@@ -33,8 +33,10 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.search_engines.TemplateUrl;
@@ -92,17 +94,16 @@ public final class SearchEngineChoiceNotificationTest {
     @Test
     @SmallTest
     public void receiveSearchEngineChoiceRequest() {
-        assertFalse(ContextUtils.getAppSharedPreferences().contains(
-                SearchEngineChoiceNotification.PREF_SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP));
+        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+        assertFalse(prefs.contains(ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP));
         SearchEngineChoiceNotification.receiveSearchEngineChoiceRequest();
-        assertTrue(ContextUtils.getAppSharedPreferences().contains(
-                SearchEngineChoiceNotification.PREF_SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP));
+        assertTrue(prefs.contains(ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP));
 
-        long firstTimestamp = ContextUtils.getAppSharedPreferences().getLong(
-                SearchEngineChoiceNotification.PREF_SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP, 0);
+        long firstTimestamp =
+                prefs.readLong(ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP);
         SearchEngineChoiceNotification.receiveSearchEngineChoiceRequest();
-        long secondTimestamp = ContextUtils.getAppSharedPreferences().getLong(
-                SearchEngineChoiceNotification.PREF_SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP, 0);
+        long secondTimestamp =
+                prefs.readLong(ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP);
 
         assertEquals(firstTimestamp, secondTimestamp);
     }
@@ -110,15 +111,13 @@ public final class SearchEngineChoiceNotificationTest {
     @Test
     @SmallTest
     public void handleSearchEngineChoice_ignoredWhenNotRequested() {
-        assertFalse(ContextUtils.getAppSharedPreferences().contains(
-                SearchEngineChoiceNotification.PREF_SEARCH_ENGINE_CHOICE_PRESENTED_VERSION));
+        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+        assertFalse(prefs.contains(ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_PRESENTED_VERSION));
 
         SearchEngineChoiceNotification.handleSearchEngineChoice(mContext, null);
 
         assertFalse("When not requested, the call should have been ignored.",
-                ContextUtils.getAppSharedPreferences().contains(
-                        SearchEngineChoiceNotification
-                                .PREF_SEARCH_ENGINE_CHOICE_PRESENTED_VERSION));
+                prefs.contains(ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_PRESENTED_VERSION));
 
         assertEquals(0,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
@@ -140,16 +139,14 @@ public final class SearchEngineChoiceNotificationTest {
                         "Android.SearchEngineChoice.Events",
                         SearchEngineChoiceMetrics.Events.SNACKBAR_SHOWN));
 
+        SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
         assertTrue("Version of the app should be persisted upon prompting.",
-                ContextUtils.getAppSharedPreferences().contains(
-                        SearchEngineChoiceNotification
-                                .PREF_SEARCH_ENGINE_CHOICE_PRESENTED_VERSION));
+                prefs.contains(ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_PRESENTED_VERSION));
 
         assertEquals("Presented version should be set to the current product version.",
                 ChromeVersionInfo.getProductVersion(),
-                ContextUtils.getAppSharedPreferences().getString(
-                        SearchEngineChoiceNotification.PREF_SEARCH_ENGINE_CHOICE_PRESENTED_VERSION,
-                        null));
+                prefs.readString(
+                        ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_PRESENTED_VERSION, null));
     }
 
     @Test
@@ -161,8 +158,8 @@ public final class SearchEngineChoiceNotificationTest {
 
         SearchEngineChoiceNotification.handleSearchEngineChoice(mContext, mSnackbarManager);
         assertFalse("Second call removes the preference for search engine choice before.",
-                ContextUtils.getAppSharedPreferences().contains(
-                        SearchEngineChoiceMetrics.PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
+                SharedPreferencesManager.getInstance().contains(
+                        ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
 
         SearchEngineChoiceNotification.handleSearchEngineChoice(mContext, mSnackbarManager);
 
@@ -202,8 +199,8 @@ public final class SearchEngineChoiceNotificationTest {
 
         assertFalse(
                 "First handleSearchEngineChoice call after prompt removes SE choice before pref.",
-                ContextUtils.getAppSharedPreferences().contains(
-                        SearchEngineChoiceMetrics.PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
+                SharedPreferencesManager.getInstance().contains(
+                        ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
 
         assertEquals(0,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
@@ -227,8 +224,8 @@ public final class SearchEngineChoiceNotificationTest {
         SearchEngineChoiceNotification.handleSearchEngineChoice(mContext, mSnackbarManager);
         assertFalse(
                 "First handleSearchEngineChoice call after prompt removes SE choice before pref.",
-                ContextUtils.getAppSharedPreferences().contains(
-                        SearchEngineChoiceMetrics.PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
+                SharedPreferencesManager.getInstance().contains(
+                        ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
 
         doReturn(mAlternativeSearchEngine)
                 .when(mTemplateUrlService)
@@ -270,8 +267,8 @@ public final class SearchEngineChoiceNotificationTest {
 
         assertFalse(
                 "First handleSearchEngineChoice call after prompt removes SE choice before pref.",
-                ContextUtils.getAppSharedPreferences().contains(
-                        SearchEngineChoiceMetrics.PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
+                SharedPreferencesManager.getInstance().contains(
+                        ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
 
         SearchEngineChoiceNotification.handleSearchEngineChoice(mContext, mSnackbarManager);
 

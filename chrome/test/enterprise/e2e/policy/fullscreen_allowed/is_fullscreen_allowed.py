@@ -21,10 +21,8 @@ def main(argv):
     container = w.child_window(best_match="Infobar Container")
     container.child_window(best_match="Close").click_input()
 
-    print "Clicking on the Fullscreen button."
-    button = w.child_window(title_re="^Chrom(e|ium)$", control_type="Button")
-    button.click_input()
-    w.child_window(best_match="Full screen").click_input()
+    print "press F11 to enter full screen mode."
+    w.type_keys('{F11}')
 
     window_rect = w.rectangle()
     window_width = window_rect.width()

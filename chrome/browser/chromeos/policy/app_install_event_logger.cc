@@ -312,6 +312,19 @@ void AppInstallEventLogger::AddForSetOfPackagesWithDiskSpaceInfo(
 void AppInstallEventLogger::AddForSetOfPackages(
     const std::set<std::string>& packages,
     std::unique_ptr<em::AppInstallReportLogEvent> event) {
+  delegate_->GetAndroidId(base::BindOnce(&AppInstallEventLogger::OnGetAndroidId,
+                                         weak_factory_.GetWeakPtr(), packages,
+                                         std::move(event)));
+}
+
+void AppInstallEventLogger::OnGetAndroidId(
+    const std::set<std::string>& packages,
+    std::unique_ptr<em::AppInstallReportLogEvent> event,
+    bool ok,
+    int64_t android_id) {
+  if (ok) {
+    event->set_android_id(android_id);
+  }
   delegate_->Add(packages, *event);
 }
 

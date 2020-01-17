@@ -248,7 +248,7 @@ cr.define('safe_browsing', function() {
     const token = result[0];
     const request = result[1];
 
-    if ($(tableId + '-' + token) == undefined) {
+    if ($(tableId + '-' + token) === undefined) {
       insertTokenToTable(tableId, token);
     }
 

@@ -74,9 +74,7 @@ jumbo_static_library("test_support") {
     "test_rappor_service.h",
   ]
 
-  public_deps = [
-    ":rappor",
-  ]
+  public_deps = [ ":rappor" ]
   deps = [
     "//base",
     "//components/prefs:test_support",
@@ -114,9 +112,7 @@ jumbo_source_set("unit_tests") {
 
 # Convenience testing target
 test("rappor_unittests") {
-  sources = [
-    "//components/test/run_all_unittests.cc",
-  ]
+  sources = [ "//components/test/run_all_unittests.cc" ]
   deps = [
     ":unit_tests",
     "//components/test:test_support",

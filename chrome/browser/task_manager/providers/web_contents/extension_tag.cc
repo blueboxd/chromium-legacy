@@ -13,7 +13,7 @@
 
 namespace task_manager {
 
-ExtensionTask* ExtensionTag::CreateTask() const {
+ExtensionTask* ExtensionTag::CreateTask(WebContentsTaskProvider*) const {
   // Upon being asked to create a task, it means that the site instance is ready
   // and connected, and the render frames have been initialized.
   // It's OK if the following returns nullptr, ExtensionTask will then get the

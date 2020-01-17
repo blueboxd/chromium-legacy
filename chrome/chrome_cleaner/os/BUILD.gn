@@ -80,9 +80,7 @@ source_set("common_os") {
 }
 
 source_set("file_remover_api") {
-  sources = [
-    "file_remover_api.h",
-  ]
+  sources = [ "file_remover_api.h" ]
 
   deps = [
     "//base",
@@ -118,9 +116,7 @@ source_set("cleaner_os") {
     "//sandbox/win:sandbox",
   ]
 
-  public_deps = [
-    "//chrome/chrome_cleaner/logging/proto:removal_status_proto",
-  ]
+  public_deps = [ "//chrome/chrome_cleaner/logging/proto:removal_status_proto" ]
 }
 
 source_set("unittest_sources") {

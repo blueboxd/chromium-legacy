@@ -302,13 +302,21 @@ class ExtensionDownloader {
       std::set<std::string> extension_ids,
       ExtensionDownloaderDelegate::Stage stage);
 
-  // Invokes OnExtensionDownloadFailed() on the |delegate_| for each extension
-  // in the set, with |error| as the reason for failure. Make a copy of
-  // arguments because there is no guarantee that callback won't indirectly
-  // change source of IDs.
+  // Calls NotifyExtensionsDownloadFailedWithFailureData with empty failure
+  // data.
   void NotifyExtensionsDownloadFailed(std::set<std::string> id_set,
                                       std::set<int> request_ids,
                                       ExtensionDownloaderDelegate::Error error);
+
+  // Invokes OnExtensionDownloadFailed() on the |delegate_| for each extension
+  // in the set, with |error| as the reason for failure, and failure data. Make
+  // a copy of arguments because there is no guarantee that callback won't
+  // indirectly change source of IDs.
+  void NotifyExtensionsDownloadFailedWithFailureData(
+      std::set<std::string> extension_ids,
+      std::set<int> request_ids,
+      ExtensionDownloaderDelegate::Error error,
+      const ExtensionDownloaderDelegate::FailureData& data);
 
   // Send a notification that an update was found for |id| that we'll
   // attempt to download.

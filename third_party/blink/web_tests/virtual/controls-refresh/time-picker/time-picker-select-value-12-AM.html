@@ -21,7 +21,7 @@ function selectValue() {
   clickTimeCellAt(0, 2);
   clickTimeCellAt(1, 2);
   clickTimeCellAt(3, 1);
-  clickSubmitTimeButton();
+  eventSender.keyDown('Enter');
 }
 
 t.step(() => {

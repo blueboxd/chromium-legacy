@@ -28,7 +28,8 @@ AccessibilityTest.define('ManageAccessibilityA11yTest', {
   axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
   setup: function() {
-    settings.router.navigateTo(settings.routes.MANAGE_ACCESSIBILITY);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.MANAGE_ACCESSIBILITY);
     Polymer.dom.flush();
   },
   /** @override */

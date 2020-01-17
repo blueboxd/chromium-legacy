@@ -5,7 +5,5 @@
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("user_settings_event_proto") {
-  sources = [
-    "user_settings_event.proto",
-  ]
+  sources = [ "user_settings_event.proto" ]
 }

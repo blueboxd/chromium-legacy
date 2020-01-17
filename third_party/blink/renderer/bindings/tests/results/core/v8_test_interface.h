@@ -271,12 +271,6 @@ class V8TestInterface {
 };
 
 template <>
-struct NativeValueTraits<TestInterfaceImplementation> : public NativeValueTraitsBase<TestInterfaceImplementation> {
-  CORE_EXPORT static TestInterfaceImplementation* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestInterfaceImplementation* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestInterfaceImplementation> {
   typedef V8TestInterface Type;
 };

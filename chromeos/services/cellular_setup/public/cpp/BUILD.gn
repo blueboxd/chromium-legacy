@@ -19,7 +19,5 @@ static_library("test_support") {
     "//chromeos/services/cellular_setup/public/mojom",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

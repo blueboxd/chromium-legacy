@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_image_data_source.h"
 
 @protocol GridConsumer;
-@class TabModel;
+class Browser;
 
 namespace sessions {
 class TabRestoreService;
@@ -20,8 +20,8 @@ class TabRestoreService;
 // Mediates between model layer and tab grid UI layer.
 @interface TabGridMediator : NSObject<GridCommands, GridImageDataSource>
 
-// The source tab model.
-@property(nonatomic, weak) TabModel* tabModel;
+// The source browser.
+@property(nonatomic, assign) Browser* browser;
 // TabRestoreService holds the recently closed tabs.
 @property(nonatomic, assign) sessions::TabRestoreService* tabRestoreService;
 

@@ -627,6 +627,11 @@ class CORE_EXPORT Node : public EventTarget {
     return *tree_scope_;
   }
 
+  // Returns the tree scope where this element originated.
+  // Use this when resolving element references for (CSS url(...)s and #id).
+  // This differs from GetTreeScope for shadow clones inside <svg:use/>.
+  TreeScope& OriginatingTreeScope() const;
+
   bool InActiveDocument() const;
 
   // Returns true if this node is connected to a document, false otherwise.
@@ -904,6 +909,9 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   bool IsEffectiveRootScroller() const;
+
+  virtual LayoutBox* AutoscrollBox();
+  virtual void StopAutoscroll();
 
   // If the node is a plugin, then this returns its WebPluginContainer.
   WebPluginContainerImpl* GetWebPluginContainer() const;

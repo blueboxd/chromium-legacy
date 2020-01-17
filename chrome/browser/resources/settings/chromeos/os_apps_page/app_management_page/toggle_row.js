@@ -30,7 +30,7 @@ Polymer({
   /**
    * @returns {boolean} true if the toggle is checked.
    */
-  isChecked: function() {
+  isChecked() {
     return this.$.toggle.checked;
   },
 
@@ -38,7 +38,7 @@ Polymer({
    * @param {MouseEvent} event
    * @private
    */
-  onClick_: function(event) {
+  onClick_(event) {
     event.stopPropagation();
     this.$['toggle'].click();
   },

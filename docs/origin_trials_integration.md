@@ -52,6 +52,20 @@ Trial limited to specific platform:
 },
 ```
 
+### CSS Properties
+
+You can also run experiment for new CSS properties with origin trial. After you
+have configured your feature in [runtime\_enabled\_features.json5] as above, head
+to [css\_properties.json5]. As explained in the file, you use `runtime_flag` to associate
+the CSS property with the feature you just defined. This will automatically link the CSS
+property to the origin trial defined in the runtime feature. It will be available
+in both JavaScript (`Element.style`) and CSS (including `@supports`) when the trial
+is enabled.
+
+
+**Example:** [origin-trial-test-property] defines a test css property controlled via
+runtime feature `OriginTrialsSampleAPI` and subsequently an origin trial named `Frobulate`.
+
 ### Gating Access
 
 Once configured, there are two mechanisms to gate access to your feature behind
@@ -73,6 +87,14 @@ partial interface Navigator {
 check. Your code should simply call
 `RuntimeEnabledFeatures::MyFeatureEnabled(ExecutionContext*)` as often as
 necessary to gate access to your feature.
+
+**NOTE:** For CSS properties, you do not need to edit the IDL files, as the exposure
+on the [CSSStyleDeclaration] is handled at runtime.
+
+**ISSUE:** In the rare cases where the origin trial token is added via script after
+the css style declaration, the css property will be enabled and is fully functional,
+however it will not appear on the [CSSStyleDeclaration] interface, i.e. not accessible
+in `Element.style`. This issue is tracked in crbug/1041993.
 
 ### Web Feature Counting
 
@@ -200,3 +222,7 @@ as tests for script-added tokens. For examples, refer to the existing tests in
 [web\_feature.mojom]: /third_party/blink/public/mojom/web_feature/web_feature.mojom
 [update\_use\_counter\_feature\_enum.py]: /tools/metrics/histograms/update_use_counter_feature_enum.py
 [Measure]: /third_party/blink/renderer/bindings/IDLExtendedAttributes.md#Measure_i_m_a_c
+[css\_properties.json5]: /third_party/blink/renderer/core/css/css_properties.json5
+[origin-trial-test-property]: https://chromium.googlesource.com/chromium/src/+/ff2ab8b89745602c8300322c2a0158e210178c7e/third_party/blink/renderer/core/css/css_properties.json5#2635
+[CSSStyleDeclaration]: /third_party/blink/renderer/core/css/css_style_declaration.idl
+

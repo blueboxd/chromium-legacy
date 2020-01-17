@@ -35,7 +35,6 @@
 #include "chromecast/browser/cast_http_user_agent_settings.h"
 #include "chromecast/browser/cast_navigation_ui_data.h"
 #include "chromecast/browser/cast_network_contexts.h"
-#include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_overlay_manifests.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_session_id_map.h"
@@ -48,7 +47,6 @@
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/service_connector.h"
 #include "chromecast/browser/tts/tts_controller.h"
-#include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/cast_content_client.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
@@ -84,6 +82,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/embedder/descriptors.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -151,7 +150,6 @@ CastContentBrowserClient::CastContentBrowserClient(
       cast_browser_main_parts_(nullptr),
       cast_network_contexts_(
           std::make_unique<CastNetworkContexts>(GetCorsExemptHeadersList())),
-      url_request_context_factory_(new URLRequestContextFactory()),
       cast_feature_list_creator_(cast_feature_list_creator) {
   cast_feature_list_creator_->SetExtraEnableFeatures({
     ::media::kInternalMediaSession, features::kNetworkServiceInProcess,
@@ -171,8 +169,6 @@ CastContentBrowserClient::~CastContentBrowserClient() {
   DCHECK(!media_resource_tracker_)
       << "ResetMediaResourceTracker was not called";
   cast_network_contexts_.reset();
-  base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
-                   url_request_context_factory_.release());
 }
 
 std::unique_ptr<ServiceConnector>
@@ -325,8 +321,7 @@ CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   DCHECK(!cast_browser_main_parts_);
 
-  auto main_parts = CastBrowserMainParts::Create(
-      parameters, url_request_context_factory_.get(), this);
+  auto main_parts = CastBrowserMainParts::Create(parameters, this);
 
   cast_browser_main_parts_ = main_parts.get();
   CastBrowserProcess::GetInstance()->SetCastContentBrowserClient(this);
@@ -442,7 +437,8 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
     // the renderer go here.
     static const char* const kForwardSwitches[] = {
         switches::kForceMediaResolutionHeight,
-        switches::kForceMediaResolutionWidth};
+        switches::kForceMediaResolutionWidth,
+        network::switches::kUnsafelyTreatInsecureOriginAsSecure};
     command_line->CopySwitchesFrom(*browser_command_line, kForwardSwitches,
                                    base::size(kForwardSwitches));
   } else if (process_type == switches::kUtilityProcess) {
@@ -584,7 +580,7 @@ base::OnceClosure CastContentBrowserClient::SelectClientCertificate(
   // we need to return (if permitted) is the Cast device cert, which we can
   // access directly through the ClientAuthSigner instance. However, we need to
   // be on the IO thread to determine whether the app is whitelisted to return
-  // it, because CastNetworkDelegate is bound to the IO thread.
+  // it.
   // Subsequently, the callback must then itself be performed back here
   // on the UI thread.
   //
@@ -606,6 +602,15 @@ base::OnceClosure CastContentBrowserClient::SelectClientCertificate(
   return base::OnceClosure();
 }
 
+bool CastContentBrowserClient::IsWhitelisted(
+    const GURL& /* gurl */,
+    const std::string& /* session_id */,
+    int /* render_process_id */,
+    int /* render_frame_id */,
+    bool /* for_device_auth */) {
+  return false;
+}
+
 void CastContentBrowserClient::SelectClientCertificateOnIOThread(
     GURL requesting_url,
     const std::string& session_id,
@@ -616,11 +621,8 @@ void CastContentBrowserClient::SelectClientCertificateOnIOThread(
                             scoped_refptr<net::SSLPrivateKey>)>
         continue_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  CastNetworkDelegate* network_delegate =
-      url_request_context_factory_->app_network_delegate();
-  if (network_delegate->IsWhitelisted(requesting_url, session_id,
-                                      render_process_id, render_frame_id,
-                                      false)) {
+  if (IsWhitelisted(requesting_url, session_id, render_process_id,
+                    render_frame_id, false)) {
     original_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(continue_callback), DeviceCert(),
                                   DeviceKey()));

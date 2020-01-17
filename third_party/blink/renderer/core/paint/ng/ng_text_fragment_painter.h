@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_TEXT_FRAGMENT_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_TEXT_FRAGMENT_PAINTER_H_
 
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -80,6 +81,7 @@ class NGTextFragmentPainter {
                           const PhysicalOffset& paint_offset);
 
   const Cursor& cursor_;
+  base::Optional<NGInlineCursor> inline_cursor_for_block_flow_;
 };
 
 extern template class NGTextFragmentPainter<NGTextPainterCursor>;

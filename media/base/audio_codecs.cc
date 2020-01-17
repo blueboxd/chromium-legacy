@@ -47,8 +47,15 @@ std::string GetCodecName(AudioCodec codec) {
     case kCodecMpegHAudio:
       return "mpeg-h-audio";
   }
-  NOTREACHED();
-  return "";
+}
+
+std::string GetProfileName(AudioCodecProfile profile) {
+  switch (profile) {
+    case AudioCodecProfile::kUnknown:
+      return "unknown";
+    case AudioCodecProfile::kXHE_AAC:
+      return "xhe-aac";
+  }
 }
 
 AudioCodec StringToAudioCodec(const std::string& codec_id) {

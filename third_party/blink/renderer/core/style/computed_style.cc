@@ -299,6 +299,10 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
   if (new_style.HasAnyPseudoElementStyles() ||
       old_style.HasAnyPseudoElementStyles())
     return Difference::kPseudoElementStyle;
+  if (old_style.Display() != new_style.Display() &&
+      (new_style.Display() == EDisplay::kListItem ||
+       old_style.Display() == EDisplay::kListItem))
+    return Difference::kPseudoElementStyle;
   return Difference::kNonInherited;
 }
 

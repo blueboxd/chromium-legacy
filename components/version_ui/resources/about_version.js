@@ -89,7 +89,7 @@ function onLoadWork() {
     $('arc_holder').hidden = true;
     chrome.chromeosInfoPrivate.get(['customizationId'], returnCustomizationId);
   }
-  if ($('sanitizer').textContent != '') {
+  if ($('sanitizer').textContent !== '') {
     $('sanitizer-section').hidden = false;
   }
 }

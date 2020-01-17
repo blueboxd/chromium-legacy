@@ -69,18 +69,23 @@ cr.define('settings_privacy_page', function() {
     return {
       browser: {
         clear_data: {
-          time_period: {
-            key: 'browser.clear_data.time_period',
-            type: chrome.settingsPrivate.PrefType.NUMBER,
-            value: 0,
-          },
-          time_period_basic: {
-            key: 'browser.clear_data.time_period_basic',
-            type: chrome.settingsPrivate.PrefType.NUMBER,
-            value: 0,
-          },
           browsing_history: {
             key: 'browser.clear_data.browsing_history',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+          browsing_history_basic: {
+            key: 'browser.clear_data.browsing_history_basic',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+          cache: {
+            key: 'browser.clear_data.cache',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+          cache_basic: {
+            key: 'browser.clear_data.cache_basic',
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: false,
           },
@@ -94,10 +99,40 @@ cr.define('settings_privacy_page', function() {
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: false,
           },
-          cache_basic: {
-            key: 'browser.clear_data.cache_basic',
+          download_history: {
+            key: 'browser.clear_data.download_history',
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: false,
+          },
+          hosted_apps_data: {
+            key: 'browser.clear_data.hosted_apps_data',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+          form_data: {
+            key: 'browser.clear_data.form_data',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+          passwords: {
+            key: 'browser.clear_data.passwords',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+          site_settings: {
+            key: 'browser.clear_data.site_settings',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+          time_period: {
+            key: 'browser.clear_data.time_period',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 0,
+          },
+          time_period_basic: {
+            key: 'browser.clear_data.time_period_basic',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 0,
           },
         },
         last_clear_browsing_data_tab: {
@@ -114,14 +149,30 @@ cr.define('settings_privacy_page', function() {
       /** @type {settings.TestPrivacyPageBrowserProxy} */
       let testBrowserProxy;
 
+      /** @type {settings.TestMetricsBrowserProxy} */
+      let testMetricsBrowserProxy;
+
       /** @type {SettingsPrivacyPageElement} */
       let page;
 
       setup(function() {
+        testMetricsBrowserProxy = new TestMetricsBrowserProxy();
+        settings.MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
         testBrowserProxy = new TestPrivacyPageBrowserProxy();
         settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+        const testSyncBrowserProxy = new TestSyncBrowserProxy();
+        settings.SyncBrowserProxyImpl.instance_ = testSyncBrowserProxy;
         PolymerTest.clearBody();
         page = document.createElement('settings-privacy-page');
+        page.prefs = {
+          profile: {password_manager_leak_detection: {value: true}},
+          signin: {
+            allowed_on_next_startup:
+                {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
+          },
+          safebrowsing:
+              {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+        };
         document.body.appendChild(page);
       });
 
@@ -131,7 +182,7 @@ cr.define('settings_privacy_page', function() {
 
       test('LogMangeCerfificatesClick', function() {
         page.$$('#manageCertificates').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
             .then(result => {
               assertEquals(
                   settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES,
@@ -141,7 +192,7 @@ cr.define('settings_privacy_page', function() {
 
       test('LogClearBrowsingClick', function() {
         page.$$('#clearBrowsingData').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
             .then(result => {
               assertEquals(
                   settings.SettingsPageInteractions.PRIVACY_CLEAR_BROWSING_DATA,
@@ -151,7 +202,7 @@ cr.define('settings_privacy_page', function() {
 
       test('LogDoNotTrackClick', function() {
         page.$$('#doNotTrack').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
             .then(result => {
               assertEquals(
                   settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK,
@@ -161,7 +212,7 @@ cr.define('settings_privacy_page', function() {
 
       test('LogCanMakePaymentToggleClick', function() {
         page.$$('#canMakePaymentToggle').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
             .then(result => {
               assertEquals(
                   settings.SettingsPageInteractions.PRIVACY_PAYMENT_METHOD,
@@ -171,10 +222,32 @@ cr.define('settings_privacy_page', function() {
 
       test('LogSiteSettingsSubpageClick', function() {
         page.$$('#site-settings-subpage-trigger').click();
-        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
             .then(result => {
               assertEquals(
                   settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS,
+                  result);
+            });
+      });
+
+      test('LogSafeBrowsingToggleClick', function() {
+        Polymer.dom.flush();
+        page.$$('#safeBrowsingToggle').click();
+        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
+            .then(result => {
+              assertEquals(
+                  settings.SettingsPageInteractions.PRIVACY_SAFE_BROWSING,
+                  result);
+            });
+      });
+
+      test('LogSafeBrowsingReportingToggleClick', function() {
+        Polymer.dom.flush();
+        page.$$('#safeBrowsingReportingToggle').click();
+        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
+            .then(result => {
+              assertEquals(
+                  settings.SettingsPageInteractions.PRIVACY_IMPROVE_SECURITY,
                   result);
             });
       });
@@ -314,8 +387,7 @@ cr.define('settings_privacy_page', function() {
           hasError: false,
         });
         Polymer.dom.flush();
-        const footer = element.$$('#clearBrowsingDataDialog [slot=footer]');
-        assertTrue(footer.hidden);
+        assertFalse(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
 
         // Syncing: the footer is shown, with the normal sync info.
         cr.webUIListenerCallback('sync-status-changed', {
@@ -323,7 +395,7 @@ cr.define('settings_privacy_page', function() {
           hasError: false,
         });
         Polymer.dom.flush();
-        assertFalse(footer.hidden);
+        assertTrue(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
         assertVisible(element.$$('#sync-info'), true);
         assertVisible(element.$$('#sync-paused-info'), false);
         assertVisible(element.$$('#sync-passphrase-error-info'), false);
@@ -372,8 +444,7 @@ cr.define('settings_privacy_page', function() {
           hasError: false,
         });
         Polymer.dom.flush();
-        assertFalse(
-            element.$$('#clearBrowsingDataDialog [slot=footer]').hidden);
+        assertTrue(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
         const syncInfo = element.$$('#sync-info');
         assertVisible(syncInfo, true);
         const signoutLink = syncInfo.querySelector('a[href]');
@@ -390,8 +461,7 @@ cr.define('settings_privacy_page', function() {
           statusAction: settings.StatusAction.REAUTHENTICATE,
         });
         Polymer.dom.flush();
-        assertFalse(
-            element.$$('#clearBrowsingDataDialog [slot=footer]').hidden);
+        assertTrue(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
         const syncInfo = element.$$('#sync-paused-info');
         assertVisible(syncInfo, true);
         const signinLink = syncInfo.querySelector('a[href]');
@@ -408,14 +478,15 @@ cr.define('settings_privacy_page', function() {
           statusAction: settings.StatusAction.ENTER_PASSPHRASE,
         });
         Polymer.dom.flush();
-        assertFalse(
-            element.$$('#clearBrowsingDataDialog [slot=footer]').hidden);
+        assertTrue(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
         const syncInfo = element.$$('#sync-passphrase-error-info');
         assertVisible(syncInfo, true);
         const passphraseLink = syncInfo.querySelector('a[href]');
         assertTrue(!!passphraseLink);
         passphraseLink.click();
-        assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
+        assertEquals(
+            settings.routes.SYNC,
+            settings.Router.getInstance().getCurrentRoute());
       });
     });
   }
@@ -617,8 +688,7 @@ cr.define('settings_privacy_page', function() {
             hasError: false,
           });
           Polymer.dom.flush();
-          assertTrue(
-              element.$$('#clearBrowsingDataDialog [slot=footer]').hidden);
+          assertFalse(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
 
           // Syncing.
           cr.webUIListenerCallback('sync-status-changed', {
@@ -626,8 +696,7 @@ cr.define('settings_privacy_page', function() {
             hasError: false,
           });
           Polymer.dom.flush();
-          assertTrue(
-              element.$$('#clearBrowsingDataDialog [slot=footer]').hidden);
+          assertFalse(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
 
           // Sync passphrase error.
           cr.webUIListenerCallback('sync-status-changed', {
@@ -636,8 +705,7 @@ cr.define('settings_privacy_page', function() {
             statusAction: settings.StatusAction.ENTER_PASSPHRASE,
           });
           Polymer.dom.flush();
-          assertTrue(
-              element.$$('#clearBrowsingDataDialog [slot=footer]').hidden);
+          assertFalse(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
 
           // Other sync error.
           cr.webUIListenerCallback('sync-status-changed', {
@@ -646,8 +714,7 @@ cr.define('settings_privacy_page', function() {
             statusAction: settings.StatusAction.NO_ACTION,
           });
           Polymer.dom.flush();
-          assertTrue(
-              element.$$('#clearBrowsingDataDialog [slot=footer]').hidden);
+          assertFalse(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
         });
       }
     });
@@ -681,7 +748,8 @@ cr.define('settings_privacy_page', function() {
         settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
         PolymerTest.clearBody();
 
-        settings.router.navigateTo(settings.routes.SITE_SETTINGS_SOUND);
+        settings.Router.getInstance().navigateTo(
+            settings.routes.SITE_SETTINGS_SOUND);
         page = document.createElement('settings-privacy-page');
         document.body.appendChild(page);
         return flushAsync();

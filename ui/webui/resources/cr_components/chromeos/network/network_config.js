@@ -373,7 +373,7 @@ Polymer({
       const managedProperties =
           OncMojo.getDefaultManagedProperties(mojoType, this.guid, this.name);
       // Allow securityType_ to be set externally (e.g. in tests).
-      if (mojoType == mojom.NetworkType.kWiFi &&
+      if (mojoType === mojom.NetworkType.kWiFi &&
           this.securityType_ !== undefined) {
         managedProperties.typeProperties.wifi.security = this.securityType_;
       }
@@ -384,7 +384,7 @@ Polymer({
       });
     }
 
-    if (this.mojoType_ == mojom.NetworkType.kVPN ||
+    if (this.mojoType_ === mojom.NetworkType.kVPN ||
         (this.globalPolicy_ &&
          this.globalPolicy_.allowOnlyPolicyNetworksToConnect)) {
       this.autoConnect_ = false;
@@ -425,7 +425,7 @@ Polymer({
     this.error = '';
 
     const propertiesToSet = this.getPropertiesToSet_();
-    if (this.managedProperties_.source == mojom.OncSource.kNone) {
+    if (this.managedProperties_.source === mojom.OncSource.kNone) {
       if (!this.autoConnect_) {
         // Note: Do not set autoConnect to true, the connection manager will do
         // that on a successful connection (unless set to false here).
@@ -490,7 +490,7 @@ Polymer({
   onNetworkCertificatesChanged() {
     this.networkConfig_.getNetworkCertificates().then(response => {
       const isOpenVpn = !!this.configProperties_.typeConfig.vpn &&
-          this.configProperties_.typeConfig.vpn.type == mojom.VpnType.kOpenVPN;
+          this.configProperties_.typeConfig.vpn.type === mojom.VpnType.kOpenVPN;
 
       const caCerts = response.serverCas.slice();
       if (!isOpenVpn) {
@@ -591,12 +591,12 @@ Polymer({
     this.managedEapProperties_ = this.getManagedEap_(managedProperties);
     this.mojoType_ = managedProperties.type;
 
-    if (this.mojoType_ == mojom.NetworkType.kVPN) {
+    if (this.mojoType_ === mojom.NetworkType.kVPN) {
       let saveCredentials = false;
       const vpn = managedProperties.typeProperties.vpn;
-      if (vpn.type == mojom.VpnType.kOpenVPN) {
+      if (vpn.type === mojom.VpnType.kOpenVPN) {
         saveCredentials = this.getActiveBoolean_(vpn.openVpn.saveCredentials);
-      } else if (vpn.type == mojom.VpnType.kL2TPIPsec) {
+      } else if (vpn.type === mojom.VpnType.kL2TPIPsec) {
         saveCredentials = this.getActiveBoolean_(vpn.ipSec.saveCredentials) ||
             this.getActiveBoolean_(vpn.l2tp.saveCredentials);
       }
@@ -613,7 +613,7 @@ Polymer({
    * @private
    */
   getSecurityItems_() {
-    if (this.mojoType_ == mojom.NetworkType.kWiFi) {
+    if (this.mojoType_ === mojom.NetworkType.kWiFi) {
       return [
         mojom.SecurityType.kNone,
         mojom.SecurityType.kWepPsk,
@@ -634,10 +634,10 @@ Polymer({
       return;
     }
     const source = this.managedProperties_.source;
-    if (source != mojom.OncSource.kNone) {
+    if (source !== mojom.OncSource.kNone) {
       // Configured networks can not change whether they are shared.
-      this.shareNetwork_ = source == mojom.OncSource.kDevice ||
-          source == mojom.OncSource.kDevicePolicy;
+      this.shareNetwork_ = source === mojom.OncSource.kDevice ||
+          source === mojom.OncSource.kDevicePolicy;
       return;
     }
     if (!this.shareIsVisible_()) {
@@ -646,8 +646,8 @@ Polymer({
     }
     if (this.shareAllowEnable) {
       // New insecure WiFi networks are always shared.
-      if (this.mojoType_ == mojom.NetworkType.kWiFi &&
-          this.managedProperties_.typeProperties.wifi.security ==
+      if (this.mojoType_ === mojom.NetworkType.kWiFi &&
+          this.managedProperties_.typeProperties.wifi.security ===
               mojom.SecurityType.kNone) {
         this.shareNetwork_ = true;
         return;
@@ -780,7 +780,7 @@ Polymer({
                 managedProperties.typeProperties.ethernet.eap) :
             undefined;
         security = eap ? mojom.SecurityType.kWpaEap : mojom.SecurityType.kNone;
-        const auth = security == mojom.SecurityType.kWpaEap ? '8021X' : 'None';
+        const auth = security === mojom.SecurityType.kWpaEap ? '8021X' : 'None';
         configProperties.typeConfig.ethernet.authentication = auth;
         configProperties.typeConfig.ethernet.eap = eap;
         break;
@@ -790,13 +790,13 @@ Polymer({
         const configVpn = configProperties.typeConfig.vpn;
         configVpn.host = OncMojo.getActiveString(vpn.host);
         configVpn.type = vpnType;
-        if (vpnType == mojom.VpnType.kL2TPIPsec) {
+        if (vpnType === mojom.VpnType.kL2TPIPsec) {
           assert(vpn.ipSec);
           configVpn.ipSec = this.getIPSecConfigProperties_(vpn.ipSec);
           assert(vpn.l2tp);
           configVpn.l2tp = this.getL2TPConfigProperties_(vpn.l2tp);
         } else {
-          assert(vpnType == mojom.VpnType.kOpenVPN);
+          assert(vpnType === mojom.VpnType.kOpenVPN);
           assert(vpn.openVpn);
           configVpn.openVpn = this.getOpenVPNConfigProperties_(vpn.openVpn);
         }
@@ -807,14 +807,14 @@ Polymer({
       configProperties.autoConnect = {value: autoConnect};
     }
     // Request certificates the first time |configProperties_| is set.
-    const requestCertificates = this.configProperties_ == undefined;
+    const requestCertificates = this.configProperties_ === undefined;
     this.configProperties_ = configProperties;
     this.securityType_ = security;
     this.set('eapProperties_', this.getEap_(this.configProperties_));
     if (!this.eapProperties_) {
       this.showEap_ = null;
     }
-    if (managedProperties.type == mojom.NetworkType.kVPN) {
+    if (managedProperties.type === mojom.NetworkType.kVPN) {
       this.vpnType_ = this.getVpnTypeFromProperties_(this.configProperties_);
     }
     if (requestCertificates) {
@@ -833,14 +833,14 @@ Polymer({
     }
     const type = this.mojoType_;
     const security = this.securityType_;
-    if (type == mojom.NetworkType.kWiFi) {
+    if (type === mojom.NetworkType.kWiFi) {
       this.configProperties_.typeConfig.wifi.security = security;
-    } else if (type == mojom.NetworkType.kEthernet) {
-      const auth = security == mojom.SecurityType.kWpaEap ? '8021X' : 'None';
+    } else if (type === mojom.NetworkType.kEthernet) {
+      const auth = security === mojom.SecurityType.kWpaEap ? '8021X' : 'None';
       this.configProperties_.typeConfig.ethernet.authentication = auth;
     }
     let eap;
-    if (security == mojom.SecurityType.kWpaEap) {
+    if (security === mojom.SecurityType.kWpaEap) {
       eap = this.getEap_(this.configProperties_, true);
       eap.outer = eap.outer || 'LEAP';
     }
@@ -870,20 +870,20 @@ Polymer({
   /** @private */
   updateEapCerts_() {
     // EAP is used for all configurable types except VPN.
-    if (this.mojoType_ == mojom.NetworkType.kVPN) {
+    if (this.mojoType_ === mojom.NetworkType.kVPN) {
       return;
     }
     const eap = this.eapProperties_;
     const pem = eap && eap.serverCaPems ? eap.serverCaPems[0] : '';
     const certId =
-        eap && eap.clientCertType == 'PKCS11Id' ? eap.clientCertPkcs11Id : '';
+        eap && eap.clientCertType === 'PKCS11Id' ? eap.clientCertPkcs11Id : '';
     this.setSelectedCerts_(pem, certId);
   },
 
   /** @private */
   updateShowEap_() {
     if (!this.eapProperties_ ||
-        this.securityType_ == mojom.SecurityType.kNone) {
+        this.securityType_ === mojom.SecurityType.kNone) {
       this.showEap_ = null;
       this.updateCertError_();
       return;
@@ -894,13 +894,13 @@ Polymer({
       case mojom.NetworkType.kEthernet:
         this.showEap_ = {
           Outer: true,
-          Inner: outer == 'PEAP' || outer == 'EAP-TTLS',
-          ServerCA: outer != 'LEAP',
-          SubjectMatch: outer == 'EAP-TLS',
-          UserCert: outer == 'EAP-TLS',
+          Inner: outer === 'PEAP' || outer === 'EAP-TTLS',
+          ServerCA: outer !== 'LEAP',
+          SubjectMatch: outer === 'EAP-TLS',
+          UserCert: outer === 'EAP-TLS',
           Identity: true,
-          Password: outer != 'EAP-TLS',
-          AnonymousIdentity: outer == 'PEAP' || outer == 'EAP-TTLS',
+          Password: outer !== 'EAP-TLS',
+          AnonymousIdentity: outer === 'PEAP' || outer === 'EAP-TTLS',
         };
         break;
     }
@@ -971,8 +971,8 @@ Polymer({
   getVpnTypeFromProperties_(properties) {
     const vpn = properties.typeConfig.vpn;
     assert(vpn);
-    if (vpn.type == mojom.VpnType.kL2TPIPsec) {
-      return vpn.ipSec.authenticationType == 'Cert' ?
+    if (vpn.type === mojom.VpnType.kL2TPIPsec) {
+      return vpn.ipSec.authenticationType === 'Cert' ?
           VPNConfigType.L2TP_IPSEC_CERT :
           VPNConfigType.L2TP_IPSEC_PSK;
     }
@@ -1028,7 +1028,7 @@ Polymer({
         delete vpn.ipSec;
         break;
     }
-    if (vpn.type == mojom.VpnType.kL2TPIPsec && !vpn.l2tp) {
+    if (vpn.type === mojom.VpnType.kL2TPIPsec && !vpn.l2tp) {
       vpn.l2tp = {
         lcpEchoDisabled: false,
         password: '',
@@ -1041,25 +1041,25 @@ Polymer({
 
   /** @private */
   updateVpnIPsecCerts_() {
-    if (this.vpnType_ != VPNConfigType.L2TP_IPSEC_CERT) {
+    if (this.vpnType_ !== VPNConfigType.L2TP_IPSEC_CERT) {
       return;
     }
     const ipSec = this.configProperties_.typeConfig.vpn.ipSec;
     const pem = ipSec.serverCaPems ? ipSec.serverCaPems[0] : undefined;
     const certId =
-        ipSec.clientCertType == 'PKCS11Id' ? ipSec.clientCertPkcs11Id : '';
+        ipSec.clientCertType === 'PKCS11Id' ? ipSec.clientCertPkcs11Id : '';
     this.setSelectedCerts_(pem, certId);
   },
 
   /** @private */
   updateOpenVPNCerts_() {
-    if (this.vpnType_ != VPNConfigType.OPEN_VPN) {
+    if (this.vpnType_ !== VPNConfigType.OPEN_VPN) {
       return;
     }
     const openVpn = this.configProperties_.typeConfig.vpn.openVpn;
     const pem = openVpn.serverCaPems ? openVpn.serverCaPems[0] : undefined;
     const certId =
-        openVpn.clientCertType == 'PKCS11Id' ? openVpn.clientCertPkcs11Id : '';
+        openVpn.clientCertType === 'PKCS11Id' ? openVpn.clientCertPkcs11Id : '';
     this.setSelectedCerts_(pem, certId);
   },
 
@@ -1069,8 +1069,8 @@ Polymer({
     // change it.
     /** @const */ const noCertsError = 'networkErrorNoUserCertificate';
     /** @const */ const noValidCertsError = 'networkErrorNotHardwareBacked';
-    if (this.error && this.error != noCertsError &&
-        this.error != noValidCertsError) {
+    if (this.error && this.error !== noCertsError &&
+        this.error !== noValidCertsError) {
       return;
     }
 
@@ -1080,7 +1080,7 @@ Polymer({
       this.setError_('');
       return;
     }
-    if (!this.userCerts_.length || this.userCerts_[0].hash == NO_CERTS_HASH) {
+    if (!this.userCerts_.length || this.userCerts_[0].hash === NO_CERTS_HASH) {
       this.setError_(noCertsError);
       return;
     }
@@ -1105,7 +1105,7 @@ Polymer({
   setSelectedCerts_(pem, certId) {
     if (pem) {
       const serverCa = this.serverCaCerts_.find(function(cert) {
-        return cert.pemOrId == pem;
+        return cert.pemOrId === pem;
       });
       if (serverCa) {
         this.selectedServerCaHash_ = serverCa.hash;
@@ -1139,7 +1139,7 @@ Polymer({
       return undefined;
     }
     return certs.find((cert) => {
-      return cert.hash == hash;
+      return cert.hash === hash;
     });
   },
 
@@ -1158,7 +1158,7 @@ Polymer({
     // Only device-wide certificates can be used for shared networks that
     // require a certificate.
     this.deviceCertsOnly_ =
-        this.shareNetwork_ && !!eap && eap.outer == 'EAP-TLS';
+        this.shareNetwork_ && !!eap && eap.outer === 'EAP-TLS';
 
     // Validate selected Server CA.
     const caCert =
@@ -1174,7 +1174,7 @@ Polymer({
         // certificate, or DO_NOT_CHECK (i.e. skip DEFAULT_HASH). See
         /// onNetworkCertificatesChanged() for how certificates are added.
         let cert = this.serverCaCerts_[0];
-        if (cert.hash == DEFAULT_HASH && this.serverCaCerts_[1]) {
+        if (cert.hash === DEFAULT_HASH && this.serverCaCerts_[1]) {
           cert = this.serverCaCerts_[1];
         }
         this.selectedServerCaHash_ = cert.hash;
@@ -1225,7 +1225,7 @@ Polymer({
         }
       }
     }
-    if (this.securityType_ == mojom.SecurityType.kWpaEap) {
+    if (this.securityType_ === mojom.SecurityType.kWpaEap) {
       return this.eapIsConfigured_();
     }
     return true;
@@ -1242,7 +1242,7 @@ Polymer({
    * @private
    */
   isWiFi_(networkType) {
-    return networkType == mojom.NetworkType.kWiFi;
+    return networkType === mojom.NetworkType.kWiFi;
   },
 
   /** @private */
@@ -1261,8 +1261,8 @@ Polymer({
    * @private
    */
   securityIsVisible_(networkType) {
-    return networkType == mojom.NetworkType.kWiFi ||
-        networkType == mojom.NetworkType.kEthernet;
+    return networkType === mojom.NetworkType.kWiFi ||
+        networkType === mojom.NetworkType.kEthernet;
   },
 
   /**
@@ -1271,7 +1271,7 @@ Polymer({
    */
   securityIsEnabled_() {
     // WiFi Security type cannot be changed once configured.
-    return !this.guid || this.mojoType_ == mojom.NetworkType.kEthernet;
+    return !this.guid || this.mojoType_ === mojom.NetworkType.kEthernet;
   },
 
   /**
@@ -1282,8 +1282,8 @@ Polymer({
     if (!this.managedProperties_) {
       return false;
     }
-    return this.managedProperties_.source == mojom.OncSource.kNone &&
-        this.managedProperties_.type == mojom.NetworkType.kWiFi;
+    return this.managedProperties_.source === mojom.OncSource.kNone &&
+        this.managedProperties_.type === mojom.NetworkType.kWiFi;
   },
 
   /**
@@ -1295,13 +1295,13 @@ Polymer({
       return false;
     }
     if (!this.shareAllowEnable ||
-        this.managedProperties_.source != mojom.OncSource.kNone) {
+        this.managedProperties_.source !== mojom.OncSource.kNone) {
       return false;
     }
 
     // Insecure WiFi networks are always shared.
-    if (this.mojoType_ == mojom.NetworkType.kWiFi &&
-        this.securityType_ == mojom.SecurityType.kNone) {
+    if (this.mojoType_ === mojom.NetworkType.kWiFi &&
+        this.securityType_ === mojom.SecurityType.kNone) {
       return false;
     }
     return true;
@@ -1314,7 +1314,7 @@ Polymer({
   configCanAutoConnect_() {
     // Only WiFi can choose whether or not to autoConnect.
     return loadTimeData.getBoolean('showHiddenNetworkWarning') &&
-        this.mojoType_ == mojom.NetworkType.kWiFi;
+        this.mojoType_ === mojom.NetworkType.kWiFi;
   },
 
   /**
@@ -1357,7 +1357,7 @@ Polymer({
    */
   selectedUserCertHashIsValid_() {
     return !!this.selectedUserCertHash_ &&
-        this.selectedUserCertHash_ != NO_CERTS_HASH;
+        this.selectedUserCertHash_ !== NO_CERTS_HASH;
   },
 
   /**
@@ -1372,7 +1372,7 @@ Polymer({
     if (!eap) {
       return false;
     }
-    if (eap.outer != 'EAP-TLS') {
+    if (eap.outer !== 'EAP-TLS') {
       return true;
     }
     // EAP TLS networks can be shared only for device-wide certificates.
@@ -1429,18 +1429,18 @@ Polymer({
     if (eap) {
       this.setEapProperties_(eap);
     }
-    if (this.mojoType_ == mojom.NetworkType.kVPN) {
+    if (this.mojoType_ === mojom.NetworkType.kVPN) {
       const vpnConfig = propertiesToSet.typeConfig.vpn;
       // VPN.Host can be an IP address but will not be recognized as such if
       // there is initial whitespace, so trim it.
-      if (vpnConfig.host != undefined) {
+      if (vpnConfig.host !== undefined) {
         vpnConfig.host = vpnConfig.host.trim();
       }
-      if (vpnConfig.type == mojom.VpnType.kOpenVPN) {
+      if (vpnConfig.type === mojom.VpnType.kOpenVPN) {
         this.setOpenVPNProperties_(propertiesToSet);
         delete propertiesToSet.ipSec;
         delete propertiesToSet.l2tp;
-      } else if (vpnConfig.type == mojom.VpnType.kL2TPIPsec) {
+      } else if (vpnConfig.type === mojom.VpnType.kL2TPIPsec) {
         this.setVpnIPsecProperties_(propertiesToSet);
         delete propertiesToSet.openVpn;
       }
@@ -1454,7 +1454,7 @@ Polymer({
    */
   getServerCaPems_() {
     const caHash = this.selectedServerCaHash_ || '';
-    if (!caHash || caHash == DO_NOT_CHECK_HASH || caHash == DEFAULT_HASH) {
+    if (!caHash || caHash === DO_NOT_CHECK_HASH || caHash === DEFAULT_HASH) {
       return [];
     }
     const serverCa = this.findCert_(this.serverCaCerts_, caHash);
@@ -1468,7 +1468,7 @@ Polymer({
   getUserCertPkcs11Id_() {
     const userCertHash = this.selectedUserCertHash_ || '';
     if (!this.selectedUserCertHashIsValid_() ||
-        userCertHash == NO_USER_CERT_HASH) {
+        userCertHash === NO_USER_CERT_HASH) {
       return '';
     }
     const userCert = this.findCert_(this.userCerts_, userCertHash);
@@ -1480,7 +1480,7 @@ Polymer({
    * @private
    */
   setEapProperties_(eap) {
-    eap.useSystemCas = this.selectedServerCaHash_ == DEFAULT_HASH;
+    eap.useSystemCas = this.selectedServerCaHash_ === DEFAULT_HASH;
 
     eap.serverCaPems = this.getServerCaPems_();
 
@@ -1525,7 +1525,7 @@ Polymer({
     assert(vpn.ipSec);
     assert(vpn.l2tp);
 
-    if (vpn.ipSec.authenticationType == 'Cert') {
+    if (vpn.ipSec.authenticationType === 'Cert') {
       vpn.ipSec.clientCertType = 'PKCS11Id';
       vpn.ipSec.clientCertPkcs11Id = this.getUserCertPkcs11Id_();
       vpn.ipSec.serverCaPems = this.getServerCaPems_();
@@ -1562,7 +1562,7 @@ Polymer({
 
     // Only attempt a connection if the network is not yet connected.
     if (connect &&
-        this.managedProperties_.connectionState ==
+        this.managedProperties_.connectionState ===
             mojom.ConnectionStateType.kNotConnected) {
       this.startConnect_(this.guid);
     } else {
@@ -1600,10 +1600,10 @@ Polymer({
   startConnect_(guid) {
     this.networkConfig_.startConnect(guid).then(response => {
       const result = response.result;
-      if (result == mojom.StartConnectResult.kSuccess ||
-          result == mojom.StartConnectResult.kInvalidGuid ||
-          result == mojom.StartConnectResult.kInvalidState ||
-          result == mojom.StartConnectResult.kCanceled) {
+      if (result === mojom.StartConnectResult.kSuccess ||
+          result === mojom.StartConnectResult.kInvalidGuid ||
+          result === mojom.StartConnectResult.kInvalidState ||
+          result === mojom.StartConnectResult.kCanceled) {
         // Connect succeeded, or is in progress completed or canceled.
         // Close the dialog.
         this.close_();
@@ -1625,9 +1625,9 @@ Polymer({
    */
   computeConfigRequiresPassphrase_(mojoType, securityType) {
     // Note: 'Passphrase' is only used by WiFi; Ethernet uses EAP.Password.
-    return mojoType == mojom.NetworkType.kWiFi &&
-        (securityType == mojom.SecurityType.kWepPsk ||
-         securityType == mojom.SecurityType.kWpaPsk);
+    return mojoType === mojom.NetworkType.kWiFi &&
+        (securityType === mojom.SecurityType.kWepPsk ||
+         securityType === mojom.SecurityType.kWpaPsk);
   },
 
   /**
@@ -1636,10 +1636,10 @@ Polymer({
    * @private
    */
   getEapInnerItems_(outer) {
-    if (outer == 'PEAP') {
+    if (outer === 'PEAP') {
       return this.eapInnerItemsPeap_;
     }
-    if (outer == 'EAP-TTLS') {
+    if (outer === 'EAP-TTLS') {
       return this.eapInnerItemsTtls_;
     }
     return [];
@@ -1662,7 +1662,7 @@ Polymer({
   getManagedSecurity_(managedProperties) {
     const policySource =
         OncMojo.getEnforcedPolicySourceFromOncSource(managedProperties.source);
-    if (policySource == mojom.PolicySource.kNone) {
+    if (policySource === mojom.PolicySource.kNone) {
       return undefined;
     }
     switch (managedProperties.type) {

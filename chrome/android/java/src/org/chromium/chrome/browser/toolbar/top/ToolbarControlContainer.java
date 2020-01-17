@@ -21,10 +21,10 @@ import org.chromium.chrome.browser.compositor.resources.ResourceFactory;
 import org.chromium.chrome.browser.contextualsearch.SwipeRecognizer;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarProgressBar;
-import org.chromium.chrome.browser.ui.widget.ClipDrawableProgressBar.DrawingInfo;
-import org.chromium.chrome.browser.ui.widget.ViewResourceFrameLayout;
-import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.components.browser_ui.widget.ClipDrawableProgressBar.DrawingInfo;
+import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 import org.chromium.ui.widget.OptimizedFrameLayout;
 

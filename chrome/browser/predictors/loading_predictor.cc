@@ -260,4 +260,14 @@ void LoadingPredictor::PreconnectFinished(
   stats_collector_->RecordPreconnectStats(std::move(stats));
 }
 
+void LoadingPredictor::PreconnectURLIfAllowed(
+    const GURL& url,
+    bool allow_credentials,
+    const net::NetworkIsolationKey& network_isolation_key) {
+  if (!url.is_valid() || !url.has_host() || !IsPreconnectAllowed(profile_))
+    return;
+  preconnect_manager()->StartPreconnectUrl(url, allow_credentials,
+                                           network_isolation_key);
+}
+
 }  // namespace predictors

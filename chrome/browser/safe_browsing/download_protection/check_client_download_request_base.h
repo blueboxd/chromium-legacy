@@ -130,11 +130,6 @@ class CheckClientDownloadRequestBase {
                                           const std::string& request_data,
                                           const std::string& response_body) = 0;
 
-  // Called when finishing the request, to determine whether asynchronous
-  // scanning is pending. Returns whether an asynchronous verdict was provided.
-  virtual bool MaybeReturnAsynchronousVerdict(
-      DownloadCheckResultReason reason) = 0;
-
   // Called after receiving, or failing to receive a response from the server.
   // Returns whether or not the file should be uploaded to Safe Browsing for
   // deep scanning.
@@ -142,8 +137,7 @@ class CheckClientDownloadRequestBase {
 
   // If ShouldUploadBinary is true, actually performs the upload to Safe
   // Browsing for deep scanning.
-  virtual void UploadBinary(DownloadCheckResult result,
-                            DownloadCheckResultReason reason) = 0;
+  virtual void UploadBinary() = 0;
 
   // Called whenever a request has completed.
   virtual void NotifyRequestFinished(DownloadCheckResult result,

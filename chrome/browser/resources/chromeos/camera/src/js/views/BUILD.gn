@@ -60,9 +60,7 @@ js_library("settings") {
 }
 
 js_library("view") {
-  deps = [
-    "..:toast",
-  ]
+  deps = [ "..:toast" ]
 
   externs_list = [ "../externs/chrome.js" ]
 }

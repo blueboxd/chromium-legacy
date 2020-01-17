@@ -99,14 +99,3 @@ export function assertBoolean(value, optMessage) {
   }
   return /** @type {boolean} */ (value);
 }
-
-/** @const */
-cca.assert = assert;
-/** @const */
-cca.assertNotReached = assertNotReached;
-/** @const */
-cca.assertInstanceof = assertInstanceof;
-/** @const */
-cca.assertString = assertString;
-/** @const */
-cca.assertBoolean = assertBoolean;

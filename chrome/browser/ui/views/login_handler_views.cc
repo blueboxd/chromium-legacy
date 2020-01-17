@@ -147,15 +147,16 @@ class LoginHandlerViews : public LoginHandler {
     }
 
     views::View* GetContentsView() override { return login_view_; }
-    views::Widget* GetWidget() override { return login_view_->GetWidget(); }
-    const views::Widget* GetWidget() const override {
-      return login_view_->GetWidget();
-    }
 
    private:
     ~Dialog() override {
       if (handler_)
         handler_->OnDialogDestroyed();
+    }
+
+    // views::DialogDelegate:
+    const views::Widget* GetWidgetImpl() const override {
+      return login_view_->GetWidget();
     }
 
     LoginHandlerViews* handler_;

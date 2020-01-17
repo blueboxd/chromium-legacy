@@ -76,7 +76,7 @@ function LoadTimeData(){}
     getValue(id) {
       expect(this.data_, 'No data. Did you remember to include strings.js?');
       const value = this.data_[id];
-      expect(typeof value != 'undefined', 'Could not find value for ' + id);
+      expect(typeof value !== 'undefined', 'Could not find value for ' + id);
       return value;
     },
 
@@ -138,7 +138,7 @@ function LoadTimeData(){}
       const varArgs = arguments;
       return label.replace(/\$(.|$|\n)/g, function(m) {
         assert(m.match(/\$[$1-9]/), 'Unescaped $ found in localized string.');
-        return m == '$$' ? '$' : varArgs[m[1]];
+        return m === '$$' ? '$' : varArgs[m[1]];
       });
     },
 
@@ -163,7 +163,7 @@ function LoadTimeData(){}
         // with $.
         if (!p.match(/^\$[1-9]$/)) {
           assert(
-              (p.match(/\$/g) || []).length % 2 == 0,
+              (p.match(/\$/g) || []).length % 2 === 0,
               'Unescaped $ found in localized string.');
           return {value: p.replace(/\$\$/g, '$'), arg: null};
         }
@@ -194,7 +194,7 @@ function LoadTimeData(){}
     getInteger(id) {
       const value = this.getValue(id);
       expectIsType(id, value, 'number');
-      expect(value == Math.floor(value), 'Number isn\'t integer: ' + value);
+      expect(value === Math.floor(value), 'Number isn\'t integer: ' + value);
       return /** @type {number} */ (value);
     },
 
@@ -204,7 +204,7 @@ function LoadTimeData(){}
      */
     overrideValues(replacements) {
       expect(
-          typeof replacements == 'object',
+          typeof replacements === 'object',
           'Replacements must be a dictionary object.');
       for (const key in replacements) {
         this.data_[key] = replacements[key];
@@ -232,7 +232,7 @@ function LoadTimeData(){}
    */
   function expectIsType(id, value, type) {
     expect(
-        typeof value == type, '[' + value + '] (' + id + ') is not a ' + type);
+        typeof value === type, '[' + value + '] (' + id + ') is not a ' + type);
   }
 
   expect(!loadTimeData, 'should only include this file once');

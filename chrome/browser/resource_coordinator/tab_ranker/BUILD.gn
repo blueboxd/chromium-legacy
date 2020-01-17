@@ -41,7 +41,5 @@ static_library("tab_features_test_helper") {
     "tab_features_test_helper.h",
   ]
 
-  deps = [
-    ":tab_ranker",
-  ]
+  deps = [ ":tab_ranker" ]
 }

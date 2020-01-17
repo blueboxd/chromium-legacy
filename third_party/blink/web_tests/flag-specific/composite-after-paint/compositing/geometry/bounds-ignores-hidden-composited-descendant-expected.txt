@@ -9,8 +9,16 @@
     {
       "name": "LayoutImage (positioned) IMG",
       "position": [10, 10],
-      "bounds": [590, 210],
+      "bounds": [50, 50],
+      "contentsOpaque": true,
       "backgroundColor": "#000000"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='outer'",
+      "position": [500, 120],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF"
     },
     {
       "name": "LayoutImage (positioned) IMG",
@@ -21,7 +29,7 @@
       "transform": 1
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV class='composited inner box'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='composited inner'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",

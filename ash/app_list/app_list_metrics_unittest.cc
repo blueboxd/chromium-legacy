@@ -25,6 +25,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
@@ -505,7 +506,7 @@ class AppListShowSourceMetricTest : public AshTestBase {
  protected:
   void ClickHomeButton() {
     HomeButton* home_button =
-        GetPrimaryShelf()->shelf_widget()->GetHomeButton();
+        GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
     gfx::Point center = home_button->GetCenterPoint();
     views::View::ConvertPointToScreen(home_button, &center);
     GetEventGenerator()->MoveMouseTo(center);

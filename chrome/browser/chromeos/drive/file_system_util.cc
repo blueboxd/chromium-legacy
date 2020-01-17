@@ -85,6 +85,9 @@ bool IsDriveEnabledForProfile(Profile* profile) {
   }
   if (!chromeos::LoginState::IsInitialized())
     return false;
+  // Disable Drive for incognito profiles.
+  if (profile->IsOffTheRecord())
+    return false;
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user || !user->HasGaiaAccount())

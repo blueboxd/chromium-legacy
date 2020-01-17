@@ -34,7 +34,7 @@ class InitiatorCSPContext : public CSPContext {
   void SetReportingRenderFrameHost(RenderFrameHostImpl* rfh);
   void SanitizeDataForUseInCspViolation(
       bool is_redirect,
-      CSPDirective::Name directive,
+      network::mojom::CSPDirectiveName directive,
       GURL* blocked_url,
       SourceLocation* source_location) const override;
 

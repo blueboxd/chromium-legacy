@@ -14,8 +14,7 @@ namespace blink {
 
 std::unique_ptr<CompositorAnimation> CompositorAnimation::Create() {
   return std::make_unique<CompositorAnimation>(
-      cc::SingleKeyframeEffectAnimation::Create(
-          cc::AnimationIdProvider::NextAnimationId()));
+      cc::Animation::Create(cc::AnimationIdProvider::NextAnimationId()));
 }
 
 std::unique_ptr<CompositorAnimation>
@@ -32,8 +31,7 @@ CompositorAnimation::CreateWorkletAnimation(
       std::move(effect_timings)));
 }
 
-CompositorAnimation::CompositorAnimation(
-    scoped_refptr<cc::SingleKeyframeEffectAnimation> animation)
+CompositorAnimation::CompositorAnimation(scoped_refptr<cc::Animation> animation)
     : animation_(animation), delegate_() {}
 
 CompositorAnimation::~CompositorAnimation() {
@@ -44,7 +42,7 @@ CompositorAnimation::~CompositorAnimation() {
     animation_->animation_timeline()->DetachAnimation(animation_);
 }
 
-cc::SingleKeyframeEffectAnimation* CompositorAnimation::CcAnimation() const {
+cc::Animation* CompositorAnimation::CcAnimation() const {
   return animation_.get();
 }
 

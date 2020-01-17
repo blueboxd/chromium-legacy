@@ -43,7 +43,7 @@ namespace {
 #pragma warning(push)
 #pragma warning(disable: 4702)  // Unreachable code after the _exit.
 
-NOINLINE int OnNoMemory(size_t size) {
+[[noreturn]] NOINLINE int OnNoMemory(size_t size) {
   // Kill the process. This is important for security since most of code
   // does not check the result of memory allocation.
   // https://msdn.microsoft.com/en-us/library/het71c37.aspx
@@ -54,10 +54,17 @@ NOINLINE int OnNoMemory(size_t size) {
 
   // Safety check, make sure process exits here.
   _exit(win::kOomExceptionCode);
-  return 0;
 }
 
 #pragma warning(pop)
+
+// Return a non-0 value to retry the allocation.
+int ReleaseReservationOrTerminate(size_t size) {
+  constexpr int kRetryAllocation = 1;
+  if (internal::ReleaseAddressSpaceReservation())
+    return kRetryAllocation;
+  OnNoMemory(size);
+}
 
 }  // namespace
 
@@ -71,8 +78,9 @@ void EnableTerminationOnHeapCorruption() {
 }
 
 void EnableTerminationOnOutOfMemory() {
-  _set_new_handler(&OnNoMemory);
-  _set_new_mode(1);
+  constexpr int kCallNewHandlerOnAllocationFailure = 1;
+  _set_new_handler(&ReleaseReservationOrTerminate);
+  _set_new_mode(kCallNewHandlerOnAllocationFailure);
 }
 
 // Implemented using a weak symbol.

@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.ChromeStringConstants;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.settings.MainPreferences;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 
 /**
@@ -36,7 +35,7 @@ public class AutofillServerProfileFragment
         // our extras by MainPreferences.
         Bundle extras = getArguments();
         if (extras != null) {
-            mGUID = extras.getString(MainPreferences.AUTOFILL_GUID);
+            mGUID = extras.getString(AutofillEditorBase.AUTOFILL_GUID);
         }
         assert mGUID != null;
         AutofillProfile profile = PersonalDataManager.getInstance().getProfile(mGUID);

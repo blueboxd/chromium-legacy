@@ -51,9 +51,6 @@ int NextAvailableMetricsBucketIndex() {
 
 }  // namespace
 
-const base::Feature kPersistUPAInProfileInfoCache{
-    "PersistUPAInProfileInfoCache", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const char ProfileAttributesEntry::kSupervisedUserId[] = "managed_user_id";
 const char ProfileAttributesEntry::kIsOmittedFromProfileListKey[] =
     "is_omitted_from_profile_list";
@@ -80,11 +77,6 @@ ProfileAttributesEntry::ProfileAttributesEntry()
     : profile_info_cache_(nullptr),
       prefs_(nullptr),
       profile_path_(base::FilePath()) {}
-
-// static
-bool ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName() {
-  return base::FeatureList::IsEnabled(features::kProfileMenuRevamp);
-}
 
 void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
                                         const base::FilePath& path,
@@ -186,7 +178,6 @@ bool ProfileAttributesEntry::ShouldShowProfileLocalName(
 }
 
 base::string16 ProfileAttributesEntry::GetNameToDisplay() const {
-  DCHECK(ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName);
   base::string16 name_to_display = GetGAIANameToDisplay();
 
   base::string16 local_profile_name = GetLocalProfileName();
@@ -216,16 +207,7 @@ bool ProfileAttributesEntry::HasProfileNameChanged() {
 }
 
 base::string16 ProfileAttributesEntry::GetName() const {
-  if (ShouldConcatenateGaiaAndProfileName())
-    return GetNameToDisplay();
-
-  base::string16 name;
-  // Unless the user has customized the profile name, we should use the
-  // profile's Gaia given name, if it's available.
-  if (IsUsingDefaultName())
-    name = GetGAIANameToDisplay();
-
-  return name.empty() ? GetLocalProfileName() : name;
+  return GetNameToDisplay();
 }
 
 base::string16 ProfileAttributesEntry::GetShortcutName() const {

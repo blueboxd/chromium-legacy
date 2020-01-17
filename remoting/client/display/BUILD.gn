@@ -30,9 +30,7 @@ source_set("display") {
     "sys_opengl.h",
   ]
 
-  public_deps = [
-    "//remoting/proto",
-  ]
+  public_deps = [ "//remoting/proto" ]
   deps = [
     "//third_party/libyuv",
     "//third_party/protobuf:protobuf_lite",

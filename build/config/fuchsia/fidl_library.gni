@@ -126,9 +126,7 @@ template("fidl_library") {
 
     visibility = [ ":*" ]
 
-    deps = [
-      ":${invoker.target_name}_response_file",
-    ]
+    deps = [ ":${invoker.target_name}_response_file" ]
 
     script = "//build/gn_run_binary.py"
 
@@ -155,9 +153,7 @@ template("fidl_library") {
       visibility = [ ":${invoker.target_name}" ]
       forward_variables_from(invoker, [ "testonly" ])
 
-      deps = [
-        ":${invoker.target_name}_compile",
-      ]
+      deps = [ ":${invoker.target_name}_compile" ]
 
       inputs = [
         # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
@@ -192,9 +188,7 @@ template("fidl_library") {
       visibility = [ ":${invoker.target_name}" ]
       forward_variables_from(invoker, [ "testonly" ])
 
-      deps = [
-        ":${invoker.target_name}_compile",
-      ]
+      deps = [ ":${invoker.target_name}_compile" ]
 
       inputs = [
         # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
@@ -203,9 +197,7 @@ template("fidl_library") {
         "//build/fuchsia/fidlgen_js/fidl.py",  # The schema helper file.
       ]
 
-      outputs = [
-        _output_js_path,
-      ]
+      outputs = [ _output_js_path ]
 
       script = "//build/fuchsia/fidlgen_js/gen.py"
 

@@ -78,7 +78,5 @@ source_set("tests") {
 
   configs += [ "//v8:external_startup_data" ]
 
-  data = [
-    "test/data/",
-  ]
+  data = [ "test/data/" ]
 }

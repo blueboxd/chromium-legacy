@@ -25,31 +25,21 @@ if (!is_ios) {
   assert(!is_ios, "safe_browsing/ pulls in content/ which doesn't work on iOS")
 
   proto_library("csd_proto") {
-    sources = [
-      "proto/csd.proto",
-    ]
+    sources = [ "proto/csd.proto" ]
   }
 
   proto_library("webui_proto") {
-    sources = [
-      "proto/webui.proto",
-    ]
+    sources = [ "proto/webui.proto" ]
   }
 
   proto_library("realtimeapi_proto") {
-    sources = [
-      "proto/realtimeapi.proto",
-    ]
+    sources = [ "proto/realtimeapi.proto" ]
 
-    deps = [
-      ":csd_proto",
-    ]
+    deps = [ ":csd_proto" ]
   }
 
   proto_library("webprotect_proto") {
-    sources = [
-      "proto/webprotect.proto",
-    ]
+    sources = [ "proto/webprotect.proto" ]
   }
 
   static_library("ping_manager") {
@@ -58,9 +48,7 @@ if (!is_ios) {
       "ping_manager.h",
     ]
 
-    public_deps = [
-      "//google_apis:google_apis",
-    ]
+    public_deps = [ "//google_apis:google_apis" ]
 
     deps = [
       "//base:base",
@@ -73,9 +61,7 @@ if (!is_ios) {
 
   source_set("ping_manager_unittest") {
     testonly = true
-    sources = [
-      "ping_manager_unittest.cc",
-    ]
+    sources = [ "ping_manager_unittest.cc" ]
 
     deps = [
       ":ping_manager",
@@ -112,17 +98,15 @@ if (!is_ios) {
       "//components/content_settings/core/browser",
       "//components/history/core/browser",
       "//components/password_manager/core/browser:browser",
+      "//components/safe_browsing/core/common:thread_utils",
       "//components/safe_browsing/core/db:v4_protocol_manager_util",
-      "//content/public/browser",
       "//url",
     ]
   }
 
   source_set("verdict_cache_manager_unittest") {
     testonly = true
-    sources = [
-      "verdict_cache_manager_unittest.cc",
-    ]
+    sources = [ "verdict_cache_manager_unittest.cc" ]
 
     deps = [
       ":csd_proto",
@@ -130,8 +114,8 @@ if (!is_ios) {
       ":verdict_cache_manager",
       "//base",
       "//components/content_settings/core/browser",
+      "//components/safe_browsing/core/common:test_support",
       "//components/sync_preferences:test_support",
-      "//content/test:test_support",
       "//testing/gtest",
     ]
   }

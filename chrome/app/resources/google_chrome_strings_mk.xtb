@@ -22,7 +22,6 @@
 <translation id="1587325591171447154">Датотеката <ph name="FILE_NAME" /> е опасна, па затоа Chrome ја блокираше.</translation>
 <translation id="1619887657840448962">За Chrome да биде побезбеден, ја оневозможивме следнава екстензија што не е наведена во <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е додадена без ваше знаење.</translation>
 <translation id="1628000112320670027">Добијте помош за Chrome</translation>
-<translation id="1635734105302489219">Ги бришете колачињата кога ќе го напуштите Chrome. За да продолжите со синхронизирање, променете го ова на <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="1662639173275167396">Chrome OS е овозможен од дополнителен <ph name="BEGIN_LINK_CROS_OSS" />софтвер со отворен код<ph name="END_LINK_CROS_OSS" />, како и <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Бета)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1666409074978194368">Речиси сте готови! Рестартирајте го Google Chrome за да заврши ажурирањето. Прозорците „Инкогнито“ нема да се отворат повторно.</translation>
 <translation id="1674870198290878346">Отвори го линкот во инко&amp;гнито прозорец на Chrome</translation>
@@ -77,7 +76,6 @@
 <translation id="3089968997497233615">Достапна е нова, побезбедна верзија на Google Chrome.</translation>
 <translation id="3149510190863420837">Апликации на Chrome</translation>
 <translation id="3282568296779691940">Најави се на Chrome</translation>
-<translation id="3340978935015468852">поставки</translation>
 <translation id="3360895254066713204">Помошник на Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome ќе се рестартира сега}=1{Chrome ќе се рестартира по 1 секунда}one{Chrome ќе се рестартира по # секунда}other{Chrome ќе се рестартира по # секунди}}</translation>
 <translation id="3395323229510056640">Добијте помош за Chrome OS</translation>

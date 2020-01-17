@@ -62,7 +62,5 @@ blink_modules_sources("payments") {
     ]
   }
 
-  deps = [
-    "//components/payments/mojom:mojom_blink",
-  ]
+  deps = [ "//components/payments/mojom:mojom_blink" ]
 }

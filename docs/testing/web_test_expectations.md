@@ -116,8 +116,6 @@ is no period of time when the web test results are ignored.
 
 #### Options
 
-### Rebaselining with try jobs
-
 The tests which `blink_tool.py rebaseline-cl` tries to download new baselines for
 depends on its arguments.
 
@@ -130,6 +128,18 @@ depends on its arguments.
 * If some of the try jobs failed to run, and you wish to continue rebaselining
   assuming that there are no platform-specific results for those platforms,
   you can add the flag `--fill-missing`.
+* By default, it finds the try jobs by looking at the latest patchset. If you
+  have finished try jobs that are associated with an earlier patchset and you
+  want to use them instead of scheduling new try jobs, you can add the flag
+  `--patchset=n` to specify the patchset. This is very useful when the CL has
+  'trivial' patchsets that are created e.g. by editing the CL descrpition.
+
+### Local manual rebaselining
+
+This is often useful for rebaselining flag-specific results, or rebaselining
+just for the local platform.
+See [Rebaselining Web Tests](./web_tests.md#Rebaselining-Web-Tests) for more
+details.
 
 ## Kinds of expectations files
 

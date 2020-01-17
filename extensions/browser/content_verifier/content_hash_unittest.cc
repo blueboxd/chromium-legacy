@@ -148,7 +148,7 @@ class TestExtensionBuilder {
     ListBuilder files;
     for (const auto& resource : extension_resources_) {
       base::FilePath::StringType path =
-          VerifiedContents::NormalizeResourcePath(resource.relative_path);
+          base::FilePath(resource.relative_path).value();
       std::string tree_hash =
           ContentHash::ComputeTreeHashForContent(resource.contents, block_size);
 

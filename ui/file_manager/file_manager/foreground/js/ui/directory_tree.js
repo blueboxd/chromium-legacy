@@ -2287,7 +2287,8 @@ class DirectoryTree extends cr.ui.Tree {
   /*
    * The directory tree does not support horizontal scrolling (by design), but
    * can gain a scrollLeft > 0, see crbug.com/1025581. Always clamp scrollLeft
-   * back to 0 if needed.
+   * back to 0 if needed. In RTL, the scrollLeft clamp is not 0: it depends on
+   * the element scrollWidth and clientWidth per crbug.com/721759.
    */
   onTreeScrollEvent_() {
     if (this.scrollRAFActive_ === true) {
@@ -2303,7 +2304,12 @@ class DirectoryTree extends cr.ui.Tree {
 
     window.requestAnimationFrame(() => {
       this.scrollRAFActive_ = false;
-      if (this.scrollLeft) {
+      if (document.documentElement.getAttribute('dir') === 'rtl') {
+        const scrollRight = this.scrollWidth - this.clientWidth;
+        if (this.scrollLeft !== scrollRight) {
+          this.scrollLeft = scrollRight;
+        }
+      } else if (this.scrollLeft) {
         this.scrollLeft = 0;
       }
     });

@@ -45,12 +45,12 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = SmbBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     const dialogArgs = chrome.getVariableValue('dialogArguments');
     assert(dialogArgs);
     var args = JSON.parse(dialogArgs);
@@ -64,12 +64,12 @@ Polymer({
   },
 
   /** @private */
-  onCancelButtonClick_: function() {
+  onCancelButtonClick_() {
     chrome.send('dialogClose');
   },
 
   /** @private */
-  onSaveButtonClick_: function() {
+  onSaveButtonClick_() {
     this.browserProxy_.updateCredentials(
         this.mountId_, this.username_, this.password_);
     chrome.send('dialogClose');

@@ -44,7 +44,7 @@ WorkletAnimation::WorkletAnimation(
     std::unique_ptr<AnimationEffectTimings> effect_timings,
     bool is_controlling_instance,
     std::unique_ptr<KeyframeEffect> effect)
-    : SingleKeyframeEffectAnimation(cc_animation_id, std::move(effect)),
+    : Animation(cc_animation_id, std::move(effect)),
       worklet_animation_id_(worklet_animation_id),
       name_(name),
       scroll_timeline_(std::move(scroll_timeline)),
@@ -106,8 +106,8 @@ void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
   // animations lifecycle. To avoid this we pause the underlying keyframe effect
   // at the local time obtained from the user script - essentially turning each
   // call to |WorkletAnimation::Tick| into a seek in the effect.
-  keyframe_effect()->Pause(local_time_.value());
-  keyframe_effect()->Tick(monotonic_time);
+  keyframe_effect_->Pause(local_time_.value());
+  keyframe_effect_->Tick(monotonic_time);
 }
 
 void WorkletAnimation::UpdateState(bool start_ready_animations,
@@ -288,7 +288,7 @@ void WorkletAnimation::PromoteScrollTimelinePendingToActive() {
 
 void WorkletAnimation::RemoveKeyframeModel(int keyframe_model_id) {
   state_ = State::REMOVED;
-  SingleKeyframeEffectAnimation::RemoveKeyframeModel(keyframe_model_id);
+  Animation::RemoveKeyframeModel(keyframe_model_id);
 }
 
 bool WorkletAnimation::IsWorkletAnimation() const {

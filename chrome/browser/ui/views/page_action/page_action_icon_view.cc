@@ -171,14 +171,6 @@ const gfx::VectorIcon& PageActionIconView::GetVectorIconBadge() const {
   return gfx::kNoneIcon;
 }
 
-void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  views::BubbleDialogDelegateView* bubble = GetBubble();
-  // TODO(crbug.com/1016968): Remove OnAnchorBoundsChanged after fixing.
-  if (bubble && bubble->GetAnchorView())
-    bubble->OnAnchorBoundsChanged();
-  IconLabelBubbleView::OnBoundsChanged(previous_bounds);
-}
-
 void PageActionIconView::OnTouchUiChanged() {
   icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
   UpdateIconImage();

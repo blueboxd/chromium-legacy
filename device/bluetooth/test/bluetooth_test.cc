@@ -119,6 +119,11 @@ BluetoothDevice* BluetoothTestBase::SimulateClassicDevice() {
   return nullptr;
 }
 
+base::Optional<BluetoothUUID> BluetoothTestBase::GetTargetGattService(
+    BluetoothDevice* device) {
+  return base::nullopt;
+}
+
 void BluetoothTestBase::SimulateDeviceBreaksConnection(
     BluetoothDevice* device) {
   SimulateGattDisconnection(device);

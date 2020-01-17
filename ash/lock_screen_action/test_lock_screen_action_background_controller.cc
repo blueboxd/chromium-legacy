@@ -21,14 +21,15 @@ class TestWindowDelegate : public views::WidgetDelegate {
 
   // views::WidgetDelegate:
   void DeleteDelegate() override { delete this; }
-  views::Widget* GetWidget() override { return widget_; }
-  const views::Widget* GetWidget() const override { return widget_; }
   bool CanActivate() const override { return false; }
   bool CanResize() const override { return true; }
   bool CanMaximize() const override { return true; }
   bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
 
  private:
+  // views::WidgetDelegate:
+  const views::Widget* GetWidgetImpl() const override { return widget_; }
+
   views::Widget* widget_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);

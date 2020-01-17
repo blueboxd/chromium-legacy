@@ -23,9 +23,7 @@ js_library("management_ui") {
 }
 
 js_library("management_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 polymer_modulizer("management_ui") {

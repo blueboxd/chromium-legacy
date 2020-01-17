@@ -35,7 +35,7 @@ BaseAutomationHandler.prototype = {
    * @param {!function(!AutomationEvent): void} eventCallback
    * @protected
    */
-  addListener_: function(eventType, eventCallback) {
+  addListener_(eventType, eventCallback) {
     if (this.listeners_[eventType]) {
       throw 'Listener already added: ' + eventType;
     }
@@ -48,7 +48,7 @@ BaseAutomationHandler.prototype = {
   /**
    * Removes all listeners from this handler.
    */
-  removeAllListeners: function() {
+  removeAllListeners() {
     for (var eventType in this.listeners_) {
       this.node_.removeEventListener(
           eventType, this.listeners_[eventType], true);
@@ -61,7 +61,7 @@ BaseAutomationHandler.prototype = {
    * @return {!function(!AutomationEvent): void}
    * @private
    */
-  makeListener_: function(callback) {
+  makeListener_(callback) {
     return function(evt) {
       if (this.willHandleEvent_(evt)) {
         return;
@@ -76,7 +76,7 @@ BaseAutomationHandler.prototype = {
    * @return {boolean} True to skip processing this event.
    * @protected
    */
-  willHandleEvent_: function(evt) {
+  willHandleEvent_(evt) {
     return false;
   },
 
@@ -84,6 +84,6 @@ BaseAutomationHandler.prototype = {
    * Called after the event |evt| is handled.
    * @protected
    */
-  didHandleEvent_: function(evt) {}
+  didHandleEvent_(evt) {}
 };
 });  // goog.scope

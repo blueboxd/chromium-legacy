@@ -89,6 +89,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Дамен рэгістрацыі:</translation>
 <translation id="1340482604681802745">Адрас прыняцця</translation>
+<translation id="1346748346194534595">Справа</translation>
 <translation id="1348198688976932919">Сайт, на які вы збіраецеся перайсці, змяшчае небяспечныя праграмы</translation>
 <translation id="1348779747280417563">Пацвердзіць імя</translation>
 <translation id="1357195169723583938">Хто і калі нядаўна выкарыстоўваў прыладу</translation>
@@ -113,6 +114,7 @@
 <translation id="1455413310270022028">Сцірка</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1467432559032391204">Злева</translation>
 <translation id="1472675084647422956">Разгарнуць</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
@@ -258,6 +260,7 @@
 <translation id="2148613324460538318">Дадаць картку</translation>
 <translation id="2154054054215849342">Для вашага дамена сінхранізацыя недаступная</translation>
 <translation id="2154484045852737596">Рэдагаваць картку</translation>
+<translation id="2161656808144014275">Тэкст</translation>
 <translation id="2166049586286450108">Поўны доступ адміністратара</translation>
 <translation id="2166378884831602661">Гэты сайт не можа забяспечыць бяспечнае падключэнне</translation>
 <translation id="2169984857010174799">Kaku2 (канверт)</translation>
@@ -346,6 +349,7 @@
 <translation id="254947805923345898">Значэнне палітыкі несапраўднае.</translation>
 <translation id="255002559098805027">Хост <ph name="HOST_NAME" /> адправіў няправільны адказ.</translation>
 <translation id="2556876185419854533">&amp;Адрабіць змену</translation>
+<translation id="257674075312929031">Група</translation>
 <translation id="2586657967955657006">Буфер абмену</translation>
 <translation id="2587730715158995865">Крыніца: <ph name="ARTICLE_PUBLISHER" />. Вы можаце прачытаць гэты і яшчэ <ph name="OTHER_ARTICLE_COUNT" /> артыкулаў.</translation>
 <translation id="2587841377698384444">Ідэнтыфікатар API каталога:</translation>
@@ -370,6 +374,7 @@
     выканаць запыт сайта "<ph name="SITE" />". Палітыкі крыніцы могуць выкарыстоўвацца
     аператарамі сайтаў для наладжвання бяспекі і іншых уласцівасцей сайта.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Няма}=1{1 пароль (для даменаў <ph name="DOMAIN_LIST" />)}=2{2 паролі (для даменаў <ph name="DOMAIN_LIST" />)}one{# пароль (для даменаў <ph name="DOMAIN_LIST" />)}few{# паролі (для даменаў <ph name="DOMAIN_LIST" />)}many{# пароляў (для даменаў <ph name="DOMAIN_LIST" />)}other{# пароля (для даменаў <ph name="DOMAIN_LIST" />)}}</translation>
+<translation id="2666092431469916601">Зверху</translation>
 <translation id="2666117266261740852">Закрыйце іншыя ўкладкі або праграмы.</translation>
 <translation id="2674170444375937751">Сапраўды выдаліць гэтыя старонкі з гісторыі?</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
@@ -453,6 +458,7 @@
 <translation id="3061707000357573562">Сэрвіс выпраўленняў</translation>
 <translation id="3064966200440839136">Выхад з рэжыму інкогніта для плацяжу праз знешнюю праграму. Працягнуць?</translation>
 <translation id="3086579638707268289">Вашы дзеянні ў інтэрнэце адсочваюцца</translation>
+<translation id="3087734570205094154">Знізу</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Дадаць адрас прыняцця</translation>
 <translation id="3105172416063519923">Ідэнтыфікатар аб'екта ўласнасці:</translation>
@@ -497,6 +503,7 @@
 <translation id="3303855915957856445">Няма вынікаў пошуку</translation>
 <translation id="3320021301628644560">Дадаць адрас для выстаўлення рахункаў</translation>
 <translation id="3324983252691184275">Цёмна-чырвоны</translation>
+<translation id="3329013043687509092">Насычанасць</translation>
 <translation id="3338095232262050444">Бяспечны сайт</translation>
 <translation id="3355823806454867987">Змяніць налады проксі-сервера...</translation>
 <translation id="3360103848165129075">Аркуш апрацоўшчыка плацяжоў</translation>
@@ -532,6 +539,7 @@
 <translation id="3484560055331845446">Вы можаце страціць доступ да свайго Уліковага запісу Google. Chrome рэкамендуе змяніць пароль. Вас папросяць увайсці ва ўліковы запіс.</translation>
 <translation id="3495081129428749620">Знайсці на старонцы "<ph name="PAGE_TITLE" />"</translation>
 <translation id="3512163584740124171">Гэта палітыка ігнаруецца, бо іншая палітыка з той жа групы палітык мае вышэйшы прыярытэт.</translation>
+<translation id="3513704683820682405">Дапоўненая рэальнасць</translation>
 <translation id="3528171143076753409">Ненадзейны сертыфікат сервера.</translation>
 <translation id="3528485271872257980">Цёмна-карычневы</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Як мінімум 1 элемент на сінхранізаваных прыладах}=1{1 элемент (і больш на сінхранізаваных прыладах)}one{# элемент (і больш на сінхранізаваных прыладах)}few{# элементы (і больш на сінхранізаваных прыладах)}many{# элементаў (і больш на сінхранізаваных прыладах)}other{# элемента (і больш на сінхранізаваных прыладах)}}</translation>
@@ -578,6 +586,7 @@
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Загрузка…</translation>
 <translation id="3709599264800900598">Скапіраваны вамі тэкст</translation>
+<translation id="3711895659073496551">Прыпыненне</translation>
 <translation id="3712624925041724820">Ліцэнзіі скончыліся</translation>
 <translation id="3714780639079136834">Уключыць мабільную перадачу даных або Wi-Fi.</translation>
 <translation id="3715597595485130451">Падключэнне да Wi-Fi</translation>
@@ -771,6 +780,7 @@
 <translation id="4594403342090139922">&amp;Адрабіць выдаленне</translation>
 <translation id="4597348597567598915">Памер 8</translation>
 <translation id="4600854749408232102">C6/C5 (канверт)</translation>
+<translation id="4628948037717959914">Фота</translation>
 <translation id="4635654612248442824">Сайт "<ph name="ORIGIN" />" запатрабаваў, каб да ўсіх яго запытаў
     прымянялася палітыка крыніцы, але гэту палітыку зараз прымяніць нельга.</translation>
 <translation id="464342062220857295">Функцыі пошуку</translation>
@@ -827,6 +837,7 @@
 <translation id="4926049483395192435">Трэба вызначыць.</translation>
 <translation id="4926159001844873046">Паведамленне на старонцы <ph name="SITE" /></translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943703118917034429">Віртуальная рэальнасць</translation>
 <translation id="4943872375798546930">Няма вынікаў</translation>
 <translation id="4950898438188848926">Кнопка пераключэння ўкладак. Націсніце Enter, каб пераключыцца на адкрытую ўкладку, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Дзеянні</translation>
@@ -994,6 +1005,7 @@
 <translation id="5689199277474810259">Экспарт у JSON</translation>
 <translation id="5689516760719285838">Месцазнаходжанне</translation>
 <translation id="569000877158168851">Калі для палітыкі DnsOverHttpsMode не зададзены параметр "<ph name="SECURE_DNS_MODE_AUTOMATIC" />" або "<ph name="SECURE_DNS_MODE_SECURE" />", значэнне DnsOverHttpsTemplates будзе лічыцца нерэлевантным і выкарыстоўвацца не будзе.</translation>
+<translation id="5701381305118179107">У цэнтры</translation>
 <translation id="570530837424789914">Кіраваць...</translation>
 <translation id="57094364128775171">Прапанаваць надзейны пароль…</translation>
 <translation id="5710435578057952990">Сапраўднасць гэтага вэб-сайта не была спраўджана.</translation>
@@ -1026,7 +1038,6 @@
 <translation id="5855253129151731373">Імя хоста гэтага сайта падобнае да <ph name="LOOKALIKE_DOMAIN" />. Зламыснікі часам імітуюць сайты, уносячы невялікія, амаль непрыкметныя змяненні ў назву дамена.
 
     Калі вы лічыце, што гэта папярэджанне паказваецца вам памылкова, перайдзіце па спасылцы https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
-<translation id="5860033963881614850">Выключана</translation>
 <translation id="5863847714970149516">Старонка, на якую вы збіраецеся перайсці, можа спагнаць з вас грошы</translation>
 <translation id="5866257070973731571">Дадаванне нумара тэлефона</translation>
 <translation id="5866898949289125849">Вы праглядаеце старонку інструментаў распрацоўшчыка</translation>
@@ -1038,13 +1049,11 @@
 <translation id="5901630391730855834">Жоўты</translation>
 <translation id="5905445707201418379">Заблакіравана згодна з палітыкай крыніцы "<ph name="ORIGIN" />".</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (сінхранізавана)</translation>
-<translation id="5916664084637901428">Уключана</translation>
 <translation id="59174027418879706">Уключана</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Захаваць картку ва Уліковы запіс Google?</translation>
 <translation id="5922853866070715753">Амаль гатова</translation>
 <translation id="5932224571077948991">Сайт паказвае назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
-<translation id="5939847200023027600">Сэрвіс стварэння PDF</translation>
 <translation id="5946937721014915347">Адкрываецца <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Не ўдалося зарэгістраваць з дапамогай уліковага запісу спажыўца (даступна пакетная ліцэнзія).</translation>
 <translation id="5967592137238574583">Рэдагаваць кантактныя звесткі</translation>
@@ -1084,6 +1093,7 @@
 <translation id="6080696365213338172">Вы атрымалі доступ да змесціва, выкарыстоўваючы сертыфікат ад адміністратара. Адміністратар можа перахопліваць даныя, якія вы адпраўляеце на <ph name="DOMAIN" />.</translation>
 <translation id="6094273045989040137">Анатаваць</translation>
 <translation id="6104072995492677441">JIS B6</translation>
+<translation id="6106989379647458772">Магчыма, вэб-старонка па адрасе <ph name="PAGE" /> часова недаступная або была перамешчана на новы вэб-адрас.</translation>
 <translation id="610911394827799129">На сайце <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> могуць быць іншыя формы запісу гісторыі прагляду сайтаў для вашага Уліковага запісу Google</translation>
 <translation id="6120179357481664955">Запомніць ідэнтыфікатар UPI?</translation>
 <translation id="6132597952260690497">Інфармацыя пра ўсталяваныя пашырэнні і ўбудовы</translation>
@@ -1123,6 +1133,7 @@
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">Памочнік Google у Chrome спыняецца</translation>
 <translation id="6305205051461490394">Сайт <ph name="URL" /> недаступны.</translation>
+<translation id="6312113039770857350">Вэб-старонка недаступная</translation>
 <translation id="6321917430147971392">Праверце налады DNS</translation>
 <translation id="6322182122604171028">Не ўдалося выкарыстаць Windows Hello</translation>
 <translation id="6328639280570009161">Паспрабуйце выключыць прагназаванне сеткі</translation>
@@ -1417,6 +1428,7 @@
 <translation id="7716147886133743102">Заблакіравана адміністратарам</translation>
 <translation id="7716424297397655342">Не ўдалося загрузіць сайт з кэша</translation>
 <translation id="7723047071702270851">Рэдагаваць картку</translation>
+<translation id="7740996059027112821">Стандартны</translation>
 <translation id="774634243536837715">Небяспечнае змесціва заблакіравана.</translation>
 <translation id="7752995774971033316">Не пад кіраваннем</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
@@ -1522,6 +1534,7 @@
 <translation id="8241707690549784388">Старонка, на якую вы спрабуеце перайсці, выкарыстоўвала ўведзеныя вамі звесткі. Калі вярнуцца на яе, у выніку можа быць паўторна зробленае вамі дзеянне. Працягнуць?</translation>
 <translation id="8241712895048303527">Блакіраваць на гэтым сайце</translation>
 <translation id="8242426110754782860">Працягнуць</translation>
+<translation id="8249296373107784235">Скасаваць</translation>
 <translation id="8249320324621329438">Апошняе абнаўленне:</translation>
 <translation id="8253091569723639551">Патрабуецца адрас для выстаўлення рахункаў</translation>
 <translation id="825929999321470778">Паказаць усе захаваныя паролі</translation>
@@ -1591,6 +1604,7 @@
 <translation id="8647750283161643317">Скінуць усе налады да стандартных</translation>
 <translation id="8663226718884576429">Зводка па заказе, <ph name="TOTAL_LABEL" />, дадатковая інфармацыя</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, адказ, <ph name="ANSWER" /></translation>
+<translation id="8681531050781943054">Немагчыма загрузіць вэб-старонку па адрасе <ph name="PAGE" />, бо:</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Даступна</translation>
 <translation id="869891660844655955">Тэрмін дзеяння</translation>
@@ -1641,6 +1655,7 @@
 <translation id="8943282376843390568">Лайм</translation>
 <translation id="8957210676456822347">Аўтарызацыя праз партал узаемадзеяння</translation>
 <translation id="8962950042226115166">Падазроны сайт</translation>
+<translation id="8963213021028234748"><ph name="MARKUP_1" />Рэкамендацыі:<ph name="MARKUP_2" />Праверце, ці ёсць у вас падключэнне для перадачы даных.<ph name="MARKUP_3" />Перазагрузіце старонку пазней.<ph name="MARKUP_4" />Праверце ўведзены адрас.<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Захаваць картку</translation>
 <translation id="8971063699422889582">Тэрмін дзеяння сертыфіката сервера скончыўся.</translation>
 <translation id="8975012916872825179">Уключае ў сябе такую інфармацыю, як нумары тэлефонаў, адрасы электроннай пошты і адрасы дастаўкі</translation>
@@ -1717,6 +1732,7 @@
 <translation id="985199708454569384">&lt;p&gt;Гэта памылка ўзнікае, калі на камп'ютары ці мабільнай прыладзе няправільна вызначаны дата і час.&lt;/p&gt;
     &lt;p&gt;Каб вырашыць праблему, адкрыйце адпаведныя налады на прыладзе. Задайце правільныя значэнні даты і часу.&lt;/p&gt;</translation>
 <translation id="985956168329721395">Prc-32K</translation>
+<translation id="987264212798334818">Агульныя</translation>
 <translation id="988159990683914416">Зборка для распрацоўшчыкаў</translation>
 <translation id="989988560359834682">Рэдагаваць адрас</translation>
 <translation id="992256792861109788">Ружовы</translation>

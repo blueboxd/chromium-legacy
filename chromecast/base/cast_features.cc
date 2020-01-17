@@ -130,8 +130,8 @@ void SetExperimentIds(const base::ListValue& list) {
 // through getUserMedia API.
 const base::Feature kAllowUserMediaAccess{"allow_user_media_access",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-// Enables the use of QUIC in Cast-specific URLRequestContextGetters. See
-// chromecast/browser/url_request_context_factory.cc for usage.
+// Enables the use of QUIC in Cast-specific NetworkContexts. See
+// chromecast/browser/cast_network_contexts.cc for usage.
 const base::Feature kEnableQuic{"enable_quic",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables triple-buffer 720p graphics (overriding default graphics buffer
@@ -143,7 +143,7 @@ const base::Feature kTripleBuffer720{"enable_triple_buffer_720",
 const base::Feature kSingleBuffer{"enable_single_buffer",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 // Disable idle sockets closing on memory pressure. See
-// chromecast/browser/url_request_context_factory.cc for usage.
+// chromecast/browser/cast_network_contexts.cc for usage.
 const base::Feature kDisableIdleSocketsCloseOnMemoryPressure{
     "disable_idle_sockets_close_on_memory_pressure",
     base::FEATURE_DISABLED_BY_DEFAULT};

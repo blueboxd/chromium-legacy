@@ -27,20 +27,21 @@ Polymer({
    * @param {!settings.Route} route
    * @protected
    */
-  currentRouteChanged: function(route) {
+  currentRouteChanged(route) {
     if (route == settings.routes.SMB_SHARES) {
       this.showAddSmbDialog_ =
-          settings.getQueryParameters().get('showAddShare') == 'true';
+          settings.Router.getInstance().getQueryParameters().get(
+              'showAddShare') == 'true';
     }
   },
 
   /** @private */
-  onAddShareTap_: function() {
+  onAddShareTap_() {
     this.showAddSmbDialog_ = true;
   },
 
   /** @private */
-  onAddSmbDialogClosed_: function() {
+  onAddSmbDialogClosed_() {
     this.showAddSmbDialog_ = false;
   },
 });

@@ -294,7 +294,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
 
     TestCompletionCallback callback;
     EXPECT_THAT(session_->CryptoConnect(callback.callback()), IsOk());
-    EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
+    EXPECT_TRUE(session_->OneRttKeysAvailable());
 
     EXPECT_THAT(session_handle_->RequestStream(true, callback.callback(),
                                                TRAFFIC_ANNOTATION_FOR_TESTS),

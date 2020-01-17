@@ -52,7 +52,7 @@ cr.define('cr.ui', function() {
       }
 
       this.rows.forEach(function(r) {
-        r.makeActive(r == row);
+        r.makeActive(r === row);
       });
     }
 
@@ -63,13 +63,13 @@ cr.define('cr.ui', function() {
 
       let newRow = -1;
 
-      if (e.key == 'ArrowUp') {
+      if (e.key === 'ArrowUp') {
         newRow = rowIndex - 1;
-      } else if (e.key == 'ArrowDown') {
+      } else if (e.key === 'ArrowDown') {
         newRow = rowIndex + 1;
-      } else if (e.key == 'PageUp') {
+      } else if (e.key === 'PageUp') {
         newRow = 0;
-      } else if (e.key == 'PageDown') {
+      } else if (e.key === 'PageDown') {
         newRow = this.rows.length - 1;
       }
 
@@ -121,7 +121,7 @@ cr.define('cr.ui', function() {
      */
     getRowForRoot(root) {
       for (let i = 0; i < this.rows.length; ++i) {
-        if (this.rows[i].root == root) {
+        if (this.rows[i].root === root) {
           return this.rows[i];
         }
       }
@@ -146,7 +146,7 @@ cr.define('cr.ui', function() {
       row.delegate = row.delegate || this;
 
       const nextRowIndex = nextRow ? this.rows.indexOf(nextRow) : -1;
-      if (nextRowIndex == -1) {
+      if (nextRowIndex === -1) {
         this.rows.push(row);
       } else {
         this.rows.splice(nextRowIndex, 0, row);
@@ -172,7 +172,7 @@ cr.define('cr.ui', function() {
      *     grid.
      */
     ensureRowActive(preferredRow) {
-      if (this.rows.length == 0) {
+      if (this.rows.length === 0) {
         return;
       }
 

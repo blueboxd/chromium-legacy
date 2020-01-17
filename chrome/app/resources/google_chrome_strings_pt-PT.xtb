@@ -20,7 +20,6 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> é perigoso, por isso o Chrome bloqueou-o.</translation>
 <translation id="1619887657840448962">Para tornar o Chrome mais seguro, desativámos a seguinte extensão, que não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, e é possível que tenha sido adicionada sem o seu conhecimento.</translation>
 <translation id="1628000112320670027">Obter ajuda relacionada com o Chrome</translation>
-<translation id="1635734105302489219">Os cookies são eliminados quando sai do Chrome. Para continuar a sincronizar, altere <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="1662639173275167396">Foi possível conceber o Chrome OS devido a <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" />, como o <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1666409074978194368">Quase atualizado! Volte a iniciar o Google Chrome para concluir a atualização. Não é possível reabrir as suas janelas de navegação anónima.</translation>
 <translation id="1674870198290878346">Abrir link numa janela de nave&amp;gação anónima do Chrome</translation>
@@ -73,7 +72,6 @@
 <translation id="3089968997497233615">Está disponível uma versão nova e mais segura do Google Chrome.</translation>
 <translation id="3149510190863420837">Aplicações do Chrome</translation>
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
-<translation id="3340978935015468852">definições</translation>
 <translation id="3360895254066713204">Ajudante do Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{O Chrome será reiniciado agora}=1{O Chrome será reiniciado dentro de 1 segundo}other{O Chrome será reiniciado dentro de # segundos}}</translation>
 <translation id="3395323229510056640">Obter ajuda relacionada com o Chrome OS</translation>

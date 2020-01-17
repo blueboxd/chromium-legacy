@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
@@ -225,6 +226,18 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
 
   if (first_match_needs_scroll_) {
     first_match_needs_scroll_ = false;
+
+    // Activate any find-in-page activatable display-locks in the ancestor
+    // chain.
+    if (DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range)) {
+      // Since activating a lock dirties layout, we need to make sure it's clean
+      // before computing the text rect below.
+      frame_->GetDocument()->UpdateStyleAndLayout();
+      // TODO(crbug.com/1041942): It is possible and likely that activation
+      // signal causes script to resize something on the page. This code here
+      // should really yield until the next frame to give script an opportunity
+      // to run.
+    }
 
     PhysicalRect bounding_box(ComputeTextRect(range));
 

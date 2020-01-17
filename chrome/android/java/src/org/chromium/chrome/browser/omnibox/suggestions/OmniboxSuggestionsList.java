@@ -23,8 +23,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
-import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.ui.base.ViewUtils;
 
 import java.util.ArrayList;
 

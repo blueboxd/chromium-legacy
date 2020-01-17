@@ -32,23 +32,17 @@ bundle_data("test_support_bundle_data") {
     "data/success.txt",
     "data/success.txt.mock-http-headers",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 # Test support for Cronet common implementation.
 source_set("test_support") {
   testonly = true
 
-  deps = [
-    "//net:test_support",
-  ]
+  deps = [ "//net:test_support" ]
 
-  data = [
-    "data/",
-  ]
+  data = [ "data/" ]
 
   sources = [
     "test_server.cc",

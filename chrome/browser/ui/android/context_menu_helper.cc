@@ -17,6 +17,7 @@
 #include "chrome/android/chrome_jni_headers/ContextMenuParams_jni.h"
 #include "chrome/browser/download/android/download_controller_base.h"
 #include "chrome/browser/image_decoder.h"
+#include "chrome/browser/performance_hints/performance_hints_observer.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
@@ -30,12 +31,14 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/gurl.h"
 
 using base::android::ConvertJavaStringToUTF8;
-using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
+using optimization_guide::proto::PerformanceClass;
 
 namespace {
 
@@ -89,6 +92,27 @@ void OnRetrieveImageForContextMenu(
   ContextMenuHelperImageRequest::Start(jcallback, thumbnail_data);
 }
 
+PerformanceClass RetrievePerformanceClassInternal(
+    content::WebContents* web_contents,
+    const GURL& url) {
+  if (!url.is_valid() || web_contents == nullptr) {
+    return PerformanceClass::PERFORMANCE_UNKNOWN;
+  }
+
+  PerformanceHintsObserver* performance_hints_observer =
+      PerformanceHintsObserver::FromWebContents(web_contents);
+  if (performance_hints_observer == nullptr) {
+    return PerformanceClass::PERFORMANCE_UNKNOWN;
+  }
+
+  base::Optional<optimization_guide::proto::PerformanceHint> hint =
+      performance_hints_observer->HintForURL(url);
+  if (!hint) {
+    return PerformanceClass::PERFORMANCE_UNKNOWN;
+  }
+  return hint->performance_class();
+}
+
 }  // namespace
 
 ContextMenuHelper::ContextMenuHelper(content::WebContents* web_contents)
@@ -120,8 +144,11 @@ void ContextMenuHelper::ShowContextMenu(
   render_frame_id_ = render_frame_host->GetRoutingID();
   render_process_id_ = render_frame_host->GetProcess()->GetID();
   gfx::NativeView view = web_contents_->GetNativeView();
+  PerformanceClass performance_class =
+      RetrievePerformanceClassInternal(web_contents_, params.link_url);
   Java_ContextMenuHelper_showContextMenu(
-      env, java_obj_, ContextMenuHelper::CreateJavaContextMenuParams(params),
+      env, java_obj_,
+      ContextMenuHelper::CreateJavaContextMenuParams(params, performance_class),
       view->GetContainerView(), view->content_offset() * view->GetDipScale());
 }
 
@@ -136,9 +163,12 @@ void ContextMenuHelper::SetPopulator(const JavaRef<jobject>& jpopulator) {
   Java_ContextMenuHelper_setPopulator(env, java_obj_, jpopulator);
 }
 
+// TODO(crbug.com/1030813): Move performance_class into ContextMenuParams and
+// clean this up.
 base::android::ScopedJavaLocalRef<jobject>
 ContextMenuHelper::CreateJavaContextMenuParams(
-    const content::ContextMenuParams& params) {
+    const content::ContextMenuParams& params,
+    PerformanceClass performance_class) {
   GURL sanitizedReferrer = (params.frame_url.is_empty() ?
       params.page_url : params.frame_url).GetAsReferrer();
 
@@ -158,7 +188,7 @@ ContextMenuHelper::CreateJavaContextMenuParams(
           ConvertUTF16ToJavaString(env, title_text),
           ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()),
           static_cast<int>(params.referrer_policy), can_save, params.x,
-          params.y, params.source_type);
+          params.y, params.source_type, performance_class);
 
   return jmenu_info;
 }

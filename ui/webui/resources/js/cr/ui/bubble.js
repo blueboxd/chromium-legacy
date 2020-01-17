@@ -137,13 +137,13 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      this.arrowAtRight_ = location == cr.ui.ArrowLocation.TOP_END ||
-          location == cr.ui.ArrowLocation.BOTTOM_END;
-      if (document.documentElement.dir == 'rtl') {
+      this.arrowAtRight_ = location === cr.ui.ArrowLocation.TOP_END ||
+          location === cr.ui.ArrowLocation.BOTTOM_END;
+      if (document.documentElement.dir === 'rtl') {
         this.arrowAtRight_ = !this.arrowAtRight_;
       }
-      this.arrowAtTop_ = location == cr.ui.ArrowLocation.TOP_START ||
-          location == cr.ui.ArrowLocation.TOP_END;
+      this.arrowAtTop_ = location === cr.ui.ArrowLocation.TOP_START ||
+          location === cr.ui.ArrowLocation.TOP_END;
     },
 
     /**
@@ -174,7 +174,7 @@ cr.define('cr.ui', function() {
 
       let left;
       let top;
-      if (this.bubbleAlignment_ == cr.ui.BubbleAlignment.ENTIRELY_VISIBLE) {
+      if (this.bubbleAlignment_ === cr.ui.BubbleAlignment.ENTIRELY_VISIBLE) {
         // Work out horizontal placement. The bubble is initially positioned so
         // that the arrow tip points toward the midpoint of the anchor and is
         // BubbleBase.ARROW_OFFSET pixels from the reference edge and (as
@@ -186,7 +186,7 @@ cr.define('cr.ui', function() {
         const maxLeftPos =
             documentWidth - bubble.width - BubbleBase.MIN_VIEWPORT_EDGE_MARGIN;
         const minLeftPos = BubbleBase.MIN_VIEWPORT_EDGE_MARGIN;
-        if (document.documentElement.dir == 'rtl') {
+        if (document.documentElement.dir === 'rtl') {
           left = Math.min(Math.max(left, minLeftPos), maxLeftPos);
         } else {
           left = Math.max(Math.min(left, maxLeftPos), minLeftPos);
@@ -219,7 +219,7 @@ cr.define('cr.ui', function() {
           this.updateArrowPosition_(false, false, arrowTip);
         } else if (
             offsetTop > offsetBottom ||
-            offsetTop == offsetBottom && this.arrowAtTop_) {
+            offsetTop === offsetBottom && this.arrowAtTop_) {
           top = anchor.bottom + offsetTop;
           this.updateArrowPosition_(true, true, arrowTip);
         } else {
@@ -227,7 +227,7 @@ cr.define('cr.ui', function() {
           this.updateArrowPosition_(true, false, arrowTip);
         }
       } else {
-        if (this.bubbleAlignment_ ==
+        if (this.bubbleAlignment_ ===
             cr.ui.BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE) {
           left = this.arrowAtRight_ ? anchor.right - bubble.width : anchor.left;
         } else {
@@ -283,7 +283,7 @@ cr.define('cr.ui', function() {
      */
     handleEvent(event) {
       // Close the bubble when the user presses <Esc>.
-      if (event.type == 'keydown' && event.keyCode == 27) {
+      if (event.type === 'keydown' && event.keyCode === 27) {
         this.hide();
         event.preventDefault();
         event.stopPropagation();
@@ -411,9 +411,9 @@ cr.define('cr.ui', function() {
     handleEvent(event) {
       BubbleBase.prototype.handleEvent.call(this, event);
 
-      if (event.type == 'mousedown') {
+      if (event.type === 'mousedown') {
         // Dismiss the bubble when the user clicks on the close button.
-        if (event.target == this.querySelector('.bubble-close')) {
+        if (event.target === this.querySelector('.bubble-close')) {
           this.handleCloseEvent_();
           // Dismiss the bubble when the user clicks outside it after the
           // specified delay has passed.
@@ -509,7 +509,7 @@ cr.define('cr.ui', function() {
         case 'mousedown':
         case 'click':
           target = assertInstanceof(event.target, Node);
-          if (event.button == 0 && this.anchorNode_.contains(target)) {
+          if (event.button === 0 && this.anchorNode_.contains(target)) {
             break;
           }
         // Close the bubble when the underlying document is scrolled.

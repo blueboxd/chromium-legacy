@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.photo_picker;
 
 import android.Manifest;
+import android.animation.Animator;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
@@ -12,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.SystemClock;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,22 +24,23 @@ import android.util.DisplayMetrics;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.MediaController;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.VideoView;
 
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.DiscardableReferencePool.DiscardableReference;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -49,6 +52,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * A class for keeping track of common data associated with showing photos in
@@ -57,6 +62,7 @@ import java.util.List;
 public class PickerCategoryView extends RelativeLayout
         implements FileEnumWorkerTask.FilesEnumeratedCallback, RecyclerView.RecyclerListener,
                    DecoderServiceHost.ServiceReadyCallback, View.OnClickListener,
+                   SeekBar.OnSeekBarChangeListener,
                    SelectionDelegate.SelectionObserver<PickerBitmap> {
     // These values are written to logs.  New enum values can be added, but existing
     // enums must never be renumbered or deleted and reused.
@@ -86,6 +92,17 @@ public class PickerCategoryView extends RelativeLayout
             this.fullWidth = fullWidth;
             this.ratio = ratio;
         }
+    }
+
+    /**
+     * A callback interface for notifying about video playback status.
+     */
+    public interface VideoPlaybackStatusCallback {
+        // Called when the video starts playing.
+        void onVideoPlaying();
+
+        // Called when the video stops playing.
+        void onVideoEnded();
     }
 
     // The dialog that owns us.
@@ -184,11 +201,35 @@ public class PickerCategoryView extends RelativeLayout
     // A list of files to use for testing (instead of reading files on disk).
     private static List<PickerBitmap> sTestFiles;
 
-    // The video preview view.
-    private VideoView mVideoView;
+    // The callback to use for reporting playback progress in tests.
+    private static VideoPlaybackStatusCallback sProgressCallback;
 
-    // The media controls to show with the video (play/pause, etc).
-    private MediaController mMediaController;
+    // The video preview view.
+    private final VideoView mVideoView;
+
+    // The MediaPlayer object used to control the VideoView.
+    private MediaPlayer mMediaPlayer;
+
+    // The container view for all the UI elements overlaid on top of the video.
+    private final View mVideoOverlayContainer;
+
+    // The container view for the UI video controls within the overlaid window.
+    private final View mVideoControls;
+
+    // The large Play button overlaid on top of the video.
+    private ImageView mLargePlayButton;
+
+    // The Mute button for the video.
+    private ImageView mMuteButton;
+
+    // Keeps track of whether audio track is enabled or not.
+    private boolean mAudioOn = true;
+
+    // The SeekBar showing the video playback progress (allows user seeking).
+    private SeekBar mSeekBar;
+
+    // A timer for periodically updating the progress of video playback to the user.
+    private Timer mPlaybackUpdateTimer;
 
     // The Zoom (floating action) button.
     private ImageView mZoom;
@@ -229,6 +270,16 @@ public class PickerCategoryView extends RelativeLayout
         Button doneButton = (Button) toolbar.findViewById(R.id.done);
         doneButton.setOnClickListener(this);
         mVideoView = findViewById(R.id.video_player);
+        mVideoOverlayContainer = findViewById(R.id.video_overlay_container);
+        mVideoOverlayContainer.setOnClickListener(this);
+        mVideoControls = findViewById(R.id.video_controls);
+        mLargePlayButton = findViewById(R.id.video_player_play_button);
+        mLargePlayButton.setOnClickListener(this);
+        mMuteButton = findViewById(R.id.mute);
+        mMuteButton.setImageResource(R.drawable.ic_volume_on_white_24dp);
+        mMuteButton.setOnClickListener(this);
+        mSeekBar = findViewById(R.id.seek_bar);
+        mSeekBar.setOnSeekBarChangeListener(this);
         mZoom = findViewById(R.id.zoom);
 
         calculateGridMetrics();
@@ -290,46 +341,67 @@ public class PickerCategoryView extends RelativeLayout
      * Start playback of a video in an overlay above the photo picker.
      * @param uri The uri of the video to start playing.
      */
-    public void playVideo(Uri uri) {
-        findViewById(R.id.playback_container).setVisibility(View.VISIBLE);
-        findViewById(R.id.close).setOnClickListener(this);
+    public void startVideoPlaybackAsync(Uri uri) {
+        View playbackContainer = findViewById(R.id.playback_container);
+        playbackContainer.setVisibility(View.VISIBLE);
 
-        mMediaController = new MediaController(mActivity, false) {
-            @Override
-            public void hide() {
-                // Making sure the controls never hide prevents the seekbar from no longer updating
-                // in the middle of playing a video.
-                this.show();
-            }
-        };
-        mVideoView.setMediaController(mMediaController);
         mVideoView.setVisibility(View.VISIBLE);
         mVideoView.setVideoURI(uri);
 
-        mVideoView.setOnPreparedListener((MediaPlayer mp) -> {
-            mp.setOnVideoSizeChangedListener((MediaPlayer player, int width, int height) -> {
-                // To get the media controls to show up in a dialog, the view needs to be
-                // re-parented.
-                ((ViewGroup) mMediaController.getParent()).removeView(mMediaController);
-                ((FrameLayout) findViewById(R.id.controls_wrapper)).addView(mMediaController);
-                mMediaController.setVisibility(View.VISIBLE);
+        mVideoView.setOnPreparedListener((MediaPlayer mediaPlayer) -> {
+            mMediaPlayer = mediaPlayer;
+            startVideoPlayback();
 
-                mMediaController.setAnchorView(mVideoView);
-                mMediaController.setEnabled(true);
-                mMediaController.show(0);
-            });
+            mMediaPlayer.setOnVideoSizeChangedListener(
+                    (MediaPlayer player, int width, int height) -> {
+                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                                mVideoView.getMeasuredWidth(), mVideoView.getMeasuredHeight());
+                        mVideoControls.setLayoutParams(params);
+                    });
 
-            mVideoView.start();
+            if (sProgressCallback != null) {
+                mMediaPlayer.setOnInfoListener((MediaPlayer player, int what, int extra) -> {
+                    if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                        sProgressCallback.onVideoPlaying();
+                        return true;
+                    }
+                    return false;
+                });
+            }
+        });
+
+        mVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                // Once we reach the completion point, show the overlay controls (without fading
+                // away) to indicate that playback has reached the end of the video (and didn't
+                // break before reaching the end). This also allows the user to restart playback
+                // from the start, by pressing Play.
+                mLargePlayButton.setImageResource(R.drawable.ic_play_circle_filled_white_24dp);
+                showOverlayControls(/*animateAway=*/false);
+                if (sProgressCallback != null) {
+                    sProgressCallback.onVideoEnded();
+                }
+            }
         });
     }
 
-    private void stopVideo() {
-        findViewById(R.id.playback_container).setVisibility(View.GONE);
-        mVideoView.stopPlayback();
+    /**
+     * Ends video playback (if a video is playing) and closes the video player. Aborts if the video
+     * playback container is not showing.
+     * @return true if a video container was showing, false otherwise.
+     */
+    public boolean closeVideoPlayer() {
+        View playbackContainer = findViewById(R.id.playback_container);
+        if (playbackContainer.getVisibility() != View.VISIBLE) {
+            return false;
+        }
+
+        playbackContainer.setVisibility(View.GONE);
+        stopVideoPlayback();
         mVideoView.setMediaController(null);
-        // The MediaController needs a little bit of time to go away fully. Hide it in the meantime.
-        mMediaController.setVisibility(View.GONE);
-        mMediaController = null;
+        mMuteButton.setImageResource(R.drawable.ic_volume_on_white_24dp);
+        return true;
     }
 
     /**
@@ -414,11 +486,50 @@ public class PickerCategoryView extends RelativeLayout
             if (!mZoomSwitchingInEffect) {
                 flipZoomMode();
             }
-        } else if (id == R.id.close) {
-            stopVideo();
+        } else if (id == R.id.video_overlay_container) {
+            showOverlayControls(/*animateAway=*/true);
+        } else if (id == R.id.video_player_play_button) {
+            toggleVideoPlayback();
+        } else if (id == R.id.mute) {
+            toggleMute();
         } else {
             executeAction(PhotoPickerListener.PhotoPickerAction.CANCEL, null, ACTION_CANCEL);
         }
+    }
+
+    // SeekBar.OnSeekBarChangeListener:
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        if (fromUser) {
+            final boolean seekDuringPlay = mVideoView.isPlaying();
+            mMediaPlayer.setOnSeekCompleteListener(mp -> {
+                mMediaPlayer.setOnSeekCompleteListener(null);
+                if (seekDuringPlay) {
+                    startVideoPlayback();
+                }
+            });
+
+            float percentage = progress / 100f;
+            int seekTo = Math.round(percentage * mVideoView.getDuration());
+            if (Build.VERSION.SDK_INT >= 26) {
+                mMediaPlayer.seekTo(seekTo, MediaPlayer.SEEK_CLOSEST);
+            } else {
+                // On older versions, sync to nearest previous key frame.
+                mVideoView.seekTo(seekTo);
+            }
+            updateProgress();
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+        cancelFadeAwayAnimation();
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+        fadeAwayVideoControls();
     }
 
     /**
@@ -701,10 +812,134 @@ public class PickerCategoryView extends RelativeLayout
                 "Android.PhotoPicker.CacheHits", mPickerAdapter.getCacheHitCount());
     }
 
+    private void showOverlayControls(boolean animateAway) {
+        cancelFadeAwayAnimation();
+
+        if (animateAway && mVideoView.isPlaying()) {
+            fadeAwayVideoControls();
+        }
+    }
+
+    private void fadeAwayVideoControls() {
+        mVideoOverlayContainer.animate()
+                .alpha(0.0f)
+                .setStartDelay(3000)
+                .setDuration(1000)
+                .setListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {}
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        enableClickableButtons(false);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {}
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {}
+                });
+    }
+
+    private void cancelFadeAwayAnimation() {
+        // Canceling the animation will leave the alpha in the state it had reached while animating,
+        // so we need to explicitly set the alpha to 1.0 to reset it.
+        mVideoOverlayContainer.animate().cancel();
+        mVideoOverlayContainer.setAlpha(1.0f);
+        enableClickableButtons(true);
+    }
+
+    private void enableClickableButtons(boolean enable) {
+        mLargePlayButton.setClickable(enable);
+        mMuteButton.setClickable(enable);
+    }
+
+    private void updateProgress() {
+        String current;
+        String total;
+        try {
+            current = DecodeVideoTask.formatDuration(Long.valueOf(mVideoView.getCurrentPosition()));
+            total = DecodeVideoTask.formatDuration(Long.valueOf(mVideoView.getDuration()));
+        } catch (IllegalStateException exception) {
+            // VideoView#getCurrentPosition throws this error if the dialog has been dismissed while
+            // waiting to update the status.
+            return;
+        }
+
+        SeekBar seekBar = findViewById(R.id.seek_bar);
+        if (seekBar == null) {
+            return;
+        }
+
+        ThreadUtils.postOnUiThread(() -> {
+            TextView remainingTime = findViewById(R.id.remaining_time);
+            String formattedProgress = mActivity.getResources().getString(
+                    R.string.photo_picker_video_duration, current, total);
+            remainingTime.setText(formattedProgress);
+            int percentage = mVideoView.getDuration() == 0
+                    ? 0
+                    : mVideoView.getCurrentPosition() * 100 / mVideoView.getDuration();
+            seekBar.setProgress(percentage);
+        });
+    }
+
+    private void startVideoPlayback() {
+        mMediaPlayer.start();
+        mLargePlayButton.setImageResource(R.drawable.ic_pause_circle_outline_white_24dp);
+        showOverlayControls(/*animateAway=*/true);
+
+        if (mPlaybackUpdateTimer == null) {
+            mPlaybackUpdateTimer = new Timer();
+            final TimerTask tickTask = new TimerTask() {
+                @Override
+                public void run() {
+                    updateProgress();
+                }
+            };
+
+            mPlaybackUpdateTimer.schedule(tickTask, 0, 250);
+        }
+    }
+
+    private void stopVideoPlayback() {
+        mPlaybackUpdateTimer.cancel();
+        mPlaybackUpdateTimer = null;
+
+        mMediaPlayer.pause();
+        mLargePlayButton.setImageResource(R.drawable.ic_play_circle_filled_white_24dp);
+        showOverlayControls(/*animateAway=*/false);
+    }
+
+    private void toggleVideoPlayback() {
+        if (mVideoView.isPlaying()) {
+            stopVideoPlayback();
+        } else {
+            startVideoPlayback();
+        }
+    }
+
+    private void toggleMute() {
+        mAudioOn = !mAudioOn;
+        if (mAudioOn) {
+            mMediaPlayer.setVolume(1f, 1f);
+            mMuteButton.setImageResource(R.drawable.ic_volume_on_white_24dp);
+        } else {
+            mMediaPlayer.setVolume(0f, 0f);
+            mMuteButton.setImageResource(R.drawable.ic_volume_off_white_24dp);
+        }
+    }
+
     /** Sets a list of files to use as data for the dialog. For testing use only. */
     @VisibleForTesting
     public static void setTestFiles(List<PickerBitmap> testFiles) {
         sTestFiles = new ArrayList<>(testFiles);
+    }
+
+    /** Sets the video playback progress callback. For testing use only. */
+    @VisibleForTesting
+    public static void setProgressCallback(VideoPlaybackStatusCallback callback) {
+        sProgressCallback = callback;
     }
 
     @VisibleForTesting

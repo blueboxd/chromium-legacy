@@ -129,7 +129,7 @@ class COMPONENT_EXPORT(SQL) Database {
   // histogram is recorded.
   void AddTaggedHistogram(const std::string& name, int sample) const;
 
-  // Track various API calls and results.  Values corrospond to UMA
+  // Track various API calls and results.  Values correspond to UMA
   // histograms, do not modify, or add or delete other than directly
   // before EVENT_MAX_VALUE.
   enum Events {
@@ -520,11 +520,13 @@ class COMPONENT_EXPORT(SQL) Database {
   void CloseInternal(bool forced);
 
   // Construct a ScopedBlockingCall to annotate IO calls, but only if
-  // database wasn't open in memory.
+  // database wasn't open in memory. ScopedBlockingCall uses |from_here| to
+  // declare its blocking execution scope (see https://www.crbug/934302).
   void InitScopedBlockingCall(
+      const base::Location& from_here,
       base::Optional<base::ScopedBlockingCall>* scoped_blocking_call) const {
     if (!in_memory_)
-      scoped_blocking_call->emplace(FROM_HERE, base::BlockingType::MAY_BLOCK);
+      scoped_blocking_call->emplace(from_here, base::BlockingType::MAY_BLOCK);
   }
 
   // Internal helper for Does*Exist() functions.
@@ -588,11 +590,13 @@ class COMPONENT_EXPORT(SQL) Database {
     void Close(bool forced);
 
     // Construct a ScopedBlockingCall to annotate IO calls, but only if
-    // database wasn't open in memory.
+    // database wasn't open in memory. ScopedBlockingCall uses |from_here| to
+    // declare its blocking execution scope (see https://www.crbug/934302).
     void InitScopedBlockingCall(
+        const base::Location& from_here,
         base::Optional<base::ScopedBlockingCall>* scoped_blocking_call) const {
       if (database_)
-        database_->InitScopedBlockingCall(scoped_blocking_call);
+        database_->InitScopedBlockingCall(from_here, scoped_blocking_call);
     }
 
    private:

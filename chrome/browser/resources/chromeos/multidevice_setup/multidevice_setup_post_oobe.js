@@ -69,18 +69,18 @@ Polymer({
   behaviors: [I18nBehavior],
 
   /** @override */
-  attached: function() {
+  attached() {
     this.delegate_ = new multidevice_setup.PostOobeDelegate();
     this.$$('multidevice-setup').initializeSetupFlow();
   },
 
   /** @private */
-  onExitRequested_: function() {
+  onExitRequested_() {
     chrome.send('dialogClose');
   },
 
   /** @private */
-  onForwardButtonFocusRequested_: function() {
+  onForwardButtonFocusRequested_() {
     this.$$('#forward-button').focus();
   },
 
@@ -88,7 +88,7 @@ Polymer({
    * @param {!CustomEvent<!{value: multidevice_setup.PageName}>} event
    * @private
    */
-  onVisiblePageNameChanged_: function(event) {
+  onVisiblePageNameChanged_(event) {
     let pageNameValue;
     switch (event.detail.value) {
       case multidevice_setup.PageName.START:

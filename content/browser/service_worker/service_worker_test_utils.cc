@@ -690,7 +690,8 @@ void ServiceWorkerUpdateCheckTestUtils::SetComparedScriptInfoForVersion(
       (compare_result ==
        ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent)
           ? script_url
-          : GURL());
+          : GURL(),
+      network::mojom::CrossOriginEmbedderPolicy::kNone);
 }
 
 void ServiceWorkerUpdateCheckTestUtils::

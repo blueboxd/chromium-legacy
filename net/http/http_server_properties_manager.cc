@@ -864,7 +864,7 @@ void HttpServerPropertiesManager::SaveQuicServerInfoMapToServerPrefs(
                                  std::move(network_isolation_key_value));
     quic_server_pref_dict.SetStringKey(kServerInfoKey, it->second);
 
-    quic_servers_list.GetList().emplace_back(std::move(quic_server_pref_dict));
+    quic_servers_list.Append(std::move(quic_server_pref_dict));
   }
   http_server_properties_dict->SetKey(kQuicServers,
                                       std::move(quic_servers_list));

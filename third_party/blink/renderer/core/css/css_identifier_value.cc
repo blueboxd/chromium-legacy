@@ -57,7 +57,7 @@ CSSIdentifierValue::CSSIdentifierValue(const Length& length)
     case Length::kCalculated:
     case Length::kDeviceWidth:
     case Length::kDeviceHeight:
-    case Length::kMaxSizeNone:
+    case Length::kNone:
       NOTREACHED();
       break;
   }

@@ -60,7 +60,7 @@ cr.define('cr.ui', function() {
     const cs = ownerDoc.defaultView.getComputedStyle(popupElement);
     const docElement = ownerDoc.documentElement;
 
-    if (cs.position == 'fixed') {
+    if (cs.position === 'fixed') {
       // For 'fixed' positioned popups, the available rectangle should be based
       // on the viewport rather than the document.
       availRect = {
@@ -75,15 +75,15 @@ cr.define('cr.ui', function() {
       availRect = popupElement.offsetParent.getBoundingClientRect();
     }
 
-    if (cs.direction == 'rtl') {
+    if (cs.direction === 'rtl') {
       opt_invertLeftRight = !opt_invertLeftRight;
     }
 
     // Flip BEFORE, AFTER based on alignment.
     if (opt_invertLeftRight) {
-      if (type == AnchorType.BEFORE) {
+      if (type === AnchorType.BEFORE) {
         type = AnchorType.AFTER;
-      } else if (type == AnchorType.AFTER) {
+      } else if (type === AnchorType.AFTER) {
         type = AnchorType.BEFORE;
       }
     }

@@ -5,13 +5,10 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":os_toolbar",
-  ]
+  deps = [ ":os_toolbar" ]
 }
 
 js_library("os_toolbar") {
-  deps = [
-    "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_search_field",
-  ]
+  deps =
+      [ "//ui/webui/resources/cr_elements/cr_toolbar:cr_toolbar_search_field" ]
 }

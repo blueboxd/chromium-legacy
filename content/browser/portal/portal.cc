@@ -31,8 +31,7 @@ Portal::Portal(RenderFrameHostImpl* owner_render_frame_host)
     : WebContentsObserver(
           WebContents::FromRenderFrameHost(owner_render_frame_host)),
       owner_render_frame_host_(owner_render_frame_host),
-      portal_token_(base::UnguessableToken::Create()) {
-}
+      portal_token_(base::UnguessableToken::Create()) {}
 
 Portal::Portal(RenderFrameHostImpl* owner_render_frame_host,
                std::unique_ptr<WebContents> existing_web_contents)
@@ -376,6 +375,9 @@ void Portal::Activate(blink::TransferableMessage data,
 
   TakeHistoryForActivation(successor_contents_raw, outer_contents);
 
+  devtools_instrumentation::PortalActivated(outer_contents->GetMainFrame());
+  successor_contents_raw->set_portal(nullptr);
+
   std::unique_ptr<WebContents> predecessor_web_contents =
       delegate->SwapWebContents(outer_contents, std::move(successor_contents),
                                 true, is_loading);
@@ -402,7 +404,10 @@ void Portal::Activate(blink::TransferableMessage data,
       std::move(callback));
   successor_contents_raw->NotifyInsidePortal(false);
 
-  devtools_instrumentation::PortalActivated(outer_contents->GetMainFrame());
+  // This happens later than SwapWebContents so that the delegate can observe it
+  // happening after predecessor_web_contents has been moved into a portal.
+  successor_contents_raw->GetDelegate()->WebContentsBecamePortal(
+      outer_contents);
 }
 
 void Portal::PostMessageToGuest(

@@ -13,6 +13,7 @@
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/leveldb_proto/public/shared_proto_database_client_list.h"
+#include "components/optimization_guide/memory_hint.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/proto/hint_cache.pb.h"
 
@@ -793,8 +794,8 @@ void OptimizationGuideStore::OnLoadHint(
   }
 
   if (!entry || !entry->has_hint()) {
-    std::unique_ptr<proto::Hint> loaded_hint(nullptr);
-    std::move(callback).Run(entry_key, std::move(loaded_hint));
+    std::unique_ptr<MemoryHint> memory_hint;
+    std::move(callback).Run(entry_key, std::move(memory_hint));
     return;
   }
 
@@ -806,31 +807,31 @@ void OptimizationGuideStore::OnLoadHint(
     // fresh hints are fetched and placed into the store. In the future, the
     // expired hints could be asynchronously removed if necessary.
     // An empty hint is returned instead of the expired one.
-    UMA_HISTOGRAM_BOOLEAN(
+    LOCAL_HISTOGRAM_BOOLEAN(
         "OptimizationGuide.HintCacheStore.OnLoadHint.FetchedHintExpired", true);
-    std::unique_ptr<proto::Hint> loaded_hint(nullptr);
-    std::move(callback).Run(entry_key, std::move(loaded_hint));
+    std::unique_ptr<MemoryHint> memory_hint(nullptr);
+    std::move(callback).Run(entry_key, std::move(memory_hint));
     return;
   }
-
-  // Release the Hint into a Hint unique_ptr. This eliminates the need for any
-  // copies of the entry's hint.
-  std::unique_ptr<proto::Hint> loaded_hint(entry->release_hint());
 
   StoreEntryType store_entry_type =
       static_cast<StoreEntryType>(entry->entry_type());
   UMA_HISTOGRAM_ENUMERATION("OptimizationGuide.HintCache.HintType.Loaded",
                             store_entry_type);
 
-  if (store_entry_type == StoreEntryType::kFetchedHint) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
+  base::Optional<base::Time> expiry_time;
+  if (entry->has_expiry_time_secs()) {
+    expiry_time = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromSeconds(entry->expiry_time_secs()));
+    LOCAL_HISTOGRAM_CUSTOM_TIMES(
         "OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
-        base::Time::FromDeltaSinceWindowsEpoch(
-            base::TimeDelta::FromSeconds(entry->expiry_time_secs())) -
-            base::Time::Now(),
-        base::TimeDelta::FromHours(1), base::TimeDelta::FromDays(15), 50);
+        *expiry_time - base::Time::Now(), base::TimeDelta::FromHours(1),
+        base::TimeDelta::FromDays(15), 50);
   }
-  std::move(callback).Run(entry_key, std::move(loaded_hint));
+  std::move(callback).Run(
+      entry_key,
+      std::make_unique<MemoryHint>(
+          expiry_time, std::unique_ptr<proto::Hint>(entry->release_hint())));
 }
 
 std::unique_ptr<StoreUpdateData>

@@ -7,6 +7,10 @@
 #import <UIKit/UIKit.h>
 
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
+#import "ios/chrome/browser/main/test_browser_list_observer.h"
+
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -57,6 +61,58 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
 
     [wrangler shutdown];
   }
+}
+
+TEST_F(BrowserViewWranglerTest, TestBrowserList) {
+  BrowserList* browser_list =
+      BrowserListFactory::GetForBrowserState(chrome_browser_state_.get());
+  TestBrowserListObserver observer;
+  browser_list->AddObserver(&observer);
+
+  BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
+             initWithBrowserState:chrome_browser_state_.get()
+             webStateListObserver:nil
+       applicationCommandEndpoint:nil
+      browsingDataCommandEndpoint:nil
+             appURLLoadingService:nil
+                  storageSwitcher:nil];
+
+  // After creating the main browser, it should have been added to the browser
+  // list.
+  [wrangler createMainBrowser];
+  EXPECT_EQ(wrangler.mainInterface.browser, observer.GetLastAddedBrowser());
+  EXPECT_EQ(1UL, browser_list->AllRegularBrowsers().size());
+  // The lazy OTR browser creation should involve an addition to the browser
+  // list.
+  EXPECT_EQ(wrangler.incognitoInterface.browser,
+            observer.GetLastAddedIncognitoBrowser());
+  EXPECT_EQ(1UL, browser_list->AllIncognitoBrowsers().size());
+
+  Browser* prior_otr_browser = observer.GetLastAddedIncognitoBrowser();
+  // WARNING: after the following call, |last_otr_browser| is unsafe.
+  [wrangler destroyAndRebuildIncognitoBrowser];
+  // Expect that the prior OTR browser was removed, and a new one was added.
+  EXPECT_EQ(prior_otr_browser, observer.GetLastRemovedIncognitoBrowser());
+  EXPECT_EQ(wrangler.incognitoInterface.browser,
+            observer.GetLastAddedIncognitoBrowser());
+  // There still should be one OTR browser.
+  EXPECT_EQ(1UL, browser_list->AllIncognitoBrowsers().size());
+
+  // Store unsafe pointers to the current browsers.
+  Browser* pre_shutdown_main_browser = wrangler.mainInterface.browser;
+  Browser* pre_shutdown_incognito_browser = wrangler.incognitoInterface.browser;
+
+  // After shutdown all browsers are destroyed.
+  [wrangler shutdown];
+  // There should be no browsers in the BrowserList.
+  EXPECT_EQ(0UL, browser_list->AllRegularBrowsers().size());
+  EXPECT_EQ(0UL, browser_list->AllIncognitoBrowsers().size());
+  // Both browser removals should have been observed.
+  EXPECT_EQ(pre_shutdown_main_browser, observer.GetLastRemovedBrowser());
+  EXPECT_EQ(pre_shutdown_incognito_browser,
+            observer.GetLastRemovedIncognitoBrowser());
+
+  browser_list->RemoveObserver(&observer);
 }
 
 }  // namespace

@@ -18,14 +18,14 @@ function SwitchAccessNavigationManagerTest() {
 SwitchAccessNavigationManagerTest.prototype = {
   __proto__: SwitchAccessE2ETest.prototype,
 
-  runAndSaveDesktop: function(website, callback) {
+  runAndSaveDesktop(website, callback) {
     this.runWithLoadedTree(website, (desktop) => {
       this.desktop = desktop;
       callback(desktop);
     });
   },
 
-  findNodeById: function(id) {
+  findNodeById(id) {
     const result = new AutomationTreeWalker(
                        this.desktop, constants.Dir.FORWARD,
                        {visit: (node) => node.htmlAttributes['id'] === id})

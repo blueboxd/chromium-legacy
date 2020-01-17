@@ -12,7 +12,7 @@
 
 namespace {
 
-typedef decltype(::GetSystemPreferredUILanguages)* GetPreferredUILanguages_Fn;
+using GetPreferredUILanguages_Fn = decltype(::GetSystemPreferredUILanguages)*;
 
 bool GetPreferredUILanguageList(GetPreferredUILanguages_Fn function,
                                 ULONG flags,

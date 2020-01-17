@@ -27,7 +27,7 @@ BrailleKeyEventRewriter.prototype = {
    * @param {BrailleKeyEvent} evt
    * @return {boolean} False to continue event propagation.
    */
-  onBrailleKeyEvent: function(evt) {
+  onBrailleKeyEvent(evt) {
     var standardKeyCode;
     var dots = evt.brailleDots;
     if (!dots) {

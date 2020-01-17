@@ -178,12 +178,14 @@ viz::ResourceFormat TileRasterBufferFormat(
 
 void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
   if (visible) {
-    TRACE_EVENT_ASYNC_BEGIN1("cc", "LayerTreeHostImpl::SetVisible", id,
-                             "LayerTreeHostImpl", id);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("cc", "LayerTreeHostImpl::SetVisible",
+                                      TRACE_ID_LOCAL(id), "LayerTreeHostImpl",
+                                      id);
     return;
   }
 
-  TRACE_EVENT_ASYNC_END0("cc", "LayerTreeHostImpl::SetVisible", id);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("cc", "LayerTreeHostImpl::SetVisible",
+                                  TRACE_ID_LOCAL(id));
 }
 
 enum ScrollThread { MAIN_THREAD, CC_THREAD };
@@ -200,24 +202,6 @@ void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
                           scroll_on_main_thread);
   }
 }
-
-class ScopedPostAnimationEventsToMainThread {
- public:
-  ScopedPostAnimationEventsToMainThread(MutatorHost* animation_host,
-                                        LayerTreeHostImplClient* client)
-      : events_(animation_host->CreateEvents()), client_(client) {}
-
-  ~ScopedPostAnimationEventsToMainThread() {
-    if (!events_->IsEmpty())
-      client_->PostAnimationEventsToMainThreadOnImplThread(std::move(events_));
-  }
-
-  MutatorEvents* events() { return events_.get(); }
-
- private:
-  std::unique_ptr<MutatorEvents> events_;
-  LayerTreeHostImplClient* client_;
-};
 
 }  // namespace
 
@@ -303,6 +287,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       scroll_gesture_did_end_(false) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
+  mutator_events_ = mutator_host_->CreateEvents();
 
   DCHECK(task_runner_provider_->IsImplThread());
   DidVisibilityChange(this, visible_);
@@ -392,6 +377,8 @@ void LayerTreeHostImpl::BeginMainFrameAborted(
   if (reason == CommitEarlyOutReason::ABORTED_NOT_VISIBLE ||
       reason == CommitEarlyOutReason::FINISHED_NO_UPDATES) {
     frame_trackers_.NotifyMainFrameCausedNoDamage(args);
+  } else {
+    frame_trackers_.NotifyMainFrameProcessed(args);
   }
 
   // If the begin frame data was handled, then scroll and scale set was applied
@@ -406,6 +393,10 @@ void LayerTreeHostImpl::BeginMainFrameAborted(
         swap_promise->DidNotSwap(SwapPromise::COMMIT_NO_UPDATE);
     }
   }
+}
+
+void LayerTreeHostImpl::ReadyToCommit(const viz::BeginFrameArgs& commit_args) {
+  frame_trackers_.NotifyMainFrameProcessed(commit_args);
 }
 
 void LayerTreeHostImpl::BeginCommit() {
@@ -2015,6 +2006,13 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(
   PresentationTimeCallbackBuffer::PendingCallbacks activated =
       presentation_time_callbacks_.PopPendingCallbacks(frame_token);
 
+  // The callbacks in |compositor_thread_callbacks| expect to be run on the
+  // compositor thread so we'll run them now.
+  for (LayerTreeHost::PresentationTimeCallback& callback :
+       activated.compositor_thread_callbacks) {
+    std::move(callback).Run(details.presentation_feedback);
+  }
+
   // Send all the main-thread callbacks to the client in one batch. The client
   // is in charge of posting them to the main thread.
   client_->DidPresentCompositorFrameOnImplThread(
@@ -2659,6 +2657,15 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
   SetRequiresHighResToDraw();
 }
 
+void LayerTreeHostImpl::RegisterMainThreadPresentationTimeCallback(
+    uint32_t frame_token,
+    LayerTreeHost::PresentationTimeCallback callback) {
+  std::vector<LayerTreeHost::PresentationTimeCallback> as_vector;
+  as_vector.emplace_back(std::move(callback));
+  presentation_time_callbacks_.RegisterMainThreadPresentationCallbacks(
+      frame_token, std::move(as_vector));
+}
+
 void LayerTreeHostImpl::RegisterCompositorPresentationTimeCallback(
     uint32_t frame_token,
     LayerTreeHost::PresentationTimeCallback callback) {
@@ -2967,7 +2974,8 @@ void LayerTreeHostImpl::CreatePendingTree() {
   pending_tree_fully_painted_ = false;
 
   client_->OnCanDrawStateChanged(CanDraw());
-  TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree:waiting", pending_tree_.get());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("cc", "PendingTree:waiting",
+                                    TRACE_ID_LOCAL(pending_tree_.get()));
 
   DCHECK(!pending_tree_duration_timer_);
   pending_tree_duration_timer_.reset(new PendingTreeDurationHistogramTimer());
@@ -3004,7 +3012,8 @@ void LayerTreeHostImpl::PushScrollbarOpacitiesFromActiveToPending() {
 void LayerTreeHostImpl::ActivateSyncTree() {
   TRACE_EVENT0("cc,benchmark", "LayerTreeHostImpl::ActivateSyncTree()");
   if (pending_tree_) {
-    TRACE_EVENT_ASYNC_END0("cc", "PendingTree:waiting", pending_tree_.get());
+    TRACE_EVENT_NESTABLE_ASYNC_END0("cc", "PendingTree:waiting",
+                                    TRACE_ID_LOCAL(pending_tree_.get()));
     active_tree_->lifecycle().AdvanceTo(LayerTreeLifecycle::kBeginningSync);
 
     DCHECK(pending_tree_duration_timer_);
@@ -3386,6 +3395,12 @@ LayerTreeHostImpl::TakeCompletedImageDecodeRequests() {
   auto result = std::move(completed_image_decode_requests_);
   completed_image_decode_requests_.clear();
   return result;
+}
+
+std::unique_ptr<MutatorEvents> LayerTreeHostImpl::TakeMutatorEvents() {
+  std::unique_ptr<MutatorEvents> events = mutator_host_->CreateEvents();
+  std::swap(events, mutator_events_);
+  return events;
 }
 
 void LayerTreeHostImpl::ClearCaches() {
@@ -5292,21 +5307,19 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
-  ScopedPostAnimationEventsToMainThread event_poster(mutator_host_.get(),
-                                                     client_);
-
   const bool has_active_animations = mutator_host_->UpdateAnimationState(
-      start_ready_animations, event_poster.events());
+      start_ready_animations, mutator_events_.get());
 
-  if (has_active_animations)
+  if (has_active_animations) {
     SetNeedsOneBeginImplFrame();
+    if (!mutator_events_->IsEmpty())
+      SetNeedsCommit();
+  }
 }
 
 void LayerTreeHostImpl::ActivateAnimations() {
-  ScopedPostAnimationEventsToMainThread event_poster(mutator_host_.get(),
-                                                     client_);
   const bool activated =
-      mutator_host_->ActivateAnimations(event_poster.events());
+      mutator_host_->ActivateAnimations(mutator_events_.get());
   if (activated) {
     // Activating an animation changes layer draw properties, such as
     // screen_space_transform_is_animating. So when we see a new animation get
@@ -5314,6 +5327,8 @@ void LayerTreeHostImpl::ActivateAnimations() {
     active_tree()->set_needs_update_draw_properties();
     // Request another frame to run the next tick of the animation.
     SetNeedsOneBeginImplFrame();
+    if (!mutator_events_->IsEmpty())
+      SetNeedsCommit();
   }
 }
 

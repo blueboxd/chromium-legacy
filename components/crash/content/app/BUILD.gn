@@ -19,15 +19,11 @@ source_set("lib") {
     "crash_reporter_client.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("crashpad_handler_main") {
-  sources = [
-    "crashpad_handler_main.cc",
-  ]
+  sources = [ "crashpad_handler_main.cc" ]
 
   deps = [
     "//components/gwp_asan/buildflags",
@@ -67,9 +63,7 @@ static_library("app") {
 
   defines = [ "CRASH_IMPLEMENTATION" ]
 
-  public_deps = [
-    ":lib",
-  ]
+  public_deps = [ ":lib" ]
   deps = [
     "//base",
     "//build:branding_buildflags",
@@ -133,9 +127,7 @@ static_library("app") {
   }
 
   if (is_linux) {
-    data_deps = [
-      "//third_party/crashpad/crashpad/handler:crashpad_handler",
-    ]
+    data_deps = [ "//third_party/crashpad/crashpad/handler:crashpad_handler" ]
   }
 }
 
@@ -177,9 +169,7 @@ if (is_win) {
   # to depend on either :crash_export_thunks or :test_support, or in the case of
   # release binaries, on //chrome_elf, which re-exports the thunks.
   source_set("crash_export_thunk_include") {
-    sources = [
-      "crash_export_thunks.h",
-    ]
+    sources = [ "crash_export_thunks.h" ]
   }
 
   # This source set contains a set of functions that allow using the crashpad
@@ -224,9 +214,7 @@ if (is_mac || is_android) {
   # We build a chromium-specific crashpad_handler executable so that we can
   # define custom UserStreamDataSources.
   executable("chrome_crashpad_handler") {
-    sources = [
-      "chrome_crashpad_handler.cc",
-    ]
+    sources = [ "chrome_crashpad_handler.cc" ]
 
     deps = [
       ":crashpad_handler_main",
@@ -262,17 +250,11 @@ if (is_android) {
   # installer will ignore files not named like a shared object, so give the
   # handler executable an acceptable name.
   copy("chrome_crashpad_handler_named_as_so") {
-    deps = [
-      ":chrome_crashpad_handler",
-    ]
+    deps = [ ":chrome_crashpad_handler" ]
 
-    sources = [
-      "$root_out_dir/chrome_crashpad_handler",
-    ]
+    sources = [ "$root_out_dir/chrome_crashpad_handler" ]
 
-    outputs = [
-      "$root_out_dir/libchrome_crashpad_handler.so",
-    ]
+    outputs = [ "$root_out_dir/libchrome_crashpad_handler.so" ]
   }
 }
 
@@ -281,9 +263,7 @@ if (is_android) {
 source_set("test_support") {
   testonly = true
 
-  deps = [
-    ":lib",
-  ]
+  deps = [ ":lib" ]
 
   if (is_win) {
     deps += [ ":crash_export_stubs" ]

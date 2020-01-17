@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">このユーザー アカウントは、デバイスが登録されているドメインに属していません。別のドメインに登録する場合は、まず、デバイス リカバリ操作を行う必要があります。</translation>
 <translation id="1274977772557788323">Adobe Flash Player のストレージ設定</translation>
 <translation id="1274997165432133392">Cookie と他のサイトデータ</translation>
-<translation id="127668050356036882">すべてのウィンドウを閉じる</translation>
 <translation id="1280820357415527819">モバイル ネットワークを検索しています</translation>
 <translation id="1282420830958964167">あなたの保護者が設定した制限時間に達したため、今日はこれ以上「<ph name="APP_NAME" />」を使えません。明日は <ph name="TIME_LIMIT" />まで使えます。</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
@@ -518,7 +517,6 @@
 <translation id="1712552549805331520"><ph name="URL" /> から、ローカルのパソコンにデータを永続的に保存する許可を求められています</translation>
 <translation id="1714644264617423774">ユーザー補助機能を有効にするとデバイスが使いやすくなります。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">モーション センサー</translation>
-<translation id="171824261579749339">逆スクロール（<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" />）</translation>
 <translation id="1718835860248848330">1 時間以内</translation>
 <translation id="1719312230114180055">注: 指紋は複雑なパスワードや PIN より安全面で劣る場合があります。</translation>
 <translation id="1720318856472900922">TLS WWW サーバー認証</translation>
@@ -729,7 +727,6 @@
 <translation id="2006638907958895361"><ph name="APP" /> でリンクを開く</translation>
 <translation id="2007404777272201486">問題の報告...</translation>
 <translation id="2010501376126504057">対応デバイス</translation>
-<translation id="2016430552235416146">通常</translation>
 <translation id="2017334798163366053">パフォーマンス データの収集を無効にする</translation>
 <translation id="2017836877785168846">アドレスバーの履歴とオートコンプリート データを削除します。</translation>
 <translation id="2018352199541442911">お使いの外部ストレージ デバイスは現在サポートされていません。</translation>
@@ -770,7 +767,6 @@
 <translation id="2076672359661571384">中（推奨）</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="2078019350989722914">終了する前に警告メッセージを表示する（<ph name="KEY_EQUIVALENT" />）</translation>
-<translation id="2078494137444990774">オフ</translation>
 <translation id="2079053412993822885">ユーザーの証明書のいずれかを削除すると、それを使って身元を証明することはできなくなります。</translation>
 <translation id="2079545284768500474">元に戻す</translation>
 <translation id="2080070583977670716">詳細設定</translation>
@@ -1209,7 +1205,6 @@
 <translation id="2665647207431876759">期限切れ</translation>
 <translation id="2665717534925640469">現在このページは全画面表示で、マウスカーソルは無効になります。</translation>
 <translation id="2665919335226618153">フォーマット中にエラーが発生しました。</translation>
-<translation id="2666990579225592931">ゲスト ウィンドウを開く</translation>
 <translation id="2667463864537187133">スペルチェックの管理</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> が Chrome タブを共有しています。</translation>
 <translation id="2670429602441959756">このページには VR でまだご利用いただけない機能が含まれています。VR モードを終了します...</translation>
@@ -2406,7 +2401,6 @@
 <translation id="4364327530094270451">メロン</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> がウィンドウを共有しています。</translation>
 <translation id="4364830672918311045">通知を表示</translation>
-<translation id="436499142539576997">アプリのデータを取得できませんでした。引き続きアプリの実行を試みています...</translation>
 <translation id="4370975561335139969">入力したメールアドレスとパスワードが一致しません</translation>
 <translation id="437184764829821926">フォントの詳細設定</translation>
 <translation id="4374831787438678295">Linux インストーラ</translation>
@@ -3433,7 +3427,6 @@
 <translation id="5867841422488265304">検索語句またはウェブアドレスを入力</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
-<translation id="5869948122057593679">すべてのウィンドウを閉じる</translation>
 <translation id="5870086504539785141">ユーザー補助メニューを閉じる</translation>
 <translation id="5870155679953074650">ハードの障害数</translation>
 <translation id="5876851302954717356">右隣に新しいタブを開く</translation>
@@ -4482,7 +4475,6 @@
 <translation id="7385854874724088939">印刷中に問題が発生しました。プリンタを確認してからもう一度お試しください。</translation>
 <translation id="7385896526023870365">この拡張機能はサイトへのアクセスが追加されていません。</translation>
 <translation id="7388044238629873883">もうすぐ終わりです。</translation>
-<translation id="7388222713940428051">ゲスト ウィンドウを開く</translation>
 <translation id="7392118418926456391">ウイルス スキャンに失敗しました</translation>
 <translation id="7392915005464253525">閉じたウィンドウを開く（&amp;E）</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> はシステム起動時に開始され、他の <ph name="PRODUCT_NAME" /> ウィンドウをすべて閉じてもバックグラウンドで動作し続けます。</translation>
@@ -4747,7 +4739,6 @@
 <translation id="7784067724422331729">お使いのパソコンのセキュリティ設定により、このファイルはブロックされました。</translation>
 <translation id="7784796923038949829">サイトのデータを読み取れないか、変更できません</translation>
 <translation id="778480864305029524">インスタント テザリングを使用するには、Google Play 開発者サービスの通知を有効にしてください。</translation>
-<translation id="7786207843293321886">ゲスト セッションを終了</translation>
 <translation id="7786889348652477777">アプリを再読み込み(&amp;R)</translation>
 <translation id="7787308148023287649">別の画面で表示</translation>
 <translation id="7788298548579301890">パソコン上の別のプログラムにより、Chrome の動作に影響を及ぼす可能性のあるアプリが追加されました。
@@ -4861,7 +4852,6 @@
 <translation id="7908378463497120834">外部ストレージ デバイスの少なくとも 1 つのパーティションがマウントできませんでした。</translation>
 <translation id="7909969815743704077">シークレット モードでダウンロード</translation>
 <translation id="7910768399700579500">新しいフォルダ(&amp;N)</translation>
-<translation id="7910831464510799808">オン</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">サーバーでパスワードが変更されました。いったんログアウトして再度ログインしてください。</translation>
 <translation id="7915457674565721553">保護者による使用制限を設定するにはインターネットに接続してください</translation>

@@ -90,9 +90,7 @@ static_library("lzma_sdk_xz") {
     "XzDec.c",
   ]
 
-  deps = [
-    ":lzma_sdk",
-  ]
+  deps = [ ":lzma_sdk" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [

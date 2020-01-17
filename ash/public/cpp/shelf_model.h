@@ -84,6 +84,13 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   std::unique_ptr<ShelfItemDelegate> RemoveItemAndTakeShelfItemDelegate(
       const ShelfID& shelf_id);
 
+  // Returns whether the item with the given index can be swapped with the
+  // next (or previous) item. Example cases when a swap cannot happen are:
+  // trying to swap the first item with the previous one, trying to swap
+  // the last item with the next one, trying to swap a pinned item with an
+  // unpinned item.
+  bool CanSwap(int index, bool with_next) const;
+
   // Swaps the item at the given index with the next one if |with_next| is
   // true, or with the previous one if |with_next| is false. Returns true
   // if the requested swap has happened, and false otherwise.

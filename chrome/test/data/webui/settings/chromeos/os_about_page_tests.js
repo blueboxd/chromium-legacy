@@ -51,7 +51,7 @@ cr.define('settings_about_page', function() {
         lifetimeBrowserProxy.reset();
         PolymerTest.clearBody();
         page = document.createElement('os-settings-about-page');
-        settings.navigateTo(settings.routes.ABOUT);
+        settings.Router.getInstance().navigateTo(settings.routes.ABOUT);
         document.body.appendChild(page);
         return Promise.all([
           aboutBrowserProxy.whenCalled('getChannelInfo'),

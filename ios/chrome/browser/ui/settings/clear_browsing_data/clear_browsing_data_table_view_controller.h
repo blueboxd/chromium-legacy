@@ -23,10 +23,7 @@ class ChromeBrowserState;
 // Initializers. |browserState| can't be nil.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-    NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 // Prepares view controller so that -dismissViewControllerAnimated dismisses it.
 // Call this method before dismissing view controller.

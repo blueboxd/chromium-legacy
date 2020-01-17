@@ -18,9 +18,7 @@ optimize_webui("build") {
 }
 
 js_type_check("closure_compile") {
-  deps = [
-    ":internet_config_dialog",
-  ]
+  deps = [ ":internet_config_dialog" ]
 }
 
 js_library("internet_config_dialog") {

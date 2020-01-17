@@ -287,18 +287,14 @@ if (enable_vr) {
         "DXGI.lib",
       ]
 
-      deps = [
-        "//base",
-      ]
+      deps = [ "//base" ]
     }
   }
 } else {
   source_set("vr") {
     # We need to include an empty .cc file so that mac and windows don't fall over when trying to
     # compile this when webvr is disabled.
-    sources = [
-      "empty.cc",
-    ]
+    sources = [ "empty.cc" ]
   }
 }
 
@@ -340,12 +336,8 @@ if (enable_openxr) {
   # json file instead of the registry key. This json file copied to the output
   # folder points to our mock OpenXR runtime.
   copy("json_mock") {
-    sources = [
-      "openxr/test/openxr.json",
-    ]
-    outputs = [
-      "$root_out_dir/mock_vr_clients/bin/openxr/openxr.json",
-    ]
+    sources = [ "openxr/test/openxr.json" ]
+    outputs = [ "$root_out_dir/mock_vr_clients/bin/openxr/openxr.json" ]
   }
 
   shared_library("openxr_mock") {
@@ -378,9 +370,7 @@ if (enable_openxr) {
       "//third_party/openxr:openxr_headers",
     ]
 
-    data_deps = [
-      "//device/vr:json_mock",
-    ]
+    data_deps = [ "//device/vr:json_mock" ]
   }
 }
 

@@ -177,9 +177,7 @@ js_unittest("actions_model_unittest") {
 
 js_library("fake_android_app_list_model") {
   testonly = true
-  deps = [
-    ":android_app_list_model",
-  ]
+  deps = [ ":android_app_list_model" ]
 }
 
 js_library("mock_directory_model") {
@@ -202,22 +200,16 @@ js_library("mock_folder_shortcut_data_model") {
 
 js_library("mock_navigation_list_model") {
   testonly = true
-  deps = [
-    ":navigation_list_model",
-  ]
+  deps = [ ":navigation_list_model" ]
 }
 
 js_library("mock_thumbnail_loader") {
   testonly = true
-  deps = [
-    ":thumbnail_loader",
-  ]
+  deps = [ ":thumbnail_loader" ]
 }
 
 js_library("android_app_list_model") {
-  deps = [
-    "//ui/webui/resources/js/cr:event_target",
-  ]
+  deps = [ "//ui/webui/resources/js/cr:event_target" ]
 }
 
 js_library("app_state_controller") {
@@ -595,9 +587,7 @@ js_library("metadata_update_controller") {
 }
 
 js_library("metrics_start") {
-  deps = [
-    "//ui/file_manager/file_manager/common/js:metrics",
-  ]
+  deps = [ "//ui/file_manager/file_manager/common/js:metrics" ]
 }
 
 js_library("naming_controller") {
@@ -646,9 +636,7 @@ js_unittest("progress_center_item_group_unittest") {
 }
 
 js_library("providers_model") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
+  deps = [ "//ui/webui/resources/js:assert" ]
 }
 
 js_unittest("providers_model_unittest") {
@@ -762,9 +750,7 @@ js_unittest("task_controller_unittest") {
 }
 
 js_library("task_history") {
-  deps = [
-    "//ui/webui/resources/js/cr:event_target",
-  ]
+  deps = [ "//ui/webui/resources/js/cr:event_target" ]
 }
 
 # TODO(tapted): Move this into //ui/file_manager/base.
@@ -797,9 +783,7 @@ js_library("toolbar_controller") {
 }
 
 js_library("web_store_utils") {
-  deps = [
-    ":constants",
-  ]
+  deps = [ ":constants" ]
 }
 
 js_library("webui_command_extender") {

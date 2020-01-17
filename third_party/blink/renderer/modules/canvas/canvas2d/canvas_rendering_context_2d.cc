@@ -674,7 +674,7 @@ scoped_refptr<StaticBitmapImage> blink::CanvasRenderingContext2D::GetImage(
 
 void CanvasRenderingContext2D::FinalizeFrame() {
   TRACE_EVENT0("blink", "CanvasRenderingContext2D::FinalizeFrame");
-  if (canvas() && canvas()->GetCanvas2DLayerBridge())
+  if (IsPaintable())
     canvas()->GetCanvas2DLayerBridge()->FinalizeFrame();
   usage_counters_.num_frames_since_reset++;
 }

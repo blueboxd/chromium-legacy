@@ -138,9 +138,9 @@ void ArcScreenCaptureBridge::PermissionPromptCallback(
   // This is OK since these persist forever and this may be requested again with
   // a different desktop.
   granted_permissions_map_.erase(package_name);
-  granted_permissions_map_.emplace(std::make_pair(
+  granted_permissions_map_.emplace(
       package_name, GrantedCaptureParams(found->second.display_name, desktop_id,
-                                         true /* enable notification */)));
+                                         true /* enable notification */));
   std::move(found->second.callback).Run(true);
   pending_permissions_map_.erase(found);
 }
@@ -163,13 +163,13 @@ void ArcScreenCaptureBridge::TestModeAcceptPermission(
     return;
   }
   granted_permissions_map_.erase(package_name);
-  granted_permissions_map_.emplace(std::make_pair(
+  granted_permissions_map_.emplace(
       package_name,
       GrantedCaptureParams(found->second.display_name,
                            content::DesktopMediaID::RegisterNativeWindow(
                                content::DesktopMediaID::TYPE_SCREEN,
                                ash::Shell::GetPrimaryRootWindow()),
-                           false /* enable notification */)));
+                           false /* enable notification */));
   std::move(found->second.callback).Run(true);
   pending_permissions_map_.erase(found);
   // The dialog will be closed when 'found' goes out of scope and is

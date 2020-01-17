@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omaha;
 import android.app.Activity;
 import android.app.Instrumentation.ActivityResult;
 import android.content.Context;
+import android.os.Build;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.espresso.intent.matcher.IntentMatchers;
 import android.support.test.filters.MediumTest;
@@ -21,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -188,6 +190,7 @@ public class UpdateMenuItemHelperTest {
     @MediumTest
     @Feature({"Omaha"})
     @RetryOnFailure
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testCurrentVersionIsSame() throws Exception {
         checkUpdateMenuItemIsNotShowing("1.2.3.4", "1.2.3.4");
     }
@@ -195,6 +198,7 @@ public class UpdateMenuItemHelperTest {
     @Test
     @MediumTest
     @Feature({"Omaha"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testCurrentVersionIsNewer() throws Exception {
         checkUpdateMenuItemIsNotShowing("27.0.1453.42", "26.0.1410.49");
     }
@@ -203,6 +207,7 @@ public class UpdateMenuItemHelperTest {
     @MediumTest
     @Feature({"Omaha"})
     @RetryOnFailure
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testNoVersionKnown() throws Exception {
         checkUpdateMenuItemIsNotShowing("1.2.3.4", "0");
     }

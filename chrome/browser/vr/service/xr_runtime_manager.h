@@ -20,7 +20,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "chrome/browser/vr/service/xr_runtime_manager_observer.h"
-#include "chrome/browser/vr/vr_export.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -36,7 +35,7 @@ class XRRuntimeManagerTest;
 
 // Singleton used to provide the platform's XR Runtimes to VRServiceImpl
 // instances.
-class VR_EXPORT XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
+class XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
  public:
   friend base::RefCounted<XRRuntimeManager>;
   static constexpr auto kRefCountPreference =

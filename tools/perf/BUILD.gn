@@ -5,9 +5,7 @@
 # Keep in sync with group("perf_without_chrome").
 group("perf") {
   testonly = true
-  deps = [
-    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
-  ]
+  deps = [ "//tools/perf/chrome_telemetry_build:telemetry_chrome_test" ]
   data = [
     "//tools/perf/",
 
@@ -35,9 +33,7 @@ group("perf") {
 
   # Runs a script which generates the ad tagging ruleset.
   if (!is_ios) {
-    data_deps = [
-      "//components/subresource_filter/tools:index_ruleset",
-    ]
+    data_deps = [ "//components/subresource_filter/tools:index_ruleset" ]
   }
 }
 
@@ -89,8 +85,6 @@ group("perf_without_chrome") {
 
   # Runs a script which generates the ad tagging ruleset.
   if (!is_ios) {
-    data_deps = [
-      "//components/subresource_filter/tools:index_ruleset",
-    ]
+    data_deps = [ "//components/subresource_filter/tools:index_ruleset" ]
   }
 }

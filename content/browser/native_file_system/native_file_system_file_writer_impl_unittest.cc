@@ -89,7 +89,8 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
                                               test_swap_url_));
 
     chrome_blob_context_ = base::MakeRefCounted<ChromeBlobStorageContext>();
-    chrome_blob_context_->InitializeOnIOThread(base::FilePath(), nullptr);
+    chrome_blob_context_->InitializeOnIOThread(base::FilePath(),
+                                               base::FilePath(), nullptr);
     blob_context_ = chrome_blob_context_->context();
 
     manager_ = base::MakeRefCounted<NativeFileSystemManagerImpl>(

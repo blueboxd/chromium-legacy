@@ -24,13 +24,9 @@ js_library("index") {
 }
 
 js_library("constants") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("types") {
-  deps = [
-    "line_chart:data_series",
-  ]
+  deps = [ "line_chart:data_series" ]
 }

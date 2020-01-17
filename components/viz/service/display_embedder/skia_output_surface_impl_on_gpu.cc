@@ -619,6 +619,12 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
     // No need to flush in this implementation.
   }
 
+  scoped_refptr<gfx::NativePixmap> GetNativePixmap(
+      const gpu::Mailbox& mailbox) override {
+    DCHECK(shared_image_manager_->is_thread_safe());
+    return shared_image_manager_->GetNativePixmap(mailbox);
+  }
+
   // DirectContextProviderDelegate implementation.
   gpu::SharedImageManager* GetSharedImageManager() override {
     return shared_image_manager_;
@@ -986,20 +992,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
   scoped_output_device_paint_.reset();
 
   if (output_surface_plane_) {
-    if (gl::GLImage* image = output_device_->GetOverlayImage()) {
-      std::unique_ptr<gfx::GpuFence> gpu_fence =
-          output_device_->SubmitOverlayGpuFence();
-
-      // Output surface is also z-order 0.
-      int plane_z_order = 0;
-      // Output surface always uses the full texture.
-      gfx::RectF uv_rect(0.f, 0.f, 1.f, 1.f);
-
-      gl_surface_->ScheduleOverlayPlane(
-          plane_z_order, output_surface_plane_->transform, image,
-          ToNearestRect(output_surface_plane_->display_rect), uv_rect,
-          output_surface_plane_->enable_blending, std::move(gpu_fence));
-    }
+    output_device_->SchedulePrimaryPlane(output_surface_plane_.value());
     output_surface_plane_.reset();
   }
 

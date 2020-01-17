@@ -78,9 +78,7 @@ js_library("files_metadata_entry") {
 }
 
 js_library("files_quick_view") {
-  deps = [
-    ":files_metadata_box",
-  ]
+  deps = [ ":files_metadata_box" ]
   externs_list = [
     "$externs_path/chrome_extensions.js",
     "$externs_path/webview_tag.js",
@@ -89,9 +87,7 @@ js_library("files_quick_view") {
 }
 
 js_library("files_ripple") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
+  deps = [ "//ui/webui/resources/js:assert" ]
 }
 
 js_library("files_safe_media") {

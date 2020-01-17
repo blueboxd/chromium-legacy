@@ -607,7 +607,6 @@ TEST_F(AppCacheDatabaseTest, NamespaceRecords) {
   EXPECT_EQ(kFooOrigin, fallbacks[0].origin);
   EXPECT_EQ(kFooNameSpace1, fallbacks[0].namespace_.namespace_url);
   EXPECT_EQ(kFooFallbackEntry, fallbacks[0].namespace_.target_url);
-  EXPECT_FALSE(fallbacks[0].namespace_.is_pattern);
 
   fallbacks.clear();
   EXPECT_TRUE(db.FindNamespacesForCache(2, &intercepts, &fallbacks));
@@ -616,7 +615,6 @@ TEST_F(AppCacheDatabaseTest, NamespaceRecords) {
   EXPECT_EQ(kFooOrigin, fallbacks[0].origin);
   EXPECT_EQ(kFooNameSpace2, fallbacks[0].namespace_.namespace_url);
   EXPECT_EQ(kFooFallbackEntry, fallbacks[0].namespace_.target_url);
-  EXPECT_FALSE(fallbacks[0].namespace_.is_pattern);
 
   fallbacks.clear();
   EXPECT_TRUE(db.FindNamespacesForOrigin(kFooOrigin, &intercepts, &fallbacks));
@@ -625,12 +623,10 @@ TEST_F(AppCacheDatabaseTest, NamespaceRecords) {
   EXPECT_EQ(kFooOrigin, fallbacks[0].origin);
   EXPECT_EQ(kFooNameSpace1, fallbacks[0].namespace_.namespace_url);
   EXPECT_EQ(kFooFallbackEntry, fallbacks[0].namespace_.target_url);
-  EXPECT_FALSE(fallbacks[0].namespace_.is_pattern);
   EXPECT_EQ(2, fallbacks[1].cache_id);
   EXPECT_EQ(kFooOrigin, fallbacks[1].origin);
   EXPECT_EQ(kFooNameSpace2, fallbacks[1].namespace_.namespace_url);
   EXPECT_EQ(kFooFallbackEntry, fallbacks[1].namespace_.target_url);
-  EXPECT_FALSE(fallbacks[1].namespace_.is_pattern);
 
   EXPECT_TRUE(db.DeleteNamespacesForCache(1));
   fallbacks.clear();
@@ -640,34 +636,27 @@ TEST_F(AppCacheDatabaseTest, NamespaceRecords) {
   EXPECT_EQ(kFooOrigin, fallbacks[0].origin);
   EXPECT_EQ(kFooNameSpace2, fallbacks[0].namespace_.namespace_url);
   EXPECT_EQ(kFooFallbackEntry, fallbacks[0].namespace_.target_url);
-  EXPECT_FALSE(fallbacks[0].namespace_.is_pattern);
 
   // Two more records for the same cache in the Bar origin.
   record.cache_id = 3;
   record.origin = kBarOrigin;
   record.namespace_.namespace_url = kBarNameSpace1;
   record.namespace_.target_url = kBarFallbackEntry;
-  record.namespace_.is_pattern = true;
   EXPECT_TRUE(db.InsertNamespace(&record));
 
   record.cache_id = 3;
   record.origin = kBarOrigin;
   record.namespace_.namespace_url = kBarNameSpace2;
   record.namespace_.target_url = kBarFallbackEntry;
-  record.namespace_.is_pattern = true;
   EXPECT_TRUE(db.InsertNamespace(&record));
 
   fallbacks.clear();
   EXPECT_TRUE(db.FindNamespacesForCache(3, &intercepts, &fallbacks));
   EXPECT_EQ(2U, fallbacks.size());
-  EXPECT_TRUE(fallbacks[0].namespace_.is_pattern);
-  EXPECT_TRUE(fallbacks[1].namespace_.is_pattern);
 
   fallbacks.clear();
   EXPECT_TRUE(db.FindNamespacesForOrigin(kBarOrigin, &intercepts, &fallbacks));
   EXPECT_EQ(2U, fallbacks.size());
-  EXPECT_TRUE(fallbacks[0].namespace_.is_pattern);
-  EXPECT_TRUE(fallbacks[1].namespace_.is_pattern);
 
   ASSERT_TRUE(expecter.SawExpectedErrors());
 }
@@ -694,17 +683,14 @@ TEST_F(AppCacheDatabaseTest, OnlineWhiteListRecords) {
   record.namespace_url = kFooNameSpace1;
   EXPECT_TRUE(db.InsertOnlineWhiteList(&record));
   record.namespace_url = kFooNameSpace2;
-  record.is_pattern = true;
   EXPECT_TRUE(db.InsertOnlineWhiteList(&record));
   records.clear();
   EXPECT_TRUE(db.FindOnlineWhiteListForCache(1, &records));
   EXPECT_EQ(2U, records.size());
   EXPECT_EQ(1, records[0].cache_id);
   EXPECT_EQ(kFooNameSpace1, records[0].namespace_url);
-  EXPECT_FALSE(records[0].is_pattern);
   EXPECT_EQ(1, records[1].cache_id);
   EXPECT_EQ(kFooNameSpace2, records[1].namespace_url);
-  EXPECT_TRUE(records[1].is_pattern);
 
   record.cache_id = 2;
   record.namespace_url = kBarNameSpace1;

@@ -36,7 +36,7 @@
    * @private
    */
   i18nRaw_(id, var_args) {
-    return arguments.length == 1 ?
+    return arguments.length === 1 ?
         loadTimeData.getString(id) :
         loadTimeData.getStringF.apply(loadTimeData, arguments);
   },

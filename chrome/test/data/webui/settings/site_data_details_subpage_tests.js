@@ -41,7 +41,7 @@ suite('SiteDataDetailsSubpage', function() {
     settings.LocalDataBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     page = document.createElement('site-data-details-subpage');
-    settings.navigateTo(
+    settings.Router.getInstance().navigateTo(
         settings.routes.SITE_SETTINGS_DATA_DETAILS,
         new URLSearchParams('site=' + site));
 
@@ -49,7 +49,7 @@ suite('SiteDataDetailsSubpage', function() {
   });
 
   teardown(function() {
-    settings.resetRouteForTesting();
+    settings.Router.getInstance().resetRouteForTesting();
   });
 
   test('DetailsShownForCookie', function() {

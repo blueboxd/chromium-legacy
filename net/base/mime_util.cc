@@ -148,6 +148,9 @@ static const MimeInfo kPrimaryMappings[] = {
     // Must precede audio/webm .
     {"video/webm", "webm"},
 
+    // Must precede audio/mp3
+    {"audio/mpeg", "mp3"},
+
     {"application/wasm", "wasm"},
     {"application/x-chrome-extension", "crx"},
     {"application/xhtml+xml", "xhtml,xht,xhtm"},
@@ -196,7 +199,6 @@ static const MimeInfo kSecondaryMappings[] = {
     {"application/x-tar", "tar"},
     {"application/x-x509-ca-cert", "cer,crt"},
     {"application/zip", "zip"},
-    {"audio/mpeg", "mp3"},
     // This is the platform mapping on recent versions of Windows 10.
     {"audio/webm", "weba"},
     {"image/bmp", "bmp"},

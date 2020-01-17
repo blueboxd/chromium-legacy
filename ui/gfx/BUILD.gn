@@ -24,9 +24,7 @@ set_sources_assignment_filter([])
 # targets can all have a dependency for header checking purposes without
 # creating circular dependencies.
 source_set("gfx_export") {
-  sources = [
-    "gfx_export.h",
-  ]
+  sources = [ "gfx_export.h" ]
 }
 
 # Used for color generation at build time without importing all the gfx.
@@ -432,9 +430,7 @@ jumbo_component("color_space") {
       "color_space_win.h",
     ]
   }
-  deps = [
-    "//skia:skcms",
-  ]
+  deps = [ "//skia:skcms" ]
   public_deps = [
     "//base",
     "//skia",
@@ -459,16 +455,12 @@ jumbo_component("color_space") {
 # Depend on this to use image/resize_image_dimensions.h without pulling in
 # all of gfx.
 source_set("resize_image_dimensions") {
-  sources = [
-    "image/resize_image_dimensions.h",
-  ]
+  sources = [ "image/resize_image_dimensions.h" ]
 }
 
 # Depend on this to use native_widget_types.h without pulling in all of gfx.
 source_set("native_widget_types") {
-  public = [
-    "native_widget_types.h",
-  ]
+  public = [ "native_widget_types.h" ]
 
   public_deps = [
     ":gfx_export",
@@ -478,13 +470,9 @@ source_set("native_widget_types") {
 
 group("selection_bound") {
   if (is_component_build) {
-    public_deps = [
-      ":gfx",
-    ]
+    public_deps = [ ":gfx" ]
   } else {
-    public_deps = [
-      ":selection_bound_sources",
-    ]
+    public_deps = [ ":selection_bound_sources" ]
   }
 }
 
@@ -511,9 +499,7 @@ source_set("selection_bound_sources") {
 
 # Depend on this to use buffer_types.h without pulling in all of gfx.
 source_set("buffer_types") {
-  sources = [
-    "buffer_types.h",
-  ]
+  sources = [ "buffer_types.h" ]
 }
 
 # The GPU memory buffer stuff is separate from "gfx" to allow GPU-related
@@ -524,13 +510,9 @@ source_set("buffer_types") {
 # in the component build, but be a separate source set in a static build.
 group("memory_buffer") {
   if (is_component_build) {
-    public_deps = [
-      ":gfx",
-    ]
+    public_deps = [ ":gfx" ]
   } else {
-    public_deps = [
-      ":memory_buffer_sources",
-    ]
+    public_deps = [ ":memory_buffer_sources" ]
   }
 }
 
@@ -571,9 +553,7 @@ jumbo_source_set("memory_buffer_sources") {
 
   defines = [ "GFX_IMPLEMENTATION" ]
 
-  public_deps = [
-    ":buffer_types",
-  ]
+  public_deps = [ ":buffer_types" ]
 
   deps = [
     ":gfx_switches",
@@ -631,9 +611,7 @@ jumbo_component("gfx_switches") {
 
   defines = [ "GFX_SWITCHES_IMPLEMENTATION" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 jumbo_static_library("test_support") {
@@ -660,9 +638,7 @@ jumbo_static_library("test_support") {
     sources += [ "image/image_unittest_util_mac.mm" ]
   }
 
-  public_deps = [
-    ":gfx",
-  ]
+  public_deps = [ ":gfx" ]
 
   deps = [
     "//base",
@@ -722,9 +698,7 @@ test("gfx_unittests") {
 
   include_dirs = [ "//third_party/skia/include/private" ]
 
-  data = [
-    "test/data/",
-  ]
+  data = [ "test/data/" ]
 
   if (!is_ios) {
     sources += [
@@ -814,9 +788,7 @@ test("gfx_unittests") {
     deps += [ "//third_party:freetype_harfbuzz" ]
   }
 
-  data_deps = [
-    "//ui/resources:ui_test_pak_data",
-  ]
+  data_deps = [ "//ui/resources:ui_test_pak_data" ]
 
   if (is_mac || is_ios) {
     deps += [ "//ui/resources:ui_test_pak_bundle_data" ]
@@ -907,33 +879,23 @@ if (is_android) {
 }
 
 fuzzer_test("color_analysis_fuzzer") {
-  sources = [
-    "color_analysis_fuzzer.cc",
-  ]
+  sources = [ "color_analysis_fuzzer.cc" ]
 
-  deps = [
-    ":gfx",
-  ]
+  deps = [ ":gfx" ]
 }
 
 fuzzer_test("color_transform_fuzzer") {
-  sources = [
-    "color_transform_fuzzer.cc",
-  ]
+  sources = [ "color_transform_fuzzer.cc" ]
 
   dict = "//testing/libfuzzer/fuzzers/dicts/icc.dict"
 
-  deps = [
-    ":gfx",
-  ]
+  deps = [ ":gfx" ]
 
   libfuzzer_options = [ "max_len=4194304" ]
 }
 
 fuzzer_test("render_text_fuzzer") {
-  sources = [
-    "render_text_fuzzer.cc",
-  ]
+  sources = [ "render_text_fuzzer.cc" ]
 
   deps = [
     ":gfx",
@@ -945,9 +907,7 @@ fuzzer_test("render_text_fuzzer") {
 }
 
 fuzzer_test("render_text_api_fuzzer") {
-  sources = [
-    "render_text_api_fuzzer.cc",
-  ]
+  sources = [ "render_text_api_fuzzer.cc" ]
 
   deps = [
     ":gfx",

@@ -17,13 +17,12 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.UserData;
 import org.chromium.base.UserDataHost;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.PageTransition;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -323,31 +322,24 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
         return mLastCommittedEntryIndexBeforeStartingNavigation;
     }
 
-    private static List<ComponentName> getIntentHandlers(Intent intent) {
-        List<ResolveInfo> list = PackageManagerUtils.queryIntentActivities(intent, 0);
-        List<ComponentName> nameList = new ArrayList<ComponentName>();
-        for (ResolveInfo r : list) {
-            nameList.add(new ComponentName(r.activityInfo.packageName, r.activityInfo.name));
-        }
-        return nameList;
-    }
-
     /**
      * @return whether |intent| has a new resolver against |mIntentHistory| or not.
      */
-    public boolean hasNewResolver(Intent intent) {
+    public boolean hasNewResolver(List<ResolveInfo> resolvingInfos) {
         if (mInitialIntent == null) {
-            return intent != null;
-        } else if (intent == null) {
-            return false;
+            return !resolvingInfos.isEmpty();
         }
 
-        List<ComponentName> newList = getIntentHandlers(intent);
         if (mCachedResolvers.isEmpty()) {
-            mCachedResolvers.addAll(getIntentHandlers(mInitialIntent));
+            for (ResolveInfo r : PackageManagerUtils.queryIntentActivities(mInitialIntent, 0)) {
+                mCachedResolvers.add(
+                        new ComponentName(r.activityInfo.packageName, r.activityInfo.name));
+            }
         }
-        for (ComponentName name : newList) {
-            if (!mCachedResolvers.contains(name)) {
+        if (resolvingInfos.size() > mCachedResolvers.size()) return true;
+        for (ResolveInfo r : resolvingInfos) {
+            if (!mCachedResolvers.contains(
+                        new ComponentName(r.activityInfo.packageName, r.activityInfo.name))) {
                 return true;
             }
         }

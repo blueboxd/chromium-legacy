@@ -96,10 +96,6 @@ cr-menu.files-menu > cr-menu-item > span {
   z-index: 1;
 }
 
-/* Make ripple size wider to make the animation speed faster since paper-ripple
-   doesn't allow us to change its animation speed. */
 cr-menu.files-menu > cr-menu-item > paper-ripple {
-  left: -25%;
-  width: 150%;
   z-index: 0;
 }

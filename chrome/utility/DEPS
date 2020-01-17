@@ -27,7 +27,7 @@ include_rules = [
   "+components/safe_browsing/buildflags.h",
   "+components/services/paint_preview_compositor",
   "+components/services/patch",
-  "+components/services/pdf_compositor",
+  "+components/services/print_compositor",
   "+components/services/quarantine",
   "+components/services/unzip",
   "+components/wifi",

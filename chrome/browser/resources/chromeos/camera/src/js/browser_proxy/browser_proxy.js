@@ -37,8 +37,3 @@ class ChromeAppBrowserProxy {
 }
 
 export const browserProxy = new ChromeAppBrowserProxy();
-
-/**
- * @type {!BrowserProxy}
- */
-cca.proxy.browserProxy = browserProxy;

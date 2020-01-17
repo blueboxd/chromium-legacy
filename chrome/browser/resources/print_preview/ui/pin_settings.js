@@ -66,7 +66,7 @@ Polymer({
   },
 
   /** @return {!CrInputElement} The cr-input field element for InputBehavior. */
-  getInput: function() {
+  getInput() {
     return /** @type {!CrInputElement} */ (this.$.pinValue);
   },
 
@@ -74,12 +74,12 @@ Polymer({
    * @param {!CustomEvent<string>} e Contains the new input value.
    * @private
    */
-  onInputChange_: function(e) {
+  onInputChange_(e) {
     this.inputString_ = e.detail;
   },
 
   /** @private */
-  onCollapseChanged_: function() {
+  onCollapseChanged_() {
     if (this.pinEnabled_) {
       /** @type {!CrInputElement} */ (this.$.pinValue).focusInput();
     }
@@ -92,7 +92,7 @@ Polymer({
    * @return {boolean} Whether pin checkbox should be disabled.
    * @private
    */
-  computeCheckboxDisabled_: function(inputValid, disabled, managed) {
+  computeCheckboxDisabled_(inputValid, disabled, managed) {
     return managed || (inputValid && disabled);
   },
 
@@ -100,7 +100,7 @@ Polymer({
    * @return {boolean} Whether to disable the pin value input.
    * @private
    */
-  inputDisabled_: function() {
+  inputDisabled_() {
     return !this.pinEnabled_ || (this.inputValid_ && this.disabled);
   },
 
@@ -108,7 +108,7 @@ Polymer({
    * Updates the checkbox state when the setting has been initialized.
    * @private
    */
-  onSettingsChanged_: function() {
+  onSettingsChanged_() {
     const pinEnabled = /** @type {boolean} */ (this.getSetting('pin').value);
     this.$.pin.checked = pinEnabled;
     this.pinEnabled_ = pinEnabled;
@@ -118,7 +118,7 @@ Polymer({
   },
 
   /** @private */
-  onPinChange_: function() {
+  onPinChange_() {
     this.setSetting('pin', this.$.pin.checked);
     // We need to set validity of pinValue to true to return to READY state
     // after unchecking the pin and to check the validity again after checking
@@ -133,7 +133,7 @@ Polymer({
   /**
    * @private
    */
-  onInputChanged_: function() {
+  onInputChanged_() {
     this.changePinValueSetting_();
   },
 
@@ -142,7 +142,7 @@ Polymer({
    * input.
    * @private
    */
-  changePinValueSetting_: function() {
+  changePinValueSetting_() {
     if (this.settings === undefined) {
       return;
     }
@@ -170,7 +170,7 @@ Polymer({
    *     valid, so that it can be used to update the setting.
    * @private
    */
-  computeValid_: function() {
+  computeValid_() {
     // Make sure value updates first, in case inputString_ was updated by JS.
     this.$.pinValue.value = this.inputString_;
     this.$.pinValue.validate();

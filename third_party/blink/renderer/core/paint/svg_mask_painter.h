@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class DisplayItemClient;
 class GraphicsContext;
 class LayoutObject;
 class LayoutSVGResourceMasker;
@@ -20,8 +21,10 @@ class SVGMaskPainter {
  public:
   SVGMaskPainter(LayoutSVGResourceMasker& mask) : mask_(mask) {}
 
-  bool PrepareEffect(const LayoutObject&, GraphicsContext&);
-  void FinishEffect(const LayoutObject&, GraphicsContext&);
+  bool PrepareEffect(GraphicsContext&);
+  void FinishEffect(const LayoutObject&,
+                    const DisplayItemClient&,
+                    GraphicsContext&);
 
  private:
   LayoutSVGResourceMasker& mask_;

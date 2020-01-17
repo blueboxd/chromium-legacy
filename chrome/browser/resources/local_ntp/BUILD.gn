@@ -5,9 +5,7 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":local_ntp",
-  ]
+  deps = [ ":local_ntp" ]
 }
 
 js_library("local_ntp") {
@@ -23,8 +21,6 @@ js_library("local_ntp") {
     "utils.js",
     "voice.js",
   ]
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
+  deps = [ "//ui/webui/resources/js:assert" ]
   externs_list = [ "externs.js" ]
 }

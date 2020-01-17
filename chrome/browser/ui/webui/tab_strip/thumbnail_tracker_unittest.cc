@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper_factory.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
@@ -57,7 +57,7 @@ class ThumbnailTrackerTest : public ::testing::Test,
   std::unique_ptr<content::WebContents> CreateWebContents() {
     auto contents =
         content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
-    SessionTabHelper::CreateForWebContents(contents.get());
+    CreateSessionServiceTabHelper(contents.get());
     return contents;
   }
 

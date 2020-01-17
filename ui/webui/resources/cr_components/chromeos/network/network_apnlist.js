@@ -127,7 +127,7 @@ Polymer({
 
     // Test whether |activeApn| is in the current APN list in managedProperties.
     const activeApnInList = activeApn && apnList.some(function(a) {
-      return a.accessPointName == activeApn.accessPointName;
+      return a.accessPointName === activeApn.accessPointName;
     });
 
     // If |activeApn| is specified and not in the list, use the active
@@ -199,7 +199,7 @@ Polymer({
     // non-default value has been set for Other.
     if (this.isOtherSelected_(accessPointName) &&
         (!this.otherApn_ || !this.otherApn_.accessPointName ||
-         this.otherApn_.accessPointName == kDefaultAccessPointName)) {
+         this.otherApn_.accessPointName === kDefaultAccessPointName)) {
       this.selectedApn_ = accessPointName;
       return;
     }
@@ -214,7 +214,7 @@ Polymer({
   onOtherApnChange_(event) {
     // TODO(benchan/stevenjb): Move the toUpperCase logic to shill or
     // onc_translator_onc_to_shill.cc.
-    const value = (event.detail.field == 'accessPointName') ?
+    const value = (event.detail.field === 'accessPointName') ?
         event.detail.value.toUpperCase() :
         event.detail.value;
     this.set('otherApn_.' + event.detail.field, value);
@@ -238,7 +238,7 @@ Polymer({
   sendApnChange_(accessPointName) {
     const apnList = this.getApnList_();
     let apn = this.findApnInList_(apnList, accessPointName);
-    if (apn == undefined) {
+    if (apn === undefined) {
       apn = this.createApnObject_();
       if (this.otherApn_) {
         apn.accessPointName = this.otherApn_.accessPointName;
@@ -260,7 +260,7 @@ Polymer({
     }
     const apnList = this.getApnList_();
     const apn = this.findApnInList_(apnList, accessPointName);
-    return apn == undefined;
+    return apn === undefined;
   },
 
   /**
@@ -281,7 +281,7 @@ Polymer({
    */
   findApnInList_(apnList, accessPointName) {
     return apnList.find(function(a) {
-      return a.accessPointName == accessPointName;
+      return a.accessPointName === accessPointName;
     });
   },
 
@@ -292,7 +292,7 @@ Polymer({
    * @private
    */
   isApnItemSelected_(item) {
-    return item.accessPointName == this.selectedApn_;
+    return item.accessPointName === this.selectedApn_;
   }
 });
 })();

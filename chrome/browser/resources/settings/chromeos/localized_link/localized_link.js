@@ -49,7 +49,7 @@ Polymer({
    *     and an aria-labelledby tag
    * @private
    */
-  getAriaLabelledContent_: function(localizedString, linkUrl) {
+  getAriaLabelledContent_(localizedString, linkUrl) {
     const tempEl = document.createElement('div');
     tempEl.innerHTML = localizedString;
 

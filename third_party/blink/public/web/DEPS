@@ -31,6 +31,7 @@ include_rules = [
     "+services/network/public/mojom/cors_origin_pattern.mojom-shared.h",
     "+services/network/public/mojom/fetch_api.mojom-shared.h",
     "+services/network/public/mojom/ip_address_space.mojom-shared.h",
+    "+services/network/public/mojom/content_security_policy-shared.h",
     "+services/network/public/mojom/referrer_policy.mojom-shared.h",
     "+services/service_manager/public",
     "+ui/events/types",

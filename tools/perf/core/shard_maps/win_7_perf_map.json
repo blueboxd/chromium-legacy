@@ -59,6 +59,17 @@
                 "end": 77,
                 "abridged": false
             }
+        },
+        "executables": {
+            "components_perftests": {
+                "path": "components_perftests",
+                "arguments": [
+                    "--xvfb"
+                ]
+            },
+            "load_library_perf_tests": {
+                "path": "load_library_perf_tests"
+            }
         }
     },
     "1": {
@@ -103,6 +114,16 @@
             "system_health.memory_desktop": {
                 "end": 39,
                 "abridged": false
+            }
+        },
+        "executables": {
+            "media_perftests": {
+                "path": "media_perftests",
+                "arguments": [
+                    "--single-process-tests",
+                    "--test-launcher-retry-limit=0",
+                    "--isolated-script-test-filter=*::-*_unoptimized::*_unaligned::*unoptimized_aligned"
+                ]
             }
         }
     },

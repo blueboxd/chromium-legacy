@@ -21,9 +21,7 @@ source_set("overscroll_actions") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "overscroll_actions_tab_helper_unittest.mm",
-  ]
+  sources = [ "overscroll_actions_tab_helper_unittest.mm" ]
   deps = [
     ":overscroll_actions",
     "//base",

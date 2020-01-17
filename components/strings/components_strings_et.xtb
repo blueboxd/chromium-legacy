@@ -89,6 +89,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Registreerimisdomeen:</translation>
 <translation id="1340482604681802745">Kättesaamise aadress</translation>
+<translation id="1346748346194534595">Paremale</translation>
 <translation id="1348198688976932919">Sait, mille soovite avada, sisaldab ohtlikke rakendusi</translation>
 <translation id="1348779747280417563">Kinnitage nimi</translation>
 <translation id="1357195169723583938">Näitab seadme hiljutisi kasutajaid ja kasutamise aega</translation>
@@ -113,6 +114,7 @@
 <translation id="1455413310270022028">Kustutuskumm</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1463543813647160932">5 x 7</translation>
+<translation id="1467432559032391204">Vasakule</translation>
 <translation id="1472675084647422956">Kuva rohkem</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
@@ -258,6 +260,7 @@
 <translation id="2148613324460538318">Lisa kaart</translation>
 <translation id="2154054054215849342">Sünkroonimisteenus pole domeeni jaoks saadaval</translation>
 <translation id="2154484045852737596">Kaardi muutmine</translation>
+<translation id="2161656808144014275">Tekst</translation>
 <translation id="2166049586286450108">Täielik administraatorijuurdepääs</translation>
 <translation id="2166378884831602661">See sait ei saa turvalist ühendust luua</translation>
 <translation id="2169984857010174799">Kaku2 (ümbrik)</translation>
@@ -346,6 +349,7 @@
 <translation id="254947805923345898">Reegli väärtus on kehtetu.</translation>
 <translation id="255002559098805027">Host <ph name="HOST_NAME" /> saatis sobimatu vastuse.</translation>
 <translation id="2556876185419854533">&amp;Võta muudatus tagasi</translation>
+<translation id="257674075312929031">Rühm</translation>
 <translation id="2586657967955657006">Lõikelaud</translation>
 <translation id="2587730715158995865">Avaldajalt <ph name="ARTICLE_PUBLISHER" />. Lugege seda ja <ph name="OTHER_ARTICLE_COUNT" /> teist lugu.</translation>
 <translation id="2587841377698384444">Kataloogi API ID:</translation>
@@ -370,6 +374,7 @@
     teie sisenemistaotlust saidile <ph name="SITE" />. Saidioperaatorid saavad kasutada
     lähtekohareegleid saidi turbe ja muude atribuutide seadistamiseks.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Puudub}=1{1 parool (loendile <ph name="DOMAIN_LIST" />)}=2{2 parooli (loendile <ph name="DOMAIN_LIST" />)}other{# parooli (loendile <ph name="DOMAIN_LIST" />)}}</translation>
+<translation id="2666092431469916601">Üles</translation>
 <translation id="2666117266261740852">Sulgege muud vahelehed või rakendused</translation>
 <translation id="2674170444375937751">Olete kindel, et soovite need leheküljed oma ajaloost kustutada?</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
@@ -453,6 +458,7 @@
 <translation id="3061707000357573562">Teenuse paikamine</translation>
 <translation id="3064966200440839136">Väljute inkognito režiimist, et välise rakenduse kaudu maksta. Kas soovite jätkata?</translation>
 <translation id="3086579638707268289">Teie tegevusi veebis jälgitakse</translation>
+<translation id="3087734570205094154">Alaserv</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Lisage kättesaamisaadress</translation>
 <translation id="3105172416063519923">Vara ID:</translation>
@@ -497,6 +503,7 @@
 <translation id="3303855915957856445">Otsingutulemusi ei leitud</translation>
 <translation id="3320021301628644560">Arveldusaadressi lisamine</translation>
 <translation id="3324983252691184275">Tulipunane</translation>
+<translation id="3329013043687509092">Küllastus</translation>
 <translation id="3338095232262050444">Turvaline</translation>
 <translation id="3355823806454867987">Muuda puhverserveri seadeid ...</translation>
 <translation id="3360103848165129075">Maksetöötleja leht</translation>
@@ -533,6 +540,7 @@
 <translation id="3495081129428749620">Lehelt otsimine
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Seda reeglit eiratakse, kuna sama reegligrupi teisel reeglil on kõrgem prioriteet.</translation>
+<translation id="3513704683820682405">Liitreaalsus</translation>
 <translation id="3528171143076753409">Serveri sertifikaat ei ole usaldusväärne.</translation>
 <translation id="3528485271872257980">Tumepruun</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Vähemalt 1 üksus sünkroonitud seadmetes}=1{1 üksus (ja rohkem sünkroonitud seadmetes)}other{# üksust (ja rohkem sünkroonitud seadmetes)}}</translation>
@@ -579,6 +587,7 @@
 <translation id="3704609568417268905"><ph name="TIME" />, <ph name="BOOKMARKED" />, <ph name="TITLE" />, <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Laadimine...</translation>
 <translation id="3709599264800900598">Teie kopeeritud tekst</translation>
+<translation id="3711895659073496551">Peata</translation>
 <translation id="3712624925041724820">Litsentsid on ammendunud</translation>
 <translation id="3714780639079136834">Lülitage sisse mobiilne andmeside või WiFi</translation>
 <translation id="3715597595485130451">Ühenduse loomine WiFi-võrguga</translation>
@@ -772,6 +781,7 @@
 <translation id="4594403342090139922">&amp;Võta kustutamine tagasi</translation>
 <translation id="4597348597567598915">Suurus 8</translation>
 <translation id="4600854749408232102">C6/C5 (ümbrik)</translation>
+<translation id="4628948037717959914">Foto</translation>
 <translation id="4635654612248442824">Sait <ph name="ORIGIN" /> nõuab, et lähtekohareeglit
     kohaldataks kõigi taotluste puhul, kuid reeglit ei saa praegu rakendada.</translation>
 <translation id="464342062220857295">Otsingufunktsioonid</translation>
@@ -828,6 +838,7 @@
 <translation id="4926049483395192435">Tuleb määrata.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> ütleb</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943703118917034429">Virtuaalreaalsus</translation>
 <translation id="4943872375798546930">Tulemusi pole</translation>
 <translation id="4950898438188848926">Vahelehe vahetamise nupp, vajutage sisestusklahvi avatud vahelehe aktiveerimiseks, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Toimingud</translation>
@@ -995,6 +1006,7 @@
 <translation id="5689199277474810259">Ekspordi JSON-vormingus</translation>
 <translation id="5689516760719285838">Asukoht</translation>
 <translation id="569000877158168851">Reegli DnsOverHttpsTemplates väärtus pole asjakohane ja seda ei kasutata, kui reegli DnsOverHttpsMode väärtuseks pole määratud <ph name="SECURE_DNS_MODE_AUTOMATIC" /> või <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
+<translation id="5701381305118179107">Keskel</translation>
 <translation id="570530837424789914">Halda …</translation>
 <translation id="57094364128775171">Soovita tugevat parooli …</translation>
 <translation id="5710435578057952990">Selle veebisaidi identiteeti pole kinnitanud.</translation>
@@ -1027,7 +1039,6 @@
 <translation id="5855253129151731373">Saidi hostinimi sarnaneb domeenile <ph name="LOOKALIKE_DOMAIN" />. Ründajad imiteerivad mõnikord saite, tehes domeeni nimes väikeseid raskesti märgatavaid muudatusi.
 
     Kui arvate, et tegemist on veaga, külastage saiti https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
-<translation id="5860033963881614850">Väljas</translation>
 <translation id="5863847714970149516">Järgmisel lehel võidakse teilt üritada tasu võtta</translation>
 <translation id="5866257070973731571">Telefoninumbri lisamine</translation>
 <translation id="5866898949289125849">Vaatate arendaja tööriistade lehte</translation>
@@ -1039,13 +1050,11 @@
 <translation id="5901630391730855834">Kollane</translation>
 <translation id="5905445707201418379">Blokeeritud saidi <ph name="ORIGIN" /> lähtekohareegli tõttu.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sünkroonitud)</translation>
-<translation id="5916664084637901428">Sees</translation>
 <translation id="59174027418879706">Lubatud</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Kas salvestada kaart Google'i kontole?</translation>
 <translation id="5922853866070715753">Peaaegu valmis</translation>
 <translation id="5932224571077948991">Sait kuvab sekkuvaid või eksitavaid reklaame</translation>
-<translation id="5939847200023027600">PDF-i koostamisteenus</translation>
 <translation id="5946937721014915347">Saidi <ph name="SITE_NAME" /> avamine …</translation>
 <translation id="5951495562196540101">Tarbijakontoga ei saa registreeruda (paketipõhine litsents on saadaval).</translation>
 <translation id="5967592137238574583">Kontaktteabe muutmine</translation>
@@ -1085,6 +1094,7 @@
 <translation id="6080696365213338172">Olete sisule juurde pääsenud administraatori antud sertifikaadiga. Administraator saab domeenile <ph name="DOMAIN" /> edastatavaid andmeid kinni pidada.</translation>
 <translation id="6094273045989040137">Lisa märkus</translation>
 <translation id="6104072995492677441">JIS B6</translation>
+<translation id="6106989379647458772">Veebileht <ph name="PAGE" /> võib olla ajutiselt maas või see viidi jäädavalt üle uuele veebiaadressile.</translation>
 <translation id="610911394827799129">Aadressil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu</translation>
 <translation id="6120179357481664955">Kas jätta teie UPI ID meelde?</translation>
 <translation id="6132597952260690497">Installitud laienduste ja pistikprogrammide teave</translation>
@@ -1124,6 +1134,7 @@
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">Chrome'ile mõeldud Google'i assistenti peatatakse</translation>
 <translation id="6305205051461490394">URL-iga <ph name="URL" /> ei saa ühendust.</translation>
+<translation id="6312113039770857350">Veebileht ei ole saadaval</translation>
 <translation id="6321917430147971392">Kontrollige DNS-i seadeid</translation>
 <translation id="6322182122604171028">Funktsiooni Windows Hello ei saa kasutada</translation>
 <translation id="6328639280570009161">Proovige keelata võrguprognoos</translation>
@@ -1150,6 +1161,7 @@
 <translation id="6410264514553301377">Sisestage krediitkaardi <ph name="CREDIT_CARD" /> aegumiskuupäev ja CVC</translation>
 <translation id="6415778972515849510">Chromium aitab teil oma Google'i kontot kaitsta ja parooli muuta.</translation>
 <translation id="6423385022588644828">Kinnitage oma kaardid kiiremini, kasutades edaspidi funktsiooni Touch ID</translation>
+<translation id="6425092077175753609">Materiaalne</translation>
 <translation id="6427730057873428458">Väravakujuliselt volditud</translation>
 <translation id="6433490469411711332">Kontaktandmete muutmine</translation>
 <translation id="6433595998831338502">Host <ph name="HOST_NAME" /> keeldus ühendamast.</translation>
@@ -1417,6 +1429,7 @@ Lisateave:
 <translation id="7716147886133743102">Blokeeris administraator</translation>
 <translation id="7716424297397655342">Seda saiti ei saa vahemälust laadida</translation>
 <translation id="7723047071702270851">Kaardi muutmine</translation>
+<translation id="7740996059027112821">Tavapärane</translation>
 <translation id="774634243536837715">Ohtlik sisu blokeeriti.</translation>
 <translation id="7752995774971033316">Haldamata</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
@@ -1522,6 +1535,7 @@ Lisateave:
 <translation id="8241707690549784388">Teie poolt otsitav lehekülg kasutas teie sisestatud andmeid. Sellele leheküljele naasmine võib kaasa tuua kõikide sooritatud tegevuste kordamise. Soovite jätkata?</translation>
 <translation id="8241712895048303527">Blokeeri sellel saidil</translation>
 <translation id="8242426110754782860">Jätka</translation>
+<translation id="8249296373107784235">Katkesta</translation>
 <translation id="8249320324621329438">Viimati toodud:</translation>
 <translation id="8253091569723639551">Arveldusaadress on nõutav</translation>
 <translation id="825929999321470778">Kuva kõik salvestatud paroolid</translation>
@@ -1591,6 +1605,7 @@ Lisateave:
 <translation id="8647750283161643317">Lähtesta kõik vaikeolekusse</translation>
 <translation id="8663226718884576429">Tellimuse kokkuvõte, <ph name="TOTAL_LABEL" />, rohkem üksikasju</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, vastus, <ph name="ANSWER" /></translation>
+<translation id="8681531050781943054">Veebilehte <ph name="PAGE" /> ei saanud laadida järgmisel põhjusel.</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Saadaval</translation>
 <translation id="869891660844655955">Aegumiskuupäev</translation>
@@ -1641,6 +1656,7 @@ Lisateave:
 <translation id="8943282376843390568">Laimiroheline</translation>
 <translation id="8957210676456822347">Kontrollportaali volitamine</translation>
 <translation id="8962950042226115166">Kahtlane sait</translation>
+<translation id="8963213021028234748"><ph name="MARKUP_1" />Soovitused.<ph name="MARKUP_2" />Veenduge, et andmesideühendus oleks olemas<ph name="MARKUP_3" />Laadige veebileht hiljem uuesti<ph name="MARKUP_4" />Kontrollige sisestatud aadressi<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Salvesta kaart</translation>
 <translation id="8971063699422889582">Serveri sertifikaat on aegunud.</translation>
 <translation id="8975012916872825179">Hõlmab näiteks telefoninumbreid, e-posti ja postiaadresse</translation>
@@ -1717,6 +1733,7 @@ Lisateave:
 <translation id="985199708454569384">&lt;p&gt;Seda viga näete juhul, kui teie arvuti või mobiilseadme kuupäev ja kellaaeg pole õiged.&lt;/p&gt;
     &lt;p&gt;Vea parandamiseks avage seadme kell ning veenduge, et kellaaeg ja kuupäev oleksid õiged.&lt;/p&gt;</translation>
 <translation id="985956168329721395">Prc-32K</translation>
+<translation id="987264212798334818">Üldine</translation>
 <translation id="988159990683914416">Arendaja järk</translation>
 <translation id="989988560359834682">Aadressi muutmine</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

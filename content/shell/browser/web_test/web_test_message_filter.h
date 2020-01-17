@@ -82,6 +82,8 @@ class WebTestMessageFilter : public BrowserMessageFilter {
   void OnInitiateCaptureDump(bool capture_navigation_history,
                              bool capture_pixels);
   void OnInspectSecondaryWindow();
+  void OnGetWritableDirectory(base::FilePath* path);
+  void OnSetFilePathForMockFileDialog(const base::FilePath& path);
 
   int render_process_id_;
 

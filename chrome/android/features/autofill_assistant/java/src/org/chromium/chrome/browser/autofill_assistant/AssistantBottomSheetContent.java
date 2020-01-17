@@ -101,7 +101,7 @@ class AssistantBottomSheetContent implements BottomSheetContent {
 
     @Override
     public boolean hideOnScroll() {
-        return true;
+        return false;
     }
 
     @Override

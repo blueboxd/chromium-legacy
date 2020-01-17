@@ -505,9 +505,7 @@ static_library("test_support_engine") {
     "test/test_transaction_observer.h",
   ]
 
-  public_deps = [
-    "//components/sync/base:test_support",
-  ]
+  public_deps = [ "//components/sync/base:test_support" ]
 
   deps = [
     ":sync",
@@ -550,13 +548,9 @@ static_library("test_support_model") {
     "model/test_model_type_store_service.h",
   ]
 
-  public_deps = [
-    "//components/sync/base:test_support",
-  ]
+  public_deps = [ "//components/sync/base:test_support" ]
 
-  deps = [
-    ":sync",
-  ]
+  deps = [ ":sync" ]
 }
 
 source_set("unit_tests") {
@@ -744,8 +738,6 @@ if (is_android) {
       "//base:base_java",
       "//third_party/junit",
     ]
-    sources = [
-      "test/android/javatests/src/org/chromium/components/sync/test/util/MockSyncContentResolverDelegate.java",
-    ]
+    sources = [ "test/android/javatests/src/org/chromium/components/sync/test/util/MockSyncContentResolverDelegate.java" ]
   }
 }

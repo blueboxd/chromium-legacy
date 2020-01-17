@@ -11,7 +11,9 @@
 #include <string>
 
 #include "base/debug/alias.h"
+#include "base/environment.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -78,6 +80,28 @@ wchar_t g_debug_icu_pf_filename[_MAX_PATH];
 // This variable is exported through the header file.
 const char kIcuDataFileName[] = "icudtl.dat";
 const char kIcuExtraDataFileName[] = "icudtl_extra.dat";
+
+// Time zone data loading.
+// For now, only Fuchsia has a meaningful use case for this feature, so it is
+// only implemented for OS_FUCHSIA.
+#if defined(OS_FUCHSIA)
+// The environment variable used to point the ICU data loader to the directory
+// containing timezone data. This is available from ICU version 54. The env
+// variable approach is antiquated by today's standards (2019), but is the
+// recommended way to configure ICU.
+//
+// See for details: http://userguide.icu-project.org/datetime/timezone
+const char kIcuTimeZoneEnvVariable[] = "ICU_TIMEZONE_FILES_DIR";
+
+// We assume that Fuchsia will provide time zone data at this path for Chromium
+// to load, and that the path will be timely updated when Fuchsia needs to
+// uprev the ICU version it is using. There are unit tests that will fail at
+// Fuchsia roll time in case either Chromium or Fuchsia get upgraded to
+// mutually incompatible ICU versions. That should be enough to alert the
+// developers of the need to keep ICU library versions in ICU and Fuchsia in
+// reasonable sync.
+const char kIcuTimeZoneDataDir[] = "/config/data/tzdata/icu/44/le";
+#endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_ANDROID)
 const char kAssetsPathPrefix[] = "assets/";
@@ -181,10 +205,38 @@ void LazyOpenIcuDataFile() {
   g_icudtl_region = pf_region->region;
 }
 
+// Loads timezone data, for configurations where it makes sense.  If the
+// timezone data directory is not set up properly, we continue, but log
+// appropriate information for debugging.
+void InitializeTimeZoneData() {
+#if defined(OS_FUCHSIA)
+  std::unique_ptr<base::Environment> env = base::Environment::Create();
+
+  // We only set the variable if it was not already set by a test.  Fuchsia
+  // normally does not otherwise set env variables in production code.
+  if (!env->HasVar(kIcuTimeZoneEnvVariable)) {
+    env->SetVar(kIcuTimeZoneEnvVariable, kIcuTimeZoneDataDir);
+  }
+  std::string tzdata_dir;
+  env->GetVar(kIcuTimeZoneEnvVariable, &tzdata_dir);
+
+  // Try opening the path to check if present. No need to verify that it is a
+  // directory since ICU loading will return an error if the TimeZone data is
+  // wrong.
+  if (!base::DirectoryExists(base::FilePath(tzdata_dir))) {
+    PLOG(ERROR) << "Could not open: '" << tzdata_dir
+                << "', proceeding without loading the timezone database";
+    return;
+  }
+#endif  // defined(OS_FUCHSIA)
+}
+
 int LoadIcuData(PlatformFile data_fd,
                 const MemoryMappedFile::Region& data_region,
                 std::unique_ptr<MemoryMappedFile>* out_mapped_data_file,
                 UErrorCode* out_error_code) {
+  InitializeTimeZoneData();
+
   if (data_fd == kInvalidPlatformFile) {
     LOG(ERROR) << "Invalid file descriptor to ICU data received.";
     return 1;  // To debug http://crbug.com/445616.

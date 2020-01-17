@@ -165,6 +165,7 @@ class TestLauncher {
   bool Init(CommandLine* command_line) WARN_UNUSED_RESULT;
 
   // Gets tests from the delegate, and converts to TestInfo objects.
+  // Catches and logs uninstantiated parameterized tests.
   // Returns false if delegate fails to return tests.
   bool InitTests();
 

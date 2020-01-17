@@ -578,9 +578,13 @@ void ClientTagBasedModelTypeProcessor::GetLocalChanges(
 
 void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& model_type_state,
-    const CommitResponseDataList& response_list) {
+    const CommitResponseDataList& committed_response_list,
+    const FailedCommitResponseDataList& error_response_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!model_error_);
+
+  // |error_response_list| is ignored, because all errors are treated as
+  // transientand the processor with eventually retry.
 
   std::unique_ptr<MetadataChangeList> metadata_change_list =
       bridge_->CreateMetadataChangeList();
@@ -589,7 +593,7 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
   model_type_state_ = model_type_state;
   metadata_change_list->UpdateModelTypeState(model_type_state_);
 
-  for (const CommitResponseData& data : response_list) {
+  for (const CommitResponseData& data : committed_response_list) {
     ProcessorEntity* entity = GetEntityForTagHash(data.client_tag_hash);
     if (entity == nullptr) {
       NOTREACHED() << "Received commit response for missing item."
@@ -631,6 +635,7 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
     entity_kv.second->ClearTransientSyncState();
   }
 
+  // TODO(crbug.com/1034923): Propagate failed items to bridge.
   base::Optional<ModelError> error = bridge_->ApplySyncChanges(
       std::move(metadata_change_list), std::move(entity_change_list));
   if (error) {

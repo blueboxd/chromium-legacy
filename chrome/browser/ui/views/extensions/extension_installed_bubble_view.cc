@@ -113,10 +113,6 @@ views::View* AnchorViewForBrowser(const extensions::Extension* extension,
 
   if (ShouldAnchorToAction(extension)) {
     if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-      // TODO(pbos): Make sure this view pops out so that we can actually
-      // anchor to a visible action. Right now this view is most likely not
-      // visible, and will fall back on the default case on showing the
-      // installed dialog anchored to the general extensions toolbar button.
       ExtensionsToolbarContainer* const container =
           browser_view->toolbar_button_provider()
               ->GetExtensionsToolbarContainer();
@@ -473,7 +469,25 @@ void ExtensionInstalledBubbleUi::Show(BubbleReference bubble_reference) {
                                        bubble_->extension(), bubble_->icon());
   bubble_reference_ = bubble_reference;
 
-  views::BubbleDialogDelegateView::CreateBubble(bubble_view_)->Show();
+  views::Widget* const widget =
+      views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
+  // When the extension is installed to the ExtensionsToolbarContainer, use the
+  // container to pop out the extension icon and show the widget. Otherwise show
+  // the widget directly.
+  if (ShouldAnchorToAction(bubble_->extension()) &&
+      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    ExtensionsToolbarContainer* const container =
+        BrowserView::GetBrowserViewForBrowser(bubble_->browser())
+            ->toolbar_button_provider()
+            ->GetExtensionsToolbarContainer();
+    if (container) {
+      container->ShowWidgetForExtension(widget, bubble_->extension()->id());
+    } else {
+      widget->Show();
+    }
+  } else {
+    widget->Show();
+  }
   bubble_view_->GetWidget()->AddObserver(this);
 }
 

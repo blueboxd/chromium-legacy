@@ -113,8 +113,8 @@ declare_args() {
   archive_seed_corpus = true
 }
 
-# Disable sanitizers for non-default toolchains.
-if (current_toolchain != default_toolchain) {
+# Disable sanitizers for non-target toolchains.
+if (!is_a_target_toolchain) {
   is_asan = false
   is_cfi = false
   is_hwasan = false

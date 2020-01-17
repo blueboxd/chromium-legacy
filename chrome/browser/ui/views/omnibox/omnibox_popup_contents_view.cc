@@ -34,7 +34,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
       : ThemeCopyingWidget(role_model) {}
   ~AutocompletePopupWidget() override {}
 
-  void InitOmniboxPopup(views::Widget* parent_widget, const gfx::Rect& bounds) {
+  void InitOmniboxPopup(views::Widget* parent_widget) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
 #if defined(OS_WIN)
     // On Windows use the software compositor to ensure that we don't block
@@ -44,7 +44,6 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 #endif
     params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
     params.parent = parent_widget->GetNativeView();
-    params.bounds = bounds;
     params.context = parent_widget->GetNativeWindow();
 
     RoundedOmniboxResultsFrame::OnBeforeWidgetInit(&params, this);
@@ -135,12 +134,10 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 OmniboxPopupContentsView::OmniboxPopupContentsView(
     OmniboxViewViews* omnibox_view,
     OmniboxEditModel* edit_model,
-    LocationBarView* location_bar_view,
-    const ui::ThemeProvider* theme_provider)
+    LocationBarView* location_bar_view)
     : model_(new OmniboxPopupModel(this, edit_model)),
       omnibox_view_(omnibox_view),
-      location_bar_view_(location_bar_view),
-      theme_provider_(theme_provider) {
+      location_bar_view_(location_bar_view) {
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
 
@@ -234,43 +231,15 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     return;
   }
 
-  // Fix-up any matches due to tail suggestions, before display below.
-  model_->autocomplete_controller()->InlineTailPrefixes();
-
-  // Update the match cached by each row, in the process of doing so make sure
-  // we have enough row views.
-  const size_t result_size = model_->result().size();
-  for (size_t i = 0; i < result_size; ++i) {
-    // Create child views lazily.  Since especially the first result view may be
-    // expensive to create due to loading font data, this saves time and memory
-    // during browser startup.
-    if (children().size() == i) {
-      AddChildView(
-          std::make_unique<OmniboxResultView>(this, i, theme_provider_));
-    }
-
-    OmniboxResultView* view = result_view_at(i);
-    const AutocompleteMatch& match = GetMatchAtIndex(i);
-    view->SetMatch(match);
-    view->SetVisible(true);
-    const SkBitmap* bitmap = model_->RichSuggestionBitmapAt(i);
-    if (bitmap)
-      view->SetRichSuggestionImage(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
-  }
-
-  for (auto i = children().begin() + result_size; i != children().end(); ++i)
-    (*i)->SetVisible(false);
-
-  gfx::Rect new_target_bounds = GetTargetBounds();
-
-  if (popup_) {
-    popup_->SetTargetBounds(new_target_bounds);
-  } else {
+  // Ensure that we have an existing popup widget prior to creating the result
+  // views to ensure the proper initialization of the views hierarchy.
+  bool popup_created = false;
+  if (!popup_) {
     views::Widget* popup_parent = location_bar_view_->GetWidget();
 
     // If the popup is currently closed, we need to create it.
     popup_ = (new AutocompletePopupWidget(popup_parent))->AsWeakPtr();
-    popup_->InitOmniboxPopup(popup_parent, new_target_bounds);
+    popup_->InitOmniboxPopup(popup_parent);
     // Third-party software such as DigitalPersona identity verification can
     // hook the underlying window creation methods and use SendMessage to
     // synchronously change focus/activation, resulting in the popup being
@@ -289,6 +258,38 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     if (!popup_)
       return;
 
+    popup_created = true;
+  }
+
+  // Fix-up any matches due to tail suggestions, before display below.
+  model_->autocomplete_controller()->InlineTailPrefixes();
+
+  // Update the match cached by each row, in the process of doing so make sure
+  // we have enough row views.
+  const size_t result_size = model_->result().size();
+  for (size_t i = 0; i < result_size; ++i) {
+    // Create child views lazily.  Since especially the first result view may be
+    // expensive to create due to loading font data, this saves time and memory
+    // during browser startup.
+    if (children().size() == i) {
+      AddChildView(std::make_unique<OmniboxResultView>(this, i));
+    }
+
+    OmniboxResultView* view = result_view_at(i);
+    const AutocompleteMatch& match = GetMatchAtIndex(i);
+    view->SetMatch(match);
+    view->SetVisible(true);
+    const SkBitmap* bitmap = model_->RichSuggestionBitmapAt(i);
+    if (bitmap)
+      view->SetRichSuggestionImage(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
+  }
+
+  for (auto i = children().begin() + result_size; i != children().end(); ++i)
+    (*i)->SetVisible(false);
+
+  popup_->SetTargetBounds(GetTargetBounds());
+
+  if (popup_created) {
     popup_->ShowAnimated();
 
     // Popup is now expanded and first item will be selected.

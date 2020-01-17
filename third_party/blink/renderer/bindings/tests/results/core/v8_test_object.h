@@ -620,12 +620,6 @@ class V8TestObject {
 };
 
 template <>
-struct NativeValueTraits<TestObject> : public NativeValueTraitsBase<TestObject> {
-  CORE_EXPORT static TestObject* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestObject* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestObject> {
   typedef V8TestObject Type;
 };

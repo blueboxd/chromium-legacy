@@ -5,9 +5,7 @@
 source_set("tests") {
   testonly = true
 
-  sources = [
-    "mojom_traits_unittest.cc",
-  ]
+  sources = [ "mojom_traits_unittest.cc" ]
 
   deps = [
     "//base/test:test_support",
@@ -30,9 +28,7 @@ source_set("tests") {
 source_set("perftests") {
   testonly = true
 
-  sources = [
-    "mojom_traits_perftest.cc",
-  ]
+  sources = [ "mojom_traits_perftest.cc" ]
 
   deps = [
     "//base",

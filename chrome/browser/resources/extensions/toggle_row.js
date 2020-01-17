@@ -37,7 +37,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onNativeClick_: function(e) {
+  onNativeClick_(e) {
     // Even though the native checkbox is hidden and can't be actually
     // cilcked/tapped by the user, because it resides within the <label> the
     // browser emits an extraneous event when the label is clicked. Stop
@@ -51,7 +51,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onNativeChange_: function(e) {
+  onNativeChange_(e) {
     e.stopPropagation();
 
     // Sync value of native checkbox and cr-toggle and |checked|.
@@ -65,7 +65,7 @@ Polymer({
    * @param {!CustomEvent<boolean>} e
    * @private
    */
-  onCrToggleChange_: function(e) {
+  onCrToggleChange_(e) {
     e.stopPropagation();
 
     // Sync value of native checkbox and cr-toggle.

@@ -392,7 +392,7 @@ cr.define('device_page_tests', function() {
       settings.display.systemDisplayApi = fakeSystemDisplay;
 
       PolymerTest.clearBody();
-      settings.navigateTo(settings.routes.BASIC);
+      settings.Router.getInstance().navigateTo(settings.routes.BASIC);
 
       devicePage = document.createElement('settings-device-page');
       devicePage.prefs = getFakePrefs();
@@ -413,7 +413,8 @@ cr.define('device_page_tests', function() {
     function showAndGetDeviceSubpage(subpage, expectedRoute) {
       const row = assert(devicePage.$$(`#main #${subpage}Row`));
       row.click();
-      assertEquals(expectedRoute, settings.getCurrentRoute());
+      assertEquals(
+          expectedRoute, settings.Router.getInstance().getCurrentRoute());
       const page = devicePage.$$('settings-' + subpage);
       assert(page);
       return Promise.resolve(page);
@@ -512,21 +513,27 @@ cr.define('device_page_tests', function() {
       });
 
       test('subpage responds to pointer attach/detach', function() {
-        assertEquals(settings.routes.POINTERS, settings.getCurrentRoute());
+        assertEquals(
+            settings.routes.POINTERS,
+            settings.Router.getInstance().getCurrentRoute());
         assertLT(0, pointersPage.$$('#mouse').offsetHeight);
         assertLT(0, pointersPage.$$('#touchpad').offsetHeight);
         assertLT(0, pointersPage.$$('#mouse h2').offsetHeight);
         assertLT(0, pointersPage.$$('#touchpad h2').offsetHeight);
 
         cr.webUIListenerCallback('has-touchpad-changed', false);
-        assertEquals(settings.routes.POINTERS, settings.getCurrentRoute());
+        assertEquals(
+            settings.routes.POINTERS,
+            settings.Router.getInstance().getCurrentRoute());
         assertLT(0, pointersPage.$$('#mouse').offsetHeight);
         assertEquals(0, pointersPage.$$('#touchpad').offsetHeight);
         assertEquals(0, pointersPage.$$('#mouse h2').offsetHeight);
         assertEquals(0, pointersPage.$$('#touchpad h2').offsetHeight);
 
         cr.webUIListenerCallback('has-mouse-changed', false);
-        assertEquals(settings.routes.DEVICE, settings.getCurrentRoute());
+        assertEquals(
+            settings.routes.DEVICE,
+            settings.Router.getInstance().getCurrentRoute());
         assertEquals(0, devicePage.$$('#main #pointersRow').offsetHeight);
 
         cr.webUIListenerCallback('has-touchpad-changed', true);
@@ -541,7 +548,8 @@ cr.define('device_page_tests', function() {
 
               cr.webUIListenerCallback('has-mouse-changed', true);
               assertEquals(
-                  settings.routes.POINTERS, settings.getCurrentRoute());
+                  settings.routes.POINTERS,
+                  settings.Router.getInstance().getCurrentRoute());
               assertLT(0, pointersPage.$$('#mouse').offsetHeight);
               assertLT(0, pointersPage.$$('#touchpad').offsetHeight);
               assertLT(0, pointersPage.$$('#mouse h2').offsetHeight);

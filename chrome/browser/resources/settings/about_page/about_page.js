@@ -34,7 +34,7 @@ Polymer({
      */
     isManaged_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isManaged');
       },
     },
@@ -48,7 +48,7 @@ Polymer({
     /** @private {!{obsolete: boolean, endOfLine: boolean}} */
     obsoleteSystemInfo_: {
       type: Object,
-      value: function() {
+      value() {
         return {
           obsolete: loadTimeData.getBoolean('aboutObsoleteNowOrSoon'),
           endOfLine: loadTimeData.getBoolean('aboutObsoleteEndOfTheLine'),
@@ -89,7 +89,7 @@ Polymer({
   lifetimeBrowserProxy_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.aboutBrowserProxy_ = settings.AboutPageBrowserProxyImpl.getInstance();
     this.aboutBrowserProxy_.pageReady();
 
@@ -98,7 +98,8 @@ Polymer({
 
     // <if expr="not chromeos">
     this.startListening_();
-    if (settings.getQueryParameters().get('checkForUpdate') == 'true') {
+    if (settings.Router.getInstance().getQueryParameters().get(
+            'checkForUpdate') == 'true') {
       this.onUpdateStatusChanged_({status: UpdateStatus.CHECKING});
       this.aboutBrowserProxy_.requestUpdate();
     }
@@ -107,7 +108,7 @@ Polymer({
 
   // <if expr="not chromeos">
   /** @private */
-  startListening_: function() {
+  startListening_() {
     this.addWebUIListener(
         'update-status-changed', this.onUpdateStatusChanged_.bind(this));
     // <if expr="_google_chrome and is_macosx">
@@ -122,7 +123,7 @@ Polymer({
    * @param {!UpdateStatusChangedEvent} event
    * @private
    */
-  onUpdateStatusChanged_: function(event) {
+  onUpdateStatusChanged_(event) {
     this.currentUpdateStatusEvent_ = event;
   },
   // </if>
@@ -132,7 +133,7 @@ Polymer({
    * @param {!PromoteUpdaterStatus} status
    * @private
    */
-  onPromoteUpdaterStatusChanged_: function(status) {
+  onPromoteUpdaterStatusChanged_(status) {
     this.promoteUpdaterStatus_ = status;
   },
 
@@ -140,7 +141,7 @@ Polymer({
    * If #promoteUpdater isn't disabled, trigger update promotion.
    * @private
    */
-  onPromoteUpdaterTap_: function() {
+  onPromoteUpdaterTap_() {
     // This is necessary because #promoteUpdater is not a button, so by default
     // disable doesn't do anything.
     if (this.promoteUpdaterStatus_.disabled) {
@@ -154,30 +155,30 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onLearnMoreTap_: function(event) {
+  onLearnMoreTap_(event) {
     // Stop the propagation of events, so that clicking on links inside
     // actionable items won't trigger action.
     event.stopPropagation();
   },
 
   /** @private */
-  onReleaseNotesTap_: function() {
+  onReleaseNotesTap_() {
     this.aboutBrowserProxy_.launchReleaseNotes();
   },
 
   /** @private */
-  onHelpTap_: function() {
+  onHelpTap_() {
     this.aboutBrowserProxy_.openHelpPage();
   },
 
   /** @private */
-  onRelaunchTap_: function() {
+  onRelaunchTap_() {
     this.lifetimeBrowserProxy_.relaunch();
   },
 
   // <if expr="not chromeos">
   /** @private */
-  updateShowUpdateStatus_: function() {
+  updateShowUpdateStatus_() {
     if (this.obsoleteSystemInfo_.endOfLine) {
       this.showUpdateStatus_ = false;
       return;
@@ -191,12 +192,12 @@ Polymer({
    * container displays an unwanted border (see separator class).
    * @private
    */
-  updateShowButtonContainer_: function() {
+  updateShowButtonContainer_() {
     this.showButtonContainer_ = this.showRelaunch_;
   },
 
   /** @private */
-  updateShowRelaunch_: function() {
+  updateShowRelaunch_() {
     this.showRelaunch_ = this.checkStatus_(UpdateStatus.NEARLY_UPDATED);
   },
 
@@ -204,7 +205,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowLearnMoreLink_: function() {
+  shouldShowLearnMoreLink_() {
     return this.currentUpdateStatusEvent_.status == UpdateStatus.FAILED;
   },
 
@@ -212,7 +213,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getUpdateStatusMessage_: function() {
+  getUpdateStatusMessage_() {
     switch (this.currentUpdateStatusEvent_.status) {
       case UpdateStatus.CHECKING:
       case UpdateStatus.NEED_PERMISSION_TO_UPDATE:
@@ -258,7 +259,7 @@ Polymer({
    * @return {?string}
    * @private
    */
-  getUpdateStatusIcon_: function() {
+  getUpdateStatusIcon_() {
     // If this platform has reached the end of the line, display an error icon
     // and ignore UpdateStatus.
     if (this.obsoleteSystemInfo_.endOfLine) {
@@ -282,7 +283,7 @@ Polymer({
    * @return {?string}
    * @private
    */
-  getThrobberSrcIfUpdating_: function() {
+  getThrobberSrcIfUpdating_() {
     if (this.obsoleteSystemInfo_.endOfLine) {
       return null;
     }
@@ -302,12 +303,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  checkStatus_: function(status) {
+  checkStatus_(status) {
     return this.currentUpdateStatusEvent_.status == status;
   },
 
   /** @private */
-  onManagementPageTap_: function() {
+  onManagementPageTap_() {
     window.location.href = 'chrome://management';
   },
 
@@ -316,7 +317,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getUpdateOsSettingsLink_: function() {
+  getUpdateOsSettingsLink_() {
     // Note: This string contains raw HTML and thus requires i18nAdvanced().
     // Since the i18n template syntax (e.g., $i18n{}) does not include an
     // "advanced" version, it's not possible to inline this link directly in the
@@ -326,7 +327,7 @@ Polymer({
   // </if>
 
   /** @private */
-  onProductLogoTap_: function() {
+  onProductLogoTap_() {
     this.$['product-logo'].animate(
         {
           transform: ['none', 'rotate(-10turn)'],
@@ -339,7 +340,7 @@ Polymer({
 
   // <if expr="_google_chrome">
   /** @private */
-  onReportIssueTap_: function() {
+  onReportIssueTap_() {
     this.aboutBrowserProxy_.openFeedbackDialog();
   },
   // </if>
@@ -348,7 +349,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowIcons_: function() {
+  shouldShowIcons_() {
     // <if expr="not chromeos">
     if (this.obsoleteSystemInfo_.endOfLine) {
       return true;

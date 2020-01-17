@@ -109,7 +109,7 @@ cr.define('cr.ui', function() {
       return this.itemConstructor_;
     },
     set itemConstructor(func) {
-      if (func != this.itemConstructor_) {
+      if (func !== this.itemConstructor_) {
         this.itemConstructor_ = func;
         this.cachedItems_ = {};
         this.redraw();
@@ -123,7 +123,7 @@ cr.define('cr.ui', function() {
      * @type {ArrayDataModel}
      */
     set dataModel(dataModel) {
-      if (this.dataModel_ == dataModel) {
+      if (this.dataModel_ === dataModel) {
         return;
       }
 
@@ -186,7 +186,7 @@ cr.define('cr.ui', function() {
     },
     set selectionModel(sm) {
       const oldSm = this.selectionModel_;
-      if (oldSm == sm) {
+      if (oldSm === sm) {
         return;
       }
 
@@ -218,7 +218,7 @@ cr.define('cr.ui', function() {
       return this.autoExpands_;
     },
     set autoExpands(autoExpands) {
-      if (this.autoExpands_ == autoExpands) {
+      if (this.autoExpands_ === autoExpands) {
         return;
       }
       this.autoExpands_ = autoExpands;
@@ -233,7 +233,7 @@ cr.define('cr.ui', function() {
       return this.fixedHeight_;
     },
     set fixedHeight(fixedHeight) {
-      if (this.fixedHeight_ == fixedHeight) {
+      if (this.fixedHeight_ === fixedHeight) {
         return;
       }
       this.fixedHeight_ = fixedHeight;
@@ -248,7 +248,7 @@ cr.define('cr.ui', function() {
       const dataModel = this.dataModel;
       if (dataModel) {
         const index = this.selectionModel.selectedIndex;
-        if (index != -1) {
+        if (index !== -1) {
           return dataModel.item(index);
         }
       }
@@ -292,8 +292,8 @@ cr.define('cr.ui', function() {
      * @return {boolean} True if a list item.
      */
     isItem(child) {
-      return child.nodeType == Node.ELEMENT_NODE &&
-          child != this.beforeFiller_ && child != this.afterFiller_;
+      return child.nodeType === Node.ELEMENT_NODE &&
+          child !== this.beforeFiller_ && child !== this.afterFiller_;
     },
 
     batchCount_: 0,
@@ -313,7 +313,7 @@ cr.define('cr.ui', function() {
      */
     endBatchUpdates() {
       this.batchCount_--;
-      if (this.batchCount_ == 0) {
+      if (this.batchCount_ === 0) {
         this.redraw();
       }
     },
@@ -518,7 +518,7 @@ cr.define('cr.ui', function() {
 
       // If the target was this element we need to make sure that the user did
       // not click on a border or a scrollbar.
-      if (target == this) {
+      if (target === this) {
         if (inViewport(target, e)) {
           this.selectionController_.handlePointerDownUp(e, -1);
         }
@@ -567,7 +567,7 @@ cr.define('cr.ui', function() {
      */
     getListItemAncestor(element) {
       let container = element;
-      while (container && container.parentNode != this) {
+      while (container && container.parentNode !== this) {
         container = container.parentNode;
       }
       return container && assertInstanceof(container, HTMLLIElement);
@@ -603,7 +603,7 @@ cr.define('cr.ui', function() {
 
       let target = /** @type {HTMLElement} */ (e.target);
 
-      if (target == this) {
+      if (target === this) {
         // Unlike the mouse events, we don't check if the touch is inside the
         // viewport because of these reasons:
         // - The scrollbars do not interact with touch.
@@ -651,17 +651,17 @@ cr.define('cr.ui', function() {
      */
     handleLeadChange(e) {
       let element;
-      if (e.oldValue != -1) {
+      if (e.oldValue !== -1) {
         if ((element = this.getListItemByIndex(e.oldValue))) {
           element.lead = false;
         }
       }
 
-      if (e.newValue != -1) {
+      if (e.newValue !== -1) {
         if ((element = this.getListItemByIndex(e.newValue))) {
           element.lead = true;
         }
-        if (e.oldValue != e.newValue) {
+        if (e.oldValue !== e.newValue) {
           if (element) {
             this.setAttribute('aria-activedescendant', element.id);
           }
@@ -700,7 +700,7 @@ cr.define('cr.ui', function() {
     handleDataModelPermuted_(e) {
       const newCachedItems = {};
       for (const index in this.cachedItems_) {
-        if (e.permutation[index] != -1) {
+        if (e.permutation[index] !== -1) {
           const newIndex = e.permutation[index];
           newCachedItems[newIndex] = this.cachedItems_[index];
           newCachedItems[newIndex].listIndex = newIndex;
@@ -711,7 +711,7 @@ cr.define('cr.ui', function() {
 
       const newCachedItemHeights = {};
       for (const index in this.cachedItemHeights_) {
-        if (e.permutation[index] != -1) {
+        if (e.permutation[index] !== -1) {
           newCachedItemHeights[e.permutation[index]] =
               this.cachedItemHeights_[index];
         }
@@ -864,7 +864,7 @@ cr.define('cr.ui', function() {
      */
     getIndexOfListItem(item) {
       const index = item.listIndex;
-      if (this.cachedItems_[index] == item) {
+      if (this.cachedItems_[index] === item) {
         return index;
       }
       return -1;
@@ -878,7 +878,7 @@ cr.define('cr.ui', function() {
     createItem(value) {
       const item = new this.itemConstructor_(value);
       item.label = value;
-      if (typeof item.decorate == 'function') {
+      if (typeof item.decorate === 'function') {
         item.decorate();
       }
       return item;
@@ -1021,7 +1021,7 @@ cr.define('cr.ui', function() {
 
       function remove() {
         const next = item.nextSibling;
-        if (item != self.pinnedItem_) {
+        if (item !== self.pinnedItem_) {
           self.removeChild(item);
         }
         item = next;
@@ -1029,16 +1029,16 @@ cr.define('cr.ui', function() {
 
       let item;
       for (item = this.beforeFiller_.nextSibling;
-           item != this.afterFiller_ && currentIndex < lastIndex;) {
+           item !== this.afterFiller_ && currentIndex < lastIndex;) {
         if (!this.isItem(item)) {
           item = item.nextSibling;
           continue;
         }
 
         const index = item.listIndex;
-        if (this.cachedItems_[index] != item || index < currentIndex) {
+        if (this.cachedItems_[index] !== item || index < currentIndex) {
           remove();
-        } else if (index == currentIndex) {
+        } else if (index === currentIndex) {
           this.cachedItems_[currentIndex] = item;
           item = item.nextSibling;
           currentIndex++;
@@ -1047,7 +1047,7 @@ cr.define('cr.ui', function() {
         }
       }
 
-      while (item != this.afterFiller_) {
+      while (item !== this.afterFiller_) {
         if (this.isItem(item)) {
           remove();
         } else {
@@ -1140,16 +1140,16 @@ cr.define('cr.ui', function() {
      * Redraws the viewport.
      */
     redraw() {
-      if (this.batchCount_ != 0) {
+      if (this.batchCount_ !== 0) {
         return;
       }
 
       const dataModel = this.dataModel;
-      if (!dataModel || !this.autoExpands_ && this.clientHeight == 0) {
+      if (!dataModel || !this.autoExpands_ && this.clientHeight === 0) {
         this.cachedItems_ = {};
         this.firstIndex_ = 0;
         this.lastIndex_ = 0;
-        this.remainingSpace_ = this.clientHeight != 0;
+        this.remainingSpace_ = this.clientHeight !== 0;
         this.mergeItems(0, 0);
         return;
       }
@@ -1187,7 +1187,7 @@ cr.define('cr.ui', function() {
       // it from cache. Note, that we restore the hidden status to false, since
       // the item is still in cache, and may be reused.
       if (this.pinnedItem_ &&
-          this.pinnedItem_ != this.cachedItems_[leadIndex]) {
+          this.pinnedItem_ !== this.cachedItems_[leadIndex]) {
         if (this.pinnedItem_.hidden) {
           this.removeChild(this.pinnedItem_);
           this.pinnedItem_.hidden = false;
@@ -1198,7 +1198,7 @@ cr.define('cr.ui', function() {
       this.mergeItems(firstIndex, lastIndex);
 
       if (!this.pinnedItem_ && this.cachedItems_[leadIndex] &&
-          this.cachedItems_[leadIndex].parentNode == this) {
+          this.cachedItems_[leadIndex].parentNode === this) {
         this.pinnedItem_ = this.cachedItems_[leadIndex];
       }
 
@@ -1210,11 +1210,11 @@ cr.define('cr.ui', function() {
 
       // We don't set the lead or selected properties until after adding all
       // items, in case they force relayout in response to these events.
-      if (leadIndex != -1 && this.cachedItems_[leadIndex]) {
+      if (leadIndex !== -1 && this.cachedItems_[leadIndex]) {
         this.cachedItems_[leadIndex].lead = true;
       }
       for (let y = firstIndex; y < lastIndex; y++) {
-        if (sm.getIndexSelected(y) != this.cachedItems_[y].selected) {
+        if (sm.getIndexSelected(y) !== this.cachedItems_[y].selected) {
           this.cachedItems_[y].selected = !this.cachedItems_[y].selected;
         }
       }
@@ -1298,18 +1298,18 @@ cr.define('cr.ui', function() {
 
       const item =
           cachedItems[index] || this.createItem(this.dataModel.item(index));
-      if (this.pinnedItem_ != item && this.pinnedItem_ &&
+      if (this.pinnedItem_ !== item && this.pinnedItem_ &&
           this.pinnedItem_.hidden) {
         this.removeChild(this.pinnedItem_);
       }
       this.pinnedItem_ = item;
       cachedItems[index] = item;
       item.listIndex = index;
-      if (item.parentNode == this) {
+      if (item.parentNode === this) {
         return item;
       }
 
-      if (this.batchCount_ != 0) {
+      if (this.batchCount_ !== 0) {
         item.hidden = true;
       }
 
@@ -1378,7 +1378,7 @@ cr.define('cr.ui', function() {
     const wasSelected = listItem && listItem.selected;
     this.handlePointerDownUp_(e);
 
-    if (e.defaultPrevented || e.button != 0) {
+    if (e.defaultPrevented || e.button !== 0) {
       return;
     }
 
@@ -1416,7 +1416,7 @@ cr.define('cr.ui', function() {
     }
 
     const index = this.getIndexOfListItem(listItem);
-    if (index == -1) {
+    if (index === -1) {
       return;
     }
 
@@ -1434,7 +1434,7 @@ cr.define('cr.ui', function() {
    * @return {boolean} True if we found a focusable element.
    */
   function containsFocusableElement(start, root) {
-    for (let element = start; element && element != root;
+    for (let element = start; element && element !== root;
          element = element.parentElement) {
       if (element.tabIndex >= 0 && !element.disabled) {
         return true;

@@ -27,10 +27,7 @@ class Browser;
              (id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>)
                  dispatcher NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-    NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 - (instancetype)init NS_UNAVAILABLE;
 

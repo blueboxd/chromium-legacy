@@ -4388,10 +4388,7 @@ HRESULT AXPlatformNodeWin::GetTextAttributeValue(TEXTATTRIBUTEID attribute_id,
       }
       V_VT(result) = VT_BOOL;
       V_BOOL(result) =
-          (GetData().GetRestriction() == ax::mojom::Restriction::kReadOnly ||
-           !GetData().HasState(ax::mojom::State::kEditable))
-              ? VARIANT_TRUE
-              : VARIANT_FALSE;
+          GetData().IsReadOnlyOrDisabled() ? VARIANT_TRUE : VARIANT_FALSE;
       break;
     case UIA_IsSubscriptAttributeId:
       V_VT(result) = VT_BOOL;
@@ -5963,22 +5960,15 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
 
   const auto restriction = static_cast<ax::mojom::Restriction>(
       GetIntAttribute(ax::mojom::IntAttribute::kRestriction));
-  switch (restriction) {
-    case ax::mojom::Restriction::kDisabled:
-      properties.push_back(L"disabled=true");
-      break;
-    case ax::mojom::Restriction::kReadOnly:
+  if (restriction == ax::mojom::Restriction::kDisabled) {
+    properties.push_back(L"disabled=true");
+  } else {
+    // The readonly property is complex on Windows. We set "readonly=true"
+    // on *some* document structure roles such as paragraph, heading or list
+    // even if the node data isn't marked as read only, as long as the
+    // node is not editable.
+    if (GetData().IsReadOnlyOrDisabled())
       properties.push_back(L"readonly=true");
-      break;
-    default:
-      // The readonly property is complex on windows. We set "readonly=true"
-      // on *some* document structure roles such as paragraph, heading or list
-      // even if the node data isn't marked as read only, as long as the
-      // node is not editable.
-      if (!data.HasState(ax::mojom::State::kRichlyEditable) &&
-          ShouldHaveReadonlyStateByDefault(data.role))
-        properties.push_back(L"readonly=true");
-      break;
   }
 
   // aria-dropeffect is deprecated in WAI-ARIA 1.1.
@@ -6680,8 +6670,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
   }
   // non web-content case
   const ui::AXNodeData& data = GetData();
-  return !(ui::ShouldHaveReadonlyStateByDefault(data.role) ||
-           data.GetRestriction() == ax::mojom::Restriction::kReadOnly ||
+  return !(GetData().IsReadOnlyOrDisabled() ||
            data.HasState(ax::mojom::State::kInvisible) ||
            data.role == ax::mojom::Role::kIgnored);
 }
@@ -6895,7 +6884,7 @@ int AXPlatformNodeWin::MSAAState() const {
       msaa_state |= STATE_SYSTEM_READONLY;
       break;
     default:
-      // READONLY state is complex on windows.  We set STATE_SYSTEM_READONLY
+      // READONLY state is complex on Windows.  We set STATE_SYSTEM_READONLY
       // on *some* document structure roles such as paragraph, heading or list
       // even if the node data isn't marked as read only, as long as the
       // node is not editable.

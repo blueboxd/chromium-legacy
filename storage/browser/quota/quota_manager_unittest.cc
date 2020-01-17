@@ -60,8 +60,6 @@ const int64_t kMustRemainAvailableForSystem = kAvailableSpaceForApp / 2;
 const int64_t kDefaultPoolSize = 1000;
 const int64_t kDefaultPerHostQuota = 200;
 
-const GURL kTestEvictionOrigin = GURL("http://test.eviction.policy/result");
-
 // Returns a deterministic value for the amount of available disk space.
 int64_t GetAvailableDiskSpaceForTest() {
   return kAvailableSpaceForApp + kMustRemainAvailableForSystem;

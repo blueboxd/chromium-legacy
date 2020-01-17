@@ -14,11 +14,11 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
-import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 
@@ -43,6 +43,9 @@ class BottomToolbarCoordinator {
     private OverviewModeBehavior mOverviewModeBehavior;
     private OverviewModeObserver mOverviewModeObserver;
 
+    /** The activity tab provider. */
+    private ActivityTabProvider mTabProvider;
+
     /**
      * Build the coordinator that manages the bottom toolbar.
      * @param stub The bottom toolbar {@link ViewStub} to inflate.
@@ -66,6 +69,7 @@ class BottomToolbarCoordinator {
         mTabSwitcherModeStub = root.findViewById(R.id.bottom_toolbar_tab_switcher_mode_stub);
 
         mThemeColorProvider = themeColorProvider;
+        mTabProvider = tabProvider;
     }
 
     /**
@@ -90,18 +94,44 @@ class BottomToolbarCoordinator {
             AppMenuButtonHelper menuButtonHelper, OverviewModeBehavior overviewModeBehavior,
             TabCountProvider tabCountProvider, IncognitoStateProvider incognitoStateProvider,
             ViewGroup topToolbarRoot) {
-        mBrowsingModeCoordinator.initializeWithNative(tabSwitcherListener, menuButtonHelper,
-                tabCountProvider, mThemeColorProvider, incognitoStateProvider,
+        mBrowsingModeCoordinator.initializeWithNative(newTabClickListener, tabSwitcherListener,
+                menuButtonHelper, tabCountProvider, mThemeColorProvider, incognitoStateProvider,
                 overviewModeBehavior);
         mTabSwitcherModeCoordinator = new TabSwitcherBottomToolbarCoordinator(mTabSwitcherModeStub,
                 topToolbarRoot, incognitoStateProvider, mThemeColorProvider, newTabClickListener,
                 closeTabsClickListener, menuButtonHelper, tabCountProvider);
+
         // Do not change bottom bar if StartSurface Single Pane is enabled and HomePage is not
         // customized.
-        if (!ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()) {
+        if (!ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
+                && BottomToolbarVariationManager.shouldBottomToolbarBeVisibleInOverviewMode()) {
             mOverviewModeBehavior = overviewModeBehavior;
-            mOverviewModeObserver = new BottomToolbarAnimationCoordinator(
-                    mBrowsingModeCoordinator, mTabSwitcherModeCoordinator);
+            mOverviewModeObserver = new EmptyOverviewModeObserver() {
+                @Override
+                public void onOverviewModeStartedShowing(boolean showToolbar) {
+                    mBrowsingModeCoordinator.getSearchAccelerator().setEnabled(false);
+                    if (BottomToolbarVariationManager.isShareButtonOnBottom()) {
+                        mBrowsingModeCoordinator.getShareButton().setEnabled(false);
+                    }
+                    if (BottomToolbarVariationManager.isHomeButtonOnBottom()) {
+                        mBrowsingModeCoordinator.getHomeButton().setEnabled(false);
+                    }
+                }
+
+                @Override
+                public void onOverviewModeStartedHiding(
+                        boolean showToolbar, boolean delayAnimation) {
+                    mBrowsingModeCoordinator.getSearchAccelerator().setEnabled(true);
+                    if (BottomToolbarVariationManager.isShareButtonOnBottom()) {
+                        mBrowsingModeCoordinator.getShareButton().updateButtonEnabledState(
+                                mTabProvider.get());
+                    }
+                    if (BottomToolbarVariationManager.isHomeButtonOnBottom()) {
+                        mBrowsingModeCoordinator.getHomeButton().updateButtonEnabledState(
+                                mTabProvider.get());
+                    }
+                }
+            };
             if (mOverviewModeBehavior != null) {
                 mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
             }
@@ -116,34 +146,6 @@ class BottomToolbarCoordinator {
             mTabSwitcherModeCoordinator.showToolbarOnTop(!isVisible);
         }
         mBrowsingModeCoordinator.onVisibilityChanged(isVisible);
-    }
-
-    /**
-     * Show the update badge over the bottom toolbar's app menu.
-     */
-    void showAppMenuUpdateBadge() {
-        mBrowsingModeCoordinator.showAppMenuUpdateBadge();
-    }
-
-    /**
-     * Remove the update badge.
-     */
-    void removeAppMenuUpdateBadge() {
-        mBrowsingModeCoordinator.removeAppMenuUpdateBadge();
-    }
-
-    /**
-     * @return Whether the update badge is showing.
-     */
-    boolean isShowingAppMenuUpdateBadge() {
-        return mBrowsingModeCoordinator.isShowingAppMenuUpdateBadge();
-    }
-
-    /**
-     * @return The wrapper for the browsing mode toolbar's app menu button.
-     */
-    MenuButton getMenuButtonWrapper() {
-        return mBrowsingModeCoordinator.getMenuButton();
     }
 
     /**

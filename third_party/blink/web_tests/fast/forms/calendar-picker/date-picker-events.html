@@ -32,13 +32,15 @@ function test1() {
     debug('Choosing a new value from the calendar picker. "input" and "change" events should be dispatched in this order.');
     removeCommitDelay();
     eventSender.keyDown('Enter');
-    shouldBeEqualToString('date1.value', '2000-01-03');
 
-    shouldBe('eventsCounter.input', '1');
-    shouldBe('eventsCounter.change', '1');
-
-    eventsCounter = {};
     waitUntilClosing(function() {
+        shouldBeEqualToString('date1.value', '2000-01-03');
+
+        shouldBe('eventsCounter.input', '1');
+        shouldBe('eventsCounter.change', '1');
+
+        eventsCounter = {};
+
         openPicker(date1, test2);
     });
 }
@@ -46,12 +48,16 @@ function test1() {
 function test2() {
     debug('Choosing the same value from the calendar picker. No events should be dispatched.');
     eventSender.keyDown('Enter');
-    shouldBeEqualToString('date1.value', '2000-01-03');
-    shouldBeUndefined('eventsCounter.input');
-    shouldBeUndefined('eventsCounter.change');
 
-    finishJSTest();
+    waitUntilClosing(function() {
+        shouldBeEqualToString('date1.value', '2000-01-03');
+        shouldBeUndefined('eventsCounter.input');
+        shouldBeUndefined('eventsCounter.change');
+
+        finishJSTest();
+    });
 }
+
 </script>
 </body>
 </html>

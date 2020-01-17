@@ -87,6 +87,20 @@ class SyncedBookmarkTracker {
       commit_may_have_started_ = value;
     }
 
+    // Returns whether the bookmark's GUID is known to match the server-side
+    // originator client item ID (or for pre-2015 bookmarks, the equivalent
+    // inferred GUID). This function may return false negatives since the
+    // required local metadata got populated with M81.
+    // TODO(crbug.com/1032052): Remove this code once all local sync metadata
+    // is required to populate the client tag (and be considered invalid
+    // otherwise).
+    bool has_final_guid() const;
+
+    // TODO(crbug.com/1032052): Remove this code once all local sync metadata
+    // is required to populate the client tag (and be considered invalid
+    // otherwise).
+    void set_final_guid(const std::string& guid);
+
     // Returns the estimate of dynamically allocated memory in bytes.
     size_t EstimateMemoryUsage() const;
 
@@ -149,6 +163,9 @@ class SyncedBookmarkTracker {
   // Updates the server version of an existing entry for the |sync_id|.
   void UpdateServerVersion(const std::string& sync_id, int64_t server_version);
 
+  // Populates a bookmark's final GUID.
+  void PopulateFinalGuid(const std::string& sync_id, const std::string& guid);
+
   // Marks an existing entry for |sync_id| that a commit request might have been
   // sent to the server.
   void MarkCommitMayHaveStarted(const std::string& sync_id);
@@ -199,11 +216,6 @@ class SyncedBookmarkTracker {
   // the internal state of the tracker accordingly.
   void UpdateSyncForLocalCreationIfNeeded(const std::string& old_id,
                                           const std::string& new_id);
-
-  // Informs the tracker that a BookmarkNode has been replaced. It updates
-  // the internal state of the tracker accordingly.
-  void UpdateBookmarkNodePointer(const bookmarks::BookmarkNode* old_node,
-                                 const bookmarks::BookmarkNode* new_node);
 
   // Set the value of |EntityMetadata.acked_sequence_number| in the entity with
   // |sync_id| to be equal to |EntityMetadata.sequence_number| such that it is

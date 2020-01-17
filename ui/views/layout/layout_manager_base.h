@@ -100,6 +100,12 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   bool IsChildIncludedInLayout(const View* child,
                                bool include_hidden = false) const;
 
+  // Returns whether the specified child view can be visible. To be able to be
+  // visible, |child| must be a child of the host view, and must have been
+  // visible when it was added or most recently had GetVisible(true) called on
+  // it by non-layout code.
+  bool CanBeVisible(const View* child) const;
+
   // Creates a proposed layout for the host view, including bounds and
   // visibility for all children currently included in the layout.
   virtual ProposedLayout CalculateProposedLayout(

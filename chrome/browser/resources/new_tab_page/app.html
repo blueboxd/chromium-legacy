@@ -32,10 +32,16 @@
   :host-context([dir='rtl']) #customizeButton {
     left: 16px;
   }
+
+  ntp-most-visited[dark] {
+    --icon-button-color-active: var(--google-grey-refresh-300);
+    --icon-button-color: white;
+    --tile-hover-color: rgba(255, 255, 255, .1);
+  }
 </style>
 <div id="background"
     style="background-color: [[rgbOrInherit_(theme_.backgroundColor)]];">
-  <ntp-most-visited
+  <ntp-most-visited dark$="[[theme_.isDark]]"
       style="--icon-background-color:
             [[rgbOrInherit_(theme_.shortcutBackgroundColor)]];
           --tile-title-color:

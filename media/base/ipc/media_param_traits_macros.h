@@ -50,6 +50,8 @@
 // Enum traits.
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::AudioCodec, media::AudioCodec::kAudioCodecMax)
+IPC_ENUM_TRAITS_MAX_VALUE(media::AudioCodecProfile,
+                          media::AudioCodecProfile::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::AudioLatency::LatencyType,
                           media::AudioLatency::LATENCY_COUNT)

@@ -5,9 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "paint_preview_recorder.mojom",
-  ]
+  sources = [ "paint_preview_recorder.mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",

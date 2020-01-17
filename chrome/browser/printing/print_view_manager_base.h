@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "components/prefs/pref_member.h"
 #include "components/printing/browser/print_manager.h"
-#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
+#include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "printing/buildflags/buildflags.h"
@@ -133,7 +133,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
                         const gfx::Rect& content_area,
                         const gfx::Point& physical_offsets,
                         std::unique_ptr<DelayedFrameDispatchHelper> helper,
-                        mojom::PdfCompositor::Status status,
+                        mojom::PrintCompositor::Status status,
                         base::ReadOnlySharedMemoryRegion region);
 
 // Helpers for PrintForPrintPreview();

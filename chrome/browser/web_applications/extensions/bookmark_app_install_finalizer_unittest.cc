@@ -548,7 +548,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, UninstallExternalWebApp_Successful) {
   ASSERT_EQ(1u, enabled_extensions().size());
 
   base::RunLoop run_loop;
-  finalizer().UninstallExternalWebApp(
+  finalizer().UninstallExternalWebAppByUrl(
       kWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy,
       base::BindLambdaForTesting([&](bool uninstalled) {
         EXPECT_TRUE(uninstalled);
@@ -566,7 +566,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, UninstallExternalWebApp_Multiple) {
   // Uninstall one app.
   {
     base::RunLoop run_loop;
-    finalizer().UninstallExternalWebApp(
+    finalizer().UninstallExternalWebAppByUrl(
         kWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy,
         base::BindLambdaForTesting([&](bool uninstalled) {
           EXPECT_TRUE(uninstalled);
@@ -581,7 +581,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, UninstallExternalWebApp_Multiple) {
   // Uninstall the second app.
   {
     base::RunLoop run_loop;
-    finalizer().UninstallExternalWebApp(
+    finalizer().UninstallExternalWebAppByUrl(
         kAlternateWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy,
         base::BindLambdaForTesting([&](bool uninstalled) {
           EXPECT_TRUE(uninstalled);
@@ -598,7 +598,7 @@ TEST_F(BookmarkAppInstallFinalizerTest,
   SimulateExternalAppUninstalledByUser(app_id);
 
   base::RunLoop run_loop;
-  finalizer().UninstallExternalWebApp(
+  finalizer().UninstallExternalWebAppByUrl(
       kWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy,
       base::BindLambdaForTesting([&](bool uninstalled) {
         EXPECT_FALSE(uninstalled);
@@ -610,7 +610,7 @@ TEST_F(BookmarkAppInstallFinalizerTest,
 TEST_F(BookmarkAppInstallFinalizerTest,
        UninstallExternalWebApp_FailsNeverInstalled) {
   base::RunLoop run_loop;
-  finalizer().UninstallExternalWebApp(
+  finalizer().UninstallExternalWebAppByUrl(
       kWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy,
       base::BindLambdaForTesting([&](bool uninstalled) {
         EXPECT_FALSE(uninstalled);
@@ -626,7 +626,7 @@ TEST_F(BookmarkAppInstallFinalizerTest,
   // Uninstall the app.
   {
     base::RunLoop run_loop;
-    finalizer().UninstallExternalWebApp(
+    finalizer().UninstallExternalWebAppByUrl(
         kWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy,
         base::BindLambdaForTesting([&](bool uninstalled) {
           EXPECT_TRUE(uninstalled);
@@ -638,7 +638,7 @@ TEST_F(BookmarkAppInstallFinalizerTest,
   // Try to uninstall it again.
   {
     base::RunLoop run_loop;
-    finalizer().UninstallExternalWebApp(
+    finalizer().UninstallExternalWebAppByUrl(
         kWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy,
         base::BindLambdaForTesting([&](bool uninstalled) {
           EXPECT_FALSE(uninstalled);

@@ -43,7 +43,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'profile-stats-count-ready', this.handleProfileStatsCount_.bind(this));
     // <if expr="not chromeos">
@@ -58,7 +58,7 @@ Polymer({
    * Returns true when the user selected 'Confirm'.
    * @return {boolean}
    */
-  wasConfirmed: function() {
+  wasConfirmed() {
     return this.$.dialog.getNative().returnValue == 'success';
   },
 
@@ -67,7 +67,7 @@ Polymer({
    * @param {number} count
    * @private
    */
-  handleProfileStatsCount_: function(count) {
+  handleProfileStatsCount_(count) {
     const username = this.syncStatus.signedInUsername || '';
     if (count == 0) {
       this.deleteProfileWarning_ = loadTimeData.getStringF(
@@ -85,7 +85,7 @@ Polymer({
    * Polymer observer for syncStatus.
    * @private
    */
-  syncStatusChanged_: function() {
+  syncStatusChanged_() {
     if (!this.syncStatus.signedIn && this.$.dialog.open) {
       this.$.dialog.close();
     }
@@ -96,7 +96,7 @@ Polymer({
    * @param {string} domain
    * @return {string}
    */
-  getDisconnectExplanationHtml_: function(domain) {
+  getDisconnectExplanationHtml_(domain) {
     // <if expr="not chromeos">
     if (domain) {
       return loadTimeData.getStringF(
@@ -108,12 +108,12 @@ Polymer({
   },
 
   /** @private */
-  onDisconnectCancel_: function() {
+  onDisconnectCancel_() {
     this.$.dialog.cancel();
   },
 
   /** @private */
-  onDisconnectConfirm_: function() {
+  onDisconnectConfirm_() {
     this.$.dialog.close();
     const deleteProfile = !!this.syncStatus.domain || this.deleteProfile_;
     settings.SyncBrowserProxyImpl.getInstance().signOut(deleteProfile);

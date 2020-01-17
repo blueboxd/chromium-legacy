@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Rect;
 
 import org.chromium.base.supplier.DestroyableObservableSupplier;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
@@ -37,12 +36,6 @@ public interface NativePageHost {
 
     /** @return whether the hosted native page is currently visible. */
     boolean isVisible();
-
-    /**
-     * Creates a delegate object needed for history navigation logic.
-     * @return {@link HistoryNavigationDelegate} implementation.
-     */
-    HistoryNavigationDelegate createHistoryNavigationDelegate();
 
     /**
      * Creates a default margin supplier. Once created, the NativePage is responsible for calling

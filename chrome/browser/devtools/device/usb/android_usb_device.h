@@ -19,7 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/devtools/device/usb/usb_device_manager_helper.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/usb_device.mojom.h"
+#include "services/device/public/mojom/usb_device.mojom-forward.h"
 
 namespace base {
 class RefCountedBytes;

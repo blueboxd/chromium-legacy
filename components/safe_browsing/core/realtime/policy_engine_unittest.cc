@@ -7,12 +7,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/user_prefs/user_prefs.h"
-#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/platform_test.h"
 
@@ -25,6 +25,8 @@ namespace safe_browsing {
 
 class RealTimePolicyEngineTest : public PlatformTest {
  public:
+  RealTimePolicyEngineTest() : task_environment_(CreateTestTaskEnvironment()) {}
+
   void SetUp() override {
     user_prefs::UserPrefs::Set(&test_context_, &pref_service_);
     RegisterProfilePrefs(pref_service_.registry());
@@ -40,7 +42,7 @@ class RealTimePolicyEngineTest : public PlatformTest {
     return RealTimePolicyEngine::CanPerformFullURLLookup(&test_context_);
   }
 
-  content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
   content::TestBrowserContext test_context_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
 };

@@ -31,7 +31,5 @@ blink_modules_sources("webmidi") {
     "navigator_web_midi.h",
   ]
 
-  deps = [
-    "//media/midi:mojo_blink",
-  ]
+  deps = [ "//media/midi:mojo_blink" ]
 }

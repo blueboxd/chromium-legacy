@@ -10,9 +10,7 @@ source_set("ui") {
     "fling_tracker.h",
   ]
 
-  deps = [
-    ":ui_manipulation",
-  ]
+  deps = [ ":ui_manipulation" ]
 
   public_deps = [
     "//remoting/proto",

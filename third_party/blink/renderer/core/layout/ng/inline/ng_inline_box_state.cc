@@ -371,19 +371,23 @@ void NGInlineLayoutStateStack::PrepareForReorder(
     DCHECK((*line_box)[box_data.fragment_start].IsPlaceholder());
     for (unsigned i = box_data.fragment_start; i < box_data.fragment_end; i++) {
       NGLineBoxFragmentBuilder::Child& child = (*line_box)[i];
-      if (!child.box_data_index)
+      unsigned child_box_data_index = child.box_data_index;
+      if (!child_box_data_index) {
         child.box_data_index = box_data_index;
-    }
-  }
+        continue;
+      }
 
-  // When boxes are nested, placeholders have indexes to which box it should be
-  // added. Copy them to BoxData.
-  for (BoxData& box_data : box_data_list_) {
-    if (!box_data.fragment_start)
-      continue;
-    const NGLineBoxFragmentBuilder::Child& parent =
-        (*line_box)[box_data.fragment_start - 1];
-    box_data.parent_box_data_index = parent.box_data_index;
+      // This |box_data| has child boxes. Set up |parent_box_data_index| to
+      // represent the box nesting structure.
+      while (child_box_data_index != box_data_index) {
+        BoxData* child_box_data = &box_data_list_[child_box_data_index - 1];
+        child_box_data_index = child_box_data->parent_box_data_index;
+        if (!child_box_data_index) {
+          child_box_data->parent_box_data_index = box_data_index;
+          break;
+        }
+      }
+    }
   }
 }
 

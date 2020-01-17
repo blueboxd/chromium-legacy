@@ -18,6 +18,3 @@ export class LegacyVCDError extends Error {
     this.name = this.constructor.name;
   }
 }
-
-/** @const */
-cca.device.LegacyVCDError = LegacyVCDError;

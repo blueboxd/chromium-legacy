@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "services/network/public/mojom/cookie_manager.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_cookie_change_event_init.h"
 #include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
-#include "third_party/blink/renderer/modules/cookie_store/cookie_change_event_init.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_list_item.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/platform/cookie/canonical_cookie.h"

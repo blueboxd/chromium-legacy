@@ -70,7 +70,10 @@ export const DeviceReportingType = {
   DEVICE: 'device',
   LOGS: 'logs',
   PRINT: 'print',
-  CROSTINI: 'crostini'
+  CROSTINI: 'crostini',
+  USERNAME: 'username',
+  EXTENSION: 'extension',
+  ANDROID_APPLICATION: 'android application'
 };
 
 

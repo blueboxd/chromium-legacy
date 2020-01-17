@@ -30,13 +30,12 @@ Polymer({
    * @param {*} newValue The new value of the pages per sheet setting.
    * @private
    */
-  onPagesPerSheetSettingChange_: function(newValue) {
+  onPagesPerSheetSettingChange_(newValue) {
     this.selectedValue = /** @type {number} */ (newValue).toString();
-    this.setSetting('margins', MarginsType.DEFAULT);
   },
 
   /** @param {string} value The new select value. */
-  onProcessSelectChange: function(value) {
+  onProcessSelectChange(value) {
     this.setSetting('pagesPerSheet', parseInt(value, 10));
   },
 });

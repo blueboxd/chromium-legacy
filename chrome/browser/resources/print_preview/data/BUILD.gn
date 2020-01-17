@@ -82,9 +82,7 @@ js_library("cloud_parsers") {
 }
 
 js_library("invitation") {
-  deps = [
-    ":destination",
-  ]
+  deps = [ ":destination" ]
 }
 
 js_library("destination") {
@@ -114,9 +112,7 @@ js_library("margins") {
 }
 
 js_library("measurement_system") {
-  deps = [
-    "//ui/webui/resources/js:assert.m",
-  ]
+  deps = [ "//ui/webui/resources/js:assert.m" ]
 }
 
 js_library("model") {

@@ -122,8 +122,8 @@ void MultiDeviceSetupClientImpl::OnHostStatusChanged(
   if (host_device) {
     remote_device_cache_->SetRemoteDevices({*host_device});
     host_status_with_device_ = std::make_pair(
-        host_status,
-        remote_device_cache_->GetRemoteDevice(host_device->GetDeviceId()));
+        host_status, remote_device_cache_->GetRemoteDevice(
+                         host_device->instance_id, host_device->GetDeviceId()));
   } else {
     host_status_with_device_ =
         std::make_pair(host_status, base::nullopt /* host_device */);
@@ -144,12 +144,12 @@ void MultiDeviceSetupClientImpl::OnGetEligibleHostDevicesCompleted(
   remote_device_cache_->SetRemoteDevices(eligible_host_devices);
 
   multidevice::RemoteDeviceRefList eligible_host_device_refs;
-  std::transform(
-      eligible_host_devices.begin(), eligible_host_devices.end(),
-      std::back_inserter(eligible_host_device_refs),
-      [this](const auto& device) {
-        return *remote_device_cache_->GetRemoteDevice(device.GetDeviceId());
-      });
+  std::transform(eligible_host_devices.begin(), eligible_host_devices.end(),
+                 std::back_inserter(eligible_host_device_refs),
+                 [this](const auto& device) {
+                   return *remote_device_cache_->GetRemoteDevice(
+                       device.instance_id, device.GetDeviceId());
+                 });
 
   std::move(callback).Run(eligible_host_device_refs);
 }

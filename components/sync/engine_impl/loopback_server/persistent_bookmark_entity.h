@@ -28,7 +28,7 @@ class PersistentBookmarkEntity : public LoopbackServerEntity {
   static std::unique_ptr<LoopbackServerEntity> CreateNew(
       const sync_pb::SyncEntity& client_entity,
       const std::string& parent_id,
-      const std::string& client_guid);
+      const std::string& originator_cache_guid);
 
   // Factory function for PersistentBookmarkEntity. The server's current entity
   // for this ID, |current_server_entity|, is passed here because the client
@@ -37,7 +37,8 @@ class PersistentBookmarkEntity : public LoopbackServerEntity {
   static std::unique_ptr<LoopbackServerEntity> CreateUpdatedVersion(
       const sync_pb::SyncEntity& client_entity,
       const LoopbackServerEntity& current_server_entity,
-      const std::string& parent_id);
+      const std::string& parent_id,
+      const std::string& originator_cache_guid);
 
   // Factory function for PersistentBookmarkEntity used when de-serializing the
   // information stored in the persistent storage.
@@ -68,10 +69,10 @@ class PersistentBookmarkEntity : public LoopbackServerEntity {
 
  private:
   // All member values have equivalent fields in SyncEntity.
-  std::string originator_cache_guid_;
-  std::string originator_client_item_id_;
+  const std::string originator_cache_guid_;
+  const std::string originator_client_item_id_;
+  const bool is_folder_;
   sync_pb::UniquePosition unique_position_;
-  bool is_folder_;
   std::string parent_id_;
   int64_t creation_time_;
   int64_t last_modified_time_;

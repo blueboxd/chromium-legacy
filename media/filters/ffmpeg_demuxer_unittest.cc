@@ -277,6 +277,13 @@ class FFmpegDemuxerTest : public testing::Test {
       demuxer_->duration_ = kInfiniteDuration;
   }
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  bool HasBitstreamConverter(DemuxerStream* stream) const {
+    return !!reinterpret_cast<FFmpegDemuxerStream*>(stream)
+                 ->bitstream_converter_;
+  }
+#endif
+
   // Fixture members.
 
   base::test::TaskEnvironment task_environment_;
@@ -1439,6 +1446,26 @@ TEST_F(FFmpegDemuxerTest, Read_Mp4_Multiple_Tracks) {
 TEST_F(FFmpegDemuxerTest, Read_Mp4_Crbug657437) {
   CreateDemuxer("crbug657437.mp4");
   InitializeDemuxer();
+}
+
+TEST_F(FFmpegDemuxerTest, XHE_AAC) {
+  CreateDemuxer("noise-xhe-aac.mp4");
+  InitializeDemuxer();
+
+  DemuxerStream* audio = GetStream(DemuxerStream::AUDIO);
+  ASSERT_TRUE(audio);
+
+  EXPECT_EQ(audio->audio_decoder_config().profile(),
+            AudioCodecProfile::kXHE_AAC);
+
+  // ADTS bitstream conversion shouldn't be enabled for xHE-AAC since it can't
+  // be represented with only two bits for the profile.
+  audio->EnableBitstreamConverter();
+  EXPECT_FALSE(HasBitstreamConverter(audio));
+
+  // Even though FFmpeg can't decode xHE-AAC content, it should be demuxing it
+  // just fine.
+  Read(audio, FROM_HERE, 1796, 0, true);
 }
 
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)

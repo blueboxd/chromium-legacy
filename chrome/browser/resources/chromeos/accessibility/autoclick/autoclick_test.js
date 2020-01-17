@@ -34,7 +34,7 @@ AutoclickE2ETest.prototype = {
   browsePreload: null,
 
   /** @override */
-  testGenCppIncludes: function() {
+  testGenCppIncludes() {
     GEN(`
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/shell.h"
@@ -46,7 +46,7 @@ AutoclickE2ETest.prototype = {
   },
 
   /** @override */
-  testGenPreamble: function() {
+  testGenPreamble() {
     GEN(`
   base::Closure load_cb =
       base::Bind(&chromeos::AccessibilityManager::EnableAutoclick,
@@ -65,7 +65,7 @@ AutoclickE2ETest.prototype = {
    *        reference bound to the test fixture.
    * @return {Function}
    */
-  newCallback: function(opt_callback) {
+  newCallback(opt_callback) {
     return this.callbackHelper_.wrap(opt_callback);
   },
 
@@ -82,7 +82,7 @@ AutoclickE2ETest.prototype = {
    * @param {function(chrome.automation.AutomationNode)} callback Called with
    *     the desktop node once the document is ready.
    */
-  runWithLoadedTree: function(url, callback) {
+  runWithLoadedTree(url, callback) {
     callback = this.newCallback(callback);
     chrome.automation.getDesktop(function(desktopRootNode) {
       var createParams = {active: true, url: url};
@@ -111,7 +111,7 @@ AutoclickE2ETest.prototype = {
    * @param {!chrome.accessibilityPrivate.ScreenRect} first
    * @param {!chrome.accessibilityPrivate.ScreenRect} second
    */
-  assertSameRect: function(first, second) {
+  assertSameRect(first, second) {
     assertEquals(first.left, second.left);
     assertEquals(first.top, second.top);
     assertEquals(first.width, second.width);

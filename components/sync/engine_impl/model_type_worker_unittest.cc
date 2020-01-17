@@ -1630,7 +1630,7 @@ TEST_F(ModelTypeWorkerTest,
   const EntityData& data = response_data.entity;
 
   EXPECT_EQ(kInvalidOCII, data.originator_client_item_id);
-  EXPECT_TRUE(data.specifics.bookmark().guid().empty());
+  EXPECT_TRUE(base::IsValidGUIDOutputString(data.specifics.bookmark().guid()));
 }
 
 TEST_F(ModelTypeWorkerTest,
@@ -2036,11 +2036,11 @@ TEST_F(ModelTypeWorkerBookmarksTest,
                               .at(0)
                               ->entity.originator_client_item_id);
 
-  EXPECT_EQ("", processor()
-                    ->GetNthUpdateResponse(1)
-                    .at(0)
-                    ->entity.specifics.bookmark()
-                    .guid());
+  EXPECT_TRUE(base::IsValidGUIDOutputString(processor()
+                                                ->GetNthUpdateResponse(1)
+                                                .at(0)
+                                                ->entity.specifics.bookmark()
+                                                .guid()));
 }
 
 TEST_F(ModelTypeWorkerBookmarksTest,
@@ -2119,12 +2119,11 @@ TEST_F(ModelTypeWorkerBookmarksTest,
                               .at(0)
                               ->entity.originator_client_item_id);
 
-  EXPECT_TRUE(processor()
-                  ->GetNthUpdateResponse(0)
-                  .at(0)
-                  ->entity.specifics.bookmark()
-                  .guid()
-                  .empty());
+  EXPECT_TRUE(base::IsValidGUIDOutputString(processor()
+                                                ->GetNthUpdateResponse(0)
+                                                .at(0)
+                                                ->entity.specifics.bookmark()
+                                                .guid()));
 }
 
 }  // namespace syncer

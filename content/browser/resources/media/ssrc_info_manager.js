@@ -14,7 +14,7 @@
  * @return {?string} The ssrc.
  */
 function GetSsrcFromReport(report) {
-  if (report.type != 'ssrc') {
+  if (report.type !== 'ssrc') {
     console.warn('Trying to get ssrc from non-ssrc report.');
     return null;
   }
@@ -28,7 +28,7 @@ function GetSsrcFromReport(report) {
   // to Chrome.
   if (report.stats && report.stats.values) {
     for (var i = 0; i < report.stats.values.length - 1; i += 2) {
-      if (report.stats.values[i] == 'ssrc') {
+      if (report.stats.values[i] === 'ssrc') {
         return report.stats.values[i + 1];
       }
     }
@@ -98,13 +98,13 @@ var SsrcInfoManager = (function() {
       var attributes = sdp.split(this.ATTRIBUTE_SEPARATOR_);
       for (var i = 0; i < attributes.length; ++i) {
         // Check if this is a ssrc attribute.
-        if (attributes[i].indexOf(this.SSRC_ATTRIBUTE_PREFIX_) != 0) {
+        if (attributes[i].indexOf(this.SSRC_ATTRIBUTE_PREFIX_) !== 0) {
           continue;
         }
 
         var nextFieldIndex = attributes[i].search(this.FIELD_SEPARATOR_REGEX_);
 
-        if (nextFieldIndex == -1) {
+        if (nextFieldIndex === -1) {
           continue;
         }
 
@@ -119,7 +119,7 @@ var SsrcInfoManager = (function() {
         var name, value;
         while (rest.length > 0) {
           nextFieldIndex = rest.search(this.FIELD_SEPARATOR_REGEX_);
-          if (nextFieldIndex == -1) {
+          if (nextFieldIndex === -1) {
             nextFieldIndex = rest.length;
           }
 

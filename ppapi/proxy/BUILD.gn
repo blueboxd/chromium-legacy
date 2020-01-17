@@ -313,13 +313,9 @@ source_set("common") {
 
 group("ipc") {
   if (is_component_build) {
-    public_deps = [
-      "//ppapi/proxy",
-    ]
+    public_deps = [ "//ppapi/proxy" ]
   } else {
-    public_deps = [
-      ":ipc_sources",
-    ]
+    public_deps = [ ":ipc_sources" ]
   }
 }
 
@@ -359,9 +355,7 @@ source_set("ipc_sources") {
     "//ppapi/shared_impl",
   ]
 
-  public_deps = [
-    "//ipc",
-  ]
+  public_deps = [ "//ipc" ]
 
   if (!is_nacl) {
     deps += [ "//skia" ]
@@ -378,9 +372,7 @@ jumbo_static_library("test_support") {
     "resource_message_test_sink.h",
   ]
 
-  public_deps = [
-    ":proxy",
-  ]
+  public_deps = [ ":proxy" ]
   deps = [
     "//base/test:test_support",
     "//ipc",

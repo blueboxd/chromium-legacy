@@ -35,14 +35,14 @@ Polymer({
      */
     isForceSigninEnabled_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isForceSigninEnabled');
       },
     }
   },
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = signin.ProfileBrowserProxyImpl.getInstance();
   },
 
@@ -51,7 +51,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onLaunchGuestTap_: function(event) {
+  onLaunchGuestTap_(event) {
     this.browserProxy_.areAllProfilesLocked().then(allProfilesLocked => {
       if (!allProfilesLocked || this.isForceSigninEnabled_) {
         this.browserProxy_.launchGuestUser();
@@ -67,7 +67,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onAddUserTap_: function(event) {
+  onAddUserTap_(event) {
     this.browserProxy_.areAllProfilesLocked().then(allProfilesLocked => {
       if (!allProfilesLocked || this.isForceSigninEnabled_) {
         // Event is caught by user-manager-pages.

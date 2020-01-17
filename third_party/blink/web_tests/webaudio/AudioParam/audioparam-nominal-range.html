@@ -72,8 +72,7 @@
           limits: {
             playbackRate:
                 {minValue: -mostPositiveFloat, maxValue: mostPositiveFloat},
-            detune:
-                {minValue: -mostPositiveFloat, maxValue: mostPositiveFloat}
+            detune: {minValue: -mostPositiveFloat, maxValue: mostPositiveFloat}
           }
         },
         {
@@ -101,11 +100,21 @@
           creator: 'createBiquadFilter',
           args: [],
           limits: {
-            gain: {minValue: -mostPositiveFloat, maxValue: mostPositiveFloat},
+            gain: {
+              minValue: -mostPositiveFloat,
+              // This complicated expression is used to get all the arithmetic
+              // to round to the correct single-precision float value for the
+              // desired max.  This also assumes that the implication computes
+              // the limit as 40 * log10f(std::numeric_limits<float>::max()).
+              maxValue:
+                  Math.fround(40 * Math.fround(Math.log10(mostPositiveFloat)))
+            },
             Q: {minValue: -mostPositiveFloat, maxValue: mostPositiveFloat},
             frequency: {minValue: 0, maxValue: sampleRate / 2},
-            detune:
-                {minValue: -mostPositiveFloat, maxValue: mostPositiveFloat}
+            detune: {
+              minValue: -Math.fround(1200 * Math.log2(mostPositiveFloat)),
+              maxValue: Math.fround(1200 * Math.log2(mostPositiveFloat))
+            }
           }
         },
         {
@@ -114,9 +123,8 @@
           limits: {
             frequency: {minValue: -sampleRate / 2, maxValue: sampleRate / 2},
             detune: {
-              // 3.4028..e38 is the most positive single float value.
-              minValue: -Math.fround(1200 * Math.log2(3.4028234663852886e38)),
-              maxValue: Math.fround(1200 * Math.log2(3.4028234663852886e38))
+              minValue: -Math.fround(1200 * Math.log2(mostPositiveFloat)),
+              maxValue: Math.fround(1200 * Math.log2(mostPositiveFloat))
             }
           }
         },
@@ -154,8 +162,7 @@
           creator: 'createConstantSource',
           args: [],
           limits: {
-            offset:
-                {minValue: -mostPositiveFloat, maxValue: mostPositiveFloat}
+            offset: {minValue: -mostPositiveFloat, maxValue: mostPositiveFloat}
           }
         },
         // These nodes don't have AudioParams, but we want to test them anyway.
@@ -366,21 +373,24 @@
                           .beEqualTo(limits[paramName].maxValue) &&
               isCorrect;
 
-          // Verify that the min and max attributes are read-only
-          parameter.minValue = Math.PI;
+          // Verify that the min and max attributes are read-only.  |testValue|
+          // MUST be a number that can be represented exactly the same way as
+          // both a double and single float.  A small integer works nicely.
+          const testValue = 42;
+          parameter.minValue = testValue;
           let isReadOnly;
           isReadOnly =
-              should(parameter.minValue, prefix + '.minValue = Math.PI')
-                  .notBeEqualTo(Math.PI);
+              should(parameter.minValue, `${prefix}.minValue = ${testValue}`)
+                  .notBeEqualTo(testValue);
 
           should(isReadOnly, prefix + '.minValue is read-only').beEqualTo(true);
 
           isCorrect = isReadOnly && isCorrect;
 
-          parameter.maxValue = Math.PI;
+          parameter.maxValue = testValue;
           isReadOnly =
-              should(parameter.maxValue, prefix + '.maxValue = Math.PI')
-                  .notBeEqualTo(Math.PI);
+              should(parameter.maxValue, `${prefix}.maxValue = ${testValue}`)
+                  .notBeEqualTo(testValue);
           should(isReadOnly, prefix + '.maxValue is read-only').beEqualTo(true);
 
           isCorrect = isReadOnly && isCorrect;
@@ -417,7 +427,7 @@
           if (clippingTested) {
             should(
                 isClipped,
-                prefix + 'was clipped to lie within the nominal range')
+                prefix + ' was clipped to lie within the nominal range')
                 .beEqualTo(true);
           }
 

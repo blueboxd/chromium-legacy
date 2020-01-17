@@ -32,13 +32,13 @@ Polymer({
   ],
 
   /** @private */
-  prefChanged_: function() {
+  prefChanged_() {
     const pref = /** @type {!chrome.settingsPrivate.PrefObject} */ (this.pref);
     this.selected = Settings.PrefUtil.prefToString(pref);
   },
 
   /** @private */
-  onSelectedChanged_: function() {
+  onSelectedChanged_() {
     if (!this.pref) {
       return;
     }

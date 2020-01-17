@@ -20,9 +20,7 @@ if (is_linux) {
       "zlib_client.h",
     ]
 
-    deps = [
-      "//third_party/zlib",
-    ]
+    deps = [ "//third_party/zlib" ]
 
     # Always build release since this is a build tool.
     if (is_debug) {

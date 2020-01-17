@@ -1411,7 +1411,7 @@ class PpdProviderImpl : public PpdProvider {
       return PpdProvider::INTERNAL_ERROR;
     }
 
-    *top_list = std::move(ret_list.value().GetList());
+    *top_list = ret_list->TakeList();
     for (const auto& entry : *top_list) {
       if (!entry.is_list()) {
         LOG(ERROR) << "Found unexpected non-list entry in JSON object";

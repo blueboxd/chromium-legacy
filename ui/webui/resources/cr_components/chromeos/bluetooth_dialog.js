@@ -263,10 +263,10 @@ Polymer({
    */
   onBluetoothPrivateOnPairing_(event) {
     if (!this.pairingDevice ||
-        event.device.address != this.pairingDevice.address) {
+        event.device.address !== this.pairingDevice.address) {
       return;
     }
-    if (event.pairing == PairingEventType.KEYS_ENTERED &&
+    if (event.pairing === PairingEventType.KEYS_ENTERED &&
         event.passkey === undefined && this.pairingEvent_) {
       // 'keysEntered' event might not include the updated passkey so preserve
       // the current one.
@@ -282,7 +282,7 @@ Polymer({
    * @private
    */
   onBluetoothDeviceChanged_(device) {
-    if (!this.pairingDevice || device.address != this.pairingDevice.address) {
+    if (!this.pairingDevice || device.address !== this.pairingDevice.address) {
       return;
     }
     this.pairingDevice = device;
@@ -344,7 +344,7 @@ Polymer({
    */
   showEnterPincode_() {
     return !!this.pairingEvent_ &&
-        this.pairingEvent_.pairing == PairingEventType.REQUEST_PINCODE;
+        this.pairingEvent_.pairing === PairingEventType.REQUEST_PINCODE;
   },
 
   /**
@@ -353,7 +353,7 @@ Polymer({
    */
   showEnterPasskey_() {
     return !!this.pairingEvent_ &&
-        this.pairingEvent_.pairing == PairingEventType.REQUEST_PASSKEY;
+        this.pairingEvent_.pairing === PairingEventType.REQUEST_PASSKEY;
   },
 
   /**
@@ -366,10 +366,10 @@ Polymer({
     }
     const pairing = this.pairingEvent_.pairing;
     return (
-        pairing == PairingEventType.DISPLAY_PINCODE ||
-        pairing == PairingEventType.DISPLAY_PASSKEY ||
-        pairing == PairingEventType.CONFIRM_PASSKEY ||
-        pairing == PairingEventType.KEYS_ENTERED);
+        pairing === PairingEventType.DISPLAY_PINCODE ||
+        pairing === PairingEventType.DISPLAY_PASSKEY ||
+        pairing === PairingEventType.CONFIRM_PASSKEY ||
+        pairing === PairingEventType.KEYS_ENTERED);
   },
 
   /**
@@ -378,7 +378,7 @@ Polymer({
    */
   showAcceptReject_() {
     return !!this.pairingEvent_ &&
-        this.pairingEvent_.pairing == PairingEventType.CONFIRM_PASSKEY;
+        this.pairingEvent_.pairing === PairingEventType.CONFIRM_PASSKEY;
   },
 
   /**
@@ -390,8 +390,8 @@ Polymer({
       return false;
     }
     const pairing = this.pairingEvent_.pairing;
-    return pairing == PairingEventType.REQUEST_PINCODE ||
-        pairing == PairingEventType.REQUEST_PASSKEY;
+    return pairing === PairingEventType.REQUEST_PINCODE ||
+        pairing === PairingEventType.REQUEST_PASSKEY;
   },
 
   /**
@@ -403,7 +403,7 @@ Polymer({
       return false;
     }
     const inputId =
-        (this.pairingEvent_.pairing == PairingEventType.REQUEST_PINCODE) ?
+        (this.pairingEvent_.pairing === PairingEventType.REQUEST_PINCODE) ?
         '#pincode' :
         '#passkey';
     const crInput = /** @type {!CrInputElement} */ (this.$$(inputId));
@@ -419,7 +419,7 @@ Polymer({
   showDismiss_() {
     return (!!this.pairingDevice && this.pairingDevice.paired) ||
         (!!this.pairingEvent_ &&
-         this.pairingEvent_.pairing == PairingEventType.COMPLETE);
+         this.pairingEvent_.pairing === PairingEventType.COMPLETE);
   },
 
   /** @private */
@@ -448,11 +448,11 @@ Polymer({
     const options =
         /** @type {!chrome.bluetoothPrivate.SetPairingResponseOptions} */ (
             {device: this.pairingDevice, response: response});
-    if (response == chrome.bluetoothPrivate.PairingResponse.CONFIRM) {
+    if (response === chrome.bluetoothPrivate.PairingResponse.CONFIRM) {
       const pairing = this.pairingEvent_.pairing;
-      if (pairing == PairingEventType.REQUEST_PINCODE) {
+      if (pairing === PairingEventType.REQUEST_PINCODE) {
         options.pincode = this.$$('#pincode').value;
-      } else if (pairing == PairingEventType.REQUEST_PASSKEY) {
+      } else if (pairing === PairingEventType.REQUEST_PASSKEY) {
         options.passkey = parseInt(this.$$('#passkey').value, 10);
       }
     }
@@ -477,8 +477,8 @@ Polymer({
    */
   getEventDesc_(eventType) {
     assert(eventType);
-    if (eventType == PairingEventType.COMPLETE ||
-        eventType == PairingEventType.REQUEST_AUTHORIZATION) {
+    if (eventType === PairingEventType.COMPLETE ||
+        eventType === PairingEventType.REQUEST_AUTHORIZATION) {
       return 'bluetoothStartConnecting';
     }
     return 'bluetooth_' + /** @type {string} */ (eventType);
@@ -495,15 +495,15 @@ Polymer({
     }
     let digit = '0';
     const pairing = this.pairingEvent_.pairing;
-    if (pairing == PairingEventType.DISPLAY_PINCODE &&
+    if (pairing === PairingEventType.DISPLAY_PINCODE &&
         this.pairingEvent_.pincode &&
         index < this.pairingEvent_.pincode.length) {
       digit = this.pairingEvent_.pincode[index];
     } else if (
         this.pairingEvent_.passkey &&
-        (pairing == PairingEventType.DISPLAY_PASSKEY ||
-         pairing == PairingEventType.KEYS_ENTERED ||
-         pairing == PairingEventType.CONFIRM_PASSKEY)) {
+        (pairing === PairingEventType.DISPLAY_PASSKEY ||
+         pairing === PairingEventType.KEYS_ENTERED ||
+         pairing === PairingEventType.CONFIRM_PASSKEY)) {
       const passkeyString =
           String(this.pairingEvent_.passkey).padStart(this.digits_.length, '0');
       digit = passkeyString[index];
@@ -520,22 +520,23 @@ Polymer({
     if (!this.pairingEvent_) {
       return '';
     }
-    if (this.pairingEvent_.pairing == PairingEventType.CONFIRM_PASSKEY) {
+    if (this.pairingEvent_.pairing === PairingEventType.CONFIRM_PASSKEY) {
       return 'confirm';
     }
     let cssClass = 'display';
-    if (this.pairingEvent_.pairing == PairingEventType.DISPLAY_PASSKEY) {
-      if (index == 0) {
+    if (this.pairingEvent_.pairing === PairingEventType.DISPLAY_PASSKEY) {
+      if (index === 0) {
         cssClass += ' next';
       } else {
         cssClass += ' untyped';
       }
     } else if (
-        this.pairingEvent_.pairing == PairingEventType.KEYS_ENTERED &&
+        this.pairingEvent_.pairing === PairingEventType.KEYS_ENTERED &&
         this.pairingEvent_.enteredKey) {
       const enteredKey = this.pairingEvent_.enteredKey;  // 1-7
       const lastKey = this.digits_.length;               // 6
-      if ((index == -1 && enteredKey > lastKey) || (index + 1 == enteredKey)) {
+      if ((index === -1 && enteredKey > lastKey) ||
+          (index + 1 === enteredKey)) {
         cssClass += ' next';
       } else if (index > enteredKey) {
         cssClass += ' untyped';

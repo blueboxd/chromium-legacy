@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/sandbox_type.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/process_type.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
@@ -25,6 +26,39 @@ using content::RenderProcessHost;
 
 namespace sandbox_handler {
 namespace {
+
+// This only includes OS_WIN included SandboxType values.
+std::string GetSandboxTypeInEnglish(content::SandboxType sandbox_type) {
+  switch (sandbox_type) {
+    case content::SandboxType::kInvalid:
+      return "Invalid";
+    case content::SandboxType::kNoSandbox:
+      return "Unsandboxed";
+    case content::SandboxType::kNoSandboxAndElevatedPrivileges:
+      return "Unsandboxed (Elevated)";
+    case content::SandboxType::kXrCompositing:
+      return "XR Compositing";
+    case content::SandboxType::kRenderer:
+      return "Renderer";
+    case content::SandboxType::kUtility:
+      return "Utility";
+    case content::SandboxType::kGpu:
+      return "GPU";
+    case content::SandboxType::kPpapi:
+      return "PPAPI";
+    case content::SandboxType::kNetwork:
+      return "Network";
+    case content::SandboxType::kCdm:
+      return "CDM";
+    case content::SandboxType::kPrintCompositor:
+      return "Print Compositor";
+    case content::SandboxType::kAudio:
+      return "Audio";
+    case content::SandboxType::kSoda:
+      return "SODA";
+  }
+}
+
 base::Value FetchBrowserChildProcesses() {
   // The |BrowserChildProcessHostIterator| must only be used on the IO thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -43,6 +77,9 @@ base::Value FetchBrowserChildProcesses() {
                      process_data.process_type)));
     proc.SetPath("name", base::Value(process_data.name));
     proc.SetPath("metricsName", base::Value(process_data.metrics_name));
+    proc.SetPath(
+        "sandboxType",
+        base::Value(GetSandboxTypeInEnglish(process_data.sandbox_type)));
     browser_processes.Append(std::move(proc));
   }
 

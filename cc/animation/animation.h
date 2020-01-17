@@ -37,6 +37,8 @@ struct AnimationEvent;
 //
 // Each Animation has a copy on the impl thread, and will take care of
 // synchronizing to/from the impl thread when requested.
+//
+// There is a 1:1 relationship between Animation and KeyframeEffect.
 class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
  public:
   static scoped_refptr<Animation> Create(int id);
@@ -46,7 +48,9 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   Animation& operator=(const Animation&) = delete;
 
   int id() const { return id_; }
-  typedef size_t KeyframeEffectId;
+  ElementId element_id() const;
+
+  KeyframeEffect* keyframe_effect() const { return keyframe_effect_.get(); }
 
   // Parent AnimationHost. Animation can be detached from AnimationTimeline.
   AnimationHost* animation_host() { return animation_host_; }
@@ -59,37 +63,32 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   const AnimationTimeline* animation_timeline() const {
     return animation_timeline_;
   }
-  virtual void SetAnimationTimeline(AnimationTimeline* timeline);
+  void SetAnimationTimeline(AnimationTimeline* timeline);
 
   // TODO(smcgruer): If/once ScrollTimeline is supported on normal Animations,
   // we will need to move the promotion logic from WorkletAnimation to here.
   virtual void PromoteScrollTimelinePendingToActive() {}
 
-  bool has_element_animations() const;
-  scoped_refptr<ElementAnimations> element_animations(
-      KeyframeEffectId keyframe_effect_id) const;
+  scoped_refptr<ElementAnimations> element_animations() const;
 
   void set_animation_delegate(AnimationDelegate* delegate) {
     animation_delegate_ = delegate;
   }
 
-  void AttachElementForKeyframeEffect(ElementId element_id,
-                                      KeyframeEffectId keyframe_effect_id);
-  void DetachElementForKeyframeEffect(ElementId element_id,
-                                      KeyframeEffectId keyframe_effect_id);
-  virtual void DetachElement();
+  void AttachElement(ElementId element_id);
+  void DetachElement();
 
-  void AddKeyframeModelForKeyframeEffect(
-      std::unique_ptr<KeyframeModel> keyframe_model,
-      KeyframeEffectId keyframe_effect_id);
-  void PauseKeyframeModelForKeyframeEffect(int keyframe_model_id,
-                                           base::TimeDelta time_offset,
-                                           KeyframeEffectId keyframe_effect_id);
-  void RemoveKeyframeModelForKeyframeEffect(
+  void AddKeyframeModel(std::unique_ptr<KeyframeModel> keyframe_model);
+  void PauseKeyframeModel(int keyframe_model_id, base::TimeDelta time_offset);
+  virtual void RemoveKeyframeModel(int keyframe_model_id);
+  void AbortKeyframeModel(int keyframe_model_id);
+
+  void NotifyKeyframeModelFinishedForTesting(
+      int timeline_id,
       int keyframe_model_id,
-      KeyframeEffectId keyframe_effect_id);
-  void AbortKeyframeModelForKeyframeEffect(int keyframe_model_id,
-                                           KeyframeEffectId keyframe_effect_id);
+      TargetProperty::Type target_property,
+      int group_id);
+
   void AbortKeyframeModelsWithProperty(TargetProperty::Type target_property,
                                        bool needs_completion);
 
@@ -116,43 +115,30 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   // Make KeyframeModels affect active elements if and only if they affect
   // pending elements. Any KeyframeModels that no longer affect any elements
   // are deleted.
-  void ActivateKeyframeEffects();
+  void ActivateKeyframeModels();
 
   // Returns the keyframe model animating the given property that is either
   // running, or is next to run, if such a keyframe model exists.
-  KeyframeModel* GetKeyframeModelForKeyframeEffect(
-      TargetProperty::Type target_property,
-      KeyframeEffectId keyframe_effect_id) const;
+  KeyframeModel* GetKeyframeModel(TargetProperty::Type target_property) const;
 
   std::string ToString() const;
 
   void SetNeedsCommit();
 
   virtual bool IsWorkletAnimation() const;
-  void AddKeyframeEffect(std::unique_ptr<KeyframeEffect>);
-
-  KeyframeEffect* GetKeyframeEffectById(
-      KeyframeEffectId keyframe_effect_id) const;
-  KeyframeEffectId NextKeyframeEffectId() { return keyframe_effects_.size(); }
 
  private:
   friend class base::RefCounted<Animation>;
 
-  void RegisterKeyframeEffect(ElementId element_id,
-                              KeyframeEffectId keyframe_effect_id);
-  void UnregisterKeyframeEffect(ElementId element_id,
-                                KeyframeEffectId keyframe_effect_id);
-  void RegisterKeyframeEffects();
-  void UnregisterKeyframeEffects();
-
-  void PushAttachedKeyframeEffectsToImplThread(Animation* animation_impl) const;
-  void PushPropertiesToImplThread(Animation* animation_impl);
+  void RegisterAnimation();
+  void UnregisterAnimation();
 
   // Delegates animation event
   void DelegateAnimationEvent(const AnimationEvent& event);
 
  protected:
   explicit Animation(int id);
+  Animation(int id, std::unique_ptr<KeyframeEffect>);
   virtual ~Animation();
 
   AnimationHost* animation_host_;
@@ -160,19 +146,7 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   AnimationDelegate* animation_delegate_;
 
   int id_;
-
-  using ElementToKeyframeEffectIdMap =
-      std::unordered_map<ElementId,
-                         std::unordered_set<KeyframeEffectId>,
-                         ElementIdHash>;
-  using KeyframeEffects = std::vector<std::unique_ptr<KeyframeEffect>>;
-
-  // It is possible for a keyframe_effect to be in keyframe_effects_ but not in
-  // element_to_keyframe_effect_id_map_ but the reverse is not possible.
-  ElementToKeyframeEffectIdMap element_to_keyframe_effect_id_map_;
-  KeyframeEffects keyframe_effects_;
-
-  int ticking_keyframe_effects_count;
+  std::unique_ptr<KeyframeEffect> keyframe_effect_;
 };
 
 }  // namespace cc

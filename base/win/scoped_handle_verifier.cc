@@ -27,12 +27,12 @@ void* GetHandleVerifier() {
 namespace {
 
 base::win::internal::ScopedHandleVerifier* g_active_verifier = nullptr;
-typedef void* (*GetHandleVerifierFn)();
-typedef std::unordered_map<HANDLE,
-                           base::win::internal::ScopedHandleVerifierInfo,
-                           base::win::internal::HandleHash>
-    HandleMap;
-typedef base::internal::LockImpl NativeLock;
+using GetHandleVerifierFn = void* (*)();
+using HandleMap =
+    std::unordered_map<HANDLE,
+                       base::win::internal::ScopedHandleVerifierInfo,
+                       base::win::internal::HandleHash>;
+using NativeLock = base::internal::LockImpl;
 
 NativeLock* GetLock() {
   static auto* native_lock = new NativeLock();

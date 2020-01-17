@@ -274,14 +274,4 @@ TestAttributes* V8TestAttributes::ToImplWithTypeCheck(
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestAttributes* NativeValueTraits<TestAttributes>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestAttributes* native_value = V8TestAttributes::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestAttributes"));
-  }
-  return native_value;
-}
-
 }  // namespace blink

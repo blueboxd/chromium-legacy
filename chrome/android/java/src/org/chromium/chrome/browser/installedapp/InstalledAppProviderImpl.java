@@ -205,9 +205,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
         // add significant noise to the time taken to check whether this app is installed and
         // related. Otherwise, it would be possible to tell whether a non-related app is installed,
         // based on the time this operation takes.
-        //
-        // Generate a 16-bit hash based on a unique device ID + the package name.
-        short hash = PackageHash.hashForPackage(packageName);
+        short hash = PackageHash.hashForPackage(packageName, mFrameUrlDelegate.isIncognito());
 
         // The time delay is the low 10 bits of the hash in 100ths of a ms (between 0 and 10ms).
         int delayHundredthsOfMs = hash & 0x3ff;

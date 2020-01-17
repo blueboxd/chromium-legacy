@@ -136,15 +136,16 @@ class PLATFORM_EXPORT HeapAllocator {
     }
   }
 
-  static void BackingWriteBarrier(void* address) {
-    MarkingVisitor::WriteBarrier(address);
+  template <typename T>
+  static void BackingWriteBarrier(T** slot) {
+    MarkingVisitor::WriteBarrier(slot);
   }
 
-  template <typename HashTable>
-  static void BackingWriteBarrierForHashTable(void* address) {
-    if (MarkingVisitor::WriteBarrier(address)) {
+  template <typename HashTable, typename T>
+  static void BackingWriteBarrierForHashTable(T** slot) {
+    if (MarkingVisitor::WriteBarrier(slot)) {
       AddMovingCallback<HashTable>(
-          static_cast<typename HashTable::ValueType*>(address));
+          static_cast<typename HashTable::ValueType*>(*slot));
     }
   }
 

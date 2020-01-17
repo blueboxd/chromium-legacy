@@ -124,7 +124,6 @@ enum class WebAXStringAttribute {
 // sparse attribute the default value must be the null WebAXObject.
 enum class WebAXObjectAttribute {
   kAriaActiveDescendant,
-  kAriaDetails,
   kAriaErrorMessage,
 };
 
@@ -134,6 +133,7 @@ enum class WebAXObjectAttribute {
 // empty vector.
 enum class WebAXObjectVectorAttribute {
   kAriaControls,
+  kAriaDetails,
   kAriaFlowTo,
 };
 

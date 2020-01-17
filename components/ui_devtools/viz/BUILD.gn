@@ -27,9 +27,7 @@ source_set("viz") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "viz_devtools_unittest.cc",
-  ]
+  sources = [ "viz_devtools_unittest.cc" ]
 
   deps = [
     ":viz",

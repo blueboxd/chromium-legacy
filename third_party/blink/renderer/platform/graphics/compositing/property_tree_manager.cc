@@ -846,12 +846,16 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
 static cc::RenderSurfaceReason RenderSurfaceReasonForBackdropEffect(
     const EffectPaintPropertyNode& backdrop_effect) {
   DCHECK(backdrop_effect.HasBackdropEffect());
-  if (backdrop_effect.BlendMode() != SkBlendMode::kSrcOver)
-    return cc::RenderSurfaceReason::kBlendMode;
   if (!backdrop_effect.BackdropFilter().IsEmpty())
     return cc::RenderSurfaceReason::kBackdropFilter;
-  DCHECK(backdrop_effect.HasActiveBackdropFilterAnimation());
-  return cc::RenderSurfaceReason::kBackdropFilterAnimation;
+  if (backdrop_effect.HasActiveBackdropFilterAnimation())
+    return cc::RenderSurfaceReason::kBackdropFilterAnimation;
+  DCHECK_NE(backdrop_effect.BlendMode(), SkBlendMode::kSrcOver);
+  // For optimization, we will set render surface reason for DstIn later in
+  // PaintArtifactCompositor::UpdateRenderSurfaceForEffects() only if needed.
+  if (backdrop_effect.BlendMode() == SkBlendMode::kDstIn)
+    return cc::RenderSurfaceReason::kNone;
+  return cc::RenderSurfaceReason::kBlendMode;
 }
 
 void PropertyTreeManager::PopulateCcEffectNodeBackdropEffect(
@@ -883,8 +887,10 @@ PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     while (IsCurrentCcEffectSynthetic())
       CloseCcEffect();
 
+    // An effect node can't omit render surface if it has child with backdrop
+    // effect, in order to define the scope of the backdrop.
     SetCurrentEffectRenderSurfaceReason(
-        RenderSurfaceReasonForBackdropEffect(*next_effect));
+        cc::RenderSurfaceReason::kBackdropScope);
     backdrop_effect_state = kBackdropEffectToBeSetOnCcEffectNode;
   } else {
     // Exit synthetic effects until there are no more synthesized clips below

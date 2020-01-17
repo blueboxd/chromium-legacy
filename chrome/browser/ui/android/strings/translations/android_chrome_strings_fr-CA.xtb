@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Fermer l'onglet actuel</translation>
 <translation id="1258753120186372309">Logo commémoratif de Google : <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Rechercher et explorer</translation>
-<translation id="1264974993859112054">Sports</translation>
 <translation id="1266864766717917324">Partage impossible du contenu suivant : <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1283039547216852943">Toucher pour développer</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Pour synchroniser vos favoris sur tous vos appareils, connectez-vous et activez la synchronisation</translation>
 <translation id="2822354292072154809">Voulez-vous vraiment réinitialiser toutes les autorisations de site pour <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2842985007712546952">Dossier parent</translation>
-<translation id="2858138569776157458">Sites populaires</translation>
 <translation id="2860954141821109167">Assurez-vous qu'une application de téléphonie est activée sur cet appareil</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Chanson précédente</translation>
@@ -366,7 +364,6 @@
 <translation id="381841723434055211">Numéros de téléphone</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> téléchargements supprimés</translation>
 <translation id="3822502789641063741">Suppr. stock. des sites?</translation>
-<translation id="3853625385350850937">Pour continuer, activez la NFC sur votre appareil</translation>
 <translation id="3859306556332390985">Rechercher vers l'avant</translation>
 <translation id="388596076286380598">Consultez des articles, des vidéos et d'autres contenus sur les sites qui vous intéressent, même si vous êtes hors ligne ou si votre connexion est mauvaise.</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
@@ -764,7 +761,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6697947395630195233">Chrome a besoin d'accéder à votre position afin de la partager avec ce site.</translation>
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>
 <translation id="6699370405921460408">Les serveurs de Google optimiseront les pages que vous consultez.</translation>
-<translation id="6709133671862442373">Actualités</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="671481426037969117">Votre minuterie <ph name="FQDN" /> a expiré. Elle recommencera demain.</translation>
 <translation id="6738867403308150051">Téléchargement en cours…</translation>
@@ -1079,7 +1075,6 @@ Le site n'obtient PAS l'accès à l'appareil photo. Vous seul pouvez visionner l
 <translation id="9133397713400217035">Explorer hors ligne</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
-<translation id="9139318394846604261">Magasinage</translation>
 <translation id="9155898266292537608">Vous pouvez également effectuer une recherche d'un simple toucher sur un mot</translation>
 <translation id="9169507124922466868">L'historique de navigation est ouvert à moitié</translation>
 <translation id="9204836675896933765">1 fichier restant</translation>

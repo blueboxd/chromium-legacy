@@ -30,12 +30,12 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.DefaultBrowserBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'browser-default-state-changed',
         this.updateDefaultBrowserState_.bind(this));
@@ -48,7 +48,7 @@ Polymer({
    * @param {!DefaultBrowserInfo} defaultBrowserState
    * @private
    */
-  updateDefaultBrowserState_: function(defaultBrowserState) {
+  updateDefaultBrowserState_(defaultBrowserState) {
     this.isDefault_ = false;
     this.isSecondaryInstall_ = false;
     this.isUnknownError_ = false;
@@ -68,7 +68,7 @@ Polymer({
   },
 
   /** @private */
-  onSetDefaultBrowserTap_: function() {
+  onSetDefaultBrowserTap_() {
     this.browserProxy_.setAsDefaultBrowser();
   },
 });

@@ -84,7 +84,7 @@ class UtilitySandboxedProcessLauncherDelegate
         sandbox_type_ == service_manager::SandboxType::kUtility ||
         sandbox_type_ == service_manager::SandboxType::kNetwork ||
         sandbox_type_ == service_manager::SandboxType::kCdm ||
-        sandbox_type_ == service_manager::SandboxType::kPdfCompositor ||
+        sandbox_type_ == service_manager::SandboxType::kPrintCompositor ||
         sandbox_type_ == service_manager::SandboxType::kPpapi ||
 #if defined(OS_CHROMEOS)
         sandbox_type_ == service_manager::SandboxType::kIme ||

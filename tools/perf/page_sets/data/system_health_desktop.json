@@ -334,6 +334,9 @@
         "load:tools:gmail": {
             "DEFAULT": "system_health_desktop_004.wprgo"
         },
+        "load:tools:gmail:2019": {
+            "DEFAULT": "system_health_desktop_0e466e2324.wprgo"
+        },
         "load:tools:maps": {
             "DEFAULT": "system_health_desktop_004.wprgo"
         },

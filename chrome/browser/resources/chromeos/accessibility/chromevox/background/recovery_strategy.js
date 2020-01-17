@@ -34,7 +34,7 @@ RecoveryStrategy.prototype = {
   },
 
   /** @return {boolean} */
-  requiresRecovery: function() {
+  requiresRecovery() {
     return !this.node_ || !this.node_.role;
   },
 
@@ -42,11 +42,11 @@ RecoveryStrategy.prototype = {
    * @return {AutomationNode}
    * @protected
    */
-  recover: function() {
+  recover() {
     return null;
   },
 
-  equalsWithoutRecovery: function(rhs) {
+  equalsWithoutRecovery(rhs) {
     return this.node_ === rhs.node_;
   }
 };
@@ -75,7 +75,7 @@ AncestryRecoveryStrategy.prototype = {
   __proto__: RecoveryStrategy.prototype,
 
   /** @override */
-  recover: function() {
+  recover() {
     return this.ancestry_[this.getFirstValidNodeIndex_()];
   },
 
@@ -83,7 +83,7 @@ AncestryRecoveryStrategy.prototype = {
    * @return {number}
    * @protected
    */
-  getFirstValidNodeIndex_: function() {
+  getFirstValidNodeIndex_() {
     for (var i = 0; i < this.ancestry_.length; i++) {
       var firstValidNode = this.ancestry_[i];
       if (firstValidNode != null && firstValidNode.role !== undefined &&
@@ -119,7 +119,7 @@ TreePathRecoveryStrategy.prototype = {
   __proto__: AncestryRecoveryStrategy.prototype,
 
   /** @override */
-  recover: function() {
+  recover() {
     var index = this.getFirstValidNodeIndex_();
     if (index == 0) {
       return this.ancestry_[index];

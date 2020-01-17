@@ -47,7 +47,8 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
                        GetLocalChangesCallback callback) override;
   void OnCommitCompleted(
       const sync_pb::ModelTypeState& type_state,
-      const syncer::CommitResponseDataList& response_list) override;
+      const syncer::CommitResponseDataList& committed_response_list,
+      const syncer::FailedCommitResponseDataList& error_response_list) override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
                         syncer::UpdateResponseDataList updates) override;
 

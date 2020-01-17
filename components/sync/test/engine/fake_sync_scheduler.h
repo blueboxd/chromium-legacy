@@ -37,6 +37,7 @@ class FakeSyncScheduler : public SyncScheduler {
   void SetNotificationsEnabled(bool notifications_enabled) override;
 
   void OnCredentialsUpdated() override;
+  void OnCredentialsInvalidated() override;
   void OnConnectionStatusChange(network::mojom::ConnectionType type) override;
 
   // SyncCycle::Delegate implementation.

@@ -49,22 +49,28 @@ std::map<SquareSizePx, SkBitmap> ConstrainBitmapsToSizes(
     const std::set<SquareSizePx>& sizes);
 
 // Generates a square container icon of |output_size| by drawing the given
-// |letter| into a rounded background of |color|.
+// |icon_letter| into a rounded background of |color|.
 SkBitmap GenerateBitmap(SquareSizePx output_size,
                         SkColor color,
-                        base::char16 letter);
+                        base::char16 icon_letter);
 
-// Returns the letter that will be painted on the generated icon.
+// Returns the first letter from |app_url| that will be painted on the generated
+// icon.
 base::char16 GenerateIconLetterFromUrl(const GURL& app_url);
 
+// Returns the first letter from |app_name| that will be painted on the
+// generated icon.
+base::char16 GenerateIconLetterFromAppName(const base::string16& app_name);
+
 // Resize icons to the accepted sizes, and generate any that are missing.
-// Note that |app_url| is the launch URL for the app.
+// Note that |icon_letter| is the first letter of app name if available
+// otherwise the first letter of app url.
 // Output: |generated_icon_color| is the color to use if an icon needs to be
 // generated for the web app.
 std::map<SquareSizePx, SkBitmap> ResizeIconsAndGenerateMissing(
     const std::vector<SkBitmap>& icons,
     const std::set<SquareSizePx>& sizes_to_generate,
-    const GURL& app_url,
+    base::char16 icon_letter,
     SkColor* generated_icon_color);
 
 // Generate icons for default sizes, using the first letter of the application

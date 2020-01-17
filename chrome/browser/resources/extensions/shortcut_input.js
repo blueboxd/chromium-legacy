@@ -71,7 +71,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     const node = this.$.input;
     node.addEventListener('mouseup', this.startCapture_.bind(this));
     node.addEventListener('blur', this.endCapture_.bind(this));
@@ -81,7 +81,7 @@ Polymer({
   },
 
   /** @private */
-  startCapture_: function() {
+  startCapture_() {
     if (this.capturing_) {
       return;
     }
@@ -90,7 +90,7 @@ Polymer({
   },
 
   /** @private */
-  endCapture_: function() {
+  endCapture_() {
     if (!this.capturing_) {
       return;
     }
@@ -106,7 +106,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onKeyDown_: function(e) {
+  onKeyDown_(e) {
     if (e.target === this.$.clear) {
       return;
     }
@@ -138,7 +138,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onKeyUp_: function(e) {
+  onKeyUp_(e) {
     // Ignores pressing 'Space' or 'Enter' on the clear button. In 'Enter's
     // case, the clear button disappears before key-up, so 'Enter's key-up
     // target becomes the input field, not the clear button, and needs to
@@ -162,7 +162,7 @@ Polymer({
    * @return {string} UI string.
    * @private
    */
-  getErrorString_: function(
+  getErrorString_(
       error, includeStartModifier, tooManyModifiers, needCharacter) {
     switch (this.error_) {
       case ShortcutError.INCLUDE_START_MODIFIER:
@@ -181,7 +181,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  handleKey_: function(e) {
+  handleKey_(e) {
     // While capturing, we prevent all events from bubbling, to prevent
     // shortcuts lacking the right modifier (F3 for example) from activating
     // and ending capture prematurely.
@@ -218,7 +218,7 @@ Polymer({
   },
 
   /** @private */
-  commitPending_: function() {
+  commitPending_() {
     this.shortcut = this.pendingShortcut_;
     this.delegate.updateExtensionCommandKeybinding(
         this.item, this.commandName, this.shortcut);
@@ -228,7 +228,7 @@ Polymer({
    * @return {string} The text to be displayed in the shortcut field.
    * @private
    */
-  computeText_: function() {
+  computeText_() {
     const shortcutString =
         this.capturing_ ? this.pendingShortcut_ : this.shortcut;
     return shortcutString.split('+').join(' + ');
@@ -239,7 +239,7 @@ Polymer({
    * @return {boolean} Whether the clear button is invisible.
    * @private
    */
-  computeClearInvisible_: function() {
+  computeClearInvisible_() {
     return this.capturing_ && !!this.shortcut;
   },
 
@@ -248,7 +248,7 @@ Polymer({
    * @return {boolean} Whether the clear button is hidden.
    * @private
    */
-  computeClearHidden_: function() {
+  computeClearHidden_() {
     return !this.shortcut;
   },
 
@@ -256,12 +256,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getIsInvalid_: function() {
+  getIsInvalid_() {
     return this.error_ !== ShortcutError.NO_ERROR;
   },
 
   /** @private */
-  onClearTap_: function() {
+  onClearTap_() {
     assert(this.shortcut);
 
     this.pendingShortcut_ = '';

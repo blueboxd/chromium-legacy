@@ -38,8 +38,7 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 @synthesize viewDidAppear = _viewDidAppear;
 
 - (instancetype)init {
-  return [super initWithTableViewStyle:UITableViewStyleGrouped
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  return [super initWithStyle:UITableViewStyleGrouped];
 }
 
 - (void)selectRowAtPoint:(CGPoint)point {

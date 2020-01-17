@@ -35,6 +35,7 @@ class MEDIA_EXPORT MimeUtil {
     EAC3,
     MPEG2_AAC,
     MPEG4_AAC,
+    MPEG4_XHE_AAC,
     VORBIS,
     OPUS,
     FLAC,

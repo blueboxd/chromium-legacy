@@ -51,9 +51,7 @@ static_library("service") {
 }
 
 executable("viz_demo") {
-  sources = [
-    "demo_main.cc",
-  ]
+  sources = [ "demo_main.cc" ]
 
   deps = [
     "//base",

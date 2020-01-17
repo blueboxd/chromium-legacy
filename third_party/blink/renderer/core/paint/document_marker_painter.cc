@@ -186,7 +186,21 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
           ? style.VisitedDependentColor(GetCSSPropertyWebkitTextFillColor())
           : marker.UnderlineColor();
   context.SetStrokeColor(marker_color);
-
+  // Set the style of the underline if there is any.
+  switch (marker.UnderlineStyle()) {
+    case ui::mojom::ImeTextSpanUnderlineStyle::kDash:
+      context.SetStrokeStyle(StrokeStyle::kDashedStroke);
+      break;
+    case ui::mojom::ImeTextSpanUnderlineStyle::kDot:
+      context.SetStrokeStyle(StrokeStyle::kDottedStroke);
+      break;
+    case ui::mojom::ImeTextSpanUnderlineStyle::kSolid:
+      context.SetStrokeStyle(StrokeStyle::kSolidStroke);
+      break;
+    case ui::mojom::ImeTextSpanUnderlineStyle::kNone:
+      context.SetStrokeStyle(StrokeStyle::kNoStroke);
+      break;
+  }
   context.SetStrokeThickness(line_thickness);
   context.DrawLineForText(
       FloatPoint(

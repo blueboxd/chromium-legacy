@@ -5,17 +5,11 @@
 component("cpp") {
   output_name = "storage_service_public"
 
-  public = [
-    "constants.h",
-  ]
+  public = [ "constants.h" ]
 
-  sources = [
-    "constants.cc",
-  ]
+  sources = [ "constants.cc" ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 
   defines = [ "IS_STORAGE_SERVICE_PUBLIC_IMPL" ]
 }

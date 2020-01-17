@@ -498,7 +498,7 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
           "benchmark,toplevel,ipc,base,browser,navigation,omnibox,ui,shutdown,"
           "safe_browsing,Java,EarlyJava,loading,startup,mojom,renderer_host,"
           "disabled-by-default-system_stats,disabled-by-default-cpu_profiler,"
-          "dwrite,fonts,ServiceWorker,passwords",
+          "dwrite,fonts,ServiceWorker,passwords,disabled-by-default-file",
           record_mode);
       // Filter only browser process events.
       base::trace_event::TraceConfig::ProcessFilterConfig process_config(
@@ -510,7 +510,7 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
       return TraceConfig(
           "benchmark,toplevel,ipc,base,ui,v8,renderer,blink,blink_gc,mojom,"
           "latency,latencyInfo,renderer_host,cc,memory,dwrite,fonts,browser,"
-          "ServiceWorker,disabled-by-default-v8.gc,disabled-by-default-file"
+          "ServiceWorker,disabled-by-default-v8.gc,disabled-by-default-file,"
           "disabled-by-default-blink_gc,disabled-by-default-lifecycles,"
           "disabled-by-default-renderer.scheduler,"
           "disabled-by-default-system_stats,disabled-by-default-cpu_profiler,"

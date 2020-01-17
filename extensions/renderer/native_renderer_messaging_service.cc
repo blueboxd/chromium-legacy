@@ -418,9 +418,7 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
 
   if (binding::IsContextValid(v8_context) &&
       APIActivityLogger::IsLoggingEnabled()) {
-    auto activity_logging_args =
-        std::make_unique<base::Value>(base::Value::Type::LIST);
-    auto& list = activity_logging_args->GetList();
+    std::vector<base::Value> list;
     list.reserve(2u);
     if (info.source_endpoint.extension_id)
       list.emplace_back(*info.source_endpoint.extension_id);
@@ -436,7 +434,7 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
 
     APIActivityLogger::LogEvent(
         script_context, event_name,
-        base::ListValue::From(std::move(activity_logging_args)));
+        std::make_unique<base::ListValue>(std::move(list)));
   }
 }
 

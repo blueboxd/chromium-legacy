@@ -74,7 +74,7 @@ Polymer({
   findShortcutListenOnAttach: false,
 
   /** @override */
-  attached: function() {
+  attached() {
     if (this.searchLabel) {
       // |searchLabel| should not change dynamically.
       this.listen(this, 'clear-subpage-search', 'onClearSubpageSearch_');
@@ -82,7 +82,7 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     if (this.searchLabel) {
       // |searchLabel| should not change dynamically.
       this.unlisten(this, 'clear-subpage-search', 'onClearSubpageSearch_');
@@ -90,18 +90,18 @@ Polymer({
   },
 
   /** Focuses the back button when page is loaded. */
-  initialFocus: function() {
+  initialFocus() {
     Polymer.RenderStatus.afterNextRender(
         this, () => cr.ui.focusWithoutInk(this.$.closeButton));
   },
 
   /** @protected */
-  currentRouteChanged: function(route) {
+  currentRouteChanged(route) {
     this.active_ = this.getAttribute('route-path') == route.path;
   },
 
   /** @private */
-  onActiveChanged_: function() {
+  onActiveChanged_() {
     if (this.lastActiveValue_ == this.active_) {
       return;
     }
@@ -132,23 +132,23 @@ Polymer({
    * Clear the value of the search field.
    * @param {!Event} e
    */
-  onClearSubpageSearch_: function(e) {
+  onClearSubpageSearch_(e) {
     e.stopPropagation();
     this.$$('cr-search-field').setValue('');
   },
 
   /** @private */
-  onTapBack_: function() {
-    settings.navigateToPreviousRoute();
+  onTapBack_() {
+    settings.Router.getInstance().navigateToPreviousRoute();
   },
 
   /** @private */
-  onSearchChanged_: function(e) {
+  onSearchChanged_(e) {
     this.searchTerm = e.detail;
   },
 
   // Override FindShortcutBehavior methods.
-  handleFindShortcut: function(modalContextOpen) {
+  handleFindShortcut(modalContextOpen) {
     if (modalContextOpen) {
       return false;
     }
@@ -157,7 +157,7 @@ Polymer({
   },
 
   // Override FindShortcutBehavior methods.
-  searchInputHasFocus: function() {
+  searchInputHasFocus() {
     const field = this.$$('cr-search-field');
     return field.getSearchInput() == field.shadowRoot.activeElement;
   },

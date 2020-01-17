@@ -185,7 +185,7 @@ bool IsAudioCodecProprietary(AudioCodec codec) {
 }
 
 bool IsDefaultSupportedAudioType(const AudioType& type) {
-  if (type.spatialRendering)
+  if (type.spatial_rendering)
     return false;
 
 #if !BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -195,6 +195,15 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
 
   switch (type.codec) {
     case kCodecAAC:
+      if (type.profile != AudioCodecProfile::kXHE_AAC)
+        return true;
+#if defined(OS_ANDROID)
+      return base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_P;
+#else
+      return false;
+#endif
+
     case kCodecFLAC:
     case kCodecMP3:
     case kCodecOpus:

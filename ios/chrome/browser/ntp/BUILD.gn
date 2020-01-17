@@ -25,17 +25,13 @@ source_set("features") {
     "features.cc",
     "features.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "new_tab_page_tab_helper_unittest.mm",
-  ]
+  sources = [ "new_tab_page_tab_helper_unittest.mm" ]
   deps = [
     "//base/test:test_support",
     "//components/strings:components_strings_grit",

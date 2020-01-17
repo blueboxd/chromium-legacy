@@ -15,6 +15,7 @@
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
+#include "components/sync_device_info/fake_local_device_info_provider.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "crypto/ec_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -94,14 +95,16 @@ class SharingFCMSenderTest : public testing::Test {
 
  protected:
   SharingFCMSenderTest()
-      : sync_prefs_(&prefs_, &fake_device_info_sync_service),
+      : sync_prefs_(&prefs_, &fake_device_info_sync_service_),
         sharing_fcm_sender_(&fake_gcm_driver_,
                             &sync_prefs_,
-                            &vapid_key_manager_) {
+                            &vapid_key_manager_,
+                            &fake_local_device_info_provider_) {
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
 
-  syncer::FakeDeviceInfoSyncService fake_device_info_sync_service;
+  syncer::FakeDeviceInfoSyncService fake_device_info_sync_service_;
+  syncer::FakeLocalDeviceInfoProvider fake_local_device_info_provider_;
   FakeGCMDriver fake_gcm_driver_;
 
   SharingSyncPreference sync_prefs_;
@@ -128,7 +131,7 @@ TEST_F(SharingFCMSenderTest, NoFcmRegistration) {
   base::Optional<std::string> message_id;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
-  sharing_fcm_sender_.SendMessageToDevice(
+  sharing_fcm_sender_.SendMessageToTargetInfo(
       std::move(target), base::TimeDelta::FromSeconds(kTtlSeconds),
       std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
@@ -150,7 +153,7 @@ TEST_F(SharingFCMSenderTest, NoVapidKey) {
   base::Optional<std::string> message_id;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ack_message();
-  sharing_fcm_sender_.SendMessageToDevice(
+  sharing_fcm_sender_.SendMessageToTargetInfo(
       std::move(target), base::TimeDelta::FromSeconds(kTtlSeconds),
       std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
@@ -204,7 +207,7 @@ TEST_P(SharingFCMSenderResultTest, ResultTest) {
   base::Optional<std::string> message_id;
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_ping_message();
-  sharing_fcm_sender_.SendMessageToDevice(
+  sharing_fcm_sender_.SendMessageToTargetInfo(
       std::move(target), base::TimeDelta::FromSeconds(kTtlSeconds),
       std::move(sharing_message),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,

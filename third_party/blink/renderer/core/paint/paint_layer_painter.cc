@@ -397,6 +397,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
                                                     subpixel_accumulation)
             : offset_from_root;
     clip_path_clipper.emplace(context, paint_layer_.GetLayoutObject(),
+                              paint_layer_.GetLayoutObject(),
                               visual_offset_from_root);
   }
 

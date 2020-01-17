@@ -76,7 +76,6 @@ def chromiumos_builder(*, name, **kwargs):
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-rel',
-    goma_enable_ats = True,
 )
 
 chromiumos_builder(
@@ -100,7 +99,6 @@ def fyi_builder(
 # OS shouldn't matter.
 fyi_builder(
     name = 'mac-osxbeta-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 
@@ -142,7 +140,6 @@ gpu_builder(
 gpu_builder(
     name = 'GPU Win x64 Builder',
     builderless = True,
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -257,7 +254,6 @@ def win_builder(*, name, os=os.WINDOWS_DEFAULT, **kwargs):
   return builder(
       name = name,
       goma_backend = goma.backend.RBE_PROD,
-      goma_enable_ats = True,
       mastername = 'chromium.win',
       os = os,
       **kwargs

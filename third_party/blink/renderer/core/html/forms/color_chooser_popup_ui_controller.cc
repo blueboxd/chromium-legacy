@@ -54,12 +54,8 @@ ColorChooserPopupUIController::ColorChooserPopupUIController(
       popup_(nullptr),
       locale_(Locale::DefaultLocale()) {}
 
-ColorChooserPopupUIController::~ColorChooserPopupUIController() = default;
-
-void ColorChooserPopupUIController::Dispose() {
-  // Finalized earlier so as to access chrome_client_ while alive.
-  CancelPopup();
-  // ~ColorChooserUIController calls EndChooser().
+ColorChooserPopupUIController::~ColorChooserPopupUIController() {
+  DCHECK(!popup_);
 }
 
 void ColorChooserPopupUIController::Trace(Visitor* visitor) {

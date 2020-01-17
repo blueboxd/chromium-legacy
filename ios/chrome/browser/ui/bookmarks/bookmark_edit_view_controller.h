@@ -58,9 +58,7 @@ class ChromeBrowserState;
                     browserState:(ios::ChromeBrowserState*)browserState
                       dispatcher:(id<BrowserCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:(ChromeTableViewControllerStyle)style
-    NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 // Closes the edit view as if close button was pressed.
 - (void)dismiss;

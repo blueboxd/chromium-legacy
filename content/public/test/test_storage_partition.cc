@@ -98,6 +98,10 @@ ServiceWorkerContext* TestStoragePartition::GetServiceWorkerContext() {
   return service_worker_context_;
 }
 
+DedicatedWorkerService* TestStoragePartition::GetDedicatedWorkerService() {
+  return dedicated_worker_service_;
+}
+
 SharedWorkerService* TestStoragePartition::GetSharedWorkerService() {
   return shared_worker_service_;
 }

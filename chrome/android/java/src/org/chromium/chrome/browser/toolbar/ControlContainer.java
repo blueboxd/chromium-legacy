@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.toolbar;
 import android.view.View;
 
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
-import org.chromium.chrome.browser.ui.widget.ClipDrawableProgressBar;
+import org.chromium.components.browser_ui.widget.ClipDrawableProgressBar;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**

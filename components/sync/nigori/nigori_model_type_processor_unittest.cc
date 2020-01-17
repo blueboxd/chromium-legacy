@@ -256,8 +256,9 @@ TEST_F(NigoriModelTypeProcessorTest,
 
   // ApplySyncChanges() should be called to trigger persistence of the metadata.
   EXPECT_CALL(*mock_nigori_sync_bridge(), ApplySyncChanges(Eq(base::nullopt)));
-  processor()->OnCommitCompleted(CreateDummyModelTypeState(),
-                                 std::move(commit_response_list));
+  processor()->OnCommitCompleted(
+      CreateDummyModelTypeState(), std::move(commit_response_list),
+      /*error_response_list=*/FailedCommitResponseDataList());
 
   // There should be no more local changes.
   commit_response_list.clear();
@@ -285,8 +286,10 @@ TEST_F(NigoriModelTypeProcessorTest,
 
   // ApplySyncChanges() should be called to trigger persistence of the metadata.
   EXPECT_CALL(*mock_nigori_sync_bridge(), ApplySyncChanges(Eq(base::nullopt)));
-  processor()->OnCommitCompleted(CreateDummyModelTypeState(),
-                                 CommitResponseDataList());
+  processor()->OnCommitCompleted(
+      CreateDummyModelTypeState(),
+      /*committed_response_list=*/CommitResponseDataList(),
+      /*error_response_list=*/FailedCommitResponseDataList());
 
   // Data has been moved into the previous request, so the processor will ask
   // for the commit data once more.
@@ -342,8 +345,9 @@ TEST_F(NigoriModelTypeProcessorTest,
   // ApplySyncChanges() should be called to trigger persistence of the metadata.
   EXPECT_CALL(*mock_nigori_sync_bridge(), ApplySyncChanges(Eq(base::nullopt)));
   // Receive the commit response of the first request.
-  processor()->OnCommitCompleted(CreateDummyModelTypeState(),
-                                 std::move(commit_response_list));
+  processor()->OnCommitCompleted(
+      CreateDummyModelTypeState(), std::move(commit_response_list),
+      /*error_response_list=*/FailedCommitResponseDataList());
 
   // There should still be a local change.
   commit_response_list.clear();

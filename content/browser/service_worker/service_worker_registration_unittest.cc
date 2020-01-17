@@ -192,6 +192,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
   }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
+  ServiceWorkerRegistry* registry() { return helper_->context()->registry(); }
   ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
 
   class RegistrationListener : public ServiceWorkerRegistration::Listener {
@@ -867,7 +868,7 @@ class ServiceWorkerRegistrationObjectHostTest
       int64_t registration_id,
       const GURL& scope) {
     base::Optional<blink::ServiceWorkerStatusCode> status;
-    storage()->FindRegistrationForId(
+    registry()->FindRegistrationForId(
         registration_id, scope,
         base::AdaptCallbackForRepeating(base::BindOnce(
             [](base::Optional<blink::ServiceWorkerStatusCode>* out_status,

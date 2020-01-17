@@ -72,7 +72,7 @@ var TimelineGraphView = (function() {
      * Returns true if the graph is scrolled all the way to the right.
      */
     graphScrolledToRightEdge_: function() {
-      return this.scrollbar_.position_ == this.scrollbar_.range_;
+      return this.scrollbar_.position_ === this.scrollbar_.range_;
     },
 
     /**
@@ -176,7 +176,7 @@ var TimelineGraphView = (function() {
       var fontHeight = parseInt(fontHeightString);
 
       // Safety check, to avoid drawing anything too ugly.
-      if (fontHeightString.length == 0 || fontHeight <= 0 ||
+      if (fontHeightString.length === 0 || fontHeight <= 0 ||
           fontHeight * 4 > height || width < 50) {
         return;
       }
@@ -193,7 +193,7 @@ var TimelineGraphView = (function() {
       var position = this.scrollbar_.position_;
       // If the entire time range is being displayed, align the right edge of
       // the graph to the end of the time range.
-      if (this.scrollbar_.range_ == 0) {
+      if (this.scrollbar_.range_ === 0) {
         position = this.getLength_() - this.canvas_.width;
       }
       var visibleStartTime = this.startTime_ + position * this.scale_;
@@ -318,7 +318,7 @@ var TimelineGraphView = (function() {
 
       hasDataSeries: function(dataSeries) {
         for (var i = 0; i < this.dataSeries_.length; ++i) {
-          if (this.dataSeries_[i] == dataSeries) {
+          if (this.dataSeries_[i] === dataSeries) {
             return true;
           }
         }
@@ -414,7 +414,7 @@ var TimelineGraphView = (function() {
         this.labels_ = [];
         var range = maxValue - minValue;
         // No labels if the range is 0.
-        if (range == 0) {
+        if (range === 0) {
           this.min_ = this.max_ = maxValue;
           return;
         }
@@ -533,7 +533,7 @@ var TimelineGraphView = (function() {
        * Draw labels in |labels_|.
        */
       drawLabels: function(context) {
-        if (this.labels_.length == 0) {
+        if (this.labels_.length === 0) {
           return;
         }
         var x = this.width_ - LABEL_HORIZONTAL_SPACING;

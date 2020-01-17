@@ -22,6 +22,8 @@ AX_EXPORT extern const char kEnableExperimentalAccessibilitySwitchAccessText[];
 AX_EXPORT extern const char
     kEnableExperimentalAccessibilityChromeVoxLanguageSwitching[];
 AX_EXPORT extern const char
+    kEnableExperimentalAccessibilityChromeVoxSearchMenus[];
+AX_EXPORT extern const char
     kEnableExperimentalAccessibilityChromeVoxSubNodeLanguageSwitching[];
 
 // Returns true if experimental accessibility language detection is enabled.

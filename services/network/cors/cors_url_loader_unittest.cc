@@ -1485,7 +1485,7 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_POST) {
   EXPECT_EQ(GetRequest().method, "POST");
   std::string attached_origin;
   EXPECT_TRUE(GetRequest().headers.GetHeader("origin", &attached_origin));
-  EXPECT_EQ(attached_origin, url::Origin::Create(url).Serialize());
+  EXPECT_EQ(attached_origin, url::Origin::Create(origin).Serialize());
 }
 
 TEST_F(CorsURLLoaderTest, 304ForSimpleRevalidation) {

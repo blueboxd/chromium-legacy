@@ -67,7 +67,7 @@ Polymer({
   ],
 
   /** @override */
-  ready: function() {
+  ready() {
     this.ContentSetting = settings.ContentSetting;
     this.addWebUIListener(
         'contentSettingCategoryChanged', this.updateDefaultManaged_.bind(this));
@@ -79,7 +79,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShowAllowSiteList_: function() {
+  computeShowAllowSiteList_() {
     return this.category !=
         settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
   },
@@ -88,7 +88,7 @@ Polymer({
    * Updates whether or not the default value is managed by a policy.
    * @private
    */
-  updateDefaultManaged_: function() {
+  updateDefaultManaged_() {
     if (this.category === undefined) {
       return;
     }
@@ -108,7 +108,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getReadOnlyList_: function() {
+  getReadOnlyList_() {
     return this.readOnlyList || this.defaultManaged_;
   }
 });

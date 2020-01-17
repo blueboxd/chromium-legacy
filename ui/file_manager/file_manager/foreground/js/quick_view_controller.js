@@ -15,7 +15,7 @@ class QuickViewController {
    * @param {!cr.ui.MultiMenuButton} selectionMenuButton
    * @param {!QuickViewModel} quickViewModel
    * @param {!TaskController} taskController
-   * @param {!cr.ui.ListSelectionModel} fileListSelectionModel
+   * @param {!FileListSelectionModel} fileListSelectionModel
    * @param {!QuickViewUma} quickViewUma
    * @param {!MetadataBoxController} metadataBoxController
    * @param {DialogType} dialogType
@@ -47,7 +47,7 @@ class QuickViewController {
     /** @private @const {!TaskController} */
     this.taskController_ = taskController;
 
-    /** @private @const {!cr.ui.ListSelectionModel} */
+    /** @private @const {!FileListSelectionModel} */
     this.fileListSelectionModel_ = fileListSelectionModel;
 
     /** @private @const {!MetadataBoxController} */
@@ -64,6 +64,12 @@ class QuickViewController {
      * @private {!Array<!FileEntry>}
      */
     this.entries_ = [];
+
+    /**
+     * The current selection index of this.entries_.
+     * @private {number}
+     */
+    this.currentSelection_ = 0;
 
     this.selectionHandler_.addEventListener(
         FileSelectionHandler.EventType.CHANGE,
@@ -148,9 +154,6 @@ class QuickViewController {
   onKeyDownToOpen_(event) {
     if (event.key === ' ') {
       event.preventDefault();
-      if (this.entries_.length != 1) {
-        return;
-      }
       event.stopImmediatePropagation();
       this.display_(QuickViewUma.WayToOpen.SPACE_KEY);
     }
@@ -175,23 +178,75 @@ class QuickViewController {
           break;
         case 'ArrowRight':
         case 'ArrowDown':
-          index = this.fileListSelectionModel_.selectedIndex + 1;
-          if (index >= this.fileListSelectionModel_.length) {
-            index = 0;
+          if (this.fileListSelectionModel_.getCheckSelectMode()) {
+            this.changeCheckSelectModeSelection_(true);
+          } else {
+            this.changeSingleSelectModeSelection_(true);
           }
-          this.fileListSelectionModel_.selectedIndex = index;
           break;
         case 'ArrowLeft':
         case 'ArrowUp':
-          index = this.fileListSelectionModel_.selectedIndex - 1;
-          if (index < 0) {
-            index = this.fileListSelectionModel_.length - 1;
+          if (this.fileListSelectionModel_.getCheckSelectMode()) {
+            this.changeCheckSelectModeSelection_();
+          } else {
+            this.changeSingleSelectModeSelection_();
           }
-          this.fileListSelectionModel_.selectedIndex = index;
           break;
       }
     }
   }
+
+  /**
+   * Changes the currently selected entry when in single-select mode.  Sets
+   * the models |selectedIndex| to indirectly trigger onFileSelectionChanged_
+   * and populate |this.entries_|.
+   *
+   * @param {boolean} down True if user pressed down arrow, false if up.
+   * @private
+   */
+  changeSingleSelectModeSelection_(down = false) {
+    let index;
+
+    if (down) {
+      index = this.fileListSelectionModel_.selectedIndex + 1;
+      if (index >= this.fileListSelectionModel_.length) {
+        index = 0;
+      }
+    } else {
+      index = this.fileListSelectionModel_.selectedIndex - 1;
+      if (index < 0) {
+        index = this.fileListSelectionModel_.length - 1;
+      }
+    }
+
+    this.fileListSelectionModel_.selectedIndex = index;
+  }
+
+  /**
+   * Changes the currently selected entry when in multi-select mode (file
+   * list calls this "check-select" mode).
+   *
+   * @param {boolean} down True if user pressed down arrow, false if up.
+   * @private
+   */
+  changeCheckSelectModeSelection_(down = false) {
+    if (down) {
+      this.currentSelection_ = this.currentSelection_ + 1;
+      if (this.currentSelection_ >=
+          this.fileListSelectionModel_.selectedIndexes.length) {
+        this.currentSelection_ = 0;
+      }
+    } else {
+      this.currentSelection_ = this.currentSelection_ - 1;
+      if (this.currentSelection_ < 0) {
+        this.currentSelection_ =
+            this.fileListSelectionModel_.selectedIndexes.length - 1;
+      }
+    }
+
+    this.onFileSelectionChanged_(null);
+  }
+
 
   /**
    * Display quick view.
@@ -200,6 +255,9 @@ class QuickViewController {
    * @private
    */
   display_(wayToOpen) {
+    // On opening Quick View, always reset the current selection index.
+    this.currentSelection_ = 0;
+
     this.updateQuickView_().then(() => {
       if (!this.quickView_.isOpened()) {
         this.quickView_.open();
@@ -211,14 +269,18 @@ class QuickViewController {
   /**
    * Update quick view on file selection change.
    *
-   * @param {!Event} event an Event whose target is FileSelectionHandler.
+   * @param {?Event} event an Event whose target is FileSelectionHandler.
    * @private
    */
   onFileSelectionChanged_(event) {
-    this.entries_ = event.target.selection.entries;
+    if (event) {
+      this.entries_ = event.target.selection.entries;
+    }
+
     if (this.quickView_ && this.quickView_.isOpened()) {
       assert(this.entries_.length > 0);
-      const entry = this.entries_[0];
+      const entry = this.entries_[this.currentSelection_];
+
       if (!util.isSameEntry(entry, this.quickViewModel_.getSelectedEntry())) {
         this.updateQuickView_();
       }
@@ -250,9 +312,8 @@ class QuickViewController {
           .catch(console.error);
     }
 
-    // TODO(oka): Support multi-selection.
     assert(this.entries_.length > 0);
-    const entry = this.entries_[0];
+    const entry = this.entries_[this.currentSelection_];
     this.quickViewModel_.setSelectedEntry(entry);
 
     requestIdleCallback(() => {

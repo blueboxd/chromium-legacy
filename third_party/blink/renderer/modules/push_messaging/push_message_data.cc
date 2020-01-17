@@ -40,7 +40,7 @@ PushMessageData* PushMessageData::Create(
 
     return MakeGarbageCollected<PushMessageData>(
         static_cast<const char*>(buffer->Data()),
-        buffer->DeprecatedByteLengthAsUnsigned());
+        base::checked_cast<wtf_size_t>(buffer->ByteLengthAsSizeT()));
   }
 
   if (message_data.IsUSVString()) {

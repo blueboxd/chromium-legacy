@@ -192,8 +192,11 @@ TEST_P(ScrollingTest, fastScrollingByDefault) {
   LocalFrameView* frame_view = GetFrame()->View();
   Page* page = GetFrame()->GetPage();
   ASSERT_TRUE(page->GetScrollingCoordinator());
-  ASSERT_TRUE(page->GetScrollingCoordinator()->CoordinatesScrollingForFrameView(
-      frame_view));
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    ASSERT_TRUE(
+        page->GetScrollingCoordinator()->CoordinatesScrollingForFrameView(
+            frame_view));
+  }
 
   // Fast scrolling should be enabled by default.
   const auto* outer_scroll_node =

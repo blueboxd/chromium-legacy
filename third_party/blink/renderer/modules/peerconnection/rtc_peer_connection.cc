@@ -763,14 +763,9 @@ RTCPeerConnection::RTCPeerConnection(
     return;
   }
 
-  // TODO(crbug.com/787254): Can the frame be associated when
-  // calling RtcPeerConnectionHandler::Initialize()?
-  auto* web_local_frame =
+  auto* web_frame =
       static_cast<WebLocalFrame*>(WebFrame::FromFrame(document->GetFrame()));
-  if (web_local_frame)
-    peer_handler_->AssociateWithFrame(web_local_frame);
-
-  if (!peer_handler_->Initialize(configuration, constraints)) {
+  if (!peer_handler_->Initialize(configuration, constraints, web_frame)) {
     closed_ = true;
     stopped_ = true;
     exception_state.ThrowDOMException(
@@ -802,32 +797,6 @@ void RTCPeerConnection::Dispose() {
   // Promptly clears a raw reference from content/ to an on-heap object
   // so that content/ doesn't access it in a lazy sweeping phase.
   peer_handler_.reset();
-
-  // UMA for CallSetupStates. This metric is reported regardless of whether or
-  // not getUserMedia() has been called in this document.
-  UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.CallSetupState.OffererState",
-                            call_setup_state_tracker_.offerer_state());
-  UMA_HISTOGRAM_ENUMERATION(
-      "WebRTC.PeerConnection.CallSetupState.AnswererState",
-      call_setup_state_tracker_.answerer_state());
-  UMA_HISTOGRAM_ENUMERATION(
-      "WebRTC.PeerConnection.CallSetupState.CallSetupState",
-      call_setup_state_tracker_.GetCallSetupState());
-  // UMA for CallSetupStates only for documents that have performed
-  // getUserMedia(). This heuristic hints that the peer connection is likely
-  // used in a media/conferencing context, which is a use case that may be
-  // particularly sensitive to the Plan B vs Unified Plan switch.
-  if (call_setup_state_tracker_.document_uses_media()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "WebRTC.PeerConnection.CallSetupStateWithGum.OffererState",
-        call_setup_state_tracker_.offerer_state());
-    UMA_HISTOGRAM_ENUMERATION(
-        "WebRTC.PeerConnection.CallSetupStateWithGum.AnswererState",
-        call_setup_state_tracker_.answerer_state());
-    UMA_HISTOGRAM_ENUMERATION(
-        "WebRTC.PeerConnection.CallSetupStateWithGum.CallSetupState",
-        call_setup_state_tracker_.GetCallSetupState());
-  }
 }
 
 ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
@@ -2702,14 +2671,17 @@ void RTCPeerConnection::DidGenerateICECandidate(
   RTCIceCandidate* ice_candidate = RTCIceCandidate::Create(platform_candidate);
   ScheduleDispatchEvent(RTCPeerConnectionIceEvent::Create(ice_candidate));
 }
-void RTCPeerConnection::DidFailICECandidate(const String& host_candidate,
+
+void RTCPeerConnection::DidFailICECandidate(const String& address,
+                                            base::Optional<uint16_t> port,
+                                            const String& host_candidate,
                                             const String& url,
                                             int error_code,
                                             const String& error_text) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
   ScheduleDispatchEvent(RTCPeerConnectionIceErrorEvent::Create(
-      host_candidate, url, error_code, error_text));
+      address, port, host_candidate, url, error_code, error_text));
 }
 
 void RTCPeerConnection::DidChangeSignalingState(

@@ -80,7 +80,7 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
     {testVoice: '', expectedVoice: constants.SYSTEM_VOICE},
 
     {
-      setup: function() {
+      setup() {
         voices[3].lang = 'en';
       },
       testVoice: 'U.S. English',
@@ -88,7 +88,7 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
     },
 
     {
-      setup: function() {
+      setup() {
         voices[3].lang = 'fr-FR';
         voices[3].voiceName = 'French';
       },
@@ -112,7 +112,7 @@ TEST_F(
       var startCalls = 0, endCalls = 0;
       assertCallsCallbacks = function(text, speakCalls) {
         tts.speak(text, QueueMode.QUEUE, {
-          startCallback: function() {
+          startCallback() {
             ++startCalls;
           },
           endCallback: this.newCallback(function() {

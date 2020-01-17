@@ -90,6 +90,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 #include "chrome/browser/plugins/plugin_utils.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_url_loader_interceptor.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -119,7 +120,6 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sharing/sms/sms_remote_fetcher.h"
 #include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory.h"
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
@@ -329,6 +329,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "ui/base/buildflags.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
@@ -578,6 +579,10 @@
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 #include "chrome/browser/ui/webui/tab_strip/chrome_content_browser_client_tab_strip_part.h"
+#endif
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #endif
 
 using base::FileDescriptor;
@@ -3573,7 +3578,7 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case service_manager::SandboxType::kXrCompositing:
     case service_manager::SandboxType::kNetwork:
     case service_manager::SandboxType::kCdm:
-    case service_manager::SandboxType::kPdfCompositor:
+    case service_manager::SandboxType::kPrintCompositor:
     case service_manager::SandboxType::kAudio:
     case service_manager::SandboxType::kSoda:
       // Should never reach here.
@@ -4564,6 +4569,12 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
             frame_tree_node_id));
   }
 
+  if (base::FeatureList::IsEnabled(features::kIsolatePrerenders)) {
+    interceptors.push_back(
+        std::make_unique<IsolatedPrerenderURLLoaderInterceptor>(
+            frame_tree_node_id));
+  }
+
   return interceptors;
 }
 
@@ -5435,3 +5446,43 @@ void ChromeContentBrowserClient::FetchRemoteSms(
   ::FetchRemoteSms(browser_context, origin, std::move(callback));
 }
 #endif
+
+void ChromeContentBrowserClient::IsClipboardPasteAllowed(
+    content::WebContents* web_contents,
+    const GURL& url,
+    const ui::ClipboardFormatType& data_type,
+    const std::string& data,
+    IsClipboardPasteAllowedCallback callback) {
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  // Safe browsing does not support images, so accept without checking.
+  // TODO(crbug.com/1013584): check policy on what to do about unsupported
+  // types when it is implemented.
+  if (data_type.Equals(ui::ClipboardFormatType::GetBitmapType())) {
+    std::move(callback).Run(ClipboardPasteAllowed(true));
+    return;
+  }
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  safe_browsing::DeepScanningDialogDelegate::Data dialog_data;
+  if (safe_browsing::DeepScanningDialogDelegate::IsEnabled(profile, url,
+                                                           &dialog_data)) {
+    dialog_data.text.push_back(base::UTF8ToUTF16(data));
+    safe_browsing::DeepScanningDialogDelegate::ShowForWebContents(
+        web_contents, std::move(dialog_data),
+        base::BindOnce(
+            [](IsClipboardPasteAllowedCallback callback,
+               const safe_browsing::DeepScanningDialogDelegate::Data& data,
+               const safe_browsing::DeepScanningDialogDelegate::Result&
+                   result) {
+              std::move(callback).Run(
+                  ClipboardPasteAllowed(result.text_results[0]));
+            },
+            std::move(callback)));
+  } else {
+    std::move(callback).Run(ClipboardPasteAllowed(true));
+  }
+#else
+  std::move(callback).Run(ClipboardPasteAllowed(true));
+#endif  // BUILDFLAG(FULL_SAFE_BROWSING)
+}

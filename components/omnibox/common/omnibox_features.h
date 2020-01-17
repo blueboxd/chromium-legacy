@@ -60,6 +60,8 @@ extern const base::Feature kZeroSuggestionsOnSERP;
 
 // Scoring - these affect how relevance scores are calculated for suggestions.
 extern const base::Feature kOmniboxExperimentalSuggestScoring;
+extern const base::Feature kHistoryQuickProviderAllowButDoNotScoreMidwordTerms;
+extern const base::Feature kHistoryQuickProviderAllowMidwordContinuations;
 
 // Suggestions UI - these affect the UI or function of the suggestions popup.
 extern const base::Feature kConfirmOmniboxSuggestionRemovals;

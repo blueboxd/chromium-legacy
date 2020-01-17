@@ -35,7 +35,7 @@ Polymer({
      */
     diceEnabled_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('diceEnabled');
       },
     },
@@ -81,7 +81,7 @@ Polymer({
      */
     isProfileActionable_: {
       type: Boolean,
-      value: function() {
+      value() {
         if (!cr.isChromeOS) {
           // Opens profile manager.
           return true;
@@ -120,7 +120,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.SYNC) {
           map.set(settings.routes.SYNC.path, '#sync-setup');
@@ -143,7 +143,7 @@ Polymer({
   syncBrowserProxy_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     let useProfileNameAndIcon = true;
     // <if expr="chromeos">
     if (loadTimeData.getBoolean('isAccountManagerEnabled')) {
@@ -182,16 +182,18 @@ Polymer({
   },
 
   /** @protected */
-  currentRouteChanged: function() {
+  currentRouteChanged() {
     this.showImportDataDialog_ =
-        settings.getCurrentRoute() == settings.routes.IMPORT_DATA;
+        settings.Router.getInstance().getCurrentRoute() ==
+        settings.routes.IMPORT_DATA;
 
-    if (settings.getCurrentRoute() == settings.routes.SIGN_OUT) {
+    if (settings.Router.getInstance().getCurrentRoute() ==
+        settings.routes.SIGN_OUT) {
       // If the sync status has not been fetched yet, optimistically display
       // the sign-out dialog. There is another check when the sync status is
       // fetched. The dialog will be closed when the user is not signed in.
       if (this.syncStatus && !this.syncStatus.signedIn) {
-        settings.navigateToPreviousRoute();
+        settings.Router.getInstance().navigateToPreviousRoute();
       } else {
         this.showSignoutDialog_ = true;
       }
@@ -202,7 +204,7 @@ Polymer({
    * @return {!Element}
    * @private
    */
-  getEditPersonAssocControl_: function() {
+  getEditPersonAssocControl_() {
     return this.diceEnabled_ ? assert(this.$$('#edit-profile')) :
                                assert(this.$$('#picture-subpage-trigger'));
   },
@@ -211,7 +213,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSyncAndGoogleServicesSubtext_: function() {
+  getSyncAndGoogleServicesSubtext_() {
     if (this.syncStatus && this.syncStatus.hasError &&
         this.syncStatus.statusText) {
       return this.syncStatus.statusText;
@@ -224,7 +226,7 @@ Polymer({
    * @private
    * @param {!settings.ProfileInfo} info
    */
-  handleProfileInfo_: function(info) {
+  handleProfileInfo_(info) {
     this.profileName_ = info.name;
     /**
      * Extract first frame from image by creating a single frame PNG using
@@ -267,7 +269,7 @@ Polymer({
    * @param {?settings.SyncStatus} syncStatus
    * @private
    */
-  handleSyncStatus_: function(syncStatus) {
+  handleSyncStatus_(syncStatus) {
     // Sign-in impressions should be recorded only if the sign-in promo is
     // shown. They should be recorder only once, the first time
     // |this.syncStatus| is set.
@@ -293,7 +295,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShouldShowGoogleAccount_: function() {
+  computeShouldShowGoogleAccount_() {
     if (this.storedAccounts === undefined || this.syncStatus === undefined) {
       return false;
     }
@@ -304,7 +306,7 @@ Polymer({
   // </if>
 
   /** @private */
-  onProfileTap_: function() {
+  onProfileTap_() {
     // <if expr="chromeos">
     if (loadTimeData.getBoolean('isAccountManagerEnabled')) {
       // Post-SplitSettings. The browser C++ code loads OS settings in a window.
@@ -313,17 +315,17 @@ Polymer({
     }
     // </if>
     // <if expr="not chromeos">
-    settings.navigateTo(settings.routes.MANAGE_PROFILE);
+    settings.Router.getInstance().navigateTo(settings.routes.MANAGE_PROFILE);
     // </if>
   },
 
   /** @private */
-  onSigninTap_: function() {
+  onSigninTap_() {
     this.syncBrowserProxy_.startSignIn();
   },
 
   /** @private */
-  onDisconnectDialogClosed_: function(e) {
+  onDisconnectDialogClosed_(e) {
     this.showSignoutDialog_ = false;
     // <if expr="not chromeos">
     if (!this.diceEnabled_) {
@@ -336,31 +338,32 @@ Polymer({
     cr.ui.focusWithoutInk(assert(this.$$('#disconnectButton')));
     // </if>
 
-    if (settings.getCurrentRoute() == settings.routes.SIGN_OUT) {
-      settings.navigateToPreviousRoute();
+    if (settings.Router.getInstance().getCurrentRoute() ==
+        settings.routes.SIGN_OUT) {
+      settings.Router.getInstance().navigateToPreviousRoute();
     }
   },
 
   /** @private */
-  onDisconnectTap_: function() {
-    settings.navigateTo(settings.routes.SIGN_OUT);
+  onDisconnectTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.SIGN_OUT);
   },
 
   /** @private */
-  onSyncTap_: function() {
+  onSyncTap_() {
     // Users can go to sync subpage regardless of sync status.
-    settings.navigateTo(settings.routes.SYNC);
+    settings.Router.getInstance().navigateTo(settings.routes.SYNC);
   },
 
   // <if expr="not chromeos">
   /** @private */
-  onImportDataTap_: function() {
-    settings.navigateTo(settings.routes.IMPORT_DATA);
+  onImportDataTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.IMPORT_DATA);
   },
 
   /** @private */
-  onImportDataDialogClosed_: function() {
-    settings.navigateToPreviousRoute();
+  onImportDataDialogClosed_() {
+    settings.Router.getInstance().navigateToPreviousRoute();
     cr.ui.focusWithoutInk(assert(this.$.importDataDialogTrigger));
   },
 
@@ -368,7 +371,7 @@ Polymer({
    * Open URL for managing your Google Account.
    * @private
    */
-  openGoogleAccount_: function() {
+  openGoogleAccount_() {
     settings.OpenWindowProxyImpl.getInstance().openURL(
         loadTimeData.getString('googleAccountUrl'));
     chrome.metricsPrivate.recordUserAction('ManageGoogleAccount_Clicked');
@@ -378,7 +381,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowSyncAccountControl_: function() {
+  shouldShowSyncAccountControl_() {
     if (this.syncStatus == undefined) {
       return false;
     }
@@ -393,7 +396,7 @@ Polymer({
    * @return {string} A CSS image-set for multiple scale factors.
    * @private
    */
-  getIconImageSet_: function(iconUrl) {
+  getIconImageSet_(iconUrl) {
     return cr.icon.getImage(iconUrl);
   },
 
@@ -402,7 +405,7 @@ Polymer({
    * @return {boolean} Whether to show the "Sign in to Chrome" button.
    * @private
    */
-  showSignin_: function(syncStatus) {
+  showSignin_(syncStatus) {
     return !!syncStatus.signinAllowed && !syncStatus.signedIn;
   },
 });

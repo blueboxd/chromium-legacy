@@ -5,7 +5,5 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojo_bindings") {
-  sources = [
-    "snippets_internals.mojom",
-  ]
+  sources = [ "snippets_internals.mojom" ]
 }

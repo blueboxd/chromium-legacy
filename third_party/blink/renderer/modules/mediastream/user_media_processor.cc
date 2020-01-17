@@ -1310,14 +1310,8 @@ UserMediaProcessor::CreateAudioSource(
 
   // The audio device is not associated with screen capture and also requires
   // processing.
-  //
-  // TODO(crbug.com/c/704136): Convert ProcessedLocalAudioSource ctor to
-  // operate over LocalFrame instead of WebLocalFrame.
-  WebLocalFrame* web_frame =
-      frame_ ? static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame_))
-             : nullptr;
   return std::make_unique<blink::ProcessedLocalAudioSource>(
-      web_frame, device, stream_controls->disable_local_echo,
+      frame_, device, stream_controls->disable_local_echo,
       audio_processing_properties, std::move(source_ready), task_runner_);
 }
 

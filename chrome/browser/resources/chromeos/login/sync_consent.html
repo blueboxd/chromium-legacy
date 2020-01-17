@@ -73,32 +73,24 @@
 
     <!-- Dialog used with SplitSettingsSync. -->
     <oobe-dialog id="osSyncConsentDialog" role="dialog" has-buttons
-        aria-label$="Sync and personalization options PLACEHOLDER"
+        aria-label$="[[i18nDynamic(locale, 'osSyncConsentTitle')]]"
         hidden>
       <hd-iron-icon slot="oobe-icon"
           icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
       </hd-iron-icon>
-      <!-- TODO(jamescook): When replacing the PLACEHOLDER strings add the
-            consent-description attribute to the h1 and the divs. The consent
-            auditor system requires real string IDs so it won't work with the
-            placeholders. -->
-      <h1 slot="title">
-        Sync and personalization options PLACEHOLDER
+      <h1 slot="title" consent-description>
+        [[i18nDynamic(locale, 'osSyncConsentTitle')]]
       </h1>
-      <div slot="subtitle">
-        Speedy, secure, stateless... feature description PLACEHOLDER
-      </div>
       <div slot="footer" class="layout vertical">
         <div class="overview-list-item flex layout horizontal center">
           <div class="overview-list-item-text flex layout vertical
               center-justified">
             <div role="heading" aria-level="2" class="overview-list-item-title"
-                id="enableOsSyncLabel">
-              Keep my Chromebook synced PLACEHOLDER
+                id="enableOsSyncLabel" consent-description>
+              [[i18nDynamic(locale, 'osSyncConsentToggleName')]]
             </div>
-            <div class="overview-list-item-description">
-              Chrome OS will sync your apps, settings, and Wi-Fi preferences to
-              keep your transition seamless. PLACEHOLDER
+            <div class="overview-list-item-description" consent-description>
+              [[i18nDynamic(locale, 'osSyncConsentToggleDescription')]]
             </div>
           </div>
           <cr-toggle id="enableOsSyncToggle" checked
@@ -110,7 +102,7 @@
         <oobe-text-button id="osSyncAcceptAndContinueButton"
             on-click="onOsSyncAcceptAndContinue_" class="focus-on-show" inverse>
           <div slot="text" consent-description consent-confirmation>
-            [[i18nDynamic(locale, 'syncConsentAcceptAndContinue')]]
+            [[i18nDynamic(locale, 'osSyncConsentContinue')]]
           </div>
         </oobe-text-button>
       </div>

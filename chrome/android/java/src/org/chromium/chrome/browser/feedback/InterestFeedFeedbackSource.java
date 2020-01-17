@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feedback;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 import java.util.HashMap;
 import java.util.Map;

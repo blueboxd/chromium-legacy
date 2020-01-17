@@ -85,8 +85,10 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotifi
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeSessionState;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAAccountChangeListener;
 import org.chromium.chrome.browser.gsa.GSAState;
@@ -105,6 +107,7 @@ import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.nfc.BeamController;
+import org.chromium.chrome.browser.night_mode.NightModeReparentingController;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -126,11 +129,13 @@ import org.chromium.chrome.browser.share.ShareDelegateImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab_activity_glue.ReparentingDelegateFactory;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -320,6 +325,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private List<MenuOrKeyboardActionController.MenuOrKeyboardActionHandler> mMenuActionHandlers =
             new ArrayList<>();
 
+    /** Controls tab reparenting for night mode. */
+    NightModeReparentingController mNightModeReparentingController;
+
     @Override
     protected ActivityWindowAndroid createWindowAndroid() {
         return new ChromeWindow(this);
@@ -356,6 +364,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         getWindow().setBackgroundDrawable(getBackgroundDrawable());
+
+        mNightModeReparentingController = new NightModeReparentingController(
+                ReparentingDelegateFactory.createNightModeReparentingControllerDelegate(this),
+                ReparentingDelegateFactory.createReparentingTaskDelegate(this));
+        getLifecycleDispatcher().register(mNightModeReparentingController);
     }
 
     protected RootUiCoordinator createRootUiCoordinator() {
@@ -895,9 +908,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             if (webContents != null) webContents.notifyRendererPreferenceUpdate();
         }
 
-        FeatureUtilities.setCustomTabVisible(isCustomTab());
-        FeatureUtilities.setActivityType(getActivityType());
-        FeatureUtilities.setIsInMultiWindowMode(
+        ChromeSessionState.setCustomTabVisible(isCustomTab());
+        ChromeSessionState.setActivityType(getActivityType());
+        ChromeSessionState.setIsInMultiWindowMode(
                 MultiWindowUtils.getInstance().isInMultiWindowMode(this));
 
         if (mPictureInPictureController != null) {
@@ -1288,7 +1301,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public SnackbarManager getSnackbarManager() {
         if (mRootUiCoordinator != null && getBottomSheetController() != null
                 && getBottomSheetController().isSheetOpen()
-                && getBottomSheetController().isSheetHiding()) {
+                && !getBottomSheetController().isSheetHiding()) {
             return mRootUiCoordinator.getBottomSheetSnackbarManager();
         }
         return mSnackbarManager;
@@ -1543,6 +1556,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public ActivityTabProvider getActivityTabProvider() {
         return mActivityTabProvider;
+    }
+
+    public TabDelegateFactory getTabDelegateFactory() {
+        return new TabbedModeTabDelegateFactory(
+                this, new ComposedBrowserControlsVisibilityDelegate(), getShareDelegateSupplier());
     }
 
     /**
@@ -1859,7 +1877,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 // stays in that state.
                 markSessionEnd();
                 markSessionResume();
-                FeatureUtilities.setIsInMultiWindowMode(
+                ChromeSessionState.setIsInMultiWindowMode(
                         MultiWindowUtils.getInstance().isInMultiWindowMode(this));
             }
         }
@@ -2403,5 +2421,17 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @VisibleForTesting
     public RootUiCoordinator getRootUiCoordinatorForTesting() {
         return mRootUiCoordinator;
+    }
+
+    // NightModeStateProvider.Observer implementation.
+    @Override
+    public void onNightModeStateChanged() {
+        // Note: order matters here because the call to super will recreate the activity.
+        // Note: it's possible for this method to be called before mNightModeReparentingController
+        // is constructed.
+        if (mNightModeReparentingController != null) {
+            mNightModeReparentingController.onNightModeStateChanged();
+        }
+        super.onNightModeStateChanged();
     }
 }

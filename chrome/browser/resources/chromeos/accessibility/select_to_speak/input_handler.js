@@ -151,7 +151,7 @@ InputHandler.prototype = {
    * any particular window.
    * @public
    */
-  setUpEventListeners: function() {
+  setUpEventListeners() {
     document.addEventListener('keydown', this.onKeyDown_.bind(this));
     document.addEventListener('keyup', this.onKeyUp_.bind(this));
     document.addEventListener('mousedown', this.onMouseDown_.bind(this));
@@ -169,7 +169,7 @@ InputHandler.prototype = {
    *     otherwise.
    * @public
    */
-  setTrackingMouse: function(tracking) {
+  setTrackingMouse(tracking) {
     this.trackingMouse_ = tracking;
   },
 
@@ -177,7 +177,7 @@ InputHandler.prototype = {
    * Gets the rect that has been drawn by clicking and dragging the mouse.
    * @public
    */
-  getMouseRect: function() {
+  getMouseRect() {
     return RectUtils.rectFromPoints(
         this.mouseStart_.x, this.mouseStart_.y, this.mouseEnd_.x,
         this.mouseEnd_.y);
@@ -187,7 +187,7 @@ InputHandler.prototype = {
    * Sets the date at which we last wanted the clipboard data to be read.
    * @public
    */
-  onRequestReadClipboardData: function() {
+  onRequestReadClipboardData() {
     this.lastReadClipboardDataTime_ = new Date();
   },
 
@@ -203,7 +203,7 @@ InputHandler.prototype = {
    *    handlers to run.
    * @public
    */
-  onMouseDown_: function(evt) {
+  onMouseDown_(evt) {
     // If the user hasn't clicked 'search', or if they are currently
     // trying to highlight a selection, don't track the mouse.
     if (this.callbacks_.canStartSelecting() &&
@@ -232,7 +232,7 @@ InputHandler.prototype = {
    * @return {boolean} True if the default action should be performed.
    * @public
    */
-  onMouseUp_: function(evt) {
+  onMouseUp_(evt) {
     if (!this.trackingMouse_) {
       return false;
     }
@@ -259,7 +259,7 @@ InputHandler.prototype = {
    * @param {!Event} evt
    * @public
    */
-  onKeyDown_: function(evt) {
+  onKeyDown_(evt) {
     this.keysCurrentlyDown_.add(evt.keyCode);
     this.keysPressedTogether_.add(evt.keyCode);
     if (this.keysPressedTogether_.size == 1 &&
@@ -282,7 +282,7 @@ InputHandler.prototype = {
    * @param {!Event} evt
    * @public
    */
-  onKeyUp_: function(evt) {
+  onKeyUp_(evt) {
     if (evt.keyCode == SelectToSpeak.READ_SELECTION_KEY_CODE) {
       if (this.isSelectionKeyDown_ && this.keysPressedTogether_.size == 2 &&
           this.keysPressedTogether_.has(evt.keyCode) &&

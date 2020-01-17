@@ -15,8 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/profiles/profile_observer.h"
-#include "components/performance_manager/process_node_source.h"
-#include "components/performance_manager/tab_helper_frame_node_source.h"
 
 class Profile;
 
@@ -30,7 +28,6 @@ class Graph;
 class PageLiveStateDecoratorHelper;
 class PerformanceManager;
 class PerformanceManagerRegistry;
-class WorkerWatcher;
 }  // namespace performance_manager
 
 // Handles the initialization of the performance manager and a few dependent
@@ -78,15 +75,6 @@ class ChromeBrowserMainExtraPartsPerformanceManager
       browser_child_process_watcher_;
 
   ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
-
-  // Needed by the worker watchers to access existing process nodes and frame
-  // nodes.
-  performance_manager::ProcessNodeSource process_node_source_;
-  performance_manager::TabHelperFrameNodeSource frame_node_source_;
-
-  // Observes the lifetime of all types of workers.
-  base::flat_map<Profile*, std::unique_ptr<performance_manager::WorkerWatcher>>
-      worker_watchers_;
 
   // Needed to properly maintain some of the PageLiveStateDecorator' properties.
   std::unique_ptr<performance_manager::PageLiveStateDecoratorHelper>

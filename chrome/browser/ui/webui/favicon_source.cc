@@ -165,10 +165,11 @@ void FaviconSource::StartDataRequest(
     history_ui_favicon_request_handler->GetRawFaviconForPageURL(
         page_url, desired_size_in_pixel,
         base::BindOnce(&FaviconSource::OnFaviconDataAvailable,
-                       base::Unretained(this), std::move(callback), parsed),
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       parsed),
         favicon::FaviconRequestPlatform::kDesktop, parsed_history_ui_origin,
         /*icon_url_for_uma=*/
-        GURL(parsed.icon_url), &cancelable_task_tracker_);
+        GURL(parsed.icon_url));
   }
 }
 

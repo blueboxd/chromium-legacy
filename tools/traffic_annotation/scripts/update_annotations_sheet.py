@@ -273,14 +273,6 @@ class SheetEditor():
       file_row = file_contents[row]
       sheet_row = sheet_contents[row]
 
-      # If the last column of the file_row is empty, the row belongs to a
-      # platform different from the one that TSV file is generated on, hence it
-      # should be ignored.
-      if not file_row[-1]:
-        if self.verbose:
-          print("Ignored from other platforms: %s" % file_contents[row][0])
-        continue
-
       major_update = False
       for col in range(len(file_row)):
         # Ignore 'Last Update' column for now.
@@ -349,11 +341,12 @@ def utf_8_encoder(input_file):
     yield line.encode("utf-8")
 
 
-def LoadTSVFile(file_path):
+def LoadTSVFile(file_path, verbose):
   """ Loads annotations TSV file.
 
   Args:
     file_path: str Path to the TSV file.
+    verbose: bool Whether to print messages about ignored rows.
 
   Returns:
     list of list Table of loaded annotations.
@@ -363,7 +356,14 @@ def LoadTSVFile(file_path):
     # CSV library does not support unicode, so encoding to utf-8 and back.
     reader = csv.reader(utf_8_encoder(csvfile), delimiter='\t')
     for row in reader:
-      rows.append([unicode(col, 'utf-8') for col in row])
+      row = [unicode(col, 'utf-8') for col in row]
+      # If the last column of the file_row is empty, the row belongs to a
+      # platform different from the one that TSV file is generated on, hence it
+      # should be ignored.
+      if row[-1]:
+        rows.append(row)
+      elif verbose:
+        print("Ignored from other platforms: %s" % row[0])
   return rows
 
 
@@ -416,7 +416,7 @@ def main():
     config = json.load(config_file)
 
   # Load and parse annotations file.
-  file_content = LoadTSVFile(args.annotations_file)
+  file_content = LoadTSVFile(args.annotations_file, args.verbose)
   if not file_content:
     print("Could not read annotations file.")
     return -1

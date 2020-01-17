@@ -79,7 +79,7 @@ class CreateWindowTest : public testing::Test {
     web_view_ = helper_.Initialize(nullptr, &web_view_client_);
     main_frame_ = helper_.LocalMainFrame();
     chrome_client_impl_ =
-        ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());
+        To<ChromeClientImpl>(&web_view_->GetPage()->GetChromeClient());
   }
 
   ViewCreatingClient web_view_client_;
@@ -186,7 +186,7 @@ class PagePopupSuppressionTest : public testing::Test {
     web_view_ = helper_.Initialize();
     main_frame_ = helper_.LocalMainFrame();
     chrome_client_impl_ =
-        ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());
+        To<ChromeClientImpl>(&web_view_->GetPage()->GetChromeClient());
     LocalFrame* frame = helper_.LocalMainFrame()->GetFrame();
     color_chooser_client_ = MakeGarbageCollected<FakeColorChooserClient>(
         frame->GetDocument()->documentElement());
@@ -258,7 +258,7 @@ class FileChooserQueueTest : public testing::Test {
   void SetUp() override {
     web_view_ = helper_.Initialize();
     chrome_client_impl_ =
-        ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());
+        To<ChromeClientImpl>(&web_view_->GetPage()->GetChromeClient());
   }
 
   frame_test_helpers::WebViewHelper helper_;

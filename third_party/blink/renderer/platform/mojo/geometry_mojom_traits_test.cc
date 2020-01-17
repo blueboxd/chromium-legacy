@@ -32,7 +32,7 @@ class GeometryStructTraitsTest
 
  private:
   // GeometryTraitsTestService:
-  void EchoPoint(const WebPoint& p, EchoPointCallback callback) override {
+  void EchoPoint(const gfx::Point& p, EchoPointCallback callback) override {
     std::move(callback).Run(p);
   }
 
@@ -113,17 +113,6 @@ TEST_F(GeometryStructTraitsTest, Size) {
       GetTraitsTestProxy();
   WebSize output;
   proxy->EchoSize(input, &output);
-  EXPECT_EQ(input, output);
-}
-
-TEST_F(GeometryStructTraitsTest, Point) {
-  const float kX = 1234;
-  const float kY = 5678;
-  WebPoint input(kX, kY);
-  mojo::Remote<gfx::mojom::blink::GeometryTraitsTestService> proxy =
-      GetTraitsTestProxy();
-  WebPoint output;
-  proxy->EchoPoint(input, &output);
   EXPECT_EQ(input, output);
 }
 

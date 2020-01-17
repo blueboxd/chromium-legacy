@@ -1224,12 +1224,12 @@ AXNode* AXPlatformNodeTextRangeProviderWin::GetSelectionCommonAnchor() {
 // element will correspond to this element. When we update the selection to be
 // on a different element that is not focusable, the new selection won't be
 // applied unless we remove the DOM focused element. For example, with Narrator,
-// if we move by word from a text field (focusable) to a static text
-// (not focusable), the selection we stay on the textfield because the DOM
-// focused element will still be the textfield. To avoid that, we need to remove
-// the focus from this element.
-// Since |ax::mojom::Action::kBlur| is not implemented, we perform a
-// |ax::mojom::Action::focus| action on the root node. The result is the same.
+// if we move by word from a text field (focusable) to a static text (not
+// focusable), the selection will stay on the text field because the DOM focused
+// element will still be the text field. To avoid that, we need to remove the
+// focus from this element. Since |ax::mojom::Action::kBlur| is not implemented,
+// we perform a |ax::mojom::Action::focus| action on the root node. The result
+// is the same.
 void AXPlatformNodeTextRangeProviderWin::
     RemoveFocusFromPreviousSelectionIfNeeded(const AXNodeRange& new_selection) {
   const AXNode* old_selection_node = GetSelectionCommonAnchor();

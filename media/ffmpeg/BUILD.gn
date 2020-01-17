@@ -38,9 +38,7 @@ source_set("ffmpeg") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "ffmpeg_common_unittest.cc",
-  ]
+  sources = [ "ffmpeg_common_unittest.cc" ]
   configs += [ "//media:media_config" ]
   deps = [
     "//base",
@@ -52,9 +50,7 @@ source_set("unit_tests") {
 
 source_set("ffmpeg_regression_tests") {
   testonly = true
-  sources = [
-    "ffmpeg_regression_tests.cc",
-  ]
+  sources = [ "ffmpeg_regression_tests.cc" ]
   deps = [
     "//base",
     "//media",

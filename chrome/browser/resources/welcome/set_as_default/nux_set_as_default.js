@@ -53,7 +53,7 @@ Polymer({
   navigateToNextStep_: navigateToNextStep,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = NuxSetAsDefaultProxyImpl.getInstance();
 
     this.addWebUIListener(
@@ -61,12 +61,12 @@ Polymer({
         this.onDefaultBrowserChange_.bind(this));
   },
 
-  onRouteEnter: function() {
+  onRouteEnter() {
     this.finalized_ = false;
     this.browserProxy_.recordPageShown();
   },
 
-  onRouteExit: function() {
+  onRouteExit() {
     if (this.finalized_) {
       return;
     }
@@ -74,7 +74,7 @@ Polymer({
     this.browserProxy_.recordNavigatedAwayThroughBrowserHistory();
   },
 
-  onRouteUnload: function() {
+  onRouteUnload() {
     if (this.finalized_) {
       return;
     }
@@ -83,7 +83,7 @@ Polymer({
   },
 
   /** @private */
-  onDeclineClick_: function() {
+  onDeclineClick_() {
     if (this.finalized_) {
       return;
     }
@@ -93,7 +93,7 @@ Polymer({
   },
 
   /** @private */
-  onSetDefaultClick_: function() {
+  onSetDefaultClick_() {
     if (this.finalized_) {
       return;
     }
@@ -107,7 +107,7 @@ Polymer({
    * @param {!DefaultBrowserInfo} status
    * @private
    */
-  onDefaultBrowserChange_: function(status) {
+  onDefaultBrowserChange_(status) {
     if (status.isDefault) {
       this.browserProxy_.recordSuccessfullySetDefault();
       // Triggers toast in the containing welcome-app.
@@ -127,7 +127,7 @@ Polymer({
   },
 
   /** @private */
-  finished_: function() {
+  finished_() {
     this.finalized_ = true;
     this.navigateToNextStep_();
   },

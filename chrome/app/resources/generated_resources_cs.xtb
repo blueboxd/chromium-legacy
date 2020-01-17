@@ -78,7 +78,7 @@
 <translation id="1108600514891325577">&amp;Zastavit</translation>
 <translation id="1110155001042129815">Počkat</translation>
 <translation id="1112420131909513020">Karta na pozadí používá Bluetooth</translation>
-<translation id="1113042067630273625">Tímto vymažete <ph name="TOTAL_USAGE" /> uložených dat webů.</translation>
+<translation id="1113042067630273625">Tímto vymažete <ph name="TOTAL_USAGE" /> dat uložených webovými stránkami.</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamant</translation>
 <translation id="1114335938027186412">Váš počítač obsahuje bezpečnostní zařízení TPM (Trusted Platform Module), jehož pomocí je do systému Chrome OS implementováno mnoho důležitých bezpečnostních funkcí. Další informace najdete v centru nápovědy k Chromebookům: https://support.google.com/chromebook/?p=tpm</translation>
@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">Tento uživatelský účet nepatří do domény, do které je zaregistrováno toto zařízení. Chcete-li se zaregistrovat do jiné domény, je nutné nejdříve provést obnovení zařízení.</translation>
 <translation id="1274977772557788323">Nastavení úložiště přehrávače Adobe Flash Player</translation>
 <translation id="1274997165432133392">Soubory cookie a jiná data webů</translation>
-<translation id="127668050356036882">Zavřete všechna okna</translation>
 <translation id="1280820357415527819">Vyhledávání mobilních sítí</translation>
 <translation id="1282420830958964167">Tvůj rodič pro aplikaci <ph name="APP_NAME" /> nastavil limit a tento limit vypršel. Zítra ji budeš moci používat <ph name="TIME_LIMIT" />.</translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
@@ -518,7 +517,6 @@
 <translation id="1712552549805331520">Stránka <ph name="URL" /> chce trvale ukládat data v místním počítači</translation>
 <translation id="1714644264617423774">Aktivuje funkce usnadnění přístupu pro snazší používání zařízení. <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Pohybová čidla</translation>
-<translation id="171824261579749339">Opačné <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">Poslední hodina</translation>
 <translation id="1719312230114180055">Poznámka: Otisk prstu může být méně bezpečný než silné heslo nebo PIN.</translation>
 <translation id="1720318856472900922">Ověření TLS webového serveru</translation>
@@ -729,7 +727,6 @@
 <translation id="2006638907958895361">Otevřít odkaz v aplikaci <ph name="APP" /></translation>
 <translation id="2007404777272201486">Nahlásit problém...</translation>
 <translation id="2010501376126504057">Kompatibilní zařízení</translation>
-<translation id="2016430552235416146">Tradiční</translation>
 <translation id="2017334798163366053">Deaktivovat shromažďování údajů o výkonu</translation>
 <translation id="2017836877785168846">Vymaže historii a automatická dokončení v adresním řádku.</translation>
 <translation id="2018352199541442911">Je nám líto, externí paměťové zařízení není v současné době podporováno.</translation>
@@ -770,7 +767,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2076672359661571384">Střední (doporučeno)</translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="2078019350989722914">Před ukončením upozornit (<ph name="KEY_EQUIVALENT" />)</translation>
-<translation id="2078494137444990774">Vypnuto</translation>
 <translation id="2079053412993822885">Smažete-li jeden z vlastních certifikátů, nebudete ho již moci používat k identifikaci své osoby.</translation>
 <translation id="2079545284768500474">Vrátit zpět</translation>
 <translation id="2080070583977670716">Další nastavení</translation>
@@ -1208,7 +1204,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2665647207431876759">Platnost vypršela</translation>
 <translation id="2665717534925640469">Stránka je teď zobrazena na celou obrazovku a deaktivovala ukazatel myši.</translation>
 <translation id="2665919335226618153">To ne! Během formátování došlo k chybě.</translation>
-<translation id="2666990579225592931">Otevřít okno hosta</translation>
 <translation id="2667463864537187133">Správa kontroly pravopisu</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> sdílí kartu Chrome.</translation>
 <translation id="2670429602441959756">Tato stránka obsahuje funkce, které ve virtuální realitě dosud nejsou podporovány. Režim virtuální reality se zavře...</translation>
@@ -2404,7 +2399,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4364327530094270451">Meloun</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> sdílí okno.</translation>
 <translation id="4364830672918311045">Zobrazování oznámení</translation>
-<translation id="436499142539576997">Nepodařilo se získat data aplikace, pokračuje pokus o spuštění aplikace...</translation>
 <translation id="4370975561335139969">Zadaný e-mail a heslo se neshodují.</translation>
 <translation id="437184764829821926">Rozšířené nastavení písma</translation>
 <translation id="4374831787438678295">Instalační program Linuxu</translation>
@@ -3431,7 +3425,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5867841422488265304">Zadejte dotaz nebo webovou adresu</translation>
 <translation id="5869029295770560994">Dobře, rozumím</translation>
 <translation id="5869522115854928033">Uložená hesla</translation>
-<translation id="5869948122057593679">Zavřít všechna okna</translation>
 <translation id="5870086504539785141">Zavřít nabídku usnadnění přístupu</translation>
 <translation id="5870155679953074650">Chyby stránkování na disk</translation>
 <translation id="5876851302954717356">Nová karta napravo</translation>
@@ -4480,7 +4473,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7385854874724088939">Při pokusu o tisk došlo k chybě. Zkontrolujte tiskárnu a zkuste to znovu.</translation>
 <translation id="7385896526023870365">Toto rozšíření nemá žádný další přístup k webům.</translation>
 <translation id="7388044238629873883">Už jste skoro hotovi!</translation>
-<translation id="7388222713940428051">Otevřít okno hosta</translation>
 <translation id="7392118418926456391">Při vyhledávání virů došlo k chybě</translation>
 <translation id="7392915005464253525">Znovu ot&amp;evřít zavřené okno</translation>
 <translation id="7396845648024431313">Aplikace <ph name="APP_NAME" /> se spustí při zapnutí systému a poběží na pozadí i v případě, že zavřete všechna okna prohlížeče <ph name="PRODUCT_NAME" />.</translation>
@@ -4745,7 +4737,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7784067724422331729">Tento soubor byl zablokován nastavením zabezpečení vašeho počítače.</translation>
 <translation id="7784796923038949829">Nelze přečíst či změnit data webu</translation>
 <translation id="778480864305029524">Chcete-li používat dynamický tethering, zapněte oznámení Služeb Google Play.</translation>
-<translation id="7786207843293321886">Odhlásit hosta</translation>
 <translation id="7786889348652477777">Znovu načíst &amp;aplikaci</translation>
 <translation id="7787308148023287649">Zobrazit na jiné obrazovce</translation>
 <translation id="7788298548579301890">Jiný program ve vašem počítači nainstaloval aplikaci, která může měnit funkce Chromu.
@@ -4859,7 +4850,6 @@ V zařízení se systémem Chrome OS můžete aktivovat funkce ladění, abyste
 <translation id="7908378463497120834">Je nám líto, minimálně jeden oddíl externího paměťového zařízení nelze připojit.</translation>
 <translation id="7909969815743704077">Staženo v anonymním režimu</translation>
 <translation id="7910768399700579500">Nová složka</translation>
-<translation id="7910831464510799808">Zapnuto</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Vaše heslo bylo na serveru změněno. Odhlaste se a poté se znovu přihlaste.</translation>
 <translation id="7915457674565721553">Chcete-li nastavit rodičovskou kontrolu, připojte se k internetu</translation>

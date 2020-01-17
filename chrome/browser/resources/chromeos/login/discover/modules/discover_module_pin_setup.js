@@ -86,7 +86,7 @@ Polymer({
        */
       writeUma_: {
         type: Object,
-        value: function() {
+        value() {
           return settings.recordLockScreenProgress;
         }
       },
@@ -145,7 +145,7 @@ Polymer({
      * This is called when locale is changed.
      * @override
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       this.behaviors.forEach((behavior) => {
         if (behavior.updateLocalizedContent)
           behavior.updateLocalizedContent.call(this);
@@ -157,7 +157,7 @@ Polymer({
      * Starts automatic skip timer.
      * @private
      */
-    startAutoSkipTimer_: function() {
+    startAutoSkipTimer_() {
       if (this.autoSkipTimer_ !== undefined)
         return;
 
@@ -171,7 +171,7 @@ Polymer({
      * Kills automatic skip timer.
      * @private
      */
-    stopAutoSkipTimer_: function() {
+    stopAutoSkipTimer_() {
       if (this.autoSkipTimer_)
         clearTimeout(this.autoSkipTimer_);
 
@@ -183,7 +183,7 @@ Polymer({
      * autoskip timer if spinner is hidden.
      * @private
      */
-    onStepChanged_: function() {
+    onStepChanged_() {
       let dialogs = this.root.querySelectorAll('oobe-dialog');
       for (let dialog of dialogs) {
         if (dialog.hidden)
@@ -199,7 +199,7 @@ Polymer({
     },
 
     /** @override */
-    show: function() {
+    show() {
       this.discoverCallWithReply(
           'discover.pinSetup.getHasLoginSupport', [], (is_available) => {
             this.hasLoginSupport_ = is_available;
@@ -216,7 +216,7 @@ Polymer({
      * Starts fetching QuickUnlock token.
      * @private
      */
-    getToken_: function(password) {
+    getToken_(password) {
       this.step_ = PIN_SETUP_STEPS.LOADING;
       this.startAutoSkipTimer_();
 
@@ -243,7 +243,7 @@ Polymer({
      * Starts fetching primary user password.
      * @private
      */
-    getFirstRunUserPassword_: function() {
+    getFirstRunUserPassword_() {
       this.startAutoSkipTimer_();
       this.discoverCallWithReply(
           'discover.pinSetup.getUserPassword', [], (password) => {
@@ -263,7 +263,7 @@ Polymer({
      * Receives new AuthToken.
      * @private
      */
-    setToken: function(tokenInfo) {
+    setToken(tokenInfo) {
       this.authToken_ = tokenInfo.token;
       // Subtract time from the expiration time to account for IPC delays.
       // Treat values less than the minimum as 0 for testing.
@@ -283,7 +283,7 @@ Polymer({
      * skips module.
      * @private
      */
-    onAuthTokenChanged_: function() {
+    onAuthTokenChanged_() {
       this.password_ = '';
       if (!this.authToken_) {
         this.setModes = null;
@@ -306,23 +306,23 @@ Polymer({
     },
 
     /** @private */
-    onIsConfirmStepChanged_: function() {
+    onIsConfirmStepChanged_() {
       if (this.isConfirmStep_)
         this.step_ = PIN_SETUP_STEPS.CONFIRM;
     },
 
     /** @private */
-    onPinSubmit_: function() {
+    onPinSubmit_() {
       this.$.pinKeyboard.doSubmit();
     },
 
     /** @private */
-    onSetPinDone_: function() {
+    onSetPinDone_() {
       this.step_ = PIN_SETUP_STEPS.DONE;
     },
 
     /** @private */
-    onSkipButton_: function() {
+    onSkipButton_() {
       this.password_ = '';
       this.authToken_ = '';
 
@@ -332,19 +332,19 @@ Polymer({
     },
 
     /** @private */
-    onBackButton_: function() {
+    onBackButton_() {
       this.password_ = '';
       this.$.pinKeyboard.resetState();
       this.step_ = PIN_SETUP_STEPS.START;
     },
 
     /** @private */
-    onNextButton_: function() {
+    onNextButton_() {
       this.onPinSubmit_();
     },
 
     /** @private */
-    onDoneButton_: function() {
+    onDoneButton_() {
       this.password_ = '';
       this.authToken_ = '';
       this.$.pinKeyboard.resetState();
@@ -357,7 +357,7 @@ Polymer({
      * @param {PIN_SETUP_STEPS} expected_step
      * @private
      */
-    isStepHidden_: function(current_step, expected_step) {
+    isStepHidden_(current_step, expected_step) {
       return current_step != expected_step;
     },
 
@@ -366,7 +366,7 @@ Polymer({
      * @param {PIN_SETUP_STEPS} current_step
      * @private
      */
-    isPinSetupHidden_: function(current_step) {
+    isPinSetupHidden_(current_step) {
       return !['start', 'confirm', 'done'].includes(current_step);
     },
 
@@ -376,7 +376,7 @@ Polymer({
      * @param {Boolean} enableSubmit this.enableSubmit_
      * @private
      */
-    isNextDisabled_: function(step, enableSubmit) {
+    isNextDisabled_(step, enableSubmit) {
       return step != PIN_SETUP_STEPS.DONE && !enableSubmit;
     },
 
@@ -385,7 +385,7 @@ Polymer({
      * @param {Event} e Keyboard event.
      * @private
      */
-    onKeypress_: function(e) {
+    onKeypress_(e) {
       if (e.key != 'Enter')
         return;
 
@@ -393,7 +393,7 @@ Polymer({
     },
 
     /** @private */
-    onPasswordSubmitButton_: function() {
+    onPasswordSubmitButton_() {
       if (!this.password_)
         return;
 
@@ -403,7 +403,7 @@ Polymer({
     },
 
     /** @private */
-    onTypedPasswordChange_: function() {
+    onTypedPasswordChange_() {
       this.passwordInvalid_ = false;
     },
   });

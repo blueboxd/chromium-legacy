@@ -447,6 +447,15 @@ int ViewAndroid::GetViewportInsetBottom() {
   return Java_ViewAndroidDelegate_getViewportInsetBottom(env, delegate);
 }
 
+void ViewAndroid::OnBrowserControlsHeightChanged() {
+  if (event_handler_)
+    event_handler_->OnBrowserControlsHeightChanged();
+  for (auto* child : children_) {
+    if (child->match_parent())
+      child->OnBrowserControlsHeightChanged();
+  }
+}
+
 void ViewAndroid::OnSizeChanged(int width, int height) {
   // Match-parent view must not receive size events.
   DCHECK(!match_parent());

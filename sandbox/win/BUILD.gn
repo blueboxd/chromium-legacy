@@ -241,9 +241,7 @@ test("sbox_integration_tests") {
 }
 
 executable("cfi_unittest_exe") {
-  sources = [
-    "tests/integration_tests/cfi_unittest_exe.cc",
-  ]
+  sources = [ "tests/integration_tests/cfi_unittest_exe.cc" ]
   deps = [
     "//base",
     "//build/win:default_exe_manifest",

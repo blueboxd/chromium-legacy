@@ -7,7 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper_factory.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/test/base/testing_profile.h"
@@ -196,7 +196,7 @@ TEST_F(ToolbarActionViewUnitTest, BasicToolbarActionViewTest) {
   controller.SetTooltip(tooltip);
   content::WebContents* web_contents =
       web_contents_factory.CreateWebContents(&profile);
-  SessionTabHelper::CreateForWebContents(web_contents);
+  CreateSessionServiceTabHelper(web_contents);
   action_view_delegate.set_web_contents(web_contents);
 
   // Move the mouse off the not-yet-existent button.

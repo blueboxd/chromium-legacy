@@ -23,9 +23,8 @@ android_apk("webview_ui_test_app_apk") {
 }
 
 android_library("webview_ui_test_app_java") {
-  sources = [
-    "java/src/org/chromium/webview_ui_test/WebViewUiTestActivity.java",
-  ]
+  sources =
+      [ "java/src/org/chromium/webview_ui_test/WebViewUiTestActivity.java" ]
   deps = [
     ":webview_ui_test_app_apk_resources",
     "//base:base_java",
@@ -67,8 +66,6 @@ instrumentation_test_apk("webview_ui_test_app_test_apk") {
     "//third_party/junit",
     "//third_party/ub-uiautomator:ub_uiautomator_java",
   ]
-  data = [
-    "test/data/",
-  ]
+  data = [ "test/data/" ]
   use_webview_provider = system_webview_apk_target
 }

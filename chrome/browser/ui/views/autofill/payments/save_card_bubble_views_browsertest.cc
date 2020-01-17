@@ -1568,55 +1568,6 @@ IN_PROC_BROWSER_TEST_F(
       "Autofill.SaveCardCardholderNameWasEdited", true, 1);
 }
 
-class SaveCardBubbleViewsFullFormBrowserTestWithBlankEditableCardholderName
-    : public SaveCardBubbleViewsFullFormBrowserTest {
- public:
-  SaveCardBubbleViewsFullFormBrowserTestWithBlankEditableCardholderName() {
-    // Enable the EditableCardholderName and BlankCardholderNameField
-    // experiments.
-    feature_list_.InitWithFeatures(
-        {features::kAutofillUpstream,
-         features::kAutofillUpstreamEditableCardholderName,
-         features::kAutofillUpstreamBlankCardholderNameField},
-        // Disabled
-        {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Tests the upload save bubble. Ensures that if cardholder name is explicitly
-// requested but the AutofillUpstreamBlankCardholderNameField experiment is
-// active, the textfield is NOT prefilled even though the user's Google Account
-// name is available.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithBlankEditableCardholderName,
-    Upload_CardholderNameNotPrefilledIfBlankNameExperimentEnabled) {
-  base::HistogramTester histogram_tester;
-
-  // Start sync.
-  harness_->SetupSync();
-  // Set the user's full name.
-  SetAccountFullName("John Smith");
-
-  // Submitting the form should still show the upload save bubble and legal
-  // footer, along with a textfield specifically requesting the cardholder name.
-  FillFormWithoutName();
-  SubmitFormAndWaitForCardUploadSaveBubble();
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
-
-  // The textfield should be blank, and UMA should have logged its value's
-  // absence. Because the textfield is blank, the tooltip explaining that the
-  // name came from the user's Google Account should NOT be visible.
-  views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
-      FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
-  EXPECT_TRUE(cardholder_name_textfield->GetText().empty());
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SaveCardCardholderNamePrefilled", false, 1);
-  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TOOLTIP));
-}
-
 // TODO(jsaul): Only *part* of the legal message StyledLabel is clickable, and
 //              the NOTREACHED() in SaveCardBubbleViews::StyledLabelLinkClicked
 //              prevents us from being able to click it unless we know the exact

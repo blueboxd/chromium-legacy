@@ -103,24 +103,18 @@ source_set("libpng_sources") {
 
   public_configs = [ ":libpng_config" ]
 
-  public_deps = [
-    "//third_party/zlib",
-  ]
+  public_deps = [ "//third_party/zlib" ]
 
   configs += [ ":clang_warnings" ]
 }
 
 if (is_win) {
   component("libpng") {
-    public_deps = [
-      ":libpng_sources",
-    ]
+    public_deps = [ ":libpng_sources" ]
   }
 } else {
   group("libpng") {
-    public_deps = [
-      ":libpng_sources",
-    ]
+    public_deps = [ ":libpng_sources" ]
   }
 }
 
@@ -131,12 +125,8 @@ libpng_ossfuzz_seed_corpuses = [
 ]
 
 fuzzer_test("libpng_read_fuzzer") {
-  sources = [
-    "contrib/oss-fuzz/libpng_read_fuzzer.cc",
-  ]
-  deps = [
-    ":libpng",
-  ]
+  sources = [ "contrib/oss-fuzz/libpng_read_fuzzer.cc" ]
+  deps = [ ":libpng" ]
   dict = "contrib/oss-fuzz/png.dict"
   seed_corpuses = libpng_ossfuzz_seed_corpuses
 }

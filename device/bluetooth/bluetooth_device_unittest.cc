@@ -2253,4 +2253,83 @@ TEST_P(BluetoothTestWinrtOnly, FalseStatusChangedTest) {
 }
 #endif
 
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#define MAYBE_ServiceSpecificDiscovery ServiceSpecificDiscovery
+#else
+#define MAYBE_ServiceSpecificDiscovery DISABLED_ServiceSpecificDiscovery
+#endif
+
+#if !defined(OS_WIN)
+TEST_F(BluetoothTest, MAYBE_ServiceSpecificDiscovery) {
+#else
+TEST_P(BluetoothTestWinrtOnly, ServiceSpecificDiscovery) {
+#endif
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+
+  // Create a GATT connection and specify a specific UUID for discovery.
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED),
+                               BluetoothUUID(kTestUUIDGenericAccess));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(device->IsGattConnected());
+
+  SimulateGattServicesDiscovered(device, {kTestUUIDGenericAccess});
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, gatt_connection_attempts_);
+  EXPECT_EQ(1, gatt_discovery_attempts_);
+
+#if !defined(OS_WIN)
+  // Outside of WinRT, service-specific discovery should be ignored.
+  ASSERT_FALSE(device->supports_service_specific_discovery());
+
+  EXPECT_FALSE(GetTargetGattService(device).has_value());
+  EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
+#else
+  ASSERT_TRUE(device->supports_service_specific_discovery());
+
+  base::Optional<BluetoothUUID> service_uuid = GetTargetGattService(device);
+  ASSERT_TRUE(service_uuid.has_value());
+  EXPECT_EQ(*service_uuid, BluetoothUUID(kTestUUIDGenericAccess));
+  EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
+
+  // Next, simulate a second GATT request that requests the same service.
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED),
+                               BluetoothUUID(kTestUUIDGenericAccess));
+  // The connection request should be ignored because of the existing,
+  // compatible connection.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, gatt_connection_attempts_);
+  EXPECT_EQ(1, gatt_discovery_attempts_);
+
+  // A third GATT request is same without any UUID.
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  // This should restart discovery.
+  EXPECT_EQ(2, gatt_discovery_attempts_);
+
+  SimulateGattServicesDiscovered(device, {kTestUUIDGenericAccess});
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
+
+  // Another GATT request with a specific UUID should be ignored because any
+  // specific service is a subset of a complete discovery.
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED),
+                               BluetoothUUID(kTestUUIDGenericAccess));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, gatt_discovery_attempts_);
+#endif
+}
+
 }  // namespace device

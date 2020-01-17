@@ -77,7 +77,9 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
 
   InitCB bound_init_cb = BindToCurrentLoop(std::move(init_cb));
 
-  if (config.is_encrypted()) {
+  if (config.is_encrypted() ||
+      // TODO(dalecurtis): Remove this if ffmpeg ever gets xHE-AAC support.
+      config.profile() == AudioCodecProfile::kXHE_AAC) {
     std::move(bound_init_cb).Run(false);
     return;
   }

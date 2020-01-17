@@ -77,6 +77,29 @@ gfx::Point ShelfControlButton::GetCenterPoint() const {
   return GetLocalBounds().CenterPoint();
 }
 
+void ShelfControlButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  int radius = ShelfConfig::Get()->control_border_radius();
+
+  ink_drop_layer->SetRoundedCornerRadius(gfx::RoundedCornersF(radius));
+  ink_drop_layer->SetIsFastRoundedCorner(true);
+
+  if (chromeos::switches::ShouldShowShelfHotseat() &&
+      Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+      ShelfConfig::Get()->is_in_app()) {
+    // Control button highlights are oval in in-app, so adjust the insets.
+    gfx::Rect clip(size());
+    clip.Inset(0, ShelfConfig::Get()->in_app_control_button_height_inset());
+    ink_drop_layer->SetClipRect(clip);
+  } else {
+    gfx::Point center = GetCenterPoint();
+    gfx::Rect clip(center.x(), center.y(), 0, 0);
+    clip.Inset(-radius, -radius);
+    ink_drop_layer->SetClipRect(clip);
+  }
+
+  ShelfButton::AddInkDropLayer(ink_drop_layer);
+}
+
 std::unique_ptr<views::InkDropRipple> ShelfControlButton::CreateInkDropRipple()
     const {
   return std::make_unique<views::FloodFillInkDropRipple>(
@@ -86,19 +109,9 @@ std::unique_ptr<views::InkDropRipple> ShelfControlButton::CreateInkDropRipple()
 
 std::unique_ptr<views::InkDropMask> ShelfControlButton::CreateInkDropMask()
     const {
-  if (chromeos::switches::ShouldShowShelfHotseat() &&
-      Shell::Get()->tablet_mode_controller()->InTabletMode() &&
-      ShelfConfig::Get()->is_in_app()) {
-    // Control button highlights are oval in in-app, so adjust the insets.
-    return std::make_unique<views::RoundRectInkDropMask>(
-        size(),
-        gfx::Insets(ShelfConfig::Get()->in_app_control_button_height_inset(),
-                    0),
-        ShelfConfig::Get()->control_border_radius());
-  }
-
-  return std::make_unique<views::CircleInkDropMask>(
-      size(), GetCenterPoint(), ShelfConfig::Get()->control_border_radius());
+  // The mask is either cicle or rounded rects. Just use layer's RoundedCorner
+  // api which is faster.
+  return nullptr;
 }
 
 const char* ShelfControlButton::GetClassName() const {

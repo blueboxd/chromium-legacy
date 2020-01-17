@@ -32,8 +32,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) MemoryFileStreamWriter
   MemoryFileStreamWriter(
       base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util,
       const base::FilePath& file_path,
-      int64_t initial_offset,
-      OpenOrCreate open_or_create);
+      int64_t initial_offset);
 
   base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util_;
 

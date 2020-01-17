@@ -65,8 +65,6 @@ class DiceBubbleSyncPromoView : public views::View,
   BubbleSyncPromoDelegate* delegate_;
   DiceSigninButtonView* signin_button_view_ = nullptr;
 
-  std::vector<AccountInfo> accounts_for_submenu_;
-
   DISALLOW_COPY_AND_ASSIGN(DiceBubbleSyncPromoView);
 };
 #endif  // CHROME_BROWSER_UI_VIEWS_SYNC_DICE_BUBBLE_SYNC_PROMO_VIEW_H_

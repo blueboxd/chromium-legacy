@@ -89,6 +89,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">ନାମାଙ୍କନ ଡୋମେନ୍:</translation>
 <translation id="1340482604681802745">ପିକ୍‌ଅପ୍ ଠିକଣା</translation>
+<translation id="1346748346194534595">ଡାହାଣ</translation>
 <translation id="1348198688976932919">ଆଗରେ ଥିବା ସାଇଟ୍‍‍ରେ ବିପଜ୍ଜନକ ଆପ୍ସ ରହିଛି</translation>
 <translation id="1348779747280417563">ନାମ ନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="1357195169723583938">କିଏ ଏହି ଡିଭାଇସ୍‍କୁ କିଛି ସମୟପୂର୍ବେ କରିଛନ୍ତି ଏବଂ କେତେବେଳେ</translation>
@@ -113,6 +114,7 @@
 <translation id="1455413310270022028">ଇରେଜର୍</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1467432559032391204">ବାମ</translation>
 <translation id="1472675084647422956">ଅଧିକ ଦେଖାନ୍ତୁ</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
@@ -258,6 +260,7 @@
 <translation id="2148613324460538318">କାର୍ଡ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="2154054054215849342">ଆପଣଙ୍କ ଡୋମେନ୍ ପାଇଁ ସିଙ୍କ୍ ଉପଲବ୍ଧ ନାହିଁ</translation>
 <translation id="2154484045852737596">କାର୍ଡକୁ ଏଡିଟ୍ କରନ୍ତୁ</translation>
+<translation id="2161656808144014275">ଟେକ୍ସଟ୍</translation>
 <translation id="2166049586286450108">ସମ୍ପୂର୍ଣ୍ଣ ବ୍ୟବସ୍ଥାପକ ଆକ୍ସେସ୍</translation>
 <translation id="2166378884831602661">ଏହି ସାଇଟ୍ ଏକ ସୁରକ୍ଷିତ ସଂଯୋଗ ପ୍ରଦାନ କରିପାରିବ ନାହିଁ</translation>
 <translation id="2169984857010174799">Kaku2 (ଏନଭଲପ୍)</translation>
@@ -346,6 +349,7 @@
 <translation id="254947805923345898">ନୀତିର ମୂଲ୍ୟ ବୈଧ ନୁହେଁ।</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ଏକ ଅବୈଧ ପ୍ରତିକ୍ରିୟା ପଠାଇଲା।</translation>
 <translation id="2556876185419854533">&amp;ଏଡିଟ୍‍କୁ ପୂର୍ବବତ୍ କରନ୍ତୁ</translation>
+<translation id="257674075312929031">ଗୋଷ୍ଠୀ</translation>
 <translation id="2586657967955657006">କ୍ଲିପ୍‌ବୋର୍ଡ</translation>
 <translation id="2587730715158995865"><ph name="ARTICLE_PUBLISHER" />ଙ୍କ ତରଫରୁ। ଏହାକୁ ଓ <ph name="OTHER_ARTICLE_COUNT" /> ଅନ୍ୟ କାହାଣୀଗୁଡ଼ିକୁ ପଢ଼ନ୍ତୁ।</translation>
 <translation id="2587841377698384444">ଡିରେକ୍ଟୋରୀ API ID:</translation>
@@ -362,6 +366,7 @@
 <translation id="2653659639078652383">ଉପସ୍ଥାପନ</translation>
 <translation id="2660650542324841986">ଆପଣ ଯେଉଁ ସର୍ଭର୍ <ph name="ORIGIN" />କୁ ଯାଉଛନ୍ତି ସେ ଅନୁରୋଧ କରିଛି ଯେ ଏହାର ସମସ୍ତ ଅନୁରୋଧରେ ଏକ ମୂଳ ନୀତି ଲାଗୁ କରାଯିବ। କିନ୍ତୁ ବର୍ତ୍ତମାନ ଏହା ଗୋଟିଏ ନୀତି ପ୍ରଦାନ କରିବାରେ ବିଫଳ ହୋଇଛି, ଯାହା <ph name="SITE" /> ପାଇଁ ବ୍ରାଉଜର୍‌କୁ ଆପଣଙ୍କର ଅନୁରୋଧ ପୂରଣ କରିବାରେ ପ୍ରତିରୋଧ କରେ। ଏକ ସାଇଟ୍ ପାଇଁ ସୁରକ୍ଷା ଏବଂ ଅନ୍ୟ ପ୍ରପୋର୍ଟିସ୍ କନ୍‌ଫିଗର୍ କରିବାକୁ ସାଇଟ୍ ଅପ୍‌ରେଟର୍‍ମାନଙ୍କ ଦ୍ୱାରା ମୂଳ ନୀତିଗୁଡ଼ିକୁ ବ୍ୟବହାର କରାଯାଇପାରେ।</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{କୌଣସିଟି ନୁହେଁ}=1{1ଟି ପାସ୍‌ୱାର୍ଡ (<ph name="DOMAIN_LIST" /> ପାଇଁ)}=2{2ଟି ପାସ୍‌ୱାର୍ଡ (<ph name="DOMAIN_LIST" /> ପାଇଁ)}other{#ଟି ପାସ୍‌ୱାର୍ଡ (<ph name="DOMAIN_LIST" /> ପାଇଁ)}}</translation>
+<translation id="2666092431469916601">ଶୀର୍ଷ</translation>
 <translation id="2666117266261740852">ଅନ୍ୟ ଟାବ୍ କିମ୍ୱା ଆପ୍‍ଗୁଡ଼ିକ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="2674170444375937751">ଆପଣଙ୍କ ଇତିବୃତ୍ତିରୁ ଏହି ପୃଷ୍ଠାଗୁଡିକ ଆପଣ ବିଲୋପ କରିବାକୁ ଚାହୁଁଥିବାର ନିଶ୍ଚିତ କି?</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
@@ -443,6 +448,7 @@
 <translation id="3061707000357573562">ପ୍ୟାଚ୍ ସେବା</translation>
 <translation id="3064966200440839136">ଏକ ଏକ୍ସଟର୍ନଲ୍‌ ଆପ୍ଲିକେସନ୍‌ ମାଧ୍ୟମରେ ଦେୟ ଦେବାକୁ ଇନ୍‌କଗ୍ନିଟୋ ମୋଡ୍‌ ଛାଡୁଛନ୍ତି। ଜାରି ରଖିବେ?</translation>
 <translation id="3086579638707268289">ୱେବ୍‍‍ରେ ଆପଣଙ୍କର କାର୍ଯ୍ୟକଳାପକୁ ନିରୀକ୍ଷଣ କରାଯାଉଛି</translation>
+<translation id="3087734570205094154">ନିମ୍ନଭାଗ</translation>
 <translation id="3095940652251934233">ବକ୍ତବ୍ୟ</translation>
 <translation id="3096100844101284527">ପିକ୍‍ଅପ୍‍ର ଠିକଣା ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="3105172416063519923">ଆସେଟ୍ ID:</translation>
@@ -485,6 +491,7 @@
 <translation id="3303855915957856445">କୌଣସି ସନ୍ଧାନ ଫଳାଫଳଗୁଡିକ ଖୋଜି ପାଇଲା ନାହିଁ</translation>
 <translation id="3320021301628644560">ବିଲିଂ ଠିକଣା ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="3324983252691184275">ଗାଢ଼ ଲାଲ୍‌ ରଙ୍ଗ</translation>
+<translation id="3329013043687509092">ସମ୍ପୃକ୍ତି</translation>
 <translation id="3338095232262050444">ସୁରକ୍ଷିତ</translation>
 <translation id="3355823806454867987">ପ୍ରୋକ୍ସି ସେଟିଂସ୍‌ ପରିବର୍ତ୍ତନ କରନ୍ତୁ...</translation>
 <translation id="3360103848165129075">ପେମେଣ୍ଟ ହ୍ୟାଣ୍ଡଲର୍ ସିଟ୍</translation>
@@ -521,6 +528,7 @@
 <translation id="3495081129428749620">ପୃଷ୍ଠାରେ ଖୋଜନ୍ତୁ
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">ଏହି ନୀତିକୁ ଅଣଦେଖା କରାଯାଏ କାରଣ ସେହି ଏକା ନୀତି ଗୋଷ୍ଠୀ ଭିତରୁ ଅନ୍ୟ ଗୋଟିଏ ନୀତିର ପ୍ରାଧାନ୍ୟ ଅଛି।</translation>
+<translation id="3513704683820682405">ବୃଦ୍ଧି ହେଉଥିବା ବାସ୍ତବତା</translation>
 <translation id="3528171143076753409">ସର୍ଭରର ସାର୍ଟିଫିକେଟ୍‍ଟି ବିଶ୍ୱସ୍ତ ନୁହେଁ।</translation>
 <translation id="3528485271872257980">ଗାଢ଼ ବାଦାମୀ</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{ସିଙ୍କ୍‌ ହୋ‍ଇଥିବା ଡିଭାଇସ୍‌ଗୁଡ଼ିକରେ ଅତିକମ୍‌ରେ 1ଟି ଆଇଟମ୍‌}=1{1ଟି ଆଇଟମ୍‌ (ଏବଂ ସିଙ୍କ୍‌ ହୋ‍ଇଥିବା ଡିଭାଇସ୍‌ଗୁଡ଼ିକରେ ଆହୁରି ବହୁତ କିଛି)}other{#ଟି ଆଇଟମ୍‌ (ଏବଂ ସିଙ୍କ୍‌ ହୋ‍ଇଥିବା ଡିଭାଇସ୍‌ଗୁଡ଼ିକରେ ଆହୁରି ବହୁତ କିଛି)}}</translation>
@@ -561,6 +569,7 @@
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">ଲୋଡ୍ କରୁଛି...</translation>
 <translation id="3709599264800900598">ଆପଣ କପି କରିଥିବା ଟେକ୍ସଟ୍</translation>
+<translation id="3711895659073496551">ନିଲମ୍ବନ କରନ୍ତୁ</translation>
 <translation id="3712624925041724820">ଲାଇସେନ୍ସର ମିଆଦ ଶେଷ ହୋଇଛି</translation>
 <translation id="3714780639079136834">ମୋବାଇଲ୍‌ ଡାଟା କିମ୍ବା ୱାଇ-ଫାଇ ଚାଲୁ କରନ୍ତୁ</translation>
 <translation id="3715597595485130451">ୱାଇ-ଫାଇ ସହ ସଂଯୋଗ କରନ୍ତୁ</translation>
@@ -754,6 +763,7 @@
 <translation id="4594403342090139922">&amp;ଡିଲିଟ୍‌କୁ ପୂର୍ବବତ୍ କରନ୍ତୁ</translation>
 <translation id="4597348597567598915">ଆକାର 8</translation>
 <translation id="4600854749408232102">C6/C5 (ଏନଭଲପ୍)</translation>
+<translation id="4628948037717959914">ଫଟୋ</translation>
 <translation id="4635654612248442824"><ph name="ORIGIN" /> ସାଇଟ୍, ଏହା ଅନୁରୋଧ କରିଛି ଯେ ଏହାର ସମସ୍ତ ଅନୁରୋଧରେ ଗୋଟିଏ ମୂଳ ନୀତି ଲାଗୁ ହେବ, କିନ୍ତୁ ବର୍ତ୍ତମାନ ଏହି ନୀତି ଲାଗୁ କରାଯାଇ ପାରିବ ନାହିଁ।</translation>
 <translation id="464342062220857295">ଫିଚର୍‍ଗୁଡ଼ିକର ସନ୍ଧାନ କରନ୍ତୁ</translation>
 <translation id="4646534391647090355">ମୋତେ ବର୍ତ୍ତମାନ ସେଠାକୁ ନେଇଚାଲନ୍ତୁ</translation>
@@ -809,6 +819,7 @@
 <translation id="4926049483395192435">ନିର୍ଦ୍ଦିଷ୍ଟ କରିବା ଉଚିତ।</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> କୁହେ</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943703118917034429">ଭର୍ଚୁଆଲ୍ ରିଅଲିଟି</translation>
 <translation id="4943872375798546930">କୌଣସି ଫଳାଫଳ ନାହିଁ</translation>
 <translation id="4950898438188848926">ଟାବ୍ ସ୍ୱିଚ୍ କରିବା ବଟନ୍, ଖୋଲାଥିବା ଟାବ୍‍କୁ ଯିବା ପାଇଁ Enter ଦବାନ୍ତୁ, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">କାର୍ଯ୍ୟ</translation>
@@ -976,6 +987,7 @@
 <translation id="5689199277474810259">JSONକୁ ଏକ୍ସପୋର୍ଟ କରନ୍ତୁ</translation>
 <translation id="5689516760719285838">ଲୋକେସନ୍</translation>
 <translation id="569000877158168851">DnsOverHttpsTemplates ମୂଲ୍ୟ ପ୍ରାସଙ୍ଗିକ ନୁହେଁ, DnsOverHttpsMode ନୀତି <ph name="SECURE_DNS_MODE_AUTOMATIC" /> କିମ୍ବା <ph name="SECURE_DNS_MODE_SECURE" />କୁ ସେଟ୍ କରାନଯିବା ପର୍ଯ୍ୟନ୍ତ ଏହା ବ୍ୟବହାର କରାଯିବ ନାହିଁ।</translation>
+<translation id="5701381305118179107">କେନ୍ଦ୍ର</translation>
 <translation id="570530837424789914">ପରିଚାଳନା…</translation>
 <translation id="57094364128775171">ଜଟିଳ ପାସ୍‌ୱର୍ଡ ପରାମର୍ଶ କରନ୍ତୁ…</translation>
 <translation id="5710435578057952990">ଏହି ସାଇଟ୍ ଗୋଟିକର ପରିଚୟକରଣ ଯାଞ୍ଚ କରାଯାଇ ନାହିଁ ।</translation>
@@ -1008,7 +1020,6 @@
 <translation id="5855253129151731373">ଏହି ସାଇଟ୍‍ର ହୋଷ୍ଟନାମ <ph name="LOOKALIKE_DOMAIN" /> ସହ ସମାନ ଥିବା ପରି ଜଣାଯାଉଛି। ଆକ୍ରମଣକାରୀମାନେ ବେଳେବେଳେ ଡୋମେନ୍ ନାମରେ ସହଜରେ ଦେଖା ଯାଉନଥିବା, ଛୋଟ ପରିବର୍ତ୍ତନ କରି ସାଇଟ୍‍ଗୁଡ଼ିକର ନକଲ କରିଥାନ୍ତି।
 
     ଯଦି ଆପଣ ବିଶ୍ୱାସ କରୁଛନ୍ତି, ଏହା ତ୍ରୂଟିରେ ଦେଖାଯାଇଛି, ତେବେ ଦୟାକରି https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appealsକୁ ଯାଆନ୍ତୁ।</translation>
-<translation id="5860033963881614850">ବନ୍ଦ ଅଛି</translation>
 <translation id="5863847714970149516">ଆଗରେ ଆସୁଥିବା ପୃଷ୍ଠା ଆପଣଙ୍କ ଠାରୁ ଶୁଳ୍କ ନେବା ପାଇଁ ଚେଷ୍ଟା କରିପାରେ</translation>
 <translation id="5866257070973731571">ଫୋନ୍ ନମ୍ବର ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="5866898949289125849">ଆପଣ ଏକ ଡେଭେଲପର୍ ଟୁଲ୍ସର ପୃଷ୍ଠା ଦେଖୁଛନ୍ତି</translation>
@@ -1020,13 +1031,11 @@
 <translation id="5901630391730855834">ହଳଦିଆ</translation>
 <translation id="5905445707201418379"><ph name="ORIGIN" />ର ମୂଳ ନୀତି ଅନୁଯାୟୀ ବ୍ଲକ୍ କରାଯାଇଛି।</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> ( ସିଙ୍କ୍‍ କରାଯାଇଛି)</translation>
-<translation id="5916664084637901428">ଚାଲୁ</translation>
 <translation id="59174027418879706">ସାମର୍ଥ୍ୟ ହୋଇଛି</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Google ଆକାଉଣ୍ଟରେ କାର୍ଡ ସେଭ୍‌ କରିବେ?</translation>
 <translation id="5922853866070715753">ପ୍ରାୟ ହୋଇଗଲାଣି!</translation>
 <translation id="5932224571077948991">ସାଇଟ୍, ଅନଧିକାର ପ୍ରବେଶ କରିଥିବା କିମ୍ବା ବିଭ୍ରାନ୍ତିକର ବିଜ୍ଞାପନ ଦେଖାଉଛି</translation>
-<translation id="5939847200023027600">PDF କମ୍ପୋଜିଟର୍ ସେବା</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> ଖୋଲୁଛି…</translation>
 <translation id="5951495562196540101">ଉପଭୋକ୍ତାଙ୍କ ଆକାଉଣ୍ଟ (ପ୍ୟାକେଜ୍‌ ହୋ‍ଇଥିବା ଲାଇସେନ୍ସ ଉପଲବ୍ଧ ଅଛି ) ନାମାଙ୍କନ କରାଯାଇପାରିବ ନାହିଁ।</translation>
 <translation id="5967592137238574583">ଯୋଗାଯୋଗ ସୂଚନା ଏଡିଟ୍ କରନ୍ତୁ</translation>
@@ -1066,6 +1075,7 @@
 <translation id="6080696365213338172">ଆପଣ ବ୍ୟବସ୍ଥାପକଙ୍କ ଦ୍ୱାରା ପ୍ରଦାନ କରାଯାଇଥିବା ସାର୍ଟିଫିକେଟ୍‌ ବ୍ୟବହାର କରି ବିଷୟବସ୍ତୁ ଆକ୍ସେସ୍‌ କରିଛନ୍ତି। ଆପଣ <ph name="DOMAIN" />କୁ ପ୍ରଦାନ କରିଥିବା ଡାଟା ଆପଣଙ୍କ ବ୍ୟବସ୍ଥାପକଙ୍କ ଦ୍ୱାରା ମଝିରେ ପ୍ରତିରୋଧ କରାଯାଇପାରେ।</translation>
 <translation id="6094273045989040137">ବ୍ୟାଖ୍ୟା କରନ୍ତୁ</translation>
 <translation id="6104072995492677441">JIS B6</translation>
+<translation id="6106989379647458772"><ph name="PAGE" />ରେ ଥିବା ୱେବ୍‌ପୃଷ୍ଠାଟି ଅସ୍ଥାୟୀ ରୂପେ ଡାଉନ୍‌ ଥାଇପାରେ କିମ୍ବା ସ୍ଥାୟୀଭାବେ ଏକ ନୂତନ ୱେବ୍ ଠିକଣାକୁ ସ୍ଥାନାନ୍ତର ହୋଇପାରେ।</translation>
 <translation id="610911394827799129"><ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />ରେ ହୁଏତ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟର ଅନ୍ୟାନ୍ୟ ଧରଣର ବ୍ରାଉଜିଂ ଇତିବୃତ୍ତି ଥାଇପାରେ</translation>
 <translation id="6120179357481664955">ଆପଣଙ୍କର UPI ID ମନେ ଅଛି?</translation>
 <translation id="6132597952260690497">ଇନ୍‌ଷ୍ଟଲ୍ ହୋଇଥିବା ଏକ୍ସଟେନ୍‌ସନ୍‍ଗୁଡ଼ିକ ଏବଂ ପ୍ଲଗ୍‍ଇନ୍‌ଗୁଡ଼ିକ ବିଷୟରେ ସୂଚନା</translation>
@@ -1104,6 +1114,7 @@
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">Chromeରେ Google ଆସିଷ୍ଟାଣ୍ଟ ବନ୍ଦ କରାଯାଇଛି</translation>
 <translation id="6305205051461490394"><ph name="URL" />ରେ ପହଞ୍ଚି ହେଉନାହିଁ।</translation>
+<translation id="6312113039770857350">ୱେବ୍ ପୃଷ୍ଠା ଉପଲବ୍ଧ ନାହିଁ</translation>
 <translation id="6321917430147971392">ଆପଣଙ୍କର DNS ସେଟିଂସ୍ ଯାଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="6322182122604171028">Windows Hello ବ୍ୟବହାର କରାଯାଇପାରିଲା ନାହିଁ</translation>
 <translation id="6328639280570009161">ନେଟ୍‌ୱର୍କ ପୁର୍ବାନୁମାନ ଅକ୍ଷମ କରି ଦେଖନ୍ତୁ</translation>
@@ -1397,6 +1408,7 @@
 <translation id="7716147886133743102">ଆପଣଙ୍କର ବ୍ୟବସ୍ଥାପକଙ୍କ ଦ୍ୱାରା ବ୍ଲକ୍ କରାଯାଇଛି</translation>
 <translation id="7716424297397655342">କେଚ୍‌ରୁ ଏହି ସାଇଟ୍‌ ଲୋଡ୍‌ କରାଯାଇପାରିବ ନାହିଁ</translation>
 <translation id="7723047071702270851">କାର୍ଡକୁ ଏଡିଟ୍ କରନ୍ତୁ</translation>
+<translation id="7740996059027112821">ମାନାଙ୍କ</translation>
 <translation id="774634243536837715">ବିପଜ୍ଜନକ ବିଷୟବସ୍ତୁ ବ୍ଲକ୍ କରାଯାଇଛି।</translation>
 <translation id="7752995774971033316">ଅପରିଚାଳିତ</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
@@ -1502,6 +1514,7 @@
 <translation id="8241707690549784388">ଆପଣ ଯେଉଁ ପୃଷ୍ଠାଟି ଦେଖନ୍ତି ତାହା ଆପଣ ପ୍ରବିଷ୍ଟ କରିବା ବ୍ୟବହୃତ ସୂଚନା ଅଟେ । ସେହି ପୃଷ୍ଠାଟିକୁ ଫେରିବା ଦ୍ଵାରା ପୁନରାବୃତ୍ତି ଲାଗି ଆପଣ ରଖିଥିବା ଯେକୌଣସିଟି ନିଶ୍ଚିତରୂପେ ଘଟିପାରେ । ଆପଣ ଜାରି ରଖିବାକୁ ଚାହାଁନ୍ତି କି?</translation>
 <translation id="8241712895048303527">ଏହି ସାଇଟ୍‌ରେ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="8242426110754782860">ଆଗକୁ ବଢ଼ନ୍ତୁ</translation>
+<translation id="8249296373107784235">ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="8249320324621329438">ଶେଷଥର ପ୍ରାପ୍ତ କରାଯାଇଥିବା:</translation>
 <translation id="8253091569723639551">ବିଲିଂ ଠିକଣା ଆବଶ୍ୟକ</translation>
 <translation id="825929999321470778">ସେଭ୍ ଥିବା ସମସ୍ତ ପାସ୍‌ୱର୍ଡ ଦେଖାନ୍ତୁ</translation>
@@ -1571,6 +1584,7 @@
 <translation id="8647750283161643317">ସବୁ ଡିଫଲ୍ଟରେ ସେଟ୍ କରନ୍ତୁ</translation>
 <translation id="8663226718884576429">ଅର୍ଡର ସାରାଂଶ, <ph name="TOTAL_LABEL" />, ଅଧିକ ବିବରଣୀ</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, ଉତ୍ତର ଦିଅନ୍ତୁ, <ph name="ANSWER" /></translation>
+<translation id="8681531050781943054"><ph name="PAGE" />ରେ ୱେବ୍‌ପୃଷ୍ଠା ଲୋଡ୍ କରାଯାଇପାରିଲା ନାହିଁ, କାରଣ:</translation>
 <translation id="8685155993131031756">PRC 16K</translation>
 <translation id="8688672835843460752">ଉପଲବ୍ଧ</translation>
 <translation id="869891660844655955">ମିଆଦ ଶେଷ ହେଉଥିବା ତାରିଖ</translation>
@@ -1621,6 +1635,7 @@
 <translation id="8943282376843390568">ଲାଇମ୍‌</translation>
 <translation id="8957210676456822347">କେପଟିଭ୍ ପୋର୍ଟାଲ ପ୍ରାଧିକରଣ</translation>
 <translation id="8962950042226115166">ସନ୍ଦେଶଜନକ ସାଇଟ୍</translation>
+<translation id="8963213021028234748"><ph name="MARKUP_1" />ପ୍ରସ୍ତାବଗୁଡ଼ିକ:<ph name="MARKUP_2" />ସୁନିଶ୍ଚିତ କରନ୍ତୁ ଯେ ଆପଣଙ୍କର ଗୋଟିଏ ଇଣ୍ଟର୍ନେଟ୍ ସଂଯୋଗ ଅଛି <ph name="MARKUP_3" />ଏହି ୱେବ୍-ପୃଷ୍ଠାକୁ ପରେ ପୁଣି ଲୋଡ୍ କରନ୍ତୁ<ph name="MARKUP_4" /> ଆପଣ ଲେଖିଥିବା ଠିକଣାକୁ ଯାଞ୍ଚ କରନ୍ତୁ<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">କାର୍ଡ ସେଭ୍‌ କରନ୍ତୁ</translation>
 <translation id="8971063699422889582">ସର୍ଭରର ସାର୍ଟିଫିକେଟ୍‍ର ସମୟ ଅବଧି ସମାପ୍ତ ହୋଇଯାଇଛି।</translation>
 <translation id="8975012916872825179">ଏଥିରେ ଫୋନ୍ ନମ୍ବର୍, ଇମେଲ୍ ଠିକଣା ଏବଂ ଶିପିଂ ଠିକଣା ପରି ସୂଚନା ଅଛି</translation>
@@ -1697,6 +1712,7 @@
 <translation id="985199708454569384">&lt;p&gt;ଯଦି ଆପଣଙ୍କର କମ୍ପ୍ୟୁଟର୍ କିମ୍ୱା ମୋବାଇଲ୍ ଡିଭାଇସ୍‌ର ତାରିଖ ଓ ସମୟ ଭୁଲ ଥିବ, ତେବେ ଆପଣ ଏହି ତ୍ରୁଟି ଦେଖିବେ।&lt;/p&gt;
     &lt;p&gt;ଏହି ତ୍ରୁଟି ଠିକ୍ କରିବା ପାଇଁ ନିଜ ଡିଭାଇସ୍‌ର ଘଣ୍ଟା ଖୋଲନ୍ତୁ। ଏହା ସୁନିଶ୍ଚିତ କରନ୍ତୁ ଯେ ସମୟ ଓ ତାରିଖ ଠିକ୍ ଅଛି।&lt;/p&gt;</translation>
 <translation id="985956168329721395">Prc-32K</translation>
+<translation id="987264212798334818">ସାଧାରଣ</translation>
 <translation id="988159990683914416">ଡେଭେଲପର୍ ବିଲ୍ଡ</translation>
 <translation id="989988560359834682">ଠିକଣା ଏଡିଟ୍ କରନ୍ତୁ</translation>
 <translation id="992256792861109788">ଗୋଲାପି</translation>

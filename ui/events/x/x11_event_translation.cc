@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/x/events_x_utils.h"
@@ -15,22 +14,6 @@
 namespace ui {
 
 namespace {
-
-Event::Properties GetEventPropertiesFromXKeyEvent(const XKeyEvent& xev) {
-  using Values = std::vector<uint8_t>;
-  Event::Properties properties;
-
-  // Keyboard group
-  uint8_t group = XkbGroupForCoreState(xev.state);
-  properties.emplace(kPropertyKeyboardGroup, Values{group});
-
-  // IBus-gtk specific flags
-  uint8_t ibus_flags = (xev.state >> kPropertyKeyboardIBusFlagOffset) &
-                       kPropertyKeyboardIBusFlagMask;
-  properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
-
-  return properties;
-}
 
 std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
                                          const XEvent& xev) {
@@ -52,7 +35,7 @@ std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
 #endif
 
   DCHECK(event);
-  event->SetProperties(GetEventPropertiesFromXKeyEvent(xev.xkey));
+  event->SetProperties(GetEventPropertiesFromXEvent(event_type, xev));
   return event;
 }
 
@@ -227,6 +210,37 @@ std::unique_ptr<MouseWheelEvent> BuildMouseWheelEventFromXEvent(
   if (!event || !event->IsMouseWheelEvent())
     return nullptr;
   return std::unique_ptr<MouseWheelEvent>{event.release()->AsMouseWheelEvent()};
+}
+
+// TODO(crbug.com/965991): Make this private once PlatformEvent migration in
+// Aura/X11 is done.
+Event::Properties GetEventPropertiesFromXEvent(EventType type,
+                                               const XEvent& xev) {
+  using Values = std::vector<uint8_t>;
+  Event::Properties properties;
+  if (type == ET_KEY_PRESSED || type == ET_KEY_RELEASED) {
+    // Keyboard group
+    uint8_t group = XkbGroupForCoreState(xev.xkey.state);
+    properties.emplace(kPropertyKeyboardGroup, Values{group});
+
+    // Hardware keycode
+    uint8_t hw_keycode = xev.xkey.keycode;
+    properties.emplace(kPropertyKeyboardHwKeyCode, Values{hw_keycode});
+
+    // IBus-gtk specific flags
+    uint8_t ibus_flags = (xev.xkey.state >> kPropertyKeyboardIBusFlagOffset) &
+                         kPropertyKeyboardIBusFlagMask;
+    properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
+
+  } else if (type == ET_MOUSE_EXITED) {
+    // NotifyVirtual events are created for intermediate windows that the
+    // pointer crosses through. These occur when middle clicking.
+    // Change these into mouse move events.
+    bool crossing_intermediate_window = xev.xcrossing.detail == NotifyVirtual;
+    properties.emplace(kPropertyMouseCrossedIntermediateWindow,
+                       crossing_intermediate_window);
+  }
+  return properties;
 }
 
 }  // namespace ui

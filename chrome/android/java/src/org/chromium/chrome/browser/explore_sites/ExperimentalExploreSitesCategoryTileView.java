@@ -17,7 +17,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
-import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.ui.base.ViewUtils;
 
 /**
  * The View representing a single explore sites category.

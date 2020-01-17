@@ -30,6 +30,7 @@
 #include "ui/events/devices/x11/touch_factory_x11.h"        // nogncheck
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"  // nogncheck
 #include "ui/events/x/events_x_utils.h"                     // nogncheck
+#include "ui/events/x/x11_event_translation.h"
 #include "ui/gfx/x/x11.h"                                   // nogncheck
 #elif defined(USE_OZONE)
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"  // nogncheck
@@ -51,31 +52,6 @@ bool X11EventHasNonStandardState(const PlatformEvent& event) {
       LockMask | ControlMask | AnyModifier;
 
   return event && (event->xkey.state & ~kAllStateMask) != 0;
-}
-
-Event::Properties GetEventPropertiesFromXEvent(EventType type,
-                                               const XEvent& xev) {
-  using Values = std::vector<uint8_t>;
-  Event::Properties properties;
-  if (type == ET_KEY_PRESSED || type == ET_KEY_RELEASED) {
-    // Keyboard group
-    uint8_t group = XkbGroupForCoreState(xev.xkey.state);
-    properties.emplace(kPropertyKeyboardGroup, Values{group});
-
-    // IBus-gtk specific flags
-    uint8_t ibus_flags = (xev.xkey.state >> kPropertyKeyboardIBusFlagOffset) &
-                         kPropertyKeyboardIBusFlagMask;
-    properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
-
-  } else if (type == ET_MOUSE_EXITED) {
-    // NotifyVirtual events are created for intermediate windows that the
-    // pointer crosses through. These occur when middle clicking.
-    // Change these into mouse move events.
-    bool crossing_intermediate_window = xev.xcrossing.detail == NotifyVirtual;
-    properties.emplace(kPropertyMouseCrossedIntermediateWindow,
-                       crossing_intermediate_window);
-  }
-  return properties;
 }
 #endif
 

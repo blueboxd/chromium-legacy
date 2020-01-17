@@ -48,9 +48,7 @@ source_set("throttles") {
 
 source_set("websocket_sb_handshake_throttle_unittest") {
   testonly = true
-  sources = [
-    "websocket_sb_handshake_throttle_unittest.cc",
-  ]
+  sources = [ "websocket_sb_handshake_throttle_unittest.cc" ]
 
   deps = [
     ":throttles",

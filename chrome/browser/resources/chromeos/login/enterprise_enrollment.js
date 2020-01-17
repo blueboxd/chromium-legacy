@@ -153,7 +153,7 @@ Polymer({
    */
   lastBackMessageValue_: false,
 
-  ready: function() {
+  ready() {
     this.navigation_ = this.$['oauth-enroll-navigation'];
     this.offlineAdUi_ = this.$['oauth-enroll-ad-join-ui'];
 
@@ -269,7 +269,7 @@ Polymer({
    * @param {Object} data Screen init payload, contains the signin frame
    * URL.
    */
-  onBeforeShow: function(data) {
+  onBeforeShow(data) {
     if (Oobe.getInstance().forceKeyboardFlow) {
       // We run the tab remapping logic inside of the webview so that the
       // simulated tab events will use the webview tab-stops. Simulated tab
@@ -320,7 +320,7 @@ Polymer({
     });
   },
 
-  onBeforeHide: function() {
+  onBeforeHide() {
     Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
   },
 
@@ -328,7 +328,7 @@ Polymer({
    * Shows attribute-prompt step with pre-filled asset ID and
    * location.
    */
-  showAttributePromptStep: function(annotatedAssetId, annotatedLocation) {
+  showAttributePromptStep(annotatedAssetId, annotatedLocation) {
     this.assetId_ = annotatedAssetId;
     this.deviceLocation_ = annotatedLocation;
     this.showStep(ENROLLMENT_STEP.ATTRIBUTE_PROMPT);
@@ -338,7 +338,7 @@ Polymer({
    * Shows a success card for attestation-based enrollment that shows
    * which domain the device was enrolled into.
    */
-  showAttestationBasedEnrollmentSuccess: function(
+  showAttestationBasedEnrollmentSuccess(
       device, enterpriseEnrollmentDomain) {
     this.enrolledDomain_ = enterpriseEnrollmentDomain;
     this.deviceName_ = device;
@@ -349,7 +349,7 @@ Polymer({
    * Cancels the current authentication and drops the user back to the next
    * screen (either the next authentication or the login screen).
    */
-  cancel: function() {
+  cancel() {
     if (this.isCancelDisabled)
       return;
     this.isCancelDisabled = true;
@@ -361,7 +361,7 @@ Polymer({
    * @param {string} step the steps to show, one of "signin", "working",
    * "attribute-prompt", "error", "success".
    */
-  showStep: function(step) {
+  showStep(step) {
     this.isCancelDisabled =
         (step == ENROLLMENT_STEP.SIGNIN && !this.isManualEnrollment_) ||
         step == ENROLLMENT_STEP.AD_JOIN || step == ENROLLMENT_STEP.WORKING;
@@ -391,7 +391,7 @@ Polymer({
    * @param {string} message the error message.
    * @param {boolean} retry whether the retry link should be shown.
    */
-  showError: function(message, retry) {
+  showError(message, retry) {
     this.errorText_ = message;
     this.canRetryAfterError_ = retry;
 
@@ -404,7 +404,7 @@ Polymer({
     }
   },
 
-  doReload: function() {
+  doReload() {
     this.lastBackMessageValue_ = false;
     this.authenticatorDialogDisplayed_ = false;
     this.authenticator_.reload();
@@ -419,7 +419,7 @@ Polymer({
    * @param {boolean} showUnlockConfig true if there is an encrypted
    * configuration (and not unlocked yet).
    */
-  setAdJoinParams: function(
+  setAdJoinParams(
       machineName, userName, errorState, showUnlockConfig) {
     this.offlineAdUi_.disabled = false;
     this.offlineAdUi_.machineName = machineName;
@@ -432,7 +432,7 @@ Polymer({
    * Sets Active Directory join screen with the unlocked configuration.
    * @param {Array<JoinConfigType>} options
    */
-  setAdJoinConfiguration: function(options) {
+  setAdJoinConfiguration(options) {
     this.offlineAdUi_.disabled = false;
     this.offlineAdUi_.setJoinConfigurationOptions(options);
     this.offlineAdUi_.unlockPasswordStep = false;
@@ -443,7 +443,7 @@ Polymer({
    * attempt. This goes to the C++ side through |chrome| first to clean up the
    * profile, so that the next attempt is performed with a clean state.
    */
-  doRetry_: function() {
+  doRetry_() {
     chrome.send('oauthEnrollRetry');
   },
 
@@ -451,7 +451,7 @@ Polymer({
    * Skips the device attribute update,
    * shows the successful enrollment step.
    */
-  skipAttributes_: function() {
+  skipAttributes_() {
     this.showStep(ENROLLMENT_STEP.SUCCESS);
   },
 
@@ -459,7 +459,7 @@ Polymer({
    * Uploads the device attributes to server. This goes to C++ side through
    * |chrome| and launches the device attribute update negotiation.
    */
-  submitAttributes_: function() {
+  submitAttributes_() {
     this.screen.onAttributesEntered_(this.assetId_, this.deviceLocation_);
   },
 
@@ -467,7 +467,7 @@ Polymer({
    * Skips the device attribute update,
    * shows the successful enrollment step.
    */
-  onBackButtonClicked_: function() {
+  onBackButtonClicked_() {
     if (this.currentStep_ == ENROLLMENT_STEP.SIGNIN) {
       if (this.lastBackMessageValue_) {
         this.lastBackMessageValue_ = false;
@@ -484,7 +484,7 @@ Polymer({
    *
    * @type {boolean}
    */
-  isAtTheBeginning: function() {
+  isAtTheBeginning() {
     return !this.lastBackMessageValue_ &&
         this.currentStep_ == ENROLLMENT_STEP.SIGNIN;
   },
@@ -492,7 +492,7 @@ Polymer({
   /**
    * Updates visibility of navigation buttons.
    */
-  updateControlsState: function() {
+  updateControlsState() {
     this.navigation_.refreshVisible = this.isAtTheBeginning() &&
         this.isManualEnrollment_ === false;
     this.navigation_.closeVisible =
@@ -503,14 +503,14 @@ Polymer({
   /**
    * Notifies chrome that enrollment have finished.
    */
-  onEnrollmentFinished_: function() {
+  onEnrollmentFinished_() {
     this.screen.closeEnrollment_('done');
   },
 
   /*
    * Executed on language change.
    */
-  updateLocalizedContent: function() {
+  updateLocalizedContent() {
     this.offlineAdUi_.i18nUpdateLocale();
     this.i18nUpdateLocale();
   },
@@ -528,26 +528,26 @@ Polymer({
   /**
    * Generates message on the success screen.
    */
-  successText_: function(locale, device, domain) {
+  successText_(locale, device, domain) {
     return this.i18nAdvanced(
         'oauthEnrollAbeSuccessDomain', {substitutions: [device, domain]});
   },
 
-  isEmpty_: function(str) {
+  isEmpty_(str) {
     return !str;
   },
 
   /**
    * Simple equality comparison function.
    */
-  eq_: function(currentStep, expectedStep) {
+  eq_(currentStep, expectedStep) {
     return currentStep == expectedStep;
   },
 
   /**
    * Simple equality comparison function.
    */
-  isErrorStep_: function(currentStep) {
+  isErrorStep_(currentStep) {
     return currentStep == ENROLLMENT_STEP.ERROR ||
            currentStep == ENROLLMENT_STEP.ATTRIBUTE_PROMPT_ERROR ||
            currentStep == ENROLLMENT_STEP.ACTIVE_DIRECTORY_JOIN_ERROR;
@@ -556,7 +556,7 @@ Polymer({
   /**
    * Text for error screen button depending on type of error.
    */
-  errorAction_: function(locale, step, retry) {
+  errorAction_(locale, step, retry) {
     if (this.currentStep_ == ENROLLMENT_STEP.ACTIVE_DIRECTORY_JOIN_ERROR) {
       return this.i18n('oauthEnrollRetry');
     } else if (this.currentStep_ == ENROLLMENT_STEP.ATTRIBUTE_PROMPT_ERROR) {

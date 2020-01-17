@@ -34,7 +34,7 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
   static FakeCrosHealthdClient* Get();
 
   // CrosHealthdClient overrides:
-  mojo::Remote<mojom::CrosHealthdService> BootstrapMojoConnection(
+  mojo::Remote<mojom::CrosHealthdServiceFactory> BootstrapMojoConnection(
       base::OnceCallback<void(bool success)> result_callback) override;
 
   // Set the list of routines that will be used in the response to any
@@ -56,7 +56,7 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
 
  private:
   FakeCrosHealthdService fake_service_;
-  mojo::Receiver<mojom::CrosHealthdService> receiver_{&fake_service_};
+  mojo::Receiver<mojom::CrosHealthdServiceFactory> receiver_{&fake_service_};
 
   DISALLOW_COPY_AND_ASSIGN(FakeCrosHealthdClient);
 };

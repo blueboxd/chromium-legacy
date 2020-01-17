@@ -274,6 +274,19 @@ void AnimatingLayoutManager::FadeOut(View* child_view) {
   DCHECK(child_view->parent());
   DCHECK_EQ(host_view(), child_view->parent());
 
+  // If the view in question is already incapable of being visible, either:
+  // 1. the view wasn't capable of being visible in the first place
+  // 2. the view is already invisible because the layout has chosen to hide it
+  // In either case, it is generally useful to recalculate the layout just in
+  // case the caller has made other changes that won't directly cause a layout -
+  // for example, the user has changed a layout-affecting class property. Worst
+  // case this ends up being a slightly costly no-op but we don't expect this
+  // method to be called very often.
+  if (!CanBeVisible(child_view)) {
+    InvalidateHost(true);
+    return;
+  }
+
   // Indicate that the view should become hidden in the layout without
   // immediately changing its visibility. Instead, this triggers an animation
   // which results in the view being hidden.
@@ -288,6 +301,20 @@ void AnimatingLayoutManager::FadeIn(View* child_view) {
   DCHECK(child_view);
   DCHECK(child_view->parent());
   DCHECK_EQ(host_view(), child_view->parent());
+
+  // If the view in question is already capable of being visible, either:
+  // 1. the view is already visible so this is a no-op
+  // 2. the view is not visible because the target layout has chosen to hide it
+  // In either case, it is generally useful to recalculate the layout just in
+  // case the caller has made other changes that won't directly cause a layout -
+  // for example, the user has changed a layout-affecting class property. Worst
+  // case this ends up being a slightly costly no-op but we don't expect this
+  // method to be called very often.
+  if (CanBeVisible(child_view)) {
+    InvalidateHost(true);
+    return;
+  }
+
   // Indicate that the view should become visible in the layout without
   // immediately changing its visibility. Instead, this triggers an animation
   // which results in the view being shown.

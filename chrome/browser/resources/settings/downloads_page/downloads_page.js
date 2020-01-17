@@ -45,12 +45,12 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.DownloadsBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener('auto-open-downloads-changed', autoOpen => {
       this.autoOpenDownloads_ = autoOpen;
     });
@@ -59,7 +59,7 @@ Polymer({
   },
 
   /** @private */
-  selectDownloadLocation_: function() {
+  selectDownloadLocation_() {
     listenOnce(this, 'transitionend', () => {
       this.browserProxy_.selectDownloadLocation();
     });
@@ -69,7 +69,7 @@ Polymer({
   /**
    * @private
    */
-  handleDownloadLocationChanged_: function() {
+  handleDownloadLocationChanged_() {
     this.browserProxy_
         .getDownloadLocationText(/** @type {string} */ (
             this.getPref('download.default_directory').value))
@@ -80,7 +80,7 @@ Polymer({
   // </if>
 
   /** @private */
-  onClearAutoOpenFileTypesTap_: function() {
+  onClearAutoOpenFileTypesTap_() {
     this.browserProxy_.resetAutoOpenFileTypes();
   },
 });

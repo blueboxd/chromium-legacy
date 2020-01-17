@@ -101,7 +101,6 @@ ios_eg_test("ios_showcase_egtests") {
     "//ios/showcase/content_suggestions:eg_tests",
     "//ios/showcase/core:eg_tests",
     "//ios/showcase/infobars:eg_tests",
-    "//ios/showcase/payments:eg_tests",
     "//ios/showcase/text_badge_view:eg_tests",
   ]
 

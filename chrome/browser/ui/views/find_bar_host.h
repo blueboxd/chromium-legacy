@@ -145,10 +145,10 @@ class FindBarHost : public DropdownBarHost,
   }
 
   // A pointer back to the owning controller.
-  FindBarController* find_bar_controller_;
+  FindBarController* find_bar_controller_ = nullptr;
 
   // The number of audible alerts issued.
-  size_t audible_alerts_;
+  size_t audible_alerts_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FindBarHost);
 };

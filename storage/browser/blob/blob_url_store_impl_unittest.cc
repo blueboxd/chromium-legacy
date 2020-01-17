@@ -216,17 +216,6 @@ TEST_F(BlobURLStoreImplTest, RevokeCantCommit) {
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
-TEST_F(BlobURLStoreImplTest, RevokeCantCommit_ProcessNotValid) {
-  delegate_.can_commit_url_result = false;
-  delegate_.is_process_valid_result = false;
-
-  mojo::Remote<BlobURLStore> url_store(CreateURLStore());
-  url_store->Revoke(kValidUrl);
-  url_store.FlushForTesting();
-  EXPECT_TRUE(bad_messages_.empty());
-  EXPECT_FALSE(context_->GetBlobFromPublicURL(kValidUrl));
-}
-
 TEST_F(BlobURLStoreImplTest, RevokeURLWithFragment) {
   mojo::Remote<BlobURLStore> url_store(CreateURLStore());
   url_store->Revoke(kFragmentUrl);

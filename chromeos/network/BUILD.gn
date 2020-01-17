@@ -168,9 +168,7 @@ component("network") {
 
 source_set("test_support") {
   testonly = true
-  public_deps = [
-    ":network",
-  ]
+  public_deps = [ ":network" ]
   deps = [
     "//base",
     "//chromeos:test_utils",
@@ -268,9 +266,7 @@ source_set("unit_tests") {
 }
 
 fuzzer_test("variable_expander_fuzzer") {
-  sources = [
-    "onc/variable_expander_fuzzer.cc",
-  ]
+  sources = [ "onc/variable_expander_fuzzer.cc" ]
   seed_corpus = "//chromeos/test/data/variable_expander/fuzzer_corpus"
   dict = "//chromeos/test/data/variable_expander/fuzzer.dict"
   deps = [

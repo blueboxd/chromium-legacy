@@ -54,11 +54,11 @@ const MainView = (function() {
     __proto__: superClass.prototype,
 
     // This is exposed for testing.
-    tabSwitcher: function() {
+    tabSwitcher() {
       return this.tabSwitcher_;
     },
 
-    initTabs_: function() {
+    initTabs_() {
       this.tabIdToHash_ = {};
       this.hashToTabId_ = {};
 
@@ -102,7 +102,7 @@ const MainView = (function() {
      * changed. It will update the current URL to reflect the new active tab,
      * so the back can be used to return to previous view.
      */
-    onTabSwitched_: function(oldTabId, newTabId) {
+    onTabSwitched_(oldTabId, newTabId) {
       // Change the URL to match the new tab.
       const newTabHash = this.tabIdToHash_[newTabId];
       const parsed = parseUrlHash_(window.location.hash);
@@ -111,7 +111,7 @@ const MainView = (function() {
       }
     },
 
-    onUrlHashChange_: function() {
+    onUrlHashChange_() {
       const parsed = parseUrlHash_(window.location.hash);
 
       if (!parsed) {

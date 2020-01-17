@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chromeos/components/multidevice/remote_device_cache.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
@@ -79,7 +80,8 @@ std::vector<multidevice::BeaconSeed> CreateFakeBeaconSeeds(int id) {
 
 multidevice::RemoteDeviceRef CreateLocalDevice(int id) {
   return multidevice::RemoteDeviceRefBuilder()
-      .SetPublicKey("local public key " + std::to_string(id))
+      .SetInstanceId("local instance id " + base::NumberToString(id))
+      .SetPublicKey("local public key " + base::NumberToString(id))
       .SetBeaconSeeds(CreateFakeBeaconSeeds(id))
       .Build();
 }

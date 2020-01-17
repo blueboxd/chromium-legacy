@@ -20,49 +20,137 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 
+namespace ui {
+
 namespace {
 
-static const struct {
-  const char* css_name;
-  const char* fallback_name;
-  int fallback_shape;
-} kCursorFallbacks[] = {
-    // clang-format off
-    { "pointer",     "hand",            XC_hand2 },
-    { "progress",    "left_ptr_watch",  XC_watch },
-    { "wait",        nullptr,           XC_watch },
-    { "cell",        nullptr,           XC_plus },
-    { "all-scroll",  nullptr,           XC_fleur},
-    { "v-scroll",    "all-scroll",      XC_fleur},
-    { "h-scroll",    "all-scroll",      XC_fleur},
-    { "crosshair",   nullptr,           XC_cross },
-    { "text",        nullptr,           XC_xterm },
-    { "not-allowed", "crossed_circle",  x11::None },
-    { "grabbing",    nullptr,           XC_hand2 },
-    { "col-resize",  nullptr,           XC_sb_h_double_arrow },
-    { "row-resize",  nullptr,           XC_sb_v_double_arrow},
-    { "n-resize",    nullptr,           XC_top_side},
-    { "e-resize",    nullptr,           XC_right_side},
-    { "s-resize",    nullptr,           XC_bottom_side},
-    { "w-resize",    nullptr,           XC_left_side},
-    { "ne-resize",   nullptr,           XC_top_right_corner},
-    { "nw-resize",   nullptr,           XC_top_left_corner},
-    { "se-resize",   nullptr,           XC_bottom_right_corner},
-    { "sw-resize",   nullptr,           XC_bottom_left_corner},
-    { "ew-resize",   nullptr,           XC_sb_h_double_arrow},
-    { "ns-resize",   nullptr,           XC_sb_v_double_arrow},
-    { "nesw-resize", "fd_double_arrow", x11::None},
-    { "nwse-resize", "bd_double_arrow", x11::None},
-    { "dnd-none",    "grabbing",        XC_hand2 },
-    { "dnd-move",    "grabbing",        XC_hand2 },
-    { "dnd-copy",    "grabbing",        XC_hand2 },
-    { "dnd-link",    "grabbing",        XC_hand2 },
-    // clang-format on
-};
+// Load a cursor with a list of css names or shapes in order of decreasing
+// priority.
+::Cursor LoadFontCursor() {
+  return x11::None;
+}
+
+template <typename... Ts>
+::Cursor LoadFontCursor(int shape, Ts... ts);
+
+template <typename... Ts>
+::Cursor LoadFontCursor(const char* name, Ts... ts) {
+  ::Cursor cursor = XcursorLibraryLoadCursor(gfx::GetXDisplay(), name);
+  if (cursor != x11::None)
+    return cursor;
+  return LoadFontCursor(ts...);
+}
+
+template <typename... Ts>
+::Cursor LoadFontCursor(int shape, Ts... ts) {
+  ::Cursor cursor = XCreateFontCursor(gfx::GetXDisplay(), shape);
+  if (cursor != x11::None)
+    return cursor;
+  return LoadFontCursor(ts...);
+}
+
+::Cursor LoadFontCursorForCursorType(CursorType id) {
+  switch (id) {
+    case CursorType::kMiddlePanning:
+      return LoadFontCursor("all-scroll", XC_fleur);
+    case CursorType::kMiddlePanningVertical:
+      return LoadFontCursor("v-scroll");
+    case CursorType::kMiddlePanningHorizontal:
+      return LoadFontCursor("h-scroll");
+    case CursorType::kNone:
+      return LoadFontCursor("none");
+    case CursorType::kGrab:
+      return LoadFontCursor("openhand", "grab");
+    case CursorType::kGrabbing:
+      return LoadFontCursor("closedhand", "grabbing", XC_hand2);
+    case CursorType::kNull:
+    case CursorType::kPointer:
+      return LoadFontCursor("left_ptr", XC_left_ptr);
+    case CursorType::kMove:
+      return LoadFontCursor("move", XC_fleur);
+    case CursorType::kCross:
+      return LoadFontCursor("crosshair", XC_cross);
+    case CursorType::kHand:
+      return LoadFontCursor("pointer", "hand", XC_hand2);
+    case CursorType::kIBeam:
+      return LoadFontCursor("text", XC_xterm);
+    case CursorType::kProgress:
+      return LoadFontCursor("progress", "left_ptr_watch", XC_watch);
+    case CursorType::kWait:
+      return LoadFontCursor("wait", XC_watch);
+    case CursorType::kHelp:
+      return LoadFontCursor("help");
+    case CursorType::kEastResize:
+    case CursorType::kEastPanning:
+      return LoadFontCursor("e-resize", XC_right_side);
+    case CursorType::kNorthResize:
+    case CursorType::kNorthPanning:
+      return LoadFontCursor("n-resize", XC_top_side);
+    case CursorType::kNorthEastResize:
+    case CursorType::kNorthEastPanning:
+      return LoadFontCursor("ne-resize", XC_top_right_corner);
+    case CursorType::kNorthWestResize:
+    case CursorType::kNorthWestPanning:
+      return LoadFontCursor("nw-resize", XC_top_left_corner);
+    case CursorType::kSouthResize:
+    case CursorType::kSouthPanning:
+      return LoadFontCursor("s-resize", XC_bottom_side);
+    case CursorType::kSouthEastResize:
+    case CursorType::kSouthEastPanning:
+      return LoadFontCursor("se-resize", XC_bottom_right_corner);
+    case CursorType::kSouthWestResize:
+    case CursorType::kSouthWestPanning:
+      return LoadFontCursor("sw-resize", XC_bottom_left_corner);
+    case CursorType::kWestResize:
+    case CursorType::kWestPanning:
+      return LoadFontCursor("w-resize", XC_right_side);
+    case CursorType::kNorthSouthResize:
+      return LoadFontCursor(XC_sb_v_double_arrow, "ns-resize");
+    case CursorType::kEastWestResize:
+      return LoadFontCursor(XC_sb_h_double_arrow, "ew-resize");
+    case CursorType::kColumnResize:
+      return LoadFontCursor("col-resize", XC_sb_h_double_arrow);
+    case CursorType::kRowResize:
+      return LoadFontCursor("row-resize", XC_sb_v_double_arrow);
+    case CursorType::kNorthEastSouthWestResize:
+      return LoadFontCursor("size_bdiag", "nesw-resize", "fd_double_arrow");
+    case CursorType::kNorthWestSouthEastResize:
+      return LoadFontCursor("size_fdiag", "nwse-resize", "bd_double_arrow");
+    case CursorType::kVerticalText:
+      return LoadFontCursor("vertical-text");
+    case CursorType::kZoomIn:
+      return LoadFontCursor("zoom-in");
+    case CursorType::kZoomOut:
+      return LoadFontCursor("zoom-out");
+    case CursorType::kCell:
+      return LoadFontCursor("cell", XC_plus);
+    case CursorType::kContextMenu:
+      return LoadFontCursor("context-menu");
+    case CursorType::kAlias:
+      return LoadFontCursor("alias");
+    case CursorType::kNoDrop:
+      return LoadFontCursor("no-drop");
+    case CursorType::kCopy:
+      return LoadFontCursor("copy");
+    case CursorType::kNotAllowed:
+      return LoadFontCursor("not-allowed", "crossed_circle");
+    case CursorType::kDndNone:
+      return LoadFontCursor("dnd-none", XC_hand2);
+    case CursorType::kDndMove:
+      return LoadFontCursor("dnd-move", XC_hand2);
+    case CursorType::kDndCopy:
+      return LoadFontCursor("dnd-copy", XC_hand2);
+    case CursorType::kDndLink:
+      return LoadFontCursor("dnd-link", XC_hand2);
+    case CursorType::kCustom:
+      NOTREACHED();
+      return LoadFontCursor();
+  }
+  NOTREACHED() << "Case not handled for " << static_cast<int>(id);
+  return LoadFontCursor();
+}
 
 }  // namespace
-
-namespace ui {
 
 CursorLoader* CursorLoader::Create() {
   return new CursorLoaderX11;
@@ -187,19 +275,7 @@ bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
   }
 
   // First try to load the cursor directly.
-  const char* css_name = CursorCssNameFromId(id);
-  ::Cursor cursor = XcursorLibraryLoadCursor(display_, css_name);
-  if (cursor == x11::None) {
-    // Try a similar cursor supplied by the native cursor theme.
-    for (const auto& mapping : kCursorFallbacks) {
-      if (strcmp(mapping.css_name, css_name) == 0) {
-        if (mapping.fallback_name)
-          cursor = XcursorLibraryLoadCursor(display_, mapping.fallback_name);
-        if (cursor == x11::None && mapping.fallback_shape)
-          cursor = XCreateFontCursor(display_, mapping.fallback_shape);
-      }
-    }
-  }
+  ::Cursor cursor = LoadFontCursorForCursorType(id);
   if (cursor != x11::None) {
     font_cursors_[id] = cursor;
     return cursor;

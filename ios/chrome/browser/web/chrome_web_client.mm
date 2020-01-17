@@ -182,8 +182,6 @@ NSString* ChromeWebClient::GetDocumentStartScriptForMainFrame(
     [scripts addObject:GetPageScript(@"credential_manager")];
   }
 
-  [scripts addObject:GetPageScript(@"payment_request")];
-
   return [scripts componentsJoinedByString:@";"];
 }
 

@@ -47,6 +47,7 @@
 #include "weblayer/browser/weblayer_browser_interface_binders.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
 #include "weblayer/common/features.h"
+#include "weblayer/public/common/switches.h"
 #include "weblayer/public/fullscreen_delegate.h"
 #include "weblayer/public/main.h"
 
@@ -124,6 +125,15 @@ ContentBrowserClientImpl::CreateBrowserMainParts(
       std::make_unique<BrowserMainPartsImpl>(params_, parameters);
 
   return browser_main_parts;
+}
+
+void ContentBrowserClientImpl::AppendExtraCommandLineSwitches(
+    base::CommandLine* command_line,
+    int child_process_id) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWebLayerFakePermissions)) {
+    command_line->AppendSwitch(switches::kWebLayerFakePermissions);
+  }
 }
 
 std::string ContentBrowserClientImpl::GetApplicationLocale() {

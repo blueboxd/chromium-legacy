@@ -24,7 +24,6 @@ import androidx.browser.trusted.TrustedWebActivityIntentBuilder;
 import androidx.browser.trusted.splashscreens.SplashScreenParamKey;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
 import org.chromium.chrome.browser.customtabs.TranslucentCustomTabActivity;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
@@ -79,14 +78,13 @@ public class TwaSplashController
     private final ScreenOrientationProvider mScreenOrientationProvider;
     private final SplashImageHolder mSplashImageCache;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
-    private final TwaFinishHandler mFinishHandler;
 
     @Inject
     public TwaSplashController(SplashController splashController, Activity activity,
             ActivityWindowAndroid activityWindowAndroid,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             ScreenOrientationProvider screenOrientationProvider, SplashImageHolder splashImageCache,
-            BrowserServicesIntentDataProvider intentDataProvider, TwaFinishHandler finishHandler) {
+            BrowserServicesIntentDataProvider intentDataProvider) {
         mSplashController = splashController;
         mActivity = activity;
         mActivityWindowAndroid = activityWindowAndroid;
@@ -94,7 +92,6 @@ public class TwaSplashController
         mScreenOrientationProvider = screenOrientationProvider;
         mSplashImageCache = splashImageCache;
         mIntentDataProvider = intentDataProvider;
-        mFinishHandler = finishHandler;
 
         long splashHideAnimationDurationMs = IntentUtils.safeGetInt(
                 getSplashScreenParamsFromIntent(), SplashScreenParamKey.KEY_FADE_OUT_DURATION_MS,
@@ -111,11 +108,6 @@ public class TwaSplashController
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
             mScreenOrientationProvider.delayOrientationRequests(mActivityWindowAndroid);
         }
-
-        // If the client's activity is opaque, finishing the activities one after another may lead
-        // to bottom activity showing itself in a short flash. The problem can be solved by bottom
-        // activity killing the whole task.
-        mFinishHandler.setShouldAttemptFinishingTask(true);
     }
 
     @Override
@@ -135,7 +127,6 @@ public class TwaSplashController
     @Override
     public void onSplashHidden(Tab tab, @SplashController.SplashHidesReason int reason,
             long startTimestamp, long endTimestamp) {
-        mFinishHandler.setShouldAttemptFinishingTask(false);
         mLifecycleDispatcher.unregister(this); // Unregister to get gc-ed
     }
 

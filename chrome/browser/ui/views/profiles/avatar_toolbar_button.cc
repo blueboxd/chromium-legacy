@@ -34,14 +34,9 @@
 
 namespace {
 
-int GetIconSizeForNonTouchUi() {
-  // Note that the non-touchable icon size is larger than the default to
-  // make the avatar icon easier to read.
-  if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
-    return 22;
-  }
-  return 20;
-}
+// Note that the non-touchable icon size is larger than the default to make the
+// avatar icon easier to read.
+constexpr int kIconSizeForNonTouchUi = 22;
 
 }  // namespace
 
@@ -76,11 +71,9 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser,
 
   Init();
 
-  if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
-    // For consistency with identity representation, we need to have the avatar
-    // on the left and the (potential) user name on the right.
-    SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  }
+  // For consistency with identity representation, we need to have the avatar on
+  // the left and the (potential) user name on the right.
+  SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   // Set initial text and tooltip. UpdateIcon() needs to be called from the
   // outside as GetThemeProvider() is not available until the button is added to
@@ -125,15 +118,6 @@ void AvatarToolbarButton::UpdateText() {
           IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE, incognito_window_count));
       text = l10n_util::GetPluralStringFUTF16(IDS_AVATAR_BUTTON_INCOGNITO,
                                               incognito_window_count);
-      // The new feature has styling that has the same text color for Incognito
-      // as for other states.
-      if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButton) &&
-          GetThemeProvider()) {
-        // Note that this chip does not have a highlight color.
-        const SkColor text_color = GetThemeProvider()->GetColor(
-            ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-        SetEnabledTextColors(text_color);
-      }
       break;
     }
     case State::kAnimatedUserIdentity: {
@@ -154,9 +138,7 @@ void AvatarToolbarButton::UpdateText() {
       text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
       break;
     case State::kGuestSession:
-      if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
-        text = l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
-      }
+      text = l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
       break;
     case State::kGenericProfile:
     case State::kNormal:
@@ -271,7 +253,7 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
     const gfx::Image& gaia_account_image) const {
   const int icon_size = ui::MaterialDesignController::touch_ui()
                             ? kDefaultTouchableIconSize
-                            : GetIconSizeForNonTouchUi();
+                            : kIconSizeForNonTouchUi;
   SkColor icon_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
 
@@ -279,10 +261,7 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
     case State::kIncognitoProfile:
       return gfx::CreateVectorIcon(kIncognitoIcon, icon_size, icon_color);
     case State::kGuestSession:
-      if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
-        return profiles::GetGuestAvatar(icon_size);
-      }
-      return gfx::CreateVectorIcon(kUserMenuGuestIcon, icon_size, icon_color);
+      return profiles::GetGuestAvatar(icon_size);
     case State::kGenericProfile:
       return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size,
                                    icon_color);
@@ -303,9 +282,9 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
 void AvatarToolbarButton::SetInsets() {
   // In non-touch mode we use a larger-than-normal icon size for avatars so we
   // need to compensate it by smaller insets.
-  gfx::Insets layout_insets(
-      ui::MaterialDesignController::touch_ui()
-          ? 0
-          : (kDefaultIconSize - GetIconSizeForNonTouchUi()) / 2);
+  gfx::Insets layout_insets(ui::MaterialDesignController::touch_ui()
+                                ? 0
+                                : (kDefaultIconSize - kIconSizeForNonTouchUi) /
+                                      2);
   SetLayoutInsetDelta(layout_insets);
 }

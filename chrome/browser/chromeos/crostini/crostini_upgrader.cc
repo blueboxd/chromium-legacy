@@ -7,6 +7,7 @@
 #include "base/barrier_closure.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/chromeos/crostini/crostini_export_import_status_tracker.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -82,13 +83,59 @@ void CrostiniUpgrader::RemoveObserver(CrostiniUpgraderUIObserver* observer) {
   upgrader_observers_.RemoveObserver(observer);
 }
 
-void CrostiniUpgrader::Backup() {
-  // Just pretend for now. Real import/export code starts here.
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&CrostiniUpgrader::OnBackup,
-                     weak_ptr_factory_.GetWeakPtr(), CrostiniResult::SUCCESS),
-      base::TimeDelta::FromSeconds(5));
+CrostiniUpgrader::StatusTracker::StatusTracker(
+    base::WeakPtr<CrostiniUpgrader> upgrader,
+    ExportImportType type,
+    base::FilePath path)
+    : CrostiniExportImportStatusTracker(type, std::move(path)),
+      upgrader_(upgrader) {}
+
+CrostiniUpgrader::StatusTracker::~StatusTracker() = default;
+
+void CrostiniUpgrader::StatusTracker::SetStatusRunningUI(int progress_percent) {
+  if (type() == ExportImportType::EXPORT) {
+    upgrader_->OnBackupProgress(progress_percent);
+  } else {
+    upgrader_->OnRestoreProgress(progress_percent);
+  }
+}
+
+void CrostiniUpgrader::StatusTracker::SetStatusDoneUI() {
+  if (type() == ExportImportType::EXPORT) {
+    upgrader_->OnBackup(CrostiniResult::SUCCESS);
+  } else {
+    upgrader_->OnRestore(CrostiniResult::SUCCESS);
+  }
+}
+
+void CrostiniUpgrader::StatusTracker::SetStatusCancelledUI() {
+  // Successfully canceled backup/restore. Upgrade can continue.
+  if (type() == ExportImportType::EXPORT) {
+    upgrader_->OnBackup(CrostiniResult::SUCCESS);
+  } else {
+    upgrader_->OnRestore(CrostiniResult::SUCCESS);
+  }
+}
+
+void CrostiniUpgrader::StatusTracker::SetStatusFailedWithMessageUI(
+    Status status,
+    const base::string16& message) {
+  CrostiniResult result = CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED;
+  if (status == Status::FAILED_INSUFFICIENT_SPACE) {
+    result = CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_SPACE;
+  }
+  if (type() == ExportImportType::EXPORT) {
+    upgrader_->OnBackup(result);
+  } else {
+    upgrader_->OnRestore(result);
+  }
+}
+
+void CrostiniUpgrader::Backup(const ContainerId& container_id,
+                              content::WebContents* web_contents) {
+  CrostiniExportImport::OnceTrackerFactory factory = MakeFactory();
+  CrostiniExportImport::GetForProfile(profile_)->ExportContainer(
+      web_contents, container_id, std::move(factory));
 }
 
 void CrostiniUpgrader::OnBackup(CrostiniResult result) {
@@ -100,6 +147,12 @@ void CrostiniUpgrader::OnBackup(CrostiniResult result) {
   }
   for (auto& observer : upgrader_observers_) {
     observer.OnBackupSucceeded();
+  }
+}
+
+void CrostiniUpgrader::OnBackupProgress(int progress_percent) {
+  for (auto& observer : upgrader_observers_) {
+    observer.OnBackupProgress(progress_percent);
   }
 }
 
@@ -187,6 +240,31 @@ void CrostiniUpgrader::OnUpgrade(CrostiniResult result) {
   }
 }
 
+void CrostiniUpgrader::Restore(const ContainerId& container_id,
+                               content::WebContents* web_contents) {
+  CrostiniExportImport::OnceTrackerFactory factory = MakeFactory();
+  CrostiniExportImport::GetForProfile(profile_)->ImportContainer(
+      web_contents, container_id, std::move(factory));
+}
+
+void CrostiniUpgrader::OnRestore(CrostiniResult result) {
+  if (result != CrostiniResult::SUCCESS) {
+    for (auto& observer : upgrader_observers_) {
+      observer.OnRestoreFailed();
+    }
+    return;
+  }
+  for (auto& observer : upgrader_observers_) {
+    observer.OnRestoreSucceeded();
+  }
+}
+
+void CrostiniUpgrader::OnRestoreProgress(int progress_percent) {
+  for (auto& observer : upgrader_observers_) {
+    observer.OnRestoreProgress(progress_percent);
+  }
+}
+
 void CrostiniUpgrader::Cancel() {
   CrostiniManager::GetForProfile(profile_)->CancelUpgradeContainer(
       container_id_, base::BindOnce(&CrostiniUpgrader::OnCancel,
@@ -234,6 +312,17 @@ void CrostiniUpgrader::OnUpgradeContainerProgress(
 // Return true if internal state allows starting upgrade.
 bool CrostiniUpgrader::CanUpgrade() {
   return false;
+}
+
+CrostiniExportImport::OnceTrackerFactory CrostiniUpgrader::MakeFactory() {
+  return base::BindOnce(
+      [](base::WeakPtr<CrostiniUpgrader> upgrader, ExportImportType type,
+         base::FilePath path)
+          -> std::unique_ptr<CrostiniExportImportStatusTracker> {
+        return std::make_unique<StatusTracker>(std::move(upgrader), type,
+                                               std::move(path));
+      },
+      weak_ptr_factory_.GetWeakPtr());
 }
 
 }  // namespace crostini

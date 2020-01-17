@@ -98,20 +98,18 @@ class VIEWS_EXPORT RootView : public View,
   // Make an announcement through the screen reader, if present.
   void AnnounceText(const base::string16& text);
 
-  // Overridden from FocusTraversable:
+  // FocusTraversable:
   FocusSearch* GetFocusSearch() override;
   FocusTraversable* GetFocusTraversableParent() override;
   View* GetFocusTraversableParentView() override;
 
-  // Overridden from ui::EventProcessor:
+  // ui::EventProcessor:
   ui::EventTarget* GetRootForEvent(ui::Event* event) override;
   ui::EventTargeter* GetDefaultEventTargeter() override;
   void OnEventProcessingStarted(ui::Event* event) override;
   void OnEventProcessingFinished(ui::Event* event) override;
 
-  // Overridden from View:
-  const Widget* GetWidget() const override;
-  Widget* GetWidget() override;
+  // View:
   bool IsDrawn() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -125,7 +123,7 @@ class VIEWS_EXPORT RootView : public View,
   void UpdateParentLayer() override;
 
  protected:
-  // Overridden from View:
+  // View:
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
@@ -165,7 +163,7 @@ class VIEWS_EXPORT RootView : public View,
       View* view,
       View* sibling) WARN_UNUSED_RESULT;
 
-  // Overridden from ui::EventDispatcherDelegate:
+  // ui::EventDispatcherDelegate:
   bool CanDispatchToTarget(ui::EventTarget* target) override;
   ui::EventDispatchDetails PreDispatchEvent(ui::EventTarget* target,
                                             ui::Event* event) override;
@@ -174,6 +172,9 @@ class VIEWS_EXPORT RootView : public View,
 
   //////////////////////////////////////////////////////////////////////////////
   // Tree operations -----------------------------------------------------------
+
+  // View:
+  const Widget* GetWidgetImpl() const override;
 
   // The host Widget
   Widget* widget_;

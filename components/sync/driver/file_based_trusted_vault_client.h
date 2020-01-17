@@ -32,13 +32,13 @@ class FileBasedTrustedVaultClient : public TrustedVaultClient {
   std::unique_ptr<Subscription> AddKeysChangedObserver(
       const base::RepeatingClosure& cb) override;
   void FetchKeys(
-      const std::string& gaia_id,
+      const CoreAccountInfo& account_info,
       base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb)
       override;
   void StoreKeys(const std::string& gaia_id,
                  const std::vector<std::vector<uint8_t>>& keys,
                  int last_key_version) override;
-  void MarkKeysAsStale(const std::string& gaia_id,
+  void MarkKeysAsStale(const CoreAccountInfo& account_info,
                        base::OnceCallback<void(bool)> cb) override;
 
   // Runs |cb| when all requests have completed.

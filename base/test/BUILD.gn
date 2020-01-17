@@ -244,9 +244,7 @@ static_library("test_support") {
 
   if (is_linux) {
     public_deps += [ ":fontconfig_util_linux" ]
-    data_deps = [
-      "//third_party/test_fonts",
-    ]
+    data_deps = [ "//third_party/test_fonts" ]
     if (current_toolchain == host_toolchain) {
       data_deps += [ ":do_generate_fontconfig_caches" ]
     }
@@ -320,9 +318,7 @@ config("perf_test_config") {
 # this, you always want the object file anyway.
 source_set("test_support_perf") {
   testonly = true
-  sources = [
-    "run_all_perftests.cc",
-  ]
+  sources = [ "run_all_perftests.cc" ]
   deps = [
     ":test_support",
     "//base",
@@ -338,19 +334,13 @@ static_library("test_launcher_nacl_nonsfi") {
     "launcher/test_launcher_nacl_nonsfi.cc",
     "launcher/test_launcher_nacl_nonsfi.h",
   ]
-  deps = [
-    ":test_support",
-  ]
+  deps = [ ":test_support" ]
 }
 
 static_library("run_all_unittests") {
   testonly = true
-  sources = [
-    "run_all_unittests.cc",
-  ]
-  deps = [
-    ":test_support",
-  ]
+  sources = [ "run_all_unittests.cc" ]
+  deps = [ ":test_support" ]
 }
 
 # These sources are linked into both the base_unittests binary and the test
@@ -365,9 +355,7 @@ source_set("native_library_test_utils") {
 
 # This shared library is dynamically loaded by ImmediateCrash unittests.
 shared_library("immediate_crash_test_helper") {
-  sources = [
-    "immediate_crash_test_helper.cc",
-  ]
+  sources = [ "immediate_crash_test_helper.cc" ]
 
   # Note: the helper has a header-only dependency on //base/immediate_helper.h.
   # However, the build rule intentionally omits an explicit //base dependency
@@ -391,13 +379,9 @@ shared_library("immediate_crash_test_helper") {
 # This shared library is dynamically loaded by NativeLibrary unittests.
 shared_library("test_shared_library") {
   testonly = true
-  sources = [
-    "test_shared_library.cc",
-  ]
+  sources = [ "test_shared_library.cc" ]
 
-  deps = [
-    ":native_library_test_utils",
-  ]
+  deps = [ ":native_library_test_utils" ]
 }
 
 static_library("run_all_base_unittests") {
@@ -405,12 +389,8 @@ static_library("run_all_base_unittests") {
   # should depend on run_all_unittests above.
   visibility = [ "//base/*" ]
   testonly = true
-  sources = [
-    "run_all_base_unittests.cc",
-  ]
-  deps = [
-    ":test_support",
-  ]
+  sources = [ "run_all_base_unittests.cc" ]
+  deps = [ ":test_support" ]
 }
 
 if (is_linux) {
@@ -419,9 +399,7 @@ if (is_linux) {
       "fontconfig_util_linux.cc",
       "fontconfig_util_linux.h",
     ]
-    data_deps = [
-      ":fonts_conf",
-    ]
+    data_deps = [ ":fonts_conf" ]
     deps = [
       "//base",
       "//third_party/fontconfig",
@@ -429,20 +407,14 @@ if (is_linux) {
   }
 
   copy("fonts_conf") {
-    sources = [
-      "fonts.conf",
-    ]
-    outputs = [
-      "${root_build_dir}/etc/fonts/{{source_file_part}}",
-    ]
+    sources = [ "fonts.conf" ]
+    outputs = [ "${root_build_dir}/etc/fonts/{{source_file_part}}" ]
   }
 
   if (current_toolchain == host_toolchain) {
     executable("generate_fontconfig_caches") {
       testonly = true
-      sources = [
-        "generate_fontconfig_caches.cc",
-      ]
+      sources = [ "generate_fontconfig_caches.cc" ]
       deps = [
         ":fontconfig_util_linux",
         "//base",
@@ -455,9 +427,7 @@ if (is_linux) {
 
       # The copied test fonts are inputs to generate_fontconfig_caches, so must
       # be listed in deps, not data_deps (https://crbug.com/919422).
-      deps = [
-        "//third_party/test_fonts",
-      ]
+      deps = [ "//third_party/test_fonts" ]
       args = []
       outputs = [
         "$root_out_dir/fontconfig_caches/fb5c91b2895aa445d23aebf7f9e2189c-le64.cache-7",
@@ -470,12 +440,8 @@ if (is_linux) {
 if (is_fuchsia || is_linux) {
   shared_library("malloc_wrapper") {
     testonly = true
-    sources = [
-      "malloc_wrapper.cc",
-    ]
-    deps = [
-      "//base",
-    ]
+    sources = [ "malloc_wrapper.cc" ]
+    deps = [ "//base" ]
   }
 }
 
@@ -543,15 +509,11 @@ if (is_android) {
 
 if (is_ios) {
   source_set("google_test_runner_shared_headers") {
-    sources = [
-      "ios/google_test_runner_delegate.h",
-    ]
+    sources = [ "ios/google_test_runner_delegate.h" ]
   }
 
   source_set("google_test_runner") {
-    sources = [
-      "ios/google_test_runner.mm",
-    ]
+    sources = [ "ios/google_test_runner.mm" ]
     deps = [
       ":google_test_runner_shared_headers",
       "//base",
@@ -568,7 +530,5 @@ if (is_ios) {
 # used for testing.
 executable("test_child_process") {
   testonly = true
-  sources = [
-    "test_child_process.cc",
-  ]
+  sources = [ "test_child_process.cc" ]
 }

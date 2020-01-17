@@ -69,7 +69,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.BLUETOOTH_DEVICES) {
           map.set(
@@ -106,7 +106,7 @@ Polymer({
      */
     isSecondaryUser_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isSecondaryUser');
       },
       readOnly: true,
@@ -118,7 +118,7 @@ Polymer({
      */
     primaryUserEmail_: {
       type: String,
-      value: function() {
+      value() {
         return loadTimeData.getString('primaryUserEmail');
       },
       readOnly: true,
@@ -135,7 +135,7 @@ Polymer({
   bluetoothAdapterStateChangedListener_: undefined,
 
   /** @override */
-  ready: function() {
+  ready() {
     if (bluetoothApis.bluetoothApiForTest) {
       this.bluetooth = bluetoothApis.bluetoothApiForTest;
     }
@@ -145,7 +145,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.bluetoothAdapterStateChangedListener_ =
         this.onBluetoothAdapterStateChanged_.bind(this);
     this.bluetooth.onAdapterStateChanged.addListener(
@@ -156,7 +156,7 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     if (this.bluetoothAdapterStateChangedListener_) {
       this.bluetooth.onAdapterStateChanged.removeListener(
           this.bluetoothAdapterStateChangedListener_);
@@ -168,7 +168,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getIcon_: function(bluetoothToggleState) {
+  getIcon_(bluetoothToggleState) {
     // Don't use |this.bluetoothToggleState_| here, since it has not been
     // updated yet to the latest value.
     if (!bluetoothToggleState) {
@@ -184,7 +184,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getOnOffString_: function(enabled, onstr, offstr) {
+  getOnOffString_(enabled, onstr, offstr) {
     return enabled ? onstr : offstr;
   },
 
@@ -192,7 +192,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isToggleEnabled_: function() {
+  isToggleEnabled_() {
     return this.adapterState_ !== undefined && this.adapterState_.available &&
         !this.stateChangeInProgress_;
   },
@@ -202,7 +202,7 @@ Polymer({
    * @param {!chrome.bluetooth.AdapterState} state
    * @private
    */
-  onBluetoothAdapterStateChanged_: function(state) {
+  onBluetoothAdapterStateChanged_(state) {
     this.adapterState_ = state;
     if (this.isToggleEnabled_()) {
       this.bluetoothToggleState_ = state.powered;
@@ -210,7 +210,7 @@ Polymer({
   },
 
   /** @private */
-  onTap_: function() {
+  onTap_() {
     if (!this.isToggleEnabled_()) {
       return;
     }
@@ -225,13 +225,13 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onSubpageArrowTap_: function(e) {
+  onSubpageArrowTap_(e) {
     this.openSubpage_();
     e.stopPropagation();
   },
 
   /** @private */
-  bluetoothToggleStateChanged_: function() {
+  bluetoothToggleStateChanged_() {
     if (!this.adapterState_ || !this.isToggleEnabled_() ||
         this.bluetoothToggleState_ == this.adapterState_.powered) {
       return;
@@ -255,7 +255,7 @@ Polymer({
   },
 
   /** @private */
-  openSubpage_: function() {
-    settings.navigateTo(settings.routes.BLUETOOTH_DEVICES);
+  openSubpage_() {
+    settings.Router.getInstance().navigateTo(settings.routes.BLUETOOTH_DEVICES);
   }
 });

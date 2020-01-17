@@ -8,15 +8,6 @@ const char kSharingFCMAppID[] = "com.google.chrome.sharing.fcm";
 
 const char kSharingSenderID[] = "379932496580";
 
-// Based on Stable + Beta metrics on 23-Oct-2019, 95th percentile of round trip
-// time (Sharing.MessageAckTime) is ~16 seconds. Message timeout is set as round
-// trip expected time, and ack TTL is set as half of the value.
-const constexpr base::TimeDelta kSendMessageTimeout =
-    base::TimeDelta::FromSeconds(16);
-
-const constexpr base::TimeDelta kAckTimeToLive =
-    base::TimeDelta::FromSeconds(8);
-
 const constexpr base::TimeDelta kRegistrationExpiration =
     base::TimeDelta::FromDays(1);
 

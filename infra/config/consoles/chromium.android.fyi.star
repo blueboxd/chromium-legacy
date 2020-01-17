@@ -7,6 +7,13 @@ luci.console_view(
             builder = 'ci/android-bfcache-debug',
             category = 'android',
         ),
+        # Formerly on chromium.memory. Moved to the FYI console for persistent
+        # redness. https://crbug.com/1008094
+        luci.console_view_entry(
+            builder = 'ci/Android CFI',
+            category = 'memory',
+            short_name = 'cfi',
+        ),
         luci.console_view_entry(
             builder = 'ci/Android WebView P Blink-CORS FYI (rel)',
             category = 'webview',

@@ -24,6 +24,7 @@
 #include "device/bluetooth/bluetooth_pairing_winrt.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_winrt.h"
 #include "device/bluetooth/event_utils_winrt.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 namespace device {
 
@@ -155,7 +156,9 @@ BluetoothDeviceWinrt::BluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter,
                                            uint64_t raw_address)
     : BluetoothDevice(adapter),
       raw_address_(raw_address),
-      address_(CanonicalizeAddress(raw_address)) {}
+      address_(CanonicalizeAddress(raw_address)) {
+  supports_service_specific_discovery_ = true;
+}
 
 BluetoothDeviceWinrt::~BluetoothDeviceWinrt() {
   CloseDevice(ble_device_);
@@ -415,7 +418,8 @@ void BluetoothDeviceWinrt::UpdateLocalName(
   local_name_ = std::move(local_name);
 }
 
-void BluetoothDeviceWinrt::CreateGattConnectionImpl() {
+void BluetoothDeviceWinrt::CreateGattConnectionImpl(
+    base::Optional<BluetoothUUID> service_uuid) {
   ComPtr<IBluetoothLEDeviceStatics> device_statics;
   HRESULT hr = GetBluetoothLEDeviceStaticsActivationFactory(&device_statics);
   if (FAILED(hr)) {
@@ -447,6 +451,7 @@ void BluetoothDeviceWinrt::CreateGattConnectionImpl() {
     return;
   }
 
+  target_uuid_ = std::move(service_uuid);
   hr = base::win::PostAsyncResults(
       std::move(from_bluetooth_address_op),
       base::BindOnce(&BluetoothDeviceWinrt::OnFromBluetoothAddress,
@@ -459,7 +464,27 @@ void BluetoothDeviceWinrt::CreateGattConnectionImpl() {
         FROM_HERE, base::BindOnce(&BluetoothDeviceWinrt::DidFailToConnectGatt,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   ConnectErrorCode::ERROR_FAILED));
+    return;
   }
+
+  pending_on_from_bluetooth_address_ = true;
+}
+
+void BluetoothDeviceWinrt::UpgradeToFullDiscovery() {
+  // |CreateGattConnectionImpl| has been called previously but having a specific
+  // |target_uuid_| was too optimistic and now a complete enumeration of
+  // services is needed.
+  DCHECK(pending_on_from_bluetooth_address_ || connection_status_);
+  target_uuid_.reset();
+
+  if (pending_on_from_bluetooth_address_) {
+    // |OnFromBluetoothAddress| hasn't been called yet. Updating |target_uuid_|
+    // will be sufficient to change the discovery that will be started.
+    return;
+  }
+
+  // Restart discovery.
+  StartGattDiscovery();
 }
 
 void BluetoothDeviceWinrt::DisconnectGatt() {
@@ -489,6 +514,7 @@ HRESULT BluetoothDeviceWinrt::GetBluetoothLEDeviceStaticsActivationFactory(
 void BluetoothDeviceWinrt::OnFromBluetoothAddress(
     ComPtr<IBluetoothLEDevice> ble_device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  pending_on_from_bluetooth_address_ = false;
   if (!ble_device) {
     BLUETOOTH_LOG(DEBUG) << "Getting Device From Bluetooth Address failed.";
     DidFailToConnectGatt(ConnectErrorCode::ERROR_FAILED);
@@ -518,13 +544,9 @@ void BluetoothDeviceWinrt::OnFromBluetoothAddress(
       base::BindRepeating(&BluetoothDeviceWinrt::OnGattServicesChanged,
                           weak_ptr_factory_.GetWeakPtr()));
 
-  gatt_discoverer_ =
-      std::make_unique<BluetoothGattDiscovererWinrt>(ble_device_);
   // Initiating the GATT discovery will result in a GATT connection attempt as
   // well and triggers OnConnectionStatusChanged on success.
-  gatt_discoverer_->StartGattDiscovery(
-      base::BindOnce(&BluetoothDeviceWinrt::OnGattDiscoveryComplete,
-                     weak_ptr_factory_.GetWeakPtr()));
+  StartGattDiscovery();
 
   name_changed_token_ = AddTypedEventHandler(
       ble_device_.Get(), &IBluetoothLEDevice::add_NameChanged,
@@ -564,11 +586,7 @@ void BluetoothDeviceWinrt::OnGattServicesChanged(IBluetoothLEDevice* ble_device,
   if (IsGattConnected()) {
     // In order to stop a potential ongoing GATT discovery, the GattDiscoverer
     // is reset and a new discovery is initiated.
-    gatt_discoverer_ =
-        std::make_unique<BluetoothGattDiscovererWinrt>(ble_device);
-    gatt_discoverer_->StartGattDiscovery(
-        base::BindOnce(&BluetoothDeviceWinrt::OnGattDiscoveryComplete,
-                       weak_ptr_factory_.GetWeakPtr()));
+    StartGattDiscovery();
   }
 }
 
@@ -576,6 +594,14 @@ void BluetoothDeviceWinrt::OnNameChanged(IBluetoothLEDevice* ble_device,
                                          IInspectable* object) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   adapter_->NotifyDeviceChanged(this);
+}
+
+void BluetoothDeviceWinrt::StartGattDiscovery() {
+  gatt_discoverer_ =
+      std::make_unique<BluetoothGattDiscovererWinrt>(ble_device_, target_uuid_);
+  gatt_discoverer_->StartGattDiscovery(
+      base::BindOnce(&BluetoothDeviceWinrt::OnGattDiscoveryComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothDeviceWinrt::OnGattDiscoveryComplete(bool success) {

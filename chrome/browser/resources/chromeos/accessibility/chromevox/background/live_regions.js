@@ -84,7 +84,7 @@ LiveRegions.prototype = {
    * Called when the automation tree is changed.
    * @param {TreeChange} treeChange
    */
-  onTreeChange: function(treeChange) {
+  onTreeChange(treeChange) {
     var type = treeChange.type;
     var node = treeChange.target;
     if ((!node.containerLiveStatus || node.containerLiveStatus == 'off') &&
@@ -133,14 +133,14 @@ LiveRegions.prototype = {
    * @param {!AutomationNode} node
    * @private
    */
-  queueLiveRegionChange_: function(node) {
+  queueLiveRegionChange_(node) {
     this.changedNodes_.push(node);
   },
 
   /**
    * @private
    */
-  processQueuedTreeChanges_: function() {
+  processQueuedTreeChanges_() {
     // Schedule all live regions after all events in the native C++ EventBundle.
     this.liveRegionNodeSet_ = new WeakSet();
     setTimeout(function() {
@@ -161,7 +161,7 @@ LiveRegions.prototype = {
    *     Output to prepend to the output.
    * @private
    */
-  outputLiveRegionChange_: function(node, opt_prependFormatStr) {
+  outputLiveRegionChange_(node, opt_prependFormatStr) {
     if (node.containerLiveBusy) {
       return;
     }
@@ -184,7 +184,7 @@ LiveRegions.prototype = {
    *     Output to prepend to the output.
    * @private
    */
-  outputLiveRegionChangeForNode_: function(node, opt_prependFormatStr) {
+  outputLiveRegionChangeForNode_(node, opt_prependFormatStr) {
     var range = cursors.Range.fromNode(node);
     var output = new Output();
     output.withSpeechCategory(TtsCategory.LIVE);
@@ -233,7 +233,7 @@ LiveRegions.prototype = {
    * @param {AutomationNode} root
    * @private
    */
-  addNodeToNodeSetRecursive_: function(root) {
+  addNodeToNodeSetRecursive_(root) {
     this.liveRegionNodeSet_.add(root);
     for (var child = root.firstChild; child; child = child.nextSibling) {
       this.addNodeToNodeSetRecursive_(child);

@@ -214,7 +214,6 @@ base::Value IOSPaymentInstrumentLauncher::SerializeCertificateChain(
 
   for (const auto& cert_string : cert_chain) {
     base::Value byte_array(base::Value::Type::LIST);
-    byte_array.GetList().reserve(cert_string.size());
     for (const char byte : cert_string)
       byte_array.Append(byte);
 

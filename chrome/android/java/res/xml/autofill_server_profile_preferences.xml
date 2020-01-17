@@ -9,9 +9,7 @@
         android:key="server_profile_description"
         android:selectable="false" />
 
-    <org.chromium.chrome.browser.settings.TextAndButtonPreference
-        android:key="server_profile_edit_link"
-        android:widgetLayout="@layout/autofill_server_data_edit_link"
-        android:title="@string/autofill_from_google_account_long" />
+    <org.chromium.chrome.browser.settings.autofill.AutofillEditLinkPreference
+        android:key="server_profile_edit_link" />
 
 </PreferenceScreen>

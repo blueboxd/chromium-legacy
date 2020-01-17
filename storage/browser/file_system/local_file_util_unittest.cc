@@ -39,7 +39,6 @@ namespace content {
 
 namespace {
 
-const GURL kOrigin("http://foo/");
 const storage::FileSystemType kFileSystemType = storage::kFileSystemTypeTest;
 
 }  // namespace
@@ -76,7 +75,8 @@ class LocalFileUtilTest : public testing::Test {
 
   FileSystemURL CreateURL(const std::string& file_name) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        kOrigin, kFileSystemType, base::FilePath().FromUTF8Unsafe(file_name));
+        GURL("http://foo/"), kFileSystemType,
+        base::FilePath().FromUTF8Unsafe(file_name));
   }
 
   base::FilePath LocalPath(const char* file_name) {

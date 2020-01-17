@@ -118,11 +118,6 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   if (previews_user_data->cache_control_no_transform_directive()) {
     origin_opt_out_occurred_ = true;
   }
-  if (previews_user_data->server_lite_page_info()) {
-    navigation_restart_penalty_ =
-        navigation_handle->NavigationStart() -
-        previews_user_data->server_lite_page_info()->original_navigation_start;
-  }
 
   lite_page_eligibility_reason_ =
       previews_user_data->EligibilityReasonForPreview(
@@ -202,13 +197,10 @@ void PreviewsUKMObserver::RecordPreviewsTypes() {
       page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
 
   // Only record previews types when they are active.
-  // |navigation_restart_penalty_| is included here because a Lite Page Redirect
-  // preview can be attempted and not commit. This incurs the penalty but may
-  // also cause no preview to be committed.
   if (!lite_page_seen_ && !noscript_seen_ && !resource_loading_hints_seen_ &&
       !defer_all_script_seen_ && !offline_preview_seen_ &&
       !origin_opt_out_occurred_ && !save_data_enabled_ &&
-      !lite_page_redirect_seen_ && !navigation_restart_penalty_.has_value()) {
+      !lite_page_redirect_seen_) {
     return;
   }
 
@@ -235,10 +227,6 @@ void PreviewsUKMObserver::RecordPreviewsTypes() {
     builder.Setsave_data_enabled(1);
   if (previews_likely_)
     builder.Setpreviews_likely(1);
-  if (navigation_restart_penalty_.has_value()) {
-    builder.Setnavigation_restart_penalty(
-        navigation_restart_penalty_->InMilliseconds());
-  }
 
   if (ShouldOptionalEligibilityReasonBeRecorded(
           lite_page_eligibility_reason_)) {

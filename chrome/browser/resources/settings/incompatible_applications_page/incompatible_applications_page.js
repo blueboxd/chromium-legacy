@@ -28,7 +28,7 @@ Polymer({
      */
     hasAdminRights_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('hasAdminRights');
       },
     },
@@ -78,7 +78,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'incompatible-application-removed',
         this.onIncompatibleApplicationRemoved_.bind(this));
@@ -95,7 +95,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeIsDone_: function() {
+  computeIsDone_() {
     return this.applications_.length === 0;
   },
 
@@ -103,7 +103,7 @@ Polymer({
    * Removes a single incompatible application from the |applications_| list.
    * @private
    */
-  onIncompatibleApplicationRemoved_: function(applicationName) {
+  onIncompatibleApplicationRemoved_(applicationName) {
     // Find the index of the element.
     const index = this.applications_.findIndex(function(application) {
       return application.name == applicationName;
@@ -119,7 +119,7 @@ Polymer({
    * the length of |applications_|.
    * @private
    */
-  updatePluralStrings_: function() {
+  updatePluralStrings_() {
     const browserProxy =
         settings.IncompatibleApplicationsBrowserProxyImpl.getInstance();
     const numApplications = this.applications_.length;

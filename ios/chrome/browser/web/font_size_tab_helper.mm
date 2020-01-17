@@ -29,7 +29,7 @@ FontSizeTabHelper::FontSizeTabHelper(web::WebState* web_state)
                   object:nil
                    queue:nil
               usingBlock:^(NSNotification* _Nonnull note) {
-                SetPageFontSize(GetSystemSuggestedFontSize());
+                SetPageFontSize(GetFontSize());
               }];
 }
 
@@ -41,9 +41,29 @@ void FontSizeTabHelper::SetPageFontSize(int size) {
   }
 }
 
-int FontSizeTabHelper::GetSystemSuggestedFontSize() const {
+void FontSizeTabHelper::UserZoom(Zoom zoom) {
+  // TODO(crbug.com/1028938): Replace with actual logic.
+  return;
+}
+
+bool FontSizeTabHelper::CanUserZoomIn() const {
+  // TODO(crbug.com/1028938): Replace with actual logic.
+  return true;
+}
+
+bool FontSizeTabHelper::CanUserZoomOut() const {
+  // TODO(crbug.com/1028938): Replace with actual logic.
+  return true;
+}
+
+int FontSizeTabHelper::GetFontSize() const {
   // Multiply by 100 as the web property needs a percentage.
-  return SystemSuggestedFontSizeMultiplier() * 100;
+  return SystemSuggestedFontSizeMultiplier() * GetCurrentUserZoomMultiplier() *
+         100;
+}
+
+double FontSizeTabHelper::GetCurrentUserZoomMultiplier() const {
+  return 1;
 }
 
 void FontSizeTabHelper::WebStateDestroyed(web::WebState* web_state) {
@@ -54,7 +74,7 @@ void FontSizeTabHelper::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
   DCHECK_EQ(web_state, web_state_);
-  int size = GetSystemSuggestedFontSize();
+  int size = GetFontSize();
   if (size != 100)
     SetPageFontSize(size);
 }

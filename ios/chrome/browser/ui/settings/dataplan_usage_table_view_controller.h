@@ -18,10 +18,7 @@ class PrefService;
                      wifiPref:(const char*)wifiPreference
                         title:(NSString*)title NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-    NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 // Returns the text for the current setting, based on the values of the
 // preferences.  Kept in this class, so that all of the code to translate from

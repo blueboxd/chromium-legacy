@@ -87,7 +87,7 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   void MarkSurfaceForDestruction(const SurfaceId& surface_id);
 
   // Returns a Surface corresponding to the provided |surface_id|.
-  Surface* GetSurfaceForId(const SurfaceId& surface_id);
+  Surface* GetSurfaceForId(const SurfaceId& surface_id) const;
 
   void AddObserver(SurfaceObserver* obs) { observer_list_.AddObserver(obs); }
 

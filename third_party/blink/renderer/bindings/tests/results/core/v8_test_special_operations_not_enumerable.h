@@ -60,12 +60,6 @@ class V8TestSpecialOperationsNotEnumerable {
 };
 
 template <>
-struct NativeValueTraits<TestSpecialOperationsNotEnumerable> : public NativeValueTraitsBase<TestSpecialOperationsNotEnumerable> {
-  CORE_EXPORT static TestSpecialOperationsNotEnumerable* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestSpecialOperationsNotEnumerable* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestSpecialOperationsNotEnumerable> {
   typedef V8TestSpecialOperationsNotEnumerable Type;
 };

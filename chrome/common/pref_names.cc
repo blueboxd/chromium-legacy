@@ -2443,6 +2443,9 @@ const char kPolicyPinnedLauncherApps[] = "policy_pinned_launcher_apps";
 // Keeps names of rolled default pin layouts for shelf in order not to apply
 // this twice. Names are separated by comma.
 const char kShelfDefaultPinLayoutRolls[] = "shelf_default_pin_layout_rolls";
+// Same as kShelfDefaultPinLayoutRolls, but for tablet form factor devices.
+const char kShelfDefaultPinLayoutRollsForTabletFormFactor[] =
+    "shelf_default_pin_layout_rolls_for_tablet_form_factor";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)

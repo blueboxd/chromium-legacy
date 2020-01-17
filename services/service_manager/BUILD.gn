@@ -6,9 +6,7 @@ import("//testing/test.gni")
 
 group("all") {
   testonly = true
-  deps = [
-    ":service_manager",
-  ]
+  deps = [ ":service_manager" ]
 
   if (!is_ios) {
     deps += [

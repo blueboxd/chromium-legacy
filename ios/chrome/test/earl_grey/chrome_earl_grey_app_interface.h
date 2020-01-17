@@ -348,14 +348,17 @@
 // Returns YES if NewOmniboxPopupLayout feature is enabled.
 + (BOOL)isNewOmniboxPopupLayoutEnabled WARN_UNUSED_RESULT;
 
+// Returns YES if |variationID| is enabled.
++ (BOOL)isVariationEnabled:(int)variationID;
+
+// Returns YES if a variation triggering server-side behavior is enabled.
++ (BOOL)isTriggerVariationEnabled:(int)variationID;
+
 // Returns YES if UmaCellular feature is enabled.
 + (BOOL)isUMACellularEnabled WARN_UNUSED_RESULT;
 
 // Returns YES if UKM feature is enabled.
 + (BOOL)isUKMEnabled WARN_UNUSED_RESULT;
-
-// Returns YES if WebPaymentsModifiers feature is enabled.
-+ (BOOL)isWebPaymentsModifiersEnabled WARN_UNUSED_RESULT;
 
 // Returns YES if CreditCardScanner feature is enabled.
 + (BOOL)isCreditCardScannerEnabled WARN_UNUSED_RESULT;

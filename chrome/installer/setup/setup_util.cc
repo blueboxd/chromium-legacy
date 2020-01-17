@@ -879,31 +879,37 @@ bool StoreDMToken(const std::string& token) {
     return false;
   }
 
-  std::wstring path;
-  std::wstring name;
-  InstallUtil::GetMachineLevelUserCloudPolicyDMTokenRegistryPath(&path,
-                                                                 &name);
-
+  // Write the token both to the app-neutral and browser-specific locations.
+  // Only the former is mandatory -- the latter is best-effort.
   base::win::RegKey key;
-  LONG result = key.Create(HKEY_LOCAL_MACHINE, path.c_str(),
-                           KEY_WRITE | KEY_WOW64_64KEY);
-  if (result != ERROR_SUCCESS) {
-    LOG(ERROR) << "Unable to create/open registry key HKLM\\" << path
-               << " for writing result=" << result;
-    return false;
-  }
+  std::wstring value_name;
+  bool succeeded = false;
+  for (const auto& is_browser_location : {InstallUtil::BrowserLocation(false),
+                                          InstallUtil::BrowserLocation(true)}) {
+    std::tie(key, value_name) = InstallUtil::GetCloudManagementDmTokenLocation(
+        InstallUtil::ReadOnly(false), is_browser_location);
+    // If the key couldn't be opened on the first iteration (the mandatory
+    // location), return failure straight away. Otherwise, continue iterating.
+    if (!key.Valid()) {
+      if (succeeded)
+        continue;
+      // Logging already performed in GetCloudManagementDmTokenLocation.
+      return false;
+    }
 
-  result =
-      key.WriteValue(name.c_str(), token.data(),
-                     base::saturated_cast<DWORD>(token.size()), REG_BINARY);
-  if (result != ERROR_SUCCESS) {
-    LOG(ERROR) << "Unable to write specified DMToken to the registry at HKLM\\"
-               << path << "\\" << name << " result=" << result;
-    return false;
+    auto result =
+        key.WriteValue(value_name.c_str(), token.data(),
+                       base::saturated_cast<DWORD>(token.size()), REG_BINARY);
+    if (result == ERROR_SUCCESS) {
+      succeeded = true;
+    } else if (!succeeded) {
+      ::SetLastError(result);
+      PLOG(ERROR) << "Unable to write specified DMToken to the registry";
+      return false;
+    }  // Else ignore the failure to write to the best-effort location.
   }
 
   VLOG(1) << "Successfully stored specified DMToken in the registry.";
-
   return true;
 }
 

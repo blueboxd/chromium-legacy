@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
+#import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 
@@ -21,6 +23,11 @@ class AppUrlLoadingService;
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
+
+// Used to update the current BVC mode if a new tab is added while the tab
+// switcher view is being dismissed.  This is different than ApplicationMode in
+// that it can be set to |NONE| when not in use.
+enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 
 // TODO(crbug.com/1012697): Remove this protocol when SceneController is
 // operational. Move the private internals back into MainController, and pass
@@ -54,9 +61,37 @@ class ChromeBrowserState;
     SigninInteractionCoordinator* signinInteractionCoordinator;
 
 // If YES, the tab switcher is currently active.
-
 @property(nonatomic, assign, getter=isTabSwitcherActive)
     BOOL tabSwitcherIsActive;
+
+// YES while animating the dismissal of tab switcher.
+@property(nonatomic, assign) BOOL dismissingTabSwitcher;
+
+// Returns YES if the settings are presented, either from
+// self.settingsNavigationController or from SigninInteractionCoordinator.
+@property(nonatomic, assign, readonly, getter=isSettingsViewPresented)
+    BOOL settingsViewPresented;
+
+// If not NONE, the current BVC should be switched to this BVC on completion
+// of tab switcher dismissal.
+@property(nonatomic, assign)
+    TabSwitcherDismissalMode modeToDisplayOnTabSwitcherDismissal;
+
+// A property to track whether the QR Scanner should be started upon tab
+// switcher dismissal. It can only be YES if the QR Scanner experiment is
+// enabled.
+@property(nonatomic, readwrite)
+    NTPTabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
+
+// Parameters received at startup time when the app is launched from another
+// app.
+@property(nonatomic, strong) AppStartupParameters* startupParameters;
+
+- (ProceduralBlock)completionBlockForTriggeringAction:
+    (NTPTabOpeningPostOpeningAction)action;
+
+// Keeps track of the restore state during startup.
+@property(nonatomic, strong) CrashRestoreHelper* restoreHelper;
 
 - (id<TabSwitcher>)tabSwitcher;
 - (TabModel*)currentTabModel;
@@ -69,31 +104,14 @@ class ChromeBrowserState;
 - (TabGridCoordinator*)mainCoordinator;
 - (id<BrowserInterfaceProvider>)interfaceProvider;
 - (void)startVoiceSearchInCurrentBVC;
-
-- (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
-                           dismissOmnibox:(BOOL)dismissOmnibox;
-- (void)closeSettingsAnimated:(BOOL)animated
-                   completion:(ProceduralBlock)completion;
-
-- (void)dismissModalsAndOpenSelectedTabInMode:
-            (ApplicationModeForTabOpening)targetMode
-                            withUrlLoadParams:
-                                (const UrlLoadParams&)urlLoadParams
-                               dismissOmnibox:(BOOL)dismissOmnibox
-                                   completion:(ProceduralBlock)completion;
 - (void)showTabSwitcher;
 
-// TabSwitcherDelegate helpers
+// Sets |currentBVC| as the root view controller for the window.
+- (void)displayCurrentBVCAndFocusOmnibox:(BOOL)focusOmnibox;
 
-// Begins the process of dismissing the tab switcher with the given current
-// model, switching which BVC is suspended if necessary, but not updating the
-// UI.  The omnibox will be focused after the tab switcher dismissal is
-// completed if |focusOmnibox| is YES.
-- (void)beginDismissingTabSwitcherWithCurrentModel:(TabModel*)tabModel
-                                      focusOmnibox:(BOOL)focusOmnibox;
-// Completes the process of dismissing the tab switcher, removing it from the
-// screen and showing the appropriate BVC.
-- (void)finishDismissingTabSwitcher;
+// Activates |mainBVC| and |otrBVC| and sets |currentBVC| as primary iff
+// |currentBVC| can be made active.
+- (void)activateBVCAndMakeCurrentBVCPrimary;
 
 @end
 

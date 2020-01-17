@@ -112,11 +112,10 @@ class CONTENT_EXPORT AppCacheDatabase {
   using NamespaceRecordVector = std::vector<NamespaceRecord>;
 
   struct OnlineWhiteListRecord {
-    OnlineWhiteListRecord() : cache_id(0), is_pattern(false) {}
+    OnlineWhiteListRecord() : cache_id(0) {}
 
     int64_t cache_id;
     GURL namespace_url;
-    bool is_pattern;
   };
 
   explicit AppCacheDatabase(const base::FilePath& path);

@@ -21,12 +21,12 @@ const ContentfulPaintTimingInfo& MergeTimingsBySizeAndTime(
     const ContentfulPaintTimingInfo& timing1,
     const ContentfulPaintTimingInfo& timing2) {
   // When both are empty, just return either.
-  if (timing1.IsEmpty() && timing2.IsEmpty())
+  if (timing1.Empty() && timing2.Empty())
     return timing1;
 
-  if (timing1.IsEmpty() && !timing2.IsEmpty())
+  if (timing1.Empty() && !timing2.Empty())
     return timing2;
-  if (!timing1.IsEmpty() && timing2.IsEmpty())
+  if (!timing1.Empty() && timing2.Empty())
     return timing1;
   if (timing1.Size() > timing2.Size())
     return timing1;
@@ -58,11 +58,16 @@ void MergeForSubframes(
     const base::Optional<base::TimeDelta>& candidate_new_time,
     const uint64_t& candidate_new_size,
     base::TimeDelta navigation_start_offset) {
-  MergeForSubframesWithAdjustedTime(
-      inout_timing,
-      candidate_new_time ? navigation_start_offset + candidate_new_time.value()
-                         : candidate_new_time,
-      candidate_new_size);
+  base::Optional<base::TimeDelta> new_time = base::nullopt;
+  if (candidate_new_time) {
+    // If |candidate_new_time| is TimeDelta(), this means that the candidate is
+    // an image that has not finished loading. Preserve its meaning by not
+    // adding the |navigation_start_offset|.
+    new_time = *candidate_new_time > base::TimeDelta()
+                   ? navigation_start_offset + candidate_new_time.value()
+                   : base::TimeDelta();
+  }
+  MergeForSubframesWithAdjustedTime(inout_timing, new_time, candidate_new_size);
 }
 
 bool IsSubframe(content::RenderFrameHost* subframe_rfh) {

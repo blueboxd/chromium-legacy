@@ -55,8 +55,8 @@ typedef (HTMLImageElement or
     void clearInterval(optional long handle = 0);
 
     // ImageBitmap
-    [CallWith=ScriptState] Promise<ImageBitmap> createImageBitmap(
+    [CallWith=ScriptState, RaisesException] Promise<ImageBitmap> createImageBitmap(
         ImageBitmapSource imageBitmap, optional ImageBitmapOptions options);
-    [CallWith=ScriptState] Promise<ImageBitmap> createImageBitmap(
+    [CallWith=ScriptState, RaisesException] Promise<ImageBitmap> createImageBitmap(
         ImageBitmapSource imageBitmap, long sx, long sy, long sw, long sh, optional ImageBitmapOptions options);
 };

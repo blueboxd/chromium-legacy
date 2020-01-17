@@ -98,9 +98,9 @@ std::string GetPermissionRequestString(PermissionRequestType type) {
     case PermissionRequestType::PERMISSION_CLIPBOARD_READ_WRITE:
       return "ClipboardReadWrite";
     case PermissionRequestType::PERMISSION_VR:
-      return "Vr";
+      return "VR";
     case PermissionRequestType::PERMISSION_AR:
-      return "Ar";
+      return "AR";
     default:
       NOTREACHED();
       return "";
@@ -427,7 +427,7 @@ void PermissionUmaUtil::RecordPermissionAction(
   bool secure_origin = content::IsOriginSecure(requesting_origin);
 
   switch (permission) {
-    // Geolocation, MidiSysEx, Push, Media and Clipboard permissions are
+    // Geolocation, MidiSysEx, Push, Media, Clipboard, and AR/VR permissions are
     // disabled on insecure origins, so there's no need to record separate
     // metrics for secure/insecure.
     case ContentSettingsType::GEOLOCATION:
@@ -473,6 +473,14 @@ void PermissionUmaUtil::RecordPermissionAction(
       break;
     case ContentSettingsType::NFC:
       base::UmaHistogramEnumeration("Permissions.Action.Nfc", action,
+                                    PermissionAction::NUM);
+      break;
+    case ContentSettingsType::VR:
+      base::UmaHistogramEnumeration("Permissions.Action.VR", action,
+                                    PermissionAction::NUM);
+      break;
+    case ContentSettingsType::AR:
+      base::UmaHistogramEnumeration("Permissions.Action.AR", action,
                                     PermissionAction::NUM);
       break;
     // The user is not prompted for these permissions, thus there is no

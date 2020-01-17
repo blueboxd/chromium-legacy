@@ -309,6 +309,9 @@ class PLATFORM_EXPORT ThreadHeap {
   // thread heaps.  If so marks the object pointed to as live.
   Address CheckAndMarkPointer(MarkingVisitor*, Address);
 
+  // Visits remembered sets.
+  void MarkRememberedSets(MarkingVisitor*);
+
   size_t ObjectPayloadSizeForTesting();
   void ResetAllocationPointForTesting();
 
@@ -340,6 +343,10 @@ class PLATFORM_EXPORT ThreadHeap {
   // free lists. This is called after taking a snapshot and before resuming
   // the executions of mutators.
   void MakeConsistentForMutator();
+
+  // Unmarks all objects in the entire heap. This is supposed to be called in
+  // the beginning of major GC.
+  void Unmark();
 
   void Compact();
 

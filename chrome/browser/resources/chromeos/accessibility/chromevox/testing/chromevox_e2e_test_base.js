@@ -31,7 +31,7 @@ ChromeVoxE2ETest.prototype = {
   browsePreload: null,
 
   /** @override */
-  testGenCppIncludes: function() {
+  testGenCppIncludes() {
     GEN(`
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/shell.h"
@@ -44,7 +44,7 @@ ChromeVoxE2ETest.prototype = {
   },
 
   /** @override */
-  testGenPreamble: function() {
+  testGenPreamble() {
     GEN(`
   auto allow = extension_l10n_util::AllowGzippedMessagesAllowedForTest();
   base::Closure load_cb =
@@ -60,7 +60,7 @@ ChromeVoxE2ETest.prototype = {
    * @param {function() : void} doc Snippet wrapped inside of a function.
    * @param {function()} callback Called once the document is ready.
    */
-  runWithLoadedTab: function(doc, callback) {
+  runWithLoadedTab(doc, callback) {
     this.launchNewTabWithDoc(doc, function(tab) {
       chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
         if (tabId == tab.id && changeInfo.status == 'complete') {
@@ -76,7 +76,7 @@ ChromeVoxE2ETest.prototype = {
    * @param {function(url: string)} opt_callback Called once the
    *     document is created.
    */
-  runWithTab: function(doc, opt_callback) {
+  runWithTab(doc, opt_callback) {
     var url = TestUtils.createUrlForDoc(doc);
     var createParams = {active: true, url: url};
     chrome.tabs.create(createParams, function(tab) {
@@ -94,7 +94,7 @@ ChromeVoxE2ETest.prototype = {
    *        reference bound to the test fixture.
    * @return {Function}
    */
-  newCallback: function(opt_callback) {
+  newCallback(opt_callback) {
     return this.callbackHelper_.wrap(opt_callback);
   }
 };

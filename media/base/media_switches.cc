@@ -333,6 +333,10 @@ const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
 const base::Feature kGlobalMediaControls{"GlobalMediaControls",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Auto-dismiss global media controls.
+const base::Feature kGlobalMediaControlsAutoDismiss{
+    "GlobalMediaControlsAutoDismiss", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Show Cast sessions in Global Media Controls. It is no-op if
 // kGlobalMediaControls is not enabled.
 const base::Feature kGlobalMediaControlsForCast{
@@ -647,6 +651,11 @@ const base::Feature kInternalMediaSession {
 
 const base::Feature kUseFakeDeviceForMediaStream{
     "use-fake-device-for-media-stream", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Makes VideoCadenceEstimator use Bresenham-like algorithm for frame cadence
+// estimations.
+const base::Feature kBresenhamCadence{"BresenhamCadence",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

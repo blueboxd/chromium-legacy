@@ -63,9 +63,7 @@ mojom("mojom") {
 }
 
 mojom("device_service") {
-  sources = [
-    "device_service.mojom",
-  ]
+  sources = [ "device_service.mojom" ]
 
   # We can't depend on the Blink variant of ":generic_sensors", but we need the
   # non-Blink variant as a dependency. Blink can never use the DeviceService
@@ -149,11 +147,7 @@ mojom("usb") {
 
 mojom("usb_test") {
   generate_java = true
-  sources = [
-    "usb_manager_test.mojom",
-  ]
+  sources = [ "usb_manager_test.mojom" ]
 
-  public_deps = [
-    "//url/mojom:url_mojom_gurl",
-  ]
+  public_deps = [ "//url/mojom:url_mojom_gurl" ]
 }

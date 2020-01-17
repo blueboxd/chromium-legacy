@@ -271,6 +271,15 @@ public class Promise<T> {
         return promise;
     }
 
+    /**
+     * Convenience method to return a rejected Promise.
+     */
+    public static <T> Promise<T> rejected() {
+        Promise<T> promise = new Promise<>();
+        promise.reject();
+        return promise;
+    }
+
     private void checkThread() {
         assert mThread == Thread.currentThread() : "Promise must only be used on a single Thread.";
     }

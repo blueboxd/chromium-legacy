@@ -61,7 +61,7 @@ Polymer({
   },
 
   /** @return {!CrInputElement} The cr-input field element for InputBehavior. */
-  getInput: function() {
+  getInput() {
     return /** @type {!CrInputElement} */ (this.$.userValue);
   },
 
@@ -69,7 +69,7 @@ Polymer({
    * @param {!CustomEvent<string>} e Contains the new input value.
    * @private
    */
-  onInputChange_: function(e) {
+  onInputChange_(e) {
     this.inputString_ = e.detail;
   },
 
@@ -77,14 +77,14 @@ Polymer({
    * @return {boolean} Whether the input should be disabled.
    * @private
    */
-  getDisabled_: function() {
+  getDisabled_() {
     return this.disabled && this.inputValid;
   },
 
   /**
    * @param {!KeyboardEvent} e The keyboard event
    */
-  onKeydown_: function(e) {
+  onKeydown_(e) {
     if (['.', 'e', 'E', '-', '+'].includes(e.key)) {
       e.preventDefault();
       return;
@@ -96,7 +96,7 @@ Polymer({
   },
 
   /** @private */
-  onBlur_: function() {
+  onBlur_() {
     if (this.inputString_ === '') {
       this.set('inputString_', this.defaultValue);
     }
@@ -106,13 +106,13 @@ Polymer({
   },
 
   /** @private */
-  onInputChanged_: function() {
+  onInputChanged_() {
     this.inputValid = this.computeValid_();
     this.currentValue = this.inputString_;
   },
 
   /** @private */
-  onCurrentValueChanged_: function() {
+  onCurrentValueChanged_() {
     this.inputString_ = this.currentValue;
     this.resetString();
   },
@@ -122,7 +122,7 @@ Polymer({
    *     valid and non-empty, so that it can be used to update the setting.
    * @private
    */
-  computeValid_: function() {
+  computeValid_() {
     // Make sure value updates first, in case inputString_ was updated by JS.
     this.$.userValue.value = this.inputString_;
     return !this.$.userValue.invalid;

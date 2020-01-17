@@ -198,7 +198,7 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
   if (is_xsl_) {
     sheet_ = MakeGarbageCollected<XSLStyleSheet>(
         this, resource->Url(), resource->GetResponse().ResponseUrl(), false);
-    ToXSLStyleSheet(sheet_.Get())
+    To<XSLStyleSheet>(sheet_.Get())
         ->ParseString(ToXSLStyleSheetResource(resource)->Sheet());
   } else {
     DCHECK(is_css_);
@@ -233,7 +233,7 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
   if (is_css_)
     To<CSSStyleSheet>(sheet_.Get())->Contents()->CheckLoaded();
   else if (is_xsl_)
-    ToXSLStyleSheet(sheet_.Get())->CheckLoaded();
+    To<XSLStyleSheet>(sheet_.Get())->CheckLoaded();
 }
 
 Node::InsertionNotificationRequest ProcessingInstruction::InsertedInto(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 16
+// Next MinVersion: 17
 
 module arc.mojom;
 
@@ -443,7 +443,7 @@ interface BluetoothHost {
       => (BluetoothStatus status, RfcommConnectingSocketClient&? client);
 };
 
-// Next Method ID: 22
+// Next Method ID: 23
 // Deprecated Method ID: 2, 6, 11, 12
 interface BluetoothInstance {
   // DEPRECATED: Please use Init@18 instead.
@@ -455,6 +455,8 @@ interface BluetoothInstance {
   OnAdapterProperties@1(BluetoothStatus status,
                         array<BluetoothProperty> properties);
   OnDeviceFound@3(array<BluetoothProperty> properties);
+  [MinVersion=16] OnDevicePropertiesChanged@22(
+      BluetoothAddress remote_addr, array<BluetoothProperty> properties);
   OnDiscoveryStateChanged@4(BluetoothDiscoveryState state);
   OnBondStateChanged@5(BluetoothStatus status,
                        BluetoothAddress remote_addr,

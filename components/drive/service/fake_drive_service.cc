@@ -326,10 +326,10 @@ bool FakeDriveService::HasAccessToken() const {
   return true;
 }
 
-void FakeDriveService::RequestAccessToken(const AuthStatusCallback& callback) {
+void FakeDriveService::RequestAccessToken(AuthStatusCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
-  callback.Run(google_apis::HTTP_NOT_MODIFIED, "fake_access_token");
+  std::move(callback).Run(google_apis::HTTP_NOT_MODIFIED, "fake_access_token");
 }
 
 bool FakeDriveService::HasRefreshToken() const {

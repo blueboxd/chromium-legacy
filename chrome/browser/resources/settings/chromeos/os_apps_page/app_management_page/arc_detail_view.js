@@ -30,7 +30,7 @@ Polymer({
     }
   },
 
-  attached: function() {
+  attached() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
     this.watch('isArcSupported_', state => state.arcSupported);
     this.updateFromStore();
@@ -38,7 +38,7 @@ Polymer({
     this.listExpanded_ = false;
   },
 
-  onClickNativeSettingsButton_: function() {
+  onClickNativeSettingsButton_() {
     app_management.BrowserProxy.getInstance().handler.openNativeSettings(
         this.app_.id);
     app_management.util.recordAppManagementUserAction(
@@ -48,7 +48,7 @@ Polymer({
   /**
    * @private
    */
-  toggleListExpanded_: function() {
+  toggleListExpanded_() {
     this.listExpanded_ = !this.listExpanded_;
   },
 
@@ -57,7 +57,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  iconUrlFromId_: function(app) {
+  iconUrlFromId_(app) {
     return app_management.util.getAppIcon(app);
   },
 
@@ -66,7 +66,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getCollapsedIcon_: function(listExpanded) {
+  getCollapsedIcon_(listExpanded) {
     return listExpanded ? 'cr:expand-less' : 'cr:expand-more';
   },
 
@@ -77,7 +77,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  noPermissionsRequested_: function(app) {
+  noPermissionsRequested_(app) {
     const permissionItems =
         this.$$('#subpermission-list')
             .querySelectorAll('app-management-permission-item');

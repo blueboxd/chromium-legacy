@@ -205,6 +205,18 @@ TEST_F(WaylandPositionerTest, PreventsSlidingThatOccludesAnchorRect) {
                 .SetAdjustment(~ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_NONE)
                 .SolveToRect(),
             gfx::Rect(2, 3, 3, 2));
+
+  // Here we ensure that the 4x4 popup does slide, which is allowed because
+  // the anchor rect is already occluded.
+  EXPECT_EQ(TestCaseBuilder()
+                .SetSize(4, 4)
+                .SetGravity(ZXDG_POSITIONER_V6_GRAVITY_BOTTOM |
+                            ZXDG_POSITIONER_V6_GRAVITY_RIGHT)
+                .SetAnchor(ZXDG_POSITIONER_V6_ANCHOR_TOP |
+                           ZXDG_POSITIONER_V6_ANCHOR_LEFT)
+                .SetAdjustment(~ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_NONE)
+                .SolveToRect(),
+            gfx::Rect(1, 1, 4, 4));
 }
 
 }  // namespace

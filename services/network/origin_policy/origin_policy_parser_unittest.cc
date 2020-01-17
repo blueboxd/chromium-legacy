@@ -19,6 +19,7 @@ namespace {
 void AssertEmptyPolicy(
     const network::OriginPolicyContentsPtr& policy_contents) {
   ASSERT_FALSE(policy_contents->feature_policy.has_value());
+  ASSERT_FALSE(policy_contents->isolation_optin_hints.has_value());
   ASSERT_EQ(0u, policy_contents->content_security_policies.size());
   ASSERT_EQ(0u, policy_contents->content_security_policies_report_only.size());
 }
@@ -37,6 +38,17 @@ TEST(OriginPolicyParser, Invalid) {
   AssertEmptyPolicy(policy_contents);
 }
 
+TEST(OriginPolicyParser, InvalidString) {
+  auto policy_contents = OriginPolicyParser::Parse("\"potato potato potato\"");
+  AssertEmptyPolicy(policy_contents);
+}
+
+TEST(OriginPolicyParser, InvalidArray) {
+  auto policy_contents =
+      OriginPolicyParser::Parse("[\"potato potato potato\"]");
+  AssertEmptyPolicy(policy_contents);
+}
+
 TEST(OriginPolicyParser, ValidButEmpty) {
   auto policy_contents = OriginPolicyParser::Parse("{}");
   AssertEmptyPolicy(policy_contents);
@@ -44,24 +56,21 @@ TEST(OriginPolicyParser, ValidButEmpty) {
 
 TEST(OriginPolicyParser, SimpleCSP) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "content-security-policy": [{
-          "policy": "script-src 'self' 'unsafe-inline'"
-      }] }
+      { "content_security": {
+          "policies": ["script-src 'self' 'unsafe-inline'"]
+      } }
   )");
   ASSERT_EQ(policy_contents->content_security_policies.size(), 1U);
   ASSERT_EQ(policy_contents->content_security_policies[0],
             "script-src 'self' 'unsafe-inline'");
 }
 
-TEST(OriginPolicyParser, DoubleCSP) {
+TEST(OriginPolicyParser, CSPIncludingReportOnly) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "content-security-policy": [{
-          "policy": "script-src 'self' 'unsafe-inline'",
-          "report-only": false
-        },{
-          "policy": "script-src 'self' 'https://example.com/'",
-          "report-only": true
-      }] }
+      { "content_security": {
+          "policies": ["script-src 'self' 'unsafe-inline'"],
+          "policies_report_only": ["script-src 'self' 'https://example.com/'"]
+      } }
   )");
   ASSERT_EQ(policy_contents->content_security_policies.size(), 1U);
   ASSERT_EQ(policy_contents->content_security_policies_report_only.size(), 1U);
@@ -72,87 +81,173 @@ TEST(OriginPolicyParser, DoubleCSP) {
             "script-src 'self' 'https://example.com/'");
 }
 
-TEST(OriginPolicyParser, HalfDoubleCSP) {
+TEST(OriginPolicyParser, CSPMultiItemArrays) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "content-security-policy": [{
-          "policy": "script-src 'self' 'unsafe-inline'",
-        },{
-          "policies": "script-src 'self' 'https://example.com/'",
-      }] }
+      { "content_security": {
+          "policies": [
+            "script-src 'self' 'unsafe-inline'",
+            "frame-ancestors 'none'",
+            "object-src 'none'"
+          ],
+          "policies_report_only": [
+            "script-src 'self' 'https://example.com/'",
+            "object-src 'none'"
+          ]
+      } }
   )");
-  AssertEmptyPolicy(policy_contents);
+  ASSERT_EQ(policy_contents->content_security_policies.size(), 3U);
+  ASSERT_EQ(policy_contents->content_security_policies_report_only.size(), 2U);
+
+  ASSERT_EQ(policy_contents->content_security_policies[0],
+            "script-src 'self' 'unsafe-inline'");
+  ASSERT_EQ(policy_contents->content_security_policies[1],
+            "frame-ancestors 'none'");
+  ASSERT_EQ(policy_contents->content_security_policies[2], "object-src 'none'");
+
+  ASSERT_EQ(policy_contents->content_security_policies_report_only[0],
+            "script-src 'self' 'https://example.com/'");
+  ASSERT_EQ(policy_contents->content_security_policies_report_only[1],
+            "object-src 'none'");
+}
+
+TEST(OriginPolicyParser, CSPTwoContentSecurity) {
+  auto policy_contents = OriginPolicyParser::Parse(R"(
+      { "content_security": {
+          "policies": ["frame-ancestors 'none'", "object-src 'none'"],
+          "policies_report_only": ["script-src 'self' https://cdn.example.com/js/"]
+      }, "content_security": {
+          "policies": ["script-src 'self' 'unsafe-inline'"],
+          "policies_report_only": ["script-src 'self' 'https://example.com/'"]
+      } }
+  )");
+  ASSERT_EQ(policy_contents->content_security_policies.size(), 1U);
+  ASSERT_EQ(policy_contents->content_security_policies_report_only.size(), 1U);
+
+  ASSERT_EQ(policy_contents->content_security_policies[0],
+            "script-src 'self' 'unsafe-inline'");
+  ASSERT_EQ(policy_contents->content_security_policies_report_only[0],
+            "script-src 'self' 'https://example.com/'");
+}
+
+TEST(OriginPolicyParser, CSPTwoContentSecurityNoReportOnly) {
+  auto policy_contents = OriginPolicyParser::Parse(R"(
+      { "content_security": {
+          "policies": ["script-src 'self' 'unsafe-inline'"]
+      },
+      "content_security": {
+          "policies": ["img-src 'none'"]
+      } }
+  )");
+  ASSERT_EQ(policy_contents->content_security_policies.size(), 1U);
+  ASSERT_EQ(policy_contents->content_security_policies_report_only.size(), 0U);
+
+  ASSERT_EQ(policy_contents->content_security_policies[0], "img-src 'none'");
+}
+
+TEST(OriginPolicyParser, CSPTwoPolicies) {
+  auto policy_contents = OriginPolicyParser::Parse(R"(
+      { "content_security": {
+          "policies": ["frame-ancestors 'none'", "object-src 'none'"],
+          "policies": ["script-src 'self' 'unsafe-inline'"],
+          "policies_report_only": ["script-src 'self' https://cdn.example.com/js/"],
+          "policies_report_only": ["script-src 'self' 'https://example.com/'"]
+      } }
+  )");
+  ASSERT_EQ(policy_contents->content_security_policies.size(), 1U);
+  ASSERT_EQ(policy_contents->content_security_policies_report_only.size(), 1U);
+
+  ASSERT_EQ(policy_contents->content_security_policies[0],
+            "script-src 'self' 'unsafe-inline'");
+  ASSERT_EQ(policy_contents->content_security_policies_report_only[0],
+            "script-src 'self' 'https://example.com/'");
 }
 
 TEST(OriginPolicyParser, CSPWithoutCSP) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "content-security-policy": [{
-          "police": "script-src 'self' 'unsafe-inline'",
-          "report-only": false
-        }] }
+      { "content_security": {
+          "police": ["frame-ancestors 'none'", "object-src 'none'"]
+      } }
   )");
   AssertEmptyPolicy(policy_contents);
 }
 
 TEST(OriginPolicyParser, ExtraFieldsDontBreakParsing) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "potatoes": "are better than kale",
-        "content-security-policy": [{
-          "report-only": false,
-          "potatoes": "are best",
-          "policy": "script-src 'self' 'unsafe-inline'"
-        }],
-        "other": {
-          "name": "Sieglinde",
-          "value": "best of potatoes"
-      }}
+      { "content_security": {
+          "policies": ["script-src 'self' 'unsafe-inline'"],
+          "policies_report_only": ["script-src 'self' 'https://example.com/'"],
+          "potatoes": "are best"
+      } }
   )");
   ASSERT_EQ(policy_contents->content_security_policies.size(), 1U);
+  ASSERT_EQ(policy_contents->content_security_policies_report_only.size(), 1U);
+
   ASSERT_EQ(policy_contents->content_security_policies[0],
             "script-src 'self' 'unsafe-inline'");
-}
-
-TEST(OriginPolicyParser, CSPDispositionEnforce) {
-  auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "content-security-policy": [{
-          "policy": "script-src 'self'",
-          "report-only": false
-        }] }
-  )");
-  ASSERT_EQ(policy_contents->content_security_policies.size(), 1U);
-  ASSERT_EQ(policy_contents->content_security_policies[0], "script-src 'self'");
-}
-
-TEST(OriginPolicyParser, CSPDispositionReport) {
-  auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "content-security-policy": [{
-          "policy": "script-src 'self'",
-          "report-only": true
-        }] }
-  )");
-  ASSERT_EQ(policy_contents->content_security_policies_report_only.size(), 1U);
   ASSERT_EQ(policy_contents->content_security_policies_report_only[0],
-            "script-src 'self'");
+            "script-src 'self' 'https://example.com/'");
 }
 
-TEST(OriginPolicyParser, CSPDispositionInvalid) {
+// At this level we don't validate the syntax, so commas get passed through.
+// Integration tests will show that comma-containing policies get discarded,
+// though.
+TEST(OriginPolicyParser, CSPComma) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "content-security-policy": [{
-          "policy": "script-src 'self'",
-          "report-only": "potato"
-        }] }
+      { "content_security": {
+          "policies": ["script-src 'self' 'unsafe-inline', script-src 'self' 'https://example.com/'"],
+          "policies_report_only": ["script-src 'self' 'https://example.com/', frame-ancestors 'none', object-src 'none'"]
+      } }
   )");
+
   ASSERT_EQ(policy_contents->content_security_policies.size(), 1U);
-  ASSERT_EQ(policy_contents->content_security_policies[0], "script-src 'self'");
+  ASSERT_EQ(policy_contents->content_security_policies_report_only.size(), 1U);
+
+  ASSERT_EQ(policy_contents->content_security_policies[0],
+            "script-src 'self' 'unsafe-inline', script-src 'self' "
+            "'https://example.com/'");
+  ASSERT_EQ(policy_contents->content_security_policies_report_only[0],
+            "script-src 'self' 'https://example.com/', frame-ancestors 'none', "
+            "object-src 'none'");
 }
 
-TEST(OriginPolicyParser, CSPDispositionAbsent) {
+// Similarly, complete garbage will be passed through; this is expected.
+TEST(OriginPolicyParser, CSPGarbage) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
-      { "content-security-policy": [{
-          "policy": "script-src 'self'"
-        }] }
+      { "content_security": {
+          "policies": ["potato potato potato"],
+          "policies_report_only": ["tomato tomato tomato"]
+      } }
   )");
+
   ASSERT_EQ(policy_contents->content_security_policies.size(), 1U);
-  ASSERT_EQ(policy_contents->content_security_policies[0], "script-src 'self'");
+  ASSERT_EQ(policy_contents->content_security_policies_report_only.size(), 1U);
+
+  ASSERT_EQ(policy_contents->content_security_policies[0],
+            "potato potato potato");
+  ASSERT_EQ(policy_contents->content_security_policies_report_only[0],
+            "tomato tomato tomato");
+}
+
+TEST(OriginPolicyParser, CSPNonDict) {
+  auto policy_contents = OriginPolicyParser::Parse(R"(
+      { "content_security": "script-src 'self' 'unsafe-inline'"
+      } )");
+  AssertEmptyPolicy(policy_contents);
+}
+
+TEST(OriginPolicyParser, CSPNonArray) {
+  auto policy_contents = OriginPolicyParser::Parse(R"(
+      { "content_security": { "policies": "script-src 'self' 'unsafe-inline'" }
+      } )");
+  AssertEmptyPolicy(policy_contents);
+}
+
+TEST(OriginPolicyParser, CSPNonString) {
+  auto policy_contents = OriginPolicyParser::Parse(R"(
+      { "content_security": { "policies":
+        [["script-src 'self' 'unsafe-inline'"]]
+      } } )");
+  AssertEmptyPolicy(policy_contents);
 }
 
 TEST(OriginPolicyParser, FeatureOne) {
@@ -220,14 +315,14 @@ TEST(OriginPolicyParser, FeatureNonDict) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
       { "features": "geolocation 'self' http://maps.google.com"
       } )");
-  ASSERT_FALSE(policy_contents->feature_policy.has_value());
+  AssertEmptyPolicy(policy_contents);
 }
 
 TEST(OriginPolicyParser, FeatureNonString) {
   auto policy_contents = OriginPolicyParser::Parse(R"(
       { "features": { "policy": ["geolocation 'self' http://maps.google.com"]
       } )");
-  ASSERT_FALSE(policy_contents->feature_policy.has_value());
+  AssertEmptyPolicy(policy_contents);
 }
 
 namespace {

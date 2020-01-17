@@ -10,9 +10,7 @@ import("//device/vr/buildflags/buildflags.gni")
 android_aidl("common_aidl") {
   interface_file = "java/src/org/chromium/content/common/common.aidl"
   import_include = [ "java/src" ]
-  sources = [
-    "java/src/org/chromium/content/common/IGpuProcessCallback.aidl",
-  ]
+  sources = [ "java/src/org/chromium/content/common/IGpuProcessCallback.aidl" ]
 }
 
 android_aidl("is_ready_to_pay_service_aidl") {
@@ -45,9 +43,7 @@ action("generate_sandboxed_service_srcjar") {
     "40",
     _rebased_srcjar_path,
   ]
-  outputs = [
-    _srcjar_path,
-  ]
+  outputs = [ _srcjar_path ]
 }
 
 android_library("content_java") {
@@ -329,9 +325,7 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
 }
 
 java_cpp_strings("content_public_android_java_switches_srcjar") {
-  sources = [
-    "//content/public/common/content_switches.cc",
-  ]
+  sources = [ "//content/public/common/content_switches.cc" ]
   template = "//content/common/android/java_templates/ContentSwitches.java.tmpl"
 }
 
@@ -510,9 +504,7 @@ android_library("content_javatests") {
     "//content/test/data/android/",
     "//content/test/data/media/",
   ]
-  data_deps = [
-    "//net:test_support",
-  ]
+  data_deps = [ "//net:test_support" ]
 }
 
 junit_binary("content_junit_tests") {
@@ -548,7 +540,5 @@ junit_binary("content_junit_tests") {
     "//ui/gfx/geometry/mojom:mojom_java",
   ]
 
-  data_deps = [
-    "//testing/buildbot/filters:content_junit_tests_filters",
-  ]
+  data_deps = [ "//testing/buildbot/filters:content_junit_tests_filters" ]
 }

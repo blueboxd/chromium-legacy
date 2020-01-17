@@ -36,12 +36,12 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.SearchEnginesBrowserProxyImpl.getInstance();
   },
 
   /** @private */
-  closePopupMenu_: function() {
+  closePopupMenu_() {
     this.$$('cr-action-menu').close();
   },
 
@@ -49,7 +49,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeIsDefault_: function() {
+  computeIsDefault_() {
     return this.engine.default;
   },
 
@@ -60,18 +60,18 @@ Polymer({
    * @return {boolean} Whether to show the dots menu.
    * @private
    */
-  computeShowDots_: function(canBeDefault, canBeEdited, canBeRemoved) {
+  computeShowDots_(canBeDefault, canBeEdited, canBeRemoved) {
     return canBeDefault || canBeEdited || canBeRemoved;
   },
 
   /** @private */
-  onDeleteTap_: function() {
+  onDeleteTap_() {
     this.browserProxy_.removeSearchEngine(this.engine.modelIndex);
     this.closePopupMenu_();
   },
 
   /** @private */
-  onDotsTap_: function() {
+  onDotsTap_() {
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
         .showAt(assert(this.$$('cr-icon-button')), {
           anchorAlignmentY: AnchorAlignment.AFTER_END,
@@ -82,7 +82,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onEditTap_: function(e) {
+  onEditTap_(e) {
     e.preventDefault();
     this.closePopupMenu_();
     this.fire('edit-search-engine', {
@@ -92,7 +92,7 @@ Polymer({
   },
 
   /** @private */
-  onMakeDefaultTap_: function() {
+  onMakeDefaultTap_() {
     this.closePopupMenu_();
     this.browserProxy_.setDefaultSearchEngine(this.engine.modelIndex);
   },

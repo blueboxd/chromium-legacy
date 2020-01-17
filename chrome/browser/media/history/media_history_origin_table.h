@@ -12,6 +12,9 @@
 namespace media_history {
 
 class MediaHistoryOriginTable : public MediaHistoryTableBase {
+ public:
+  static const char kTableName[];
+
  private:
   friend class MediaHistoryStoreInternal;
 

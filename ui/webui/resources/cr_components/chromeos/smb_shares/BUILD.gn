@@ -27,9 +27,7 @@ js_type_check("closure_compile_module") {
 }
 
 js_library("smb_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("add_smb_share_dialog") {
@@ -47,9 +45,7 @@ js_library("add_smb_share_dialog") {
 }
 
 js_library("add_smb_share_dialog.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_components/chromeos/smb_shares/add_smb_share_dialog.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/smb_shares/add_smb_share_dialog.m.js" ]
   deps = [
     ":smb_browser_proxy.m",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
@@ -70,12 +66,8 @@ js_modulizer("smb_browser_proxy_module") {
 }
 
 js_library("smb_browser_proxy.m") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_components/chromeos/smb_shares/smb_browser_proxy.m.js",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/smb_shares/smb_browser_proxy.m.js" ]
   extra_deps = [ ":smb_browser_proxy_module" ]
 }
 

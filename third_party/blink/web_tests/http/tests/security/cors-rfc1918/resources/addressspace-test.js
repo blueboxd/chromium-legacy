@@ -14,8 +14,10 @@ function createIFrame(origin, type) {
         file = "post-addressspace-from-worker.html?module";
     } else if (type == "sharedworker") {
         file = "post-addressspace-from-sharedworker.html";
-    } else if (type == "serviceworker") {
-        file = "post-addressspace-from-serviceworker.html";
+    } else if (type == "module-sharedworker") {
+        file = "post-addressspace-from-sharedworker.html?module";
+    } else {
+        throw new Error("Unknown type: " + type);
     }
 
     var i = document.createElement('iframe');

@@ -46,12 +46,12 @@ Polymer({
   visible_: true,
 
   /** @return {boolean} */
-  isVisible: function() {
+  isVisible() {
     return this.visible_;
   },
 
   /** @private */
-  onFocus_: function() {
+  onFocus_() {
     // This can only happen when the plugin is shown within Print Preview using
     // keyboard navigation.
     if (!this.visible_) {
@@ -62,7 +62,7 @@ Polymer({
   },
 
   /** @private */
-  onKeyUp_: function() {
+  onKeyUp_() {
     if (this.isPrintPreview) {
       this.fire('keyboard-navigation-active', true);
     }
@@ -70,7 +70,7 @@ Polymer({
   },
 
   /** @private */
-  onPointerDown_: function() {
+  onPointerDown_() {
     if (this.isPrintPreview) {
       this.fire('keyboard-navigation-active', false);
     }
@@ -84,7 +84,7 @@ Polymer({
    *           tooltipZoomIn: string,
    *           tooltipZoomOut: string}} strings
    */
-  setStrings: function(strings) {
+  setStrings(strings) {
     this.$['fit-button'].tooltips =
         [strings.tooltipFitToPage, strings.tooltipFitToWidth];
     this.$['zoom-in-button'].tooltips = [strings.tooltipZoomIn];
@@ -92,7 +92,7 @@ Polymer({
   },
 
   /** Handle clicks of the fit-button. */
-  fitToggle: function() {
+  fitToggle() {
     this.fireFitToChangedEvent_(
         this.$['fit-button'].activeIndex == FIT_TO_WIDTH_BUTTON_STATE ?
             FittingType.FIT_TO_WIDTH :
@@ -101,7 +101,7 @@ Polymer({
   },
 
   /** Handle the keyboard shortcut equivalent of fit-button clicks. */
-  fitToggleFromHotKey: function() {
+  fitToggleFromHotKey() {
     this.fitToggle();
 
     // Toggle the button state since there was no mouse click.
@@ -116,7 +116,7 @@ Polymer({
    * Handle forcing zoom via scripting to a fitting type.
    * @param {!FittingType} fittingType Page fitting type to force.
    */
-  forceFit: function(fittingType) {
+  forceFit(fittingType) {
     this.fireFitToChangedEvent_(fittingType, false);
 
     // Set the button state since there was no mouse click.
@@ -133,7 +133,7 @@ Polymer({
    *     action.
    * @private
    */
-  fireFitToChangedEvent_: function(fittingType, userInitiated) {
+  fireFitToChangedEvent_(fittingType, userInitiated) {
     this.fire(
         'fit-to-changed',
         {fittingType: fittingType, userInitiated: userInitiated});
@@ -142,18 +142,18 @@ Polymer({
   /**
    * Handle clicks of the zoom-in-button.
    */
-  zoomIn: function() {
+  zoomIn() {
     this.fire('zoom-in');
   },
 
   /**
    * Handle clicks of the zoom-out-button.
    */
-  zoomOut: function() {
+  zoomOut() {
     this.fire('zoom-out');
   },
 
-  show: function() {
+  show() {
     if (!this.visible_) {
       this.visible_ = true;
       this.$['fit-button'].show();
@@ -162,7 +162,7 @@ Polymer({
     }
   },
 
-  hide: function() {
+  hide() {
     if (this.visible_) {
       this.visible_ = false;
       this.$['fit-button'].hide();

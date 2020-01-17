@@ -21,7 +21,5 @@ mojom_component("mojom") {
     ]
   }
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }

@@ -35,6 +35,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -118,7 +119,7 @@ class DOMDataStore final : public GarbageCollected<DOMDataStore> {
       return object->MainWorldWrapper(isolate);
     auto it = wrapper_map_.find(object);
     if (it != wrapper_map_.end())
-      return it->value->ref.NewLocal(isolate);
+      return it->value.NewLocal(isolate);
     return v8::Local<v8::Object>();
   }
 
@@ -132,13 +133,12 @@ class DOMDataStore final : public GarbageCollected<DOMDataStore> {
       return object->SetWrapper(isolate, wrapper_type_info, wrapper);
 
     auto result = wrapper_map_.insert(
-        object, MakeGarbageCollected<WrappedReference>(isolate, wrapper));
+        object, TraceWrapperV8Reference<v8::Object>(isolate, wrapper));
     if (LIKELY(result.is_new_entry)) {
-      wrapper_type_info->ConfigureWrapper(
-          &result.stored_value->value->ref.Get());
+      wrapper_type_info->ConfigureWrapper(&result.stored_value->value.Get());
     } else {
-      DCHECK(!result.stored_value->value->ref.IsEmpty());
-      wrapper = result.stored_value->value->ref.NewLocal(isolate);
+      DCHECK(!result.stored_value->value.IsEmpty());
+      wrapper = result.stored_value->value.NewLocal(isolate);
     }
     return result.is_new_entry;
   }
@@ -149,8 +149,8 @@ class DOMDataStore final : public GarbageCollected<DOMDataStore> {
     DCHECK(!is_main_world_);
     const auto& it = wrapper_map_.find(object);
     if (it != wrapper_map_.end()) {
-      if (it->value->ref.Get() == handle) {
-        it->value->ref.Clear();
+      if (it->value.Get() == handle) {
+        it->value.Clear();
         wrapper_map_.erase(it);
         return true;
       }
@@ -164,7 +164,7 @@ class DOMDataStore final : public GarbageCollected<DOMDataStore> {
       return object->SetReturnValue(return_value);
     auto it = wrapper_map_.find(object);
     if (it != wrapper_map_.end()) {
-      return_value.Set(it->value->ref.Get());
+      return_value.Set(it->value.Get());
       return true;
     }
     return false;
@@ -198,24 +198,10 @@ class DOMDataStore final : public GarbageCollected<DOMDataStore> {
     return wrappable->IsEqualTo(holder);
   }
 
-  // Wrapper around TraceWrapperV8Reference to allow use in ephemeron hash map
-  // below.
-  class PLATFORM_EXPORT WrappedReference final
-      : public GarbageCollected<WrappedReference> {
-   public:
-    WrappedReference() = default;
-    WrappedReference(v8::Isolate* isolate, v8::Local<v8::Object> handle)
-        : ref(isolate, handle) {}
-
-    virtual void Trace(Visitor*);
-
-    TraceWrapperV8Reference<v8::Object> ref;
-  };
-
   bool is_main_world_;
-  // Ephemeron map: WrappedReference will be kept alive as long as
-  // ScriptWrappable is alive.
-  HeapHashMap<WeakMember<const ScriptWrappable>, Member<WrappedReference>>
+  // Ephemeron map: V8 wrapper will be kept alive as long as ScriptWrappable is.
+  HeapHashMap<WeakMember<const ScriptWrappable>,
+              TraceWrapperV8Reference<v8::Object>>
       wrapper_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMDataStore);

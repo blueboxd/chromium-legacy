@@ -20,7 +20,5 @@ android_library("dom_distiller_core_java") {
 
 java_cpp_enum("jni_enums") {
   visibility = [ ":*" ]
-  sources = [
-    "//components/dom_distiller/core/distilled_page_prefs.h",
-  ]
+  sources = [ "//components/dom_distiller/core/distilled_page_prefs.h" ]
 }

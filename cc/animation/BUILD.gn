@@ -40,8 +40,6 @@ cc_component("animation") {
     "scroll_offset_animations_impl.h",
     "scroll_timeline.cc",
     "scroll_timeline.h",
-    "single_keyframe_effect_animation.cc",
-    "single_keyframe_effect_animation.h",
     "timing_function.cc",
     "timing_function.h",
     "transform_operation.cc",

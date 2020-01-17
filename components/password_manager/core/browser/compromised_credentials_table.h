@@ -23,6 +23,14 @@ enum class CompromiseType {
   kMaxValue = kPhished
 };
 
+enum class RemoveCompromisedCredentialsReason {
+  // If the password was updated in the password store.
+  kUpdate = 0,
+  // If the password is removed from the password store.
+  kRemove = 1,
+  kMaxValue = kRemove
+};
+
 // Represents information about the particular compromised credentials.
 struct CompromisedCredentials {
   CompromisedCredentials(GURL url,
@@ -72,9 +80,12 @@ class CompromisedCredentialsTable {
                  const base::string16& old_username) const;
 
   // Removes information about the credentials compromised for |username| on
-  // |url|. Returns true if the SQL completed successfully.
+  // |url|. |reason| is the reason why the credentials is removed from
+  // the table. Returns true if the SQL completed successfully.
   // Also logs the compromise type in UMA.
-  bool RemoveRow(const GURL& url, const base::string16& username);
+  bool RemoveRow(const GURL& url,
+                 const base::string16& username,
+                 RemoveCompromisedCredentialsReason reason);
 
   // Gets all the rows in the database for the |username| and |url|.
   std::vector<CompromisedCredentials> GetRows(

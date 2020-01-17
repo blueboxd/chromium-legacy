@@ -11,7 +11,7 @@ Polymer({
    * @param {string} content
    * @private
    */
-  contentChanged_: function(content) {
+  contentChanged_(content) {
     this.$.echo.innerHTML = content;
   },
 });

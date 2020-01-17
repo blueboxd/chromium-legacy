@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/autofill/core/common/form_data.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -167,6 +168,7 @@ class SavePasswordProgressLogger {
   // Call these methods to log information. They sanitize the input and call
   // SendLog to pass it for display.
   void LogPasswordForm(StringID label, const PasswordForm& form);
+  void LogFormData(StringID label, const FormData& form_data);
   void LogHTMLForm(StringID label,
                    const std::string& name_or_id,
                    const GURL& action);

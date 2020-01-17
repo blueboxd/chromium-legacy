@@ -581,9 +581,7 @@ cc_test_static_library("test_support") {
     deps += [ "//gpu/vulkan/init" ]
   }
   if (!is_android) {
-    data_deps = [
-      "//third_party/mesa_headers",
-    ]
+    data_deps = [ "//third_party/mesa_headers" ]
   }
 }
 
@@ -743,9 +741,7 @@ cc_test("cc_unittests") {
   ]
 
   if (!is_android) {
-    data = [
-      "//components/viz/test/data/",
-    ]
+    data = [ "//components/viz/test/data/" ]
   }
 
   if (is_win) {
@@ -787,6 +783,7 @@ cc_test("cc_unittests") {
     "//ui/gl:test_support",
   ]
   data_deps = [
+    "//testing/buildbot/filters:cc_unittests_filters",
     "//third_party/mesa_headers",
   ]
 
@@ -857,9 +854,7 @@ cc_test("cc_perftests") {
   # This target should not require the Chrome executable to run.
   assert_no_deps = [ "//chrome" ]
 
-  data = [
-    "//components/viz/test/data/",
-  ]
+  data = [ "//components/viz/test/data/" ]
 
   data_deps = [
     # Needed for isolate script to execute.

@@ -84,6 +84,7 @@ Polymer({
   listeners: {
     'edit-cups-printer-details': 'onShowCupsEditPrinterDialog_',
     'show-cups-printer-toast': 'openResultToast_',
+    'show-cups-print-server-toast': 'openPrintServerResultToast_',
     'open-manufacturer-model-dialog-for-specified-printer':
         'openManufacturerModelDialogForSpecifiedPrinter_',
   },
@@ -95,7 +96,7 @@ Polymer({
   entryManager_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
                               .getMojoServiceRemote();
     this.entryManager_ =
@@ -103,7 +104,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.networkConfig_
         .getNetworkStateList({
           filter: chromeos.networkConfig.mojom.FilterType.kActive,
@@ -116,7 +117,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.updateCupsPrintersList_();
   },
 
@@ -125,7 +126,7 @@ Polymer({
    * @param {!settings.Route} route
    * @protected
    */
-  currentRouteChanged: function(route) {
+  currentRouteChanged(route) {
     if (route != settings.routes.CUPS_PRINTERS) {
       cr.removeWebUIListener('on-printers-changed');
       this.entryManager_.removeWebUIListeners();
@@ -144,7 +145,7 @@ Polymer({
    *     networks
    * @private
    */
-  onActiveNetworksChanged: function(networks) {
+  onActiveNetworksChanged(networks) {
     this.canAddPrinter = networks.some(function(network) {
       // Note: Check for kOnline rather than using
       // OncMojo.connectionStateIsConnected() since the latter could return true
@@ -161,7 +162,7 @@ Polymer({
    * }>} event
    * @private
    */
-  openResultToast_: function(event) {
+  openResultToast_(event) {
     const printerName = event.detail.printerName;
     switch (event.detail.resultCode) {
       case PrinterSetupResult.SUCCESS:
@@ -184,17 +185,38 @@ Polymer({
   },
 
   /**
+   * @param {!CustomEvent<!{
+   *      printers: !CupsPrintersList
+   * }>} event
+   * @private
+   */
+  openPrintServerResultToast_: function(event) {
+    const length = event.detail.printers.printerList.length;
+    if (length === 0) {
+      this.addPrintServerResultText_ =
+          loadTimeData.getString('printServerFoundZeroPrinters');
+    } else if (length === 1) {
+      this.addPrintServerResultText_ =
+          loadTimeData.getString('printServerFoundOnePrinter');
+    } else {
+      this.addPrintServerResultText_ =
+          loadTimeData.getStringF('printServerFoundManyPrinters', length);
+    }
+    this.$.printServerErrorToast.show();
+  },
+
+  /**
    * @param {!CustomEvent<{item: !CupsPrinterInfo}>} e
    * @private
    */
-  openManufacturerModelDialogForSpecifiedPrinter_: function(e) {
+  openManufacturerModelDialogForSpecifiedPrinter_(e) {
     const item = e.detail.item;
     this.$.addPrinterDialog.openManufacturerModelDialogForSpecifiedPrinter(
         item);
   },
 
   /** @private */
-  updateCupsPrintersList_: function() {
+  updateCupsPrintersList_() {
     settings.CupsPrintersBrowserProxyImpl.getInstance()
         .getCupsPrintersList()
         .then(this.onPrintersChanged_.bind(this));
@@ -204,7 +226,7 @@ Polymer({
    * @param {!CupsPrintersList} cupsPrintersList
    * @private
    */
-  onPrintersChanged_: function(cupsPrintersList) {
+  onPrintersChanged_(cupsPrintersList) {
     this.savedPrinters_ = cupsPrintersList.printerList.map(
         printer => /** @type {!PrinterListEntry} */ (
             {printerInfo: printer, printerType: PrinterType.SAVED}));
@@ -212,22 +234,22 @@ Polymer({
   },
 
   /** @private */
-  onAddPrinterTap_: function() {
+  onAddPrinterTap_() {
     this.$.addPrinterDialog.open();
   },
 
   /** @private */
-  onAddPrinterDialogClose_: function() {
+  onAddPrinterDialogClose_() {
     cr.ui.focusWithoutInk(assert(this.$$('#addManualPrinterIcon')));
   },
 
   /** @private */
-  onShowCupsEditPrinterDialog_: function() {
+  onShowCupsEditPrinterDialog_() {
     this.showCupsEditPrinterDialog_ = true;
   },
 
   /** @private */
-  onEditPrinterDialogClose_: function() {
+  onEditPrinterDialogClose_() {
     this.showCupsEditPrinterDialog_ = false;
   },
 
@@ -236,7 +258,7 @@ Polymer({
    * @return {boolean} If the 'no-search-results-found' string should be shown.
    * @private
    */
-  showNoSearchResultsMessage_: function(searchTerm) {
+  showNoSearchResultsMessage_(searchTerm) {
     if (!searchTerm || !this.printers.length) {
       return false;
     }
@@ -254,8 +276,7 @@ Polymer({
    * @return {boolean} Whether the 'Add Printer' button is active.
    * @private
    */
-  addPrinterButtonActive_: function(
-      connectedToNetwork, userNativePrintersAllowed) {
+  addPrinterButtonActive_(connectedToNetwork, userNativePrintersAllowed) {
     return connectedToNetwork && userNativePrintersAllowed;
   },
 
@@ -263,12 +284,12 @@ Polymer({
    * @return {boolean} Whether |savedPrinters_| is empty.
    * @private
    */
-  doesAccountHaveSavedPrinters_: function() {
+  doesAccountHaveSavedPrinters_() {
     return !!this.savedPrinters_.length;
   },
 
   /** @private */
-  getSavedPrintersAriaLabel_: function() {
+  getSavedPrintersAriaLabel_() {
     const printerLabel = this.savedPrinterCount_ == 0 ?
         'savedPrintersCountNone' :
         this.savedPrinterCount_ == 1 ? 'savedPrintersCountOne' :
@@ -278,7 +299,7 @@ Polymer({
   },
 
   /** @private */
-  getNearbyPrintersAriaLabel_: function() {
+  getNearbyPrintersAriaLabel_() {
     const printerLabel = this.nearbyPrinterCount_ == 0 ?
         'nearbyPrintersCountNone' :
         this.nearbyPrinterCount_ == 1 ? 'nearbyPrintersCountOne' :

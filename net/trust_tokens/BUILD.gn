@@ -33,9 +33,7 @@ source_set("trust_tokens") {
 source_set("tests") {
   testonly = true
 
-  sources = [
-    "trust_token_persister_unittest.cc",
-  ]
+  sources = [ "trust_token_persister_unittest.cc" ]
 
   deps = [
     ":public_proto",
@@ -51,9 +49,7 @@ source_set("tests") {
 # public.proto contains datatypes intended
 # to be exposed to //net consumers.
 proto_library("public_proto") {
-  sources = [
-    "proto/public.proto",
-  ]
+  sources = [ "proto/public.proto" ]
 }
 
 # storage.proto contains datatypes internal
@@ -64,10 +60,6 @@ proto_library("storage_proto") {
     ":trust_tokens",
     ":tests",
   ]
-  sources = [
-    "proto/storage.proto",
-  ]
-  deps = [
-    ":public_proto",
-  ]
+  sources = [ "proto/storage.proto" ]
+  deps = [ ":public_proto" ]
 }

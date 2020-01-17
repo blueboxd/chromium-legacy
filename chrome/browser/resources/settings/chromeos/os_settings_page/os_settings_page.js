@@ -73,7 +73,7 @@ Polymer({
      */
     pageVisibility: {
       type: Object,
-      value: function() {
+      value() {
         return {};
       },
     },
@@ -134,7 +134,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.currentRoute_ = settings.getCurrentRoute();
+    this.currentRoute_ = settings.Router.getInstance().getCurrentRoute();
 
     this.allowCrostini_ = loadTimeData.valueExists('allowCrostini') &&
         loadTimeData.getBoolean('allowCrostini');
@@ -148,7 +148,7 @@ Polymer({
    * @param {!settings.Route} newRoute
    * @param {settings.Route} oldRoute
    */
-  currentRouteChanged: function(newRoute, oldRoute) {
+  currentRouteChanged(newRoute, oldRoute) {
     this.currentRoute_ = newRoute;
 
     if (settings.routes.ADVANCED &&
@@ -171,7 +171,7 @@ Polymer({
   },
 
   // Override settings.MainPageBehavior method.
-  containsRoute: function(route) {
+  containsRoute(route) {
     return !route || settings.routes.BASIC.contains(route) ||
         settings.routes.ADVANCED.contains(route);
   },
@@ -181,7 +181,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showPage_: function(visibility) {
+  showPage_(visibility) {
     return visibility !== false;
   },
 
@@ -192,7 +192,7 @@ Polymer({
    * @return {!Promise<!settings.SearchResult>} A signal indicating that
    *     searching finished.
    */
-  searchContents: function(query) {
+  searchContents(query) {
     const whenSearchDone = [
       settings.getSearchManager().search(query, assert(this.$$('#basicPage'))),
     ];
@@ -222,7 +222,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShowSecondaryUserBanner_: function() {
+  computeShowSecondaryUserBanner_() {
     return !this.hasExpandedSection_ &&
         loadTimeData.getBoolean('isSecondaryUser');
   },
@@ -231,7 +231,7 @@ Polymer({
    * @return {boolean|undefined}
    * @private
    */
-  computeShowBrowserSettingsBanner_: function() {
+  computeShowBrowserSettingsBanner_() {
     // this.prefs is implicitly used by this.getPref() below, but may not be
     // initialized yet.
     if (!this.prefs || !this.currentRoute_) {
@@ -262,7 +262,7 @@ Polymer({
    * @param {!AndroidAppsInfo} info
    * @private
    */
-  androidAppsInfoUpdate_: function(info) {
+  androidAppsInfoUpdate_(info) {
     this.androidAppsInfo = info;
   },
 
@@ -273,7 +273,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowAndroidAppsSection_: function() {
+  shouldShowAndroidAppsSection_() {
     if (this.havePlayStoreApp ||
         (this.androidAppsInfo && this.androidAppsInfo.settingsAppAvailable)) {
       return true;
@@ -282,7 +282,7 @@ Polymer({
   },
 
   /** @private */
-  onBrowserSettingsClick_: function() {
+  onBrowserSettingsClick_() {
     // The label has a link that opens the page, so just record the metric.
     chrome.metricsPrivate.recordEnumerationValue(
         BROWSER_BANNER_INTERACTION_METRIC_NAME,
@@ -291,7 +291,7 @@ Polymer({
   },
 
   /** @private */
-  onBrowserSettingsBannerClosed_: function() {
+  onBrowserSettingsBannerClosed_() {
     this.setPrefValue('settings.cros.show_browser_banner', false);
     chrome.metricsPrivate.recordEnumerationValue(
         BROWSER_BANNER_INTERACTION_METRIC_NAME,
@@ -303,7 +303,7 @@ Polymer({
    * Hides everything but the newly expanded subpage.
    * @private
    */
-  onSubpageExpanded_: function() {
+  onSubpageExpanded_() {
     this.hasExpandedSection_ = true;
   },
 
@@ -311,7 +311,7 @@ Polymer({
    * Render the advanced page now (don't wait for idle).
    * @private
    */
-  advancedToggleExpandedChanged_: function() {
+  advancedToggleExpandedChanged_() {
     if (!this.advancedToggleExpanded) {
       return;
     }
@@ -323,7 +323,7 @@ Polymer({
     });
   },
 
-  advancedToggleClicked_: function() {
+  advancedToggleClicked_() {
     if (this.advancedTogglingInProgress_) {
       return;
     }
@@ -359,7 +359,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showAdvancedToggle_: function(inSearchMode, hasExpandedSection) {
+  showAdvancedToggle_(inSearchMode, hasExpandedSection) {
     return !inSearchMode && !hasExpandedSection;
   },
 
@@ -371,7 +371,7 @@ Polymer({
    *     both routing and search state.
    * @private
    */
-  showBasicPage_: function(currentRoute, inSearchMode, hasExpandedSection) {
+  showBasicPage_(currentRoute, inSearchMode, hasExpandedSection) {
     return !hasExpandedSection || settings.routes.BASIC.contains(currentRoute);
   },
 
@@ -384,7 +384,7 @@ Polymer({
    *     both routing and search state.
    * @private
    */
-  showAdvancedPage_: function(
+  showAdvancedPage_(
       currentRoute, inSearchMode, hasExpandedSection, advancedToggleExpanded) {
     return hasExpandedSection ?
         (settings.routes.ADVANCED &&
@@ -397,7 +397,7 @@ Polymer({
    * @return {boolean} True unless visibility is false.
    * @private
    */
-  showAdvancedSettings_: function(visibility) {
+  showAdvancedSettings_(visibility) {
     return visibility !== false;
   },
 
@@ -406,7 +406,7 @@ Polymer({
    * @return {string} Icon name.
    * @private
    */
-  getArrowIcon_: function(opened) {
+  getArrowIcon_(opened) {
     return opened ? 'cr:arrow-drop-up' : 'cr:arrow-drop-down';
   },
 
@@ -415,7 +415,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  boolToString_: function(bool) {
+  boolToString_(bool) {
     return bool.toString();
   },
 });

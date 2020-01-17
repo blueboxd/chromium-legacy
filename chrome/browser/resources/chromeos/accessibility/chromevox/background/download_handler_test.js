@@ -20,7 +20,7 @@ function ChromeVoxDownloadTest() {
 ChromeVoxDownloadTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
-  addFakeApi: function() {
+  addFakeApi() {
     // Fake out Chrome Downloads API namespace.
     chrome.downloads = {};
     chrome.downloads.search = function(query, callback) {
@@ -42,14 +42,14 @@ ChromeVoxDownloadTest.prototype = {
   },
 
   /** @override */
-  setUp: function() {
+  setUp() {
     window.simulateEvent = this.simulateEvent.bind(this);
   },
 
   /**
    * @return{!MockFeedback}
    */
-  createMockFeedback: function() {
+  createMockFeedback() {
     var mockFeedback =
         new MockFeedback(this.newCallback(), this.newCallback.bind(this));
     mockFeedback.install();
@@ -59,7 +59,7 @@ ChromeVoxDownloadTest.prototype = {
   /**
    * Simulates a chrome.downloads.onChanged event with the given parameters.
    */
-  simulateEvent: function(item) {
+  simulateEvent(item) {
     return function() {
       var listener = chrome.downloads.onChanged.getListener();
       assertNotEquals(null, listener);
@@ -67,7 +67,7 @@ ChromeVoxDownloadTest.prototype = {
     };
   },
 
-  getTimeRemaining: function(units) {
+  getTimeRemaining(units) {
     if (!units) {
       console.error('Must specify time units before calling this function');
     } else if (units === 'second') {

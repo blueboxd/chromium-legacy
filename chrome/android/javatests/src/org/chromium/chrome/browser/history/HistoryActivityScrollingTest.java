@@ -27,13 +27,13 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryTestUtils.TestObserver;
-import org.chromium.chrome.browser.ui.widget.MoreProgressButton;
-import org.chromium.chrome.browser.ui.widget.MoreProgressButton.State;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.FooterItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.components.browser_ui.widget.MoreProgressButton;
+import org.chromium.components.browser_ui.widget.MoreProgressButton.State;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 

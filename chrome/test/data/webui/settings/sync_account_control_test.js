@@ -270,7 +270,9 @@ cr.define('settings_sync_account_control', function() {
       testElement.$$('#avatar-row #turn-off').click();
       Polymer.dom.flush();
 
-      assertEquals(settings.getCurrentRoute(), settings.routes.SIGN_OUT);
+      assertEquals(
+          settings.Router.getInstance().getCurrentRoute(),
+          settings.routes.SIGN_OUT);
     });
 
     test('signed in, has error', function() {

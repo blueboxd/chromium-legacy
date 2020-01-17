@@ -1851,9 +1851,9 @@ namespace {
 void PressEscapeWhileDetachedStep2(const BrowserList* browser_list) {
   ASSERT_EQ(2u, browser_list->size());
   Browser* new_browser = browser_list->get(1);
-  ui_controls::SendKeyPress(
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
       new_browser->window()->GetNativeWindow(), ui::VKEY_ESCAPE, false, false,
-      false, false);
+      false, false));
 }
 
 }  // namespace
@@ -2059,6 +2059,92 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
               testing::ElementsAre(1, 2));
   EXPECT_NE(groups2[0], group);
   EXPECT_EQ(tab_strip2->GetGroupColorId(groups2[0]), group_color);
+}
+
+// Drags a tab group by the header to a new position and presses escape to
+// revert the drag.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
+                       PressEscapeDuringHeaderDrag) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+  AddTabsAndResetBrowser(browser(), 1);
+  tab_groups::TabGroupId group = model->AddToNewGroup({0});
+  StopAnimating(tab_strip);
+
+  TabGroupHeader* group_header = tab_strip->group_header(group);
+  EXPECT_FALSE(group_header->dragging());
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(group_header)));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+  ASSERT_TRUE(group_header->dragging());
+
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      browser()->window()->GetNativeWindow(), ui::VKEY_ESCAPE, false, false,
+      false, false));
+
+  EXPECT_EQ(1u, browser_list->size());
+  EXPECT_FALSE(group_header->dragging());
+  EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
+  std::vector<tab_groups::TabGroupId> groups =
+      model->group_model()->ListTabGroups();
+  EXPECT_EQ(1u, groups.size());
+  EXPECT_THAT(model->group_model()->GetTabGroup(groups[0])->ListTabs(),
+              testing::ElementsAre(0));
+}
+
+namespace {
+
+void PressEscapeWhileDetachedHeaderStep2(
+    DetachToBrowserTabDragControllerTest* test) {
+  // At this moment there should be a new browser window for the dragged tabs.
+  EXPECT_EQ(2u, test->browser_list->size());
+  Browser* new_browser = test->browser_list->get(1);
+  std::vector<tab_groups::TabGroupId> new_browser_groups =
+      new_browser->tab_strip_model()->group_model()->ListTabGroups();
+  EXPECT_EQ(1u, new_browser_groups.size());
+  EXPECT_EQ(0u, test->browser()
+                    ->tab_strip_model()
+                    ->group_model()
+                    ->ListTabGroups()
+                    .size());
+
+  TabGroupHeader* new_group_header =
+      GetTabStripForBrowser(new_browser)->group_header(new_browser_groups[0]);
+  EXPECT_TRUE(new_group_header->dragging());
+
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      new_browser->window()->GetNativeWindow(), ui::VKEY_ESCAPE, false, false,
+      false, false));
+}
+
+}  // namespace
+
+// Drags a tab group by the header and while detached presses escape to revert
+// the drag.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
+                       PressEscapeDuringHeaderDragWhileDetached) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+  AddTabsAndResetBrowser(browser(), 1);
+  tab_groups::TabGroupId group = model->AddToNewGroup({0});
+  StopAnimating(tab_strip);
+
+  DragGroupAndNotify(tab_strip,
+                     base::BindOnce(&PressEscapeWhileDetachedHeaderStep2, this),
+                     group);
+
+  TabGroupHeader* group_header =
+      GetTabStripForBrowser(browser())->group_header(group);
+  EXPECT_FALSE(group_header->dragging());
+
+  ASSERT_FALSE(tab_strip->GetDragContext()->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ(1u, browser_list->size());
+  EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
+  std::vector<tab_groups::TabGroupId> groups =
+      model->group_model()->ListTabGroups();
+  EXPECT_EQ(1u, groups.size());
+  EXPECT_THAT(model->group_model()->GetTabGroup(groups[0])->ListTabs(),
+              testing::ElementsAre(0));
 }
 
 namespace {

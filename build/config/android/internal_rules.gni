@@ -116,15 +116,11 @@ template("write_build_config") {
     _parent_invoker = invoker.invoker
     _target_label =
         get_label_info(":${_parent_invoker.target_name}", "label_no_toolchain")
-    sources = [
-      _target_label,
-    ]
+    sources = [ _target_label ]
     if (sources != []) {
       set_sources_assignment_filter(_java_target_blacklist)
       sources = []
-      sources = [
-        _target_label,
-      ]
+      sources = [ _target_label ]
       if (sources != []) {
         assert(false, "Invalid java target name: $_target_label")
       }
@@ -148,24 +144,18 @@ template("write_build_config") {
     script = "//build/android/gyp/write_build_config.py"
     depfile = "$target_gen_dir/$target_name.d"
     inputs = []
-    outputs = [
-      invoker.build_config,
-    ]
+    outputs = [ invoker.build_config ]
 
     _deps_configs = []
     if (defined(invoker.possible_config_deps)) {
       foreach(_possible_dep, invoker.possible_config_deps) {
         set_sources_assignment_filter(_java_target_whitelist)
         _target_label = get_label_info(_possible_dep, "label_no_toolchain")
-        sources = [
-          _target_label,
-        ]
+        sources = [ _target_label ]
         if (sources == []) {
           set_sources_assignment_filter(_java_target_blacklist)
           sources = []
-          sources = [
-            _target_label,
-          ]
+          sources = [ _target_label ]
           if (sources != []) {
             # Put the bug number in the target name so that false-positives
             # have a hint in the error message about non-existent dependencies.
@@ -581,13 +571,9 @@ template("test_runner_script") {
     _install_artifacts_json =
         "${target_gen_dir}/${target_name}.install_artifacts"
     generated_file("${target_name}__install_artifacts") {
-      deps = [
-        invoker.apk_under_test,
-      ]
+      deps = [ invoker.apk_under_test ]
       output_conversion = "json"
-      outputs = [
-        _install_artifacts_json,
-      ]
+      outputs = [ _install_artifacts_json ]
       data_keys = [ "install_artifacts" ]
       walk_keys = [ "install_artifacts_barrier" ]
       rebase = root_build_dir
@@ -974,9 +960,7 @@ if (enable_java_templates) {
       pool = "//build/toolchain:link_pool($default_toolchain)"
 
       _output_path = invoker.output_path
-      inputs = [
-        invoker.build_config,
-      ]
+      inputs = [ invoker.build_config ]
       if (defined(invoker.inputs)) {
         inputs += invoker.inputs
       }
@@ -1092,13 +1076,9 @@ if (enable_java_templates) {
       _script_name = invoker.script_name
 
       script = "//build/android/gyp/create_java_binary_script.py"
-      inputs = [
-        _build_config,
-      ]
+      inputs = [ _build_config ]
       _java_script = "$root_build_dir/bin/$_script_name"
-      outputs = [
-        _java_script,
-      ]
+      outputs = [ _java_script ]
       _rebased_build_config = rebase_path(_build_config, root_build_dir)
       args = [
         "--output",
@@ -1278,9 +1258,7 @@ if (enable_java_templates) {
                      _shrinked_android,
                    ] + _input_class_jars
 
-          outputs = [
-            _main_dex_list_path,
-          ]
+          outputs = [ _main_dex_list_path ]
 
           args = [
             "--depfile",
@@ -1340,9 +1318,7 @@ if (enable_java_templates) {
         script = "//build/android/gyp/dex.py"
         depfile = "$target_gen_dir/$target_name.d"
         inputs = []
-        outputs = [
-          invoker.output,
-        ]
+        outputs = [ invoker.output ]
 
         args = [
           "--depfile",
@@ -1584,9 +1560,7 @@ if (enable_java_templates) {
           _java_bytecode_rewriter_input_jar,
           _build_config,
         ]
-        outputs = [
-          _java_bytecode_rewriter_output_jar,
-        ]
+        outputs = [ _java_bytecode_rewriter_output_jar ]
         args = [
           "--script",
           rebase_path(_bytecode_rewriter_script, root_build_dir),
@@ -1644,9 +1618,7 @@ if (enable_java_templates) {
           _desugar_input_jar,
           _desugar_jar,
         ]
-        outputs = [
-          _desugar_output_jar,
-        ]
+        outputs = [ _desugar_output_jar ]
         args = [
           "--desugar-jar",
           rebase_path(_desugar_jar, root_build_dir),
@@ -1684,9 +1656,7 @@ if (enable_java_templates) {
           _build_config,
           _filter_input_jar,
         ]
-        outputs = [
-          _filter_output_jar,
-        ]
+        outputs = [ _filter_output_jar ]
         args = [
           "--input",
           rebase_path(_filter_input_jar, root_build_dir),
@@ -1744,12 +1714,8 @@ if (enable_java_templates) {
         deps += invoker.deps
       }
       dest = _output_jar_path
-      sources = [
-        _previous_output_jar,
-      ]
-      outputs = [
-        _output_jar_path,
-      ]
+      sources = [ _previous_output_jar ]
+      outputs = [ _output_jar_path ]
     }
 
     group(target_name) {
@@ -1758,9 +1724,7 @@ if (enable_java_templates) {
                                "data_deps",
                                "visibility",
                              ])
-      public_deps = [
-        ":$_output_jar_target",
-      ]
+      public_deps = [ ":$_output_jar_target" ]
     }
   }
 
@@ -1779,9 +1743,7 @@ if (enable_java_templates) {
         invoker.input_manifest,
       ]
 
-      outputs = [
-        invoker.output_manifest,
-      ]
+      outputs = [ invoker.output_manifest ]
       _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
 
       args = [
@@ -2120,9 +2082,7 @@ if (enable_java_templates) {
       ]
 
       inputs += [ invoker.android_manifest ]
-      outputs = [
-        _intermediate_srcjar_path,
-      ]
+      outputs = [ _intermediate_srcjar_path ]
       args += [
         "--android-manifest",
         rebase_path(invoker.android_manifest, root_build_dir),
@@ -2416,9 +2376,7 @@ if (enable_java_templates) {
           _output_apk,
           _final_srcjar_path,
         ]
-        public_deps = [
-          ":${_compile_resources_target_name}",
-        ]
+        public_deps = [ ":${_compile_resources_target_name}" ]
       }
     }
   }
@@ -2539,9 +2497,7 @@ if (enable_java_templates) {
       depfile = "$target_gen_dir/$target_name.d"
       _apksigner = "$android_sdk_build_tools/lib/apksigner.jar"
       _zipalign = "$android_sdk_build_tools/zipalign"
-      data_deps = [
-        "//tools/android/md5sum",
-      ]  # Used when deploying APKs
+      data_deps = [ "//tools/android/md5sum" ]
 
       inputs = [
         invoker.keystore_path,
@@ -2550,12 +2506,8 @@ if (enable_java_templates) {
         _zipalign,
       ]
 
-      outputs = [
-        invoker.output_apk_path,
-      ]
-      data = [
-        invoker.output_apk_path,
-      ]
+      outputs = [ invoker.output_apk_path ]
+      data = [ invoker.output_apk_path ]
 
       _rebased_compiled_resources_path =
           rebase_path(invoker.packaged_resources_path, root_build_dir)
@@ -2742,9 +2694,7 @@ if (enable_java_templates) {
         deps += invoker.deps
       }
 
-      outputs = [
-        invoker.javac_jar_path,
-      ]
+      outputs = [ invoker.javac_jar_path ]
       if (!invoker.enable_errorprone) {
         outputs += [ invoker.javac_jar_path + ".info" ]
       }
@@ -2844,9 +2794,7 @@ if (enable_java_templates) {
                                "visibility",
                              ])
       script = "//build/android/gyp/ijar.py"
-      deps = [
-        _ijar_target,
-      ]
+      deps = [ _ijar_target ]
       if (defined(invoker.deps)) {
         deps += invoker.deps
       }
@@ -2857,9 +2805,7 @@ if (enable_java_templates) {
       if (defined(invoker.inputs)) {
         inputs += invoker.inputs
       }
-      outputs = [
-        invoker.output_jar,
-      ]
+      outputs = [ invoker.output_jar ]
       args = [
         rebase_path(_ijar_executable, root_build_dir),
         rebase_path(invoker.input_jar, root_build_dir),
@@ -3124,9 +3070,7 @@ if (enable_java_templates) {
     } else {
       # Default based on whether target is in third_party.
       set_sources_assignment_filter([ "*\bthird_party\b*" ])
-      sources = [
-        get_label_info(":$_main_target_name", "dir"),
-      ]
+      sources = [ get_label_info(":$_main_target_name", "dir") ]
       _chromium_code = sources != []
       if (!_chromium_code && !_is_prebuilt && _java_files != []) {
         # Unless third_party code has an org.chromium file in it.
@@ -3409,13 +3353,9 @@ if (enable_java_templates) {
         # Use copy_ex rather than copy to ensure that we copy symlink targets
         # rather than the symlink itself.
         copy_ex(_copy_system_library_target_name) {
-          sources = [
-            _unprocessed_jar_path,
-          ]
+          sources = [ _unprocessed_jar_path ]
           dest = _final_jar_path
-          outputs = [
-            _final_jar_path,
-          ]
+          outputs = [ _final_jar_path ]
         }
         _accumulated_public_deps += [ ":$_copy_system_library_target_name" ]
       } else {
@@ -3452,9 +3392,7 @@ if (enable_java_templates) {
             # change just one class at a time.
             disable_incremental = _is_prebuilt
             output = _dex_path
-            deps = [
-              ":$_process_prebuilt_target_name",
-            ]
+            deps = [ ":$_process_prebuilt_target_name" ]
 
             # Should never need multidex when compiling individual libraries.
             # Disabling multidex saves on having to create a main_dex_list.
@@ -3604,9 +3542,7 @@ template("create_android_app_bundle_module") {
       invoker.build_config,
       invoker.native_libraries_config,
     ]
-    outputs = [
-      invoker.module_zip_path,
-    ]
+    outputs = [ invoker.module_zip_path ]
     args = [
       "--depfile",
       rebase_path(depfile, root_build_dir),
@@ -3676,9 +3612,7 @@ template("dexsplitter") {
     forward_variables_from(invoker, [ "deps" ])
     script = "//build/android/gyp/dexsplitter.py"
     _stamp = "${target_gen_dir}/${target_name}.stamp"
-    outputs = [
-      _stamp,
-    ]
+    outputs = [ _stamp ]
 
     depfile = "${target_gen_dir}/${target_name}.d"
     args = [
@@ -3736,9 +3670,7 @@ template("allot_native_libraries") {
       "--output",
       rebase_path(invoker.output, root_build_dir),
     ]
-    outputs = [
-      invoker.output,
-    ]
+    outputs = [ invoker.output ]
     deps = []
     if (defined(invoker.deps)) {
       deps += invoker.deps

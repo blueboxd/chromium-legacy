@@ -152,7 +152,7 @@ base::File::Error QuotaBackendImpl::GetUsageCachePath(
   base::File::Error error = base::File::FILE_OK;
   *usage_file_path =
       SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
-          obfuscated_file_util_, origin.GetURL(), type, &error);
+          obfuscated_file_util_, origin, type, &error);
   return error;
 }
 

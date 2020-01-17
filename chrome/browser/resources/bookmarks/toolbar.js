@@ -59,7 +59,7 @@ Polymer({
     globalCanEdit_: Boolean,
   },
 
-  attached: function() {
+  attached() {
     this.watch('searchTerm_', function(state) {
       return state.search.term;
     });
@@ -82,7 +82,7 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onMenuButtonOpenTap_: function(e) {
+  onMenuButtonOpenTap_(e) {
     this.fire('open-command-menu', {
       targetElement: e.target,
       source: MenuSource.TOOLBAR,
@@ -90,7 +90,7 @@ Polymer({
   },
 
   /** @private */
-  onDeleteSelectionTap_: function() {
+  onDeleteSelectionTap_() {
     const selection = this.selectedItems_;
     const commandManager = CommandManager.getInstance();
     assert(commandManager.canExecute(Command.DELETE, selection));
@@ -98,7 +98,7 @@ Polymer({
   },
 
   /** @private */
-  onClearSelectionTap_: function() {
+  onClearSelectionTap_() {
     this.dispatch(deselectItems());
   },
 
@@ -106,19 +106,19 @@ Polymer({
    * @param {!CustomEvent<string>} e
    * @private
    */
-  onSearchChanged_: function(e) {
+  onSearchChanged_(e) {
     if (e.detail !== this.searchTerm_) {
       this.dispatch(setSearchTerm(e.detail));
     }
   },
 
   /** @private */
-  onSidebarWidthChanged_: function() {
+  onSidebarWidthChanged_() {
     this.style.setProperty('--sidebar-width', this.sidebarWidth);
   },
 
   /** @private */
-  onSearchTermChanged_: function() {
+  onSearchTermChanged_() {
     this.searchField.setValue(this.searchTerm_ || '');
   },
 
@@ -126,7 +126,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowSelectionOverlay_: function() {
+  shouldShowSelectionOverlay_() {
     return this.selectedItems_.size > 1 && this.globalCanEdit_;
   },
 
@@ -134,7 +134,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  canDeleteSelection_: function() {
+  canDeleteSelection_() {
     return this.showSelectionOverlay &&
         CommandManager.getInstance().canExecute(
             Command.DELETE, this.selectedItems_);
@@ -144,7 +144,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getItemsSelectedString_: function() {
+  getItemsSelectedString_() {
     return loadTimeData.getStringF('itemsSelected', this.selectedItems_.size);
   },
 });

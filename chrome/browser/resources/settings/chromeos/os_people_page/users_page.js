@@ -34,14 +34,14 @@ Polymer({
     /** @private */
     isChild_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isSupervised');
       },
     },
   },
 
   /** @override */
-  created: function() {
+  created() {
     chrome.usersPrivate.getCurrentUser(user => {
       this.isOwner_ = user.isOwner;
     });
@@ -55,13 +55,13 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  openAddUserDialog_: function(e) {
+  openAddUserDialog_(e) {
     e.preventDefault();
     this.$.addUserDialog.open();
   },
 
   /** @private */
-  onAddUserDialogClose_: function() {
+  onAddUserDialogClose_() {
     cr.ui.focusWithoutInk(assert(this.$$('#add-user-button a')));
   },
 
@@ -71,7 +71,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  isEditingDisabled_: function(isOwner, isWhitelistManaged) {
+  isEditingDisabled_(isOwner, isWhitelistManaged) {
     return !isOwner || isWhitelistManaged;
   },
 
@@ -83,13 +83,12 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  isEditingUsersEnabled_: function(
-      isOwner, isWhitelistManaged, allowGuest, isChild) {
+  isEditingUsersEnabled_(isOwner, isWhitelistManaged, allowGuest, isChild) {
     return isOwner && !isWhitelistManaged && !allowGuest && !isChild;
   },
 
   /** @return {boolean} */
-  shouldHideModifiedByOwnerLabel_: function() {
+  shouldHideModifiedByOwnerLabel_() {
     return this.isWhitelistManaged_ || this.isOwner_;
   },
 });

@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
@@ -175,11 +174,9 @@ void UrlLoadingService::LoadUrlInCurrentTab(const UrlLoadParams& params) {
 
   // Ask the prerender service to load this URL if it can, and return if it does
   // so.
-  id<SessionWindowRestoring> restorer =
-      (id<SessionWindowRestoring>)browser_->GetTabModel();
-  if (prerenderService && prerenderService->MaybeLoadPrerenderedURL(
-                              web_params.url, web_params.transition_type,
-                              web_state_list, restorer)) {
+  if (prerenderService &&
+      prerenderService->MaybeLoadPrerenderedURL(
+          web_params.url, web_params.transition_type, browser_)) {
     notifier_->TabDidPrerenderUrl(web_params.url, web_params.transition_type);
     return;
   }

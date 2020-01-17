@@ -115,11 +115,11 @@ cursors.Cursor.prototype = {
    * @param {!cursors.Cursor} rhs
    * @return {boolean}
    */
-  equals: function(rhs) {
+  equals(rhs) {
     return this.node === rhs.node && this.index === rhs.index;
   },
 
-  equalsWithoutRecovery: function(rhs) {
+  equalsWithoutRecovery(rhs) {
     return this.recovery_.equalsWithoutRecovery(rhs.recovery_);
   },
 
@@ -130,7 +130,7 @@ cursors.Cursor.prototype = {
    * @param {!cursors.Cursor} rhs
    * @return {boolean}
    */
-  contentEquals: function(rhs) {
+  contentEquals(rhs) {
     // First, normalize the two nodes so they both point to the first non-text
     // node.
     var lNode = this.node;
@@ -157,7 +157,7 @@ cursors.Cursor.prototype = {
    * @return Dir.BACKWARD if |rhs| comes before this cursor in
    * document order. Forward otherwise.
    */
-  compare: function(rhs) {
+  compare(rhs) {
     if (!this.node || !rhs.node) {
       return Dir.FORWARD;
     }
@@ -284,7 +284,7 @@ cursors.Cursor.prototype = {
    * Gets the accessible text of the node associated with this cursor.
    * @return {string}
    */
-  getText: function() {
+  getText() {
     return AutomationUtil.getText(this.node);
   },
 
@@ -296,7 +296,7 @@ cursors.Cursor.prototype = {
    * @param {Dir} dir
    * @return {!cursors.Cursor} The moved cursor.
    */
-  move: function(unit, movement, dir) {
+  move(unit, movement, dir) {
     var originalNode = this.node;
     if (!originalNode) {
       return this;
@@ -563,7 +563,7 @@ cursors.Cursor.prototype = {
    * Returns whether this cursor points to a valid position.
    * @return {boolean}
    */
-  isValid: function() {
+  isValid() {
     return this.node != null;
   },
 
@@ -572,7 +572,7 @@ cursors.Cursor.prototype = {
    * @param {!AutomationNode} node
    * @return {!Array<!AutomationNode>}
    */
-  getAllLeaves_: function(node) {
+  getAllLeaves_(node) {
     var ret = [];
     if (!node.firstChild) {
       ret.push(node);
@@ -614,7 +614,7 @@ cursors.WrappingCursor.prototype = {
   __proto__: cursors.Cursor.prototype,
 
   /** @override */
-  move: function(unit, movement, dir) {
+  move(unit, movement, dir) {
     var result = this;
     if (!result.node) {
       return this;
@@ -759,11 +759,11 @@ cursors.Range.prototype = {
    * @param {!cursors.Range} rhs
    * @return {boolean}
    */
-  equals: function(rhs) {
+  equals(rhs) {
     return this.start_.equals(rhs.start) && this.end_.equals(rhs.end);
   },
 
-  equalsWithoutRecovery: function(rhs) {
+  equalsWithoutRecovery(rhs) {
     return this.start_.equalsWithoutRecovery(rhs.start) &&
         this.end_.equalsWithoutRecovery(rhs.end);
   },
@@ -774,7 +774,7 @@ cursors.Range.prototype = {
    * @param {!cursors.Range} rhs
    * @return {boolean}
    */
-  contentEquals: function(rhs) {
+  contentEquals(rhs) {
     return this.start_.contentEquals(rhs.start) &&
         this.end_.contentEquals(rhs.end);
   },
@@ -785,7 +785,7 @@ cursors.Range.prototype = {
    * Dir.BACKWARD for start.
    * @return {!cursors.Cursor}
    */
-  getBound: function(dir) {
+  getBound(dir) {
     return dir == Dir.FORWARD ? this.end_ : this.start_;
   },
 
@@ -807,7 +807,7 @@ cursors.Range.prototype = {
    * Returns true if this range covers less than a node.
    * @return {boolean}
    */
-  isSubNode: function() {
+  isSubNode() {
     var startIndex = this.start.index;
     var endIndex = this.end.index;
     return this.start.node === this.end.node && startIndex != -1 &&
@@ -820,7 +820,7 @@ cursors.Range.prototype = {
    * inlineTextBox).
    * @return {boolean?}
    */
-  isInlineText: function() {
+  isInlineText() {
     return this.start.node && this.end.node &&
         this.start.node.role == this.end.node.role &&
         this.start.node.role == RoleType.INLINE_TEXT_BOX;
@@ -833,7 +833,7 @@ cursors.Range.prototype = {
    * @param {Dir} dir
    * @return {cursors.Range}
    */
-  move: function(unit, dir) {
+  move(unit, dir) {
     var newStart = this.start_;
     if (!newStart.node) {
       return this;
@@ -868,7 +868,7 @@ cursors.Range.prototype = {
   /**
    * Select the text contained within this range.
    */
-  select: function() {
+  select() {
     var start = this.start_, end = this.end_;
     if (this.start.compare(this.end) == Dir.BACKWARD) {
       start = this.end;
@@ -912,7 +912,7 @@ cursors.Range.prototype = {
    * Returns true if this range has either cursor end on web content.
    * @return {boolean}
    */
-  isWebRange: function() {
+  isWebRange() {
     return this.isValid() &&
         (this.start.node.root.role != RoleType.DESKTOP ||
          this.end.node.root.role != RoleType.DESKTOP);
@@ -922,7 +922,7 @@ cursors.Range.prototype = {
    * Returns whether this range has valid start and end cursors.
    * @return {boolean}
    */
-  isValid: function() {
+  isValid() {
     return this.start.isValid() && this.end.isValid();
   },
 
@@ -933,7 +933,7 @@ cursors.Range.prototype = {
    * document order. Dir.FORWARD if |rhs| comes after this range. Undefined
    * otherwise.
    */
-  compare: function(rhs) {
+  compare(rhs) {
     var startDir = this.start.compare(rhs.start);
     var endDir = this.end.compare(rhs.end);
     if (startDir != endDir) {
@@ -947,7 +947,7 @@ cursors.Range.prototype = {
    * Returns an undirected version of this range.
    * @return {!cursors.Range}
    */
-  normalize: function() {
+  normalize() {
     if (this.start.compare(this.end) == Dir.BACKWARD) {
       return new cursors.Range(this.end, this.start);
     }

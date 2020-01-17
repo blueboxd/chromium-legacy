@@ -19,7 +19,6 @@
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace chromeos {
 

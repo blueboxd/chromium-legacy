@@ -136,7 +136,7 @@ void PendingAppInstallTask::UninstallPlaceholderApp(
   }
 
   // Otherwise, uninstall the placeholder app.
-  install_finalizer_->UninstallExternalWebApp(
+  install_finalizer_->UninstallExternalWebAppByUrl(
       install_options_.url, install_options_.install_source,
       base::BindOnce(&PendingAppInstallTask::OnPlaceholderUninstalled,
                      weak_ptr_factory_.GetWeakPtr(), web_contents,

@@ -33,6 +33,7 @@ void WebCursor::CleanupPlatformData() {
     DestroyIcon(platform_cursor_);
     platform_cursor_ = nullptr;
   }
+  custom_cursor_.reset();
 }
 
 void WebCursor::CopyPlatformData(const WebCursor& other) {

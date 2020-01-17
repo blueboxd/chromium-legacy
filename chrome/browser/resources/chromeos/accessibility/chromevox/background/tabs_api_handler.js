@@ -59,7 +59,7 @@ TabsApiHandler.prototype = {
    * Handles chrome.tabs.onCreated.
    * @param {Object} tab
    */
-  onCreated: function(tab) {
+  onCreated(tab) {
     if (TabsApiHandler.shouldOutputSpeechAndBraille) {
       ChromeVox.tts.speak(
           this.msg_('chrome_tab_created'), QueueMode.FLUSH,
@@ -74,7 +74,7 @@ TabsApiHandler.prototype = {
    * Handles chrome.tabs.onRemoved.
    * @param {Object} tab
    */
-  onRemoved: function(tab) {
+  onRemoved(tab) {
     ChromeVox.earcons.playEarcon(Earcon.OBJECT_CLOSE);
 
     chrome.tabs.query({active: true}, function(tabs) {
@@ -89,7 +89,7 @@ TabsApiHandler.prototype = {
    * Handles chrome.tabs.onActivated.
    * @param {Object} activeInfo
    */
-  onActivated: function(activeInfo) {
+  onActivated(activeInfo) {
     this.updateLoadingSoundsWhenTabFocusChanges_(activeInfo.tabId);
     chrome.tabs.get(activeInfo.tabId, function(tab) {
       if (tab.status == 'loading') {
@@ -113,7 +113,7 @@ TabsApiHandler.prototype = {
    * @param {number} tabId the id of the tab that's now focused and active.
    * @private
    */
-  updateLoadingSoundsWhenTabFocusChanges_: function(tabId) {
+  updateLoadingSoundsWhenTabFocusChanges_(tabId) {
     chrome.tabs.get(tabId, function(tab) {
       this.lastActiveTabLoaded_ = tab.status == 'complete';
       if (tab.status == 'loading' && !this.isPlayingPageLoadingSound_()) {
@@ -131,7 +131,7 @@ TabsApiHandler.prototype = {
    * @param {number} tabId
    * @param {Object} selectInfo
    */
-  onUpdated: function(tabId, selectInfo) {
+  onUpdated(tabId, selectInfo) {
     chrome.tabs.get(tabId, function(tab) {
       if (!tab.active) {
         return;
@@ -156,7 +156,7 @@ TabsApiHandler.prototype = {
    * @param {number} tabId The id of the tab to monitor.
    * @private
    */
-  startPageLoadTimer_: function(tabId) {
+  startPageLoadTimer_(tabId) {
     if (this.pageLoadIntervalID_) {
       if (tabId == this.pageLoadTabID_) {
         return;
@@ -176,7 +176,7 @@ TabsApiHandler.prototype = {
    * Cancel the page loading timer because the active tab is loaded.
    * @private
    */
-  cancelPageLoadTimer_: function() {
+  cancelPageLoadTimer_() {
     if (this.pageLoadIntervalID_) {
       window.clearInterval(this.pageLoadIntervalID_);
       this.pageLoadIntervalID_ = null;
@@ -188,7 +188,7 @@ TabsApiHandler.prototype = {
    * @return {boolean} True if the page loading sound is playing and our
    * page loading timer is active.
    */
-  isPlayingPageLoadingSound_: function() {
+  isPlayingPageLoadingSound_() {
     return this.pageLoadIntervalID_ != null;
   }
 };

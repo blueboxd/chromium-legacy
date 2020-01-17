@@ -852,15 +852,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         // Nothing to do here yet.
     }
 
-    // TODO(crbug.com/1002519): This should be a temporary solution until the scene layer ownership
-    // is redone and the toolbar component owns its scene layer.
-    /**
-     * @return The {@link ToolbarSceneLayer}.
-     */
-    public ToolbarSceneLayer getToolbarSceneLayer() {
-        return mToolbarOverlay;
-    }
-
     /**
      * @return The {@link EdgeSwipeHandler} responsible for processing swipe events for the normal
      *         toolbar. By default this returns null.

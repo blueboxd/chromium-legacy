@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -189,6 +190,15 @@ class WebTestDelegate {
 
   // Sets the POSIX locale of the current process.
   virtual void SetLocale(const std::string& locale) = 0;
+
+  // Returns the absolute path to a directory this test can write data in. This
+  // returns the path to a fresh empty directory for each test that calls this
+  // method, but repeatedly calling this from the same test will return the same
+  // directory.
+  virtual base::FilePath GetWritableDirectory() = 0;
+
+  // Sets the path that should be returned when the test shows a file dialog.
+  virtual void SetFilePathForMockFileDialog(const base::FilePath& path) = 0;
 
   // Invoked when web test runtime flags change.
   virtual void OnWebTestRuntimeFlagsChanged(

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -39,6 +40,22 @@
 
 namespace data_reduction_proxy {
 
+namespace {
+
+base::Optional<base::Value> GetSaveDataSavingsPercentEstimateFromFieldTrial() {
+  if (!base::FeatureList::IsEnabled(features::kReportSaveDataSavings))
+    return base::nullopt;
+  const auto origin_savings_estimate_json =
+      base::GetFieldTrialParamValueByFeature(features::kReportSaveDataSavings,
+                                             "origin_savings_estimate");
+  if (origin_savings_estimate_json.empty())
+    return base::nullopt;
+
+  return base::JSONReader::Read(origin_savings_estimate_json);
+}
+
+}  // namespace
+
 DataReductionProxyService::DataReductionProxyService(
     DataReductionProxySettings* settings,
     PrefService* prefs,
@@ -62,7 +79,9 @@ DataReductionProxyService::DataReductionProxyService(
       data_use_measurement_(data_use_measurement),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       client_(client),
-      channel_(channel) {
+      channel_(channel),
+      save_data_savings_estimate_dict_(
+          GetSaveDataSavingsPercentEstimateFromFieldTrial()) {
   DCHECK(settings);
   DCHECK(network_quality_tracker_);
   DCHECK(network_connection_tracker_);
@@ -405,8 +424,6 @@ void DataReductionProxyService::MarkProxiesAsBad(
   // process (renderer).
 
   if (bypass_duration < base::TimeDelta()) {
-    LOG(ERROR) << "Received bad MarkProxiesAsBad() -- invalid bypass_duration: "
-               << bypass_duration;
     std::move(callback).Run();
     return;
   }
@@ -420,8 +437,6 @@ void DataReductionProxyService::MarkProxiesAsBad(
   // received (FindConfiguredDataReductionProxy() searches recent proxies too).
   for (const auto& proxy : bad_proxies.GetAll()) {
     if (!config_->FindConfiguredDataReductionProxy(proxy)) {
-      LOG(ERROR) << "Received bad MarkProxiesAsBad() -- not a DRP server: "
-                 << proxy.ToURI();
       std::move(callback).Run();
       return;
     }
@@ -548,6 +563,19 @@ void DataReductionProxyService::SetDependenciesForTesting(
   config_client_ = std::move(config_client);
   if (config_client_)
     config_client_->Initialize(url_loader_factory_);
+}
+
+double DataReductionProxyService::GetSaveDataSavingsPercentEstimate(
+    const std::string& origin) const {
+  if (origin.empty() || !save_data_savings_estimate_dict_ ||
+      !save_data_savings_estimate_dict_->is_dict()) {
+    return 0;
+  }
+  const auto savings_percent =
+      save_data_savings_estimate_dict_->FindDoubleKey(origin);
+  if (!savings_percent)
+    return 0;
+  return *savings_percent;
 }
 
 }  // namespace data_reduction_proxy

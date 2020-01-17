@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -144,7 +144,7 @@ bool PageCaptureSaveAsMHTMLFunction::CanCaptureCurrentPage() {
   } else {
     std::string error;
     can_capture_page = extension()->permissions_data()->CanCaptureVisiblePage(
-        url, SessionTabHelper::IdForTab(web_contents).id(), &error,
+        url, sessions::SessionTabHelper::IdForTab(web_contents).id(), &error,
         extensions::CaptureRequirement::kPageCapture);
   }
 

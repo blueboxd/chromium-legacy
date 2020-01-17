@@ -34,7 +34,7 @@ Polymer({
    * @param {*} newValue The new value of the color setting.
    * @private
    */
-  onColorSettingChange_: function(newValue) {
+  onColorSettingChange_(newValue) {
     this.selectedValue = /** @type {boolean} */ (newValue) ? 'color' : 'bw';
   },
 
@@ -44,12 +44,12 @@ Polymer({
    * @return {boolean} Whether drop-down should be disabled.
    * @private
    */
-  computeDisabled_: function(disabled, managed) {
+  computeDisabled_(disabled, managed) {
     return !!(disabled || managed);
   },
 
   /** @param {string} value The new select value. */
-  onProcessSelectChange: function(value) {
+  onProcessSelectChange(value) {
     this.setSetting('color', value === 'color');
   },
 });

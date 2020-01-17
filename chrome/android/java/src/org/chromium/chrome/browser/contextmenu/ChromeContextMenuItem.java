@@ -133,6 +133,9 @@ public class ChromeContextMenuItem implements ContextMenuItem {
 
     private final @Item int mItem;
 
+    // If set to true, adds a "New" superscript label to the menu string.
+    private boolean mShowNewLabel;
+
     public ChromeContextMenuItem(@Item int item) {
         mItem = item;
     }
@@ -141,6 +144,11 @@ public class ChromeContextMenuItem implements ContextMenuItem {
     public int getMenuId() {
         assert MENU_IDS.length == Item.NUM_ENTRIES;
         return MENU_IDS[mItem];
+    }
+
+    @Override
+    public void setShowInProductHelp() {
+        mShowNewLabel = true;
     }
 
     /**
@@ -194,10 +202,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
      */
     private CharSequence addOrRemoveNewLabel(Context context, String prefKey) {
         String menuTitle = context.getString(getStringId(mItem));
-
-        // TODO(jinsukkim): Consider removing the preference keys and hooking this up to
-        //     the feature engagement system.
-        if (SharedPreferencesManager.getInstance().readBoolean(prefKey, false)) {
+        if (!mShowNewLabel || SharedPreferencesManager.getInstance().readBoolean(prefKey, false)) {
             return SpanApplier.removeSpanText(menuTitle, new SpanInfo("<new>", "</new>"));
         }
         return SpanApplier.applySpans(menuTitle,

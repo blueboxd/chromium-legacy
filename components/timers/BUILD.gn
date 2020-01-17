@@ -8,17 +8,13 @@ static_library("timers") {
     "alarm_timer_chromeos.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "alarm_timer_unittest.cc",
-  ]
+  sources = [ "alarm_timer_unittest.cc" ]
 
   deps = [
     ":timers",

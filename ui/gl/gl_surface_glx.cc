@@ -750,10 +750,6 @@ GLSurfaceFormat NativeViewGLSurfaceGLX::GetFormat() {
   return GLSurfaceFormat();
 }
 
-unsigned long NativeViewGLSurfaceGLX::GetCompatibilityKey() {
-  return XVisualIDFromVisual(g_visual);
-}
-
 gfx::SwapResult NativeViewGLSurfaceGLX::PostSubBuffer(
     int x,
     int y,
@@ -886,10 +882,6 @@ void* UnmappedNativeViewGLSurfaceGLX::GetConfig() {
 
 GLSurfaceFormat UnmappedNativeViewGLSurfaceGLX::GetFormat() {
   return GLSurfaceFormat();
-}
-
-unsigned long UnmappedNativeViewGLSurfaceGLX::GetCompatibilityKey() {
-  return XVisualIDFromVisual(g_visual);
 }
 
 UnmappedNativeViewGLSurfaceGLX::~UnmappedNativeViewGLSurfaceGLX() {

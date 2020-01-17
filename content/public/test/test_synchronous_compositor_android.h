@@ -42,6 +42,7 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
                            const gfx::Point& anchor) override {}
   void OnComputeScroll(base::TimeTicks animate_time) override {}
   void ProgressFling(base::TimeTicks frame_time) override {}
+  void SetBeginFrameSource(viz::BeginFrameSource* source) override {}
 
   void SetHardwareFrame(uint32_t layer_tree_frame_sink_id,
                         std::unique_ptr<viz::CompositorFrame> frame);

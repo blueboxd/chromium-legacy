@@ -1875,15 +1875,6 @@ void StyleResolver::ApplyMatchedLowPriorityProperties(
     ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
         state, range, true, apply_inherited_only, needs_apply_pass);
   }
-  ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
-      state, match_result.UaRules(), true, apply_inherited_only,
-      needs_apply_pass);
-
-  if (IsForcedColorsModeEnabled() &&
-      state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone) {
-    ApplyForcedColors<kLowPropertyPriority>(
-        state, match_result, apply_inherited_only, needs_apply_pass);
-  }
 
   if (state.Style()->HasAppearance() && !apply_inherited_only) {
     // Check whether the final border and background differs from the cached UA
@@ -1893,6 +1884,16 @@ void StyleResolver::ApplyMatchedLowPriorityProperties(
     // would give the wrong answer.
     state.Style()->SetHasAuthorBackground(HasAuthorBackground(state));
     state.Style()->SetHasAuthorBorder(HasAuthorBorder(state));
+  }
+
+  ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
+      state, match_result.UaRules(), true, apply_inherited_only,
+      needs_apply_pass);
+
+  if (IsForcedColorsModeEnabled() &&
+      state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone) {
+    ApplyForcedColors<kLowPropertyPriority>(
+        state, match_result, apply_inherited_only, needs_apply_pass);
   }
 
   LoadPendingResources(state);

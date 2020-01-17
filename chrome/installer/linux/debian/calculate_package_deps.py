@@ -68,7 +68,11 @@ if exit_code != 0:
   print 'stderr was ' + stderr
   sys.exit(1)
 
-deps_str = stdout.replace('shlibs:Depends=', '').replace('\n', '')
+SHLIBS_DEPENDS_PREFIX = 'shlibs:Depends='
+deps_str = ''
+for line in stdout.split('\n'):
+  if line.startswith(SHLIBS_DEPENDS_PREFIX):
+    deps_str = line[len(SHLIBS_DEPENDS_PREFIX):]
 deps = deps_str.split(', ')
 interval_sets = []
 if deps_str != '':

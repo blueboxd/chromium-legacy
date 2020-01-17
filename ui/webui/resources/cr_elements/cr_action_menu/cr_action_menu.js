@@ -226,7 +226,7 @@ Polymer({
    * @private
    */
   onClick_(e) {
-    if (e.target == this) {
+    if (e.target === this) {
       this.close();
       e.stopPropagation();
     }
@@ -238,29 +238,29 @@ Polymer({
    */
   onKeyDown_(e) {
     e.stopPropagation();
-    if (e.key == 'Tab' || e.key == 'Escape') {
+    if (e.key === 'Tab' || e.key === 'Escape') {
       this.close();
       e.preventDefault();
       return;
     }
 
-    if (e.key != 'Enter' && e.key != 'ArrowUp' && e.key != 'ArrowDown') {
+    if (e.key !== 'Enter' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
       return;
     }
 
     const query = '.dropdown-item:not([disabled]):not([hidden])';
     const options = Array.from(this.querySelectorAll(query));
-    if (options.length == 0) {
+    if (options.length === 0) {
       return;
     }
 
     const focused = getDeepActiveElement();
     const index = options.findIndex(
-        option => cr.ui.FocusRow.getFocusableElement(option) == focused);
+        option => cr.ui.FocusRow.getFocusableElement(option) === focused);
 
-    if (e.key == 'Enter') {
+    if (e.key === 'Enter') {
       // If a menu item has focus, don't change focus or close menu on 'Enter'.
-      if (index != -1) {
+      if (index !== -1) {
         return;
       }
 
@@ -272,7 +272,7 @@ Polymer({
     }
 
     e.preventDefault();
-    this.updateFocus_(options, index, e.key != 'ArrowUp');
+    this.updateFocus_(options, index, e.key !== 'ArrowUp');
 
     if (!this.hasMousemoveListener_) {
       this.hasMousemoveListener_ = true;
@@ -303,7 +303,7 @@ Polymer({
     const numOptions = options.length;
     assert(numOptions > 0);
     let index;
-    if (focusedIndex == -1) {
+    if (focusedIndex === -1) {
       index = next ? 0 : numOptions - 1;
     } else {
       const delta = next ? 1 : -1;
@@ -341,7 +341,7 @@ Polymer({
 
     let height = rect.height;
     if (opt_config &&
-        opt_config.anchorAlignmentY == AnchorAlignment.AFTER_END) {
+        opt_config.anchorAlignmentY === AnchorAlignment.AFTER_END) {
       // When an action menu is positioned after the end of an element, the
       // action menu can appear too far away from the anchor element, typically
       // because anchors tend to have padding. So we offset the height a bit
@@ -443,7 +443,7 @@ Polymer({
     const right = left + c.width;
 
     // Flip the X anchor in RTL.
-    const rtl = getComputedStyle(this).direction == 'rtl';
+    const rtl = getComputedStyle(this).direction === 'rtl';
     if (rtl) {
       c.anchorAlignmentX *= -1;
     }

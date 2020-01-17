@@ -99,6 +99,19 @@ std::unique_ptr<ChromeMetricsHelper> CreateBadClockMetricsHelper(
   return metrics_helper;
 }
 
+std::unique_ptr<ChromeMetricsHelper> CreateMitmSoftwareMetricsHelper(
+    content::WebContents* web_contents,
+    const GURL& request_url) {
+  // Set up the metrics helper for the MITMSoftwareUI.
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix = "mitm_software";
+  std::unique_ptr<ChromeMetricsHelper> metrics_helper =
+      std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
+                                            reporting_info);
+  metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
+  return metrics_helper;
+}
+
 }  // namespace
 
 // static
@@ -203,6 +216,27 @@ ChromeSecurityBlockingPageFactory::CreateBadClockBlockingPage(
           CreateBadClockMetricsHelper(web_contents, request_url)));
 
   ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(page.get());
+  return page.release();
+}
+
+// static
+MITMSoftwareBlockingPage*
+ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
+    content::WebContents* web_contents,
+    int cert_error,
+    const GURL& request_url,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    const net::SSLInfo& ssl_info,
+    const std::string& mitm_software_name,
+    bool is_enterprise_managed) {
+  auto page = std::make_unique<MITMSoftwareBlockingPage>(
+      web_contents, cert_error, request_url, std::move(ssl_cert_reporter),
+      ssl_info, mitm_software_name, is_enterprise_managed,
+      std::make_unique<SSLErrorControllerClient>(
+          web_contents, ssl_info, cert_error, request_url,
+          CreateMitmSoftwareMetricsHelper(web_contents, request_url)));
+
+  DoChromeSpecificSetup(page.get());
   return page.release();
 }
 

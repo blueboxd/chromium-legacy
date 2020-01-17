@@ -64,7 +64,7 @@ suite('OSSettingsMenu', function() {
 suite('OSSettingsMenuReset', function() {
   setup(function() {
     PolymerTest.clearBody();
-    settings.navigateTo(settings.routes.RESET, '');
+    settings.Router.getInstance().navigateTo(settings.routes.RESET, '');
     settingsMenu = document.createElement('os-settings-menu');
     document.body.appendChild(settingsMenu);
   });
@@ -84,7 +84,7 @@ suite('OSSettingsMenuReset', function() {
     let path = new window.URL(selector.selected).pathname;
     assertEquals('/reset', path);
 
-    settings.navigateTo(settings.routes.BLUETOOTH, '');
+    settings.Router.getInstance().navigateTo(settings.routes.BLUETOOTH, '');
     Polymer.dom.flush();
 
     path = new window.URL(selector.selected).pathname;
@@ -96,7 +96,7 @@ suite('OSSettingsMenuReset', function() {
     const path = new window.URL(selector.selected).pathname;
     assertEquals('/reset', path);
 
-    settings.navigateTo(settings.routes.BASIC, '');
+    settings.Router.getInstance().navigateTo(settings.routes.BASIC, '');
     Polymer.dom.flush();
 
     // BASIC has no sub page selected.

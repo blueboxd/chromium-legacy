@@ -10,13 +10,9 @@ import("//ppapi/buildflags/buildflags.gni")
 # See //content/BUILD.gn for how this works.
 group("renderer") {
   if (is_component_build) {
-    public_deps = [
-      "//content",
-    ]
+    public_deps = [ "//content" ]
   } else {
-    public_deps = [
-      ":renderer_sources",
-    ]
+    public_deps = [ ":renderer_sources" ]
   }
 }
 
@@ -74,9 +70,7 @@ target(link_target_type, "renderer_sources") {
 
   configs += [ "//content:content_implementation" ]
 
-  public_deps = [
-    "//media",
-  ]
+  public_deps = [ "//media" ]
 
   deps = [
     "//content/public/child:child_sources",

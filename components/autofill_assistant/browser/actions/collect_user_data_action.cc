@@ -666,6 +666,11 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
                   "'start', 'end', 'min', 'max', 'start_label', end_label'.";
       return false;
     }
+    if (collect_user_data.date_time_range().invalid_error_message().empty()) {
+      DVLOG(1) << "Invalid action: date_time_range.invalid_error_message "
+                  "must not be empty.";
+      return false;
+    }
     collect_user_data_options_->request_date_time_range = true;
     collect_user_data_options_->date_time_range =
         collect_user_data.date_time_range();

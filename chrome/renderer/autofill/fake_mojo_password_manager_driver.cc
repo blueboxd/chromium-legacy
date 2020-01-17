@@ -24,31 +24,28 @@ void FakeMojoPasswordManagerDriver::Flush() {
 
 // mojom::PasswordManagerDriver:
 void FakeMojoPasswordManagerDriver::PasswordFormsParsed(
-    const std::vector<autofill::PasswordForm>& forms) {
+    const std::vector<autofill::FormData>& forms_data) {
   called_password_forms_parsed_ = true;
-  password_forms_parsed_ = forms;
+  form_data_parsed_ = forms_data;
 }
 
 void FakeMojoPasswordManagerDriver::PasswordFormsRendered(
-    const std::vector<autofill::PasswordForm>& visible_forms,
+    const std::vector<autofill::FormData>& visible_forms_data,
     bool did_stop_loading) {
   called_password_forms_rendered_ = true;
-  password_forms_rendered_ = visible_forms;
+  form_data_rendered_ = visible_forms_data;
 }
 
 void FakeMojoPasswordManagerDriver::PasswordFormSubmitted(
-    const autofill::PasswordForm& password_form) {
+    const autofill::FormData& form_data) {
   called_password_form_submitted_ = true;
-  password_form_submitted_ = password_form;
+  form_data_submitted_ = form_data;
 }
 
 void FakeMojoPasswordManagerDriver::SameDocumentNavigation(
     autofill::mojom::SubmissionIndicatorEvent submission_indication_event) {
   called_same_document_navigation_ = true;
-  password_form_maybe_submitted_->form_data.submission_event =
-      submission_indication_event;
-  password_form_maybe_submitted_->submission_event =
-      submission_indication_event;
+  form_data_maybe_submitted_->submission_event = submission_indication_event;
 }
 
 void FakeMojoPasswordManagerDriver::RecordSavePasswordProgress(
@@ -71,9 +68,9 @@ void FakeMojoPasswordManagerDriver::CheckSafeBrowsingReputation(
 }
 
 void FakeMojoPasswordManagerDriver::ShowManualFallbackForSaving(
-    const autofill::PasswordForm& password_form) {
+    const autofill::FormData& form_data) {
   called_show_manual_fallback_for_saving_count_++;
-  password_form_maybe_submitted_ = password_form;
+  form_data_maybe_submitted_ = form_data;
 }
 
 void FakeMojoPasswordManagerDriver::HideManualFallbackForSaving() {

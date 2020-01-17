@@ -186,9 +186,12 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
     return;
   }
 
+  CRAS_STREAM_TYPE type = CRAS_STREAM_TYPE_DEFAULT;
   uint32_t flags = 0;
-  if (params_.effects() & AudioParameters::PlatformEffectsMask::HOTWORD)
+  if (params_.effects() & AudioParameters::PlatformEffectsMask::HOTWORD) {
     flags = HOTWORD_STREAM;
+    type = CRAS_STREAM_TYPE_SPEECH_RECOGNITION;
+  }
 
   unsigned int frames_per_packet = params_.frames_per_buffer();
   cras_stream_params* stream_params = cras_client_stream_params_create(
@@ -196,12 +199,8 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
       frames_per_packet,  // Total latency.
       frames_per_packet,  // Call back when this many ready.
       frames_per_packet,  // Minimum Callback level ignored for capture streams.
-      CRAS_STREAM_TYPE_DEFAULT,
-      flags,
-      this,
-      CrasInputStream::SamplesReady,
-      CrasInputStream::StreamError,
-      audio_format);
+      type, flags, this, CrasInputStream::SamplesReady,
+      CrasInputStream::StreamError, audio_format);
   if (!stream_params) {
     DLOG(WARNING) << "Error setting up stream parameters.";
     callback_->OnError();

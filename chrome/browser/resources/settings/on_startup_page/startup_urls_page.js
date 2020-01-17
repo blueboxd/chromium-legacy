@@ -44,7 +44,7 @@ Polymer({
   startupUrlDialogAnchor_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.browserProxy_ = settings.StartupUrlsPageBrowserProxyImpl.getInstance();
     this.addWebUIListener('update-startup-pages', startupPages => {
       // If an "edit" URL dialog was open, close it, because the underlying page
@@ -69,7 +69,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onAddPageTap_: function(e) {
+  onAddPageTap_(e) {
     e.preventDefault();
     this.showStartupUrlDialog_ = true;
     this.startupUrlDialogAnchor_ =
@@ -77,7 +77,7 @@ Polymer({
   },
 
   /** @private */
-  destroyUrlDialog_: function() {
+  destroyUrlDialog_() {
     this.showStartupUrlDialog_ = false;
     this.startupUrlDialogModel_ = null;
     if (this.startupUrlDialogAnchor_) {
@@ -87,7 +87,7 @@ Polymer({
   },
 
   /** @private */
-  onUseCurrentPagesTap_: function() {
+  onUseCurrentPagesTap_() {
     this.browserProxy_.useCurrentPages();
   },
 
@@ -96,7 +96,7 @@ Polymer({
    *     allowed.
    * @private
    */
-  shouldAllowUrlsEdit_: function() {
+  shouldAllowUrlsEdit_() {
     return this.get('prefs.session.startup_urls.enforcement') !=
         chrome.settingsPrivate.Enforcement.ENFORCED;
   },

@@ -11,9 +11,7 @@ assert(enable_vulkan)
 
 group("demo") {
   if (use_x11) {
-    deps = [
-      ":vulkan_demo",
-    ]
+    deps = [ ":vulkan_demo" ]
   }
 }
 

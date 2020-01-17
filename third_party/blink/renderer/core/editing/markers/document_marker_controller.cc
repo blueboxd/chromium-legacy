@@ -191,26 +191,34 @@ void DocumentMarkerController::AddCompositionMarker(
     const EphemeralRange& range,
     Color underline_color,
     ui::mojom::ImeTextSpanThickness thickness,
+    ui::mojom::ImeTextSpanUnderlineStyle underline_style,
+    Color text_color,
     Color background_color) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
-  AddMarkerInternal(range, [underline_color, thickness, background_color](
-                               int start_offset, int end_offset) {
-    return MakeGarbageCollected<CompositionMarker>(
-        start_offset, end_offset, underline_color, thickness, background_color);
-  });
+  AddMarkerInternal(range,
+                    [underline_color, thickness, underline_style, text_color,
+                     background_color](int start_offset, int end_offset) {
+                      return MakeGarbageCollected<CompositionMarker>(
+                          start_offset, end_offset, underline_color, thickness,
+                          underline_style, text_color, background_color);
+                    });
 }
 
 void DocumentMarkerController::AddActiveSuggestionMarker(
     const EphemeralRange& range,
     Color underline_color,
     ui::mojom::ImeTextSpanThickness thickness,
+    ui::mojom::ImeTextSpanUnderlineStyle underline_style,
+    Color text_color,
     Color background_color) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
-  AddMarkerInternal(range, [underline_color, thickness, background_color](
-                               int start_offset, int end_offset) {
-    return MakeGarbageCollected<ActiveSuggestionMarker>(
-        start_offset, end_offset, underline_color, thickness, background_color);
-  });
+  AddMarkerInternal(range,
+                    [underline_color, thickness, underline_style, text_color,
+                     background_color](int start_offset, int end_offset) {
+                      return MakeGarbageCollected<ActiveSuggestionMarker>(
+                          start_offset, end_offset, underline_color, thickness,
+                          underline_style, text_color, background_color);
+                    });
 }
 
 void DocumentMarkerController::AddSuggestionMarker(

@@ -11,7 +11,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/features.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -120,8 +119,7 @@ void HistoryUiFaviconRequestHandlerImpl::GetRawFaviconForPageURL(
     favicon_base::FaviconRawBitmapCallback callback,
     FaviconRequestPlatform request_platform,
     HistoryUiFaviconRequestOrigin request_origin_for_uma,
-    const GURL& icon_url_for_uma,
-    base::CancelableTaskTracker* tracker) {
+    const GURL& icon_url_for_uma) {
   // First attempt to find the icon locally.
   favicon_service_->GetRawFaviconForPageURL(
       page_url, GetIconTypesForLocalQuery(), desired_size_in_pixel,
@@ -131,16 +129,15 @@ void HistoryUiFaviconRequestHandlerImpl::GetRawFaviconForPageURL(
           weak_ptr_factory_.GetWeakPtr(), CanQueryGoogleServer(), page_url,
           desired_size_in_pixel,
           /*response_callback=*/std::move(callback), request_platform,
-          request_origin_for_uma, icon_url_for_uma, base::Time::Now(), tracker),
-      tracker);
+          request_origin_for_uma, icon_url_for_uma, base::Time::Now()),
+      &cancelable_task_tracker_);
 }
 
 void HistoryUiFaviconRequestHandlerImpl::GetFaviconImageForPageURL(
     const GURL& page_url,
     favicon_base::FaviconImageCallback callback,
     HistoryUiFaviconRequestOrigin request_origin_for_uma,
-    const GURL& icon_url_for_uma,
-    base::CancelableTaskTracker* tracker) {
+    const GURL& icon_url_for_uma) {
   // First attempt to find the icon locally.
   favicon_service_->GetFaviconImageForPageURL(
       page_url,
@@ -148,8 +145,8 @@ void HistoryUiFaviconRequestHandlerImpl::GetFaviconImageForPageURL(
           &HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable,
           weak_ptr_factory_.GetWeakPtr(), CanQueryGoogleServer(), page_url,
           /*response_callback=*/std::move(callback), request_origin_for_uma,
-          icon_url_for_uma, base::Time::Now(), tracker),
-      tracker);
+          icon_url_for_uma, base::Time::Now()),
+      &cancelable_task_tracker_);
 }
 
 void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
@@ -161,7 +158,6 @@ void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
     HistoryUiFaviconRequestOrigin origin_for_uma,
     const GURL& icon_url_for_uma,
     base::Time request_start_time_for_uma,
-    base::CancelableTaskTracker* tracker,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   if (bitmap_result.is_valid()) {
     // The icon comes from local storage now even though it may have been
@@ -187,9 +183,11 @@ void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
         /*local_lookup_callback=*/
         base::BindOnce(
             base::IgnoreResult(&FaviconService::GetRawFaviconForPageURL),
+            // base::Unretained() is safe here as RequestFromGoogleServer()
+            // doesn't execute the callback if |this| is deleted.
             base::Unretained(favicon_service_), page_url,
             GetIconTypesForLocalQuery(), desired_size_in_pixel, kFallbackToHost,
-            repeating_response_callback, tracker),
+            repeating_response_callback, &cancelable_task_tracker_),
         origin_for_uma, icon_url_for_uma, request_start_time_for_uma);
     return;
   }
@@ -220,7 +218,6 @@ void HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable(
     HistoryUiFaviconRequestOrigin origin_for_uma,
     const GURL& icon_url_for_uma,
     base::Time request_start_time_for_uma,
-    base::CancelableTaskTracker* tracker,
     const favicon_base::FaviconImageResult& image_result) {
   if (!image_result.image.IsEmpty()) {
     // The icon comes from local storage now even though it may have been
@@ -248,8 +245,10 @@ void HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable(
         /*local_lookup_callback=*/
         base::BindOnce(
             base::IgnoreResult(&FaviconService::GetFaviconImageForPageURL),
+            // base::Unretained() is safe here as RequestFromGoogleServer()
+            // doesn't execture the callback if |this| is deleted.
             base::Unretained(favicon_service_), page_url,
-            repeating_response_callback, tracker),
+            repeating_response_callback, &cancelable_task_tracker_),
         origin_for_uma, icon_url_for_uma, request_start_time_for_uma);
     return;
   }

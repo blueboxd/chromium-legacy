@@ -83,8 +83,6 @@ jumbo_source_set("utility") {
 group("for_content_tests") {
   visibility = [ "//content/test/*" ]
   if (!is_component_build) {
-    public_deps = [
-      ":utility",
-    ]
+    public_deps = [ ":utility" ]
   }
 }

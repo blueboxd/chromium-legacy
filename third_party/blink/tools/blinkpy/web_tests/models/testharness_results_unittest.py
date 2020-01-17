@@ -150,37 +150,49 @@ class TestHarnessResultCheckerTest(unittest.TestCase):
             ' NOTRUN: bah \n'
             ' Harness: the test ran to completion.'))
 
-    def test_has_console_errors_or_warnings_positive_cases(self):
-        self.assertTrue(testharness_results.has_console_errors_or_warnings(
+    def test_has_other_useful_output_positive_cases(self):
+        self.assertTrue(testharness_results.has_other_useful_output(
             'This is a testharness.js-based test.\n'
             'CONSOLE ERROR: This is an error.\n'
             'Test ran to completion.'))
-        self.assertTrue(testharness_results.has_console_errors_or_warnings(
+        self.assertTrue(testharness_results.has_other_useful_output(
             'This is a testharness.js-based test.\n'
             'CONSOLE WARNING: This is a warning.\n'
             'Test ran to completion.'))
-        self.assertTrue(testharness_results.has_console_errors_or_warnings(
+        self.assertTrue(testharness_results.has_other_useful_output(
             'CONSOLE ERROR: This is an error.\n'
             'Test ran to completion.'))
-        self.assertTrue(testharness_results.has_console_errors_or_warnings(
+        self.assertTrue(testharness_results.has_other_useful_output(
             'CONSOLE WARNING: This is a warning.\n'
             'Test ran to completion.'))
-        self.assertTrue(testharness_results.has_console_errors_or_warnings(
+        self.assertTrue(testharness_results.has_other_useful_output(
             'This is a testharness.js-based test.\n'
             'CONSOLE ERROR: This is an error.'))
-        self.assertTrue(testharness_results.has_console_errors_or_warnings(
+        self.assertTrue(testharness_results.has_other_useful_output(
             'CONSOLE ERROR: This is an error.'))
-        self.assertTrue(testharness_results.has_console_errors_or_warnings(
+        self.assertTrue(testharness_results.has_other_useful_output(
             'CONSOLE WARNING: This is a warning.'))
+        self.assertTrue(testharness_results.has_other_useful_output(
+            'ALERT: alert!'))
+        self.assertTrue(testharness_results.has_other_useful_output(
+            'CONFIRM: confirm?'))
+        self.assertTrue(testharness_results.has_other_useful_output(
+            'PROMPT: prompt.'))
 
-    def test_has_console_errors_or_warnings_negative_cases(self):
-        self.assertFalse(testharness_results.has_console_errors_or_warnings(
+    def test_has_other_useful_output_negative_cases(self):
+        self.assertFalse(testharness_results.has_other_useful_output(
             'This is a testharness.js-based test.\n'
             'CONSOLE MESSAGE: This is not error.'))
-        self.assertFalse(testharness_results.has_console_errors_or_warnings(
+        self.assertFalse(testharness_results.has_other_useful_output(
             'This is a testharness.js-based test.\n'
             'No errors here.'))
-        self.assertFalse(testharness_results.has_console_errors_or_warnings(
+        self.assertFalse(testharness_results.has_other_useful_output(
             'This is not a CONSOLE ERROR, sorry.'))
-        self.assertFalse(testharness_results.has_console_errors_or_warnings(
+        self.assertFalse(testharness_results.has_other_useful_output(
             'This is not a CONSOLE WARNING, sorry.'))
+        self.assertFalse(testharness_results.has_other_useful_output(
+            'Not an ALERT'))
+        self.assertFalse(testharness_results.has_other_useful_output(
+            'Not a CONFRIM'))
+        self.assertFalse(testharness_results.has_other_useful_output(
+            'Not a PROMPT'))

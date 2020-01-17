@@ -725,6 +725,14 @@ TEST_P(PasswordFormManagerTest, CreatePendingCredentialsEmptyStore) {
   EXPECT_GE(pending_credentials.date_last_used, kNow);
 }
 
+// Tests creating pending credentials when fetch completed
+TEST_P(PasswordFormManagerTest, CreatePendingCredentialsWhenFetchCompleted) {
+  form_manager_->set_wait_for_server_predictions_for_filling(false);
+  form_manager_->ProvisionallySave(submitted_form_, &driver_, nullptr);
+  SetNonFederatedAndNotifyFetchCompleted({&parsed_submitted_form_});
+  EXPECT_FALSE(form_manager_->IsNewLogin());
+}
+
 // Tests creating pending credentials when new credentials are submitted and the
 // store has another credentials saved.
 TEST_P(PasswordFormManagerTest, CreatePendingCredentialsNewCredentials) {

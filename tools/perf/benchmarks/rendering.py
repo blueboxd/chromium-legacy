@@ -13,6 +13,7 @@ from telemetry.web_perf import timeline_based_measurement
 
 
 RENDERING_BENCHMARK_UMA = [
+    'Compositing.Display.DrawToSwapUs',
     'Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4',
     'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4',
     'Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4',

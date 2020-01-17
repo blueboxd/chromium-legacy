@@ -123,7 +123,7 @@ unpacker.app = {
    * @param {!unpacker.request.Operation} operation
    * @private
    */
-  handlePackMessage_: function(message, operation) {
+  handlePackMessage_(message, operation) {
     var compressorId = message.data[unpacker.request.Key.COMPRESSOR_ID];
     console.assert(compressorId, 'No NaCl compressor id.');
 
@@ -141,7 +141,7 @@ unpacker.app = {
    * @param {!unpacker.request.Operation} operation
    * @private
    */
-  handleUnpackMessage_: function(message, operation) {
+  handleUnpackMessage_(message, operation) {
     var fileSystemId = message.data[unpacker.request.Key.FILE_SYSTEM_ID];
     console.assert(fileSystemId, 'No NaCl file system id.');
 
@@ -165,7 +165,7 @@ unpacker.app = {
    * @param {!Object} message The message received from NaCl module.
    * @private
    */
-  handleMessage_: function(message) {
+  handleMessage_(message) {
     // Get mandatory fields in a message.
     var operation = message.data[unpacker.request.Key.OPERATION];
     console.assert(
@@ -184,7 +184,7 @@ unpacker.app = {
    * older versions of the extension. This method does nothing when context is
    * in incognito mode.
    */
-  cleanupOldStorageInfo: function() {
+  cleanupOldStorageInfo() {
     if (chrome.extension.inIncognitoContext)
       return;
 
@@ -209,7 +209,7 @@ unpacker.app = {
    * @return {!Promise} Promise fulfilled on success and rejected on failure.
    * @private
    */
-  loadVolume_: function(fileSystemId, entry, openedFiles) {
+  loadVolume_(fileSystemId, entry, openedFiles) {
     return new Promise(function(fulfill, reject) {
       entry.file(
           function(file) {
@@ -265,7 +265,7 @@ unpacker.app = {
    * @return {!Promise} The loading volume promise.
    * @private
    */
-  ensureVolumeLoaded_: function(fileSystemId) {
+  ensureVolumeLoaded_(fileSystemId) {
     // Increment the counter so that the NaCl module won't be unloaded until
     // the mounting process ends.
     unpacker.app.mountProcessCounter++;
@@ -304,14 +304,14 @@ unpacker.app = {
   /**
    * @return {boolean} True if NaCl module is loaded.
    */
-  naclModuleIsLoaded: function() {
+  naclModuleIsLoaded() {
     return !!unpacker.app.naclModule;
   },
 
   /**
    * Loads string assets.
    */
-  loadStringData: function() {
+  loadStringData() {
     unpacker.app.stringDataLoadedPromise = new Promise(function(fulfill) {
       chrome.fileManagerPrivate.getStrings(function(strings) {
         fulfill(strings);
@@ -327,7 +327,7 @@ unpacker.app = {
    * @param {string=} opt_moduleId The NaCl module id. Necessary for testing
    *     purposes.
    */
-  loadNaclModule: function(pathToConfigureFile, mimeType, opt_moduleId) {
+  loadNaclModule(pathToConfigureFile, mimeType, opt_moduleId) {
     unpacker.app.moduleLoadedPromise = new Promise(function(fulfill) {
       var moduleId =
           opt_moduleId ? opt_moduleId : unpacker.app.DEFAULT_MODULE_ID;
@@ -417,7 +417,7 @@ unpacker.app = {
   /**
    * Unloads the NaCl module.
    */
-  unloadNaclModule: function() {
+  unloadNaclModule() {
     if (unpacker.app.naclModule) {
       var naclModuleParentNode = unpacker.app.naclModule.parentNode;
       naclModuleParentNode.parentNode.removeChild(naclModuleParentNode);
@@ -430,7 +430,7 @@ unpacker.app = {
    * Cleans up the resources for a volume.
    * @param {!unpacker.types.FileSystemId} fileSystemId
    */
-  cleanupVolume: function(fileSystemId) {
+  cleanupVolume(fileSystemId) {
     delete unpacker.app.volumes[fileSystemId];
     // Allow mount after clean.
     delete unpacker.app.volumeLoadedPromises[fileSystemId];
@@ -451,7 +451,7 @@ unpacker.app = {
    * @param {boolean} hasError
    * @param {boolean} canceled
    */
-  cleanupCompressor: function(compressorId, hasError, canceled) {
+  cleanupCompressor(compressorId, hasError, canceled) {
     var compressor = unpacker.app.compressors[compressorId];
     if (!compressor) {
       console.error('No compressor for: compressor id: ' + compressorId + '.');
@@ -485,7 +485,7 @@ unpacker.app = {
    * @return {!Promise} A promise that fulfills if volume is unmounted or
    *     rejects with ProviderError in case of any errors.
    */
-  unmountVolume: function(fileSystemId, opt_forceUnmount) {
+  unmountVolume(fileSystemId, opt_forceUnmount) {
     return new Promise(function(fulfill, reject) {
       var volume = unpacker.app.volumes[fileSystemId];
       console.assert(
@@ -528,7 +528,7 @@ unpacker.app = {
    * @param {function()} onSuccess Callback to execute on success.
    * @param {function(!ProviderError)} onError Callback to execute on error.
    */
-  onUnmountRequested: function(options, onSuccess, onError) {
+  onUnmountRequested(options, onSuccess, onError) {
     unpacker.app.ensureVolumeLoaded_(options.fileSystemId)
         .then(function() {
           return unpacker.app.unmountVolume(options.fileSystemId);
@@ -544,7 +544,7 @@ unpacker.app = {
    *     The parameter is the EntryMetadata obtained by this function.
    * @param {function(!ProviderError)} onError Callback to execute on error.
    */
-  onGetMetadataRequested: function(options, onSuccess, onError) {
+  onGetMetadataRequested(options, onSuccess, onError) {
     unpacker.app.ensureVolumeLoaded_(options.fileSystemId)
         .then(function() {
           unpacker.app.volumes[options.fileSystemId].onGetMetadataRequested(
@@ -562,7 +562,7 @@ unpacker.app = {
    *     then onSuccess must be called again with the next directory entries.
    * @param {function(!ProviderError)} onError Callback to execute on error.
    */
-  onReadDirectoryRequested: function(options, onSuccess, onError) {
+  onReadDirectoryRequested(options, onSuccess, onError) {
     unpacker.app.ensureVolumeLoaded_(options.fileSystemId)
         .then(function() {
           unpacker.app.volumes[options.fileSystemId].onReadDirectoryRequested(
@@ -577,7 +577,7 @@ unpacker.app = {
    * @param {function()} onSuccess Callback to execute on success.
    * @param {function(!ProviderError)} onError Callback to execute on error.
    */
-  onOpenFileRequested: function(options, onSuccess, onError) {
+  onOpenFileRequested(options, onSuccess, onError) {
     unpacker.app.ensureVolumeLoaded_(options.fileSystemId)
         .then(function() {
           unpacker.app.volumes[options.fileSystemId].onOpenFileRequested(
@@ -592,7 +592,7 @@ unpacker.app = {
    * @param {function()} onSuccess Callback to execute on success.
    * @param {function(!ProviderError)} onError Callback to execute on error.
    */
-  onCloseFileRequested: function(options, onSuccess, onError) {
+  onCloseFileRequested(options, onSuccess, onError) {
     unpacker.app.ensureVolumeLoaded_(options.fileSystemId)
         .then(function() {
           unpacker.app.volumes[options.fileSystemId].onCloseFileRequested(
@@ -610,7 +610,7 @@ unpacker.app = {
    *     with the next data to read.
    * @param {function(!ProviderError)} onError Callback to execute on error.
    */
-  onReadFileRequested: function(options, onSuccess, onError) {
+  onReadFileRequested(options, onSuccess, onError) {
     unpacker.app.ensureVolumeLoaded_(options.fileSystemId)
         .then(function() {
           unpacker.app.volumes[options.fileSystemId].onReadFileRequested(
@@ -624,7 +624,7 @@ unpacker.app = {
    * @param {!Object} launchData
    * @param {boolean} useTemporaryDirectory
    */
-  onLaunchedWithPack: function(launchData, useTemporaryDirectory) {
+  onLaunchedWithPack(launchData, useTemporaryDirectory) {
     unpacker.app.mountProcessCounter++;
 
     // Create a promise to load the NaCL module.
@@ -773,7 +773,7 @@ unpacker.app = {
    *     system id of the volume that failed to load. Can be called multiple
    *     times, depending on how many volumes must be loaded.
    */
-  onLaunchedWithUnpack: function(launchData, opt_onSuccess, opt_onError) {
+  onLaunchedWithUnpack(launchData, opt_onSuccess, opt_onError) {
     // Increment the counter that indicates the number of ongoing mouot process.
     unpacker.app.mountProcessCounter++;
 
@@ -909,7 +909,7 @@ unpacker.app = {
    * @param {function(string)=} opt_onSuccess
    * @param {function(string)=} opt_onError
    */
-  onLaunched: function(launchData, opt_onSuccess, opt_onError) {
+  onLaunched(launchData, opt_onSuccess, opt_onError) {
     if (launchData.items == null) {
       if (launchData.id === 'pack' || launchData.id === 'pack_using_tmp') {
         unpacker.app.stringDataLoadedPromise.then((stringData) => {
@@ -944,7 +944,7 @@ unpacker.app = {
    * or removed when any error happened, but might be left there when the
    * extension was aborted by runtime errors or system shutdown.
    */
-  cleanWorkDirectory: function() {
+  cleanWorkDirectory() {
     return new Promise(
                webkitRequestFileSystem.bind(null, TEMPORARY, 0 /* size */))
         .then((fs) => new Promise(function(resolve, reject) {

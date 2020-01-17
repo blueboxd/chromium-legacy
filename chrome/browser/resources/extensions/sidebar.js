@@ -25,7 +25,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.sectionMenu.select(
         navigation.getCurrentPage().page === Page.SHORTCUTS ? 1 : 0);
   },
@@ -34,14 +34,14 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onLinkTap_: function(e) {
+  onLinkTap_(e) {
     e.preventDefault();
     navigation.navigateTo({page: e.target.dataset.path});
     this.fire('close-drawer');
   },
 
   /** @private */
-  onMoreExtensionsTap_: function() {
+  onMoreExtensionsTap_() {
     assert(!this.isSupervised);
     chrome.metricsPrivate.recordUserAction('Options_GetMoreExtensions');
   },

@@ -52,6 +52,7 @@ class WaylandConnection : public PlatformEventSource,
 
   wl_display* display() const { return display_.get(); }
   wl_compositor* compositor() const { return compositor_.get(); }
+  uint32_t compositor_version() const { return compositor_version_; }
   wl_subcompositor* subcompositor() const { return subcompositor_.get(); }
   xdg_wm_base* shell() const { return shell_.get(); }
   zxdg_shell_v6* shell_v6() const { return shell_v6_.get(); }
@@ -177,6 +178,7 @@ class WaylandConnection : public PlatformEventSource,
   wl::Object<wl_display> display_;
   wl::Object<wl_registry> registry_;
   wl::Object<wl_compositor> compositor_;
+  uint32_t compositor_version_ = 0;
   wl::Object<wl_subcompositor> subcompositor_;
   wl::Object<wl_seat> seat_;
   wl::Object<xdg_wm_base> shell_;

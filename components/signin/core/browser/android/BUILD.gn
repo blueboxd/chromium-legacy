@@ -80,9 +80,7 @@ android_library("signin_javatests") {
     "//third_party/junit",
   ]
 
-  sources = [
-    "javatests/src/org/chromium/components/signin/test/AccountManagerFacadeTest.java",
-  ]
+  sources = [ "javatests/src/org/chromium/components/signin/test/AccountManagerFacadeTest.java" ]
 }
 
 android_library("signin_java_test_support") {

@@ -871,6 +871,13 @@ TEST_F(AXPositionTest, IsIgnored) {
       new_tree->data().tree_id, root_data.id, 2 /* child_index */);
   ASSERT_TRUE(tree_position_5->IsTreePosition());
   EXPECT_FALSE(tree_position_5->IsIgnored());
+
+  // A "before text" position on an unignored node should not be ignored.
+  TestPositionType tree_position_6 = AXNodePosition::CreateTreePosition(
+      new_tree->data().tree_id, static_text_data_1.id,
+      AXNodePosition::BEFORE_TEXT);
+  ASSERT_TRUE(tree_position_6->IsTreePosition());
+  EXPECT_FALSE(tree_position_6->IsIgnored());
 }
 
 TEST_F(AXPositionTest, GetTextFromNullPosition) {
@@ -5606,6 +5613,40 @@ TEST_F(AXPositionTest, OperatorEquals) {
   ASSERT_NE(nullptr, text_position2);
   ASSERT_TRUE(text_position2->IsTextPosition());
   EXPECT_EQ(*text_position1, *text_position2);
+
+  // Two "after text" positions on a parent and child should be equivalent, in
+  // the middle of the document...
+  text_position1 = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, static_text1_.id, 6 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position1);
+  ASSERT_TRUE(text_position1->IsTextPosition());
+  text_position2 = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box1_.id, 6 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position2);
+  ASSERT_TRUE(text_position2->IsTextPosition());
+  EXPECT_EQ(*text_position1, *text_position2);
+
+  // ...and at the end of the document.
+  text_position1 = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, static_text2_.id, 6 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position1);
+  ASSERT_TRUE(text_position1->IsTextPosition());
+  text_position2 = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box2_.id, 6 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position2);
+  ASSERT_TRUE(text_position2->IsTextPosition());
+  // Validate that we're actually at the end of the document by normalizing to
+  // the equivalent "before character" position.
+  EXPECT_TRUE(
+      text_position1->AsLeafTextPositionBeforeCharacter()->IsNullPosition());
+  EXPECT_TRUE(
+      text_position2->AsLeafTextPositionBeforeCharacter()->IsNullPosition());
+  // Now compare the positions.
+  EXPECT_EQ(*text_position1, *text_position2);
 }
 
 TEST_F(AXPositionTest, OperatorEqualsSameTextOffsetSameAnchorId) {
@@ -5770,6 +5811,25 @@ TEST_F(AXPositionTest, OperatorsLessThanAndGreaterThan) {
   ASSERT_NE(nullptr, text_position2);
   ASSERT_TRUE(text_position2->IsTextPosition());
   EXPECT_EQ(*text_position1, *text_position2);
+
+  // A text position at the end of the document versus one that isn't.
+  text_position1 = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, inline_box2_.id, 6 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position1);
+  ASSERT_TRUE(text_position1->IsTextPosition());
+  // Validate that we're actually at the end of the document by normalizing to
+  // the equivalent "before character" position.
+  EXPECT_TRUE(
+      text_position1->AsLeafTextPositionBeforeCharacter()->IsNullPosition());
+  // Now create the not-at-end-of-document position and compare.
+  text_position2 = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, static_text2_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position2);
+  ASSERT_TRUE(text_position2->IsTextPosition());
+  EXPECT_GT(*text_position1, *text_position2);
+  EXPECT_LT(*text_position2, *text_position1);
 }
 
 TEST_F(AXPositionTest, Swap) {

@@ -7,6 +7,7 @@
 #include <cert.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -18,9 +19,26 @@
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/x509_certificate_model_nss.h"
+#include "crypto/rsa_private_key.h"
 #include "net/cert/x509_util_nss.h"
 
 namespace arc {
+
+namespace {
+
+// Exports subject public key info and encodes it in base64.
+std::string exportSpki(crypto::RSAPrivateKey* rsa) {
+  std::vector<uint8_t> spki;
+  if (!rsa->ExportPublicKey(&spki)) {
+    LOG(ERROR) << "Key export has failed.";
+    return "";
+  }
+  std::string encoded_spki;
+  base::Base64Encode(std::string(spki.begin(), spki.end()), &encoded_spki);
+  return encoded_spki;
+}
+
+}  // namespace
 
 ArcCertInstaller::ArcCertInstaller(content::BrowserContext* context)
     : ArcCertInstaller(Profile::FromBrowserContext(context),
@@ -41,7 +59,7 @@ ArcCertInstaller::~ArcCertInstaller() {
   queue_->RemoveObserver(this);
 }
 
-std::set<std::string> ArcCertInstaller::InstallArcCerts(
+std::map<std::string, std::string> ArcCertInstaller::InstallArcCerts(
     const std::vector<net::ScopedCERTCertificate>& certificates,
     InstallArcCertsCallback callback) {
   VLOG(1) << "ArcCertInstaller::InstallArcCerts";
@@ -53,7 +71,8 @@ std::set<std::string> ArcCertInstaller::InstallArcCerts(
     pending_status_ = true;
   }
 
-  std::set<std::string> required_cert_names;
+  // Map the certificate name to the dummy RSA SPKI.
+  std::map<std::string, std::string> required_cert_names;
   callback_ = std::move(callback);
 
   for (const auto& nss_cert : certificates) {
@@ -65,9 +84,7 @@ std::set<std::string> ArcCertInstaller::InstallArcCerts(
 
     std::string cert_name =
         x509_certificate_model::GetCertNameOrNickname(nss_cert.get());
-    required_cert_names.insert(cert_name);
-
-    InstallArcCert(cert_name, nss_cert);
+    required_cert_names[cert_name] = InstallArcCert(cert_name, nss_cert);
   }
 
   // Cleanup |known_cert_names_| according to |required_cert_names|.
@@ -81,23 +98,24 @@ std::set<std::string> ArcCertInstaller::InstallArcCerts(
     std::move(callback_).Run(pending_status_);
     pending_status_ = true;
   }
-
   return required_cert_names;
 }
 
-void ArcCertInstaller::InstallArcCert(
+std::string ArcCertInstaller::InstallArcCert(
     const std::string& name,
     const net::ScopedCERTCertificate& nss_cert) {
   VLOG(1) << "ArcCertInstaller::InstallArcCert " << name;
 
-  // Do not install certificate if already exists.
-  if (known_cert_names_.count(name))
-    return;
+  // Do not install certificate if it is already installed or pending.
+  if (known_cert_names_.count(name)) {
+    VLOG(1) << "Certificate " << name << " is already installed or pending";
+    return "";
+  }
 
   std::string der_cert;
   if (!net::x509_util::GetDEREncoded(nss_cert.get(), &der_cert)) {
     LOG(ERROR) << "Certificate encoding error: " << name;
-    return;
+    return "";
   }
   known_cert_names_.insert(name);
 
@@ -113,23 +131,31 @@ void ArcCertInstaller::InstallArcCert(
 
   std::string der_cert64;
   base::Base64Encode(der_cert, &der_cert64);
-  command_proto.set_payload(base::StringPrintf(
-      "{\"type\":\"INSTALL_KEY_PAIR\","
-      "\"payload\":\"{"
-      "\\\"key\\\"=\\\"%s\\\","
-      "\\\"alias\\\":\\\"%s\\\","
-      "\\\"certs\\\":[\\\"%s\\\"]}\"}",
-      CreatePkcs12FromBlob(name).c_str(), name.c_str(), der_cert64.c_str()));
+
+  std::unique_ptr<crypto::RSAPrivateKey> rsa =
+      crypto::RSAPrivateKey::Create(2048);
+  std::string pkcs12 = CreatePkcs12ForKey(name, rsa->key());
+  command_proto.set_payload(
+      base::StringPrintf("{\"type\":\"INSTALL_KEY_PAIR\","
+                         "\"payload\":\"{"
+                         "\\\"key\\\"=\\\"%s\\\","
+                         "\\\"alias\\\":\\\"%s\\\","
+                         "\\\"certs\\\":[\\\"%s\\\"]}\"}",
+                         pkcs12.c_str(), name.c_str(), der_cert64.c_str()));
   if (!job || !job->Init(queue_->GetNowTicks(), command_proto, nullptr /* signed_command */)) {
     LOG(ERROR) << "Initialization of remote command failed";
     known_cert_names_.erase(name);
+    return "";
   } else {
     pending_commands_[next_id_++] = name;
     queue_->AddJob(std::move(job));
+
+    return exportSpki(rsa.get());
   }
 }
 
 void ArcCertInstaller::OnJobFinished(policy::RemoteCommandJob* command) {
+  VLOG(1) << "ArcCertInstaller::OnJobFinished";
   if (!pending_commands_.count(command->unique_id())) {
     LOG(ERROR) << "Received invalid ARC remote command with unrecognized "
                << "unique_id = " << command->unique_id();

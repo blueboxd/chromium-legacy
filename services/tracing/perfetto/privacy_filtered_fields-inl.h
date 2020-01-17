@@ -290,10 +290,21 @@ constexpr MessageInfo const* kTracePacketDefaultsComplexMessages[] = {
 constexpr MessageInfo kTracePacketDefaults = {
     kTracePacketDefaultsIndices, kTracePacketDefaultsComplexMessages};
 
+// Proto Message: ChromeProcessDescriptor
+constexpr int kChromeProcessDescriptorIndices[] = {1, 2, 3, -1};
+constexpr MessageInfo kChromeProcessDescriptor = {
+    kChromeProcessDescriptorIndices, nullptr};
+
+// Proto Message: ChromeThreadDescriptor
+constexpr int kChromeThreadDescriptorIndices[] = {1, 2, -1};
+constexpr MessageInfo kChromeThreadDescriptor = {kChromeThreadDescriptorIndices,
+                                                 nullptr};
+
 // Proto Message: TrackDescriptor
-constexpr int kTrackDescriptorIndices[] = {1, 3, 4, -1};
+constexpr int kTrackDescriptorIndices[] = {1, 3, 4, 5, 6, 7, -1};
 constexpr MessageInfo const* kTrackDescriptorComplexMessages[] = {
-    nullptr, &kProcessDescriptor, &kThreadDescriptor};
+    nullptr, &kProcessDescriptor,       &kThreadDescriptor,
+    nullptr, &kChromeProcessDescriptor, &kChromeThreadDescriptor};
 constexpr MessageInfo kTrackDescriptor = {kTrackDescriptorIndices,
                                           kTrackDescriptorComplexMessages};
 

@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_consumer.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_overlay_mediator+consumer_support.h"
+#import "ios/chrome/browser/ui/overlays/overlay_request_mediator+subclassing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -44,42 +45,33 @@
 - (void)bannerInfobarButtonWasPressed:(UIButton*)sender {
   // Notify the model layer to perform the infobar's main action before
   // dismissing the banner.
-  [self dispatchResponseAndStopOverlay:OverlayResponse::CreateWithInfo<
-                                           InfobarBannerMainActionResponse>()];
+  [self dispatchResponse:OverlayResponse::CreateWithInfo<
+                             InfobarBannerMainActionResponse>()];
+  [self dismissOverlay];
 }
 
 - (void)dismissInfobarBannerForUserInteraction:(BOOL)userInitiated {
   if (userInitiated) {
     // Notify the model layer of user-initiated banner dismissal before
     // dismissing the banner.
-    [self dispatchResponseAndStopOverlay:
-              OverlayResponse::CreateWithInfo<
-                  InfobarBannerUserInitiatedDismissalResponse>()];
-  } else {
-    [self.delegate stopOverlayForMediator:self];
+    [self dispatchResponse:OverlayResponse::CreateWithInfo<
+                               InfobarBannerUserInitiatedDismissalResponse>()];
   }
+  [self dismissOverlay];
 }
 
 - (void)presentInfobarModalFromBanner {
   // Notify the model layer to show the infobar modal before dismissing the
   // banner.
-  [self dispatchResponseAndStopOverlay:OverlayResponse::CreateWithInfo<
-                                           InfobarBannerShowModalResponse>()];
+  [self dispatchResponse:OverlayResponse::CreateWithInfo<
+                             InfobarBannerShowModalResponse>()];
+  [self dismissOverlay];
 }
 
 - (void)infobarBannerWasDismissed {
   // Only needed in legacy implementation.  Dismissal completion cleanup occurs
   // in InfobarBannerOverlayCoordinator.
-}
-
-#pragma mark - Private
-
-// Dispatches |response| through the OverlayRequest, then stops the overlay UI.
-- (void)dispatchResponseAndStopOverlay:
-    (std::unique_ptr<OverlayResponse>)response {
-  if (self.request)
-    self.request->GetCallbackManager()->DispatchResponse(std::move(response));
-  [self.delegate stopOverlayForMediator:self];
+  // TODO(crbug.com/1041917): Remove once non-overlay implementation is deleted.
 }
 
 @end

@@ -151,18 +151,22 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
       }
       return;
 
-    case gfx::BufferFormat::RGBA_1010102:
+    case gfx::BufferFormat::RGBA_1010102: {
       DCHECK_EQ(0, plane);
+      DCHECK_EQ(63, color[3] % 64) << "Alpha channel doesn't have enough "
+                                      "precision for the supplied value";
+      const uint8_t scaled_alpha = color[3] >> 6;
       for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
           *reinterpret_cast<uint32_t*>(&data[y * stride + x * 4]) =
-              0x3 << 30 |  // Alpha channel is unused
+              (scaled_alpha << 30) |                       // A
               ((color[2] << 2) | (color[2] >> 6)) << 20 |  // B
               ((color[1] << 2) | (color[1] >> 6)) << 10 |  // G
               ((color[0] << 2) | (color[0] >> 6));         // R
         }
       }
       return;
+    }
 
     case gfx::BufferFormat::BGRA_8888:
       DCHECK_EQ(0, plane);

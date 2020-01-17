@@ -14,7 +14,6 @@ class GURL;
 namespace ios {
 class ChromeBrowserState;
 }
-@protocol SessionWindowRestoring;
 namespace web {
 class WebState;
 }

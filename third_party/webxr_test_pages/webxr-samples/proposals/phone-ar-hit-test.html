@@ -51,7 +51,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           <br/>
           <hr/>
           <input id="useReticle" type="checkbox" checked>
-          <label for="useReticle">Use reticle for placement</label>
+          <label for="useReticle">Use reticle for placement</label><br/>
+
+          <input id="useDomOverlay" type="checkbox" checked>
+          <label for="useDomOverlay">Enable DOM Overlay</label><br/>
         </p>
       </details>
     </header>
@@ -65,18 +68,40 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       import {RayNode} from '../js/cottontail/src/nodes/ray-node.js';
       import {DropShadowNode} from '../js/cottontail/src/nodes/drop-shadow.js';
       import {vec3} from '../js/cottontail/src/math/gl-matrix.js';
+      import {DebugSources} from '../js/debug-sources.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
         var polyfill = new WebXRPolyfill();
       }
 
+      let debugSources;
+      if (QueryArgs.getBool('debugSources', false)) {
+        debugSources = new DebugSources();
+      }
+
+      // If requested, add a cross-origin iframe element via SVG
+      if (QueryArgs.getBool('iframe', false)) {
+        let iframe = document.createElement('iframe');
+        iframe.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect height="150" width="150" fill="red" fill-opacity="0.3"/></svg>';
+        iframe.style = 'position: absolute; right: 0; bottom: 0; width: 150px; height: 150px;';
+        document.body.insertBefore(iframe, document.body.firstChild);
+      }
+
       let useReticle = document.getElementById('useReticle');
+      const useDomOverlay = document.getElementById('useDomOverlay');
 
       // Debugging constants.
       const unsubscribeAfterTouch = false; // unsubscribe from hit test after first touch if in reticle mode?
 
+      // Suppress XR events for interactions with the DOM overlay
+      document.querySelector('header').addEventListener('beforexrselect', (ev) => {
+        console.log(ev.type);
+        ev.preventDefault();
+      });
+
       // XR globals.
+      let xrSession = null;
       let xrButton = null;
       let xrRefSpace = null;
       let xrLocalFloor = null;
@@ -90,6 +115,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let renderer = null;
       let scene = new Scene();
       scene.enableStats(false);
+
+      useReticle.addEventListener('change', (ev) => {
+        if (!xrSession) return;
+        if (useReticle.checked) {
+          requestViewerSpaceHitTestSource();
+        } else {
+          xrViewerSpaceHitTestSource = null;
+          arObject.visible = false;
+        }
+      });
 
       // Visualise the origin.
       {
@@ -155,6 +190,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         let options = {
           requiredFeatures: ['local-floor'],
         };
+        if (useDomOverlay.checked) {
+          options.optionalFeatures = ['dom-overlay'];
+          options.domOverlay = {root: document.body};
+        }
         navigator.xr.requestSession('immersive-ar', options).then((session) => {
               session.mode = 'immersive-ar';
               xrButton.setSession(session);
@@ -162,7 +201,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         });
       }
 
+      function requestViewerSpaceHitTestSource() {
+        console.debug("Requesting hit test source.");
+        xrSession.requestHitTestSource({
+          space : xrViewerSpace,
+          //space : xrLocalFloor, // WIP: change back to viewer
+          //space : xrOffsetSpace, // WIP: change back to viewer
+          offsetRay : new XRRay()
+          //offsetRay : new XRRay(new DOMPointReadOnly(0,.5,-.5), new DOMPointReadOnly(0, -0.5, -1)) // WIP: change back to default
+        }).then((hitTestSource) => {
+          console.debug("Hit test source created.");
+          xrViewerSpaceHitTestSource = hitTestSource;
+        }).catch(error => {
+          console.error("Error when requesting hit test source", error);
+        });
+      }
+
       function onSessionStarted(session) {
+        useDomOverlay.disabled = true;
+        xrSession = session;
         session.addEventListener('end', onSessionEnded);
         session.addEventListener('select', onSelect);
         session.addEventListener('inputsourceschange', onInputSourcesChange);
@@ -173,6 +230,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           console.debug("Hit test source for generic touchscreen created!");
           xrTransientInputHitTestSource = transient_input_hit_test_source;
         });
+
+        if (debugSources) debugSources.startSession(session);
 
         if (!gl) {
           gl = createWebGLContext({
@@ -200,19 +259,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               );
 
               if (useReticle.checked) {
-                console.debug("Requesting hit test source.");
-                session.requestHitTestSource({
-                    space : xrViewerSpace,
-                    //space : xrLocalFloor, // WIP: change back to viewer
-                    //space : xrOffsetSpace, // WIP: change back to viewer
-                    offsetRay : new XRRay()
-                    //offsetRay : new XRRay(new DOMPointReadOnly(0,.5,-.5), new DOMPointReadOnly(0, -0.5, -1)) // WIP: change back to default
-                  }).then((hitTestSource) => {
-                  console.debug("Hit test source created.");
-                  xrViewerSpaceHitTestSource = hitTestSource;
-                }).catch(error => {
-                  console.error("Error when requesting hit test source", error);
-                });
+                requestViewerSpaceHitTestSource();
               }
 
               session.requestAnimationFrame(onXRFrame);
@@ -226,7 +273,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onSessionEnded(event) {
+        useDomOverlay.disabled = false;
         xrButton.setSession(null);
+        xrSession = null;
       }
 
       // Adds a new object to the scene at the
@@ -285,9 +334,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // Called every time a XRSession requests that a new frame be drawn.
       function onXRFrame(t, frame) {
         let session = frame.session;
+        session.requestAnimationFrame(onXRFrame);
+
         let pose = frame.getViewerPose(xrRefSpace);
         let viewerSpacePose = frame.getPose(xrViewerSpace, xrRefSpace);
         let offsetSpacePose = frame.getPose(xrOffsetSpace, xrRefSpace);
+
+        if (debugSources) debugSources.update(frame, xrViewerSpace);
 
         if(offsetSpacePose) {
           offsetSpaceNode.matrix = offsetSpacePose.transform.matrix;
@@ -323,8 +376,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
 
         scene.startFrame();
-
-        session.requestAnimationFrame(onXRFrame);
 
         scene.drawXRFrame(frame, pose);
 

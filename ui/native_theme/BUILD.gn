@@ -60,9 +60,7 @@ jumbo_component("native_theme") {
 
   defines = [ "NATIVE_THEME_IMPLEMENTATION" ]
 
-  public_deps = [
-    "//skia",
-  ]
+  public_deps = [ "//skia" ]
 
   deps = [
     "//base",

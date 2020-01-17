@@ -17,9 +17,7 @@ js_library("chrome_file_manager_private_test_impl") {
 }
 
 js_library("strings") {
-  deps = [
-    "//ui/webui/resources/js:load_time_data",
-  ]
+  deps = [ "//ui/webui/resources/js:load_time_data" ]
 }
 
 js_library("test_util") {

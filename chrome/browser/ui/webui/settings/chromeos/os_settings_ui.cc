@@ -58,6 +58,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
@@ -73,6 +74,7 @@
 #include "chrome/browser/ui/webui/settings/settings_cookies_view_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/settings_media_devices_selection_handler.h"
+#include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/tts_handler.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -204,8 +206,15 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("app-management/image_info.mojom-lite.js",
                                IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
 
-  ::settings::AddLocalizedStrings(html_source, profile,
-                                  web_ui->GetWebContents());
+  ::chromeos::settings::AddOsLocalizedStrings(html_source, profile,
+                                              web_ui->GetWebContents());
+  ::settings::AddSharedLocalizedStrings(html_source, profile,
+                                        web_ui->GetWebContents());
+
+  // TODO(crbug/967888): Remove when all the needed keys have been added
+  // to os_localized_string_provider.
+  ::settings::AddBrowserLocalizedStrings(html_source, profile,
+                                         web_ui->GetWebContents());
 
   auto plural_string_handler = std::make_unique<PluralStringHandler>();
   plural_string_handler->AddLocalizedString("profileLabel",

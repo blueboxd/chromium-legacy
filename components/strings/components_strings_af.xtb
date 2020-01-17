@@ -89,6 +89,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Inskrywingdomein:</translation>
 <translation id="1340482604681802745">Oplaai-adres</translation>
+<translation id="1346748346194534595">Regs</translation>
 <translation id="1348198688976932919">Die werf voor bevat gevaarlike programme</translation>
 <translation id="1348779747280417563">Bevestig naam</translation>
 <translation id="1357195169723583938">Wie het die toestel onlangs gebruik en wanneer</translation>
@@ -113,6 +114,7 @@
 <translation id="1455413310270022028">Uitveër</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1467432559032391204">Links</translation>
 <translation id="1472675084647422956">Wys meer</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
@@ -258,6 +260,7 @@
 <translation id="2148613324460538318">Voeg kaart by</translation>
 <translation id="2154054054215849342">Sinkronisering is nie vir jou domein beskikbaar nie</translation>
 <translation id="2154484045852737596">Wysig kaart</translation>
+<translation id="2161656808144014275">Teks</translation>
 <translation id="2166049586286450108">Volle administrateurtoegang</translation>
 <translation id="2166378884831602661">Hierdie werf kan nie 'n veilige verbinding bied nie</translation>
 <translation id="2169984857010174799">Kaku2 (Envelope)</translation>
@@ -346,6 +349,7 @@
 <translation id="254947805923345898">Beleidwaarde is nie geldig nie.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> het 'n ongeldige antwoord gestuur.</translation>
 <translation id="2556876185419854533">Ontdoen wysiging</translation>
+<translation id="257674075312929031">Groep</translation>
 <translation id="2586657967955657006">Knipbord</translation>
 <translation id="2587730715158995865">Deur <ph name="ARTICLE_PUBLISHER" />. Lees dit en <ph name="OTHER_ARTICLE_COUNT" /> ander stories.</translation>
 <translation id="2587841377698384444">Gids-API-ID:</translation>
@@ -370,6 +374,7 @@
     vir <ph name="SITE" /> uit te voer. Werfoperateurs kan oorsprongbeleide gebruik om
     sekuriteit- en ander eienskappe vir 'n werf op te stel.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Geen}=1{1 wagwoord (vir <ph name="DOMAIN_LIST" />)}=2{2 wagwoorde (vir <ph name="DOMAIN_LIST" />)}other{# wagwoorde (vir <ph name="DOMAIN_LIST" />)}}</translation>
+<translation id="2666092431469916601">Top</translation>
 <translation id="2666117266261740852">Maak ander oortjies of programme toe</translation>
 <translation id="2674170444375937751">Is jy seker jy wil hierdie bladsye uit jou geskiedenis uitvee?</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
@@ -453,6 +458,7 @@
 <translation id="3061707000357573562">Regstellingdiens</translation>
 <translation id="3064966200440839136">Verlaat incognito-modus om via 'n eksterne program te betaal. Gaan voort?</translation>
 <translation id="3086579638707268289">Jou aktiwiteit op die web word gemonitor</translation>
+<translation id="3087734570205094154">Onderkant</translation>
 <translation id="3095940652251934233">Verklaring</translation>
 <translation id="3096100844101284527">Voeg oplaaiadres by</translation>
 <translation id="3105172416063519923">Bate-ID:</translation>
@@ -497,6 +503,7 @@
 <translation id="3303855915957856445">Geen soekresultate gevind nie</translation>
 <translation id="3320021301628644560">Voeg faktureringadres by</translation>
 <translation id="3324983252691184275">Karmosyn</translation>
+<translation id="3329013043687509092">Versadiging</translation>
 <translation id="3338095232262050444">Veilig</translation>
 <translation id="3355823806454867987">Verander instaanbedienerinstellings …</translation>
 <translation id="3360103848165129075">Betalinghanteerdersigblad</translation>
@@ -533,6 +540,7 @@
 <translation id="3495081129428749620">Vind in bladsy
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Hierdie beleid word geïgnoreer omdat 'n ander beleid van dieselfde beleidsgroep 'n hoër prioriteit het.</translation>
+<translation id="3513704683820682405">Aangevulde realiteit</translation>
 <translation id="3528171143076753409">Bediener se sertifikaat word nie vertrou nie.</translation>
 <translation id="3528485271872257980">Donkerbruin</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Minstens 1 item op gesinkroniseerde toestelle}=1{1 item (en meer op gesinkroniseerde toestelle)}other{# items (en meer op gesinkroniseerde toestelle)}}</translation>
@@ -579,6 +587,7 @@
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Laai tans …</translation>
 <translation id="3709599264800900598">Teks wat jy gekopieer het</translation>
+<translation id="3711895659073496551">Skort op</translation>
 <translation id="3712624925041724820">Lisensies is op</translation>
 <translation id="3714780639079136834">Mobiele data of Wi-Fi aanskakel</translation>
 <translation id="3715597595485130451">Koppel aan Wi-Fi</translation>
@@ -772,6 +781,7 @@
 <translation id="4594403342090139922">Ontdoen uitvee</translation>
 <translation id="4597348597567598915">Grootte 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="4628948037717959914">Foto</translation>
 <translation id="4635654612248442824">Die werf <ph name="ORIGIN" /> het versoek dat 'n oorsprongbeleid
     op al sy versoeke toegepas sal word, maar hierdie beleid kan nie op die oomblik toegepas word nie.</translation>
 <translation id="464342062220857295">Soekkenmerke</translation>
@@ -828,6 +838,7 @@
 <translation id="4926049483395192435">Moet gespesifiseer word.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> sê</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943703118917034429">Virtuele realiteit</translation>
 <translation id="4943872375798546930">Geen resultate nie</translation>
 <translation id="4950898438188848926">Oortjiewisselingknoppie, druk Enter om na die oop oortjie toe oor te skakel, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Handelinge</translation>
@@ -995,6 +1006,7 @@
 <translation id="5689199277474810259">Voer uit na JSON</translation>
 <translation id="5689516760719285838">Ligging</translation>
 <translation id="569000877158168851">Die DnsOverHttpsTemplates-waarde is nie relevant nie en sal nie gebruik word nie, tensy die DnsOverHttpsMode-beleid gestel word na <ph name="SECURE_DNS_MODE_AUTOMATIC" /> óf na <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
+<translation id="5701381305118179107">Sentreer</translation>
 <translation id="570530837424789914">Bestuur …</translation>
 <translation id="57094364128775171">Stel sterk wagwoord voor …</translation>
 <translation id="5710435578057952990">Die identiteit van hierdie webwerf is nie geverifieer nie.</translation>
@@ -1027,7 +1039,6 @@
 <translation id="5855253129151731373">Hierdie werf se gasheernaam lyk soortgelyk aan <ph name="LOOKALIKE_DOMAIN" />. Aanvallers boots soms werwe na deur klein veranderinge aan die domeinnaam te maak wat moeilik is om te sien.
 
     Besoek https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals as jy meen dat dit verkeerdelik gewys word.</translation>
-<translation id="5860033963881614850">Af</translation>
 <translation id="5863847714970149516">Die bladsy wat volg kan dalk geld van jou hef</translation>
 <translation id="5866257070973731571">Voeg foonnommer by</translation>
 <translation id="5866898949289125849">Jy bekyk tans 'n ontwikkelaarnutsgoedbladsy</translation>
@@ -1039,13 +1050,11 @@
 <translation id="5901630391730855834">Geel</translation>
 <translation id="5905445707201418379">Geblokkeer ingevolge <ph name="ORIGIN" /> se oorsprongbeleid.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (gesinkroniseer)</translation>
-<translation id="5916664084637901428">Aan</translation>
 <translation id="59174027418879706">Geaktiveer</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Stoor kaart in Google-rekening?</translation>
 <translation id="5922853866070715753">Amper klaar</translation>
 <translation id="5932224571077948991">Werf wys indringerige of misleidende advertensies</translation>
-<translation id="5939847200023027600">PDF-samestellerdiens</translation>
 <translation id="5946937721014915347">Maak tans <ph name="SITE_NAME" /> oop …</translation>
 <translation id="5951495562196540101">Kan nie met 'n verbruikerrekening inskryf nie (verpakte lisensie beskikbaar).</translation>
 <translation id="5967592137238574583">Wysig kontakinligting</translation>
@@ -1085,6 +1094,7 @@
 <translation id="6080696365213338172">Jy het met behulp van 'n sertifikaat wat deur 'n administrateur voorsien is, by inhoud ingegaan. Data wat jy aan <ph name="DOMAIN" /> voorsien, kan deur die administrateur onderskep word.</translation>
 <translation id="6094273045989040137">Maak aantekeninge</translation>
 <translation id="6104072995492677441">JIS B6</translation>
+<translation id="6106989379647458772">Die webbladsy by <ph name="PAGE" /> is dalk tydelik af, of dit het dalk permanent na 'n nuwe webadres geskuif.</translation>
 <translation id="610911394827799129">Jou Google-rekening kan dalk ander vorme van blaaigeskiedenis hê by <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6120179357481664955">Onthou jy jou UPI-ID?</translation>
 <translation id="6132597952260690497">Inligting oor geïnstalleerde uitbreidings en inproppe</translation>
@@ -1124,6 +1134,7 @@
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">Google Assistent in Chrome stop tans</translation>
 <translation id="6305205051461490394"><ph name="URL" /> is onbereikbaar.</translation>
+<translation id="6312113039770857350">Webbladsy is nie beskikbaar nie</translation>
 <translation id="6321917430147971392">Gaan jou DNS-instellings na</translation>
 <translation id="6322182122604171028">Kon nie Windows Hello gebruik nie</translation>
 <translation id="6328639280570009161">Probeer om netwerkvoorspelling te deaktiveer</translation>
@@ -1150,6 +1161,7 @@
 <translation id="6410264514553301377">Voer die vervaldatum en CVC vir <ph name="CREDIT_CARD" /> in</translation>
 <translation id="6415778972515849510">Chromium kan jou help om jou Google-rekening te beskerm en jou wagwoord te verander.</translation>
 <translation id="6423385022588644828">Gebruik van nou af Touch ID om jou kaarte vinniger te bevestig</translation>
+<translation id="6425092077175753609">Materiaal</translation>
 <translation id="6427730057873428458">Uitvoublad</translation>
 <translation id="6433490469411711332">Wysig kontakinligting</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> het geweier om te koppel.</translation>
@@ -1417,6 +1429,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7716147886133743102">Geblokkeer deur jou administrateur</translation>
 <translation id="7716424297397655342">Hierdie werf kan nie uit die kas gelaai word nie</translation>
 <translation id="7723047071702270851">Wysig kaart</translation>
+<translation id="7740996059027112821">Standaard</translation>
 <translation id="774634243536837715">Gevaarlike inhoud is geblokkeer.</translation>
 <translation id="7752995774971033316">Onbestuurd</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
@@ -1522,6 +1535,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="8241707690549784388">Die bladsy wat jy soek, het inligting gebruik wat jy ingevoer het. As jy na daardie bladsy terugkeer, kan van die handelinge wat jy uitgevoer het, herhaal word. Wil jy voortgaan?</translation>
 <translation id="8241712895048303527">Blokkeer op hierdie werf</translation>
 <translation id="8242426110754782860">Gaan voort</translation>
+<translation id="8249296373107784235">Staak</translation>
 <translation id="8249320324621329438">Laas gehaal:</translation>
 <translation id="8253091569723639551">Faktureringadres word vereis</translation>
 <translation id="825929999321470778">Wys alle gestoorde wagwoorde</translation>
@@ -1591,6 +1605,7 @@ Bykomende besonderhede:
 <translation id="8647750283161643317">Stel alles terug na verstek</translation>
 <translation id="8663226718884576429">Bestellingopsomming, <ph name="TOTAL_LABEL" />, meer besonderhede</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, antwoord, <ph name="ANSWER" /></translation>
+<translation id="8681531050781943054">Die webbladsy by <ph name="PAGE" /> kon nie gelaai word nie, want:</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Beskikbaar</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
@@ -1641,6 +1656,7 @@ Bykomende besonderhede:
 <translation id="8943282376843390568">Lemmetjiegroen</translation>
 <translation id="8957210676456822347">Gevangeportaal-magtiging</translation>
 <translation id="8962950042226115166">Verdagte werf</translation>
+<translation id="8963213021028234748"><ph name="MARKUP_1" />Voorstelle:<ph name="MARKUP_2" />Maak seker dat jy 'n dataverbinding het<ph name="MARKUP_3" />Herlaai hierdie webbladsy later<ph name="MARKUP_4" />Gaan die adres na wat jy ingevoer het<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Stoor kaart</translation>
 <translation id="8971063699422889582">Bediener se sertifikaat het verstryk.</translation>
 <translation id="8975012916872825179">Sluit inligting soos foonnommers, e-posadresse en versendingadresse in</translation>
@@ -1717,6 +1733,7 @@ Bykomende besonderhede:
 <translation id="985199708454569384">&lt;p&gt;Jy sal hierdie fout sien as jou rekenaar of mobiele toestel se datum en tyd nie korrek is nie.&lt;/p&gt;
     &lt;p&gt;Om die probleem reg te stel, maak jou toestel se horlosie oop. Maak seker die tyd en datum is korrek.&lt;/p&gt;</translation>
 <translation id="985956168329721395">Prc-32K</translation>
+<translation id="987264212798334818">Algemeen</translation>
 <translation id="988159990683914416">Ontwikkelaarbou</translation>
 <translation id="989988560359834682">Wysig adres</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

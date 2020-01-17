@@ -41,7 +41,7 @@
                use_base_dir="false" type ="BINDATA" />
       <include name="IDR_EXTENSIONS_ERROR_PAGE_JS"
                file="${root_gen_dir}/chrome/browser/resources/extensions/error_page.js"
-               use_base_dir="false" type ="BINDATA" flattenhtml="true" />
+               use_base_dir="false" type ="BINDATA" />
       <include name="IDR_EXTENSIONS_KEYBOARD_SHORTCUTS_JS"
                file="${root_gen_dir}/chrome/browser/resources/extensions/keyboard_shortcuts.js"
                use_base_dir="false" type ="BINDATA" />
@@ -52,7 +52,7 @@
     </if>
       <include name="IDR_EXTENSIONS_MANAGER_JS"
                file="${root_gen_dir}/chrome/browser/resources/extensions/manager.js"
-               use_base_dir="false" type ="BINDATA" flattenhtml="true" />
+               preprocess="true" use_base_dir="false" type ="BINDATA" />
       <include name="IDR_EXTENSIONS_ICONS_JS"
                file="${root_gen_dir}/chrome/browser/resources/extensions/icons.js"
                use_base_dir="false" type ="BINDATA" />
@@ -103,12 +103,11 @@
                use_base_dir="false" type ="BINDATA" />
       <include name="IDR_EXTENSIONS_TOOLBAR_JS"
                file="${root_gen_dir}/chrome/browser/resources/extensions/toolbar.js"
-               use_base_dir="false" type ="BINDATA" flattenhtml="true" />
-      <include name="IDR_WEBUI_IMAGES_CHECKUP_IMAGE"
-               file="checkup_image.svg" type="BINDATA" compress="gzip" />
-      <include name="IDR_WEBUI_IMAGES_CHECKUP_IMAGE_DARKMODE"
-               file="checkup_image_dark.svg" type="BINDATA"
-               compress="gzip" />
+               preprocess="true" use_base_dir="false" type ="BINDATA" />
+      <include name="IDR_EXTENSIONS_CHECKUP_IMAGE"
+               file="checkup_image.svg" type="BINDATA" />
+      <include name="IDR_EXTENSIONS_CHECKUP_IMAGE_DARK"
+               file="checkup_image_dark.svg" type="BINDATA" />
     </includes>
     <structures>
       <structure name="IDR_EXTENSIONS_ITEM_BEHAVIOR_JS"

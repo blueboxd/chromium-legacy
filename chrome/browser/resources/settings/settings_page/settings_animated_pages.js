@@ -46,7 +46,7 @@ Polymer({
   previousRoute_: null,
 
   /** @override */
-  created: function() {
+  created() {
     // Observe the light DOM so we know when it's ready.
     this.lightDomObserver_ =
         Polymer.dom(this).observeNodes(this.lightDomChanged_.bind(this));
@@ -56,12 +56,13 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onIronSelect_: function(e) {
+  onIronSelect_(e) {
     // Call initialFocus() on the selected subpage, only if:
     //  1) Not a direct navigation (such that the search box stays focused), and
     //  2) Not a "back" navigation, in which case the anchor element should be
     //     focused (further below in this function).
-    if (this.previousRoute_ && !settings.lastRouteChangeWasPopstate()) {
+    if (this.previousRoute_ &&
+        !settings.Router.getInstance().lastRouteChangeWasPopstate()) {
       const subpage = this.querySelector('settings-subpage.iron-selected');
       if (subpage) {
         subpage.initialFocus();
@@ -71,7 +72,7 @@ Polymer({
 
     // Don't attempt to focus any anchor element, unless last navigation was a
     // 'pop' (backwards) navigation.
-    if (!settings.lastRouteChangeWasPopstate()) {
+    if (!settings.Router.getInstance().lastRouteChangeWasPopstate()) {
       return;
     }
 
@@ -103,7 +104,7 @@ Polymer({
    * Called initially once the effective children are ready.
    * @private
    */
-  lightDomChanged_: function() {
+  lightDomChanged_() {
     if (this.lightDomReady_) {
       return;
     }
@@ -117,7 +118,7 @@ Polymer({
    * Calls currentRouteChanged with the deferred route change info.
    * @private
    */
-  runQueuedRouteChange_: function() {
+  runQueuedRouteChange_() {
     if (!this.queuedRouteChange_) {
       return;
     }
@@ -127,7 +128,7 @@ Polymer({
   },
 
   /** @protected */
-  currentRouteChanged: function(newRoute, oldRoute) {
+  currentRouteChanged(newRoute, oldRoute) {
     this.previousRoute_ = oldRoute;
 
     if (newRoute.section == this.section && newRoute.isSubpage()) {
@@ -143,7 +144,7 @@ Polymer({
    * @param {!settings.Route} oldRoute
    * @private
    */
-  switchToSubpage_: function(newRoute, oldRoute) {
+  switchToSubpage_(newRoute, oldRoute) {
     // Don't manipulate the light DOM until it's ready.
     if (!this.lightDomReady_) {
       this.queuedRouteChange_ = this.queuedRouteChange_ || {oldRoute: oldRoute};
@@ -159,8 +160,8 @@ Polymer({
    * Ensures that the template enclosing the subpage is stamped.
    * @private
    */
-  ensureSubpageInstance_: function() {
-    const routePath = settings.getCurrentRoute().path;
+  ensureSubpageInstance_() {
+    const routePath = settings.Router.getInstance().getCurrentRoute().path;
     const domIf = this.querySelector(`dom-if[route-path='${routePath}']`);
 
     // Nothing to do if the subpage isn't wrapped in a <dom-if> or the template

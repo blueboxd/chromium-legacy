@@ -23,7 +23,7 @@ function ChromeVoxAutomationTreeWalkerTest() {
 ChromeVoxAutomationTreeWalkerTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
   /** @override */
-  testGenCppIncludes: function() {
+  testGenCppIncludes() {
     ChromeVoxE2ETest.prototype.testGenCppIncludes.call(this);
 
     // See https://crbug.com/981953 for details.
@@ -38,7 +38,7 @@ ChromeVoxAutomationTreeWalkerTest.prototype = {
     `);
   },
 
-  flattenTree: function(node, outResult) {
+  flattenTree(node, outResult) {
     outResult.push(node);
     node = node.firstChild;
     while (node) {
@@ -51,7 +51,7 @@ ChromeVoxAutomationTreeWalkerTest.prototype = {
     }
   },
 
-  isAncestor: function(ancestor, node) {
+  isAncestor(ancestor, node) {
     while (node = node.parent) {
       if (node === ancestor) {
         return true;
@@ -60,7 +60,7 @@ ChromeVoxAutomationTreeWalkerTest.prototype = {
     return false;
   },
 
-  isDescendant: function(descendant, node) {
+  isDescendant(descendant, node) {
     return this.isAncestor(node, descendant);
   }
 };
@@ -228,7 +228,7 @@ TEST_F(
 TEST_F('ChromeVoxAutomationTreeWalkerTest', 'RootPredicateEnding', function() {
   this.runWithLoadedTree(toolbarDoc, function(r) {
     var backwardWalker = new AutomationTreeWalker(r.firstChild, 'backward', {
-      root: function(node) {
+      root(node) {
         return node === r;
       }
     });
@@ -237,7 +237,7 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'RootPredicateEnding', function() {
 
     var forwardWalker =
         new AutomationTreeWalker(r.firstChild.lastChild, 'forward', {
-          root: function(node) {
+          root(node) {
             return node === r;
           }
         });

@@ -370,8 +370,10 @@ void CryptAuthDeviceSyncerImpl::OnGetFeatureStatusesFinished(
 void CryptAuthDeviceSyncerImpl::BuildNewDeviceRegistry(
     const CryptAuthFeatureStatusGetter::IdToDeviceSoftwareFeatureInfoMap&
         id_to_device_software_feature_info_map) {
-  // Add all device information to the new registry except the remote device
+  // Add all device information to the new registry except the new remote device
   // BetterTogether metadata that will be decrypted and added later if possible.
+  // In the interim, use the existing BetterTogether metadata for the device
+  // from the current registry, if available.
   new_device_registry_map_ = CryptAuthDeviceRegistry::InstanceIdToDeviceMap();
   for (const auto& id_device_software_feature_info_pair :
        id_to_device_software_feature_info_map) {
@@ -383,10 +385,16 @@ void CryptAuthDeviceSyncerImpl::BuildNewDeviceRegistry(
     DCHECK(packet_it != id_to_device_metadata_packet_map_.end());
     const cryptauthv2::DeviceMetadataPacket& packet = packet_it->second;
 
-    // Add BetterTogetherDeviceMetadata only for the local device.
+    // Add BetterTogetherDeviceMetadata for the local device and all devices
+    // with BetterTogetherDeviceMetadata in the existing device registry.
     base::Optional<cryptauthv2::BetterTogetherDeviceMetadata> beto_metadata;
-    if (id == request_context_.device_id())
+    if (id == request_context_.device_id()) {
       beto_metadata = local_better_together_device_metadata_;
+    } else {
+      const CryptAuthDevice* existing_device = device_registry_->GetDevice(id);
+      if (existing_device)
+        beto_metadata = existing_device->better_together_device_metadata;
+    }
 
     new_device_registry_map_->try_emplace(
         id, id, packet.device_name(), packet.device_public_key(),

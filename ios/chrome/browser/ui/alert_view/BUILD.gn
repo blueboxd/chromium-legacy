@@ -25,9 +25,7 @@ source_set("alert_view") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "alert_view_controller_unittest.mm",
-  ]
+  sources = [ "alert_view_controller_unittest.mm" ]
   deps = [
     ":alert_view",
     "//testing/gtest:gtest",

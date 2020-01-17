@@ -15,9 +15,7 @@ import("//url/features.gni")
 assert(!is_component_build, "Cronet requires static library build.")
 
 group("cronet_consumer_group") {
-  deps = [
-    "//components/cronet/ios/cronet_consumer",
-  ]
+  deps = [ "//components/cronet/ios/cronet_consumer" ]
 }
 
 config("cronet_include_config") {
@@ -90,13 +88,9 @@ source_set("cronet_sources_with_global_state") {
     "//ios/web/public/init:global_state",
   ]
 
-  public_deps = [
-    ":cronet_sources",
-  ]
+  public_deps = [ ":cronet_sources" ]
 
-  sources = [
-    "ios_global_state_configuration.cc",
-  ]
+  sources = [ "ios_global_state_configuration.cc" ]
 }
 
 # Tweak |info_plist| with current version and revision.
@@ -116,15 +110,11 @@ ios_framework_bundle("cronet_framework") {
 
   libs = [ "UIKit.Framework" ]
 
-  public_deps = [
-    "//components/grpc_support:headers",
-  ]
+  public_deps = [ "//components/grpc_support:headers" ]
 
   public_headers = _cronet_public_headers
 
-  sources = [
-    "Cronet.h",
-  ]
+  sources = [ "Cronet.h" ]
 
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += [ "//build/config/compiler:symbols" ]
@@ -135,9 +125,7 @@ ios_framework_bundle("cronet_framework") {
 test("cronet_unittests_ios") {
   testonly = true
 
-  sources = [
-    "../run_all_unittests.cc",
-  ]
+  sources = [ "../run_all_unittests.cc" ]
 
   deps = [
     ":cronet_sources_with_global_state",
@@ -158,9 +146,7 @@ action("generate_accept_languages") {
     rebase_path("$target_gen_dir"),
     rebase_path("//"),
   ]
-  outputs = [
-    "$target_gen_dir/accept_languages_table.h",
-  ]
+  outputs = [ "$target_gen_dir/accept_languages_table.h" ]
 }
 
 # A static library which contains just _cronet_sources.
@@ -169,9 +155,7 @@ static_library("cronet_static") {
   deps = _cronet_deps
   sources = _cronet_sources + [ "ios_global_state_configuration.cc" ]
   public_configs = [ ":cronet_include_config" ]
-  public_deps = [
-    "//components/grpc_support",
-  ]
+  public_deps = [ "//components/grpc_support" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -181,9 +165,7 @@ static_library("cronet_deps_complete") {
   visibility = [ ":*" ]
   complete_static_lib = true
   configs -= [ "//build/config/compiler:thin_archive" ]
-  deps = [
-    ":cronet_static",
-  ]
+  deps = [ ":cronet_static" ]
 
   if (use_custom_libcxx) {
     deps += [
@@ -204,9 +186,7 @@ action("cronet_static_complete") {
     ":cronet_deps_complete",
     ":cronet_static",
   ]
-  outputs = [
-    "$target_out_dir/$current_cpu/cronet_static_complete.a",
-  ]
+  outputs = [ "$target_out_dir/$current_cpu/cronet_static_complete.a" ]
   args = [
     "--input_libs",
     rebase_path("$target_out_dir/libcronet_static.a", root_build_dir),
@@ -252,9 +232,7 @@ template("ios_static_framework") {
   bundle_data(_framework_headers_target) {
     visibility = [ ":$_target_name" ]
     sources = invoker.public_headers
-    outputs = [
-      "{{bundle_contents_dir}}/Headers/{{source_file_part}}",
-    ]
+    outputs = [ "{{bundle_contents_dir}}/Headers/{{source_file_part}}" ]
   }
 
   _framework_binary_target = _target_name + "_framework_binary"
@@ -263,12 +241,8 @@ template("ios_static_framework") {
   bundle_data(_framework_binary_target) {
     visibility = [ ":$_target_name" ]
     sources = get_target_outputs(_static_library_target)
-    outputs = [
-      "{{bundle_executable_dir}}/$_framework_name",
-    ]
-    public_deps = [
-      _static_library_target,
-    ]
+    outputs = [ "{{bundle_executable_dir}}/$_framework_name" ]
+    public_deps = [ _static_library_target ]
   }
 
   create_bundle(_target_name) {
@@ -300,12 +274,8 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
     _license_path = "$_package_dir/LICENSE"
 
     script = "//tools/licenses.py"
-    inputs = [
-      lastchange_file,
-    ]
-    outputs = [
-      _license_path,
-    ]
+    inputs = [ lastchange_file ]
+    outputs = [ _license_path ]
     args = [
       "license_file",
       rebase_path(_license_path, root_build_dir),
@@ -319,16 +289,10 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
   }
 
   copy("cronet_static_copy") {
-    sources = [
-      "$root_out_dir/Static/Cronet.framework",
-    ]
-    outputs = [
-      "$_package_dir/Static/Cronet.framework",
-    ]
+    sources = [ "$root_out_dir/Static/Cronet.framework" ]
+    outputs = [ "$_package_dir/Static/Cronet.framework" ]
 
-    deps = [
-      ":cronet_static_framework",
-    ]
+    deps = [ ":cronet_static_framework" ]
   }
 
   copy("cronet_package_copy") {
@@ -337,9 +301,7 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
       "//AUTHORS",
       "//chrome/VERSION",
     ]
-    outputs = [
-      "$_package_dir/{{source_file_part}}",
-    ]
+    outputs = [ "$_package_dir/{{source_file_part}}" ]
 
     deps = [
       ":cronet_framework",
@@ -357,22 +319,16 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
       # generate both the dSYM and binary image are listed in deps.
       _dsyms = [ "$root_out_dir/Cronet.dSYM" ]
 
-      sources = [
-        "$root_out_dir/Cronet.framework",
-      ]
+      sources = [ "$root_out_dir/Cronet.framework" ]
 
       _output = "$_package_dir/Cronet.dSYM.tar.bz2"
 
-      outputs = [
-        _output,
-      ]
+      outputs = [ _output ]
 
       args = [ rebase_path(_output, root_out_dir) ] +
              rebase_path(_dsyms, root_out_dir)
 
-      deps = [
-        ":cronet_framework",
-      ]
+      deps = [ ":cronet_framework" ]
     }
   } else {
     group("cronet_dsym_archive") {

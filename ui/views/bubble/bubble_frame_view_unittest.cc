@@ -55,10 +55,7 @@ class TestBubbleFrameViewWidgetDelegate : public WidgetDelegate {
 
   ~TestBubbleFrameViewWidgetDelegate() override = default;
 
-  // WidgetDelegate overrides:
-  Widget* GetWidget() override { return widget_; }
-  const Widget* GetWidget() const override { return widget_; }
-
+  // WidgetDelegate:
   View* GetContentsView() override {
     if (!contents_view_) {
       StaticSizedView* contents_view =
@@ -69,13 +66,16 @@ class TestBubbleFrameViewWidgetDelegate : public WidgetDelegate {
     }
     return contents_view_;
   }
-
   bool ShouldShowCloseButton() const override { return should_show_close_; }
+
   void SetShouldShowCloseButton(bool should_show_close) {
     should_show_close_ = should_show_close;
   }
 
  private:
+  // WidgetDelegate:
+  const Widget* GetWidgetImpl() const override { return widget_; }
+
   Widget* const widget_;
   View* contents_view_ = nullptr;  // Owned by |widget_|.
   bool should_show_close_ = false;
@@ -114,12 +114,7 @@ class TestBubbleFrameView : public BubbleFrameView {
     return bubble_border_for_testing()->GetInsets();
   }
 
-  // View overrides:
-  const Widget* GetWidget() const override {
-    return widget_.get();
-  }
-
-  // BubbleFrameView overrides:
+  // BubbleFrameView:
   gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) const override {
     return available_bounds_;
   }
@@ -133,6 +128,9 @@ class TestBubbleFrameView : public BubbleFrameView {
   }
 
  private:
+  // BubbleFrameView:
+  const Widget* GetWidgetImpl() const override { return widget_.get(); }
+
   const gfx::Rect available_bounds_ = gfx::Rect(0, 0, 1000, 1000);
   gfx::Rect available_anchor_window_bounds_;
 

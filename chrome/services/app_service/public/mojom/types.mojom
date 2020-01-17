@@ -165,18 +165,23 @@ struct IconValue {
   bool is_placeholder_icon;
 };
 
+// Enumeration of possible app launch sources.
+// Note the enumeration is used in UMA histogram so entries
+// should not be re-ordered or removed.
 enum LaunchSource {
-  kUnknown,
-  kFromAppListGrid,              // Grid of apps, not the search box.
-  kFromAppListGridContextMenu,   // Grid of apps; context menu.
-  kFromAppListQuery,             // Query-dependent results (larger icons).
-  kFromAppListQueryContextMenu,  // Query-dependent results; context menu.
-  kFromAppListRecommendation,    // Query-less recommendations (smaller icons).
-  kFromParentalControls,         // Parental Controls Settings Section.
-  kFromShelf,                    // Shelf.
-  kFromFileManager,              // FileManager.
-  kFromLink,                     // Left-licking on links in the browser.
-  kFromOmnibox,                  // Enter URL in the Omnibox in the browser.
+  kUnknown = 0,
+  kFromAppListGrid = 1,             // Grid of apps, not the search box.
+  kFromAppListGridContextMenu = 2,  // Grid of apps; context menu.
+  kFromAppListQuery = 3,            // Query-dependent results (larger icons).
+  kFromAppListQueryContextMenu = 4, // Query-dependent results; context menu.
+  kFromAppListRecommendation = 5,   // Query-less recommendations (smaller
+                                    // icons).
+  kFromParentalControls = 6,        // Parental Controls Settings Section.
+  kFromShelf = 7,                   // Shelf.
+  kFromFileManager = 8,             // FileManager.
+  kFromLink = 9,                    // Left-licking on links in the browser.
+  kFromOmnibox = 10,                // Enter URL in the Omnibox in the browser.
+  kFromChromeInternal = 11,         // Chrome internal call.
 };
 
 enum TriState {
@@ -188,6 +193,40 @@ enum TriState {
 enum PermissionValueType {
   kBool,                       // Permission.value is a Bool (either 0 or 1).
   kTriState,                   // Permission.value is a TriState.
+};
+
+// MenuItems are used to populate context menus, e.g. in the app list or shelf.
+// Note: Some menu item types only support a subset of these item features.
+// Please update comments below (MenuItemType -> [fields expected for usage])
+// when anything changed to MenuItemType or MenuItem.
+//
+// kCommand -> [command_id, string_id].
+// kRadio   -> [command_id, string_id, radio_group_id].
+// kSubmenu -> [command_id, string_id, submenu].
+//
+struct MenuItems {
+  array<MenuItem> items;
+};
+
+struct MenuItem {
+  MenuItemType type;                 // The type of the menu item.
+  int32 command_id;                  // The menu item command id.
+  int32 string_id;                   // The id of the menu item label.
+  array<MenuItem> submenu;           // The optional nested submenu item list.
+  int32 radio_group_id;              // The radio group id.
+};
+
+// The types of menu items shown in the app list or shelf.
+enum MenuItemType {
+  kCommand,    // Performs an action when selected.
+  kRadio,      // Can be selected/checked among a group of choices.
+  kSubmenu,    // Presents a submenu within another menu.
+};
+
+// Which component requests context menus, the app list or shelf.
+enum MenuType {
+  kAppList,
+  kShelf,
 };
 
 // The intent filter matching condition types.

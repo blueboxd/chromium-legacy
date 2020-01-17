@@ -27,7 +27,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper_factory.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
@@ -202,7 +202,7 @@ void WebUILoginView::InitializeWebView(views::WebView* web_view,
   // Ensure that the login UI has a tab ID, which will allow the GAIA auth
   // extension's background script to tell it apart from a captive portal window
   // that may be opened on top of this UI.
-  SessionTabHelper::CreateForWebContents(web_contents);
+  CreateSessionServiceTabHelper(web_contents);
 
   // Create the password manager that is needed for the proxy.
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(

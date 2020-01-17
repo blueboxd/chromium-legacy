@@ -31,8 +31,9 @@ static_library("url_lookup_service") {
     ":policy_engine",
     "//base:base",
     "//components/safe_browsing/core:realtimeapi_proto",
+    "//components/safe_browsing/core/common:thread_utils",
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
-    "//content/public/browser",
+    "//services/network/public/cpp:cpp",
     "//url:url",
   ]
 }
@@ -49,6 +50,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/safe_browsing/core:features",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//components/safe_browsing/core/common:test_support",
     "//components/sync_preferences:test_support",
     "//components/unified_consent",
     "//components/user_prefs",

@@ -8,29 +8,21 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # picking up a dependency on skia.
 mojom("mojom") {
   generate_java = true
-  sources = [
-    "geometry.mojom",
-  ]
+  sources = [ "geometry.mojom" ]
 
   check_includes_blink = false
 }
 
 mojom("test_interfaces") {
-  sources = [
-    "geometry_traits_test_service.mojom",
-  ]
+  sources = [ "geometry_traits_test_service.mojom" ]
 
-  public_deps = [
-    ":mojom",
-  ]
+  public_deps = [ ":mojom" ]
 }
 
 source_set("unit_test") {
   testonly = true
 
-  sources = [
-    "geometry_mojom_traits_unittest.cc",
-  ]
+  sources = [ "geometry_mojom_traits_unittest.cc" ]
 
   deps = [
     ":test_interfaces",
@@ -43,9 +35,7 @@ source_set("unit_test") {
 }
 
 source_set("mojom_traits") {
-  sources = [
-    "geometry_mojom_traits.h",
-  ]
+  sources = [ "geometry_mojom_traits.h" ]
   public_deps = [
     ":mojom_shared_cpp_sources",
     "//ui/gfx/geometry",

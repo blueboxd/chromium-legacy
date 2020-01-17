@@ -34,9 +34,7 @@ source_set("feature_flags") {
     "clipboard_recent_content_features.cc",
     "clipboard_recent_content_features.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 # Helper classes used by "open_from_clipboard" target. These classes must have
@@ -46,9 +44,7 @@ source_set("open_from_clipboard_impl") {
     "clipboard_recent_content_impl_ios.h",
     "clipboard_recent_content_impl_ios.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   assert_no_deps = [ "//base:i18n" ]
   if (is_ios) {
     configs += [ "//build/config/compiler:enable_arc" ]
@@ -74,9 +70,7 @@ static_library("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "clipboard_recent_content_ios_unittest.mm",
-  ]
+  sources = [ "clipboard_recent_content_ios_unittest.mm" ]
 
   deps = [
     ":open_from_clipboard",

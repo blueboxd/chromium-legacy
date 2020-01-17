@@ -112,6 +112,10 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual float WindowToViewportScalar(LocalFrame*,
                                        const float value) const = 0;
 
+  // Converts the scalar value from window coordinates to viewport rectangle.
+  virtual void WindowToViewportRect(LocalFrame& frame,
+                                    WebFloatRect* viewport_rect) const {}
+
   virtual bool IsPopup() { return false; }
 
   virtual void ChromeDestroyed() = 0;
@@ -482,6 +486,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   }
 
   virtual void DocumentDetached(Document&) {}
+
+  virtual void SaveImageFromDataURL(LocalFrame& frame, const String& data_url) {
+  }
 
  protected:
   ChromeClient() = default;

@@ -76,18 +76,14 @@ android_resources("test_java_resources") {
 
   custom_package = "org.chromium.chrome.browser.ui.appmenu.test"
   resource_dirs = [ "test/java/res" ]
-  deps = [
-    ":java_resources",
-  ]
+  deps = [ ":java_resources" ]
 }
 
 java_library("junit") {
   # Skip platform checks since Robolectric depends on requires_android targets.
   bypass_platform_checks = true
   testonly = true
-  sources = [
-    "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuPopupPositionTest.java",
-  ]
+  sources = [ "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuPopupPositionTest.java" ]
   deps = [
     ":java",
     "//base:base_junit_test_support",

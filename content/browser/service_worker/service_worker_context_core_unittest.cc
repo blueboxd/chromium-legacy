@@ -81,11 +81,11 @@ class ServiceWorkerContextCoreTest : public testing::Test,
     EXPECT_TRUE(registration->active_version());
   }
 
-  // Wrapper for ServiceWorkerStorage::FindRegistrationForScope.
+  // Wrapper for ServiceWorkerRegistry::FindRegistrationForScope.
   blink::ServiceWorkerStatusCode FindRegistrationForScope(const GURL& scope) {
     base::RunLoop loop;
     blink::ServiceWorkerStatusCode status;
-    context()->storage()->FindRegistrationForScope(
+    context()->registry()->FindRegistrationForScope(
         scope,
         base::BindLambdaForTesting(
             [&](blink::ServiceWorkerStatusCode result_status,

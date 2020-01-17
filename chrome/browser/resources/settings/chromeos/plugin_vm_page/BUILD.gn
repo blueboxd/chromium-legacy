@@ -8,20 +8,20 @@ js_type_check("closure_compile") {
   deps = [
     ":plugin_vm_browser_proxy",
     ":plugin_vm_page",
+    ":plugin_vm_remove_confirmation_dialog",
     ":plugin_vm_shared_paths",
     ":plugin_vm_subpage",
   ]
 }
 
 js_library("plugin_vm_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("plugin_vm_page") {
   deps = [
     "../..:route",
+    "../..:router",
     "//ui/webui/resources/js:i18n_behavior",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
@@ -30,12 +30,17 @@ js_library("plugin_vm_page") {
 js_library("plugin_vm_shared_paths") {
   deps = [
     ":plugin_vm_browser_proxy",
-    "../..:route",
+    "../..:router",
   ]
 }
 
 js_library("plugin_vm_subpage") {
   deps = [
     "../..:route",
+    "../..:router",
   ]
+}
+
+js_library("plugin_vm_remove_confirmation_dialog") {
+  deps = [ ":plugin_vm_browser_proxy" ]
 }

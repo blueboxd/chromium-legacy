@@ -74,6 +74,7 @@ class ASH_EXPORT UnifiedMessageCenterBubble : public TrayBubbleBase,
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   UnifiedMessageCenterView* message_center_view() {
     return message_center_view_;

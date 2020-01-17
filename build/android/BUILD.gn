@@ -21,9 +21,7 @@ if (enable_java_templates) {
   action("find_sun_tools_jar") {
     script = "//build/android/gyp/find_sun_tools_jar.py"
     depfile = "$target_gen_dir/$target_name.d"
-    outputs = [
-      sun_tools_jar_path,
-    ]
+    outputs = [ sun_tools_jar_path ]
     args = [
       "--depfile",
       rebase_path(depfile, root_build_dir),
@@ -34,9 +32,7 @@ if (enable_java_templates) {
 
   java_prebuilt("sun_tools_java") {
     jar_path = sun_tools_jar_path
-    deps = [
-      ":find_sun_tools_jar",
-    ]
+    deps = [ ":find_sun_tools_jar" ]
   }
 
   # Write to a file some GN vars that are useful to scripts that use the output
@@ -85,9 +81,7 @@ python_library("test_runner_py") {
     "${android_sdk_build_tools}/split-select",
     "${android_sdk_root}/platform-tools/adb",
   ]
-  data_deps = [
-    ":devil_chromium_py",
-  ]
+  data_deps = [ ":devil_chromium_py" ]
   if (build_with_chromium) {
     data += [
       "//third_party/android_build_tools/bundletool/bundletool-all-0.11.0.jar",
@@ -102,9 +96,7 @@ python_library("test_runner_py") {
 
   # Proguard is needed only when using apks (rather than native executables).
   if (enable_java_templates) {
-    deps = [
-      "//third_party/proguard:proguard603_java",
-    ]
+    deps = [ "//third_party/proguard:proguard603_java" ]
   }
 }
 

@@ -227,7 +227,8 @@ enum AuthenticationState {
   }
   if (!_didAcceptSignIn && _didSignIn) {
     AuthenticationServiceFactory::GetForBrowserState(self.browserState)
-        ->SignOut(signin_metrics::ABORT_SIGNIN, nil);
+        ->SignOut(signin_metrics::ABORT_SIGNIN,
+                  /*force_clear_browsing_data=*/false, nil);
     _didSignIn = NO;
   }
   if (!_didFinishSignIn) {
@@ -605,7 +606,8 @@ enum AuthenticationState {
 - (void)undoSignIn {
   if (_didSignIn) {
     AuthenticationServiceFactory::GetForBrowserState(self.browserState)
-        ->SignOut(signin_metrics::ABORT_SIGNIN, nil);
+        ->SignOut(signin_metrics::ABORT_SIGNIN,
+                  /*force_clear_browsing_data=*/false, nil);
     [_delegate didUndoSignIn:self identity:self.selectedIdentity];
     _didSignIn = NO;
   }

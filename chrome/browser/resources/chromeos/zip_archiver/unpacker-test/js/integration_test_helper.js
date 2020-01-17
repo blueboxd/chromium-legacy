@@ -53,7 +53,7 @@ var testsHelper = {
    * @return {!Promise} A promise that fulfills with the file's blob or rejects
    *     with the download failure error.
    */
-  getFileBlob: function(filePath) {
+  getFileBlob(filePath) {
     if (testsHelper.fileBlobCache_[filePath])
       return Promise.resolve(testsHelper.fileBlobCache_[filePath]);
 
@@ -91,7 +91,7 @@ var testsHelper = {
    * @return {!Promise} A Promise which fulfills with the data as an Int8Array
    *     or rejects with any received error.
    */
-  getAndReadFileBlobPromise: function(filePath) {
+  getAndReadFileBlobPromise(filePath) {
     return testsHelper.getFileBlob(filePath).then(function(blob) {
       return new Promise(function(fulfill, reject) {
         var fileReader = new FileReader();
@@ -107,15 +107,15 @@ var testsHelper = {
   /**
    * Initializes Chrome APIs.
    */
-  initChromeApis: function() {
+  initChromeApis() {
     // Local storage API.
     chrome.storage = {
       local: {
-        set: function() {
+        set() {
           // 'set' must be a function before we can stub it with a custom
           // function. This is a sinon requirement.
         },
-        get: function() {
+        get() {
           // Must be a function for same reasons as 'set'.
         }
       }
@@ -161,7 +161,7 @@ var testsHelper = {
     chrome.fileSystemProvider = {
       mount: sinon.stub(),
       unmount: sinon.stub(),
-      get: function(fileSystemId, callback) {
+      get(fileSystemId, callback) {
         var volumeInfoList =
             testsHelper.volumesInformation.filter(function(volumeInfo) {
               return volumeInfo.fileSystemId == fileSystemId;
@@ -224,7 +224,7 @@ var testsHelper = {
    *     'afterRestartTests', which are the tests to run after restart.
    * @return {Promise} A promise that will finish initialization asynchronously.
    */
-  init: function(archivesToTest) {
+  init(archivesToTest) {
     // Create promises to obtain archives blob.
     return Promise.all(archivesToTest.map(function(archiveData) {
       // Inititialization is done outside of the promise in order for Mocha to
@@ -299,7 +299,7 @@ var testsHelper = {
    *     Int8Array buffer containing the requested data or rejects with
    *     ProviderError.
    */
-  createReadFilePromise: function(
+  createReadFilePromise(
       fileSystemId, readRequestId, openRequestId, offset, length) {
     var options = {
       fileSystemId: fileSystemId,

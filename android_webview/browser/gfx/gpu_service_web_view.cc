@@ -37,8 +37,8 @@ GpuServiceWebView* GpuServiceWebView::CreateGpuServiceWebView() {
   auto mailbox_manager = gpu::gles2::CreateMailboxManager(gpu_preferences);
   // The shared_image_manager will be shared between renderer thread and GPU
   // main thread, so it should be thread safe.
-  auto shared_image_manager =
-      std::make_unique<gpu::SharedImageManager>(true /* thread_safe */);
+  auto shared_image_manager = std::make_unique<gpu::SharedImageManager>(
+      true /* is_thread_safe */, true /* display_context_on_another_thread */);
   return new GpuServiceWebView(std::move(sync_point_manager),
                                std::move(mailbox_manager),
                                std::move(shared_image_manager), gpu_info,

@@ -74,23 +74,23 @@ Polymer({
     /** @private {!chrome.settingsPrivate.PrefObject} */
     lidClosedPref_: {
       type: Object,
-      value: function() {
+      value() {
         return /** @type {!chrome.settingsPrivate.PrefObject} */ ({});
       },
     },
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     // enablePowerSettings comes from loadTimeData, so it will always be set
     // before attached() is called.
     if (!this.enablePowerSettings) {
-      settings.navigateToPreviousRoute();
+      settings.Router.getInstance().navigateToPreviousRoute();
     }
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'battery-status-changed', this.set.bind(this, 'batteryStatus_'));
     this.addWebUIListener(
@@ -110,7 +110,7 @@ Polymer({
    * @return {string} The primary label for the power source row.
    * @private
    */
-  computePowerSourceLabel_: function(powerSources, calculating) {
+  computePowerSourceLabel_(powerSources, calculating) {
     return this.i18n(
         calculating ?
             'calculatingPower' :
@@ -124,7 +124,7 @@ Polymer({
    *     them are dual-role (no dedicated chargers).
    * @private
    */
-  computeShowPowerSourceDropdown_: function(powerSources) {
+  computeShowPowerSourceDropdown_(powerSources) {
     return powerSources.length > 0 && powerSources.every(function(source) {
       return !source.is_dedicated_charger;
     });
@@ -136,7 +136,7 @@ Polymer({
    * @return {string} Description of the power source.
    * @private
    */
-  computePowerSourceName_: function(powerSources, lowPowerCharger) {
+  computePowerSourceName_(powerSources, lowPowerCharger) {
     if (lowPowerCharger) {
       return this.i18n('powerSourceLowPowerCharger');
     }
@@ -152,7 +152,7 @@ Polymer({
    *     display in idle-behavior select.
    * @private
    */
-  computeIdleOptions_: function(idleControlled) {
+  computeIdleOptions_(idleControlled) {
     const options = [
       {
         value: settings.IdleBehavior.DISPLAY_OFF_SLEEP,
@@ -177,20 +177,20 @@ Polymer({
   },
 
   /** @private */
-  onPowerSourceChange_: function() {
+  onPowerSourceChange_() {
     settings.DevicePageBrowserProxyImpl.getInstance().setPowerSource(
         this.$.powerSource.value);
   },
 
   /** @private */
-  onIdleSelectChange_: function() {
+  onIdleSelectChange_() {
     const behavior = /** @type {settings.IdleBehavior} */
         (parseInt(this.$.idleSelect.value, 10));
     settings.DevicePageBrowserProxyImpl.getInstance().setIdleBehavior(behavior);
   },
 
   /** @private */
-  onLidClosedToggleChange_: function() {
+  onLidClosedToggleChange_() {
     // Other behaviors are only displayed when the setting is controlled, in
     // which case the toggle can't be changed by the user.
     settings.DevicePageBrowserProxyImpl.getInstance().setLidClosedBehavior(
@@ -205,7 +205,7 @@ Polymer({
    *     is a low-powered USB charger.
    * @private
    */
-  powerSourcesChanged_: function(sources, selectedId, lowPowerCharger) {
+  powerSourcesChanged_(sources, selectedId, lowPowerCharger) {
     this.powerSources_ = sources;
     this.selectedPowerSourceId_ = selectedId;
     this.lowPowerCharger_ = lowPowerCharger;
@@ -216,7 +216,7 @@ Polymer({
    * @param {boolean} isControlled Whether the underlying pref is controlled.
    * @private
    */
-  updateLidClosedLabelAndPref_: function(behavior, isControlled) {
+  updateLidClosedLabelAndPref_(behavior, isControlled) {
     const pref = {
       key: '',
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
@@ -253,7 +253,7 @@ Polymer({
    *     management settings.
    * @private
    */
-  powerManagementSettingsChanged_: function(browserSettings) {
+  powerManagementSettingsChanged_(browserSettings) {
     this.idleControlled_ = browserSettings.idleControlled;
     this.hasLid_ = browserSettings.hasLid;
     this.updateLidClosedLabelAndPref_(
@@ -272,7 +272,7 @@ Polymer({
    * @return {string} 'first' if idle/lid settings are first visible div
    * @private
    */
-  getFirst_: function(batteryPresent) {
+  getFirst_(batteryPresent) {
     return !batteryPresent ? 'first' : '';
   },
 
@@ -282,7 +282,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isEqual_: function(lhs, rhs) {
+  isEqual_(lhs, rhs) {
     return lhs === rhs;
   },
 });

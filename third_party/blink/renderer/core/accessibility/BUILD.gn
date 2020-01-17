@@ -19,7 +19,5 @@ blink_core_sources("accessibility") {
 }
 
 blink_core_tests("unit_tests") {
-  sources = [
-    "apply_dark_mode_test.cc",
-  ]
+  sources = [ "apply_dark_mode_test.cc" ]
 }

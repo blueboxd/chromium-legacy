@@ -84,10 +84,6 @@ cast_source_set("browser") {
     "cast_navigation_ui_data.h",
     "cast_network_contexts.cc",
     "cast_network_contexts.h",
-    "cast_network_delegate.cc",
-    "cast_network_delegate.h",
-    "cast_network_request_interceptor.cc",
-    "cast_network_request_interceptor.h",
     "cast_overlay_manifests.cc",
     "cast_overlay_manifests.h",
     "cast_permission_manager.cc",
@@ -139,15 +135,12 @@ cast_source_set("browser") {
     "tts/tts_platform.h",
     "tts/tts_platform_stub.cc",
     "tts/tts_platform_stub.h",
-    "url_request_context_factory.cc",
-    "url_request_context_factory.h",
   ]
 
   if (chromecast_branding == "public") {
     sources += [
       "cast_browser_main_parts_simple.cc",
       "cast_content_browser_client_simple.cc",
-      "cast_network_request_interceptor_simple.cc",
     ]
   }
 
@@ -592,18 +585,12 @@ if (is_android) {
   }
 
   java_cpp_enum("java_enums") {
-    sources = [
-      "cast_content_window.h",
-    ]
+    sources = [ "cast_content_window.h" ]
   }
 }
 
 cast_source_set("web_contents_provider") {
-  sources = [
-    "webview/web_contents_provider.h",
-  ]
+  sources = [ "webview/web_contents_provider.h" ]
 
-  deps = [
-    "//content/public/browser",
-  ]
+  deps = [ "//content/public/browser" ]
 }

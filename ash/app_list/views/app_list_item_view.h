@@ -232,12 +232,12 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   AppListItem* item_weak_;  // Owned by AppListModel. Can be nullptr.
 
-  AppListViewDelegate* delegate_;            // Unowned.
-  AppsGridView* apps_grid_view_;             // Parent view, owns this.
-  IconImageView* icon_;                      // Strongly typed child view.
-  views::Label* title_;                      // Strongly typed child view.
-  views::ProgressBar* progress_bar_;         // Strongly typed child view.
-  views::ImageView* icon_shadow_ = nullptr;  // Strongly typed child view.
+  AppListViewDelegate* delegate_;               // Unowned.
+  AppsGridView* apps_grid_view_;                // Parent view, owns this.
+  IconImageView* icon_ = nullptr;               // Strongly typed child view.
+  views::Label* title_ = nullptr;               // Strongly typed child view.
+  views::ProgressBar* progress_bar_ = nullptr;  // Strongly typed child view.
+  views::ImageView* icon_shadow_ = nullptr;     // Strongly typed child view.
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 

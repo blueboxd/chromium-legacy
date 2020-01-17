@@ -17,6 +17,7 @@ namespace chrome_pdf {
 namespace {
 
 constexpr char kDefaultPageOrientation[] = "defaultPageOrientation";
+constexpr char kTwoUpViewEnabled[] = "twoUpViewEnabled";
 
 int GetWidestPageWidth(const std::vector<pp::Size>& page_sizes) {
   int widest_page_width = 0;
@@ -51,6 +52,7 @@ pp::Var DocumentLayout::Options::ToVar() const {
   pp::VarDictionary dictionary;
   dictionary.Set(kDefaultPageOrientation,
                  static_cast<int32_t>(default_page_orientation_));
+  dictionary.Set(kTwoUpViewEnabled, two_up_view_enabled_);
   return dictionary;
 }
 
@@ -65,6 +67,8 @@ void DocumentLayout::Options::FromVar(const pp::Var& var) {
             static_cast<int32_t>(PageOrientation::kLast));
   default_page_orientation_ =
       static_cast<PageOrientation>(default_page_orientation);
+
+  two_up_view_enabled_ = dictionary.Get(kTwoUpViewEnabled).AsBool();
 }
 
 void DocumentLayout::Options::RotatePagesClockwise() {
@@ -80,14 +84,14 @@ DocumentLayout::DocumentLayout() = default;
 DocumentLayout::~DocumentLayout() = default;
 
 void DocumentLayout::SetOptions(const Options& options) {
-  // TODO(kmoon): This is pessimistic, but we still want to consider the layout
-  // dirty for orientation changes, even if the page rects don't change.
+  // To be conservative, we want to consider the layout dirty for any layout
+  // option changes, even if the page rects don't necessarily change when
+  // layout options change.
   //
-  // We also probably don't want orientation changes to actually kick in until
+  // We also probably don't want layout changes to actually kick in until
   // the next call to ComputeLayout(). (In practice, we'll call ComputeLayout()
   // shortly after calling SetOptions().)
-  if (options_.default_page_orientation() !=
-      options.default_page_orientation()) {
+  if (options_ != options) {
     dirty_ = true;
   }
   options_ = options;

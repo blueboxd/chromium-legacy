@@ -47,8 +47,6 @@ TEST(PreviewsUserDataTest, DeepCopy) {
   EXPECT_FALSE(data->offline_preview_used());
   EXPECT_EQ(data->server_lite_page_info(), nullptr);
 
-  base::TimeTicks now = base::TimeTicks::Now();
-
   data->set_data_savings_inflation_percent(123);
   data->set_cache_control_no_transform_directive();
   data->SetCommittedPreviewsType(previews::PreviewsType::NOSCRIPT);
@@ -56,7 +54,6 @@ TEST(PreviewsUserDataTest, DeepCopy) {
   data->set_black_listed_for_lite_page(true);
   data->set_server_lite_page_info(
       std::make_unique<PreviewsUserData::ServerLitePageInfo>());
-  data->server_lite_page_info()->original_navigation_start = now;
 
   PreviewsUserData data_copy(*data);
   EXPECT_EQ(id, data_copy.page_id());
@@ -68,7 +65,6 @@ TEST(PreviewsUserDataTest, DeepCopy) {
   EXPECT_TRUE(data_copy.black_listed_for_lite_page());
   EXPECT_TRUE(data_copy.offline_preview_used());
   EXPECT_NE(data->server_lite_page_info(), nullptr);
-  EXPECT_EQ(data->server_lite_page_info()->original_navigation_start, now);
 }
 
 TEST(PreviewsUserDataTest, TestCoinFlip_HasCommittedPreviewsType) {

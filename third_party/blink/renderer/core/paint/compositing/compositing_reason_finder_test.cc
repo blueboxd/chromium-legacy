@@ -258,7 +258,7 @@ TEST_F(CompositingReasonFinderTest, PromoteCrossOriginIframe) {
   ASSERT_TRUE(To<HTMLFrameOwnerElement>(iframe)
                   ->ContentFrame()
                   ->IsCrossOriginSubframe());
-  EXPECT_EQ(CompositingReason::kCrossOriginIframe,
+  EXPECT_EQ(CompositingReason::kIFrame,
             iframe_layer->DirectCompositingReasons());
 }
 

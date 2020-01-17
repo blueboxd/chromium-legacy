@@ -36,6 +36,31 @@ bool IsMainFrameNavigationRequest(const WebRequestInfo& request_info) {
          request_info.type == content::ResourceType::kMainFrame;
 }
 
+// Returns whether a TrackedRule should be recorded on a rule match for the
+// extension with the specified |extension_id|.
+bool ShouldRecordMatchedRule(content::BrowserContext* browser_context,
+                             const ExtensionId& extension_id,
+                             int tab_id) {
+  const Extension* extension =
+      ExtensionRegistry::Get(browser_context)
+          ->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
+  DCHECK(extension);
+
+  const PermissionsData* permissions_data = extension->permissions_data();
+
+  const bool has_feedback_permission = permissions_data->HasAPIPermission(
+      APIPermission::kDeclarativeNetRequestFeedback);
+
+  const bool has_active_tab_permission =
+      permissions_data->HasAPIPermission(APIPermission::kActiveTab);
+
+  // Always record a matched rule if |extension| has the feedback permission or
+  // the request is associated with a tab and |extension| has the activeTab
+  // permission.
+  return has_feedback_permission ||
+         (tab_id != extension_misc::kUnknownTabId && has_active_tab_permission);
+}
+
 const base::Clock* g_test_clock = nullptr;
 
 base::Time GetNow() {
@@ -71,28 +96,19 @@ void ActionTracker::OnRuleMatched(const RequestAction& request_action,
                                      CreateRequestDetails(request_info));
 
   const ExtensionId& extension_id = request_action.extension_id;
-  const Extension* extension =
-      ExtensionRegistry::Get(browser_context_)
-          ->GetExtensionById(extension_id,
-                             extensions::ExtensionRegistry::ENABLED);
-  DCHECK(extension);
+  const int tab_id = request_info.frame_data.tab_id;
+  const bool should_record_rule =
+      ShouldRecordMatchedRule(browser_context_, extension_id, tab_id);
 
-  const bool has_feedback_permission =
-      extension->permissions_data()->HasAPIPermission(
-          APIPermission::kDeclarativeNetRequestFeedback);
-
-  auto add_matched_rule_if_needed = [has_feedback_permission](
+  auto add_matched_rule_if_needed = [should_record_rule](
                                         TrackedInfo* tracked_info,
                                         const RequestAction& request_action) {
-    // Only record a matched rule if |extension| has the feedback permission.
-    if (!has_feedback_permission)
+    if (!should_record_rule)
       return;
 
     tracked_info->matched_rules.emplace_back(request_action.rule_id,
                                              request_action.source_type);
   };
-
-  const int tab_id = request_info.frame_data.tab_id;
 
   // Allow rules do not result in any action being taken on the request, and
   // badge text should only be set for valid tab IDs.

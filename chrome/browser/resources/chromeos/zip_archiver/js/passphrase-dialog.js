@@ -9,21 +9,21 @@
 
 Polymer({
   is: 'passphrase-dialog',
-  i18n: function(name) {
+  i18n(name) {
     // For tests, chrome.i18n API is not available.
     return chrome.i18n ? chrome.i18n.getMessage(name) : name;
   },
 
-  cancel: function() {
+  cancel() {
     window.close();
   },
 
-  accept: function() {
+  accept() {
     window.onPassphraseSuccess(this.$.input.value);
     window.close();
   },
 
-  ready: function() {
+  ready() {
     document.addEventListener('keydown', function(event) {
       if (event.keyCode == 13)  // Enter
         this.$.acceptButton.click();

@@ -79,12 +79,6 @@ class V8TestIntegerIndexed {
 };
 
 template <>
-struct NativeValueTraits<TestIntegerIndexed> : public NativeValueTraitsBase<TestIntegerIndexed> {
-  CORE_EXPORT static TestIntegerIndexed* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestIntegerIndexed* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestIntegerIndexed> {
   typedef V8TestIntegerIndexed Type;
 };

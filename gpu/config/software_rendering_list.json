@@ -1629,22 +1629,6 @@
       ]
     },
     {
-      "id": 156,
-      "cr_bugs": [870964],
-      "description": "Frequent crashes on Adreno (TM) on L and below",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "6.0"
-        }
-      },
-      "gl_renderer": "Adreno.*",
-      "features": [
-        "oop_rasterization"
-      ]
-    },
-    {
       "id": 157,
       "description": "VMware can crash with older drivers and WebGL content",
       "cr_bugs": [879098],

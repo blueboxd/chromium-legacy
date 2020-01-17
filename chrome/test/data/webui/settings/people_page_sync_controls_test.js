@@ -26,7 +26,8 @@ cr.define('settings_people_page_sync_controls', function() {
     });
 
     test('SettingIndividualDatatypes', function() {
-      const syncAllDataTypesControl = syncControls.$.syncAllDataTypesControl;
+      const syncAllDataTypesControl =
+          syncControls.$$('#syncAllDataTypesControl');
       assertFalse(syncAllDataTypesControl.disabled);
       assertTrue(syncAllDataTypesControl.checked);
 
@@ -116,14 +117,16 @@ cr.define('settings_people_page_sync_controls', function() {
       PolymerTest.clearBody();
 
       syncControls = document.createElement('settings-sync-controls');
-      settings.navigateTo(settings.routes.SYNC_ADVANCED);
+      settings.Router.getInstance().navigateTo(settings.routes.SYNC_ADVANCED);
       document.body.appendChild(syncControls);
 
       syncControls
           .syncStatus = {disabled: false, hasError: false, signedIn: true};
       Polymer.dom.flush();
 
-      assertEquals(settings.routes.SYNC_ADVANCED, settings.getCurrentRoute());
+      assertEquals(
+          settings.routes.SYNC_ADVANCED,
+          settings.Router.getInstance().getCurrentRoute());
     });
 
     teardown(function() {
@@ -133,7 +136,9 @@ cr.define('settings_people_page_sync_controls', function() {
     test('SignedOut', function() {
       syncControls
           .syncStatus = {disabled: false, hasError: false, signedIn: false};
-      assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
+      assertEquals(
+          settings.routes.SYNC,
+          settings.Router.getInstance().getCurrentRoute());
     });
 
     test('PassphraseError', function() {
@@ -143,7 +148,9 @@ cr.define('settings_people_page_sync_controls', function() {
         signedIn: true,
         statusAction: settings.StatusAction.ENTER_PASSPHRASE
       };
-      assertEquals(settings.routes.SYNC_ADVANCED, settings.getCurrentRoute());
+      assertEquals(
+          settings.routes.SYNC_ADVANCED,
+          settings.Router.getInstance().getCurrentRoute());
     });
 
     test('SyncPaused', function() {
@@ -153,7 +160,84 @@ cr.define('settings_people_page_sync_controls', function() {
         signedIn: true,
         statusAction: settings.StatusAction.REAUTHENTICATE
       };
-      assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
+      assertEquals(
+          settings.routes.SYNC,
+          settings.Router.getInstance().getCurrentRoute());
+    });
+  });
+
+  // TODO(msalama): Merge |SyncControlsFriendlySettingsOnTest| and
+  // |SyncControlsTest| once |syncSetupFriendlySettings| is enabled 100%.
+  suite('SyncControlsFriendlySettingsOnTest', function() {
+    let syncControls = null;
+    let browserProxy = null;
+    let syncEverything = null;
+    let customizeSync = null;
+
+    suiteSetup(function() {
+      loadTimeData.overrideValues({
+        syncSetupFriendlySettings: true,
+      });
+    });
+
+    setup(function() {
+      browserProxy = new TestSyncBrowserProxy();
+      settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+
+      PolymerTest.clearBody();
+      syncControls = document.createElement('settings-sync-controls');
+      document.body.appendChild(syncControls);
+
+      // Start with Sync All.
+      cr.webUIListenerCallback(
+          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
+      Polymer.dom.flush();
+
+      syncEverything =
+          syncControls.$$('cr-radio-button[name="sync-everything"]');
+      customizeSync = syncControls.$$('cr-radio-button[name="customize-sync"]');
+      assertTrue(!!syncEverything);
+      assertTrue(!!customizeSync);
+    });
+
+    teardown(function() {
+      syncControls.remove();
+    });
+
+    test('SettingIndividualDatatypes', function() {
+      assertTrue(syncEverything.checked);
+      assertFalse(customizeSync.checked);
+      assertEquals(syncControls.$$('#syncAllDataTypesControl'), null);
+
+      // Assert that all the individual datatype controls are disabled.
+      const datatypeControls = syncControls.shadowRoot.querySelectorAll(
+          '.list-item:not([hidden]) > cr-toggle');
+
+      for (const control of datatypeControls) {
+        assertTrue(control.disabled);
+        assertTrue(control.checked);
+      }
+
+      customizeSync.click();
+      Polymer.dom.flush();
+      assertFalse(syncEverything.checked);
+      assertTrue(customizeSync.checked);
+
+      function verifyPrefs(prefs) {
+        const expected = sync_test_util.getSyncAllPrefs();
+        expected.syncAllDataTypes = false;
+        assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
+
+        cr.webUIListenerCallback('sync-prefs-changed', expected);
+
+        // Assert that all the individual datatype controls are enabled.
+        for (const control of datatypeControls) {
+          assertFalse(control.disabled);
+          assertTrue(control.checked);
+        }
+        browserProxy.resetResolver('setSyncDatatypes');
+      }
+      return browserProxy.whenCalled('setSyncDatatypes').then(verifyPrefs);
     });
   });
 });

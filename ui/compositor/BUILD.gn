@@ -88,16 +88,13 @@ jumbo_component("compositor") {
 
   defines = [ "COMPOSITOR_IMPLEMENTATION" ]
 
-  public_deps = [
-    "//cc",
-  ]
+  public_deps = [ "//cc" ]
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
     "//cc/animation",
     "//cc/paint",
     "//components/viz/host",
-    "//components/viz/service",
     "//gpu/command_buffer/common",
     "//skia",
     "//ui/base",
@@ -167,9 +164,7 @@ jumbo_static_library("test_support") {
     sources += [ "test/test_compositor_host_win.cc" ]
   }
 
-  public_deps = [
-    ":compositor",
-  ]
+  public_deps = [ ":compositor" ]
   deps = [
     "//base/test:test_support",
     "//cc",
@@ -233,9 +228,7 @@ test("compositor_unittests") {
     "transform_animation_curve_adapter_unittest.cc",
   ]
 
-  data = [
-    "//ui/gfx/test/data/compositor/",
-  ]
+  data = [ "//ui/gfx/test/data/compositor/" ]
 
   deps = [
     ":compositor",
@@ -245,7 +238,6 @@ test("compositor_unittests") {
     "//cc",
     "//cc:test_support",
     "//components/viz/common",
-    "//components/viz/service",
     "//components/viz/test:test_support",
     "//mojo/core/embedder",
     "//skia",

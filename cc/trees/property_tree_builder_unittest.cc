@@ -362,9 +362,9 @@ TEST_F(PropertyTreeBuilderTest, VisibleRectWithClippingAndFilters) {
 
   CommitAndActivate();
 
-  EXPECT_EQ(gfx::Rect(49, 39, 12, 21),
+  EXPECT_EQ(gfx::Rect(50, 40, 10, 20),
             ImplOf(filter_child)->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(-1, -11, 12, 21),
+  EXPECT_EQ(gfx::Rect(0, -10, 10, 20),
             GetRenderSurfaceImpl(filter)->content_rect());
 }
 
@@ -422,9 +422,9 @@ TEST_F(PropertyTreeBuilderTest, VisibleRectWithScalingClippingAndFilters) {
 
   CommitAndActivate();
 
-  EXPECT_EQ(gfx::Rect(49, 39, 12, 21),
+  EXPECT_EQ(gfx::Rect(50, 40, 10, 20),
             ImplOf(filter_child)->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(-1, -31, 32, 61),
+  EXPECT_EQ(gfx::Rect(0, -30, 30, 60),
             GetRenderSurfaceImpl(filter)->content_rect());
 }
 

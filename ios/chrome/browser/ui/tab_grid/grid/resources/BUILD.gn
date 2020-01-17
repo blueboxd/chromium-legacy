@@ -13,13 +13,9 @@ imageset("grid_cell_close_button") {
 }
 
 colorset("grid_theme_selection_tint_color") {
-  sources = [
-    "grid_theme_selection_tint_color.colorset/Contents.json",
-  ]
+  sources = [ "grid_theme_selection_tint_color.colorset/Contents.json" ]
 }
 
 colorset("grid_theme_dark_selection_tint_color") {
-  sources = [
-    "grid_theme_dark_selection_tint_color.colorset/Contents.json",
-  ]
+  sources = [ "grid_theme_dark_selection_tint_color.colorset/Contents.json" ]
 }

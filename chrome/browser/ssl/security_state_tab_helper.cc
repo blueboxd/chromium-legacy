@@ -110,7 +110,10 @@ bool IsLegacyTLS(GURL url, int connection_status) {
   net::SSLVersion ssl_version =
       net::SSLConnectionStatusToVersion(connection_status);
 
-  return ssl_version < ssl_version_min;
+  // Signed Exchanges do not have connection status set. Exclude unknown TLS
+  // versions from legacy TLS treatment. See https://crbug.com/1041773.
+  return ssl_version != net::SSL_CONNECTION_VERSION_UNKNOWN &&
+         ssl_version < ssl_version_min;
 }
 
 }  // namespace

@@ -76,7 +76,7 @@ Polymer({
    * @param {string} id
    * @return {?Element}
    */
-  getDetailsButton: function(id) {
+  getDetailsButton(id) {
     const item = this.$$(`#${id}`);
     return item && item.getDetailsButton();
   },
@@ -85,7 +85,7 @@ Polymer({
    * @param {string} id
    * @return {?Element}
    */
-  getErrorsButton: function(id) {
+  getErrorsButton(id) {
     const item = this.$$(`#${id}`);
     return item && item.getErrorsButton();
   },
@@ -97,7 +97,7 @@ Polymer({
    * return {?Function}
    * @private
    */
-  computeFilter_: function() {
+  computeFilter_() {
     const formattedFilter = this.filter.trim().toLowerCase();
     return formattedFilter ?
         i => i.name.toLowerCase().includes(formattedFilter) :
@@ -105,7 +105,7 @@ Polymer({
   },
 
   /** @private */
-  shouldShowEmptyItemsMessage_: function() {
+  shouldShowEmptyItemsMessage_() {
     if (!this.apps || !this.extensions) {
       return;
     }
@@ -114,20 +114,20 @@ Polymer({
   },
 
   /** @private */
-  shouldShowEmptySearchMessage_: function() {
+  shouldShowEmptySearchMessage_() {
     return !this.shouldShowEmptyItemsMessage_() && this.shownAppsCount_ === 0 &&
         this.shownExtensionsCount_ === 0;
   },
 
   /** @private */
-  onNoExtensionsTap_: function(e) {
+  onNoExtensionsTap_(e) {
     if (e.target.tagName === 'A') {
       chrome.metricsPrivate.recordUserAction('Options_GetMoreExtensions');
     }
   },
 
   /** @private */
-  announceSearchResults_: function() {
+  announceSearchResults_() {
     if (this.computedFilter_) {
       IronA11yAnnouncer.requestAvailability();
       this.async(() => {  // Async to allow list to update.

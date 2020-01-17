@@ -179,20 +179,6 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptCredentialManager) {
                              web_view, @"typeof navigator.credentials"));
 }
 
-// Tests that ChromeWebClient provides payment request script for WKWebView.
-TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequest) {
-  // Chrome scripts rely on __gCrWeb object presence.
-  WKWebView* web_view = web::BuildWKWebView(CGRectZero, browser_state());
-  web::test::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
-
-  web::ScopedTestingWebClient web_client(std::make_unique<ChromeWebClient>());
-  NSString* script =
-      web_client.Get()->GetDocumentStartScriptForMainFrame(browser_state());
-  web::test::ExecuteJavaScript(web_view, script);
-  EXPECT_NSEQ(@"function", web::test::ExecuteJavaScript(
-                               web_view, @"typeof window.PaymentRequest"));
-}
-
 // Tests PrepareErrorPage wth non-post, not Off The Record error.
 TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostNonOtr) {
   ChromeWebClient web_client;

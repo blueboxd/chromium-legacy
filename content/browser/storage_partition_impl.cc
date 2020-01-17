@@ -1259,6 +1259,8 @@ void StoragePartitionImpl::Initialize() {
   appcache_service_ = base::MakeRefCounted<ChromeAppCacheService>(
       quota_manager_proxy.get(), weak_factory_.GetWeakPtr());
 
+  dedicated_worker_service_ = std::make_unique<DedicatedWorkerServiceImpl>();
+
   shared_worker_service_ = std::make_unique<SharedWorkerServiceImpl>(
       this, service_worker_context_, appcache_service_);
 
@@ -1500,6 +1502,11 @@ CacheStorageContextImpl* StoragePartitionImpl::GetCacheStorageContext() {
 ServiceWorkerContextWrapper* StoragePartitionImpl::GetServiceWorkerContext() {
   DCHECK(initialized_);
   return service_worker_context_.get();
+}
+
+DedicatedWorkerServiceImpl* StoragePartitionImpl::GetDedicatedWorkerService() {
+  DCHECK(initialized_);
+  return dedicated_worker_service_.get();
 }
 
 SharedWorkerServiceImpl* StoragePartitionImpl::GetSharedWorkerService() {

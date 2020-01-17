@@ -287,7 +287,7 @@ bool DriveServiceOnWorker::HasAccessToken() const {
 }
 
 void DriveServiceOnWorker::RequestAccessToken(
-    const google_apis::AuthStatusCallback& callback) {
+    google_apis::AuthStatusCallback callback) {
   NOTREACHED();
 }
 

@@ -26,7 +26,6 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeIntentUtil;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -282,30 +281,6 @@ public class WebappModeTest {
 
         Assert.assertEquals(webappInfo, lastWebappActivity.getWebappInfo());
         Assert.assertTrue(lastWebappActivity.getWebappInfo().url().equals(WEBAPP_2_URL));
-    }
-
-    /** Test that on first launch {@link WebappDataStorage#hasBeenLaunched()} is set. */
-    // Flaky even with RetryOnFailure: http://crbug.com/749375
-    @DisabledTest
-    @Test
-    //    @MediumTest
-    //    @Feature({"Webapps"})
-    public void testSetsHasBeenLaunchedOnFirstLaunch() {
-        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPP_1_ID);
-        Assert.assertFalse(storage.hasBeenLaunched());
-
-        startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
-
-        // Use a longer timeout because the DeferredStartupHandler is called after the page has
-        // finished loading.
-        CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
-            @Override
-            public boolean isSatisfied() {
-                return DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp();
-            }
-        }, 5000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-
-        Assert.assertTrue(storage.hasBeenLaunched());
     }
 
     /**

@@ -742,13 +742,15 @@ class SecureChannelServiceTest : public testing::Test {
 
     // |device_to_connect| should be in the cache.
     EXPECT_TRUE(multidevice::IsSameDevice(
-        device_to_connect, *remote_device_cache()->GetRemoteDevice(
-                               device_to_connect.GetDeviceId())));
+        device_to_connect,
+        *remote_device_cache()->GetRemoteDevice(
+            device_to_connect.instance_id, device_to_connect.GetDeviceId())));
 
     // |local_device| should also be in the cache.
     EXPECT_TRUE(multidevice::IsSameDevice(
         local_device,
-        *remote_device_cache()->GetRemoteDevice(local_device.GetDeviceId())));
+        *remote_device_cache()->GetRemoteDevice(local_device.instance_id,
+                                                local_device.GetDeviceId())));
 
     return id;
   }

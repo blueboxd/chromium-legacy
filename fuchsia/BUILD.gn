@@ -18,9 +18,7 @@ fidl_library("cast_fidl") {
     "fidl/cast/url_request_rewriter.fidl",
   ]
 
-  public_deps = [
-    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
-  ]
+  public_deps = [ "//third_party/fuchsia-sdk/sdk:fuchsia-web" ]
 }
 
 # Used by the top-level "gn_all" target to discover Fuchsia build targets.

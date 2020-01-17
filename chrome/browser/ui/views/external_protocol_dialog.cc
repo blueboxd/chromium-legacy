@@ -64,7 +64,45 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
                              initiating_origin);
 }
 
-ExternalProtocolDialog::~ExternalProtocolDialog() {}
+ExternalProtocolDialog::ExternalProtocolDialog(
+    WebContents* web_contents,
+    const GURL& url,
+    const base::string16& program_name,
+    const base::Optional<url::Origin>& initiating_origin)
+    : content::WebContentsObserver(web_contents),
+      url_(url),
+      program_name_(program_name),
+      initiating_origin_(initiating_origin) {
+  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringFUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT,
+                                 program_name_));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT));
+
+  views::MessageBoxView::InitParams params(
+      GetMessageTextForOrigin(initiating_origin_));
+  message_box_view_ = new views::MessageBoxView(params);
+
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  set_margins(
+      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
+
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->GetPrefs()->GetBoolean(
+          prefs::kExternalProtocolDialogShowAlwaysOpenCheckbox)) {
+    ShowRememberSelectionCheckbox();
+  }
+  constrained_window::ShowWebModalDialogViews(this, web_contents);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTERNAL_PROTOCOL);
+}
+
+ExternalProtocolDialog::~ExternalProtocolDialog() = default;
 
 gfx::Size ExternalProtocolDialog::CalculatePreferredSize() const {
   constexpr int kDialogContentWidth = 400;
@@ -118,14 +156,6 @@ ui::ModalType ExternalProtocolDialog::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-views::Widget* ExternalProtocolDialog::GetWidget() {
-  return message_box_view_->GetWidget();
-}
-
-const views::Widget* ExternalProtocolDialog::GetWidget() const {
-  return message_box_view_->GetWidget();
-}
-
 void ExternalProtocolDialog::ShowRememberSelectionCheckbox() {
   message_box_view_->SetCheckBoxLabel(
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
@@ -138,40 +168,6 @@ void ExternalProtocolDialog::SetRememberSelectionCheckboxCheckedForTesting(
   message_box_view_->SetCheckBoxSelected(checked);
 }
 
-ExternalProtocolDialog::ExternalProtocolDialog(
-    WebContents* web_contents,
-    const GURL& url,
-    const base::string16& program_name,
-    const base::Optional<url::Origin>& initiating_origin)
-    : content::WebContentsObserver(web_contents),
-      url_(url),
-      program_name_(program_name),
-      initiating_origin_(initiating_origin) {
-  DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringFUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT,
-                                 program_name_));
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_CANCEL,
-      l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT));
-
-  views::MessageBoxView::InitParams params(
-      GetMessageTextForOrigin(initiating_origin_));
-  message_box_view_ = new views::MessageBoxView(params);
-
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  set_margins(
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
-
-  SetLayoutManager(std::make_unique<views::FillLayout>());
-
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->GetPrefs()->GetBoolean(
-          prefs::kExternalProtocolDialogShowAlwaysOpenCheckbox)) {
-    ShowRememberSelectionCheckbox();
-  }
-  constrained_window::ShowWebModalDialogViews(this, web_contents);
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTERNAL_PROTOCOL);
+const views::Widget* ExternalProtocolDialog::GetWidgetImpl() const {
+  return message_box_view_->GetWidget();
 }

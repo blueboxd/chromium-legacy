@@ -39,8 +39,6 @@ class PagePopup;
 class CORE_EXPORT ColorChooserPopupUIController final
     : public ColorChooserUIController,
       public PagePopupClient {
-  USING_PRE_FINALIZER(ColorChooserPopupUIController, Dispose);
-
  public:
   ColorChooserPopupUIController(LocalFrame*,
                                 ChromeClient*,
@@ -69,7 +67,6 @@ class CORE_EXPORT ColorChooserPopupUIController final
   ChromeClient& GetChromeClient() override;
 
   void OpenPopup();
-  void Dispose();
 
   void WriteColorPickerDocument(SharedBuffer*);
   void WriteColorSuggestionPickerDocument(SharedBuffer*);

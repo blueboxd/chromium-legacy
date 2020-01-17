@@ -13,13 +13,13 @@
     android:focusable="false"
     android:orientation="vertical">
 
-    <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout
+    <org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout
         android:id="@+id/radio_button_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
 
-        <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
+        <org.chromium.components.browser_ui.widget.RadioButtonWithDescription
             android:id="@+id/allowed"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,7 +27,7 @@
             android:background="?android:attr/selectableItemBackground"
             app:primaryText="@string/website_settings_category_allowed" />
 
-        <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
+        <org.chromium.components.browser_ui.widget.RadioButtonWithDescription
             android:id="@+id/ask"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
             android:background="?android:attr/selectableItemBackground"
             app:primaryText="@string/website_settings_category_ask" />
 
-        <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
+        <org.chromium.components.browser_ui.widget.RadioButtonWithDescription
             android:id="@+id/blocked"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -43,5 +43,5 @@
             android:background="?android:attr/selectableItemBackground"
             app:primaryText="@string/website_settings_category_blocked" />
 
-    </org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout>
+    </org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout>
 </LinearLayout>

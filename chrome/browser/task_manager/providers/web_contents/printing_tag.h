@@ -18,7 +18,7 @@ class PrintingTag : public WebContentsTag {
   ~PrintingTag() override;
 
   // task_manager::WebContentsTag:
-  PrintingTask* CreateTask() const override;
+  PrintingTask* CreateTask(WebContentsTaskProvider*) const override;
 
  private:
   friend class WebContentsTags;

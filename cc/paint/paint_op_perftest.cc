@@ -56,8 +56,7 @@ class PaintOpPerfTest : public testing::Test {
           test_options_provider.color_space(),
           test_options_provider.can_use_lcd_text(),
           test_options_provider.context_supports_distance_field_text(),
-          test_options_provider.max_texture_size(),
-          test_options_provider.max_texture_bytes());
+          test_options_provider.max_texture_size());
       serializer.Serialize(&buffer, nullptr, preamble);
       bytes_written = serializer.written();
 

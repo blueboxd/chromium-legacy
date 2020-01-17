@@ -381,10 +381,10 @@ FileManagerPrivateRequestWebStoreAccessTokenFunction::Run() {
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       scopes);
-  auth_service_->StartAuthentication(base::Bind(
-      &FileManagerPrivateRequestWebStoreAccessTokenFunction::
-          OnAccessTokenFetched,
-      this));
+  auth_service_->StartAuthentication(
+      base::BindOnce(&FileManagerPrivateRequestWebStoreAccessTokenFunction::
+                         OnAccessTokenFetched,
+                     this));
 
   return RespondLater();
 }

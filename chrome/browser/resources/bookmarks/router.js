@@ -60,7 +60,7 @@ Polymer({
     'onStateChanged_(searchTerm_, selectedId_)',
   ],
 
-  attached: function() {
+  attached() {
     this.watch('selectedId_', function(state) {
       return state.selectedFolder;
     });
@@ -71,7 +71,7 @@ Polymer({
   },
 
   /** @private */
-  onQueryParamsChanged_: function() {
+  onQueryParamsChanged_() {
     const searchTerm = this.queryParams_.q || '';
     let selectedId = this.queryParams_.id;
     if (!selectedId && !searchTerm) {
@@ -98,24 +98,24 @@ Polymer({
    * @param {?string} previous Previous value of the query.
    * @private
    */
-  onQueryChanged_: function(current, previous) {
+  onQueryChanged_(current, previous) {
     if (previous !== undefined) {
       this.urlQuery_ = this.query_;
     }
   },
 
   /** @private */
-  onUrlQueryChanged_: function() {
+  onUrlQueryChanged_() {
     this.query_ = this.urlQuery_;
   },
 
   /** @private */
-  onStateChanged_: function() {
+  onStateChanged_() {
     this.debounce('updateQueryParams', this.updateQueryParams_.bind(this));
   },
 
   /** @private */
-  updateQueryParams_: function() {
+  updateQueryParams_() {
     if (this.searchTerm_) {
       this.queryParams_ = {q: this.searchTerm_};
     } else if (this.selectedId_ !== BOOKMARKS_BAR_ID) {

@@ -281,6 +281,12 @@ class OptimizationGuideHintsManager
   // remote Optimization Guide Service.
   bool IsHintBeingFetched(const std::string& host) const;
 
+  // Creates a hints fetch for |navigation_handle| if it is allowed. The
+  // fetch will include the host and URL of the |navigation_handle| if the
+  // associated hints for each are not already in the cache.
+  void MaybeFetchHintsForNavigation(
+      content::NavigationHandle* navigation_handle);
+
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* const
       optimization_guide_service_;

@@ -215,10 +215,6 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Called when overview starting animation completes.
   void OnStartingAnimationComplete(bool canceled);
 
-  // Checks if the grid needs to have the wallpaper animated. Returns false if
-  // one of the grids windows covers the the entire workspace, true otherwise.
-  bool ShouldAnimateWallpaper() const;
-
   // Calculates |should_animate_when_entering_| and
   // |should_animate_when_exiting_| of the overview items based on where
   // the first MRU window covering the available workspace is found.

@@ -96,9 +96,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
     virtual void DidRemoveAllEventListeners(LocalDOMWindow*) = 0;
   };
 
-  static Document* CreateDocument(const String& mime_type,
-                                  const DocumentInit&,
-                                  bool force_xhtml);
+  static Document* CreateDocument(const DocumentInit&, bool force_xhtml);
 
   static LocalDOMWindow* From(const ScriptState*);
 
@@ -109,9 +107,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void Trace(blink::Visitor*) override;
 
-  Document* InstallNewDocument(const String& mime_type,
-                               const DocumentInit&,
-                               bool force_xhtml);
+  Document* InstallNewDocument(const DocumentInit&, bool force_xhtml);
 
   // EventTarget overrides:
   ExecutionContext* GetExecutionContext() const override;
@@ -247,12 +243,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   bool isSecureContext() const;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(search, kSearch)
-
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitanimationstart, kWebkitAnimationStart)
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitanimationiteration,
-                                  kWebkitAnimationIteration)
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitanimationend, kWebkitAnimationEnd)
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkittransitionend, kWebkitTransitionEnd)
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange, kOrientationchange)
 

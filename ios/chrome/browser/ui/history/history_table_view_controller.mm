@@ -122,8 +122,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 #pragma mark - ViewController Lifecycle.
 
 - (instancetype)init {
-  return [super initWithTableViewStyle:UITableViewStylePlain
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  return [super initWithStyle:UITableViewStylePlain];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -627,7 +626,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  [super scrollViewDidScroll:scrollView];
 
   if (self.hasFinishedLoading)
     return;

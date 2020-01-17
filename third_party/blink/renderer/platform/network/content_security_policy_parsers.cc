@@ -58,16 +58,4 @@ bool IsMediaTypeCharacter(UChar c) {
   return !IsASCIISpace(c) && c != '/';
 }
 
-STATIC_ASSERT_ENUM(network::mojom::ContentSecurityPolicyType::kReport,
-                   kContentSecurityPolicyHeaderTypeReport);
-STATIC_ASSERT_ENUM(network::mojom::ContentSecurityPolicyType::kEnforce,
-                   kContentSecurityPolicyHeaderTypeEnforce);
-
-STATIC_ASSERT_ENUM(network::mojom::ContentSecurityPolicySource::kHTTP,
-                   kContentSecurityPolicyHeaderSourceHTTP);
-STATIC_ASSERT_ENUM(network::mojom::ContentSecurityPolicySource::kMeta,
-                   kContentSecurityPolicyHeaderSourceMeta);
-STATIC_ASSERT_ENUM(network::mojom::ContentSecurityPolicySource::kOriginPolicy,
-                   kContentSecurityPolicyHeaderSourceOriginPolicy);
-
 }  // namespace blink

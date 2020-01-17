@@ -167,7 +167,7 @@ __gCrWeb.languageDetection['detectLanguage'] = function() {
 __gCrWeb.languageDetection['retrieveBufferedTextContent'] = function() {
   const textContent = __gCrWeb.languageDetection.bufferedTextContent;
   __gCrWeb.languageDetection.activeRequests -= 1;
-  if (__gCrWeb.languageDetection.activeRequests == 0) {
+  if (__gCrWeb.languageDetection.activeRequests === 0) {
     __gCrWeb.languageDetection.bufferedTextContent = null;
   }
   return textContent;

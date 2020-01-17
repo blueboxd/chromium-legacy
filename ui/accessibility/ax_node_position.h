@@ -52,6 +52,8 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
   base::stack<AXNode*> GetAncestorAnchors() const override;
   void AnchorParent(AXTreeID* tree_id, AXNode::AXID* parent_id) const override;
   AXNode* GetNodeInTree(AXTreeID tree_id, AXNode::AXID node_id) const override;
+  int32_t GetAnchorID(AXNode* node) const override;
+  AXTreeID GetTreeID(AXNode* node) const override;
 
   bool IsInLineBreakingObject() const override;
   ax::mojom::Role GetRole() const override;

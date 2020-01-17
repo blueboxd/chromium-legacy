@@ -43,11 +43,11 @@ Polymer({
   lastQuery_: '',
 
   /** @return {!CrInputElement} */
-  getSearchInput: function() {
+  getSearchInput() {
     return /** @type {!CrInputElement} */ (this.$.searchInput);
   },
 
-  focus: function() {
+  focus() {
     this.$.searchInput.focus();
   },
 
@@ -55,7 +55,7 @@ Polymer({
    * @param {!CustomEvent<string>} e Event containing the new search.
    * @private
    */
-  onSearchChanged_: function(e) {
+  onSearchChanged_(e) {
     const strippedQuery = stripDiacritics(e.detail.trim());
     const safeQuery = strippedQuery.replace(SANITIZE_REGEX, '\\$&');
     if (safeQuery === this.lastQuery_) {
@@ -68,7 +68,7 @@ Polymer({
   },
 
   /** @private */
-  onClearClick_: function() {
+  onClearClick_() {
     this.setValue('');
     this.$.searchInput.focus();
   },

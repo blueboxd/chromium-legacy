@@ -27,7 +27,7 @@ AccessibilityTest.define('MultideviceA11yTest', {
   axeOptions: SettingsAccessibilityTest.axeOptionsExcludeLinkInTextBlock,
   /** @override */
   setup: function() {
-    settings.router.navigateTo(settings.routes.MULTIDEVICE);
+    settings.Router.getInstance().navigateTo(settings.routes.MULTIDEVICE);
     Polymer.dom.flush();
   },
   /** @override */

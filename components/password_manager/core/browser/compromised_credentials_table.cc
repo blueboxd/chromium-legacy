@@ -169,8 +169,10 @@ bool CompromisedCredentialsTable::UpdateRow(
   return s.Run();
 }
 
-bool CompromisedCredentialsTable::RemoveRow(const GURL& url,
-                                            const base::string16& username) {
+bool CompromisedCredentialsTable::RemoveRow(
+    const GURL& url,
+    const base::string16& username,
+    RemoveCompromisedCredentialsReason reason) {
   if (!db_ || !url.is_valid())
     return false;
 
@@ -184,6 +186,8 @@ bool CompromisedCredentialsTable::RemoveRow(const GURL& url,
   for (const auto& compromised_credential : compromised_credentials) {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.CompromisedCredentials.Remove",
                               compromised_credential.compromise_type);
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.RemoveCompromisedCredentials.RemoveReason", reason);
   }
 
   sql::Statement s(db_->GetCachedStatement(

@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_sampler.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_sampler_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_sampler_descriptor.h"
 
 namespace blink {
 

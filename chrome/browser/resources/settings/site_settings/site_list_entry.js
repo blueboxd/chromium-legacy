@@ -68,7 +68,7 @@ Polymer({
   },
 
   /** @private */
-  onShowTooltip_: function() {
+  onShowTooltip_() {
     const indicator = assert(this.$$('cr-policy-pref-indicator'));
     // The tooltip text is used by an paper-tooltip contained inside the
     // cr-policy-pref-indicator. The text is currently held in a private
@@ -78,11 +78,22 @@ Polymer({
     this.fire('show-tooltip', {target: indicator, text});
   },
 
+  /** @private */
+  onShowIncognitoTooltip_: function() {
+    const tooltip = this.$.incognitoTooltip;
+    // The tooltip text is used by an paper-tooltip contained inside the
+    // cr-policy-pref-indicator. The text is currently held in a private
+    // property. This text is needed here to send up to the common tooltip
+    // component.
+    const text = loadTimeData.getString('incognitoSiteExceptionDesc');
+    this.fire('show-tooltip', {target: tooltip, text});
+  },
+
   /**
    * @return {boolean}
    * @private
    */
-  shouldHideResetButton_: function() {
+  shouldHideResetButton_() {
     if (this.model === undefined) {
       return false;
     }
@@ -96,7 +107,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldHideActionMenu_: function() {
+  shouldHideActionMenu_() {
     if (this.model === undefined) {
       return false;
     }
@@ -110,11 +121,11 @@ Polymer({
    * A handler for selecting a site (by clicking on the origin).
    * @private
    */
-  onOriginTap_: function() {
+  onOriginTap_() {
     if (!this.allowNavigateToSiteDetail_) {
       return;
     }
-    settings.navigateTo(
+    settings.Router.getInstance().navigateTo(
         settings.routes.SITE_SETTINGS_SITE_DETAILS,
         new URLSearchParams('site=' + this.model.origin));
   },
@@ -125,7 +136,7 @@ Polymer({
    * or the website whose third parties are also affected.
    * @return {string}
    */
-  computeDisplayName_: function() {
+  computeDisplayName_() {
     if (this.model.embeddingOrigin &&
         this.model.category === settings.ContentSettingsTypes.COOKIES &&
         this.model.origin.trim() == settings.SITE_EXCEPTION_WILDCARD) {
@@ -136,11 +147,11 @@ Polymer({
 
   /**
    * Returns the appropriate site description to display. This can, for example,
-   * be blank, an 'embedded on <site>' or 'Current incognito session' (or a
-   * mix of the last two).
+   * be blank, an 'embedded on <site>' string, or a third-party exception
+   * description string.
    * @return {string}
    */
-  computeSiteDescription_: function() {
+  computeSiteDescription_() {
     let description = '';
 
     if (this.model.embeddingOrigin) {
@@ -164,14 +175,6 @@ Polymer({
     }
     // </if>
 
-    if (this.model.incognito) {
-      if (description.length > 0) {
-        description =
-            loadTimeData.getStringF('embeddedIncognitoSite', description);
-      } else {
-        description = loadTimeData.getString('incognitoSite');
-      }
-    }
     return description;
   },
 
@@ -179,14 +182,14 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShowPolicyPrefIndicator_: function() {
+  computeShowPolicyPrefIndicator_() {
     return this.model.enforcement ==
         chrome.settingsPrivate.Enforcement.ENFORCED &&
         !!this.model.controlledBy;
   },
 
   /** @private */
-  onResetButtonTap_: function() {
+  onResetButtonTap_() {
     // Use the appropriate method to reset a chooser exception.
     if (this.chooserType !== settings.ChooserType.NONE &&
         this.chooserObject != null) {
@@ -202,7 +205,7 @@ Polymer({
   },
 
   /** @private */
-  onShowActionMenuTap_: function() {
+  onShowActionMenuTap_() {
     // Chooser exceptions do not support the action menu, so do nothing.
     if (this.chooserType !== settings.ChooserType.NONE) {
       return;
@@ -214,7 +217,7 @@ Polymer({
   },
 
   /** @private */
-  onModelChanged_: function() {
+  onModelChanged_() {
     if (!this.model) {
       this.allowNavigateToSiteDetail_ = false;
       return;

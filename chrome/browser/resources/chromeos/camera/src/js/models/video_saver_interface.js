@@ -20,6 +20,3 @@ export class VideoSaver {
    */
   async endWrite() {}
 }
-
-/** @const */
-cca.models.VideoSaver = VideoSaver;

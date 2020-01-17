@@ -7,11 +7,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/native_pixmap_handle.h"
 
 #if defined(OS_FUCHSIA)
@@ -156,6 +158,16 @@ class SharedImageInterface {
 
   // Flush the SharedImageInterface, issuing any deferred IPCs.
   virtual void Flush() = 0;
+
+  // Returns the NativePixmap backing |mailbox|. This is a privileged API. Only
+  // the callers living inside the GPU process are able to retrieve the
+  // NativePixmap; otherwise null is returned. Also returns null if the
+  // SharedImage doesn't exist or is not backed by a NativePixmap. The caller is
+  // not expected to read from or write into the provided NativePixmap because
+  // it can be modified at any time. The primary purpose of this method is to
+  // facilitate pageflip testing on the viz thread.
+  virtual scoped_refptr<gfx::NativePixmap> GetNativePixmap(
+      const gpu::Mailbox& mailbox) = 0;
 };
 
 }  // namespace gpu

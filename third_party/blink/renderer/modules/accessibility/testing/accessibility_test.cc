@@ -25,7 +25,7 @@ void AccessibilityTest::SetUp() {
 
 AXObjectCacheImpl& AccessibilityTest::GetAXObjectCache() const {
   auto* ax_object_cache =
-      ToAXObjectCacheImpl(GetDocument().ExistingAXObjectCache());
+      To<AXObjectCacheImpl>(GetDocument().ExistingAXObjectCache());
   DCHECK(ax_object_cache);
   return *ax_object_cache;
 }

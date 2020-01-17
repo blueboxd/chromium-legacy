@@ -49,7 +49,7 @@ Polymer({
   is_shown_: false,
 
   /** Called when dialog is shown */
-  onBeforeShow: function() {
+  onBeforeShow() {
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
@@ -61,14 +61,14 @@ Polymer({
   /**
    * Returns element by its id.
    */
-  getElement: function(id) {
+  getElement(id) {
     return this.$[id];
   },
 
   /**
    * Returns focused element inside this element.
    */
-  getActiveElement: function(id) {
+  getActiveElement(id) {
     return this.shadowRoot.activeElement;
   },
 
@@ -77,7 +77,7 @@ Polymer({
    *
    * @private
    */
-  applyOobeConfiguration_: function() {
+  applyOobeConfiguration_() {
     if (this.configuration_applied_)
       return;
     var configuration = Oobe.getInstance().getOobeConfiguration();
@@ -96,7 +96,7 @@ Polymer({
    *
    * @private
    */
-  buttonsDisabledStateChanged_: function(newValue, oldValue) {
+  buttonsDisabledStateChanged_(newValue, oldValue) {
     // Trigger applyOobeConfiguration_ if buttons are enabled and dialog is
     // visible.
     if (this.arcTosButtonsDisabled)
@@ -113,7 +113,7 @@ Polymer({
    *
    * @private
    */
-  onAccept_: function() {
+  onAccept_() {
     this.screen.onAccept();
   },
 
@@ -122,7 +122,7 @@ Polymer({
    *
    * @private
    */
-  onNext_: function() {
+  onNext_() {
     this.screen.onNext();
   },
 
@@ -131,7 +131,7 @@ Polymer({
    *
    * @private
    */
-  onRetry_: function() {
+  onRetry_() {
     this.screen.reloadPlayStoreToS();
   },
 
@@ -140,7 +140,7 @@ Polymer({
    *
    * @private
    */
-  onSkip_: function() {
+  onSkip_() {
     this.screen.onSkip();
   },
 
@@ -149,7 +149,7 @@ Polymer({
    *
    * @private
    */
-  onBack_: function() {
+  onBack_() {
     chrome.send('login.ArcTermsOfServiceScreen.userActed', ['go-back']);
   }
 });

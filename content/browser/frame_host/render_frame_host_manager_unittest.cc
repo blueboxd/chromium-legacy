@@ -49,8 +49,8 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/fake_local_frame.h"
+#include "content/public/test/fake_remote_frame.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/mock_widget_input_handler.h"
@@ -73,20 +73,6 @@
 
 namespace content {
 namespace {
-
-// Helper to check that the provided RenderProcessHost received exactly one
-// page focus message with the provided focus and routing ID values.
-void VerifyPageFocusMessage(MockRenderProcessHost* rph,
-                            bool expected_focus,
-                            int expected_routing_id) {
-  const IPC::Message* message =
-      rph->sink().GetUniqueMessageMatching(InputMsg_SetFocus::ID);
-  EXPECT_TRUE(message);
-  EXPECT_EQ(expected_routing_id, message->routing_id());
-  InputMsg_SetFocus::Param params;
-  EXPECT_TRUE(InputMsg_SetFocus::Read(message, &params));
-  EXPECT_EQ(expected_focus, std::get<0>(params));
-}
 
 // VerifyPageFocusMessage from the mojo input handler.
 void VerifyPageFocusMessage(TestRenderWidgetHost* twh, bool expected_focus) {
@@ -2289,6 +2275,21 @@ TEST_F(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
               nodes_with_back_links.end());
 }
 
+// Stub out remote frame mojo binding. Intercepts calls to SetPageFocus
+// and marks the message as received.
+class PageFocusRemoteFrame : public content::FakeRemoteFrame {
+ public:
+  explicit PageFocusRemoteFrame(RenderFrameProxyHost* render_frame_proxy_host) {
+    Init(render_frame_proxy_host->GetRemoteAssociatedInterfacesTesting());
+  }
+
+  void SetPageFocus(bool is_focused) override { set_page_focus_ = is_focused; }
+  bool IsPageFocused() { return set_page_focus_; }
+
+ private:
+  bool set_page_focus_ = false;
+};
+
 // Check that when a window is focused/blurred, the message that sets
 // page-level focus updates is sent to each process involved in rendering the
 // current page.
@@ -2344,8 +2345,18 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   TestRenderFrameHost* host1 =
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child1, &entryB));
+
+  // The main frame should have proxies for B.
+  RenderFrameProxyHost* proxyB =
+      root->render_manager()->GetRenderFrameProxyHost(host1->GetSiteInstance());
+  EXPECT_TRUE(proxyB);
+
+  // Create PageFocusRemoteFrame to intercept SetPageFocus to RemoteFrame.
+  PageFocusRemoteFrame remote_frame1(proxyB);
+
   TestRenderFrameHost* host2 =
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child2, &entryB));
+
   child1->DidNavigateFrame(host1, true /* was_caused_by_user_gesture */,
                            false /* is_same_document_navigation */,
                            blink::FramePolicy());
@@ -2361,6 +2372,15 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   TestRenderFrameHost* host3 =
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child3, &entryC));
+
+  // The main frame should have proxies for C.
+  RenderFrameProxyHost* proxyC =
+      root->render_manager()->GetRenderFrameProxyHost(host3->GetSiteInstance());
+  EXPECT_TRUE(proxyC);
+
+  // Create PageFocusRemoteFrame to intercept SetPageFocus to RemoteFrame.
+  PageFocusRemoteFrame remote_frame3(proxyC);
+
   child3->DidNavigateFrame(host3, true /* was_caused_by_user_gesture */,
                            false /* is_same_document_navigation */,
                            blink::FramePolicy());
@@ -2372,13 +2392,6 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   EXPECT_NE(host3->GetProcess(), main_test_rfh()->GetProcess());
   EXPECT_NE(host3->GetProcess(), host1->GetProcess());
 
-  // The main frame should have proxies for B and C.
-  RenderFrameProxyHost* proxyB =
-      root->render_manager()->GetRenderFrameProxyHost(host1->GetSiteInstance());
-  EXPECT_TRUE(proxyB);
-  RenderFrameProxyHost* proxyC =
-      root->render_manager()->GetRenderFrameProxyHost(host3->GetSiteInstance());
-  EXPECT_TRUE(proxyC);
   base::RunLoop().RunUntilIdle();
 
   // Focus the main page, and verify that the focus message was sent to all
@@ -2391,8 +2404,8 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   main_test_rfh()->GetRenderWidgetHost()->Focus();
   base::RunLoop().RunUntilIdle();
   VerifyPageFocusMessage(main_test_rfh()->GetRenderWidgetHost(), true);
-  VerifyPageFocusMessage(host1->GetProcess(), true, proxyB->GetRoutingID());
-  VerifyPageFocusMessage(host3->GetProcess(), true, proxyC->GetRoutingID());
+  EXPECT_TRUE(remote_frame1.IsPageFocused());
+  EXPECT_TRUE(remote_frame3.IsPageFocused());
 
   // Similarly, simulate focus loss on main page, and verify that the focus
   // message was sent to all processes.
@@ -2402,8 +2415,8 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   main_test_rfh()->GetRenderWidgetHost()->Blur();
   base::RunLoop().RunUntilIdle();
   VerifyPageFocusMessage(main_test_rfh()->GetRenderWidgetHost(), false);
-  VerifyPageFocusMessage(host1->GetProcess(), false, proxyB->GetRoutingID());
-  VerifyPageFocusMessage(host3->GetProcess(), false, proxyC->GetRoutingID());
+  EXPECT_FALSE(remote_frame1.IsPageFocused());
+  EXPECT_FALSE(remote_frame3.IsPageFocused());
 }
 
 // Check that page-level focus state is preserved across subframe navigations.
@@ -2459,19 +2472,25 @@ TEST_F(RenderFrameHostManagerTest,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   TestRenderFrameHost* hostC =
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child, &entryC));
+
+  // The main frame should now have a proxy for C.
+  RenderFrameProxyHost* proxyC =
+      root->render_manager()->GetRenderFrameProxyHost(hostC->GetSiteInstance());
+  EXPECT_TRUE(proxyC);
+
+  // Create PageFocusRemoteFrame to intercept SetPageFocus to RemoteFrame.
+  PageFocusRemoteFrame remote_frame(proxyC);
+
   child->DidNavigateFrame(hostC, true /* was_caused_by_user_gesture */,
                           false /* is_same_document_navigation */,
                           blink::FramePolicy());
 
-  // The main frame should now have a proxy for C.
-  RenderFrameProxyHost* proxy =
-      root->render_manager()->GetRenderFrameProxyHost(hostC->GetSiteInstance());
-  EXPECT_TRUE(proxy);
+  base::RunLoop().RunUntilIdle();
 
   // Since the B->C navigation happened while the current page was focused,
   // page focus should propagate to the new subframe process.  Check that
   // process C received the proper focus message.
-  VerifyPageFocusMessage(hostC->GetProcess(), true, proxy->GetRoutingID());
+  EXPECT_TRUE(remote_frame.IsPageFocused());
 }
 
 // Checks that a restore navigation to a WebUI works.

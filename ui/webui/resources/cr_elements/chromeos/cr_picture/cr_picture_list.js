@@ -130,7 +130,7 @@ Polymer({
    */
   setSelectedImageUrl(imageUrl) {
     const image = this.$.selector.items.find(function(image) {
-      return image.dataset.url == imageUrl;
+      return image.dataset.url === imageUrl;
     });
     if (image) {
       this.setSelectedImage_(image);
@@ -145,7 +145,7 @@ Polymer({
    * @param {number=} imageIndex
    */
   setOldImageUrl(imageUrl, imageIndex) {
-    if (imageUrl == CrPicture.kDefaultImageUrl || imageIndex === 0) {
+    if (imageUrl === CrPicture.kDefaultImageUrl || imageIndex === 0) {
       // Treat the default image as empty so it does not show in the list.
       this.oldImageUrl_ = '';
       this.setSelectedImageUrl(CrPicture.kDefaultImageUrl);
@@ -160,7 +160,7 @@ Polymer({
       this.$.selector.select(this.$.selector.indexOf(this.$.cameraImage));
     } else if (
         this.fallbackImage_ &&
-        this.fallbackImage_.dataset.type != CrPicture.SelectionTypes.OLD) {
+        this.fallbackImage_.dataset.type !== CrPicture.SelectionTypes.OLD) {
       this.selectImage_(this.fallbackImage_, true /* activate */);
     } else {
       this.selectImage_(this.$.profileImage, true /* activate */);
@@ -188,13 +188,15 @@ Polymer({
       case 'left':
         do {
           selector.selectPrevious();
-        } while (this.selectedItem.hidden && this.selectedItem != prevSelected);
+        } while (this.selectedItem.hidden &&
+                 this.selectedItem !== prevSelected);
         break;
       case 'down':
       case 'right':
         do {
           selector.selectNext();
-        } while (this.selectedItem.hidden && this.selectedItem != prevSelected);
+        } while (this.selectedItem.hidden &&
+                 this.selectedItem !== prevSelected);
         break;
       default:
         return;
@@ -210,7 +212,7 @@ Polymer({
     this.fallbackImage_ = image;
     // If the user is currently taking a photo, do not change the focus.
     if (!this.selectedItem ||
-        this.selectedItem.dataset.type != CrPicture.SelectionTypes.CAMERA) {
+        this.selectedItem.dataset.type !== CrPicture.SelectionTypes.CAMERA) {
       this.$.selector.select(this.$.selector.indexOf(image));
       this.selectedItem = image;
     }
@@ -230,15 +232,15 @@ Polymer({
    */
   selectImage_(selected, activate) {
     this.cameraSelected_ =
-        selected.dataset.type == CrPicture.SelectionTypes.CAMERA;
+        selected.dataset.type === CrPicture.SelectionTypes.CAMERA;
     this.selectedItem = selected;
 
-    if (selected.dataset.type == CrPicture.SelectionTypes.CAMERA) {
+    if (selected.dataset.type === CrPicture.SelectionTypes.CAMERA) {
       if (activate) {
         this.fire('focus-action', selected);
       }
     } else if (
-        activate || selected.dataset.type != CrPicture.SelectionTypes.FILE) {
+        activate || selected.dataset.type !== CrPicture.SelectionTypes.FILE) {
       this.fire('image-activate', selected);
     }
   },
@@ -251,7 +253,7 @@ Polymer({
     event.stopPropagation();
     const type = event.detail.item.dataset.type;
     // Don't change focus when activating the camera via mouse.
-    const activate = type != CrPicture.SelectionTypes.CAMERA;
+    const activate = type !== CrPicture.SelectionTypes.CAMERA;
     this.selectImage_(event.detail.item, activate);
   },
 
@@ -289,7 +291,7 @@ Polymer({
      * Extract first frame from image by creating a single frame PNG using
      * url as input if base64 encoded and potentially animated.
      */
-    if (url.split(',')[0] == 'data:image/png;base64') {
+    if (url.split(',')[0] === 'data:image/png;base64') {
       return CrPngBehavior.convertImageSequenceToPng([url]);
     }
 

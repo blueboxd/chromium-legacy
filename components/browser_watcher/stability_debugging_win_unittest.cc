@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include "base/command_line.h"
+#include "base/debug/activity_analyzer.h"
 #include "base/debug/activity_tracker.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -22,6 +23,7 @@
 
 namespace browser_watcher {
 
+using base::debug::GlobalActivityAnalyzer;
 using base::debug::GlobalActivityTracker;
 
 const int kMemorySize = 1 << 20;  // 1MiB
@@ -51,6 +53,10 @@ class StabilityDebuggingTest : public testing::Test {
 
   const base::FilePath& debug_path() { return debug_path_; }
 
+  std::unique_ptr<GlobalActivityAnalyzer> CreateAnalyzer() {
+    return GlobalActivityAnalyzer::CreateWithFile(debug_path());
+  }
+
  private:
   base::ScopedTempDir temp_dir_;
   base::FilePath debug_path_;
@@ -73,7 +79,7 @@ TEST_F(StabilityDebuggingTest, MAYBE_CrashingTest) {
 
   // Collect the report.
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, Extract(debug_path(), &report));
+  ASSERT_EQ(SUCCESS, Extract(CreateAnalyzer(), &report));
 
   // Validate expectations.
   ASSERT_EQ(1, report.process_states_size());

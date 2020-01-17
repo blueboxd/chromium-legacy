@@ -29,7 +29,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'updateDevicesMenu', this.updateDevicesMenu_.bind(this));
     this.browserProxy.getDefaultCaptureDevices(this.type);
@@ -41,7 +41,7 @@ Polymer({
    * @param {!Array<MediaPickerEntry>} devices List of available devices.
    * @param {string} defaultDevice The unique id of the current default device.
    */
-  updateDevicesMenu_: function(type, devices, defaultDevice) {
+  updateDevicesMenu_(type, devices, defaultDevice) {
     if (type != this.type) {
       return;
     }
@@ -61,7 +61,7 @@ Polymer({
    * A handler for when an item is selected in the media picker.
    * @private
    */
-  onChange_: function() {
+  onChange_() {
     this.browserProxy.setDefaultCaptureDevice(
         this.type, this.$.mediaPicker.value);
   },

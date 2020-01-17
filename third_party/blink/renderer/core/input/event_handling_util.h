@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_EVENT_HANDLING_UTIL_H_
 
 #include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
@@ -23,7 +24,7 @@ enum class DispatchEventResult;
 
 namespace event_handling_util {
 
-HitTestResult HitTestResultInFrame(
+CORE_EXPORT HitTestResult HitTestResultInFrame(
     LocalFrame*,
     const HitTestLocation&,
     HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |

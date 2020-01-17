@@ -97,9 +97,7 @@ source_set("constants") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "popup_menu_mediator_unittest.mm",
-  ]
+  sources = [ "popup_menu_mediator_unittest.mm" ]
   deps = [
     ":constants",
     ":popup_menu",

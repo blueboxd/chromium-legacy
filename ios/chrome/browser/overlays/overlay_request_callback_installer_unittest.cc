@@ -17,16 +17,14 @@ namespace {
 DEFINE_TEST_OVERLAY_REQUEST_CONFIG(SupportedConfig);
 DEFINE_TEST_OVERLAY_REQUEST_CONFIG(UnsupportedConfig);
 DEFINE_TEST_OVERLAY_RESPONSE_INFO(DispatchInfo);
-DEFINE_TEST_OVERLAY_RESPONSE_INFO(CompletionInfo);
 }  // namespace
 
 // Test fixture for OverlayRequestCallbackInstaller.
 class OverlayRequestCallbackInstallerTest : public PlatformTest {
  public:
-  OverlayRequestCallbackInstallerTest() : installer_(&mock_receiver_) {
-    installer_.SetRequestSupport(SupportedConfig::RequestSupport());
-    installer_.StartInstallingDispatchCallbacksWithSupport(
-        DispatchInfo::ResponseSupport());
+  OverlayRequestCallbackInstallerTest()
+      : installer_(&mock_receiver_, {DispatchInfo::ResponseSupport()}) {
+    installer_.set_request_support(SupportedConfig::RequestSupport());
   }
   ~OverlayRequestCallbackInstallerTest() override = default;
 
@@ -35,14 +33,12 @@ class OverlayRequestCallbackInstallerTest : public PlatformTest {
   // callback execution if |expect_callback_execution| is true.
   void DispatchResponse(OverlayRequest* request,
                         bool expect_callback_execution) {
-    std::unique_ptr<OverlayResponse> response =
-        OverlayResponse::CreateWithInfo<DispatchInfo>();
     if (expect_callback_execution) {
       EXPECT_CALL(mock_receiver_,
-                  DispatchCallback(request, DispatchInfo::ResponseSupport(),
-                                   response.get()));
+                  DispatchCallback(request, DispatchInfo::ResponseSupport()));
     }
-    request->GetCallbackManager()->DispatchResponse(std::move(response));
+    request->GetCallbackManager()->DispatchResponse(
+        OverlayResponse::CreateWithInfo<DispatchInfo>());
   }
 
  protected:
@@ -62,12 +58,7 @@ TEST_F(OverlayRequestCallbackInstallerTest, InstallCallbacks) {
   DispatchResponse(request.get(), /*expect_callback_execution=*/true);
 
   // Destroy the request and verify that the completion callback was executed.
-  std::unique_ptr<OverlayResponse> completion_response =
-      OverlayResponse::CreateWithInfo<CompletionInfo>();
-  EXPECT_CALL(mock_receiver_,
-              CompletionCallback(request.get(), completion_response.get()));
-  request->GetCallbackManager()->SetCompletionResponse(
-      std::move(completion_response));
+  EXPECT_CALL(mock_receiver_, CompletionCallback(request.get()));
   request = nullptr;
 }
 
@@ -101,5 +92,5 @@ TEST_F(OverlayRequestCallbackInstallerTest, Idempotency) {
 
   // Expect the completion callback to be executed upon destruction of
   // |request|.
-  EXPECT_CALL(mock_receiver_, CompletionCallback(request.get(), nullptr));
+  EXPECT_CALL(mock_receiver_, CompletionCallback(request.get()));
 }

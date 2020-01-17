@@ -77,6 +77,8 @@ class IOSChromeLocalSessionEventRouter
   void WebStateDetachedAt(WebStateList* web_state_list,
                           web::WebState* web_state,
                           int index) override;
+  void WillBeginBatchOperation(WebStateList* web_state_list) override;
+  void BatchOperationEnded(WebStateList* web_state_list) override;
 
  private:
   // Methods to add and remove WebStateList observer.
@@ -107,6 +109,10 @@ class IOSChromeLocalSessionEventRouter
 
   std::unique_ptr<base::CallbackList<void(web::WebState*)>::Subscription>
       tab_parented_subscription_;
+
+  // Track the number of WebStateList we are observing that are in a batch
+  // operation.
+  int batch_in_progress_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeLocalSessionEventRouter);
 };

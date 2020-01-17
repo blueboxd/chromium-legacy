@@ -89,20 +89,14 @@ test("ui_touch_selection_unittests") {
     "//ui/gfx:test_support",
   ]
 
-  data_deps = [
-    "//third_party/mesa_headers",
-  ]
+  data_deps = [ "//third_party/mesa_headers" ]
 }
 
 if (is_android) {
   java_cpp_enum("ui_touch_selection_enums_srcjar") {
-    sources = [
-      "selection_event_type.h",
-    ]
+    sources = [ "selection_event_type.h" ]
   }
   java_cpp_enum("ui_touch_handle_orientation_srcjar") {
-    sources = [
-      "touch_handle_orientation.h",
-    ]
+    sources = [ "touch_handle_orientation.h" ]
   }
 }

@@ -63,7 +63,7 @@ Polymer({
     /** @private {Object} */
     formatter_: {
       type: Object,
-      value: function() {
+      value() {
         // navigator.language actually returns a locale, not just a language.
         const locale = window.navigator.language;
         const options = {minimumFractionDigits: 1, maximumFractionDigits: 1};
@@ -78,7 +78,7 @@ Polymer({
     maxScanSpeedLabelSec_: {
       readOnly: true,
       type: String,
-      value: function() {
+      value() {
         return this.scanSpeedStringInSec_(this.maxScanSpeedMs_);
       },
     },
@@ -90,7 +90,7 @@ Polymer({
     minScanSpeedLabelSec_: {
       readOnly: true,
       type: String,
-      value: function() {
+      value() {
         return this.scanSpeedStringInSec_(this.minScanSpeedMs_);
       },
     },
@@ -99,7 +99,7 @@ Polymer({
     switchAssignOptions_: {
       readOnly: true,
       type: Array,
-      value: function() {
+      value() {
         return [
           {
             value: SwitchAccessAssignmentValue.NONE,
@@ -122,7 +122,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  currentSpeed_: function() {
+  currentSpeed_() {
     const speed = this.get('prefs.switch_access.auto_scan.speed_ms.value');
     if (typeof speed != 'number') {
       return '';
@@ -135,7 +135,7 @@ Polymer({
    *     keyboard.
    * @private
    */
-  showKeyboardScanSettings_: function() {
+  showKeyboardScanSettings_() {
     const improvedTextInputEnabled = loadTimeData.getBoolean(
         'showExperimentalAccessibilitySwitchAccessImprovedTextInput');
     const autoScanEnabled = /** @type {boolean} */
@@ -146,7 +146,7 @@ Polymer({
   /**
    * @param {string} command
    */
-  onSwitchAssigned_: function(command) {
+  onSwitchAssigned_(command) {
     const pref = 'prefs.switch_access.' + command;
     const keyCodeSuffix = '.key_codes.value';
     const settingSuffix = '.setting.value';
@@ -164,15 +164,15 @@ Polymer({
     }
   },
 
-  onNextAssigned_: function() {
+  onNextAssigned_() {
     this.onSwitchAssigned_('next');
   },
 
-  onPreviousAssigned_: function() {
+  onPreviousAssigned_() {
     this.onSwitchAssigned_('previous');
   },
 
-  onSelectAssigned_: function() {
+  onSelectAssigned_() {
     this.onSwitchAssigned_('select');
   },
 
@@ -181,7 +181,7 @@ Polymer({
    * @return {string} a string representing the scan speed in seconds.
    * @private
    */
-  scanSpeedStringInSec_: function(scanSpeedValueMs) {
+  scanSpeedStringInSec_(scanSpeedValueMs) {
     const scanSpeedValueSec = scanSpeedValueMs / 1000;
     return this.i18n(
         'durationInSeconds', this.formatter_.format(scanSpeedValueSec));

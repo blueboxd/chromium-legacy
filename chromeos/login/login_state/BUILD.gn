@@ -41,7 +41,5 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-  sources = [
-    "login_state_unittest.cc",
-  ]
+  sources = [ "login_state_unittest.cc" ]
 }

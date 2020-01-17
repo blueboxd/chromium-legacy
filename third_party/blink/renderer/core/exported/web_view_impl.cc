@@ -2305,7 +2305,7 @@ void WebViewImpl::AdvanceFocusAcrossFrames(WebFocusType type,
                                            WebLocalFrame* to) {
   // TODO(alexmos): Pass in proper with sourceCapabilities.
   GetPage()->GetFocusController().AdvanceFocusAcrossFrames(
-      type, ToWebRemoteFrameImpl(from)->GetFrame(),
+      type, To<WebRemoteFrameImpl>(from)->GetFrame(),
       To<WebLocalFrameImpl>(to)->GetFrame());
 }
 

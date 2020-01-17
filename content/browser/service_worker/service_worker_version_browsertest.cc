@@ -59,6 +59,7 @@
 #include "net/http/http_response_info.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/features.h"
 #include "storage/browser/test/blob_test_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
@@ -444,7 +445,7 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
         script_type, wrapper()->context()->storage()->NewVersionId(),
         wrapper()->context()->AsWeakPtr());
     // Make the registration findable via storage functions.
-    wrapper()->context()->storage()->NotifyInstallingRegistration(
+    wrapper()->context()->registry()->NotifyInstallingRegistration(
         registration_.get());
   }
 
@@ -561,7 +562,7 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
                                          const GURL& origin) {
     ASSERT_TRUE(
         BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId()));
-    wrapper()->context()->storage()->FindRegistrationForId(
+    wrapper()->context()->registry()->FindRegistrationForId(
         id, origin,
         CreateFindRegistrationReceiver(BrowserThread::UI, std::move(done),
                                        result));
@@ -571,7 +572,7 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
       blink::ServiceWorkerStatusCode status) {
     ASSERT_TRUE(
         BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId()));
-    wrapper()->context()->storage()->NotifyDoneInstallingRegistration(
+    wrapper()->context()->registry()->NotifyDoneInstallingRegistration(
         registration_.get(), version_.get(), status);
   }
 
@@ -1566,6 +1567,79 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, RendererCrash) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
   RunOnCoreThread(base::BindOnce(&ServiceWorkerVersion::RemoveObserver,
                                  base::Unretained(version_.get()), &observer));
+}
+
+// This tests whether the ServiceWorkerVersion can have the correct value of
+// Cross-Origin-Embedder-Policy and checks if it works either of when
+// CrossOriginIsolation is enabled and disabled.
+class ServiceWorkerVersionCoepTest : public ServiceWorkerVersionBrowserTest,
+                                     public testing::WithParamInterface<bool> {
+ public:
+  ServiceWorkerVersionCoepTest() {
+    if (IsCrossOriginIsolationEnabled()) {
+      feature_list_.InitAndEnableFeature(
+          network::features::kCrossOriginIsolation);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          network::features::kCrossOriginIsolation);
+    }
+  }
+
+  static bool IsCrossOriginIsolationEnabled() { return GetParam(); }
+
+  // Returns a response with Cross-Origin-Embedder-Policy header matching with
+  // |coep|.
+  static std::unique_ptr<net::test_server::HttpResponse>
+  RequestHandlerForWorkerScriptWithCoep(
+      base::Optional<network::mojom::CrossOriginEmbedderPolicy> coep,
+      const net::test_server::HttpRequest& request) {
+    static int counter = 0;
+    if (request.relative_url != "/service_worker/generated")
+      return nullptr;
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_code(net::HTTP_OK);
+    response->set_content(
+        base::StringPrintf("// empty. counter = %d\n", counter++));
+    response->set_content_type("text/javascript");
+    if (coep.has_value()) {
+      std::string header_value =
+          coep.value() == network::mojom::CrossOriginEmbedderPolicy::kNone
+              ? "none"
+              : "require-corp";
+      response->AddCustomHeader("Cross-Origin-Embedder-Policy", header_value);
+    }
+    return response;
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All, ServiceWorkerVersionCoepTest, testing::Bool());
+
+// Checks if ServiceWorkerVersion has the correct value of COEP when a new
+// worker is installed.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerVersionCoepTest,
+                       CrossOriginEmbedderPolicy_Install) {
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &ServiceWorkerVersionCoepTest::RequestHandlerForWorkerScriptWithCoep,
+      network::mojom::CrossOriginEmbedderPolicy::kRequireCorp));
+  StartServerAndNavigateToSetup();
+
+  // The version cannot get the proper COEP value until the worker is started.
+  RunOnCoreThread(base::BindOnce(
+      &ServiceWorkerVersionBrowserTest::SetUpRegistrationOnCoreThread,
+      base::Unretained(this), "/service_worker/generated"));
+  EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicy::kNone,
+            version_->cross_origin_embedder_policy());
+
+  // Once it's started, the worker script is read from the network and the COEP
+  // value is set to the version.
+  StartWorker(blink::ServiceWorkerStatusCode::kOk);
+  EXPECT_EQ(IsCrossOriginIsolationEnabled()
+                ? network::mojom::CrossOriginEmbedderPolicy::kRequireCorp
+                : network::mojom::CrossOriginEmbedderPolicy::kNone,
+            version_->cross_origin_embedder_policy());
 }
 
 class ServiceWorkerVersionBrowserV8FullCodeCacheTest

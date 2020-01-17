@@ -595,6 +595,7 @@
       name: "DisplayLocking",
       origin_trial_feature_name: "DisplayLocking",
       status: "experimental",
+      implied_by: ["CSSRenderSubtree"],
     },
     {
       name: "DocumentCookie",
@@ -623,7 +624,7 @@
     },
     {
       name: "EncryptedMediaEncryptionSchemeQuery",
-      status: "test",
+      status: "stable",
     },
     {
       name: "EncryptedMediaHdcpPolicyCheck",
@@ -1149,6 +1150,7 @@
     },
     {
       name: "OffMainThreadCSSPaint",
+      status: "stable",
     },
     {
       name: "OffscreenCanvasCommit",
@@ -1626,7 +1628,7 @@
     {
       name: "TextFragmentIdentifiers",
       origin_trial_feature_name: "TextFragmentIdentifiers",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "TimerThrottlingForBackgroundTabs",
@@ -1816,6 +1818,8 @@
     },
     {
       name: "WebNFC",
+      origin_trial_feature_name: "WebNFC",
+      origin_trial_os: ["android"],
       status: "experimental",
     },
     {

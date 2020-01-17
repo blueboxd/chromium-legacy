@@ -74,6 +74,3 @@ export class FileVideoSaver {
     return new FileVideoSaver(file, writer);
   }
 }
-
-/** @const */
-cca.models.FileVideoSaver = FileVideoSaver;

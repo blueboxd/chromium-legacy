@@ -30,10 +30,10 @@ namespace {
 // According to the IEEE 802.11 standard the SSID is a series of 0 to 32 octets.
 const int kMaximumSSIDLengthInBytes = 32;
 
-void AddKeyToList(const char* key, base::Value::ListStorage& list) {
+void AddKeyToList(const char* key, base::Value* list) {
   base::Value key_value(key);
-  if (!base::Contains(list, key_value))
-    list.push_back(std::move(key_value));
+  if (!base::Contains(list->GetList(), key_value))
+    list->Append(std::move(key_value));
 }
 
 std::string GetStringFromDict(const base::Value& dict, const char* key) {
@@ -919,11 +919,9 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
       recommended = result->SetKey(::onc::kRecommended, base::ListValue());
 
     // If kUserAuthenticationType is unspecified, allow Password and OTP.
-    base::Value::ListStorage& recommended_list = recommended->GetList();
-    if (!result->FindKeyOfType(::onc::openvpn::kUserAuthenticationType,
-                               base::Value::Type::STRING)) {
-      AddKeyToList(::onc::openvpn::kPassword, recommended_list);
-      AddKeyToList(::onc::openvpn::kOTP, recommended_list);
+    if (!result->FindStringKey(::onc::openvpn::kUserAuthenticationType)) {
+      AddKeyToList(::onc::openvpn::kPassword, recommended);
+      AddKeyToList(::onc::openvpn::kOTP, recommended);
     }
 
     // If client cert type is not provided, empty, or 'None', allow client cert
@@ -932,8 +930,8 @@ bool Validator::ValidateOpenVPN(base::DictionaryValue* result) {
         GetStringFromDict(*result, ::onc::client_cert::kClientCertType);
     if (client_cert_type.empty() ||
         client_cert_type == ::onc::client_cert::kClientCertTypeNone) {
-      AddKeyToList(::onc::client_cert::kClientCertType, recommended_list);
-      AddKeyToList(::onc::client_cert::kClientCertPKCS11Id, recommended_list);
+      AddKeyToList(::onc::client_cert::kClientCertType, recommended);
+      AddKeyToList(::onc::client_cert::kClientCertPKCS11Id, recommended);
     }
   }
 

@@ -43,7 +43,21 @@ ThunkNotificationDelegate::~ThunkNotificationDelegate() = default;
 
 HandleNotificationClickDelegate::HandleNotificationClickDelegate(
     const base::RepeatingClosure& callback) {
-  if (!callback.is_null()) {
+  SetCallback(callback);
+}
+
+HandleNotificationClickDelegate::HandleNotificationClickDelegate(
+    const ButtonClickCallback& callback)
+    : callback_(callback) {}
+
+void HandleNotificationClickDelegate::SetCallback(
+    const ButtonClickCallback& callback) {
+  callback_ = callback;
+}
+
+void HandleNotificationClickDelegate::SetCallback(
+    const base::RepeatingClosure& closure) {
+  if (!closure.is_null()) {
     // Create a callback that consumes and ignores the button index parameter,
     // and just runs the provided closure.
     callback_ = base::BindRepeating(
@@ -52,13 +66,9 @@ HandleNotificationClickDelegate::HandleNotificationClickDelegate(
           DCHECK(!button_index);
           closure.Run();
         },
-        callback);
+        closure);
   }
 }
-
-HandleNotificationClickDelegate::HandleNotificationClickDelegate(
-    const ButtonClickCallback& callback)
-    : callback_(callback) {}
 
 HandleNotificationClickDelegate::~HandleNotificationClickDelegate() {}
 

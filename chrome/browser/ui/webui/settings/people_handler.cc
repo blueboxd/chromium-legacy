@@ -533,14 +533,17 @@ base::Value PeopleHandler::GetStoredAccountsList() {
   base::Value accounts(base::Value::Type::LIST);
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_)) {
-    // If dice is enabled, show all the accounts.
-    for (auto const& account :
-         signin_ui_util::GetAccountsForDicePromos(profile_)) {
+    // If dice is enabled, show the account.
+    AccountInfo account = signin_ui_util::GetAccountForDicePromos(profile_);
+    if (!account.IsEmpty()) {
       accounts.Append(GetAccountValue(account));
     }
     return accounts;
   }
 #endif
+  // Guest mode does not have a primary account (or an IdentityManager).
+  if (profile_->IsGuestSession())
+    return base::ListValue();
   // If dice is disabled or unsupported, show only the primary account.
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
   base::Optional<AccountInfo> primary_account_info =
@@ -622,6 +625,11 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
       // data types.
       passphrase_failed = !service->GetUserSettings()->SetDecryptionPassphrase(
           configuration.passphrase);
+    } else if (service->GetUserSettings()->IsTrustedVaultKeyRequired()) {
+      // There are pending keys due to trusted vault keys being required, likely
+      // because something changed since the UI was displayed. A passphrase
+      // cannot be set in such circumstances.
+      passphrase_failed = true;
     } else {
       // OK, the user sent us a passphrase, but we don't have pending keys. So
       // it either means that the pending keys were resolved somehow since the
@@ -1033,9 +1041,10 @@ void PeopleHandler::PushSyncPrefs() {
   args.SetBoolean("passphraseRequired",
                   sync_user_settings->IsPassphraseRequired());
 
-  args.SetBoolean(
-      "trustedVaultKeysRequired",
-      sync_user_settings->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+  // Same as above, we call IsTrustedVaultKeyRequired() here instead of.
+  // IsTrustedVaultKeyRequiredForPreferredDataTypes().
+  args.SetBoolean("trustedVaultKeysRequired",
+                  sync_user_settings->IsTrustedVaultKeyRequired());
 
   syncer::PassphraseType passphrase_type =
       sync_user_settings->GetPassphraseType();

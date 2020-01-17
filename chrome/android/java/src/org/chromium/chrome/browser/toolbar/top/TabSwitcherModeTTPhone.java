@@ -18,8 +18,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
@@ -31,12 +31,12 @@ import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
-import org.chromium.ui.UiUtils;
 import org.chromium.ui.widget.OptimizedFrameLayout;
 
 /** The tab switcher mode top toolbar shown on phones. */
@@ -64,7 +64,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     private ColorStateList mDarkIconTint;
 
     private boolean mIsIncognito;
-    private boolean mShouldShowButtons;
+    private boolean mShouldShowNewTabButton;
     private boolean mShouldShowNewTabVariation;
 
     private ObjectAnimator mVisiblityAnimator;
@@ -82,38 +82,15 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         mMenuButton = findViewById(R.id.menu_button_wrapper);
         mToggleTabStackButton = findViewById(R.id.tab_switcher_mode_tab_switcher_button);
 
-        boolean isBottomToolbarEnabled = FeatureUtilities.isBottomToolbarEnabled();
-        boolean isGridTabSwitcherEnabled = FeatureUtilities.isGridTabSwitcherEnabled();
+        // TODO(twellington): Try to make NewTabButton responsible for handling its own clicks.
+        //                    TabSwitcherBottomToolbarCoordinator also uses NewTabButton and
+        //                    sets an onClickListener directly on NewTabButton rather than
+        //                    acting as the click listener itself so the behavior between this
+        //                    class and the bottom toolbar will need to be unified.
+        mNewTabImageButton.setOnClickListener(this);
+        mNewTabViewButton.setOnClickListener(this);
 
-        if (isBottomToolbarEnabled && !isGridTabSwitcherEnabled) {
-            UiUtils.removeViewFromParent(mNewTabImageButton);
-            mNewTabImageButton.destroy();
-            mNewTabImageButton = null;
-
-            UiUtils.removeViewFromParent(mMenuButton);
-            mMenuButton.destroy();
-            mMenuButton = null;
-
-            UiUtils.removeViewFromParent(mToggleTabStackButton);
-            mToggleTabStackButton.destroy();
-            mToggleTabStackButton = null;
-
-            UiUtils.removeViewFromParent(mNewTabViewButton);
-            mNewTabViewButton = null;
-        } else {
-            // TODO(twellington): Try to make NewTabButton responsible for handling its own clicks.
-            //                    TabSwitcherBottomToolbarCoordinator also uses NewTabButton and
-            //                    sets an onClickListener directly on NewTabButton rather than
-            //                    acting as the click listener itself so the behavior between this
-            //                    class and the bottom toolbar will need to be unified.
-            mNewTabImageButton.setOnClickListener(this);
-            mNewTabViewButton.setOnClickListener(this);
-        }
-
-        if ((usingHorizontalTabSwitcher() || FeatureUtilities.isGridTabSwitcherEnabled())
-                && IncognitoUtils.isIncognitoModeEnabled()) {
-            updateTabSwitchingElements(true);
-        }
+        updateTabSwitchingElements(shouldShowIncognitoToggle());
     }
 
     @Override
@@ -295,11 +272,14 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
      * @param isVisible Whether the bottom toolbar is visible.
      */
     void onBottomToolbarVisibilityChanged(boolean isVisible) {
-        // When bottom toolbar is showing, hide buttons in top toolbar that have overlapping
-        // functionality; otherwise show buttons in top toolbar.
-        mShouldShowButtons = !isVisible;
-        setNewTabButtonVisibility(mShouldShowButtons);
-        setMenuButtonVisibility(mShouldShowButtons);
+        mShouldShowNewTabButton = !isVisible
+                || (FeatureUtilities.isBottomToolbarEnabled()
+                        && !BottomToolbarVariationManager.isNewTabButtonOnBottom());
+        setNewTabButtonVisibility(mShouldShowNewTabButton);
+        // show tab switcher button on the top in landscape mode.
+        if (BottomToolbarVariationManager.isTabSwitcherOnBottom() && !shouldShowIncognitoToggle()) {
+            mToggleTabStackButton.setVisibility(isVisible ? GONE : VISIBLE);
+        }
     }
 
     private void setNewTabButtonVisibility(boolean isButtonVisible) {
@@ -414,6 +394,15 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         setToggleTabStackButtonVisibility(!showIncognitoToggle);
     }
 
+    /**
+     * @return Whether or not incognito toggle should be visible based on the enabled features
+     *         and incognito status.
+     */
+    private boolean shouldShowIncognitoToggle() {
+        return (usingHorizontalTabSwitcher() || FeatureUtilities.isGridTabSwitcherEnabled())
+                && IncognitoUtils.isIncognitoModeEnabled();
+    }
+
     private void updateIncognitoToggleTabsVisibility() {
         // TODO(yuezhanggg): Add a regression test for this "New Tab" variation. (crbug: 977546)
         if (!FeatureUtilities.isGridTabSwitcherEnabled() || !ChromeFeatureList.isInitialized()
@@ -430,7 +419,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         // Show new tab variation when there are no incognito tabs.
         mShouldShowNewTabVariation = !hasIncognitoTabs();
         mIncognitoToggleTabLayout.setVisibility(mShouldShowNewTabVariation ? GONE : VISIBLE);
-        setNewTabButtonVisibility(mShouldShowButtons);
+        setNewTabButtonVisibility(mShouldShowNewTabButton);
     }
 
     private boolean hasIncognitoTabs() {

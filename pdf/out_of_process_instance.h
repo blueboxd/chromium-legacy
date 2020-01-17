@@ -158,6 +158,7 @@ class OutOfProcessInstance : public pp::Instance,
   // Helper functions for implementing PPP_PDF.
   void RotateClockwise();
   void RotateCounterclockwise();
+  void SetTwoUpView(bool enable_two_up_view);
 
   // Creates a file name for saving a PDF file, given the source URL. Exposed
   // for testing.

@@ -12,6 +12,7 @@ import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -100,5 +101,26 @@ public final class Profile {
         }
         mImpl = null;
         sProfiles.remove(mName);
+    }
+
+    /**
+     * Allows embedders to override the default download directory. By default this is the system
+     * download directory.
+     *
+     * @param directory the directory to place downloads in.
+     *
+     * @since 81
+     */
+    public void setDownloadDirectory(@NonNull File directory) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 81) {
+            throw new UnsupportedOperationException();
+        }
+
+        try {
+            mImpl.setDownloadDirectory(directory.toString());
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
     }
 }

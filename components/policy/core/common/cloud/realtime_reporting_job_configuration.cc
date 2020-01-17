@@ -79,10 +79,9 @@ bool RealtimeReportingJobConfiguration::AddReport(base::Value report) {
   payload_.MergeDictionary(&*context);
 
   // Append event_list to the payload.
-  base::Value::ListStorage& to = payload_.FindListKey(kEventsKey)->GetList();
-  base::Value::ListStorage& from = event_list->GetList();
-  to.insert(to.end(), std::make_move_iterator(from.begin()),
-            std::make_move_iterator(from.end()));
+  base::Value* to = payload_.FindListKey(kEventsKey);
+  for (auto& event : event_list->GetList())
+    to->Append(std::move(event));
   return true;
 }
 

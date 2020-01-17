@@ -461,8 +461,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   }
 
   scoped_refptr<gl::GLContext> context =
-      use_virtualized_gl_contexts ? share_group->GetSharedContext(surface.get())
-                                  : nullptr;
+      use_virtualized_gl_contexts ? share_group->shared_context() : nullptr;
   if (context && (!context->MakeCurrent(surface.get()) ||
                   context->CheckStickyGraphicsResetStatus() != GL_NO_ERROR)) {
     context = nullptr;
@@ -487,7 +486,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
     gpu_feature_info_.ApplyToGLContext(context.get());
 
     if (use_virtualized_gl_contexts)
-      share_group->SetSharedContext(surface.get(), context.get());
+      share_group->SetSharedContext(context.get());
   }
 
   // This should be either:
@@ -528,6 +527,9 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
       if (!shared_context_state_->InitializeGL(gpu_preferences_,
                                                feature_info.get())) {
         shared_context_state_ = nullptr;
+        LOG(ERROR) << "ContextResult::kFatalFailure: Failed to Initialize GL "
+                      "for SharedContextState";
+        *result = ContextResult::kFatalFailure;
         return nullptr;
       }
     }

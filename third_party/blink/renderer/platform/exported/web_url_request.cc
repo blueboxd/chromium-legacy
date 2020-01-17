@@ -58,8 +58,9 @@ WebURLRequest::ExtraData::ExtraData() : render_frame_id_(MSG_ROUTING_NONE) {}
 // TODO(keishi): Replace with GCWrapper<ResourceRequest>
 struct WebURLRequest::ResourceRequestContainer {
   ResourceRequestContainer() = default;
-  explicit ResourceRequestContainer(const ResourceRequest& r)
-      : resource_request(r) {}
+  explicit ResourceRequestContainer(const ResourceRequest& r) {
+    resource_request.CopyFrom(r);
+  }
 
   ResourceRequest resource_request;
 };
@@ -84,8 +85,9 @@ WebURLRequest& WebURLRequest::operator=(const WebURLRequest& r) {
   // semantics via this operator is just not supported.
   DCHECK(owned_resource_request_);
   DCHECK(resource_request_);
-  if (&r != this)
-    *resource_request_ = *r.resource_request_;
+  if (&r != this) {
+    resource_request_->CopyFrom(*r.resource_request_);
+  }
   return *this;
 }
 

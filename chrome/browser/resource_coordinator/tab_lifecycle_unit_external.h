@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_LIFECYCLE_UNIT_EXTERNAL_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_LIFECYCLE_UNIT_EXTERNAL_H_
 
+#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
+
 namespace content {
 class WebContents;
 }  // namespace content
@@ -39,7 +41,7 @@ class TabLifecycleUnitExternal {
   virtual void SetAutoDiscardable(bool auto_discardable) = 0;
 
   // Discards the tab.
-  virtual bool DiscardTab() = 0;
+  virtual bool DiscardTab(mojom::LifecycleUnitDiscardReason reason) = 0;
 
   // Returns true if the tab is discarded.
   virtual bool IsDiscarded() const = 0;

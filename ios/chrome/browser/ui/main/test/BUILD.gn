@@ -10,7 +10,5 @@ source_set("test") {
     "stub_browser_interface_provider.h",
     "stub_browser_interface_provider.mm",
   ]
-  deps = [
-    "//ios/chrome/browser/ui/main",
-  ]
+  deps = [ "//ios/chrome/browser/ui/main" ]
 }

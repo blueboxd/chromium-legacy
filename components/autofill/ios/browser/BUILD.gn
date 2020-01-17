@@ -63,9 +63,7 @@ source_set("test_support") {
     "fake_js_autofill_manager.mm",
     "ios_test_event_waiter.h",
   ]
-  public_deps = [
-    ":browser",
-  ]
+  public_deps = [ ":browser" ]
   deps = [
     "//base",
     "//base/test:test_support",
@@ -79,9 +77,7 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "autofill_agent_unittests.mm",
-  ]
+  sources = [ "autofill_agent_unittests.mm" ]
   deps = [
     ":browser",
     "//base",
@@ -102,11 +98,7 @@ source_set("unit_tests") {
 
 bundle_data("autofill_test_bundle_data") {
   testonly = true
-  sources = [
-    "//components/test/data/autofill/credit_card_upload_form_address_and_cc.html",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  sources = [ "//components/test/data/autofill/credit_card_upload_form_address_and_cc.html" ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }

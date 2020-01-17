@@ -160,4 +160,44 @@ IN_PROC_BROWSER_TEST_F(
       &success));
   EXPECT_TRUE(success) << "window.opener is set";
 }
+
+IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+                       NetworkErrorOnSandboxedPopups) {
+  GURL starting_page(embedded_test_server()->GetURL(
+      "a.com", "/cross-origin-opener-policy_sandbox_popup.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), starting_page));
+
+  ShellAddedObserver shell_observer;
+  RenderFrameHostImpl* iframe =
+      current_frame_host()->child_at(0)->current_frame_host();
+
+  EXPECT_TRUE(ExecJs(
+      iframe, "window.open('/cross-origin-opener-policy_same-origin.html')"));
+
+  auto* popup_webcontents =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  WaitForLoadStop(popup_webcontents);
+
+  EXPECT_EQ(
+      popup_webcontents->GetController().GetLastCommittedEntry()->GetPageType(),
+      PAGE_TYPE_ERROR);
+}
+
+IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+                       NoNetworkErrorOnSandboxedDocuments) {
+  GURL starting_page(embedded_test_server()->GetURL(
+      "a.com", "/cross-origin-opener-policy_csp_sandboxed.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), starting_page));
+  EXPECT_NE(current_frame_host()->active_sandbox_flags(),
+            blink::WebSandboxFlags::kNone)
+      << "Document should be sandboxed.";
+
+  GURL next_page(embedded_test_server()->GetURL(
+      "a.com", "/cross-origin-opener-policy_same-origin.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), next_page));
+  EXPECT_EQ(
+      web_contents()->GetController().GetLastCommittedEntry()->GetPageType(),
+      PAGE_TYPE_NORMAL);
+}
 }  // namespace content

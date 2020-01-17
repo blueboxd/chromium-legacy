@@ -22,7 +22,5 @@ source_set("test_support") {
     "test_omaha_service_provider.h",
     "test_omaha_service_provider.mm",
   ]
-  deps = [
-    ":omaha",
-  ]
+  deps = [ ":omaha" ]
 }

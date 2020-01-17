@@ -58,9 +58,8 @@ std::string AudioContentTypeToString(media::AudioContentType type) {
   }
 }
 
-int64_t SamplesToMicroseconds(int64_t samples, int sample_rate) {
-  return ::media::AudioTimestampHelper::FramesToTime(samples, sample_rate)
-      .InMicroseconds();
+int64_t SamplesToMicroseconds(double samples, int sample_rate) {
+  return std::round(samples * 1000000 / sample_rate);
 }
 
 int GetFillSize(const mixer_service::OutputStreamParams& params) {
@@ -209,6 +208,8 @@ MixerInputConnection::MixerInputConnection(
   eos_task_ = base::BindRepeating(&MixerInputConnection::PostEos, weak_this_);
   ready_for_playback_task_ = base::BindRepeating(
       &MixerInputConnection::PostAudioReadyForPlayback, weak_this_);
+  post_stream_underrun_task_ = base::BindRepeating(
+      &MixerInputConnection::PostStreamUnderrun, weak_this_);
 
   CreateBufferPool(fill_size_);
   mixer_->AddInput(this);
@@ -604,8 +605,9 @@ int64_t MixerInputConnection::QueueData(scoped_refptr<net::IOBuffer> data) {
         std::max(0, mixer_read_size_ - fader_.buffered_frames());
   }
 
-  return mixer_rendering_delay_.timestamp_microseconds +
-         mixer_rendering_delay_.delay_microseconds +
+  int64_t mixer_timestamp = mixer_rendering_delay_.timestamp_microseconds +
+                            mixer_rendering_delay_.delay_microseconds;
+  return mixer_timestamp +
          SamplesToMicroseconds(extra_delay_frames, input_samples_per_second_);
 }
 
@@ -755,6 +757,7 @@ int MixerInputConnection::FillAudioPlaybackFrames(
   int filled = 0;
   bool queued_more_data = false;
   bool signal_eos = false;
+  bool underrun = false;
   bool remove_self = false;
   {
     base::AutoLock lock(lock_);
@@ -778,6 +781,7 @@ int MixerInputConnection::FillAudioPlaybackFrames(
     if (state_ == State::kNormalPlayback && !can_complete_fill) {
       LOG_IF(INFO, !zero_fader_frames_) << "Stream underrun for " << this;
       zero_fader_frames_ = true;
+      underrun = true;
     } else {
       LOG_IF(INFO, started_ && zero_fader_frames_)
           << "Stream underrun recovered for " << this;
@@ -806,8 +810,8 @@ int MixerInputConnection::FillAudioPlaybackFrames(
     for (int c = 0; c < num_channels_; ++c) {
       channels[c] = buffer->channel(c) + write_offset;
     }
-    filled +=
-        fader_.FillFrames(num_frames, playback_absolute_timestamp, channels);
+    filled += audio_clock_simulator_.FillFrames(
+        num_frames, playback_absolute_timestamp, channels);
     skip_next_fill_for_rate_change_ = false;
 
     mixer_rendering_delay_ = rendering_delay;
@@ -838,6 +842,9 @@ int MixerInputConnection::FillAudioPlaybackFrames(
   }
   if (signal_eos) {
     io_task_runner_->PostTask(FROM_HERE, eos_task_);
+  }
+  if (underrun) {
+    io_task_runner_->PostTask(FROM_HERE, post_stream_underrun_task_);
   }
 
   if (remove_self) {
@@ -1012,6 +1019,22 @@ void MixerInputConnection::PostAudioReadyForPlayback() {
   audio_ready_for_playback_fired_ = true;
 }
 
+void MixerInputConnection::PostStreamUnderrun() {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  mixer_service::Generic message;
+  message.mutable_mixer_underrun()->set_type(
+      mixer_service::MixerUnderrun::INPUT_UNDERRUN);
+  socket_->SendProto(message);
+}
+
+void MixerInputConnection::PostOutputUnderrun() {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  mixer_service::Generic message;
+  message.mutable_mixer_underrun()->set_type(
+      mixer_service::MixerUnderrun::OUTPUT_UNDERRUN);
+  socket_->SendProto(message);
+}
+
 void MixerInputConnection::OnAudioPlaybackError(MixerError error) {
   if (error == MixerError::kInputIgnored) {
     LOG(INFO) << "Mixer input " << this
@@ -1027,6 +1050,12 @@ void MixerInputConnection::OnAudioPlaybackError(MixerError error) {
   if (state_ == State::kRemoved) {
     mixer_->RemoveInput(this);
   }
+}
+
+void MixerInputConnection::OnOutputUnderrun() {
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MixerInputConnection::PostOutputUnderrun, weak_this_));
 }
 
 void MixerInputConnection::PostError(MixerError error) {

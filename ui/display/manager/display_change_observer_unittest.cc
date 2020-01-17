@@ -172,7 +172,8 @@ TEST_P(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
 TEST_P(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
   FakeDisplaySnapshot display_snapshot(
       123, gfx::Point(), gfx::Size(), DISPLAY_CONNECTION_TYPE_UNKNOWN, false,
-      false, false, false, std::string(), {}, nullptr, nullptr, 0, gfx::Size());
+      false, false, false, false, std::string(), {}, nullptr, nullptr, 0,
+      gfx::Size());
 
   ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
@@ -212,6 +213,10 @@ TEST_P(DisplayChangeObserverTest, FindDeviceScaleFactor) {
 
   // 12.3" 2400x1600
   EXPECT_EQ(2.0f, ComputeDeviceScaleFactor(12.3f, gfx::Rect(2400, 1600)));
+
+  // 10.1" 1920x1200
+  EXPECT_NEAR(1.777f, ComputeDeviceScaleFactor(10.1f, gfx::Rect(1920, 1200)),
+              0.001);
 
   // 12.3" 3000x2000
   EXPECT_EQ(2.25f, ComputeDeviceScaleFactor(12.3f, gfx::Rect(3000, 2000)));

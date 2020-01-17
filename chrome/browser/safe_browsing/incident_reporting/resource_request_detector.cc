@@ -17,6 +17,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/common/resource_type.h"
 #include "crypto/sha2.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"

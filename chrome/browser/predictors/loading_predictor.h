@@ -90,6 +90,13 @@ class LoadingPredictor : public KeyedService,
     return active_hints_;
   }
 
+  // May start a preconnect for |url|, if the current profile settings allow to
+  // perform preresolve and preconnect actions.
+  void PreconnectURLIfAllowed(
+      const GURL& url,
+      bool allow_credentials,
+      const net::NetworkIsolationKey& network_isolation_key);
+
  private:
   // Cancels an active hint, from its iterator inside |active_hints_|. If the
   // iterator is .end(), does nothing. Returns the iterator after deletion of

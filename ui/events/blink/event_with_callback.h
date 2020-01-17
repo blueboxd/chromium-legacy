@@ -63,6 +63,7 @@ class EventWithCallback {
     return original_events_.empty() ? nullptr
                                     : original_events_.front().event_.get();
   }
+  void SetScrollbarManipulationHandledOnCompositorThread();
 
  private:
   friend class test::InputHandlerProxyEventQueueTest;

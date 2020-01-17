@@ -60,7 +60,7 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
 
     using FakeDelegate = safe_browsing::FakeDeepScanningDialogDelegate;
     using Verdict = safe_browsing::DlpDeepScanningVerdict;
-    auto callback = base::Bind(
+    auto callback = base::BindRepeating(
         [](bool scan_succeeds, const base::FilePath&) {
           return scan_succeeds ? FakeDelegate::SuccessfulResponse()
                                : FakeDelegate::DlpResponse(
@@ -68,13 +68,16 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
                                      Verdict::TriggeredRule::REPORT_ONLY);
         },
         scan_succeeds);
+    auto is_encrypted_callback =
+        base::BindRepeating([](const base::FilePath&) { return false; });
 
     safe_browsing::SetDMTokenForTesting(
         policy::DMToken::CreateValidTokenForTesting("dm_token"));
     safe_browsing::DeepScanningDialogDelegate::SetFactoryForTesting(
         base::BindRepeating(
             &safe_browsing::FakeDeepScanningDialogDelegate::Create,
-            run_loop_->QuitClosure(), callback, "dm_token"));
+            run_loop_->QuitClosure(), callback, is_encrypted_callback,
+            "dm_token"));
   }
 
   // Common code for running the test cases.

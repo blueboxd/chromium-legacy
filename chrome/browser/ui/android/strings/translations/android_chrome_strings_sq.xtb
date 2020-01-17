@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Mbyll skedën aktuale</translation>
 <translation id="1258753120186372309">Logoja alternative e Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Kërko dhe eksploro</translation>
-<translation id="1264974993859112054">Sport</translation>
 <translation id="1266864766717917324">Nuk mund të ndahet <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Ndalo</translation>
 <translation id="1283039547216852943">Trokit për të zgjeruar</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Për të marrë faqeshënuesit në të gjitha pajisjet e tua, identifikohu dhe aktivizo sinkronizimin</translation>
 <translation id="2822354292072154809">Je i sigurt që dëshiron t'i rivendosësh të gjitha lejet e sajtit për <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2842985007712546952">Dosja mëmë</translation>
-<translation id="2858138569776157458">Sajtet kryesore</translation>
 <translation id="2860954141821109167">Sigurohu që një aplikacion i telefonit të jetë i aktivizuar në këtë pajisje</translation>
 <translation id="2870560284913253234">Sajti</translation>
 <translation id="2874939134665556319">Kënga e mëparshme</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Identifikohu në Chrome</translation>
 <translation id="3288003805934695103">Të ringarkosh faqen</translation>
 <translation id="32895400574683172">Njoftimet janë të lejuara</translation>
+<translation id="3290926146403723641">Për të kryer detyrat në ueb përmes "Asistentit të Google", Chrome dërgon te Google URL-në e një sajti, përmbajtjen e sajtit dhe informacione të lidhura personale.</translation>
 <translation id="3295530008794733555">Shfleto më shpejt. Përdor më pak të dhëna.</translation>
 <translation id="3298243779924642547">I lehtë</translation>
 <translation id="3303414029551471755">Të vazhdohet me shkarkimin e përmbajtjes?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Numrat e telefonit</translation>
 <translation id="3819178904835489326">U fshinë <ph name="NUMBER_OF_DOWNLOADS" /> shkarkime</translation>
 <translation id="3822502789641063741">Të pastrohet hapësira ruajtëse e sajtit?</translation>
-<translation id="3853625385350850937">Për të vazhduar, aktivizo veçorinë NFC në pajisje</translation>
 <translation id="3859306556332390985">Kërko përpara</translation>
 <translation id="388596076286380598">Merr artikuj, video dhe përmbajtje të tjera nga sajtet që të pëlqejnë, edhe nëse je jashtë linje ose lidhja jote është e dobët.</translation>
 <translation id="3894427358181296146">Shto dosje</translation>
@@ -764,7 +762,6 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="6697947395630195233">Chrome ka nevojë për qasje te vendndodhja jote për të ndarë vendndodhjen me këtë sajt.</translation>
 <translation id="6698801883190606802">Menaxho të dhënat e sinkronizuara</translation>
 <translation id="6699370405921460408">Serverët e Google do të optimizojnë faqet që viziton.</translation>
-<translation id="6709133671862442373">Lajmet</translation>
 <translation id="6710213216561001401">Prapa</translation>
 <translation id="671481426037969117">Kohëmatësi <ph name="FQDN" /> përfundoi. Do të fillojë përsëri nesër.</translation>
 <translation id="6738867403308150051">Po shkarkon...</translation>
@@ -1079,7 +1076,6 @@ Sajti NUK fiton qasje në kamerë. Imazhet e kamerës mund t'i shikosh vetëm ti
 <translation id="9133397713400217035">Eksploro jashtë linje</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Shfaq origjinalin</translation>
-<translation id="9139318394846604261">Blerje</translation>
 <translation id="9155898266292537608">Mund të kërkosh po ashtu me një trokitje të shpejtë te një fjalë</translation>
 <translation id="9169507124922466868">Historiku i navigimit është gjysmë i hapur</translation>
 <translation id="9204836675896933765">1 skedar i mbetur</translation>

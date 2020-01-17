@@ -39,7 +39,6 @@
 <translation id="124678866338384709">მიმდინარე ჩანართის დახურვა</translation>
 <translation id="1258753120186372309">Google Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">ძიება და გაცნობა</translation>
-<translation id="1264974993859112054">სპორტი</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> ვერ გაზიარდა</translation>
 <translation id="1272079795634619415">შეწყვეტა</translation>
 <translation id="1283039547216852943">შეეხეთ გასაშლელად</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">თქვენს ყველა მოწყობილობაზე არსებულ სანიშნეებზე წვდომისთვის შედით სისტემაში და ჩართეთ სინქრონიზაცია</translation>
 <translation id="2822354292072154809">ნამდვილად გსურთ, საიტის ყველა ნებართვის გადაყენება <ph name="CHOSEN_OBJECT_NAME" />-ისთვის?</translation>
 <translation id="2842985007712546952">ზედა საქაღალდე</translation>
-<translation id="2858138569776157458">ტოპ-საიტები</translation>
 <translation id="2860954141821109167">დარწმუნდით, რომ ამ მოწყობილობაზე ჩართულია ტელეფონის აპი</translation>
 <translation id="2870560284913253234">საიტი</translation>
 <translation id="2874939134665556319">წინა ჩანაწერი</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">შესვლა Chrome-ში</translation>
 <translation id="3288003805934695103">გვერდის გადატვირთვა</translation>
 <translation id="32895400574683172">შეტყობინებები დაშვებულია</translation>
+<translation id="3290926146403723641">Google ასისტენტის მეშვეობით ამოცანების ვებში შესასრულებლად Chrome უგზავნის Google-ს საიტის URL-ს, საიტის კონტენტსა და შესაბამის პერსონალურ ინფორმაციას</translation>
 <translation id="3295530008794733555">დაათვალიერეთ ვები უფრო სწრაფად. დახარჯეთ ნაკლები ტრაფიკი.</translation>
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">გაგრძელდეს შინაარსის ჩამოტვირთვა?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">ტელეფონის ნომრები</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ჩამოტვირთული ფაილი წაიშალა</translation>
 <translation id="3822502789641063741">გასუფთავდეს საიტების მეხსიერება?</translation>
-<translation id="3853625385350850937">გასაგრძელებლად თქვენს მოწყობილობაზე ჩართეთ NFC</translation>
 <translation id="3859306556332390985">წინ ძიება</translation>
 <translation id="388596076286380598">მიიღეთ სტატიები, ვიდეოები და სხვა კონტენტი საიტებიდან, რომლებიც მოგწონთ, მაშინაც კი თუ ხაზგარეშე რეჟიმში ხართ ან ცუდი კავშირი გაქვთ.</translation>
 <translation id="3894427358181296146">საქაღალდის დამატება</translation>
@@ -764,7 +762,6 @@
 <translation id="6697947395630195233">Chrome საჭიროებს თქვენს მდებარეობაზე წვდომის ნებართვას, რათა ის ამ საიტის გაუზიაროს.</translation>
 <translation id="6698801883190606802">სინქრონიზებული მონაცემების მართვა</translation>
 <translation id="6699370405921460408">Google-ის სერვერები მოახდენს თქვენ მიერ მონახულებული გვერდების ოპტიმიზაციას.</translation>
-<translation id="6709133671862442373">ახალი ამბები</translation>
 <translation id="6710213216561001401">წინა</translation>
 <translation id="671481426037969117">თქვენი <ph name="FQDN" />-ის ტაიმერი ამოიწურა. ხვალ ის ხელახლა დაიწყება.</translation>
 <translation id="6738867403308150051">ჩამოტვირთვა…</translation>
@@ -1079,7 +1076,6 @@
 <translation id="9133397713400217035">ხაზგარეშე რეჟიმში გაცნობა</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">ორიგინალის ჩვენება</translation>
-<translation id="9139318394846604261">საყიდლები</translation>
 <translation id="9155898266292537608">ძიება სიტყვაზე სწრაფად შეხებითაც შეგიძლიათ</translation>
 <translation id="9169507124922466868">ნავიგაციის ისტორია ნახევრადგახსნილია</translation>
 <translation id="9204836675896933765">დარჩენილია 1 ფაილი</translation>

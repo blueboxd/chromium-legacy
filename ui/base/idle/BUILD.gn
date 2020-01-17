@@ -22,9 +22,7 @@ component("idle") {
   # All targets in this file are allowed to access any of the headers.
   friend = [ ":*" ]
 
-  public = [
-    "idle.h",
-  ]
+  public = [ "idle.h" ]
 
   deps = [
     "//base",

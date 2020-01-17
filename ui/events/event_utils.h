@@ -43,6 +43,9 @@ enum class DomCode;
 // Key used to store keyboard 'group' values in Event::Properties
 constexpr char kPropertyKeyboardGroup[] = "_keyevent_kbd_group_";
 
+// Key used to store 'hardware key code' values in Event::Properties
+constexpr char kPropertyKeyboardHwKeyCode[] = "_keyevent_kbd_hw_keycode_";
+
 // IBus specific Event::Properties constants. ibus-gtk in async mode uses
 // gtk-specific XKeyEvent::state bits 24 and 25 for its key events.
 // https://mail.gnome.org/archives/gtk-devel-list/2013-June/msg00003.html

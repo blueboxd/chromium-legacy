@@ -38,7 +38,8 @@ class LayerTreeHostReadbackPixelTest
       public testing::WithParamInterface<ReadbackTestConfig> {
  protected:
   LayerTreeHostReadbackPixelTest()
-      : insert_copy_request_after_frame_count_(0) {}
+      : LayerTreePixelTest(renderer_type()),
+        insert_copy_request_after_frame_count_(0) {}
 
   RendererType renderer_type() const { return GetParam().renderer_type; }
 
@@ -125,8 +126,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackRootLayer) {
       CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
   background->AddChild(green);
 
-  RunPixelTest(renderer_type(), background,
-               base::FilePath(FILE_PATH_LITERAL("green.png")));
+  RunPixelTest(background, base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
 TEST_P(LayerTreeHostReadbackPixelTest, ReadbackRootLayerWithChild) {
@@ -141,7 +141,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackRootLayerWithChild) {
       CreateSolidColorLayer(gfx::Rect(150, 150, 50, 50), SK_ColorBLUE);
   green->AddChild(blue);
 
-  RunPixelTest(renderer_type(), background,
+  RunPixelTest(background,
                base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
 }
 
@@ -154,8 +154,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayer) {
   background->AddChild(green);
 
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, green.get(),
-      base::FilePath(FILE_PATH_LITERAL("green.png")));
+      background, green.get(), base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
 TEST_P(LayerTreeHostReadbackPixelTest, ReadbackSmallNonRootLayer) {
@@ -167,7 +166,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackSmallNonRootLayer) {
   background->AddChild(green);
 
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, green.get(),
+      background, green.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small.png")));
 }
 
@@ -184,7 +183,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackSmallNonRootLayerWithChild) {
   green->AddChild(blue);
 
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, green.get(),
+      background, green.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
@@ -210,7 +209,7 @@ TEST_P(LayerTreeHostReadbackPixelTestMaybeVulkan,
 
   copy_subrect_ = gfx::Rect(0, 0, 100, 100);
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, target.get(),
+      background, target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
@@ -233,7 +232,7 @@ TEST_P(LayerTreeHostReadbackPixelTest,
 
   copy_subrect_ = gfx::Rect(50, 50, 100, 100);
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, target.get(),
+      background, target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
@@ -251,7 +250,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackHiddenSubtree) {
   hidden_target->AddChild(blue);
 
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, hidden_target.get(),
+      background, hidden_target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
 }
 
@@ -271,8 +270,7 @@ TEST_P(LayerTreeHostReadbackPixelTest,
 
   hidden_target->RequestCopyOfOutput(
       viz::CopyOutputRequest::CreateStubForTesting());
-  RunPixelTest(renderer_type(), background,
-               base::FilePath(FILE_PATH_LITERAL("black.png")));
+  RunPixelTest(background, base::FilePath(FILE_PATH_LITERAL("black.png")));
 }
 
 TEST_P(LayerTreeHostReadbackPixelTest, ReadbackSubrect) {
@@ -291,7 +289,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackSubrect) {
   copy_subrect_ = gfx::Rect(50, 50, 100, 100);
 
   RunPixelTest(
-      renderer_type(), background,
+      background,
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
@@ -311,7 +309,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayerSubrect) {
   copy_subrect_ = gfx::Rect(25, 25, 100, 100);
 
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, green.get(),
+      background, green.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
@@ -333,7 +331,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackWhenNoDamage) {
 
   insert_copy_request_after_frame_count_ = 1;
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, target.get(),
+      background, target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
@@ -356,7 +354,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackOutsideViewportWhenNoDamage) {
 
   insert_copy_request_after_frame_count_ = 1;
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, target.get(),
+      background, target.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
@@ -376,7 +374,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, ReadbackNonRootLayerOutsideViewport) {
   green->AddChild(blue);
 
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, green.get(),
+      background, green.get(),
       base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
 }
 
@@ -394,7 +392,7 @@ TEST_P(LayerTreeHostReadbackPixelTestMaybeVulkan, ReadbackNonRootOrFirstLayer) {
   background->AddChild(blue);
 
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, background.get(),
+      background, background.get(),
       base::FilePath(FILE_PATH_LITERAL("green_with_blue_corner.png")));
 }
 
@@ -412,7 +410,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, MultipleReadbacksOnLayer) {
       viz::CopyOutputRequest::CreateStubForTesting());
 
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, background.get(),
+      background, background.get(),
       base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
@@ -499,7 +497,7 @@ TEST_P(LayerTreeHostReadbackDeviceScalePixelTest, ReadbackSubrect) {
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
   RunPixelTest(
-      renderer_type(), background,
+      background,
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
@@ -527,7 +525,7 @@ TEST_P(LayerTreeHostReadbackDeviceScalePixelTest, ReadbackNonRootLayerSubrect) {
   copy_subrect_ = gfx::Rect(25, 25, 50, 50);
   device_scale_factor_ = 2.f;
   RunPixelTestWithReadbackTarget(
-      renderer_type(), background, green.get(),
+      background, green.get(),
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
@@ -567,7 +565,7 @@ TEST_P(LayerTreeHostReadbackColorSpacePixelTest, Readback) {
   background->SetIsDrawable(true);
 
   // The sRGB green should be converted into P3.
-  RunPixelTest(renderer_type(), background,
+  RunPixelTest(background,
                base::FilePath(FILE_PATH_LITERAL("srgb_green_in_p3.png")));
 }
 

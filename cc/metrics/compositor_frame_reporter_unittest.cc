@@ -19,6 +19,7 @@ class CompositorFrameReporterTest : public testing::Test {
   CompositorFrameReporterTest()
       : pipeline_reporter_(
             std::make_unique<CompositorFrameReporter>(&active_trackers,
+                                                      viz::BeginFrameId(),
                                                       nullptr)) {
     AdvanceNowByMs(1);
   }

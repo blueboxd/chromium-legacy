@@ -21,21 +21,21 @@ const BookmarksStoreClientImpl = {
    * @param {string} localProperty
    * @param {function(Object)} valueGetter
    */
-  watch: function(localProperty, valueGetter) {
+  watch(localProperty, valueGetter) {
     this.watch_(localProperty, valueGetter);
   },
 
   /**
    * @return {BookmarksPageState}
    */
-  getState: function() {
+  getState() {
     return this.getStore().data;
   },
 
   /**
    * @return {Store}
    */
-  getStore: function() {
+  getStore() {
     return Store.getInstance();
   },
 };

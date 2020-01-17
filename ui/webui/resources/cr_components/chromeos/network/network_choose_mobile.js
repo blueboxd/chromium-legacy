@@ -88,7 +88,7 @@ Polymer({
     // Set selectedMobileNetworkId_ after the dom-repeat has been stamped.
     this.async(() => {
       let selected = this.mobileNetworkList_.find(function(mobileNetwork) {
-        return mobileNetwork.status == 'current';
+        return mobileNetwork.status === 'current';
       });
       if (!selected) {
         selected = this.mobileNetworkList_[0];
@@ -103,8 +103,8 @@ Polymer({
    * @private
    */
   getMobileNetworkIsDisabled_(foundNetwork) {
-    return foundNetwork.status != 'available' &&
-        foundNetwork.status != 'current';
+    return foundNetwork.status !== 'available' &&
+        foundNetwork.status !== 'current';
   },
 
   /**
@@ -113,7 +113,7 @@ Polymer({
    * @private
    */
   getEnableScanButton_(properties) {
-    return properties.connectionState ==
+    return properties.connectionState ===
         chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected &&
         !!this.deviceState && !this.deviceState.scanning;
   },
@@ -126,7 +126,7 @@ Polymer({
   getEnableSelectNetwork_(properties) {
     return (
         !!this.deviceState && !this.deviceState.scanning &&
-        properties.connectionState ==
+        properties.connectionState ===
             chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected &&
         !!properties.typeProperties.cellular.foundNetworks &&
         properties.typeProperties.cellular.foundNetworks.length > 0);
@@ -147,7 +147,7 @@ Polymer({
     if (this.scanRequested_) {
       return this.i18n('networkCellularScanCompleted');
     }
-    if (properties.connectionState !=
+    if (properties.connectionState !==
         chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected) {
       return this.i18n('networkCellularScanConnectedHelp');
     }
@@ -183,7 +183,7 @@ Polymer({
    */
   onChange_(event) {
     const target = /** @type {!HTMLSelectElement} */ (event.target);
-    if (!target.value || target.value == 'none') {
+    if (!target.value || target.value === 'none') {
       return;
     }
 

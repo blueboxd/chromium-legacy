@@ -13,7 +13,7 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
     gaiaPasswordChanged_: null,
 
     /** @override */
-    decorate: function() {
+    decorate() {
       this.gaiaPasswordChanged_ = $('gaia-password-changed');
       this.gaiaPasswordChanged_.addEventListener(
           'cancel', this.cancel.bind(this));
@@ -30,7 +30,7 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
     /**
      * Cancels password migration and drops the user back to the login screen.
      */
-    cancel: function() {
+    cancel() {
       if (!this.gaiaPasswordChanged_.disabled) {
         chrome.send(
             'cancelPasswordChangedFlow',
@@ -38,7 +38,7 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
       }
     },
 
-    onAfterShow: function(data) {
+    onAfterShow(data) {
       this.gaiaPasswordChanged_.focus();
     },
 
@@ -46,7 +46,7 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
      * Show password changed screen.
      * @param {boolean} showError Whether to show the incorrect password error.
      */
-    show: function(showError, email) {
+    show(showError, email) {
       this.gaiaPasswordChanged_.reset();
       if (showError)
         this.gaiaPasswordChanged_.invalidate();
@@ -61,7 +61,7 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
     /**
      * Updates localized content of the screen that is not updated via template.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       this.gaiaPasswordChanged_.i18nUpdateLocale();
     },
 

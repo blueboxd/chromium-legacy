@@ -38,6 +38,8 @@ class LayerTreeHostCopyRequestTest
       public ::testing::WithParamInterface<
           ::testing::tuple<LayerTreeTest::RendererType, CompositorMode>> {
  public:
+  LayerTreeHostCopyRequestTest() : LayerTreeTest(renderer_type()) {}
+
   RendererType renderer_type() const { return ::testing::get<0>(GetParam()); }
 
   CompositorMode compositor_mode() const {
@@ -167,7 +169,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SOFTWARE}));
 
 TEST_P(LayerTreeHostCopyRequestTestMultipleRequests, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -203,7 +204,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestTestMultipleRequestsOutOfOrder, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -265,7 +265,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestCompletionCausesCommit, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -370,7 +369,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestTestLayerDestroyed, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -477,7 +475,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestTestInHiddenSubtree, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -599,7 +596,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -656,7 +652,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestTestClippedOut, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -717,7 +712,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestTestScaledLayer, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -813,7 +807,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostTestAsyncTwoReadbacksWithoutDraw, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -957,7 +950,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestTestDeleteSharedImage, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -1103,7 +1095,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestTestCreatesSharedImage, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -1192,7 +1183,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestTestDestroyBeforeCopy, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -1276,7 +1266,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestTestShutdownBeforeCopy, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 
@@ -1409,7 +1398,6 @@ INSTANTIATE_TEST_SUITE_P(
                                 LayerTreeTest::RENDERER_SKIA_GL}));
 
 TEST_P(LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest, Test) {
-  renderer_type_ = renderer_type();
   RunTest(compositor_mode());
 }
 

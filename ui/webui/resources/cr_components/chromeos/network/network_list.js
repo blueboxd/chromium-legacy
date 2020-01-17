@@ -85,10 +85,10 @@ Polymer({
   updateListItems_() {
     this.saveScroll(this.$.networkList);
     const beforeNetworks = this.customItems.filter(function(item) {
-      return item.showBeforeNetworksList == true;
+      return item.showBeforeNetworksList === true;
     });
     const afterNetworks = this.customItems.filter(function(item) {
-      return item.showBeforeNetworksList == false;
+      return item.showBeforeNetworksList === false;
     });
     this.listItems_ = beforeNetworks.concat(this.networks, afterNetworks);
     this.restoreScroll(this.$.networkList);

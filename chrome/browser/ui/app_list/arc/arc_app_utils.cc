@@ -78,8 +78,6 @@ constexpr char kIntentHelperClassName[] =
     "org.chromium.arc.intent_helper.SettingsReceiver";
 constexpr char kSetInTouchModeIntent[] =
     "org.chromium.arc.intent_helper.SET_IN_TOUCH_MODE";
-constexpr char kShowTalkbackSettingsIntent[] =
-    "org.chromium.arc.intent_helper.SHOW_TALKBACK_SETTINGS";
 
 constexpr char kAction[] = "action";
 constexpr char kActionMain[] = "android.intent.action.MAIN";
@@ -154,18 +152,8 @@ bool Launch(content::BrowserContext* context,
     return false;
   }
 
-  arc::mojom::IntentHelperInstance* intent_helper_instance =
-      GET_INTENT_HELPER_INSTANCE(SendBroadcast);
-  if (intent_helper_instance && IsMouseOrTouchEventFromFlags(event_flags)) {
-    base::DictionaryValue extras;
-    extras.SetBoolean("inTouchMode", IsMouseOrTouchEventFromFlags(event_flags));
-    std::string extras_string;
-    base::JSONWriter::Write(extras, &extras_string);
-    intent_helper_instance->SendBroadcast(
-        kSetInTouchModeIntent,
-        ArcIntentHelperBridge::kArcIntentHelperPackageName,
-        kIntentHelperClassName, extras_string);
-  }
+  if (IsMouseOrTouchEventFromFlags(event_flags))
+    SetTouchMode(IsMouseOrTouchEventFromFlags(event_flags));
 
   // Unthrottle the ARC instance before launching an ARC app. This is done
   // to minimize lag on an app launch.
@@ -440,16 +428,21 @@ void CloseTask(int task_id) {
   app_instance->CloseTask(task_id);
 }
 
-void ShowTalkBackSettings() {
+bool SetTouchMode(bool enable) {
   arc::mojom::IntentHelperInstance* intent_helper_instance =
       GET_INTENT_HELPER_INSTANCE(SendBroadcast);
   if (!intent_helper_instance)
-    return;
+    return false;
 
+  base::DictionaryValue extras;
+  extras.SetBoolean("inTouchMode", enable);
+  std::string extras_string;
+  base::JSONWriter::Write(extras, &extras_string);
   intent_helper_instance->SendBroadcast(
-      kShowTalkbackSettingsIntent,
-      ArcIntentHelperBridge::kArcIntentHelperPackageName,
-      kIntentHelperClassName, "{}");
+      kSetInTouchModeIntent, ArcIntentHelperBridge::kArcIntentHelperPackageName,
+      kIntentHelperClassName, extras_string);
+
+  return true;
 }
 
 std::vector<std::string> GetSelectedPackagesFromPrefs(

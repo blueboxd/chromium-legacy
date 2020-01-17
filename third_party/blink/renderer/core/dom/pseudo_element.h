@@ -78,7 +78,8 @@ class CORE_EXPORT PseudoElement : public Element {
 
 const QualifiedName& PseudoElementTagName(PseudoId);
 
-bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle*);
+bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle* pseudo_style,
+                                       const Element* originating_element);
 
 template <>
 struct DowncastTraits<PseudoElement> {

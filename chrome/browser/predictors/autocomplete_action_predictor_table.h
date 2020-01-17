@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/predictors/predictor_table_base.h"
+#include "components/sqlite_proto/predictor_table_base.h"
 #include "url/gurl.h"
 
 namespace predictors {

@@ -11,6 +11,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -40,16 +41,16 @@ TEST_F(CannedBrowsingDataCacheStorageHelperTest, Empty) {
 }
 
 TEST_F(CannedBrowsingDataCacheStorageHelperTest, Delete) {
-  const GURL origin1("http://host1:9000");
-  const GURL origin2("http://example.com");
+  const url::Origin origin1 = url::Origin::Create(GURL("http://host1:9000"));
+  const url::Origin origin2 = url::Origin::Create(GURL("http://example.com"));
 
   scoped_refptr<CannedBrowsingDataCacheStorageHelper> helper(
       new CannedBrowsingDataCacheStorageHelper(CacheStorageContext()));
 
   EXPECT_TRUE(helper->empty());
-  helper->Add(url::Origin::Create(origin1));
-  helper->Add(url::Origin::Create(origin2));
-  helper->Add(url::Origin::Create(origin2));
+  helper->Add(origin1);
+  helper->Add(origin2);
+  helper->Add(origin2);
   EXPECT_EQ(2u, helper->GetCount());
   helper->DeleteCacheStorage(origin2);
   EXPECT_EQ(1u, helper->GetCount());

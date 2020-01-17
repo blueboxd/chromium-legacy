@@ -23,15 +23,15 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
+class LocalFrame;
 class UserMediaProcessor;
-class WebLocalFrame;
 
 // This class implements a Mojo object that receives device stopped
 // notifications and forwards them to UserMediaProcessor.
 class MODULES_EXPORT MediaStreamDeviceObserver
     : public mojom::blink::MediaStreamDeviceObserver {
  public:
-  explicit MediaStreamDeviceObserver(WebLocalFrame* frame);
+  explicit MediaStreamDeviceObserver(LocalFrame* frame);
 
   ~MediaStreamDeviceObserver() override;
 

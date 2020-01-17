@@ -20,10 +20,10 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -66,6 +66,7 @@ public class TabSwitcherCoordinator
     private final @TabListCoordinator.TabListMode int mMode;
     private final MessageCardProviderCoordinator mMessageCardProviderCoordinator;
     private TabSuggestionsOrchestrator mTabSuggestionsOrchestrator;
+    private NewTabTileCoordinator mNewTabTileCoordinator;
 
     private final MenuOrKeyboardActionController
             .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler =
@@ -169,6 +170,18 @@ public class TabSwitcherCoordinator
                 mTabSuggestionsOrchestrator.addObserver(tabSuggestionMessageService);
                 mMessageCardProviderCoordinator.subscribeMessageService(
                         tabSuggestionMessageService);
+            }
+
+            if (ChromeFeatureList
+                            .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                                    "tab_grid_layout_android_new_tab_tile")
+                            .equals("NewTabTile")) {
+                mNewTabTileCoordinator =
+                        new NewTabTileCoordinator(tabModelSelector, tabCreatorManager);
+                mTabListCoordinator.registerItemType(TabProperties.UiType.NEW_TAB_TILE, () -> {
+                    return (ViewGroup) LayoutInflater.from(context).inflate(
+                            R.layout.new_tab_tile_card_item, container, false);
+                }, NewTabTileViewBinder::bind);
             }
 
             assert mTabListCoordinator.getContainerView().getLayoutManager()
@@ -317,8 +330,17 @@ public class TabSwitcherCoordinator
 
         mMediator.registerFirstMeaningfulPaintRecorder();
         boolean showQuickly = mTabListCoordinator.resetWithListOfTabs(tabs, quickMode, mruMode);
+        if (showQuickly) {
+            mTabListCoordinator.removeSpecialListItem(TabProperties.UiType.NEW_TAB_TILE, 0);
+        }
 
-        if (tabs != null && tabs.size() > 0) appendMessagesTo(tabs.size());
+        int cardsCount = tabs == null ? 0 : tabs.size();
+        if (tabs != null && mNewTabTileCoordinator != null) {
+            mTabListCoordinator.addSpecialListItem(tabs.size(), TabProperties.UiType.NEW_TAB_TILE,
+                    mNewTabTileCoordinator.getModel());
+            cardsCount += 1;
+        }
+        if (tabs != null && tabs.size() > 0) appendMessagesTo(cardsCount);
 
         return showQuickly;
     }
@@ -366,6 +388,9 @@ public class TabSwitcherCoordinator
         }
         if (mTabGridIphItemCoordinator != null) {
             mTabGridIphItemCoordinator.destroy();
+        }
+        if (mNewTabTileCoordinator != null) {
+            mNewTabTileCoordinator.destroy();
         }
         mMultiThumbnailCardProvider.destroy();
         mTabSelectionEditorCoordinator.destroy();

@@ -413,6 +413,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const gfx::Size& dst_size_in_pixel,
       base::OnceCallback<void(const SkBitmap&)> callback);
 
+  void MaybeCreateSynchronousCompositor();
+  void ResetSynchronousCompositor();
+
   void EvictDelegatedContent();
   void OnLostResources();
 
@@ -530,6 +533,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool is_first_navigation_ = true;
   // If true, then the next allocated surface should be embedded.
   bool navigation_while_hidden_ = false;
+
+  bool render_widget_initialized_ = false;
 
   // Tracks whether we are in SynchronousCopyContents to avoid repeated calls
   // into DevTools capture logic.

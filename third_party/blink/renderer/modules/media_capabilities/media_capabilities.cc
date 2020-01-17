@@ -20,6 +20,7 @@
 #include "third_party/blink/public/platform/web_encrypted_media_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_configuration.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -36,7 +37,6 @@
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_info.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_key_system_configuration.h"
-#include "third_party/blink/renderer/modules/media_capabilities/media_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_decoding_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_encoding_configuration.h"
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler.h"
@@ -396,6 +396,7 @@ bool IsAudioConfigurationSupported(
     const String& mime_type,
     const String& codec) {
   media::AudioCodec audio_codec = media::kUnknownAudioCodec;
+  media::AudioCodecProfile audio_profile = media::AudioCodecProfile::kUnknown;
   bool is_audio_codec_ambiguous = true;
   bool is_spatial_rendering = false;
 
@@ -408,7 +409,8 @@ bool IsAudioConfigurationSupported(
   if (audio_config->hasSpatialRendering())
     is_spatial_rendering = audio_config->spatialRendering();
 
-  return media::IsSupportedAudioType({audio_codec, is_spatial_rendering});
+  return media::IsSupportedAudioType(
+      {audio_codec, audio_profile, is_spatial_rendering});
 }
 
 // Returns whether the VideoConfiguration is supported.

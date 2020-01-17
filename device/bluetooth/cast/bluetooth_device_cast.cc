@@ -342,7 +342,8 @@ bool BluetoothDeviceCast::UpdateCharacteristicValue(
   return false;
 }
 
-void BluetoothDeviceCast::CreateGattConnectionImpl() {
+void BluetoothDeviceCast::CreateGattConnectionImpl(
+    base::Optional<BluetoothUUID> service_uuid) {
   DVLOG(2) << __func__ << " " << pending_connect_;
   if (pending_connect_)
     return;

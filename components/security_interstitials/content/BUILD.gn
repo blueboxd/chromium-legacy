@@ -19,6 +19,8 @@ static_library("security_interstitial_page") {
     "connection_help_ui.h",
     "known_interception_disclosure_ui.cc",
     "known_interception_disclosure_ui.h",
+    "mitm_software_blocking_page.cc",
+    "mitm_software_blocking_page.h",
     "origin_policy_interstitial_page.cc",
     "origin_policy_interstitial_page.h",
     "origin_policy_ui.cc",
@@ -42,9 +44,7 @@ static_library("security_interstitial_page") {
     "urls.h",
   ]
 
-  public_deps = [
-    "//components/safe_browsing/core/db:hit_report",
-  ]
+  public_deps = [ "//components/safe_browsing/core/db:hit_report" ]
 
   deps = [
     ":proto",

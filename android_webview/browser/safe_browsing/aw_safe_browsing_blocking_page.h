@@ -39,7 +39,7 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
   // Used to specify which BaseSafeBrowsingErrorUI to instantiate, and
   // parameters they require.
   // Note: these values are persisted in UMA logs, so they should never be
-  // renumbered nor reused.
+  // renumbered or reused.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.android_webview
   enum class ErrorUiType { LOUD, QUIET_SMALL, QUIET_GIANT, COUNT };
 

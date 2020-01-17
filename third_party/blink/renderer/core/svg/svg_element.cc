@@ -88,13 +88,6 @@ void SVGElement::DetachLayoutTree(bool performing_reattach) {
     SvgRareData()->ClearOverriddenComputedStyle();
 }
 
-TreeScope& SVGElement::TreeScopeForIdResolution() const {
-  const SVGElement* tree_scope_element = this;
-  if (const SVGElement* element = CorrespondingUseElement())
-    tree_scope_element = element;
-  return tree_scope_element->GetTreeScope();
-}
-
 void SVGElement::WillRecalcStyle(const StyleRecalcChange change) {
   if (!HasSVGRareData())
     return;
@@ -339,6 +332,8 @@ void SVGElement::RemovedFrom(ContainerNode& root_parent) {
   Element::RemovedFrom(root_parent);
 
   if (was_in_document) {
+    if (HasSVGRareData() && SvgRareData()->CorrespondingElement())
+      SvgRareData()->CorrespondingElement()->RemoveInstanceMapping(this);
     RebuildAllIncomingReferences();
     RemoveAllIncomingReferences();
   }
@@ -448,8 +443,9 @@ void SVGElement::UpdateRelativeLengthsInformation(
   // disconnected.
   // If we're not yet in a document, this function will be called again from
   // insertedInto(). Do nothing now.
-  for (Node& current_node : NodeTraversal::InclusiveAncestorsOf(*this)) {
-    if (!current_node.isConnected())
+  for (Node* current_node = this; current_node;
+       current_node = current_node->ParentOrShadowHostNode()) {
+    if (!current_node->isConnected())
       return;
   }
 
@@ -457,10 +453,12 @@ void SVGElement::UpdateRelativeLengthsInformation(
   // Register it in the relative length map, and register us in the parent
   // relative length map.  Register the parent in the grandparents map, etc.
   // Repeat procedure until the root of the SVG tree.
-  for (Node& current_node : NodeTraversal::InclusiveAncestorsOf(*this)) {
+  for (Element* current_node = this; current_node;
+       current_node = current_node->ParentOrShadowHostElement()) {
     auto* current_element = DynamicTo<SVGElement>(current_node);
     if (!current_element)
       break;
+
 #if DCHECK_IS_ON()
     DCHECK(!current_element->in_relative_length_clients_invalidation_);
 #endif
@@ -560,10 +558,8 @@ void SVGElement::MapInstanceToElement(SVGElement* instance) {
 
 void SVGElement::RemoveInstanceMapping(SVGElement* instance) {
   DCHECK(instance);
-  DCHECK(instance->InUseShadowTree());
-
-  if (!HasSVGRareData())
-    return;
+  // Called during instance->RemovedFrom() after removal from shadow tree
+  DCHECK(!instance->isConnected());
 
   HeapHashSet<WeakMember<SVGElement>>& instances =
       SvgRareData()->ElementInstances();
@@ -591,7 +587,7 @@ SVGElement* SVGElement::CorrespondingElement() const {
   return HasSVGRareData() ? SvgRareData()->CorrespondingElement() : nullptr;
 }
 
-SVGUseElement* SVGElement::CorrespondingUseElement() const {
+SVGUseElement* SVGElement::GeneratingUseElement() const {
   if (ShadowRoot* root = ContainingShadowRoot()) {
     return DynamicTo<SVGUseElement>(root->host());
   }
@@ -603,7 +599,7 @@ void SVGElement::SetCorrespondingElement(SVGElement* corresponding_element) {
 }
 
 bool SVGElement::InUseShadowTree() const {
-  return CorrespondingUseElement();
+  return GeneratingUseElement();
 }
 
 void SVGElement::ParseAttribute(const AttributeModificationParams& params) {
@@ -1019,9 +1015,9 @@ void SVGElement::InvalidateInstances() {
   for (SVGElement* instance : set) {
     instance->SetCorrespondingElement(nullptr);
 
-    if (SVGUseElement* element = instance->CorrespondingUseElement()) {
-      if (element->isConnected())
-        element->InvalidateShadowTree();
+    if (SVGUseElement* element = instance->GeneratingUseElement()) {
+      DCHECK(element->isConnected());
+      element->InvalidateShadowTree();
     }
   }
 

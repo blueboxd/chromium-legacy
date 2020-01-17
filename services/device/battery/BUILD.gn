@@ -29,9 +29,7 @@ if (!is_android) {
       "battery_status_service.h",
     ]
 
-    public_deps = [
-      "//services/device/public/mojom",
-    ]
+    public_deps = [ "//services/device/public/mojom" ]
 
     deps = [
       "//base",

@@ -5,7 +5,6 @@ include_rules = [
   "+chromeos/constants/chromeos_features.h",
   "+components/viz/common",
   "+components/viz/host",
-  "+components/viz/service",
   "+device/gamepad",
   "+gpu",
   "+mojo/core/embedder/embedder.h",
@@ -22,5 +21,9 @@ include_rules = [
 specific_include_rules = {
   "surface_unittest\.cc": [
     "+components/viz/test",
+  ],
+  ".*test.*\.cc": [
+    "+components/viz/service/frame_sinks",
+    "+components/viz/service/surfaces",
   ],
 }

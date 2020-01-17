@@ -14,10 +14,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -288,8 +288,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
   };
 
   auto get_active_tab_id = [this]() {
-    SessionTabHelper* session_tab_helper = SessionTabHelper::FromWebContents(
-        browser()->tab_strip_model()->GetActiveWebContents());
+    sessions::SessionTabHelper* session_tab_helper =
+        sessions::SessionTabHelper::FromWebContents(
+            browser()->tab_strip_model()->GetActiveWebContents());
     if (!session_tab_helper) {
       ADD_FAILURE();
       return extension_misc::kUnknownTabId;

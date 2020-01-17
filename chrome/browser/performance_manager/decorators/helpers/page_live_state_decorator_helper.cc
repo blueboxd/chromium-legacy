@@ -134,9 +134,12 @@ void PageLiveStateDecoratorHelper::OnIsCapturingDesktopChanged(
 void PageLiveStateDecoratorHelper::OnPageNodeCreatedForWebContents(
     content::WebContents* web_contents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(web_contents);
   // Start observing the WebContents. See comment on
   // |first_web_contents_observer_| for lifetime management details.
   new WebContentsObserver(web_contents, this);
+  PageLiveStateDecorator::SetWasDiscarded(web_contents,
+                                          web_contents->WasDiscarded());
 }
 
 }  // namespace performance_manager

@@ -15,7 +15,7 @@ Polymer({
     queryState: {
       type: Object,
       notify: true,
-      value: function() {
+      value() {
         return {
           // Whether the most recent query was incremental.
           incremental: false,
@@ -44,7 +44,7 @@ Polymer({
   documentListeners_: {},
 
   /** @override */
-  attached: function() {
+  attached() {
     this.documentListeners_['change-query'] = this.onChangeQuery_.bind(this);
     this.documentListeners_['query-history'] = this.onQueryHistory_.bind(this);
 
@@ -54,13 +54,13 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     for (const e in this.documentListeners_) {
       document.removeEventListener(e, this.documentListeners_[e]);
     }
   },
 
-  initialize: function() {
+  initialize() {
     this.queryHistory_(false /* incremental */);
   },
 
@@ -68,7 +68,7 @@ Polymer({
    * @param {boolean} incremental
    * @private
    */
-  queryHistory_: function(incremental) {
+  queryHistory_(incremental) {
     this.set('queryState.querying', true);
     this.set('queryState.incremental', incremental);
 
@@ -84,7 +84,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onChangeQuery_: function(e) {
+  onChangeQuery_(e) {
     const changes = /** @type {{search: ?string}} */ (e.detail);
     let needsUpdate = false;
 
@@ -106,7 +106,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onQueryHistory_: function(e) {
+  onQueryHistory_(e) {
     this.queryHistory_(/** @type {boolean} */ (e.detail));
     return false;
   },
@@ -117,7 +117,7 @@ Polymer({
    *     information about the query.
    * @private
    */
-  onQueryResult_: function(results) {
+  onQueryResult_(results) {
     this.set('queryState.querying', false);
     this.set('queryResult.info', results.info);
     this.set('queryResult.results', results.value);
@@ -125,7 +125,7 @@ Polymer({
   },
 
   /** @private */
-  searchTermChanged_: function() {
+  searchTermChanged_() {
     // TODO(tsergeant): Ignore incremental searches in this metric.
     if (this.queryState.searchTerm) {
       BrowserService.getInstance().recordAction('Search');

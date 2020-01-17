@@ -22,6 +22,14 @@
                preprocess="true"
                type="BINDATA"
                compress="gzip" />
+      <include name="IDR_EXTENSIONS_CHECKUP_IMAGE"
+               file="checkup_image.svg"
+               type="BINDATA"
+               compress="gzip" />
+      <include name="IDR_EXTENSIONS_CHECKUP_IMAGE_DARK"
+               file="checkup_image_dark.svg"
+               type="BINDATA"
+               compress="gzip" />
     </includes>
   </release>
 </grit>

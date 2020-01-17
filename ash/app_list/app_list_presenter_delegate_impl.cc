@@ -20,6 +20,7 @@
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -228,7 +229,8 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
   // If the event happened on the home button's widget, it'll get handled by the
   // button.
   Shelf* shelf = Shelf::ForWindow(target);
-  HomeButton* home_button = shelf->shelf_widget()->GetHomeButton();
+  HomeButton* home_button =
+      shelf->shelf_widget()->navigation_widget()->GetHomeButton();
   if (home_button && home_button->GetWidget() &&
       target == home_button->GetWidget()->GetNativeWindow() &&
       home_button->GetWidget()->GetWindowBoundsInScreen().Contains(
@@ -238,7 +240,8 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
 
   // If the event happened on the back button, it'll get handled by the
   // button.
-  BackButton* back_button = shelf->shelf_widget()->GetBackButton();
+  BackButton* back_button =
+      shelf->shelf_widget()->navigation_widget()->GetBackButton();
   if (back_button && back_button->GetWidget() &&
       target == back_button->GetWidget()->GetNativeWindow() &&
       back_button->bounds().Contains(event->location())) {

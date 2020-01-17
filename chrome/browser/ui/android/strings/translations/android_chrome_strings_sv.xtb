@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Stäng den aktuella fliken</translation>
 <translation id="1258753120186372309">Googles doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Sök och utforska</translation>
-<translation id="1264974993859112054">Sport</translation>
 <translation id="1266864766717917324">Det gick inte att dela <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1283039547216852943">Tryck och utöka</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Logga in och aktivera synkronisering om du vill ha dina bokmärken tillgängliga på alla enheter</translation>
 <translation id="2822354292072154809">Vill du återställa alla webbplatsbehörigheter för <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2842985007712546952">Överordnad mapp</translation>
-<translation id="2858138569776157458">Populärt</translation>
 <translation id="2860954141821109167">Kontrollera att en telefonapp har aktiverats på enheten</translation>
 <translation id="2870560284913253234">Webbplats</translation>
 <translation id="2874939134665556319">Föregående spår</translation>
@@ -366,7 +364,6 @@
 <translation id="381841723434055211">Telefonnummer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedladdningar har raderats</translation>
 <translation id="3822502789641063741">Rensa webbplatslagring?</translation>
-<translation id="3853625385350850937">Fortsätt genom att aktivera NFC på enheten</translation>
 <translation id="3859306556332390985">Sök framåt</translation>
 <translation id="388596076286380598">Kom åt artiklar, videor och annat innehåll från webbplatser som du gillar, även när du är offline eller har dålig anslutning.</translation>
 <translation id="3894427358181296146">Lägg till mapp</translation>
@@ -764,7 +761,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6697947395630195233">Du behöver ge Chrome åtkomstbehörighet till din plats om den ska kunna delas med webbplatsen.</translation>
 <translation id="6698801883190606802">Hantera synkroniserad data</translation>
 <translation id="6699370405921460408">Googles servrar optimerar sidor du besöker.</translation>
-<translation id="6709133671862442373">Nyheter</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="671481426037969117">Timern för <ph name="FQDN" /> har löpt ut. Den börjar om igen i morgon.</translation>
 <translation id="6738867403308150051">Laddar ned …</translation>
@@ -1079,7 +1075,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="9133397713400217035">Utforska offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Visa original</translation>
-<translation id="9139318394846604261">Shopping</translation>
 <translation id="9155898266292537608">Du kan även söka med ett snabbt tryck eller ett ord</translation>
 <translation id="9169507124922466868">Navigeringshistoriken visas på halva skärmen</translation>
 <translation id="9204836675896933765">1 fil återstår</translation>

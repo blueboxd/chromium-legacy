@@ -25,6 +25,8 @@ source_set("gbm") {
     "gbm_buffer.h",
     "gbm_defines.h",
     "gbm_device.h",
+    "gbm_util.cc",
+    "gbm_util.h",
     "gbm_wrapper.cc",
     "gbm_wrapper.h",
     "scoped_gbm_device.cc",

@@ -541,6 +541,10 @@ void Controller::EnterStoppedState() {
   EnterState(AutofillAssistantState::STOPPED);
 }
 
+void Controller::EnterStateSilent(AutofillAssistantState state) {
+  EnterState(state);
+}
+
 bool Controller::EnterState(AutofillAssistantState state) {
   if (state_ == state)
     return false;
@@ -922,7 +926,14 @@ bool Controller::Start(const GURL& deeplink_url,
   SetStatusMessage(l10n_util::GetStringFUTF8(
       IDS_AUTOFILL_ASSISTANT_LOADING, base::UTF8ToUTF16(deeplink_url_.host())));
   SetProgress(kAutostartInitialProgress);
-  EnterState(AutofillAssistantState::STARTING);
+
+  if (IsNavigatingToNewDocument()) {
+    start_after_navigation_ = base::BindOnce(&Controller::EnterStateSilent,
+                                             weak_ptr_factory_.GetWeakPtr(),
+                                             AutofillAssistantState::STARTING);
+  } else {
+    EnterState(AutofillAssistantState::STARTING);
+  }
   return true;
 }
 
@@ -1415,10 +1426,16 @@ void Controller::DidFinishNavigation(
       (navigation_handle->GetResponseHeaders()->response_code() / 100) == 2;
   navigation_error_ = !is_successful;
   navigating_to_new_document_ = false;
-  ReportNavigationStateChanged();
 
-  if (is_successful)
-    OnUrlChange();
+  if (start_after_navigation_) {
+    std::move(start_after_navigation_).Run();
+  } else {
+    ReportNavigationStateChanged();
+
+    if (is_successful) {
+      OnUrlChange();
+    }
+  }
 }
 
 void Controller::DocumentAvailableInMainFrame() {

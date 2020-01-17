@@ -47,6 +47,8 @@ class AdvancedProtectionStatusManager
 
   bool IsRefreshScheduled();
 
+  void SetAdvancedProtectionStatusForTesting(bool enrolled);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest,
                            NotSignedInOnStartUp);

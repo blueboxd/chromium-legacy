@@ -69,8 +69,3 @@ export function cancel() {
     doCancel = null;
   }
 }
-
-/** @const */
-cca.views.camera.timertick.start = start;
-/** @const */
-cca.views.camera.timertick.cancel = cancel;

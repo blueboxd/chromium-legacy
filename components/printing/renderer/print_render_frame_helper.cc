@@ -1347,6 +1347,11 @@ void PrintRenderFrameHelper::SetPrintingEnabled(bool enabled) {
   is_printing_enabled_ = enabled;
 }
 
+void PrintRenderFrameHelper::PrintNodeUnderContextMenu() {
+  ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
+  PrintNode(render_frame()->GetWebFrame()->ContextMenuNode());
+}
+
 void PrintRenderFrameHelper::GetPageSizeAndContentAreaFromPageLayout(
     const PageSizeMargins& page_layout_in_points,
     gfx::Size* page_size,

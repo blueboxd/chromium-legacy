@@ -134,7 +134,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   ax::mojom::HasPopup HasPopup() const override;
   bool SupportsARIADragging() const override;
   void Dropeffects(Vector<ax::mojom::Dropeffect>& dropeffects) const override;
-  bool SupportsARIAFlowTo() const override;
   bool SupportsARIAOwns() const override;
 
   // ARIA live-region features.

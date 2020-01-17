@@ -32,15 +32,16 @@ suite('route', function() {
    */
   function testNavigateBackUsesHistory(
       previousRoute, currentRoute, expectedNavigatePreviousResult) {
-    settings.navigateTo(previousRoute);
-    settings.navigateTo(currentRoute);
+    settings.Router.getInstance().navigateTo(previousRoute);
+    settings.Router.getInstance().navigateTo(currentRoute);
 
     return whenPopState(function() {
-             settings.navigateToPreviousRoute();
+             settings.Router.getInstance().navigateToPreviousRoute();
            })
         .then(function() {
           assertEquals(
-              expectedNavigatePreviousResult, settings.getCurrentRoute());
+              expectedNavigatePreviousResult,
+              settings.Router.getInstance().getCurrentRoute());
         });
   }
 
@@ -114,74 +115,89 @@ suite('route', function() {
   });
 
   test('navigate back to parent when previous route is deeper', function() {
-    settings.navigateTo(settings.routes.SYNC);
-    settings.navigateTo(settings.routes.PEOPLE);
-    settings.navigateToPreviousRoute();
-    assertEquals(settings.routes.BASIC, settings.getCurrentRoute());
+    settings.Router.getInstance().navigateTo(settings.routes.SYNC);
+    settings.Router.getInstance().navigateTo(settings.routes.PEOPLE);
+    settings.Router.getInstance().navigateToPreviousRoute();
+    assertEquals(
+        settings.routes.BASIC, settings.Router.getInstance().getCurrentRoute());
   });
 
   test('navigate back to BASIC when going back from root pages', function() {
-    settings.navigateTo(settings.routes.PEOPLE);
-    settings.navigateTo(settings.routes.ADVANCED);
-    settings.navigateToPreviousRoute();
-    assertEquals(settings.routes.BASIC, settings.getCurrentRoute());
+    settings.Router.getInstance().navigateTo(settings.routes.PEOPLE);
+    settings.Router.getInstance().navigateTo(settings.routes.ADVANCED);
+    settings.Router.getInstance().navigateToPreviousRoute();
+    assertEquals(
+        settings.routes.BASIC, settings.Router.getInstance().getCurrentRoute());
   });
 
   test('navigateTo respects removeSearch optional parameter', function() {
     const params = new URLSearchParams('search=foo');
-    settings.navigateTo(settings.routes.BASIC, params);
-    assertEquals(params.toString(), settings.getQueryParameters().toString());
+    settings.Router.getInstance().navigateTo(settings.routes.BASIC, params);
+    assertEquals(
+        params.toString(),
+        settings.Router.getInstance().getQueryParameters().toString());
 
-    settings.navigateTo(
+    settings.Router.getInstance().navigateTo(
         settings.routes.SITE_SETTINGS, null,
         /* removeSearch */ false);
-    assertEquals(params.toString(), settings.getQueryParameters().toString());
+    assertEquals(
+        params.toString(),
+        settings.Router.getInstance().getQueryParameters().toString());
 
-    settings.navigateTo(
+    settings.Router.getInstance().navigateTo(
         settings.routes.SEARCH_ENGINES, null,
         /* removeSearch */ true);
-    assertEquals('', settings.getQueryParameters().toString());
+    assertEquals(
+        '', settings.Router.getInstance().getQueryParameters().toString());
   });
 
   test('navigateTo ADVANCED forwards to BASIC', function() {
-    settings.navigateTo(settings.routes.ADVANCED);
-    assertEquals(settings.routes.BASIC, settings.getCurrentRoute());
+    settings.Router.getInstance().navigateTo(settings.routes.ADVANCED);
+    assertEquals(
+        settings.routes.BASIC, settings.Router.getInstance().getCurrentRoute());
   });
 
   test('popstate flag works', function() {
-    settings.navigateTo(settings.routes.BASIC);
-    assertFalse(settings.lastRouteChangeWasPopstate());
+    const router = settings.Router.getInstance();
+    router.navigateTo(settings.routes.BASIC);
+    assertFalse(router.lastRouteChangeWasPopstate());
 
-    settings.navigateTo(settings.routes.PEOPLE);
-    assertFalse(settings.lastRouteChangeWasPopstate());
+    router.navigateTo(settings.routes.PEOPLE);
+    assertFalse(router.lastRouteChangeWasPopstate());
 
     return whenPopState(function() {
              window.history.back();
            })
         .then(function() {
-          assertEquals(settings.routes.BASIC, settings.getCurrentRoute());
-          assertTrue(settings.lastRouteChangeWasPopstate());
+          assertEquals(settings.routes.BASIC, router.getCurrentRoute());
+          assertTrue(router.lastRouteChangeWasPopstate());
 
-          settings.navigateTo(settings.routes.ADVANCED);
-          assertFalse(settings.lastRouteChangeWasPopstate());
+          router.navigateTo(settings.routes.ADVANCED);
+          assertFalse(router.lastRouteChangeWasPopstate());
         });
   });
 
   test('getRouteForPath trailing slashes', function() {
-    assertEquals(settings.routes.BASIC, settings.getRouteForPath('/'));
-    assertEquals(null, settings.getRouteForPath('//'));
+    assertEquals(
+        settings.routes.BASIC,
+        settings.Router.getInstance().getRouteForPath('/'));
+    assertEquals(null, settings.Router.getInstance().getRouteForPath('//'));
 
     // Simple path.
-    assertEquals(settings.routes.PEOPLE, settings.getRouteForPath('/people/'));
-    assertEquals(settings.routes.PEOPLE, settings.getRouteForPath('/people'));
+    assertEquals(
+        settings.routes.PEOPLE,
+        settings.Router.getInstance().getRouteForPath('/people/'));
+    assertEquals(
+        settings.routes.PEOPLE,
+        settings.Router.getInstance().getRouteForPath('/people'));
 
     // Path with a slash.
     assertEquals(
         settings.routes.SITE_SETTINGS_COOKIES,
-        settings.getRouteForPath('/content/cookies'));
+        settings.Router.getInstance().getRouteForPath('/content/cookies'));
     assertEquals(
         settings.routes.SITE_SETTINGS_COOKIES,
-        settings.getRouteForPath('/content/cookies/'));
+        settings.Router.getInstance().getRouteForPath('/content/cookies/'));
   });
 
   test('isNavigableDialog', function() {
@@ -222,7 +238,7 @@ suite('route', function() {
   test(
       'getAbsolutePath works in direct and within-settings navigation',
       function() {
-        settings.resetRouteForTesting();
+        settings.Router.getInstance().resetRouteForTesting();
         // Check getting the absolute path while not inside settings returns the
         // correct path.
         window.location.href = 'https://example.com/path/to/page.html';
@@ -232,10 +248,10 @@ suite('route', function() {
 
         // Check getting the absolute path while inside settings returns the
         // correct path for the current route and a different route.
-        settings.navigateTo(settings.routes.DOWNLOADS);
+        settings.Router.getInstance().navigateTo(settings.routes.DOWNLOADS);
         assertEquals(
             'chrome://settings/downloads',
-            settings.getCurrentRoute().getAbsolutePath());
+            settings.Router.getInstance().getCurrentRoute().getAbsolutePath());
         assertEquals(
             'chrome://settings/languages',
             settings.routes.LANGUAGES.getAbsolutePath());

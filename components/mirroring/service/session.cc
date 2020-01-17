@@ -431,16 +431,18 @@ Session::Session(
         gpu_channel_host_->gpu_feature_info().status_values
                 [gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] ==
             gpu::kGpuFeatureStatusEnabled) {
-      supported_profiles_ = gpu_channel_host_->gpu_info()
-                                .video_encode_accelerator_supported_profiles;
+      supported_profiles_ =
+          media::GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
+              gpu_channel_host_->gpu_info()
+                  .video_encode_accelerator_supported_profiles);
     }
   }
+
   if (supported_profiles_.empty()) {
     // HW encoding is not supported.
     gpu_channel_host_ = nullptr;
     gpu_.reset();
   }
-
   CreateAndSendOffer();
 }
 
@@ -533,8 +535,7 @@ void Session::OnEncoderStatusChange(OperationalStatus status) {
 
 media::VideoEncodeAccelerator::SupportedProfiles
 Session::GetSupportedVeaProfiles() {
-  return media::GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
-      supported_profiles_);
+  return supported_profiles_;
 }
 
 void Session::CreateVideoEncodeAccelerator(

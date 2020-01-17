@@ -27,7 +27,7 @@ namespace {
 // Wait until |condition| returns true.
 void WaitForCondition(base::RepeatingCallback<bool()> condition,
                       const std::string& description) {
-  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(15);
+  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(30);
   const base::TimeTicks start_time = base::TimeTicks::Now();
   while (!condition.Run() && (base::TimeTicks::Now() - start_time < kTimeout)) {
     base::RunLoop run_loop;
@@ -68,8 +68,8 @@ class CommandlineStartupTracingTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CommandlineStartupTracingTest);
 };
 
-// Flaky on ASAN. crbug.com/1041392
-#if defined(ADDRESS_SANITIZER)
+// Failing on Android ASAN. crbug.com/1041392
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 #define MAYBE_TestStartupTracing DISABLED_TestStartupTracing
 #else
 #define MAYBE_TestStartupTracing TestStartupTracing

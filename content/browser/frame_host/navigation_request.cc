@@ -1659,6 +1659,24 @@ void NavigationRequest::OnResponseStarted(
         return;
       }
     }
+
+    // Popups with a sandboxing flag, inherited from their opener, are not
+    // allowed to navigate to a document with a Cross-Origin-Opener-Policy that
+    // is not "unsafe-none". This ensures a COOP document does not inherit any
+    // property from an opener.
+    // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
+    if (response_head_->cross_origin_opener_policy !=
+            network::mojom::CrossOriginOpenerPolicy::kUnsafeNone &&
+        (frame_tree_node_->pending_frame_policy().sandbox_flags !=
+         blink::WebSandboxFlags::kNone)) {
+      OnRequestFailedInternal(
+          network::URLLoaderCompletionStatus(net::ERR_FAILED),
+          false /* skip_throttles */, base::nullopt /* error_page_content */,
+          false /* collapse_frame */);
+      // DO NOT ADD CODE after this. The previous call to
+      // OnRequestFailedInternal has destroyed the NavigationRequest.
+      return;
+    }
   }
 
   // Select an appropriate renderer to commit the navigation.
@@ -2545,7 +2563,7 @@ void NavigationRequest::UpdateSiteURL(
 
 bool NavigationRequest::IsAllowedByCSPDirective(
     CSPContext* context,
-    CSPDirective::Name directive,
+    network::mojom::CSPDirectiveName directive,
     bool has_followed_redirect,
     bool url_upgraded_after_redirect,
     bool is_response_check,
@@ -2575,15 +2593,16 @@ net::Error NavigationRequest::CheckCSPDirectives(
     bool is_response_check,
     CSPContext::CheckCSPDisposition disposition) {
   bool navigate_to_allowed = IsAllowedByCSPDirective(
-      initiator_csp_context_.get(), CSPDirective::NavigateTo,
-      has_followed_redirect, url_upgraded_after_redirect, is_response_check,
-      disposition);
+      initiator_csp_context_.get(),
+      network::mojom::CSPDirectiveName::NavigateTo, has_followed_redirect,
+      url_upgraded_after_redirect, is_response_check, disposition);
 
   bool frame_src_allowed = true;
   if (parent) {
     frame_src_allowed = IsAllowedByCSPDirective(
-        parent, CSPDirective::FrameSrc, has_followed_redirect,
-        url_upgraded_after_redirect, is_response_check, disposition);
+        parent, network::mojom::CSPDirectiveName::FrameSrc,
+        has_followed_redirect, url_upgraded_after_redirect, is_response_check,
+        disposition);
   }
 
   if (navigate_to_allowed && frame_src_allowed)

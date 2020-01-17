@@ -30,7 +30,7 @@ goog.addSingletonGetter(ConsoleTts);
 
 /** @override */
 ConsoleTts.prototype = {
-  speak: function(textString, queueMode, properties) {
+  speak(textString, queueMode, properties) {
     if (this.enabled_ && window['console']) {
       var category = TtsCategory.NAV;
       if (properties && properties.category) {
@@ -45,40 +45,40 @@ ConsoleTts.prototype = {
   },
 
   /** @override */
-  isSpeaking: function() {
+  isSpeaking() {
     return false;
   },
 
   /** @override */
-  stop: function() {
+  stop() {
     if (this.enabled_) {
       console.log('Stop');
     }
   },
 
   /** @override */
-  addCapturingEventListener: function(listener) {},
+  addCapturingEventListener(listener) {},
 
   /** @override */
-  increaseOrDecreaseProperty: function() {},
+  increaseOrDecreaseProperty() {},
 
   /** @override */
-  propertyToPercentage: function() {},
+  propertyToPercentage() {},
 
   /**
    * Sets the enabled bit.
    * @param {boolean} enabled The new enabled bit.
    */
-  setEnabled: function(enabled) {
+  setEnabled(enabled) {
     this.enabled_ = enabled;
   },
 
   /** @override */
-  getDefaultProperty: function(property) {},
+  getDefaultProperty(property) {},
 
   /** @override */
-  toggleSpeechOnOrOff: function() {},
+  toggleSpeechOnOrOff() {},
 
   /** @override */
-  resetTextToSpeechSettings: function() {}
+  resetTextToSpeechSettings() {}
 };

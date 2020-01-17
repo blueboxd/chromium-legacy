@@ -21,7 +21,6 @@
         android:layout_marginTop="12dp"
         android:layout_width="24dp"
         android:scaleType="fitCenter"
-        app:tint="@color/standard_mode_tint"
         tools:ignore="ContentDescription" />
     <TextView android:id="@+id/text"
         android:layout_width="fill_parent"

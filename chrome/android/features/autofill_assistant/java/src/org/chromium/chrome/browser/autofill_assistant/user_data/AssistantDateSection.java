@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander.ChevronStyle;
 import org.chromium.content.browser.picker.InputDialogContainer;
 import org.chromium.content.browser.picker.InputDialogContainer.InputActionDelegate;
@@ -36,6 +37,7 @@ public class AssistantDateSection {
     private final int mTitleToContentPadding;
     private final Locale mLocale;
     private final DateFormat mDateTimeFormat;
+    private final TextView mErrorView;
     @Nullable
     private Delegate mDelegate;
     @Nullable
@@ -55,6 +57,7 @@ public class AssistantDateSection {
         View sectionTitle =
                 inflater.inflate(R.layout.autofill_assistant_payment_request_section_title, null);
         mSummaryView = inflater.inflate(R.layout.autofill_assistant_datetime, null);
+        mErrorView = mSummaryView.findViewById(R.id.error_message);
 
         View.OnClickListener onClickListener = unusedView -> {
             if (mDateChoiceOptions == null) {
@@ -126,6 +129,14 @@ public class AssistantDateSection {
 
     void setVisible(boolean visible) {
         mSectionExpander.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
+    void setErrorMessage(String errorMessage) {
+        AssistantTextUtils.applyVisualAppearanceTags(mErrorView, errorMessage, null);
+    }
+
+    void setErrorVisible(boolean visible) {
+        mErrorView.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     void setPaddings(int topPadding, int bottomPadding) {

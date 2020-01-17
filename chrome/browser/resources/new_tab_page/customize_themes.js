@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import './grid.js';
 import './theme_icon.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -30,13 +31,6 @@ class CustomizeThemesElement extends PolymerElement {
 
       /** @private {!Array<!newTabPage.mojom.ChromeTheme>} */
       chromeThemes_: Array,
-
-      /** @private {number} */
-      numThemeColumns_: {
-        type: Number,
-        readOnly: true,
-        value: 6,
-      },
     };
   }
 
@@ -151,46 +145,6 @@ class CustomizeThemesElement extends PolymerElement {
    */
   skColorToRgb_(skColor) {
     return skColorToRgb(skColor);
-  }
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onThemesKeyDown_(e) {
-    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-      e.preventDefault();
-      const themeIcons = Array.from(this.shadowRoot.querySelectorAll(
-          '#themesContainer > :-webkit-any(div, ntp-theme-icon)'));
-      const currentIndex = themeIcons.indexOf(e.target);
-      const isRtl = window.getComputedStyle(this)['direction'] === 'rtl';
-      let delta = 0;
-      switch (e.key) {
-        case 'ArrowLeft':
-          delta = isRtl ? 1 : -1;
-          break;
-        case 'ArrowRight':
-          delta = isRtl ? -1 : 1;
-          break;
-        case 'ArrowUp':
-          delta = -this.numThemeColumns_;
-          break;
-        case 'ArrowDown':
-          delta = this.numThemeColumns_;
-          break;
-      }
-      const mod = function(m, n) {
-        return ((m % n) + n) % n;
-      };
-      const newIndex = mod(currentIndex + delta, themeIcons.length);
-      themeIcons[newIndex].focus();
-    }
-
-    if (['Enter', ' '].includes(e.key)) {
-      e.preventDefault();
-      e.stopPropagation();
-      e.target.click();
-    }
   }
 }
 

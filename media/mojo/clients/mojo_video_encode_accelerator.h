@@ -32,7 +32,7 @@ class MojoVideoEncodeAccelerator : public VideoEncodeAccelerator {
  public:
   MojoVideoEncodeAccelerator(
       mojo::PendingRemote<mojom::VideoEncodeAccelerator> vea,
-      const gpu::VideoEncodeAcceleratorSupportedProfiles& supported_profiles);
+      const SupportedProfiles& supported_profiles);
 
   // VideoEncodeAccelerator implementation.
   SupportedProfiles GetSupportedProfiles() override;
@@ -54,7 +54,7 @@ class MojoVideoEncodeAccelerator : public VideoEncodeAccelerator {
   // Constructed during Initialize().
   std::unique_ptr<mojom::VideoEncodeAcceleratorClient> vea_client_;
 
-  const gpu::VideoEncodeAcceleratorSupportedProfiles supported_profiles_;
+  const SupportedProfiles supported_profiles_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

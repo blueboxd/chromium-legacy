@@ -10,7 +10,6 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/content_security_policy.h"
-#include "content/common/content_security_policy_header.h"
 #include "content/common/navigation_params.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "url/gurl.h"
@@ -47,7 +46,7 @@ class CONTENT_EXPORT CSPContext {
   // * triggering the "SecurityPolicyViolation" javascript event.
   // * sending a JSON report to any uri defined with the "report-uri" directive.
   // Returns true when the request can proceed, false otherwise.
-  bool IsAllowedByCsp(CSPDirective::Name directive_name,
+  bool IsAllowedByCsp(network::mojom::CSPDirectiveName directive_name,
                       const GURL& url,
                       bool has_followed_redirect,
                       bool is_response_check,
@@ -94,7 +93,7 @@ class CONTENT_EXPORT CSPContext {
   // See https://crbug.com/721329
   virtual void SanitizeDataForUseInCspViolation(
       bool has_followed_redirect,
-      CSPDirective::Name directive,
+      network::mojom::CSPDirectiveName directive,
       GURL* blocked_url,
       SourceLocation* source_location) const;
 

@@ -672,6 +672,13 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
           std::make_unique<base::Value>(container.report_session_status()),
           nullptr);
     }
+    if (container.has_report_graphics_status()) {
+      policies->Set(
+          key::kReportDeviceGraphicsStatus, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.report_graphics_status()),
+          nullptr);
+    }
     if (container.has_report_power_status()) {
       policies->Set(
           key::kReportDevicePowerStatus, POLICY_LEVEL_MANDATORY,
@@ -982,6 +989,19 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
                       POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                       std::make_unique<base::Value>(
                           container.login_screen_high_contrast_enabled()),
+                      nullptr);
+      }
+    }
+
+    if (container.has_login_screen_shortcuts_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(container.has_login_screen_shortcuts_enabled_options(),
+                         container.login_screen_shortcuts_enabled_options(),
+                         &level)) {
+        policies->Set(key::kDeviceLoginScreenAccessibilityShortcutsEnabled,
+                      level, POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_shortcuts_enabled()),
                       nullptr);
       }
     }

@@ -20,6 +20,8 @@ class MediaHistoryKeyedService : public KeyedService {
   explicit MediaHistoryKeyedService(content::BrowserContext* browser_context);
   ~MediaHistoryKeyedService() override;
 
+  static bool IsEnabled();
+
   // Returns the instance attached to the given |profile|.
   static MediaHistoryKeyedService* Get(Profile* profile);
 

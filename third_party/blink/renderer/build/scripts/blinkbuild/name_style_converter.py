@@ -62,6 +62,7 @@ SPECIAL_TOKENS = [
     'V0',
     'V8',
     'v8',
+    'XR',
 ]
 
 _SPECIAL_TOKENS_WITH_NUMBERS = [token for token in SPECIAL_TOKENS if re.search(r'[0-9]', token)]

@@ -109,12 +109,9 @@ gfx::Transform WindowScaleAnimation::GetWindowTransformToShelf() {
 
   gfx::Transform transform;
   Shelf* shelf = Shelf::ForWindow(window_);
-  gfx::Rect shelf_item_bounds =
+
+  const gfx::Rect shelf_item_bounds =
       shelf->GetScreenBoundsOfItemIconForWindow(window_);
-  // |shelf_item_bounds| is the item bounds in a extended hotseat (i.e., the
-  // hotseat state during dragging). Adjust it to the bounds in a shown
-  // hotseat (i.e., the hotseat state after dragging).
-  shelf_item_bounds.Offset(0, ShelfConfig::Get()->shelf_size());
 
   if (!shelf_item_bounds.IsEmpty()) {
     transform.Translate(shelf_item_bounds.x() - origin_without_transform.x(),

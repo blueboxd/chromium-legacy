@@ -6,9 +6,7 @@ import("//build/config/jumbo.gni")
 import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 
 fuzzable_proto_library("proto") {
-  sources = [
-    "leak_detection_api.proto",
-  ]
+  sources = [ "leak_detection_api.proto" ]
 }
 
 source_set("leak_detection_interface_headers") {
@@ -97,7 +95,5 @@ jumbo_source_set("unit_tests") {
 }
 
 group("fuzzers") {
-  deps = [
-    "//components/password_manager/core/browser/leak_detection/fuzzer",
-  ]
+  deps = [ "//components/password_manager/core/browser/leak_detection/fuzzer" ]
 }

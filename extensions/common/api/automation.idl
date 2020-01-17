@@ -674,7 +674,7 @@ enum MarkerType {
     AutomationNode? inPageLinkTarget;
 
     // A node that provides more details about the current node.
-    AutomationNode? details;
+    AutomationNode[]? details;
 
     // A node that provides an error message for a current node.
     AutomationNode? errorMessage;

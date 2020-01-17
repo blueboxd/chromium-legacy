@@ -114,11 +114,12 @@ GdkModifierType ExtractGdkEventStateFromKeyEvent(
                                       GetIbusFlags(key_event));
 }
 
-int GetKeyboardGroup(const ui::KeyEvent& key_event) {
+int GetKeyEventProperty(const ui::KeyEvent& key_event,
+                        const char* property_key) {
   auto* properties = key_event.properties();
   if (!properties)
     return 0;
-  auto it = properties->find(ui::kPropertyKeyboardGroup);
+  auto it = properties->find(property_key);
   DCHECK(it == properties->end() || it->second.size() == 1);
   return (it != properties->end()) ? it->second[0] : 0;
 }
@@ -608,16 +609,15 @@ GdkDisplay* GetGdkDisplay() {
 }
 
 int BuildXkbStateFromGdkEvent(unsigned int state, unsigned char group) {
-  DCHECK_EQ(0u, ((state >> 13) & 0x3));
   return state | ((group & 0x3) << 13);
 }
 
 GdkEvent* GdkEventFromKeyEvent(const ui::KeyEvent& key_event) {
   GdkEventType event_type =
       key_event.type() == ui::ET_KEY_PRESSED ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
-  int hw_code = ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code());
   auto event_time = key_event.time_stamp() - base::TimeTicks();
-  int group = GetKeyboardGroup(key_event);
+  int hw_code = GetKeyEventProperty(key_event, ui::kPropertyKeyboardHwKeyCode);
+  int group = GetKeyEventProperty(key_event, ui::kPropertyKeyboardGroup);
 
   // Get GdkKeymap
   GdkKeymap* keymap = gdk_keymap_get_for_display(GetGdkDisplay());

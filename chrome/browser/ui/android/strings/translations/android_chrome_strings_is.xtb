@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Loka núverandi flipa</translation>
 <translation id="1258753120186372309">Google dúlla: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Leita og kanna</translation>
-<translation id="1264974993859112054">Íþróttir</translation>
 <translation id="1266864766717917324">Ekki tókst að deila <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Stöðva</translation>
 <translation id="1283039547216852943">Ýttu til að stækka</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Skráðu þig inn og kveiktu á samstillingu til að fá aðgang að bókamerkjunum þínum í öllum tækjum</translation>
 <translation id="2822354292072154809">Viltu örugglega endurstilla allar heimildir vefsvæða fyrir „<ph name="CHOSEN_OBJECT_NAME" />“?</translation>
 <translation id="2842985007712546952">Yfirmappa</translation>
-<translation id="2858138569776157458">Vinsælast</translation>
 <translation id="2860954141821109167">Gakktu úr skugga um að símaforritið sé virkt í þessu tæki</translation>
 <translation id="2870560284913253234">Vefsvæði</translation>
 <translation id="2874939134665556319">Fyrra lag</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Skráðu þig inn á Chrome</translation>
 <translation id="3288003805934695103">Endurhlaða síðuna</translation>
 <translation id="32895400574683172">Tilkynningar eru leyfðar</translation>
+<translation id="3290926146403723641">Til að ljúka við verkefni á vefnum með Google hjálparanum sendir Chrome slóð vefsvæðis, efni vefsvæðis og tengdar persónuupplýsingar til Google</translation>
 <translation id="3295530008794733555">Vafraðu hraðar. Með minna gagnamagni.</translation>
 <translation id="3298243779924642547">Léttútgáfa</translation>
 <translation id="3303414029551471755">Viltu halda áfram og sækja efnið?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Símanúmer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> niðurhölum eytt</translation>
 <translation id="3822502789641063741">Hreinsa geymslu vefsvæða?</translation>
-<translation id="3853625385350850937">Kveiktu á NFC í tækinu til að halda áfram</translation>
 <translation id="3859306556332390985">Leita áfram</translation>
 <translation id="388596076286380598">Fáðu greinar, myndskeið og annað efni frá vefsvæðum sem þú kannt að meta, jafnvel án nettengingar eða þegar tengingin er léleg.</translation>
 <translation id="3894427358181296146">Bæta möppu við</translation>
@@ -764,7 +762,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6697947395630195233">Chrome þarf staðsetningaraðgang til að deila staðsetningu þinni með þessu vefsvæði.</translation>
 <translation id="6698801883190606802">Stjórna samstilltum gögnum</translation>
 <translation id="6699370405921460408">Vefþjónar Google munu sérsníða síðurnar sem þú heimsækir.</translation>
-<translation id="6709133671862442373">Fréttir</translation>
 <translation id="6710213216561001401">Til baka</translation>
 <translation id="671481426037969117">Tímamælir <ph name="FQDN" /> rann út. Hann byrjar aftur á morgun.</translation>
 <translation id="6738867403308150051">Sækir…</translation>
@@ -1079,7 +1076,6 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="9133397713400217035">Skoða ónettengt</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Sýna frumtexta</translation>
-<translation id="9139318394846604261">Innkaup</translation>
 <translation id="9155898266292537608">Þú getur einnig leitað með því að ýta á orð</translation>
 <translation id="9169507124922466868">Ferill er hálfopinn</translation>
 <translation id="9204836675896933765">Ein skrá eftir</translation>

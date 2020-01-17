@@ -30,9 +30,9 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
@@ -164,12 +164,6 @@ public class BasicSuggestionProcessorTest {
 
     private void assertSuggestionTypeAndIcon(
             @OmniboxSuggestionType int expectedType, @SuggestionIcon int expectedIcon) {
-        int actualType = mModel.get(SuggestionViewProperties.SUGGESTION_TYPE);
-        Assert.assertEquals(String.format("Expected suggestion Type %s, Got %s",
-                                    SUGGESTION_TYPE_NAMES.get(expectedType),
-                                    SUGGESTION_TYPE_NAMES.get(actualType)),
-                expectedType, actualType);
-
         int actualIcon = mModel.get(SuggestionViewProperties.SUGGESTION_ICON_TYPE);
         Assert.assertEquals(
                 String.format("%s: Want Icon %s, Got %s", SUGGESTION_TYPE_NAMES.get(expectedType),

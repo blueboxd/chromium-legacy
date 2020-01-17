@@ -98,6 +98,14 @@ void URLDataManagerBackend::UpdateWebUIDataSource(
 
 URLDataSourceImpl* URLDataManagerBackend::GetDataSourceFromURL(
     const GURL& url) {
+  // chrome-untrusted:// sources keys are of the form "chrome-untrusted://host".
+  if (url.scheme() == kChromeUIUntrustedScheme) {
+    auto i = data_sources_.find(url.GetOrigin().spec());
+    if (i == data_sources_.end())
+      return nullptr;
+    return i->second.get();
+  }
+
   // The input usually looks like: chrome://source_name/extra_bits?foo
   // so do a lookup using the host of the URL.
   auto i = data_sources_.find(url.host());
@@ -170,6 +178,7 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
 bool URLDataManagerBackend::CheckURLIsValid(const GURL& url) {
   std::vector<std::string> additional_schemes;
   DCHECK(url.SchemeIs(kChromeUIScheme) ||
+         url.SchemeIs(kChromeUIUntrustedScheme) ||
          (GetContentClient()->browser()->GetAdditionalWebUISchemes(
               &additional_schemes),
           SchemeIsInSchemes(url.scheme(), additional_schemes)));
@@ -209,6 +218,7 @@ bool URLDataManagerBackend::IsValidNetworkErrorCode(int error_code) {
 std::vector<std::string> URLDataManagerBackend::GetWebUISchemes() {
   std::vector<std::string> schemes;
   schemes.push_back(kChromeUIScheme);
+  schemes.push_back(kChromeUIUntrustedScheme);
   GetContentClient()->browser()->GetAdditionalWebUISchemes(&schemes);
   return schemes;
 }

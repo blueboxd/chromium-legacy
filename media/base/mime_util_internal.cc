@@ -69,6 +69,7 @@ const StringToCodecMap& GetStringToCodecMap() {
       {"mp4a.40.5", MimeUtil::MPEG4_AAC},
       {"mp4a.40.05", MimeUtil::MPEG4_AAC},
       {"mp4a.40.29", MimeUtil::MPEG4_AAC},
+      {"mp4a.40.42", MimeUtil::MPEG4_XHE_AAC},
       // TODO(servolk): Strictly speaking only mp4a.A5 and mp4a.A6
       // codec ids are valid according to RFC 6381 section 3.3, 3.4.
       // Lower-case oti (mp4a.a5 and mp4a.a6) should be rejected. But
@@ -170,6 +171,7 @@ AudioCodec MimeUtilToAudioCodec(MimeUtil::Codec codec) {
       return kCodecEAC3;
     case MimeUtil::MPEG2_AAC:
     case MimeUtil::MPEG4_AAC:
+    case MimeUtil::MPEG4_XHE_AAC:
       return kCodecAAC;
     case MimeUtil::MPEG_H_AUDIO:
       return kCodecMpegHAudio;
@@ -310,7 +312,7 @@ void MimeUtil::AddSupportedMediaFormats() {
   mp4_video_codecs.emplace(VP9);
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  const CodecSet aac{MPEG2_AAC, MPEG4_AAC};
+  const CodecSet aac{MPEG2_AAC, MPEG4_AAC, MPEG4_XHE_AAC};
   mp4_audio_codecs.insert(aac.begin(), aac.end());
 
   CodecSet avc_and_aac(aac);
@@ -584,6 +586,10 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
       // MediaPlayer.
       DCHECK(!is_encrypted || platform_info.has_platform_decoders);
       return true;
+
+    case MPEG4_XHE_AAC:
+      // xHE-AAC is only supported via MediaCodec.
+      return platform_info.has_platform_decoders;
 
     case MPEG_H_AUDIO:
       return false;
@@ -885,7 +891,11 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
 
   AudioCodec audio_codec = MimeUtilToAudioCodec(codec);
   if (audio_codec != kUnknownAudioCodec) {
-    if (!IsSupportedAudioType({audio_codec}))
+    AudioCodecProfile audio_profile = AudioCodecProfile::kUnknown;
+    if (codec == MPEG4_XHE_AAC)
+      audio_profile = AudioCodecProfile::kXHE_AAC;
+
+    if (!IsSupportedAudioType({audio_codec, audio_profile, false}))
       return IsNotSupported;
   }
 

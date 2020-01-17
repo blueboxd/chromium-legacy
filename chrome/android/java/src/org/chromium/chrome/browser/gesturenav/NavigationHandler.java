@@ -46,12 +46,11 @@ public class NavigationHandler {
 
     private final ViewGroup mParentView;
     private final Context mContext;
-    private final Supplier<NavigationGlow> mGlowEffectSupplier;
 
-    private final HistoryNavigationDelegate mDelegate;
-    private final ActionDelegate mActionDelegate;
+    private HistoryNavigationDelegate mDelegate;
+    private ActionDelegate mActionDelegate;
 
-    private NavigationGlow mGlowEffect;
+    private Supplier<NavigationGlow> mGlowEffectSupplier;
 
     private @GestureState int mState = GestureState.NONE;
 
@@ -95,13 +94,11 @@ public class NavigationHandler {
         boolean willBackExitApp();
     }
 
-    public NavigationHandler(ViewGroup parentView, Context context,
-            HistoryNavigationDelegate delegate, Supplier<NavigationGlow> glowEffectSupplier) {
+    public NavigationHandler(
+            ViewGroup parentView, Context context, Supplier<NavigationGlow> glowEffect) {
         mParentView = parentView;
         mContext = context;
-        mDelegate = delegate;
-        mActionDelegate = delegate.createActionDelegate();
-        mGlowEffectSupplier = glowEffectSupplier;
+        mGlowEffectSupplier = glowEffect;
         mEdgeWidthPx = EDGE_WIDTH_DP * parentView.getResources().getDisplayMetrics().density;
     }
 
@@ -114,7 +111,6 @@ public class NavigationHandler {
             cancelStopNavigatingRunnable();
             mSideSlideLayout.post(getStopNavigatingRunnable());
         });
-
         mSideSlideLayout.setOnResetListener(() -> {
             if (mDetachLayoutRunnable != null) return;
             mDetachLayoutRunnable = () -> {
@@ -124,10 +120,21 @@ public class NavigationHandler {
             mSideSlideLayout.post(mDetachLayoutRunnable);
         });
 
-        mNavigationSheet = NavigationSheet.isEnabled()
-                ? NavigationSheet.create(mParentView, mContext,
-                        mDelegate.getBottomSheetController(), mDelegate.createSheetDelegate())
-                : NavigationSheet.DUMMY;
+        mNavigationSheet = NavigationSheet.isEnabled() ? NavigationSheet.create(
+                                   mParentView, mContext, mDelegate.getBottomSheetController())
+                                                       : NavigationSheet.DUMMY;
+        mNavigationSheet.setDelegate(mDelegate.createSheetDelegate());
+    }
+
+    /**
+     * Sets {@link HistoryNavigationDelegate} object.
+     * Also creates new delegates, for horizontal gesture and bottom sheet processing.
+     * @param {@link HistoryNavigationDelegate} object.
+     */
+    void setDelegate(HistoryNavigationDelegate delegate) {
+        mDelegate = delegate;
+        mActionDelegate = delegate.createActionDelegate();
+        if (mNavigationSheet != null) mNavigationSheet.setDelegate(delegate.createSheetDelegate());
     }
 
     /**
@@ -138,8 +145,8 @@ public class NavigationHandler {
             if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
                 mSideSlideLayout.release(mNavigationSheet.isHidden());
                 mNavigationSheet.release();
-            } else if (mState == GestureState.GLOW && mGlowEffect != null) {
-                mGlowEffect.release();
+            } else if (mState == GestureState.GLOW && mGlowEffectSupplier != null) {
+                mGlowEffectSupplier.get().release();
             }
         }
     }
@@ -167,15 +174,7 @@ public class NavigationHandler {
 
         if (mState == GestureState.STARTED) {
             if (shouldTriggerUi(startX, distanceX, distanceY)) {
-                boolean forward = distanceX > 0;
-                if (mActionDelegate.canNavigate(forward)) {
-                    showArrowWidget(forward);
-                } else {
-                    // |forward| should be true if we get here, since navigating back
-                    // is always possible.
-                    assert forward;
-                    showGlow(endX, endY);
-                }
+                navigate(distanceX > 0, endX, endY);
             }
             if (!isActive()) mState = GestureState.NONE;
         }
@@ -189,10 +188,28 @@ public class NavigationHandler {
     }
 
     /**
+     * Shows UI in response to gesture events.
+     * @param forward Direction of the swipe gesture. {@code true} if forward; else back.
+     * @param x The X position of the event.
+     * @param y The Y position of the event.
+     * @return {@code true} if the navigation can be triggered.
+     */
+    public boolean navigate(boolean forward, float x, float y) {
+        assert mActionDelegate != null;
+        boolean navigable = mActionDelegate.canNavigate(forward);
+        if (navigable) {
+            showArrowWidget(forward);
+        } else {
+            showGlow(x, y);
+        }
+        return navigable;
+    }
+
+    /**
      * Start showing arrow widget for navigation back/forward.
      * @param forward {@code true} if navigating forward.
      */
-    public void showArrowWidget(boolean forward) {
+    private void showArrowWidget(boolean forward) {
         if (mState != GestureState.STARTED) reset();
         if (mSideSlideLayout == null) createLayout();
         mSideSlideLayout.setEnabled(true);
@@ -211,10 +228,9 @@ public class NavigationHandler {
      * @param startX X coordinate of the touch event at the beginning.
      * @param startY Y coordinate of the touch event at the beginning.
      */
-    public void showGlow(float startX, float startY) {
+    private void showGlow(float startX, float startY) {
         if (mState != GestureState.STARTED) reset();
-        if (mGlowEffect == null) mGlowEffect = mGlowEffectSupplier.get();
-        mGlowEffect.prepare(startX, startY);
+        mGlowEffectSupplier.get().prepare(startX, startY);
         mState = GestureState.GLOW;
     }
 
@@ -252,8 +268,8 @@ public class NavigationHandler {
                 mSideSlideLayout.hideArrow();
                 mState = GestureState.NONE;
             }
-        } else if (mState == GestureState.GLOW && mGlowEffect != null) {
-            mGlowEffect.onScroll(-delta);
+        } else if (mState == GestureState.GLOW) {
+            mGlowEffectSupplier.get().onScroll(-delta);
         }
     }
 
@@ -283,8 +299,8 @@ public class NavigationHandler {
             cancelStopNavigatingRunnable();
             mSideSlideLayout.release(allowNav && mNavigationSheet.isHidden());
             mNavigationSheet.release();
-        } else if (mState == GestureState.GLOW && mGlowEffect != null) {
-            mGlowEffect.release();
+        } else if (mState == GestureState.GLOW) {
+            mGlowEffectSupplier.get().release();
         }
     }
 
@@ -295,17 +311,10 @@ public class NavigationHandler {
         if (mState == GestureState.DRAGGED && mSideSlideLayout != null) {
             cancelStopNavigatingRunnable();
             mSideSlideLayout.reset();
-        } else if (mState == GestureState.GLOW && mGlowEffect != null) {
-            mGlowEffect.reset();
+        } else if (mState == GestureState.GLOW) {
+            mGlowEffectSupplier.get().reset();
         }
         mState = GestureState.NONE;
-    }
-
-    /**
-     * Performs cleanup upon destruction.
-     */
-    public void destroy() {
-        if (mGlowEffect != null) mGlowEffect.destroy();
     }
 
     private void cancelStopNavigatingRunnable() {

@@ -38,8 +38,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
   ASSERT_TRUE(ExtensionsMatchChecker().Wait());
 }
 
-// E2E tests flaky on Mac: https://crbug.com/597319
-#if defined(OS_MACOSX)
+// E2E tests flaky on Mac and Windows: https://crbug.com/597319
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_E2E(test_name) test_name
 #else
 #define MAYBE_E2E(test_name) E2E_ENABLED(test_name)

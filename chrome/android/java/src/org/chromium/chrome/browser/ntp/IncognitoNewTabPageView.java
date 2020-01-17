@@ -8,16 +8,16 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
-import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.ui.base.ViewUtils;
 
 /**
  * The New Tab Page for use in the incognito profile.
  */
-public class IncognitoNewTabPageView extends HistoryNavigationLayout {
+public class IncognitoNewTabPageView extends FrameLayout {
     private IncognitoNewTabPageManager mManager;
     private boolean mFirstShow = true;
     private NewTabPageScrollView mScrollView;

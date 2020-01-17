@@ -167,7 +167,7 @@ void ClipboardMac::ReadHTML(ClipboardBuffer buffer,
   }
 
   *fragment_start = 0;
-  DCHECK(markup->length() <= std::numeric_limits<uint32_t>::max());
+  DCHECK_LE(markup->length(), std::numeric_limits<uint32_t>::max());
   *fragment_end = static_cast<uint32_t>(markup->length());
 }
 

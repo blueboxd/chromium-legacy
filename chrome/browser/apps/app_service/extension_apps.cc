@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/bind.h"
@@ -18,6 +19,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_interface.h"
@@ -26,6 +28,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
@@ -52,6 +56,7 @@
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -62,8 +67,10 @@
 #include "content/public/browser/clear_site_data_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/switches.h"
 #include "url/url_constants.h"
 
@@ -117,6 +124,7 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     case apps::mojom::LaunchSource::kFromFileManager:
     case apps::mojom::LaunchSource::kFromLink:
     case apps::mojom::LaunchSource::kFromOmnibox:
+    case apps::mojom::LaunchSource::kFromChromeInternal:
       return ash::LAUNCH_FROM_UNKNOWN;
   }
 }
@@ -407,6 +415,7 @@ void ExtensionApps::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kFromFileManager:
     case apps::mojom::LaunchSource::kFromLink:
     case apps::mojom::LaunchSource::kFromOmnibox:
+    case apps::mojom::LaunchSource::kFromChromeInternal:
       break;
   }
 
@@ -634,6 +643,60 @@ void ExtensionApps::UnpauseApps(const std::string& app_id) {
       chromeos::app_time::WebTimeLimitInterface::Get(profile_);
   DCHECK(web_limit);
   web_limit->ResumeWebActivity(app_id);
+}
+
+void ExtensionApps::GetMenuModel(const std::string& app_id,
+                                 apps::mojom::MenuType menu_type,
+                                 GetMenuModelCallback callback) {
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(app_id);
+  if (!extension || !Accepts(extension)) {
+    return;
+  }
+
+  if (app_id == extension_misc::kChromeAppId) {
+    GetMenuModelForChromeBrowserApp(menu_type, std::move(callback));
+    return;
+  }
+
+  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
+  bool is_platform_app = extension->is_platform_app();
+  bool is_system_web_app = web_app::WebAppProvider::Get(profile_)
+                               ->system_web_app_manager()
+                               .IsSystemWebApp(app_id);
+
+  if (!is_platform_app && !is_system_web_app) {
+    CreateOpenNewSubmenu(
+        extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile_),
+                                  extension) ==
+                extensions::LaunchType::LAUNCH_TYPE_WINDOW
+            ? IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW
+            : IDS_APP_LIST_CONTEXT_MENU_NEW_TAB,
+        &menu_items);
+  }
+
+  if (!is_platform_app &&
+      extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_) &&
+      extensions::OptionsPageInfo::HasOptionsPage(extension)) {
+    AddCommandItem(ash::OPTIONS, IDS_NEW_TAB_APP_OPTIONS, &menu_items);
+  }
+
+  const extensions::ManagementPolicy* policy =
+      extensions::ExtensionSystem::Get(profile_)->management_policy();
+  DCHECK(policy);
+  if (policy->UserMayModifySettings(extension, nullptr) &&
+      !policy->MustRemainInstalled(extension, nullptr)) {
+    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, &menu_items);
+  }
+
+  if (!is_system_web_app) {
+    AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
+                   &menu_items);
+  }
+
+  std::move(callback).Run(std::move(menu_items));
 }
 
 void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
@@ -1183,11 +1246,13 @@ IconEffects ExtensionApps::GetIconEffects(
   icon_effects =
       static_cast<IconEffects>(icon_effects | IconEffects::kResizeAndPad);
   if (extensions::util::ShouldApplyChromeBadge(profile_, extension->id())) {
-    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kBadge);
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kChromeBadge);
   }
 #endif
   if (!extensions::util::IsAppLaunchable(extension->id(), profile_)) {
-    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kGray);
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
   }
   if (extension->from_bookmark()) {
     icon_effects =
@@ -1276,6 +1341,32 @@ void ExtensionApps::RegisterInstance(extensions::AppWindow* app_window,
   instance->SetBrowserContext(app_window->browser_context());
   deltas.push_back(std::move(instance));
   instance_registry_->OnInstances(deltas);
+}
+
+void ExtensionApps::GetMenuModelForChromeBrowserApp(
+    apps::mojom::MenuType menu_type,
+    GetMenuModelCallback callback) {
+  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
+
+  // "Normal" windows are not allowed when incognito is enforced.
+  if (IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
+      IncognitoModePrefs::FORCED) {
+    AddCommandItem(ash::APP_CONTEXT_MENU_NEW_WINDOW, IDS_APP_LIST_NEW_WINDOW,
+                   &menu_items);
+  }
+
+  // Incognito windows are not allowed when incognito is disabled.
+  if (!profile_->IsOffTheRecord() &&
+      IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
+          IncognitoModePrefs::DISABLED) {
+    AddCommandItem(ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW,
+                   IDS_APP_LIST_NEW_INCOGNITO_WINDOW, &menu_items);
+  }
+
+  AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
+                 &menu_items);
+
+  std::move(callback).Run(std::move(menu_items));
 }
 
 }  // namespace apps

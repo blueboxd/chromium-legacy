@@ -7,6 +7,7 @@
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -54,6 +55,15 @@ void TestInstallFinalizer::FinalizeUninstallAfterSync(
 }
 
 void TestInstallFinalizer::UninstallExternalWebApp(
+    const AppId& app_id,
+    ExternalInstallSource external_install_source,
+    UninstallWebAppCallback callback) {
+  user_uninstalled_external_apps_.erase(app_id);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), /*uninstalled=*/true));
+}
+
+void TestInstallFinalizer::UninstallExternalWebAppByUrl(
     const GURL& app_url,
     ExternalInstallSource external_install_source,
     UninstallWebAppCallback callback) {

@@ -56,6 +56,7 @@ class HTMLElement;
 class HTMLSpanElement;
 struct LocalCaretRect;
 class Node;
+class SystemClipboard;
 
 // This file contains a set of helper functions used by the editing commands
 
@@ -136,7 +137,7 @@ inline ContainerNode* ParentCrossingShadowBoundaries<EditingInFlatTreeStrategy>(
   return FlatTreeTraversal::Parent(node);
 }
 
-void WriteImageNodeToClipboard(const Node&, const String&);
+void WriteImageNodeToClipboard(SystemClipboard&, const Node&, const String&);
 
 // boolean functions on Node
 

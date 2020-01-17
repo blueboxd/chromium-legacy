@@ -15,11 +15,8 @@ grit("strings") {
 }
 
 repack("bluetooth_test_strings") {
-  sources = [
-    "$root_gen_dir/device/bluetooth/strings/bluetooth_strings_en-US.pak",
-  ]
+  sources =
+      [ "$root_gen_dir/device/bluetooth/strings/bluetooth_strings_en-US.pak" ]
   output = "$root_out_dir/bluetooth_test_strings.pak"
-  deps = [
-    ":strings",
-  ]
+  deps = [ ":strings" ]
 }

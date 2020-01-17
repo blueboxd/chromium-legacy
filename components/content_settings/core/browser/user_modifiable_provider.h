@@ -8,6 +8,10 @@
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "components/content_settings/core/common/content_settings.h"
 
+namespace base {
+class Clock;
+}
+
 class ContentSettingsPattern;
 
 namespace content_settings {
@@ -23,6 +27,8 @@ class UserModifiableProvider : public ObservableProvider {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) = 0;
+  // Sets the providers internal clock for testing purposes.
+  virtual void SetClockForTesting(base::Clock* clock) = 0;
 };
 
 }  // namespace content_settings

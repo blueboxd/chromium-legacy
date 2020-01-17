@@ -28,7 +28,7 @@ Polymer({
   ],
 
   /** @private */
-  onSubLabelChanged_: function() {
+  onSubLabelChanged_() {
     this.$.checkbox.ariaDescription = this.$.subLabel.textContent;
   },
 
@@ -36,7 +36,7 @@ Polymer({
    * Don't let clicks on a link inside the secondary label reach the checkbox.
    * @private
    */
-  onSubLabelHtmlChanged_: function() {
+  onSubLabelHtmlChanged_() {
     const links = this.root.querySelectorAll('.secondary.label a');
     links.forEach((link) => {
       link.addEventListener('click', this.stopPropagation);
@@ -47,7 +47,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  stopPropagation: function(event) {
+  stopPropagation(event) {
     event.stopPropagation();
   },
 
@@ -57,7 +57,7 @@ Polymer({
    * @return {boolean} Whether there is a subLabel
    * @private
    */
-  hasSubLabel_: function(subLabel, subLabelHtml) {
+  hasSubLabel_(subLabel, subLabelHtml) {
     return !!subLabel || !!subLabelHtml;
   },
 

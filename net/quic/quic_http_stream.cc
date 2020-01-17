@@ -410,7 +410,7 @@ void QuicHttpStream::PopulateNetErrorDetails(NetErrorDetails* details) {
   details->connection_info =
       ConnectionInfoFromQuicVersion(quic_session()->GetQuicVersion());
   quic_session()->PopulateNetErrorDetails(details);
-  if (quic_session()->IsCryptoHandshakeConfirmed() && stream_ &&
+  if (quic_session()->OneRttKeysAvailable() && stream_ &&
       stream_->connection_error() != quic::QUIC_NO_ERROR)
     details->quic_connection_error = stream_->connection_error();
 }
@@ -750,8 +750,7 @@ void QuicHttpStream::ResetStream() {
 }
 
 int QuicHttpStream::MapStreamError(int rv) {
-  if (rv == ERR_QUIC_PROTOCOL_ERROR &&
-      !quic_session()->IsCryptoHandshakeConfirmed()) {
+  if (rv == ERR_QUIC_PROTOCOL_ERROR && !quic_session()->OneRttKeysAvailable()) {
     return ERR_QUIC_HANDSHAKE_FAILED;
   }
   return rv;
@@ -777,7 +776,7 @@ int QuicHttpStream::ComputeResponseStatus() const {
 
   // If the handshake has failed this will be handled by the QuicStreamFactory
   // and HttpStreamFactory to mark QUIC as broken if TCP is actually working.
-  if (!quic_session()->IsCryptoHandshakeConfirmed())
+  if (!quic_session()->OneRttKeysAvailable())
     return ERR_QUIC_HANDSHAKE_FAILED;
 
   // If the session was aborted by a higher layer, simply use that error code.

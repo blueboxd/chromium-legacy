@@ -1,4 +1,9 @@
 # Omaha Protocol (V4)
+ATTENTION: The Omaha 4 protocol is not implemented by any known client and is
+subject to redesign and change. Potential clients are encouraged to implement
+the 3.1 protocol instead.
+
+
 This document describes version 4 of the Omaha Client-Server Protocol.
 Previous versions are described at:
  * (Version 3)[https://github.com/google/omaha/blob/master/doc/ServerProtocolV3.md]

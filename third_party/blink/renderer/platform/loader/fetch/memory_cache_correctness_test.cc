@@ -318,7 +318,7 @@ TEST_F(MemoryCacheCorrectnessTest, RequestWithNoCache) {
   no_cache_request.SetHttpHeaderField(http_names::kCacheControl, "no-cache");
   no_cache_request.SetRequestorOrigin(GetSecurityOrigin());
   MockResource* no_cache_resource =
-      ResourceFromResourceRequest(no_cache_request);
+      ResourceFromResourceRequest(std::move(no_cache_request));
   MockResource* fetched = FetchMockResource();
   EXPECT_NE(no_cache_resource, fetched);
 }
@@ -349,7 +349,7 @@ TEST_F(MemoryCacheCorrectnessTest, RequestWithNoStore) {
   no_store_request.SetHttpHeaderField(http_names::kCacheControl, "no-store");
   no_store_request.SetRequestorOrigin(GetSecurityOrigin());
   MockResource* no_store_resource =
-      ResourceFromResourceRequest(no_store_request);
+      ResourceFromResourceRequest(std::move(no_store_request));
   MockResource* fetched = FetchMockResource();
   EXPECT_NE(no_store_resource, fetched);
 }

@@ -8,16 +8,12 @@ static_library("language_usage_metrics") {
     "language_usage_metrics.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "language_usage_metrics_unittest.cc",
-  ]
+  sources = [ "language_usage_metrics_unittest.cc" ]
 
   deps = [
     ":language_usage_metrics",

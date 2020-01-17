@@ -51,4 +51,6 @@ void EventHandlerAndroid::OnSizeChanged() {}
 
 void EventHandlerAndroid::OnPhysicalBackingSizeChanged() {}
 
+void EventHandlerAndroid::OnBrowserControlsHeightChanged() {}
+
 }  // namespace ui

@@ -151,6 +151,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
       base::TimeDelta::FromMilliseconds(40);
   timing.paint_timing->largest_text_paint =
       base::TimeDelta::FromMilliseconds(50);
+  timing.paint_timing->largest_text_paint_size = 20u;
   timing.paint_timing->first_image_paint =
       base::TimeDelta::FromMilliseconds(160);
   timing.parse_timing->parse_stop = base::TimeDelta::FromMilliseconds(320);

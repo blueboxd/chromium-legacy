@@ -249,6 +249,9 @@
   <message name="IDS_SETTINGS_CAPTIONS_DEFAULT_SETTING" desc="Name of the default setting for the caption text.">
     Default
   </message>
+  <message name="IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION" desc="Name of the setting to enable Live Caption.">
+    Enable Live Caption
+  </message>
   <message name="IDS_SETTINGS_ACCESSIBILITY" desc="Name of the settings page which displays accessibility preferences.">
     Accessibility
   </message>
@@ -726,6 +729,9 @@
     </message>
     <message name="IDS_SETTINGS_PLUGIN_VM_REMOVE_BUTTON" desc="Label for the button to open a dialog confirming removal of Plugin VM.">
       Remove
+    </message>
+    <message name="IDS_SETTINGS_PLUGIN_VM_CONFIRM_REMOVE_DIALOG_BODY" desc="Message of the confirmation dialog displayed before removal begins.">
+      Removing Plugin VM will delete your VM. This includes its applications, settings, and data. Are you sure you wish to continue?
     </message>
 
     <!-- Android Apps Page -->
@@ -1520,6 +1526,9 @@
     Manage Cloud Print devices
   </message>
   <if expr="chromeos">
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER" desc="Label for button that allows the user to access the add print server dialog.">
+      Print server
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS" desc="In Printing Settings, the title of the CUPS printers setting section.">
       Printers
     </message>
@@ -1586,6 +1595,9 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_MANUALLY_TITLE" desc="Text for the title of the dialog that is used to manually add a printer instead of automatically finding ones nearby.">
       Add a printer manually
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINT_SERVER_TITLE" desc="Text for the title of the dialog that is used to manually add a print server.">
+      Add a print server
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_SELECT_MANUFACTURER_AND_MODEL_TITLE" desc="Text for the title of the dialog that is used to select a manufacturer and model from the drop down list.">
       Advanced printer configuration
     </message>
@@ -1599,6 +1611,9 @@
       Show advanced printer options
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ADDRESS" desc="Label for the CUPS printer address in the Advanced section in the printer details page.">
+      Address
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_ADDRESS" desc="Label for the CUPS print server address in the in the print server details page.">
       Address
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_PROTOCOL" desc="Label for the CUPS printer protocol in the Advanced section in the printer details page.">
@@ -1742,7 +1757,24 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_DIALOG_GENERAL_ERROR" desc="General message shown on the top of the add/edit printer dialogs when adding/editting a printer fails.">
       Unable to set up printer. Please check configuration and try again.
     </message>
-
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_ZERO_PRINTERS" desc="Message shown on a toast to indicate no printers were found from a print server.">
+      Did not find any printers from the print server.
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_ONE_PRINTER" desc="Message shown on a toast to indicate that only one printer was found from a print server.">
+      Found 1 printer from the print server.
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_MANY_PRINTERS" desc="Message shown on a toast to indicate the number of printers found on a print server.">
+      Found <ph name="NUM_PRINTERS">$1<ex>5</ex></ph> printers from the print server.
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_INVALID_URL_ADDRESS" desc="Message shown on the address field of the print server dialog when attempting to connect to a print server with an invalid URL.">
+      Invalid address. Please check the address and try again.
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_CONNECTION_ERROR" desc="Message shown on the print server dialog when the user has provided a valid URL but the server is unreachable.">
+      Couldn't detect the print server. Please check the address and try again.
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_REACHABLE_BUT_CANNOT_ADD" desc="Message shown on the print server dialog when we are able to reach the print server but still ran into some error with adding the print server.">
+      Couldn't add the print server. Please check the server's configuration and try again.
+    </message>
 
   </if>
   <if expr="not chromeos">
@@ -3183,10 +3215,10 @@
   <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED" desc="Sub label for the Google Assistant button when Assistant is disabled.">
     Disabled
   </message>
-  <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ON" desc="Row label in Google Assistant settings." meaning="Google Assistant is off.">
+  <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ON" desc="Row label in Google Assistant settings." meaning="Google Assistant is on.">
     On
   </message>
-  <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_OFF" desc="Row label in Google Assistant settings." meaning="Google Assistant is on.">
+  <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_OFF" desc="Row label in Google Assistant settings." meaning="Google Assistant is off.">
     Off
   </message>
 </if>
@@ -3321,6 +3353,19 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_ADS" desc="Label for the ads site settings.">
     Ads
   </message>
+  <!-- TODO(crbug.com/1041009): Finalize WebXr Permissions strings -->
+  <message name="IDS_SETTINGS_SITE_SETTINGS_AR" desc="Label for the AR site settings.">
+    Augmented Reality
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_AR_ASK" desc="The Ask label for the AR feature in site settings.">
+    Ask when a site wants to access your camera position or map your room
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_AR_ASK_RECOMMENDED" desc="The Ask label for the AR feature in site settings (with the 'recommended' suffix).">
+    Ask when a site wants to access your camera position or map your room (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_AR_BLOCK" desc="The Ask label for the AR feature in site settings (with the 'recommended' suffix).">
+    Do not allow sites to access your camera position or map your room
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DOWNLOADS" desc="Label for the automatic downloads site settings.">
     Automatic downloads
   </message>
@@ -3419,6 +3464,19 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT_ENABLE" desc="Label for the toggle enabling protected content.">
     Allow sites to play protected content (recommended)
+  </message>
+  <!-- TODO(crbug.com/1041009): Finalize WebXr Permissions strings -->
+  <message name="IDS_SETTINGS_SITE_SETTINGS_VR" desc="Label for the VR site settings.">
+    Virtual Reality
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_VR_ASK" desc="The Ask label for the VR feature in site settings.">
+    Ask when a site wants to access your virtual reality devices/data
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_VR_ASK_RECOMMENDED" desc="The Ask label for the VR feature in site settings (with the 'recommended' suffix).">
+    Ask when a site wants to access your virtual reality devices/data (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_VR_BLOCK" desc="The Ask label for the VR feature in site settings (with the 'recommended' suffix).">
+    Do not allow sites to access your virtual reality devices/data
   </message>
   <if expr="chromeos or is_win">
     <message name="IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT_IDENTIFIERS_EXPLANATION" desc="Text that is displayed on the Protected Content section of Content Settings. This text explains that enabling protected content may require using a uniquely identifiable machine identifier.">
@@ -3852,11 +3910,8 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_ONLY" desc="A label for the checkbox to make the rule apply to the current incognito session only.">
     Current incognito session only
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_INCOGNITO" desc="A label for a site rule that only applies to the current incognito session.">
-    Current incognito session
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_EMBEDDED" desc="A label for a site rule that specifies an embedded origin and only applies to the current incognito session.">
-    Current incognito session (<ph name="EMBEDDING">$1<ex>embedded on google.com</ex></ph>)
+  <message name="IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_SITE_EXCEPTION_DESC" desc="The text displayed in order to explain to a user that a content setting only applies to the current incognito session.">
+    This exception will be automatically removed after you exit the current Incognito session
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NO_ZOOMED_SITES" desc="A label explaining that no sites have a configured zoom in/out value.">
     No sites have been zoomed in or out
@@ -4032,8 +4087,8 @@
     <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE_LOCK" desc="Text on the people page which opens up the quick unlock subpage and the title of the quick unlock subpage.">
       Screen lock
     </message>
-    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE_LOGIN_LOCK" desc="Text on the people page which opens up the quick unlock subpage and the title of the quick unlock subpage.">
-      Screen lock and sign-in
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE_LOGIN_LOCK" desc="Text on the people page which opens up the security and sign-in section.">
+      Security and sign-in
     </message>
     <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_OPTIONS_LOCK" desc="Text on the lock screen which is the subheader for the screen locking options.">
       Screen lock options
@@ -4157,6 +4212,9 @@
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD" desc="Text in the add fingerprint dialog telling users to place finger on the sensor on the keyboard.">
       Touch the fingerprint sensor with your finger
     </message>
+    <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD_BOTTOM_LEFT_ARIA_LABEL" desc="Aria label in the add fingerprint dialog telling users that the fingerprint sensor is in the bottom left corner of the keyboard. Only visible by screen reader software.">
+      The fingerprint sensor is the bottom left-hand key on your keyboard. Touch it lightly with any finger.
+    </message>
      <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER_KEYBOARD_BOTTOM_RIGHT_ARIA_LABEL" desc="Aria label in the add fingerprint dialog telling users that the fingerprint sensor is in the bottom right corner of the keyboard. Only visible by screen reader software.">
       The fingerprint sensor is the bottom right-hand key on your keyboard. Touch it lightly with any finger.
     </message>
@@ -4185,8 +4243,8 @@
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_ENTER_PASSWORD_LOCK" desc="Text above a password input field that tells the user they need to submit their password to configure these settings.">
       Enter your password to configure screen lock
     </message>
-    <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_ENTER_PASSWORD_LOGIN_LOCK" desc="Text above a password input field that tells the user they need to submit their password to configure these settings.">
-      Enter your password to configure screen lock and sign-in
+    <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_ENTER_PASSWORD_LOGIN_LOCK" desc="Text above a password input field that tells the user they need to submit their password to configure security and sign-in settings.">
+      Enter your password to configure security and sign-in
     </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_PASSWORD_LABEL" desc="An input box label that tells the user to enter their password in that input box.">
       Password
@@ -4341,6 +4399,21 @@
   </message>
   <message name="IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL" desc="Label for the checkbox which causes all properties to be synced.">
     Sync everything
+  </message>
+   <message name="IDS_SETTINGS_SYNC_EVERYTHING" desc="Label for the radio button which causes all properties to be synced.">
+    Sync everything
+  </message>
+  <message name="IDS_SETTINGS_SYNC_EVERYTHING_HINT" desc="Hint for the radio button which causes all properties to be synced.">
+    Sync all data types including ones that might be added in the future
+  </message>
+   <message name="IDS_SETTINGS_CUSTOMIZE_SYNC" desc="Label for the radio button to customize sync data types.">
+    Customize sync
+  </message>
+  <message name="IDS_SETTINGS_CUSTOMIZE_SYNC_HINT" desc="Hint or the radio button to customize sync data types.">
+    Sync only selected data types
+  </message>
+  <message name="IDS_SETTINGS_SYNC_DATA" desc="Title for sync data types list.">
+    Sync data
   </message>
   <message name="IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT" desc="Label for the button that takes the user to the Google Account website.">
     Manage your Google Account
@@ -5511,7 +5584,7 @@
     Add fingerprint
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_CHOOSE_NAME" desc="A label instructing the user to provide a descriptive name for a fingerprint enrolled to a security key.">
-    Choose a name for this fingerprint
+    Enter a name for this fingerprint
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_NAME_LABEL" desc="A label for a text input field containing a descriptive name for a fingerprint enrolled to a security key.">
     Name
@@ -5524,6 +5597,12 @@
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLING_LABEL" desc="A label instructing the user to repeatedly touch the fingerprint sensor on their security key (authentication hardware device) to take samples for a new fingerprint.">
     Keep touching your security key until your fingerprint is captured
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_TRY_AGAIN_LABEL" desc="A label instructing the user to touch the fingerprint sensor on their security key (authentication hardware device) again after taking a fingerprint sample failed.">
+    Try touching your security key again
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_FAILED_LABEL" desc="An error shown after enrolling a new fingerprint to a security key (authentication hardware device) was unsuccessful.">
+    Adding a fingerprint to this security key failed
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLING_COMPLETE_LABEL" desc="A label informing the user that adding a fingerprint to their security key succeeded.">
     Your fingerprint was captured

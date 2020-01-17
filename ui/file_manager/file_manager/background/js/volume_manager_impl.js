@@ -123,7 +123,7 @@ class VolumeManagerImpl extends cr.EventTarget {
     chrome.fileManagerPrivate.onMountCompleted.addListener(
         this.onMountCompleted_.bind(this));
 
-    console.debug('Getting volumes');
+    console.warn('Getting volumes');
     const volumeMetadataList = await new Promise(
         resolve => chrome.fileManagerPrivate.getVolumeMetadataList(resolve));
     if (!volumeMetadataList) {
@@ -141,11 +141,17 @@ class VolumeManagerImpl extends cr.EventTarget {
       // Create VolumeInfo for each volume.
       await Promise.all(volumeMetadataList.map(async (volumeMetadata) => {
         console.debug(`Initializing volume '${volumeMetadata.volumeId}'`);
-        const volumeInfo = await this.addVolumeMetadata_(volumeMetadata);
-        console.debug(`Initialized volume '${volumeInfo.volumeId}'`);
+        try {
+          // Handle error here otherwise every promise in Promise.all() fails.
+          const volumeInfo = await this.addVolumeMetadata_(volumeMetadata);
+          console.debug(`Initialized volume '${volumeInfo.volumeId}'`);
+        } catch (error) {
+          console.warn(`Error initiliazing ${volumeMetadata.volumeId}`);
+          console.error(error);
+        }
       }));
 
-      console.debug(`Initialized all ${volumeMetadataList.length} volumes`);
+      console.warn(`Initialized all ${volumeMetadataList.length} volumes`);
     } finally {
       unlock();
     }
@@ -287,7 +293,7 @@ class VolumeManagerImpl extends cr.EventTarget {
         return volumeInfo;
       }
       // Additionally, check fake entries.
-      for (let key in volumeInfo.fakeEntries) {
+      for (const key in volumeInfo.fakeEntries) {
         const fakeEntry = volumeInfo.fakeEntries[key];
         if (util.isSameEntry(fakeEntry, entry)) {
           return volumeInfo;

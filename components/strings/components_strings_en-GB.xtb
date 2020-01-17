@@ -89,6 +89,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Enrolment domain:</translation>
 <translation id="1340482604681802745">Pickup address</translation>
+<translation id="1346748346194534595">Right</translation>
 <translation id="1348198688976932919">The site ahead contains dangerous apps</translation>
 <translation id="1348779747280417563">Confirm name</translation>
 <translation id="1357195169723583938">Who has used the device recently and when</translation>
@@ -113,6 +114,7 @@
 <translation id="1455413310270022028">Eraser</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1463543813647160932">5 x 7</translation>
+<translation id="1467432559032391204">Left</translation>
 <translation id="1472675084647422956">Show more</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
@@ -258,6 +260,7 @@
 <translation id="2148613324460538318">Add Card</translation>
 <translation id="2154054054215849342">Sync is not available for your domain</translation>
 <translation id="2154484045852737596">Edit card</translation>
+<translation id="2161656808144014275">Text</translation>
 <translation id="2166049586286450108">Full Admin Access</translation>
 <translation id="2166378884831602661">This site can’t provide a secure connection</translation>
 <translation id="2169984857010174799">Kaku2 (Envelope)</translation>
@@ -346,6 +349,7 @@
 <translation id="254947805923345898">Policy value is not valid.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> sent an invalid response.</translation>
 <translation id="2556876185419854533">&amp;Undo Edit</translation>
+<translation id="257674075312929031">Group</translation>
 <translation id="2586657967955657006">Clipboard</translation>
 <translation id="2587730715158995865">From <ph name="ARTICLE_PUBLISHER" />. Read this and <ph name="OTHER_ARTICLE_COUNT" /> other stories.</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>
@@ -362,6 +366,7 @@
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2660650542324841986">The server that you are going to, <ph name="ORIGIN" />, has requested that an origin policy will be applied to all requests to it. But it has now failed to deliver a policy, which prevents the browser from fulfilling your request for <ph name="SITE" />. Origin policies can be used by site operators to configure security and other properties for a site.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{None}=1{1 password (for <ph name="DOMAIN_LIST" />)}=2{2 passwords (for <ph name="DOMAIN_LIST" />)}other{# passwords (for <ph name="DOMAIN_LIST" />)}}</translation>
+<translation id="2666092431469916601">Top</translation>
 <translation id="2666117266261740852">Close other tabs or apps</translation>
 <translation id="2674170444375937751">Are you sure that you want to delete these pages from your history?</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
@@ -445,6 +450,7 @@
 <translation id="3061707000357573562">Patch Service</translation>
 <translation id="3064966200440839136">Leaving incognito mode to pay via an external application. Continue?</translation>
 <translation id="3086579638707268289">Your activity on the web is being monitored</translation>
+<translation id="3087734570205094154">Bottom</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Add pickup address</translation>
 <translation id="3105172416063519923">Asset ID:</translation>
@@ -489,6 +495,7 @@
 <translation id="3303855915957856445">No search results found</translation>
 <translation id="3320021301628644560">Add billing address</translation>
 <translation id="3324983252691184275">Crimson</translation>
+<translation id="3329013043687509092">Saturation</translation>
 <translation id="3338095232262050444">Secure</translation>
 <translation id="3355823806454867987">Change proxy settings...</translation>
 <translation id="3360103848165129075">Payment handler sheet</translation>
@@ -525,6 +532,7 @@
 <translation id="3495081129428749620">Find in page
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">This policy is ignored because another policy from the same policy group has a higher priority.</translation>
+<translation id="3513704683820682405">Augmented Reality</translation>
 <translation id="3528171143076753409">Server's certificate is not trusted</translation>
 <translation id="3528485271872257980">Dark brown</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{At least 1 item on synced devices}=1{1 item (and more on synced devices)}other{# items (and more on synced devices)}}</translation>
@@ -566,6 +574,7 @@
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Loading...</translation>
 <translation id="3709599264800900598">Text that you copied</translation>
+<translation id="3711895659073496551">Suspend</translation>
 <translation id="3712624925041724820">Licenses exhausted</translation>
 <translation id="3714780639079136834">Turning on mobile data or Wi-Fi</translation>
 <translation id="3715597595485130451">Connect to Wi-Fi</translation>
@@ -759,6 +768,7 @@
 <translation id="4594403342090139922">&amp;Undo Delete</translation>
 <translation id="4597348597567598915">Size 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="4628948037717959914">Photo</translation>
 <translation id="4635654612248442824">The site <ph name="ORIGIN" /> has requested that an origin policy will apply to all its request, but this policy cannot presently be applied.</translation>
 <translation id="464342062220857295">Search features</translation>
 <translation id="4646534391647090355">Take me there now</translation>
@@ -814,6 +824,7 @@
 <translation id="4926049483395192435">Must be specified.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> says</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">No results</translation>
 <translation id="4950898438188848926">Tab switch button, press Enter to switch to the open tab, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Actions</translation>
@@ -981,6 +992,7 @@
 <translation id="5689199277474810259">Export to JSON</translation>
 <translation id="5689516760719285838">Location</translation>
 <translation id="569000877158168851">The DnsOverHttpsTemplates value is not relevant, and will not be used, unless the DnsOverHttpsMode policy is set to either <ph name="SECURE_DNS_MODE_AUTOMATIC" /> or <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
+<translation id="5701381305118179107">Centre</translation>
 <translation id="570530837424789914">Manage...</translation>
 <translation id="57094364128775171">Suggest strong password…</translation>
 <translation id="5710435578057952990">The identity of this website has not been verified.</translation>
@@ -1013,7 +1025,6 @@
 <translation id="5855253129151731373">This site's hostname looks similar to <ph name="LOOKALIKE_DOMAIN" />. Attackers sometimes mimic sites by making small, hard-to-see changes to the domain name.
 
     If you believe that this is shown in error please visit https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
-<translation id="5860033963881614850">Off</translation>
 <translation id="5863847714970149516">The page ahead may try to charge you money</translation>
 <translation id="5866257070973731571">Add Phone Number</translation>
 <translation id="5866898949289125849">You're viewing a developer tools page</translation>
@@ -1025,13 +1036,11 @@
 <translation id="5901630391730855834">Yellow</translation>
 <translation id="5905445707201418379">Blocked according to <ph name="ORIGIN" />'s origin policy.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synced)</translation>
-<translation id="5916664084637901428">On</translation>
 <translation id="59174027418879706">Enabled</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Save card to Google Account?</translation>
 <translation id="5922853866070715753">Almost finished</translation>
 <translation id="5932224571077948991">Site shows intrusive or misleading ads</translation>
-<translation id="5939847200023027600">PDF Compositor Service</translation>
 <translation id="5946937721014915347">Opening <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Can't enrol with consumer account (packaged licence available).</translation>
 <translation id="5967592137238574583">Edit Contact Info</translation>
@@ -1071,6 +1080,7 @@
 <translation id="6080696365213338172">You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN" /> can be intercepted by your administrator.</translation>
 <translation id="6094273045989040137">Annotate</translation>
 <translation id="6104072995492677441">JIS B6</translation>
+<translation id="6106989379647458772">The web page at <ph name="PAGE" /> might be temporarily down or it may have moved permanently to a new web address.</translation>
 <translation id="610911394827799129">Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6120179357481664955">Remember your UPI ID?</translation>
 <translation id="6132597952260690497">Information about installed extensions and plugins</translation>
@@ -1110,6 +1120,7 @@
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">Google Assistant in Chrome stopping</translation>
 <translation id="6305205051461490394"><ph name="URL" /> is unreachable.</translation>
+<translation id="6312113039770857350">Web page not available</translation>
 <translation id="6321917430147971392">Check your DNS settings</translation>
 <translation id="6322182122604171028">Couldn't use Windows Hello</translation>
 <translation id="6328639280570009161">Try disabling network prediction</translation>
@@ -1136,6 +1147,7 @@
 <translation id="6410264514553301377">Enter the expiry date and CVC for <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium can help you protect your Google account and change your password.</translation>
 <translation id="6423385022588644828">Confirm your cards faster by using touch ID from now on</translation>
+<translation id="6425092077175753609">Material</translation>
 <translation id="6427730057873428458">Gate fold</translation>
 <translation id="6433490469411711332">Edit contact info</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> refused to connect.</translation>
@@ -1403,6 +1415,7 @@ Additional details:
 <translation id="7716147886133743102">Blocked by your administrator</translation>
 <translation id="7716424297397655342">This site can’t be loaded from the cache</translation>
 <translation id="7723047071702270851">Edit Card</translation>
+<translation id="7740996059027112821">Standard</translation>
 <translation id="774634243536837715">Dangerous content blocked.</translation>
 <translation id="7752995774971033316">Unmanaged</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
@@ -1508,6 +1521,7 @@ Additional details:
 <translation id="8241707690549784388">The page that you're looking for used information that you entered. Returning to that page might cause any action that you took to be repeated. Do you want to continue?</translation>
 <translation id="8241712895048303527">Block on this site</translation>
 <translation id="8242426110754782860">Proceed</translation>
+<translation id="8249296373107784235">Abort</translation>
 <translation id="8249320324621329438">Last fetched:</translation>
 <translation id="8253091569723639551">Billing address required</translation>
 <translation id="825929999321470778">Show All Saved Passwords</translation>
@@ -1577,6 +1591,7 @@ Additional details:
 <translation id="8647750283161643317">Reset all to default</translation>
 <translation id="8663226718884576429">Order Summary, <ph name="TOTAL_LABEL" />, More Details</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, answer, <ph name="ANSWER" /></translation>
+<translation id="8681531050781943054">The web page at <ph name="PAGE" /> could not be loaded because:</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Available</translation>
 <translation id="869891660844655955">Expiry date</translation>
@@ -1627,6 +1642,7 @@ Additional details:
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8957210676456822347">Captive Portal Authorisation</translation>
 <translation id="8962950042226115166">Suspicious site</translation>
+<translation id="8963213021028234748"><ph name="MARKUP_1" />Suggestions:<ph name="MARKUP_2" />Make sure that you have a data connection<ph name="MARKUP_3" />Reload this web page later<ph name="MARKUP_4" />Check the address that you entered<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Save card</translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>
 <translation id="8975012916872825179">Includes information such as phone numbers, email addresses and delivery addresses</translation>
@@ -1703,6 +1719,7 @@ Additional details:
 <translation id="985199708454569384">&lt;p&gt;You'll see this error if your computer or mobile device's date and time are inaccurate.&lt;/p&gt;
     &lt;p&gt;To fix the error, open your device's clock. Make sure that the time and date are correct.&lt;/p&gt;</translation>
 <translation id="985956168329721395">Prc-32K</translation>
+<translation id="987264212798334818">General</translation>
 <translation id="988159990683914416">Developer Build</translation>
 <translation id="989988560359834682">Edit Address</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

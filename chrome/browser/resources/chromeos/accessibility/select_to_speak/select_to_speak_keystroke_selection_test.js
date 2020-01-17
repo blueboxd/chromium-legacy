@@ -24,7 +24,7 @@ SelectToSpeakKeystrokeSelectionTest.prototype = {
    * Function to trigger select-to-speak to read selected text at a
    * keystroke.
    */
-  triggerReadSelectedText: function() {
+  triggerReadSelectedText() {
     assertFalse(this.mockTts.currentlySpeaking());
     assertEquals(this.mockTts.pendingUtterances().length, 0);
     selectToSpeak.fireMockKeyDownEvent(
@@ -50,8 +50,7 @@ SelectToSpeakKeystrokeSelectionTest.prototype = {
    * @param {string} expected The expected string that will be read, ignoring
    *     extra whitespace, after this selection is triggered.
    */
-  testSimpleTextAtKeystroke: function(
-      text, anchorOffset, focusOffset, expected) {
+  testSimpleTextAtKeystroke(text, anchorOffset, focusOffset, expected) {
     this.testReadTextAtKeystroke('<p>' + text + '</p>', function(desktop) {
       // Set the document selection. This will fire the changed event
       // above, allowing us to do the keystroke and test that speech
@@ -82,7 +81,7 @@ SelectToSpeakKeystrokeSelectionTest.prototype = {
    * @param {string} expected The expected string that will be read, ignoring
    *     extra whitespace, after this selection is triggered.
    */
-  testReadTextAtKeystroke: function(contents, setFocusCallback, expected) {
+  testReadTextAtKeystroke(contents, setFocusCallback, expected) {
     setFocusCallback = this.newCallback(setFocusCallback);
     this.runWithLoadedTree(
         'data:text/html;charset=utf-8,' + contents, function(desktop) {
@@ -101,7 +100,7 @@ SelectToSpeakKeystrokeSelectionTest.prototype = {
         });
   },
 
-  generateHtmlWithSelection: function(selectionCode, bodyHtml) {
+  generateHtmlWithSelection(selectionCode, bodyHtml) {
     return 'data:text/html;charset=utf-8,' +
         '<script type="text/javascript">' +
         'function doSelection() {' +

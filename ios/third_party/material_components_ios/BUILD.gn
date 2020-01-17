@@ -487,9 +487,7 @@ if (!ios_third_party_material_components_built_as_framework) {
 
   copy("mdc_components_ios_public_headers") {
     sources = _mdc_public_headers
-    outputs = [
-      "$root_gen_dir/frameworks/material_components_ios/MaterialComponents/{{source_file_part}}",
-    ]
+    outputs = [ "$root_gen_dir/frameworks/material_components_ios/MaterialComponents/{{source_file_part}}" ]
     public_configs = [ ":mdc_components_ios_public_headers_config" ]
   }
 } else {
@@ -1505,9 +1503,7 @@ target(_mdc_target_type, "material_components_ios") {
   # TODO(crbug.com/1017165): remove once MaterialComponents is always built
   # as a framework
   if (ios_third_party_material_components_built_as_framework) {
-    public_deps = [
-      ":material_components_ios_public_headers",
-    ]
+    public_deps = [ ":material_components_ios_public_headers" ]
   }
 
   if (ios_third_party_material_components_built_as_framework) {
@@ -1536,15 +1532,11 @@ target(_mdc_target_type, "material_components_ios") {
 # as a framework
 if (!ios_third_party_material_components_built_as_framework) {
   group("material_components_ios+link") {
-    public_deps = [
-      ":material_components_ios",
-    ]
+    public_deps = [ ":material_components_ios" ]
   }
 
   group("material_components_ios+bundle") {
-    public_deps = [
-      ":material_components_ios",
-    ]
+    public_deps = [ ":material_components_ios" ]
   }
 }
 
@@ -1582,13 +1574,10 @@ template("material_component_string_bundle") {
   foreach(_locale, _component_locales) {
     bundle_data("${target_name}_${_locale}") {
       visibility = [ ":*" ]
-      sources = [
-        "$_resources_path/$_locale.lproj/$_component_name.strings",
-      ]
-      outputs = [
-        "{{bundle_resources_dir}}/" +
-            "$_component_name.bundle/Resources/$_locale/{{source_file_part}}",
-      ]
+      sources = [ "$_resources_path/$_locale.lproj/$_component_name.strings" ]
+      outputs =
+          [ "{{bundle_resources_dir}}/" +
+            "$_component_name.bundle/Resources/$_locale/{{source_file_part}}" ]
     }
   }
 
@@ -1661,10 +1650,8 @@ template("material_component_icon_bundle") {
       "$_icon_path@2x.png",
       "$_icon_path@3x.png",
     ]
-    outputs = [
-      "{{bundle_resources_dir}}/MaterialIcons_$_icon_name.bundle/" +
-          "{{source_file_part}}",
-    ]
+    outputs = [ "{{bundle_resources_dir}}/MaterialIcons_$_icon_name.bundle/" +
+                "{{source_file_part}}" ]
   }
 }
 
@@ -1700,17 +1687,13 @@ bundle_data("material_component_ic_arrow_back_bundle") {
     "src/components/private/Icons/icons/ic_arrow_back/src/MaterialIcons_ic_arrow_back.bundle/ic_arrow_back_ios@2x.png",
     "src/components/private/Icons/icons/ic_arrow_back/src/MaterialIcons_ic_arrow_back.bundle/ic_arrow_back_ios@3x.png",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/MaterialIcons_ic_arrow_back.bundle/" +
-        "{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/MaterialIcons_ic_arrow_back.bundle/" +
+              "{{source_file_part}}" ]
 }
 
 group("material_components_icons") {
   visibility = [ ":*" ]
-  deps = [
-    ":material_component_ic_arrow_back_bundle",
-  ]
+  deps = [ ":material_component_ic_arrow_back_bundle" ]
   foreach(_icon_name, _icon_names) {
     deps += [ ":material_component_${_icon_name}_bundle" ]
   }

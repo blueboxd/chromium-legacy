@@ -256,9 +256,7 @@ jumbo_source_set("unit_tests") {
 source_set("perf_tests") {
   testonly = true
 
-  sources = [
-    "test/queueing_time_estimator_perf_test.cc",
-  ]
+  sources = [ "test/queueing_time_estimator_perf_test.cc" ]
 
   deps = [
     "//base",
@@ -330,7 +328,5 @@ fuzzer_test("sequence_manager_fuzzer") {
 }
 
 proto_library("sequence_manager_test_description_proto") {
-  sources = [
-    "test/fuzzer/proto/sequence_manager_test_description.proto",
-  ]
+  sources = [ "test/fuzzer/proto/sequence_manager_test_description.proto" ]
 }

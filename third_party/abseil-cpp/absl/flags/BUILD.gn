@@ -30,9 +30,7 @@ source_set("internal") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/program_name.cc",
-  ]
+  sources = [ "internal/program_name.cc" ]
   public = [
     "internal/path_util.h",
     "internal/program_name.h",
@@ -53,9 +51,7 @@ source_set("config") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "usage_config.cc",
-  ]
+  sources = [ "usage_config.cc" ]
   public = [
     "config.h",
     "usage_config.h",
@@ -76,12 +72,8 @@ source_set("marshalling") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "marshalling.cc",
-  ]
-  public = [
-    "marshalling.h",
-  ]
+  sources = [ "marshalling.cc" ]
+  public = [ "marshalling.h" ]
   deps = [
     "../base:core_headers",
     "../strings",
@@ -97,12 +89,8 @@ source_set("handle") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/commandlineflag.cc",
-  ]
-  public = [
-    "internal/commandlineflag.h",
-  ]
+  sources = [ "internal/commandlineflag.cc" ]
+  public = [ "internal/commandlineflag.h" ]
   deps = [
     ":config",
     ":marshalling",
@@ -153,9 +141,7 @@ source_set("flag") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "flag.cc",
-  ]
+  sources = [ "flag.cc" ]
   public = [
     "declare.h",
     "flag.h",
@@ -180,12 +166,8 @@ source_set("usage_internal") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/usage.cc",
-  ]
-  public = [
-    "internal/usage.h",
-  ]
+  sources = [ "internal/usage.cc" ]
+  public = [ "internal/usage.h" ]
   deps = [
     ":config",
     ":flag",
@@ -206,12 +188,8 @@ source_set("usage") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "usage.cc",
-  ]
-  public = [
-    "usage.h",
-  ]
+  sources = [ "usage.cc" ]
+  public = [ "usage.h" ]
   deps = [
     ":usage_internal",
     "../strings",
@@ -227,9 +205,7 @@ source_set("parse") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "parse.cc",
-  ]
+  sources = [ "parse.cc" ]
   public = [
     "internal/parse.h",
     "parse.h",

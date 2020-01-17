@@ -6,9 +6,12 @@
 
 #include "base/threading/thread.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
+#import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/url_opener.h"
 #include "ios/chrome/app/main_controller_private.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/main/scene_controller.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/testing/scoped_block_swizzler.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -50,7 +53,7 @@ class TabOpenerTest : public PlatformTest {
           swizzle_block_executed_ = YES;
           EXPECT_EQ(expectedLaunchOptions, options);
           EXPECT_EQ(expectedStartupInformation, startupInformation);
-          EXPECT_EQ(main_controller_, tabOpener);
+          EXPECT_EQ(main_controller_.sceneController, tabOpener);
           EXPECT_EQ(expectedAppState, appState);
         } copy];
     URL_opening_handle_launch_swizzler_.reset(new ScopedBlockSwizzler(
@@ -62,13 +65,21 @@ class TabOpenerTest : public PlatformTest {
 
   MainController* GetMainController() {
     if (!main_controller_) {
+      scene_state_ = [[SceneState alloc] init];
       main_controller_ = [[MainController alloc] init];
+      scene_controller_ =
+          [[SceneController alloc] initWithSceneState:scene_state_];
+      main_controller_.sceneController = scene_controller_;
+      scene_controller_.mainController = main_controller_;
     }
     return main_controller_;
   }
 
  private:
   MainController* main_controller_;
+  SceneController* scene_controller_;
+  SceneState* scene_state_;
+
   __block BOOL swizzle_block_executed_;
   HandleLaunchOptions swizzle_block_;
   std::unique_ptr<ScopedBlockSwizzler> URL_opening_handle_launch_swizzler_;
@@ -91,7 +102,7 @@ TEST_F(TabOpenerTest, openTabFromLaunchOptionsWithOptions) {
   swizzleHandleLaunchOptions(launchOptions, startupInformationMock,
                              appStateMock);
 
-  id<TabOpening> tabOpener = GetMainController();
+  id<TabOpening> tabOpener = GetMainController().sceneController;
 
   // Action.
   [tabOpener openTabFromLaunchOptions:launchOptions
@@ -111,7 +122,7 @@ TEST_F(TabOpenerTest, openTabFromLaunchOptionsWithNil) {
 
   swizzleHandleLaunchOptions(nil, startupInformationMock, appStateMock);
 
-  id<TabOpening> tabOpener = GetMainController();
+  id<TabOpening> tabOpener = GetMainController().sceneController;
 
   // Action.
   [tabOpener openTabFromLaunchOptions:nil

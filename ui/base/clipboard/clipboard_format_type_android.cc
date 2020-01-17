@@ -43,19 +43,13 @@ ClipboardFormatType ClipboardFormatType::GetType(
 }
 
 // static
-const ClipboardFormatType& ClipboardFormatType::GetUrlWType() {
+const ClipboardFormatType& ClipboardFormatType::GetUrlType() {
   static base::NoDestructor<ClipboardFormatType> type(kMimeTypeURIList);
   return *type;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetPlainTextType() {
-  static base::NoDestructor<ClipboardFormatType> type(kMimeTypeText);
-  return *type;
-}
-
-// static
-const ClipboardFormatType& ClipboardFormatType::GetPlainTextWType() {
   static base::NoDestructor<ClipboardFormatType> type(kMimeTypeText);
   return *type;
 }

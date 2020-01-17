@@ -15,6 +15,12 @@
 struct CoreAccountId;
 class GoogleServiceAuthError;
 
+namespace network {
+namespace mojom {
+class CookieManager;
+}
+}  // namespace network
+
 namespace signin {
 
 struct MultiloginParameters;
@@ -24,6 +30,25 @@ enum class SetAccountsInCookieResult;
 // accounts into the cookie jar tracking the list of logged-in Google sessions.
 class AccountsCookieMutator {
  public:
+  // Delegate class used to interact with storage partitions other than the
+  // default one. The default storage partition is managed by the SigninClient.
+  class PartitionDelegate {
+   public:
+    // Creates a new GaiaAuthFetcher for the partition.
+    virtual std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcherForPartition(
+        GaiaAuthConsumer* consumer) = 0;
+
+    // Returns the CookieManager for the partition.
+    virtual network::mojom::CookieManager* GetCookieManagerForPartition() = 0;
+  };
+
+  // Task handle for SetAccountsInCookieForPartition. Deleting this object
+  // cancels the task. Must not outlive the AccountsInCookieMutator.
+  class SetAccountsInCookieTask {
+   public:
+    virtual ~SetAccountsInCookieTask() = default;
+  };
+
   AccountsCookieMutator() = default;
   virtual ~AccountsCookieMutator() = default;
 
@@ -64,6 +89,20 @@ class AccountsCookieMutator {
   virtual void SetAccountsInCookie(
       const MultiloginParameters& parameters,
       gaia::GaiaSource source,
+      base::OnceCallback<void(SetAccountsInCookieResult)>
+          set_accounts_in_cookies_completed_callback) = 0;
+
+  // This is similar to SetAccountsInCookie, but allow specifying the partition
+  // where the cookies are set. This function must not be used with the default
+  // partition (use SetAccountsInCookie instead).
+  //
+  // The returned SetAccountsInCookieTask must not outlive the
+  // AccountsCookieMutator. If the task is deleted, all network requests are
+  // cancelled; the partition delegate and the callback will not be called.
+  virtual std::unique_ptr<SetAccountsInCookieTask>
+  SetAccountsInCookieForPartition(
+      PartitionDelegate* partition_delegate,
+      const MultiloginParameters& parameters,
       base::OnceCallback<void(SetAccountsInCookieResult)>
           set_accounts_in_cookies_completed_callback) = 0;
 

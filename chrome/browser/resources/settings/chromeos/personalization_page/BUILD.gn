@@ -29,22 +29,20 @@ js_library("change_picture") {
 }
 
 js_library("change_picture_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("personalization_page") {
   deps = [
     ":wallpaper_browser_proxy",
+    "../..:route",
+    "../..:router",
     "../../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:cr",
   ]
 }
 
 js_library("wallpaper_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }

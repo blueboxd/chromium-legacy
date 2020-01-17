@@ -39,7 +39,6 @@
 <translation id="124678866338384709">বর্তমানৰ টেবটো বন্ধ কৰক</translation>
 <translation id="1258753120186372309">Google ডুডল্‌: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">সন্ধান আৰু অন্বেষণ কৰক</translation>
-<translation id="1264974993859112054">খেলা-ধূলা</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> শ্বেয়াৰ কৰিব পৰা নগ’ল</translation>
 <translation id="1272079795634619415">বন্ধ কৰক</translation>
 <translation id="1283039547216852943">বিস্তাৰ কৰিবলৈ টিপক</translation>
@@ -72,6 +71,7 @@
 <translation id="145097072038377568">Android ছেটিংসমূহত অফ কৰা আছে</translation>
 <translation id="1477626028522505441">ছার্ভাৰৰ সমস্যাৰ বাবে <ph name="FILE_NAME" /> ডাউনল'ড কৰিব পৰা নগ'ল।</translation>
 <translation id="1506061864768559482">সন্ধান ইঞ্জিন</translation>
+<translation id="1513352483775369820">বুকমার্কবোৰ আৰু ৱেব ইতিহাস</translation>
 <translation id="1513858653616922153">পাছৱৰ্ড মচক</translation>
 <translation id="1516229014686355813">’সন্ধান কৰিবলৈ টিপক’ সুবিধাটোৱে বাছনি কৰা শব্দ আৰু প্ৰসংগ হিচাপে বর্তমানৰ পৃষ্ঠাটো Google Searchলৈ পঠিয়ায়। আপুনি এই সুবিধাটো <ph name="BEGIN_LINK" />ছেটিংসমূহ<ph name="END_LINK" />ত অফ কৰিব পাৰে।</translation>
 <translation id="1521774566618522728">আজি সক্ৰিয় হৈছে</translation>
@@ -241,7 +241,6 @@
 <translation id="2818669890320396765">আপোনাৰ সকলো ডিভাইচতে নিজৰ বুকমার্কসমূহ পাবলৈ ছাইন ইন কৰি ছিংক কৰা সুবিধাটো অন কৰক</translation>
 <translation id="2822354292072154809">আপুনি <ph name="CHOSEN_OBJECT_NAME" />ৰ বাবে ছাইটৰ সকলো অনুমতি ৰিছেট কৰিবলৈ বিচাৰে বুলি নিশ্চিতনে?</translation>
 <translation id="2842985007712546952">মূল ফ’ল্ডাৰ</translation>
-<translation id="2858138569776157458">শীৰ্ষ ছাইট</translation>
 <translation id="2860954141821109167">নিশ্চিত হৈ লওক যে এই ডিভাইচটোত এটা ফ’ন এপ্‌ সক্ৰিয় কৰা আছে</translation>
 <translation id="2870560284913253234">ছাইট</translation>
 <translation id="2874939134665556319">পূৰ্বৱৰ্তী ট্ৰেক</translation>
@@ -302,6 +301,7 @@
 <translation id="3282568296779691940">Chromeত ছাইন-ইন কৰক</translation>
 <translation id="3288003805934695103">এই পৃষ্ঠাটো পুনৰ ল’ড কৰি থকা হৈছে</translation>
 <translation id="32895400574683172">জাননীৰ অনুমতি দিয়া হৈছে</translation>
+<translation id="3290926146403723641">Google Assistantৰ জৰিয়তে ৱেবত কাৰ্যসমূহ সম্পূৰ্ণ কৰিবলৈ Chromeএ কোনো ছাইটৰ URL, ছাইটৰ সমল আৰু প্ৰাসংগিক ব্যক্তিগত তথ্য Googleলৈ পঠিয়ায়</translation>
 <translation id="3295530008794733555">ক্ষিপ্ৰভাৱে ব্ৰাউজ কৰক। কম ডেটা খৰচ কৰক।</translation>
 <translation id="3298243779924642547">লাইট</translation>
 <translation id="3303414029551471755">সমলখিনি ডাউনল’ড কৰিবলৈ আগবাঢ়িবনে?</translation>
@@ -365,7 +365,6 @@
 <translation id="381841723434055211">ফ’ন নম্বৰসমূহ</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" />টা ডাউনল'ড মচা হ'ল</translation>
 <translation id="3822502789641063741">ছাইটৰ ষ্ট’ৰেজ মচিবনে?</translation>
-<translation id="3853625385350850937">অব্যাহত ৰাখিবলৈ আপোনাৰ ডিভাইচটোত NFC অন কৰক</translation>
 <translation id="3859306556332390985">আগলৈ যাওক</translation>
 <translation id="388596076286380598">আপুনি অফলাইন হৈ থাকিলে অথবা আপোনাৰ সংযোগটো বেয়া হৈ থাকিলেও আপুনি পচন্দ কৰা ছাইটসমূহৰ পৰা প্ৰবন্ধ, ভিডিঅ’ আৰু অন্য সমল পাওক।</translation>
 <translation id="3894427358181296146">ফ’ল্ডাৰ যোগ কৰক</translation>
@@ -762,7 +761,6 @@
 <translation id="6697947395630195233">এই ছাইটটোৰ সৈতে আপোনাৰ অৱস্থান শ্বেয়াৰ কৰিবলৈ Chromeএ আপোনাৰ অৱস্থান এক্সেছ কৰাটো দৰকাৰ।</translation>
 <translation id="6698801883190606802">ছিংক কৰা ডেটা পৰিচালনা কৰক</translation>
 <translation id="6699370405921460408">Google ছাৰ্ভাৰে আপুনি চোৱা পৃষ্ঠাসমূহ অপ্টিমাইজ কৰিব।</translation>
-<translation id="6709133671862442373">বাতৰি</translation>
 <translation id="6710213216561001401">পূৰ্বৱৰ্তী</translation>
 <translation id="671481426037969117">আপোনাৰ <ph name="FQDN" />ৰ টাইমাৰৰ সময় শেষ হ’ল। এইটো কাইলৈ পুনৰ আৰম্ভ হ’ব।</translation>
 <translation id="6738867403308150051">ডাউনল’ড কৰি থকা হৈছে…</translation>
@@ -1075,7 +1073,6 @@
 <translation id="9133397713400217035">অফলাইন অৱস্থাত অন্বেষণ কৰক</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">মূল সংস্কৰণ দেখুৱাওক</translation>
-<translation id="9139318394846604261">শ্বপিং</translation>
 <translation id="9155898266292537608">আপুনি কোনো এটা শব্দত এবাৰ টিপিও সন্ধান কৰিব পাৰে</translation>
 <translation id="9169507124922466868">নেভিগেশ্বন ইতিহাস আধা খোলা আছে</translation>
 <translation id="9204836675896933765">১টা ফাইল বাকী আছে</translation>

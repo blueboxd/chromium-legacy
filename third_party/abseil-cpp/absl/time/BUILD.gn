@@ -60,9 +60,7 @@ source_set("test_util") {
     "internal/test_util.cc",
     "internal/zoneinfo.inc",
   ]
-  public = [
-    "internal/test_util.h",
-  ]
+  public = [ "internal/test_util.h" ]
   deps = [
     ":time",
     "../base",

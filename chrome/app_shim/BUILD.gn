@@ -57,21 +57,15 @@ mac_info_plist("app_mode_loader_plist") {
 bundle_data("app_mode_loader_plist_bundle_data") {
   sources = get_target_outputs(":app_mode_loader_plist")
 
-  outputs = [
-    "{{bundle_resources_dir}}/app_mode-Info.plist",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/app_mode-Info.plist" ]
 
-  public_deps = [
-    ":app_mode_loader_plist",
-  ]
+  public_deps = [ ":app_mode_loader_plist" ]
 }
 
 executable("app_mode_loader") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  sources = [
-    "app_mode_loader_mac.mm",
-  ]
+  sources = [ "app_mode_loader_mac.mm" ]
 
   if (is_component_build) {
     # Loaders are installed to ~/Applications. In a component build, include

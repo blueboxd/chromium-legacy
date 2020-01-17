@@ -506,7 +506,7 @@ void WebMediaPlayerMSCompositor::RenderUsingAlgorithm(
     return;
 
   const base::TimeDelta timestamp = frame->timestamp();
-  SetCurrentFrame(std::move(frame));
+  SetCurrentFrame(std::move(frame), deadline_min);
 
   const auto& end = timestamps_to_clock_times_.end();
   const auto& begin = timestamps_to_clock_times_.begin();
@@ -533,14 +533,15 @@ void WebMediaPlayerMSCompositor::RenderWithoutAlgorithmOnCompositor(
     base::AutoLock auto_lock(current_frame_lock_);
     if (current_frame_)
       last_render_length_ = frame->timestamp() - current_frame_->timestamp();
-    SetCurrentFrame(std::move(frame));
+    SetCurrentFrame(std::move(frame), base::nullopt);
   }
   if (video_frame_provider_client_)
     video_frame_provider_client_->DidReceiveFrame();
 }
 
 void WebMediaPlayerMSCompositor::SetCurrentFrame(
-    scoped_refptr<media::VideoFrame> frame) {
+    scoped_refptr<media::VideoFrame> frame,
+    base::Optional<base::TimeTicks> expected_presentation_time) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   current_frame_lock_.AssertAcquired();
   TRACE_EVENT_INSTANT1("media", "WebMediaPlayerMSCompositor::SetCurrentFrame",
@@ -587,19 +588,26 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
 
   current_frame_ = std::move(frame);
 
+  base::TimeTicks now = base::TimeTicks::Now();
+
   // Complete the checks after |current_frame_| is accessible to avoid
   // deadlocks, see https://crbug.com/901744.
   PostCrossThreadTask(
       *video_frame_compositor_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&WebMediaPlayerMSCompositor::CheckForFrameChanges,
                           WrapRefCounted(this), is_first_frame,
-                          has_frame_size_changed, std::move(new_rotation),
-                          std::move(new_opacity)));
+                          has_frame_size_changed, now,
+                          expected_presentation_time.value_or(now),
+                          static_cast<int>(total_frame_count_),
+                          std::move(new_rotation), std::move(new_opacity)));
 }
 
 void WebMediaPlayerMSCompositor::CheckForFrameChanges(
     bool is_first_frame,
     bool has_frame_size_changed,
+    base::TimeTicks presentation_time,
+    base::TimeTicks expected_presentation_time,
+    int frame_count,
     base::Optional<media::VideoRotation> new_frame_rotation,
     base::Optional<bool> new_frame_opacity) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
@@ -609,8 +617,16 @@ void WebMediaPlayerMSCompositor::CheckForFrameChanges(
         *main_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&WebMediaPlayerMS::OnFirstFrameReceived, player_,
                             *new_frame_rotation, *new_frame_opacity));
+
+    // Complete rAF requests before returning.
+    if (new_frame_presented_cb_) {
+      std::move(new_frame_presented_cb_)
+          .Run(current_frame_, presentation_time, expected_presentation_time,
+               frame_count);
+    }
     return;
   }
+
   if (new_frame_rotation.has_value()) {
     PostCrossThreadTask(
         *main_task_runner_, FROM_HERE,
@@ -632,6 +648,12 @@ void WebMediaPlayerMSCompositor::CheckForFrameChanges(
   PostCrossThreadTask(
       *main_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&WebMediaPlayerMS::ResetCanvasCache, player_));
+
+  if (new_frame_presented_cb_) {
+    std::move(new_frame_presented_cb_)
+        .Run(current_frame_, presentation_time, expected_presentation_time,
+             frame_count);
+  }
 }
 
 void WebMediaPlayerMSCompositor::StartRenderingInternal() {
@@ -705,6 +727,12 @@ void WebMediaPlayerMSCompositor::SetAlgorithmEnabledForTesting(
             WTF::Unretained(this)),
         &media_log_));
   }
+}
+
+void WebMediaPlayerMSCompositor::SetOnFramePresentedCallback(
+    OnNewFramePresentedCB presented_cb) {
+  DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
+  new_frame_presented_cb_ = std::move(presented_cb);
 }
 
 }  // namespace blink

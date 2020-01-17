@@ -609,6 +609,7 @@ void ExtensionDownloader::CreateManifestLoader() {
 void ExtensionDownloader::OnManifestLoadComplete(
     std::unique_ptr<std::string> response_body) {
   const GURL url = manifest_loader_->GetFinalURL();
+  int net_error = manifest_loader_->NetError();
   DCHECK(manifests_queue_.active_request());
 
   int response_code = -1;
@@ -650,10 +651,16 @@ void ExtensionDownloader::OnManifestLoadComplete(
       NotifyExtensionsDownloadStageChanged(
           manifests_queue_.active_request()->extension_ids(),
           ExtensionDownloaderDelegate::Stage::FINISHED);
-      NotifyExtensionsDownloadFailed(
+      ExtensionDownloaderDelegate::FailureData failure_data(
+          -net_error,
+          response_code > 0 ? base::Optional<int>(response_code)
+                            : base::nullopt,
+          manifests_queue_.active_request_failure_count());
+      NotifyExtensionsDownloadFailedWithFailureData(
           manifests_queue_.active_request()->extension_ids(),
           manifests_queue_.active_request()->request_ids(),
-          ExtensionDownloaderDelegate::Error::MANIFEST_FETCH_FAILED);
+          ExtensionDownloaderDelegate::Error::MANIFEST_FETCH_FAILED,
+          failure_data);
     }
   }
   manifest_loader_.reset();
@@ -1169,16 +1176,23 @@ void ExtensionDownloader::NotifyExtensionsDownloadStageChanged(
     delegate_->OnExtensionDownloadStageChanged(it, stage);
   }
 }
-
 void ExtensionDownloader::NotifyExtensionsDownloadFailed(
     std::set<std::string> extension_ids,
     std::set<int> request_ids,
     ExtensionDownloaderDelegate::Error error) {
+  NotifyExtensionsDownloadFailedWithFailureData(
+      std::move(extension_ids), std::move(request_ids), error,
+      ExtensionDownloaderDelegate::FailureData());
+}
+
+void ExtensionDownloader::NotifyExtensionsDownloadFailedWithFailureData(
+    std::set<std::string> extension_ids,
+    std::set<int> request_ids,
+    ExtensionDownloaderDelegate::Error error,
+    const ExtensionDownloaderDelegate::FailureData& data) {
   for (const auto& it : extension_ids) {
     const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[it];
-    delegate_->OnExtensionDownloadFailed(
-        it, error, ping, request_ids,
-        ExtensionDownloaderDelegate::FailureData());
+    delegate_->OnExtensionDownloadFailed(it, error, ping, request_ids, data);
     ping_results_.erase(it);
   }
 }

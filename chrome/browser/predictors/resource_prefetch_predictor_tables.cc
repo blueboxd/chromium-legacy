@@ -14,8 +14,6 @@
 #include "chrome/browser/predictors/predictors_features.h"
 #include "sql/statement.h"
 
-using google::protobuf::MessageLite;
-
 namespace {
 
 const char kMetadataTableName[] = "resource_prefetch_predictor_metadata";
@@ -120,24 +118,6 @@ float ResourcePrefetchPredictorTables::ComputeOriginScore(
   score += 1e2 - origin.average_position();
 
   return score;
-}
-
-void ResourcePrefetchPredictorTables::ScheduleDBTask(
-    const base::Location& from_here,
-    DBTask task) {
-  GetTaskRunner()->PostTask(
-      from_here,
-      base::BindOnce(
-          &ResourcePrefetchPredictorTables::ExecuteDBTaskOnDBSequence, this,
-          std::move(task)));
-}
-
-void ResourcePrefetchPredictorTables::ExecuteDBTaskOnDBSequence(DBTask task) {
-  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
-  if (CantAccessDatabase())
-    return;
-
-  std::move(task).Run(DB());
 }
 
 LoadingPredictorKeyValueTable<RedirectData>*

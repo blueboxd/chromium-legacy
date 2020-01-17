@@ -4,12 +4,14 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.content.Intent;
 import android.util.Pair;
 import android.view.KeyEvent;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.KeyboardShortcuts;
@@ -21,7 +23,6 @@ import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
-import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -35,7 +36,7 @@ import org.chromium.chrome.browser.ui.RootUiCoordinator;
  * and {@link CustomTabActivity}.
  * @param <C> - type of associated Dagger component.
  */
-public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
+public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityComponent>
         extends ChromeActivity<C> {
     protected CustomTabToolbarCoordinator mToolbarCoordinator;
     protected CustomTabActivityNavigationController mNavigationController;
@@ -75,6 +76,17 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
 
         component.resolveCompositorContentInitializer();
         component.resolveTaskDescriptionHelper();
+    }
+
+    /**
+     * Return true when the activity has been launched in a separate task. The default behavior is
+     * to reuse the same task and put the activity on top of the previous one (i.e hiding it). A
+     * separate task creates a new entry in the Android recent screen.
+     */
+    protected boolean useSeparateTask() {
+        final int separateTaskFlags =
+                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
+        return (getIntent().getFlags() & separateTaskFlags) != 0;
     }
 
     @Override
@@ -135,6 +147,46 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
     @Override
     protected boolean handleBackPressed() {
         return mNavigationController.navigateOnBack();
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        BrowserServicesIntentDataProvider intentDataProvider = getIntentDataProvider();
+        if (intentDataProvider != null && intentDataProvider.shouldAnimateOnFinish()) {
+            mShouldOverridePackage = true;
+            overridePendingTransition(intentDataProvider.getAnimationEnterRes(),
+                    intentDataProvider.getAnimationExitRes());
+            mShouldOverridePackage = false;
+        } else if (intentDataProvider != null && intentDataProvider.isOpenedByChrome()) {
+            overridePendingTransition(R.anim.no_anim, R.anim.activity_close_exit);
+        }
+    }
+
+    /**
+     * Internal implementation that finishes the activity and removes the references from Android
+     * recents.
+     */
+    protected void handleFinishAndClose() {
+        Runnable defaultBehavior = () -> {
+            if (useSeparateTask()) {
+                ApiCompatibilityUtils.finishAndRemoveTask(this);
+            } else {
+                finish();
+            }
+        };
+        BrowserServicesIntentDataProvider intentDataProvider = getIntentDataProvider();
+        if (intentDataProvider.isTrustedWebActivity()
+                || intentDataProvider.getWebappExtras() != null) {
+            // TODO(pshmakov): extract all finishing logic from BaseCustomTabActivity.
+            // In addition to TwaFinishHandler, create DefaultFinishHandler, PaymentsFinishHandler,
+            // and SeparateTaskActivityFinishHandler, all implementing
+            // CustomTabActivityNavigationController#FinishHandler. Pass the mode enum into
+            // CustomTabActivityModule, so that it can provide the correct implementation.
+            getComponent().resolveTwaFinishHandler().onFinish(defaultBehavior);
+        } else {
+            defaultBehavior.run();
+        }
     }
 
     @Override

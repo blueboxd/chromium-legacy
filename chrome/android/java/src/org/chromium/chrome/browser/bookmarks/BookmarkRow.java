@@ -16,8 +16,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu;
 import org.chromium.chrome.browser.ui.widget.listmenu.ListMenu;
 import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButton;

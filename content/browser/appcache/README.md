@@ -177,12 +177,6 @@ The AppCache specification supports specifying namespaces as URL prefixes. Given
 a list of namespaces in an application cache, a resource URL matches the longest
 namespace that is a prefix of the URL.
 
-*** promo
-Our AppCache implementation also supports specifying namespaces as regular
-expressions that match URLs. This extension is invoked by adding the `isPattern`
-keyword after the namespace in the manifest.
-***
-
 An application cache has the following flags:
 
 * **completeness** - the application cache is *complete* when all the resources
@@ -193,3 +187,11 @@ An application cache has the following flags:
   all unlisted resources to be fetched from the network
 * **cache mode** - not supported by Chrome, which does not implement the
   `SETTINGS:` manifest section
+
+### Historical
+
+Our AppCache implementation supported specifying namespaces as regular
+expressions that match URLs. This extension was invoked by adding the
+`isPattern` keyword after the namespace in the manifest. Support has
+mostly been removed, but a column remains in the database and tests
+validate correct parsing even when it is present.

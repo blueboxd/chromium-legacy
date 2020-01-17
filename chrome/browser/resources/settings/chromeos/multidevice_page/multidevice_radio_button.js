@@ -33,7 +33,7 @@ Polymer({
     }
   },
 
-  getLabel_: function(label) {
+  getLabel_(label) {
     return label;
   },
 
@@ -43,7 +43,7 @@ Polymer({
    * @param {!Event} e The click event.
    * @private
    */
-  onIndicatorTap_: function(e) {
+  onIndicatorTap_(e) {
     e.preventDefault();
     e.stopPropagation();
   },

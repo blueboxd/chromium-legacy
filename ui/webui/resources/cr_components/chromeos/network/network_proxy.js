@@ -121,7 +121,7 @@ Polymer({
    * @private
    */
   managedPropertiesChanged_(newValue, oldValue) {
-    if ((newValue && newValue.guid) != (oldValue && oldValue.guid)) {
+    if ((newValue && newValue.guid) !== (oldValue && oldValue.guid)) {
       // Clear saved manual properties and exclude domains if we're updating
       // to show a different network.
       this.savedManual_ = undefined;
@@ -208,11 +208,11 @@ Polymer({
         /** @type {!chromeos.networkConfig.mojom.ManagedProxySettings} */ (
             Object.assign({}, inputProxy));
     const type = proxy.type.activeValue;
-    if (type == 'PAC') {
+    if (type === 'PAC') {
       if (!proxy.pac) {
         proxy.pac = OncMojo.createManagedString('');
       }
-    } else if (type == 'Manual') {
+    } else if (type === 'Manual') {
       proxy.manual = proxy.manual || this.savedManual_ || {};
       if (!proxy.manual.httpProxy) {
         proxy.manual.httpProxy = this.createDefaultProxyLocation_(80);
@@ -250,7 +250,7 @@ Polymer({
     const proxy = proxySettings ? this.validateProxy_(proxySettings) :
                                   this.createDefaultProxySettings_();
 
-    if (proxy.type.activeValue == 'WPAD') {
+    if (proxy.type.activeValue === 'WPAD') {
       // Set the Web Proxy Auto Discovery URL for display purposes.
       const ipv4 = this.managedProperties ?
           OncMojo.getIPConfigForType(this.managedProperties, 'IPv4') :
@@ -325,7 +325,7 @@ Polymer({
   sendProxyChange_() {
     const mojom = chromeos.networkConfig.mojom;
     const proxyType = OncMojo.getActiveString(this.proxy_.type);
-    if (!proxyType || (proxyType == 'PAC' && !this.proxy_.pac)) {
+    if (!proxyType || (proxyType === 'PAC' && !this.proxy_.pac)) {
       return;
     }
 
@@ -334,7 +334,7 @@ Polymer({
       excludeDomains: OncMojo.getActiveValue(this.proxy_.excludeDomains),
     });
 
-    if (proxyType == 'Manual') {
+    if (proxyType === 'Manual') {
       let manual = {};
       if (this.proxy_.manual) {
         this.savedManual_ =
@@ -371,7 +371,7 @@ Polymer({
         }
       }
       proxy.manual = manual;
-    } else if (proxyType == 'PAC') {
+    } else if (proxyType === 'PAC') {
       proxy.pac = OncMojo.getActiveString(this.proxy_.pac);
     }
     this.fire('proxy-change', proxy);
@@ -456,7 +456,7 @@ Polymer({
    * @private
    */
   onAddProxyExclusionKeypress_(event) {
-    if (event.key != 'Enter') {
+    if (event.key !== 'Enter') {
       return;
     }
     event.stopPropagation();
@@ -483,13 +483,13 @@ Polymer({
    * @private
    */
   getProxyTypeDesc_(proxyType) {
-    if (proxyType == 'Manual') {
+    if (proxyType === 'Manual') {
       return this.i18n('networkProxyTypeManual');
     }
-    if (proxyType == 'PAC') {
+    if (proxyType === 'PAC') {
       return this.i18n('networkProxyTypePac');
     }
-    if (proxyType == 'WPAD') {
+    if (proxyType === 'WPAD') {
       return this.i18n('networkProxyTypeWpad');
     }
     return this.i18n('networkProxyTypeDirect');
@@ -531,8 +531,8 @@ Polymer({
       return false;
     }
     const source = this.managedProperties.source;
-    return source == chromeos.networkConfig.mojom.OncSource.kDevice ||
-        source == chromeos.networkConfig.mojom.OncSource.kDevicePolicy;
+    return source === chromeos.networkConfig.mojom.OncSource.kDevice ||
+        source === chromeos.networkConfig.mojom.OncSource.kDevicePolicy;
   },
 
   /**
@@ -556,11 +556,11 @@ Polymer({
   /**
    * @param {string} property The property to test
    * @param {string} value The value to test against
-   * @return {boolean} True if property == value
+   * @return {boolean} True if property === value
    * @private
    */
   matches_(property, value) {
-    return property == value;
+    return property === value;
   },
 });
 })();

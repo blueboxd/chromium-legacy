@@ -98,7 +98,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     // It is possible (eg, when middle clicking the reload button) for all other
     // resize events to fire before the list is attached and can be measured.
     // Adding another resize here ensures it will get sized correctly.
@@ -118,7 +118,7 @@ Polymer({
    *    query.
    * @param {!Array<!HistoryEntry>} results A list of results.
    */
-  historyResult: function(info, results) {
+  historyResult(info, results) {
     this.initializeResults_(info, results);
     this.closeMenu_();
 
@@ -141,7 +141,7 @@ Polymer({
    * @param {boolean} finished True if there are no more results available and
    * result loading should be disabled.
    */
-  addNewResults: function(historyResults, incremental, finished) {
+  addNewResults(historyResults, incremental, finished) {
     const results = historyResults.slice();
     /** @type {IronScrollThresholdElement} */ (this.$['scroll-threshold'])
         .clearTriggers();
@@ -170,7 +170,7 @@ Polymer({
   },
 
   /** @private */
-  onHistoryDeleted_: function() {
+  onHistoryDeleted_() {
     // Do not reload the list when there are items checked.
     if (this.getSelectedItemCount() > 0) {
       return;
@@ -180,7 +180,7 @@ Polymer({
     this.fire('query-history', false);
   },
 
-  selectOrUnselectAll: function() {
+  selectOrUnselectAll() {
     if (this.historyData_.length === this.getSelectedItemCount()) {
       this.unselectAllItems();
     } else {
@@ -191,7 +191,7 @@ Polymer({
   /**
    * Select each item in |historyData|.
    */
-  selectAllItems: function() {
+  selectAllItems() {
     if (this.historyData_.length === this.getSelectedItemCount()) {
       return;
     }
@@ -204,7 +204,7 @@ Polymer({
   /**
    * Deselect each item in |selectedItems|.
    */
-  unselectAllItems: function() {
+  unselectAllItems() {
     this.selectedItems.forEach((index) => {
       this.changeSelection_(index, false);
     });
@@ -213,7 +213,7 @@ Polymer({
   },
 
   /** @return {number} */
-  getSelectedItemCount: function() {
+  getSelectedItemCount() {
     return this.selectedItems.size;
   },
 
@@ -221,7 +221,7 @@ Polymer({
    * Delete all the currently selected history items. Will prompt the user with
    * a dialog to confirm that the deletion should be performed.
    */
-  deleteSelectedWithPrompt: function() {
+  deleteSelectedWithPrompt() {
     if (!this.canDeleteHistory_) {
       return;
     }
@@ -246,7 +246,7 @@ Polymer({
    * @param {boolean} selected
    * @private
    */
-  changeSelection_: function(index, selected) {
+  changeSelection_(index, selected) {
     this.set(`historyData_.${index}.selected`, selected);
     if (selected) {
       this.selectedItems.add(index);
@@ -262,7 +262,7 @@ Polymer({
    * does prompt.
    * @private
    */
-  deleteSelected_: function() {
+  deleteSelected_() {
     assert(!this.pendingDelete);
 
     const toBeRemoved = Array.from(this.selectedItems.values())
@@ -286,7 +286,7 @@ Polymer({
    * @param {!Array<number>} indices
    * @private
    */
-  removeItemsByIndex_: function(indices) {
+  removeItemsByIndex_(indices) {
     const splices = [];
     indices.sort(function(a, b) {
       // Sort in reverse numerical order.
@@ -309,7 +309,7 @@ Polymer({
    * Closes the overflow menu.
    * @private
    */
-  closeMenu_: function() {
+  closeMenu_() {
     const menu = this.$.sharedMenu.getIfExists();
     if (menu && menu.open) {
       this.actionMenuModel_ = null;
@@ -321,7 +321,7 @@ Polymer({
   // Event listeners:
 
   /** @private */
-  onDialogConfirmTap_: function() {
+  onDialogConfirmTap_() {
     BrowserService.getInstance().recordAction('ConfirmRemoveSelected');
 
     this.deleteSelected_();
@@ -330,7 +330,7 @@ Polymer({
   },
 
   /** @private */
-  onDialogCancelTap_: function() {
+  onDialogCancelTap_() {
     BrowserService.getInstance().recordAction('CancelRemoveSelected');
 
     const dialog = assert(this.$.dialog.getIfExists());
@@ -342,7 +342,7 @@ Polymer({
    * @param {!CustomEvent<string>} e
    * @private
    */
-  onRemoveBookmarkStars_: function(e) {
+  onRemoveBookmarkStars_(e) {
     const url = e.detail;
 
     if (this.historyData_ === undefined) {
@@ -360,7 +360,7 @@ Polymer({
    * Called when the page is scrolled to near the bottom of the list.
    * @private
    */
-  onScrollToBottom_: function() {
+  onScrollToBottom_() {
     if (this.resultLoadingDisabled_ || this.queryState.querying) {
       return;
     }
@@ -378,7 +378,7 @@ Polymer({
    * }>} e
    * @private
    */
-  onOpenMenu_: function(e) {
+  onOpenMenu_(e) {
     const index = e.detail.index;
     const list = /** @type {IronListElement} */ (this.$['infinite-list']);
     if (index < list.firstVisibleIndex || index > list.lastVisibleIndex) {
@@ -392,7 +392,7 @@ Polymer({
   },
 
   /** @private */
-  onMoreFromSiteTap_: function() {
+  onMoreFromSiteTap_() {
     BrowserService.getInstance().recordAction('EntryMenuShowMoreFromSite');
 
     const menu = assert(this.$.sharedMenu.getIfExists());
@@ -406,7 +406,7 @@ Polymer({
    * @return {!Promise}
    * @private
    */
-  deleteItems_: function(items) {
+  deleteItems_(items) {
     const removalList = items.map(item => ({
                                     url: item.url,
                                     timestamps: item.allTimestamps,
@@ -417,7 +417,7 @@ Polymer({
   },
 
   /** @private */
-  onRemoveFromHistoryTap_: function() {
+  onRemoveFromHistoryTap_() {
     const browserService = BrowserService.getInstance();
     browserService.recordAction('EntryMenuRemoveFromHistory');
 
@@ -464,7 +464,7 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onItemSelected_: function(e) {
+  onItemSelected_(e) {
     const index = e.detail.index;
     const indices = [];
 
@@ -501,7 +501,7 @@ Polymer({
    * @return {boolean} Whether or not time gap separator is required.
    * @private
    */
-  needsTimeGap_: function(item, index) {
+  needsTimeGap_(item, index) {
     const length = this.historyData_.length;
     if (index === undefined || index >= length - 1 || length === 0) {
       return false;
@@ -525,7 +525,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isCardStart_: function(item, i) {
+  isCardStart_(item, i) {
     const length = this.historyData_.length;
     if (i === undefined || length === 0 || i > length - 1) {
       return false;
@@ -542,7 +542,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isCardEnd_: function(item, i) {
+  isCardEnd_(item, i) {
     const length = this.historyData_.length;
     if (i === undefined || length === 0 || i > length - 1) {
       return false;
@@ -556,7 +556,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasResults_: function() {
+  hasResults_() {
     return this.historyData_.length > 0;
   },
 
@@ -565,7 +565,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  noResultsMessage_: function(searchedTerm) {
+  noResultsMessage_(searchedTerm) {
     const messageId = searchedTerm !== '' ? 'noSearchResults' : 'noResults';
     return loadTimeData.getString(messageId);
   },
@@ -576,7 +576,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  canSearchMoreFromSite_: function(searchedTerm, domain) {
+  canSearchMoreFromSite_(searchedTerm, domain) {
     return searchedTerm === '' || searchedTerm !== domain;
   },
 
@@ -585,7 +585,7 @@ Polymer({
    * @param {!Array<HistoryEntry>} results
    * @private
    */
-  initializeResults_: function(info, results) {
+  initializeResults_(info, results) {
     if (results.length === 0) {
       return;
     }
@@ -610,7 +610,7 @@ Polymer({
    * This has yet to be reproduced in manual testing.
    * @private
    */
-  onHistoryDataChanged_: function() {
+  onHistoryDataChanged_() {
     this.$['infinite-list'].fire('iron-resize');
   },
 });

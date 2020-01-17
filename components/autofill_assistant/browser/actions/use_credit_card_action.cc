@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
@@ -162,6 +163,10 @@ std::unique_ptr<FallbackData> UseCreditCardAction::CreateFallbackData(
   fallback_data->field_values.emplace(
       (int)UseCreditCardProto::RequiredField::CREDIT_CARD_NUMBER,
       base::UTF16ToUTF8(card.GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
+  fallback_data->field_values.emplace(
+      (int)UseCreditCardProto::RequiredField::CREDIT_CARD_NETWORK,
+      autofill::data_util::GetPaymentRequestData(card.network())
+          .basic_card_issuer_network);
   return fallback_data;
 }
 }  // namespace autofill_assistant

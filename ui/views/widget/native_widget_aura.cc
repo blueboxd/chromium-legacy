@@ -289,14 +289,6 @@ void NativeWidgetAura::FrameTypeChanged() {
   GetWidget()->GetRootView()->SchedulePaint();
 }
 
-Widget* NativeWidgetAura::GetWidget() {
-  return delegate_->AsWidget();
-}
-
-const Widget* NativeWidgetAura::GetWidget() const {
-  return delegate_->AsWidget();
-}
-
 gfx::NativeView NativeWidgetAura::GetNativeView() const {
   return window_;
 }
@@ -440,6 +432,10 @@ void NativeWidgetAura::SetWindowIcons(const gfx::ImageSkia& window_icon,
 void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
   if (modal_type != ui::MODAL_TYPE_NONE)
     window_->SetProperty(aura::client::kModalKey, modal_type);
+  if (modal_type == ui::MODAL_TYPE_WINDOW) {
+    wm::TransientWindowManager::GetOrCreate(window_)
+        ->set_parent_controls_visibility(true);
+  }
 }
 
 gfx::Rect NativeWidgetAura::GetWindowBoundsInScreen() const {
@@ -1063,6 +1059,10 @@ void NativeWidgetAura::SetInitialFocus(ui::WindowShowState show_state) {
   // The window does not get keyboard messages unless we focus it.
   if (!GetWidget()->SetInitialFocus(show_state))
     window_->Focus();
+}
+
+const Widget* NativeWidgetAura::GetWidgetImpl() const {
+  return delegate_->AsWidget();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

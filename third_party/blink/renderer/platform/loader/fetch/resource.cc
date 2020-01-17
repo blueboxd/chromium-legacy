@@ -162,8 +162,8 @@ Resource::Resource(const ResourceRequest& request,
       integrity_disposition_(ResourceIntegrityDisposition::kNotChecked),
       options_(options),
       response_timestamp_(Now()),
-      resource_request_(request),
       overhead_size_(CalculateOverheadSize()) {
+  resource_request_.CopyFrom(request);
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceCounter);
 
   if (IsMainThread())
@@ -490,7 +490,7 @@ void Resource::SetRevalidatingRequest(const ResourceRequest& request) {
   DCHECK(!request.IsNull());
   CHECK(!is_revalidation_start_forbidden_);
   is_revalidating_ = true;
-  resource_request_ = request;
+  resource_request_.CopyFrom(request);
   status_ = ResourceStatus::kNotStarted;
 }
 

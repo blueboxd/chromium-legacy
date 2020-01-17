@@ -85,10 +85,6 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
     if (is_leaked) {
       password_store->AddCompromisedCredentials(CompromisedCredentials(
           url, username, base::Time::Now(), CompromiseType::kLeaked));
-    } else {
-      // If the credentials are not saved as leaked in the database, this call
-      // will just get ignored.
-      password_store->RemoveCompromisedCredentials(url, username);
     }
   }
 

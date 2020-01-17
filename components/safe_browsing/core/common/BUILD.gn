@@ -6,78 +6,105 @@ import("//build/config/features.gni")
 import("//components/safe_browsing/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-source_set("common") {
-  sources = [
-    "safebrowsing_constants.cc",
-    "safebrowsing_constants.h",
-    "safebrowsing_switches.cc",
-    "safebrowsing_switches.h",
-    "utils.cc",
-    "utils.h",
-  ]
+# TODO(crbug.com/1028755): Remove this condition once there are no longer any
+# dependencies on content/.
+if (!is_ios) {
+  source_set("common") {
+    sources = [
+      "safebrowsing_constants.cc",
+      "safebrowsing_constants.h",
+      "safebrowsing_switches.cc",
+      "safebrowsing_switches.h",
+      "utils.cc",
+      "utils.h",
+    ]
 
-  deps = [
-    "//base",
-    "//components/policy/core/browser:browser",
-    "//components/prefs:prefs",
-    "//components/safe_browsing/core:csd_proto",
-    "//components/safe_browsing/core:features",
-    "//crypto:crypto",
-    "//ipc",
-    "//url/ipc:url_ipc",
-  ]
+    deps = [
+      "//base",
+      "//components/policy/core/browser:browser",
+      "//components/prefs:prefs",
+      "//components/safe_browsing/core:csd_proto",
+      "//components/safe_browsing/core:features",
+      "//crypto:crypto",
+      "//ipc",
+      "//url/ipc:url_ipc",
+    ]
 
-  public_deps = [
-    ":interfaces",
-  ]
+    public_deps = [ ":interfaces" ]
+  }
+
+  static_library("safe_browsing_prefs") {
+    sources = [
+      "safe_browsing_prefs.cc",
+      "safe_browsing_prefs.h",
+    ]
+
+    deps = [
+      "//base:base",
+      "//components/pref_registry:pref_registry",
+      "//components/prefs",
+      "//components/safe_browsing/core:features",
+      "//components/safe_browsing/core/common:thread_utils",
+      "//net:net",
+    ]
+  }
+
+  source_set("unit_tests") {
+    testonly = true
+    sources = [ "safe_browsing_prefs_unittest.cc" ]
+    deps = [
+      ":safe_browsing_prefs",
+      ":test_support",
+      "//base:base",
+      "//base/test:test_support",
+      "//components/prefs:test_support",
+      "//components/safe_browsing/core:features",
+      "//testing/gtest",
+      "//url:url",
+    ]
+  }
+
+  mojom("interfaces") {
+    sources = [ "safe_browsing.mojom" ]
+
+    public_deps = [
+      "//content/public/common:resource_type_bindings",
+      "//services/network/public/mojom",
+      "//url/mojom:url_mojom_gurl",
+    ]
+
+    enabled_features = []
+    if (safe_browsing_mode == 1) {
+      enabled_features += [ "full_safe_browsing" ]
+    }
+  }
 }
 
-static_library("safe_browsing_prefs") {
-  sources = [
-    "safe_browsing_prefs.cc",
-    "safe_browsing_prefs.h",
-  ]
+source_set("thread_utils") {
+  sources = [ "thread_utils.h" ]
 
-  deps = [
-    "//base:base",
-    "//components/pref_registry:pref_registry",
-    "//components/prefs",
-    "//components/safe_browsing/core:features",
-    "//content/public/browser:browser",
-    "//net:net",
-  ]
+  deps = [ "//base" ]
+
+  if (is_ios) {
+    sources += [ "//components/safe_browsing/ios/thread_utils_ios.cc" ]
+    deps += [ "//ios/web/public/thread" ]
+  } else {
+    sources += [ "//components/safe_browsing/content/common/thread_utils.cc" ]
+    deps += [ "//content/public/browser" ]
+  }
 }
 
-source_set("unit_tests") {
+source_set("test_support") {
   testonly = true
-  sources = [
-    "safe_browsing_prefs_unittest.cc",
-  ]
-  deps = [
-    ":safe_browsing_prefs",
-    "//base:base",
-    "//base/test:test_support",
-    "//components/prefs:test_support",
-    "//components/safe_browsing/core:features",
-    "//content/test:test_support",
-    "//testing/gtest",
-    "//url:url",
-  ]
-}
+  sources = [ "test_task_environment.h" ]
+  deps = [ "//base/test:test_support" ]
 
-mojom("interfaces") {
-  sources = [
-    "safe_browsing.mojom",
-  ]
-
-  public_deps = [
-    "//content/public/common:resource_type_bindings",
-    "//services/network/public/mojom",
-    "//url/mojom:url_mojom_gurl",
-  ]
-
-  enabled_features = []
-  if (safe_browsing_mode == 1) {
-    enabled_features += [ "full_safe_browsing" ]
+  if (is_ios) {
+    sources += [ "//components/safe_browsing/ios/test_task_environment_ios.cc" ]
+    deps += [ "//ios/web/public/test" ]
+  } else {
+    sources +=
+        [ "//components/safe_browsing/content/common/test_task_environment.cc" ]
+    deps += [ "//content/test:test_support" ]
   }
 }

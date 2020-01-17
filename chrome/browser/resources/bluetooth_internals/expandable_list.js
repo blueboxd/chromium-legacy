@@ -27,7 +27,7 @@ cr.define('expandable_list', function() {
      * content holders for implementations.
      * @override
      */
-    decorate: function() {
+    decorate() {
       this.classList.add('expandable-list-item');
       this.briefContent_ = document.createElement('div');
       this.briefContent_.classList.add('brief-content');
@@ -43,13 +43,13 @@ cr.define('expandable_list', function() {
      * Called when the list item is expanded or collapsed.
      * @param {boolean} expanded
      */
-    onExpandInternal: function(expanded) {},
+    onExpandInternal(expanded) {},
 
     /**
      * Toggles the expanded class on the item.
      * @private
      */
-    onExpand_: function() {
+    onExpand_() {
       this.onExpandInternal(this.classList.toggle('expanded'));
     },
   };
@@ -69,7 +69,7 @@ cr.define('expandable_list', function() {
      * elements.
      * @override
      */
-    decorate: function() {
+    decorate() {
       List.prototype.decorate.call(this);
       this.classList.add('expandable-list');
 
@@ -91,7 +91,7 @@ cr.define('expandable_list', function() {
      * Sets the data model of the list.
      * @param {cr.ui.ArrayDataModel} data
      */
-    setData: function(data) {
+    setData(data) {
       if (this.dataModel) {
         this.dataModel.removeEventListener('splice', this.boundUpdateMessage_);
       }
@@ -105,7 +105,7 @@ cr.define('expandable_list', function() {
      * Sets the empty message text.
      * @param {string} message
      */
-    setEmptyMessage: function(message) {
+    setEmptyMessage(message) {
       this.emptyMessage_.textContent = message;
     },
 
@@ -114,7 +114,7 @@ cr.define('expandable_list', function() {
      * spinner is dispayed.
      * @param {boolean} showing
      */
-    setSpinnerShowing: function(showing) {
+    setSpinnerShowing(showing) {
       this.spinner_.hidden = !showing;
     },
 
@@ -122,7 +122,7 @@ cr.define('expandable_list', function() {
      * Gets the spinner display state. Returns true if the spinner is showing.
      * @return {boolean}
      */
-    isSpinnerShowing: function() {
+    isSpinnerShowing() {
       return !this.spinner_.hidden;
     },
 
@@ -130,7 +130,7 @@ cr.define('expandable_list', function() {
      * Updates the display state of the empty message. If there are no items in
      * the data model, the empty message is displayed.
      */
-    updateMessageDisplay_: function() {
+    updateMessageDisplay_() {
       this.emptyMessage_.hidden = this.dataModel.length > 0;
     },
   };

@@ -104,7 +104,7 @@ class ProfileNetworkContextService
       ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
       Test);
 
-  friend class AmbientAuthenticationTestWithPolicy;
+  friend class AmbientAuthenticationTestHelper;
 
   // Checks |quic_allowed_|, and disables QUIC if needed.
   void DisableQuicIfNotAllowed();

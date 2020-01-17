@@ -33,7 +33,5 @@ source_set("unit_tests") {
     "//chromeos/login/session:session",
     "//testing/gtest",
   ]
-  sources = [
-    "session_termination_manager_unittest.cc",
-  ]
+  sources = [ "session_termination_manager_unittest.cc" ]
 }

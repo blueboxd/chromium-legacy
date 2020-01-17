@@ -72,8 +72,6 @@ const char kMimeType[] = "application/pkix-cert";
 
 const char kDummyCertContents[] = "dummy_data";
 
-const GURL kInterceptUrl = GURL(std::string("http://") + kAiaHost);
-
 const base::TimeDelta kTimeout = base::TimeDelta::FromHours(1);
 
 network::mojom::URLResponseHeadPtr GetResponseHead() {
@@ -104,27 +102,27 @@ class OCSPRequestSessionDelegateURLLoaderTest : public ::testing::Test {
                 loader_factory_->GetSafeWeakWrapper())) {}
 
   void SetUp() override {
-    params_.url = kInterceptUrl;
+    params_.url = intercept_url_;
     params_.http_request_method = "GET";
     params_.timeout = kTimeout;
 
     old_interceptor_ = base::BindLambdaForTesting(
         [this](const network::ResourceRequest& request) {
-          EXPECT_EQ(request.url, kInterceptUrl);
+          EXPECT_EQ(request.url, intercept_url_);
           num_loaders_created_++;
         });
     loader_factory_->SetInterceptor(old_interceptor_);
   }
 
  protected:
-  // Primes |loader_factory_| to respond with |head| and|file_contents| to
-  // |kInterceptUrl}.
+  // Primes |loader_factory_| to respond with |head| and |file_contents| to
+  // |intercept_url_|.
   void AddResponse(network::mojom::URLResponseHeadPtr head,
                    std::string file_contents,
                    network::TestURLLoaderFactory::Redirects redirects =
                        network::TestURLLoaderFactory::Redirects()) {
     loader_factory_->AddResponse(
-        kInterceptUrl, std::move(head), std::move(file_contents),
+        intercept_url_, std::move(head), std::move(file_contents),
         network::URLLoaderCompletionStatus(), std::move(redirects));
   }
 
@@ -167,6 +165,8 @@ class OCSPRequestSessionDelegateURLLoaderTest : public ::testing::Test {
   void ResetLoaderFactory() { loader_factory_.reset(); }
 
  private:
+  const GURL intercept_url_{std::string("http://") + kAiaHost};
+
   base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<network::TestURLLoaderFactory> loader_factory_;
@@ -460,15 +460,14 @@ TEST_F(OCSPRequestSessionDelegateURLLoaderTest, TestDelegateFactoryDeletion) {
 class NssHttpURLLoaderTest : public net::TestWithTaskEnvironment {
  public:
   NssHttpURLLoaderTest()
-      : kInterceptUrl(std::string("http://") + kAiaHost),
-        verify_proc_(new net::CertVerifyProcNSS),
+      : verify_proc_(new net::CertVerifyProcNSS),
         verifier_(new net::MultiThreadedCertVerifier(verify_proc_.get())) {}
   ~NssHttpURLLoaderTest() override = default;
 
   void SetUp() override {
     loader_factory_.SetInterceptor(base::BindLambdaForTesting(
         [this](const network::ResourceRequest& request) {
-          EXPECT_EQ(request.url, kInterceptUrl);
+          EXPECT_EQ(request.url, intercept_url_);
           num_loaders_created_++;
         }));
 
@@ -499,17 +498,17 @@ class NssHttpURLLoaderTest : public net::TestWithTaskEnvironment {
   scoped_refptr<net::X509Certificate> test_cert() const { return test_cert_; }
 
  protected:
-  // Primes |loader_factory_| to respond with |head| and|file_contents| to
-  // |kInterceptUrl}.
+  // Primes |loader_factory_| to respond with |head| and |file_contents| to
+  // |intercept_url_|.
   void AddResponse(network::mojom::URLResponseHeadPtr head,
                    std::string file_contents) {
-    loader_factory_.AddResponse(kInterceptUrl, std::move(head),
+    loader_factory_.AddResponse(intercept_url_, std::move(head),
                                 std::move(file_contents),
                                 network::URLLoaderCompletionStatus());
   }
 
  private:
-  const GURL kInterceptUrl;
+  const GURL intercept_url_{std::string("http://") + kAiaHost};
   scoped_refptr<net::X509Certificate> test_root_;
   net::ScopedTestRoot scoped_root_;
   scoped_refptr<net::X509Certificate> test_cert_;

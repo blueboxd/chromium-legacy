@@ -19,7 +19,7 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
     callback_: null,
 
     /** @override */
-    decorate: function() {
+    decorate() {
       this.confirmPasswordForm_ = $('saml-confirm-password');
       this.confirmPasswordForm_.addEventListener('cancel', function(e) {
         Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
@@ -39,18 +39,18 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
     },
 
     /** @override */
-    onBeforeShow: function(data) {
+    onBeforeShow(data) {
       Oobe.getInstance().setSigninUIState(
           SIGNIN_UI_STATE.SAML_PASSWORD_CONFIRM);
     },
 
     /** @override */
-    onAfterShow: function(data) {
+    onAfterShow(data) {
       this.confirmPasswordForm_.focus();
     },
 
     /** @override */
-    onBeforeHide: function() {
+    onBeforeHide() {
       this.confirmPasswordForm_.reset();
     },
 
@@ -63,7 +63,7 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
      * @param {function(string)} callback The callback to be invoked when the
      *     screen is dismissed.
      */
-    show: function(email, manualPasswordInput, attemptCount, callback) {
+    show(email, manualPasswordInput, attemptCount, callback) {
       this.callback_ = callback;
       this.confirmPasswordForm_.reset();
       this.confirmPasswordForm_.email = email;

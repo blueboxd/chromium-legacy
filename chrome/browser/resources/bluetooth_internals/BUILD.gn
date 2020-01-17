@@ -6,9 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":bluetooth_internals",
-  ]
+  deps = [ ":bluetooth_internals" ]
 }
 
 js_library("bluetooth_internals") {
@@ -46,9 +44,7 @@ js_library("bluetooth_internals") {
 }
 
 js_library("node_utils") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("page") {
@@ -86,7 +82,5 @@ grit("resources") {
     "-E",
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
-  deps = [
-    "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings_js",
-  ]
+  deps = [ "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings_js" ]
 }

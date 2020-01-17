@@ -1988,6 +1988,12 @@ void GL_APIENTRY GLES2BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
 void GL_APIENTRY GLES2EndSharedImageAccessDirectCHROMIUM(GLuint texture) {
   gles2::GetGLContext()->EndSharedImageAccessDirectCHROMIUM(texture);
 }
+void GL_APIENTRY GLES2BeginBatchReadAccessSharedImageCHROMIUM() {
+  gles2::GetGLContext()->BeginBatchReadAccessSharedImageCHROMIUM();
+}
+void GL_APIENTRY GLES2EndBatchReadAccessSharedImageCHROMIUM() {
+  gles2::GetGLContext()->EndBatchReadAccessSharedImageCHROMIUM();
+}
 
 namespace gles2 {
 
@@ -3523,6 +3529,16 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glEndSharedImageAccessDirectCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glEndSharedImageAccessDirectCHROMIUM),
+    },
+    {
+        "glBeginBatchReadAccessSharedImageCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glBeginBatchReadAccessSharedImageCHROMIUM),
+    },
+    {
+        "glEndBatchReadAccessSharedImageCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glEndBatchReadAccessSharedImageCHROMIUM),
     },
     {
         nullptr,

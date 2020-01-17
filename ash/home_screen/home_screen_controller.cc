@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/home_screen/window_scale_animation.h"
@@ -91,6 +92,10 @@ void HomeScreenController::Show() {
 bool HomeScreenController::GoHome(int64_t display_id) {
   DCHECK(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
+  auto* app_list_controller = Shell::Get()->app_list_controller();
+  if (app_list_controller->IsShowingEmbeddedAssistantUI()) {
+    app_list_controller->presenter()->ShowEmbeddedAssistantUI(false);
+  }
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   SplitViewController* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
@@ -239,6 +244,12 @@ void HomeScreenController::SetDelegate(HomeScreenDelegate* delegate) {
 void HomeScreenController::OnWindowDragStarted() {
   in_window_dragging_ = true;
   UpdateVisibility();
+
+  // Dismiss Assistant if it's running when a window drag starts.
+  if (Shell::Get()->app_list_controller()->IsShowingEmbeddedAssistantUI()) {
+    Shell::Get()->app_list_controller()->presenter()->ShowEmbeddedAssistantUI(
+        false);
+  }
 }
 
 void HomeScreenController::OnWindowDragEnded(bool animate) {

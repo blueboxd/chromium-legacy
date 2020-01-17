@@ -52,12 +52,6 @@ class V8TestVariadicConstructorArguments {
 };
 
 template <>
-struct NativeValueTraits<TestVariadicConstructorArguments> : public NativeValueTraitsBase<TestVariadicConstructorArguments> {
-  CORE_EXPORT static TestVariadicConstructorArguments* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestVariadicConstructorArguments* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestVariadicConstructorArguments> {
   typedef V8TestVariadicConstructorArguments Type;
 };

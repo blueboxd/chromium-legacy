@@ -6,9 +6,7 @@ cr.define('login', function() {
   /** @const */ var CALLBACK_USER_ACTED = 'userActed';
 
   var OobeScreenBehavior = {
-    properties: {
-      name: String
-    },
+    properties: {name: String},
 
     /**
      * The login.Screen which is hosting |this|.
@@ -18,9 +16,9 @@ cr.define('login', function() {
     /**
      * Called when the screen is being registered.
      */
-    initialize: function() {},
+    initialize() {},
 
-    ready: function() {
+    ready() {
       if (this.decorate_) {
         this.initialize();
       } else {
@@ -28,13 +26,13 @@ cr.define('login', function() {
       }
     },
 
-    userActed: function(e) {
+    userActed(e) {
       this.send(
           CALLBACK_USER_ACTED,
           e.detail.sourceEvent.target.getAttribute('action'));
     },
 
-    i18n: function(args) {
+    i18n(args) {
       if (!(args instanceof Array))
         args = [args];
       args[0] = 'login_' + this.name + '_' + args[0];
@@ -44,7 +42,7 @@ cr.define('login', function() {
     /**
      * Called by login.Screen when the screen is beeing registered.
      */
-    decorate: function(screen) {
+    decorate(screen) {
       this.screen_ = screen;
       var self = this;
       if (this.ready_) {
@@ -57,7 +55,7 @@ cr.define('login', function() {
     /**
      * @final
      */
-    send: function() {
+    send() {
       return this.sendImpl_.apply(this, arguments);
     },
 
@@ -65,7 +63,7 @@ cr.define('login', function() {
      * @override
      * @final
      */
-    querySelector: function() {
+    querySelector() {
       return this.querySelectorImpl_.apply(this, arguments);
     },
 
@@ -73,7 +71,7 @@ cr.define('login', function() {
      * @override
      * @final
      */
-    querySelectorAll: function() {
+    querySelectorAll() {
       return this.querySelectorAllImpl_.apply(this, arguments);
     },
 
@@ -81,7 +79,7 @@ cr.define('login', function() {
      * See login.Screen.send.
      * @private
      */
-    sendImpl_: function() {
+    sendImpl_() {
       return this.screen_.send.apply(this.screen_, arguments);
     },
 
@@ -89,7 +87,7 @@ cr.define('login', function() {
      * Calls |querySelector| method of the shadow dom and returns the result.
      * @private
      */
-    querySelectorImpl_: function(selector) {
+    querySelectorImpl_(selector) {
       return this.shadowRoot.querySelector(selector);
     },
 
@@ -99,7 +97,7 @@ cr.define('login', function() {
      * the result converted to Array.
      * @private
      */
-    querySelectorAllImpl_: function(selector) {
+    querySelectorAllImpl_(selector) {
       var list = this.shadowRoot.querySelectorAll(selector);
       return Array.prototype.slice.call(list);
     },
@@ -109,7 +107,7 @@ cr.define('login', function() {
      * name. Otherwise returns empty string.
      * @private
      */
-    getPropertyNameOf_: function(value) {
+    getPropertyNameOf_(value) {
       for (var key in this)
         if (this[key] === value)
           return key;

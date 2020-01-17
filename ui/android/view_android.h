@@ -162,6 +162,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
                             float top_content_offset);
   void OnBottomControlsChanged(float bottom_controls_offset,
                                float bottom_content_offset);
+  void OnBrowserControlsHeightChanged();
 
   // Gets the Visual Viewport inset to apply in physical pixels.
   int GetViewportInsetBottom();

@@ -32,7 +32,7 @@ cr.define('cr.ui', function() {
     onFocus(row, e) {
       const element = e.path[0];
       const focusableElement = cr.ui.FocusRow.getFocusableElement(element);
-      if (element != focusableElement) {
+      if (element !== focusableElement) {
         focusableElement.focus();
       }
       this.listItem_.lastFocused = focusableElement;
@@ -46,7 +46,7 @@ cr.define('cr.ui', function() {
      */
     onKeydown(row, e) {
       // Prevent iron-list from changing the focus on enter.
-      if (e.key == 'Enter') {
+      if (e.key === 'Enter') {
         e.stopPropagation();
       }
 
@@ -291,7 +291,7 @@ cr.define('cr.ui', function() {
      */
     addMutationObservers_(control) {
       let current = control;
-      while (current && current != this.root) {
+      while (current && current !== this.root) {
         const currentObserver = this.createObserver_();
         currentObserver.observe(current, {
           attributes: true,
@@ -343,12 +343,12 @@ cr.define('cr.ui', function() {
     /** @private */
     ironListTabIndexChanged_() {
       if (this.row_) {
-        this.row_.makeActive(this.ironListTabIndex == 0);
+        this.row_.makeActive(this.ironListTabIndex === 0);
       }
 
       // If a new row is being focused, reset listBlurred. This means an item
       // has been removed and iron-list is about to focus the next item.
-      if (this.ironListTabIndex == 0) {
+      if (this.ironListTabIndex === 0) {
         this.listBlurred = false;
       }
     },

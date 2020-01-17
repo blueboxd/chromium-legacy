@@ -92,6 +92,9 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
   jboolean IsPassphraseRequiredForPreferredDataTypes(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsTrustedVaultKeyRequired(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   jboolean IsTrustedVaultKeyRequiredForPreferredDataTypes(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

@@ -10,10 +10,12 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/i18n/rtl.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/media_player_watch_time.h"
@@ -69,12 +71,15 @@ class FullscreenOptions;
 }
 }  // namespace blink
 
+namespace ui {
+struct ClipboardFormatType;
+}
+
 namespace content {
 class FileSelectListener;
 class FrameTreeNode;
 class InterstitialPage;
 class PageState;
-class RenderFrameHost;
 class RenderFrameHostImpl;
 class SessionStorageNamespace;
 class WebContents;
@@ -91,6 +96,13 @@ class CreateNewWindowParams;
 // of the RenderFrameHost.
 class CONTENT_EXPORT RenderFrameHostDelegate {
  public:
+  // Callback used with HandleClipboardPaste() method.  If the clipboard paste
+  // is allowed to proceed, the callback is called with true.  Otherwise the
+  // callback is called with false.
+  using ClipboardPasteAllowed = RenderFrameHostImpl::ClipboardPasteAllowed;
+  using IsClipboardPasteAllowedCallback =
+      RenderFrameHostImpl::IsClipboardPasteAllowedCallback;
+
   // This is used to give the delegate a chance to filter IPC messages.
   virtual bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                                  const IPC::Message& message);
@@ -491,6 +503,31 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   virtual media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
   GetRecordAggregateWatchTimeCallback();
+
+  // Determines if a clipboard paste using |data| of type |data_type| is allowed
+  // in this renderer frame.  Possible data types supported for paste can be
+  // seen in the ClipboardHostImpl class.  Text based formats will use the
+  // data_type ui::ClipboardFormatType::GetPlainTextType() unless it is known
+  // to be of a more specific type, like RTF or HTML, in which case a type
+  // such as ui::ClipboardFormatType::GetRtfType() or
+  // ui::ClipboardFormatType::GetHtmlType() is used.
+  //
+  // It is also possible for the data type to be
+  // ui::ClipboardFormatType::GetWebCustomDataType() indicating that the paste
+  // uses a custom data format.  It is up to the implementation to attempt to
+  // understand the type if possible.  It is acceptable to deny pastes of
+  // unknown data types.
+  //
+  // The implementation is expected to show UX to the user if needed.  If
+  // shown, the UX should be associated with the specific render frame host.
+  //
+  // The callback is called, possibly asynchronously, with a status indicating
+  // whether the operation is allowed or not.
+  virtual void IsClipboardPasteAllowed(
+      const GURL& url,
+      const ui::ClipboardFormatType& data_type,
+      const std::string& data,
+      IsClipboardPasteAllowedCallback callback);
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

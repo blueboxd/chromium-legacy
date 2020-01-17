@@ -280,8 +280,10 @@ TEST_F(FetchResponseDataTest, ContentSecurityPolicy) {
   auto& csp = fetch_api_response->content_security_policy;
 
   EXPECT_EQ(csp.size(), 2U);
-  EXPECT_EQ(csp[0]->type, network::mojom::ContentSecurityPolicyType::kEnforce);
-  EXPECT_EQ(csp[1]->type, network::mojom::ContentSecurityPolicyType::kReport);
+  EXPECT_EQ(csp[0]->header->type,
+            network::mojom::ContentSecurityPolicyType::kEnforce);
+  EXPECT_EQ(csp[1]->header->type,
+            network::mojom::ContentSecurityPolicyType::kReport);
 }
 
 }  // namespace blink

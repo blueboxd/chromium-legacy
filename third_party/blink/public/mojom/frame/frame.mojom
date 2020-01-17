@@ -6,16 +6,21 @@ module blink.mojom;
 
 import "cc/mojom/touch_action.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/network/public/mojom/content_security_policy.mojom";
 import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom";
+import "third_party/blink/public/mojom/frame/user_activation_update_types.mojom";
 import "third_party/blink/public/mojom/input/scroll_direction.mojom";
+import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
+import "ui/events/mojom/scroll_granularity.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
-import "ui/events/mojom/scroll_granularity.mojom";
 
 // Implemented in Browser, this interface defines frame-specific methods that
 // will be invoked from the render process (e.g. content::RenderFrameHostImpl).
@@ -184,6 +189,19 @@ interface LocalFrame {
 
   // Notifies this frame to clear the focused element (if any).
   ClearFocusedElement();
+
+  // Copies the image at |window_point| to the clipboard (if there indeed is an
+  // image at that |window_point|).
+  CopyImageAt(gfx.mojom.Point window_point);
+
+  // Saves the image at |window_point| to the disk (if there indeed is an image
+  // at that |window_point|).
+  SaveImageAt(gfx.mojom.Point window_point);
+
+  // Updates the frame with a list of unique WebFeature values representing
+  // Blink features used, performed or encountered by the browser during the
+  // current page load happening on the frame.
+  ReportBlinkFeatureUsage(array<blink.mojom.WebFeature> features);
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that
@@ -230,6 +248,11 @@ interface RemoteFrame {
   // fullscreen.
   WillEnterFullscreen();
 
+  // Updates replicated ContentSecurityPolicy on the remote frame's
+  // SecurityContent.
+  AddReplicatedContentSecurityPolicies(
+      array<network.mojom.ContentSecurityPolicyHeader> headers);
+
   // Resets the replicated ContentSecurityPolicy on the remote frame's
   // SecurityContext. Used to reset CSP from the previous document on
   // a cross-document navigation.
@@ -249,6 +272,11 @@ interface RemoteFrame {
   // (eg. the iframe, portal, or object element).
   DispatchLoadEventForFrameOwner();
 
+  // Sent to the remote frame placeholder in the parent process to indicate the
+  // associated frame in the child process requires information about
+  // whether it is occluded or has visual effects applied.
+  SetNeedsOcclusionTracking(bool needs_tracking);
+
   // Sent to the process that owns this frame's HTMLFrameOwnerElement to
   // control whether the element is collapsed or not. If the element is
   // collapsed, it will be removed from the layout tree of its parent
@@ -267,4 +295,17 @@ interface RemoteFrame {
   // bubbling a logical scroll from a cross-process frame.
   BubbleLogicalScroll(ScrollDirection direction,
                       ui.mojom.ScrollGranularity granularity);
+
+  // Sent to the remote frame placeholder in the parent process to update the
+  // user activation state in appropriate part of the frame tree (ancestors for
+  // activation notification and all nodes for consumption).
+  UpdateUserActivationState(blink.mojom.UserActivationUpdateType state_update_type);
+
+  // Sent to the process that owns this frame's HTMLFrameOwnerElement to
+  // set the embedding token. This token uniquely specifies the relationship
+  // between a frame and its parent.
+  SetEmbeddingToken(mojo_base.mojom.UnguessableToken embedding_token);
+
+  // Sets page-level focus and notifies FocusController.
+  SetPageFocus(bool is_focused);
 };

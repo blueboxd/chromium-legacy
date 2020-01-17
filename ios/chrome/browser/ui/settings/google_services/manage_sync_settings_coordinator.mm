@@ -69,8 +69,7 @@
       SyncSetupServiceFactory::GetForBrowserState(self.browserState);
   self.mediator.commandHandler = self;
   self.viewController = [[ManageSyncSettingsTableViewController alloc]
-      initWithTableViewStyle:UITableViewStyleGrouped
-                 appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+      initWithStyle:UITableViewStyleGrouped];
   self.viewController.serviceDelegate = self.mediator;
   self.viewController.presentationDelegate = self;
   self.viewController.modelDelegate = self.mediator;

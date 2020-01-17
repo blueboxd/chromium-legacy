@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -20,16 +21,20 @@ class JavaScriptNativeDialogFactory;
 
 class JavaScriptDialogManager : public content::JavaScriptDialogManager {
  public:
-  static JavaScriptDialogManager* GetInstance();
+  // A factory method to create and returns a platform-specific dialog class.
+  // The returned object should own itself.
+  using JavaScriptNativeDialogFactory =
+      base::RepeatingCallback<NativeAppModalDialog*(JavaScriptAppModalDialog*)>;
 
-  JavaScriptNativeDialogFactory* native_dialog_factory() {
-    return native_dialog_factory_.get();
-  }
+  static JavaScriptDialogManager* GetInstance();
 
   // Sets the JavaScriptNativeDialogFactory used to create platform specific
   // dialog window instances.
-  void SetNativeDialogFactory(
-      std::unique_ptr<JavaScriptNativeDialogFactory> factory);
+  void SetNativeDialogFactory(JavaScriptNativeDialogFactory factory);
+
+  JavaScriptNativeDialogFactory* native_dialog_factory() {
+    return &native_dialog_factory_;
+  }
 
   // JavaScript dialogs may be opened by an extensions/app, thus they need
   // access to extensions functionality. This sets a client interface to
@@ -95,7 +100,7 @@ class JavaScriptDialogManager : public content::JavaScriptDialogManager {
   // is a void* because the pointer is just a cookie and is never dereferenced.
   JavaScriptAppModalDialog::ExtraDataMap javascript_dialog_extra_data_;
 
-  std::unique_ptr<JavaScriptNativeDialogFactory> native_dialog_factory_;
+  JavaScriptNativeDialogFactory native_dialog_factory_;
   std::unique_ptr<JavaScriptDialogExtensionsClient> extensions_client_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogManager);

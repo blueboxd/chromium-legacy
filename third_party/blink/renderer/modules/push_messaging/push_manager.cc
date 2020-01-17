@@ -85,16 +85,6 @@ ScriptPromise PushManager::subscribe(
   if (!ValidateOptions(options, exception_state))
     return ScriptPromise();
 
-  if (!options->IsApplicationServerKeyVapid()) {
-    ExecutionContext::From(script_state)
-        ->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning,
-            "The provided application server key is not a VAPID key. Only "
-            "VAPID keys will be supported in the future. For more information "
-            "check https://crbug.com/979235."));
-  }
-
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 

@@ -85,9 +85,7 @@ blink_core_sources("parser") {
 }
 
 fuzzer_test("blink_html_tokenizer_fuzzer") {
-  sources = [
-    "html_tokenizer_fuzzer.cc",
-  ]
+  sources = [ "html_tokenizer_fuzzer.cc" ]
   deps = [
     "../../:core",
     "../../../platform:blink_fuzzer_test_support",

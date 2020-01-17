@@ -88,15 +88,18 @@ void InstallationReporter::ReportDownloadingCacheStatus(
   }
 }
 
-void InstallationReporter::ReportCrxFetchError(
+void InstallationReporter::ReportFetchError(
     const ExtensionId& id,
+    FailureReason reason,
     const ExtensionDownloaderDelegate::FailureData& failure_data) {
+  DCHECK(reason == FailureReason::MANIFEST_FETCH_FAILED ||
+         reason == FailureReason::CRX_FETCH_FAILED);
   InstallationData& data = installation_data_map_[id];
-  data.failure_reason = FailureReason::CRX_FETCH_FAILED;
+  data.failure_reason = reason;
   data.network_error_code = failure_data.network_error_code;
   data.response_code = failure_data.response_code;
   data.fetch_tries = failure_data.fetch_tries;
-  NotifyObserversOfFailure(id, FailureReason::CRX_FETCH_FAILED, data);
+  NotifyObserversOfFailure(id, reason, data);
 }
 
 void InstallationReporter::ReportFailure(const ExtensionId& id,

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/effect_node.h"
@@ -9,11 +10,13 @@
 #include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/transform_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -66,7 +69,8 @@ class CompositingTest : public PaintTestConfigurations, public testing::Test {
   }
 
   const cc::Layer* CcLayerByDOMElementId(const char* id) {
-    return CcLayersByDOMElementId(RootCcLayer(), id)[0];
+    auto layers = CcLayersByDOMElementId(RootCcLayer(), id);
+    return layers.IsEmpty() ? nullptr : layers[0];
   }
 
   cc::LayerTreeHost* LayerTreeHost() {
@@ -209,8 +213,6 @@ TEST_P(CompositingTest, WillChangeTransformHint) {
 class CompositingSimTest : public PaintTestConfigurations, public SimTest {
  public:
   void InitializeWithHTML(const String& html) {
-    WebView().MainFrameWidget()->Resize(WebSize(800, 600));
-
     SimRequest request("https://example.com/test.html", "text/html");
     LoadURL("https://example.com/test.html");
     request.Complete(html);
@@ -223,7 +225,8 @@ class CompositingSimTest : public PaintTestConfigurations, public SimTest {
   }
 
   const cc::Layer* CcLayerByDOMElementId(const char* id) {
-    return CcLayersByDOMElementId(RootCcLayer(), id)[0];
+    auto layers = CcLayersByDOMElementId(RootCcLayer(), id);
+    return layers.IsEmpty() ? nullptr : layers[0];
   }
 
   Element* GetElementById(const AtomicString& id) {
@@ -256,6 +259,13 @@ class CompositingSimTest : public PaintTestConfigurations, public SimTest {
 
   PaintArtifactCompositor* paint_artifact_compositor() {
     return MainFrame().GetFrameView()->GetPaintArtifactCompositor();
+  }
+
+ private:
+  void SetUp() override {
+    SimTest::SetUp();
+    // Ensure a non-empty size so painting does not early-out.
+    WebView().Resize(WebSize(800, 600));
   }
 };
 
@@ -1051,6 +1061,70 @@ TEST_P(CompositingSimTest, NoRenderSurfaceWithAxisAlignedTransformAnimation) {
     EXPECT_NE(cc::RenderSurfaceReason::kClipAxisAlignment,
               effect_node.render_surface_reason);
   }
+}
+
+TEST_P(CompositingSimTest, PromoteCrossOriginIframe) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+  InitializeWithHTML("<!DOCTYPE html><iframe id=iframe sandbox></iframe>");
+  Compositor().BeginFrame();
+  EXPECT_TRUE(CcLayerByDOMElementId("iframe"));
+}
+
+// On initial layout, the iframe is not yet loaded and is not considered
+// cross origin. This test ensures the iframe is promoted due to being cross
+// origin after the iframe loads.
+TEST_P(CompositingSimTest, PromoteCrossOriginIframeAfterLoading) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+
+  SimRequest main_resource("https://origin-a.com/a.html", "text/html");
+  SimRequest frame_resource("https://origin-b.com/b.html", "text/html");
+
+  LoadURL("https://origin-a.com/a.html");
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="iframe" src="https://origin-b.com/b.html"></iframe>
+  )HTML");
+  frame_resource.Complete("<!DOCTYPE html>");
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(CcLayerByDOMElementId("iframe"));
+}
+
+// Initially the iframe is cross-origin and should be composited. After changing
+// to same-origin, the frame should no longer be composited.
+TEST_P(CompositingSimTest, PromoteCrossOriginIframeAfterDomainChange) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+
+  SimRequest main_resource("https://origin-a.com/a.html", "text/html");
+  SimRequest frame_resource("https://sub.origin-a.com/b.html", "text/html");
+
+  LoadURL("https://origin-a.com/a.html");
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="iframe" src="https://sub.origin-a.com/b.html"></iframe>
+  )HTML");
+  frame_resource.Complete("<!DOCTYPE html>");
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(CcLayerByDOMElementId("iframe"));
+
+  auto* iframe_element =
+      To<HTMLIFrameElement>(GetDocument().getElementById("iframe"));
+  NonThrowableExceptionState exception_state;
+  GetDocument().setDomain(String("origin-a.com"), exception_state);
+  iframe_element->contentDocument()->setDomain(String("origin-a.com"),
+                                               exception_state);
+  // We may not have scheduled a visual update so force an update instead of
+  // using BeginFrame.
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(CcLayerByDOMElementId("iframe"));
 }
 
 }  // namespace blink

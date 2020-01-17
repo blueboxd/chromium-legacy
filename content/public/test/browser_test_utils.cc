@@ -30,13 +30,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "components/viz/service/surfaces/surface.h"
-#include "components/viz/service/surfaces/surface_manager.h"
+#include "components/viz/client/frame_evictor.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
-#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/file_system/file_system_manager_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -3170,6 +3167,18 @@ void PwnMessageHelper::LockMouse(RenderProcessHost* process,
                               request_unadjusted_movement));
 }
 
+void PwnMessageHelper::OpenURL(RenderProcessHost* process,
+                               int routing_id,
+                               const GURL& url) {
+  FrameHostMsg_OpenURL_Params params;
+  params.url = url;
+  params.disposition = WindowOpenDisposition::CURRENT_TAB;
+  params.should_replace_current_entry = false;
+  params.user_gesture = true;
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(
+      process->GetChannel(), FrameHostMsg_OpenURL(routing_id, params));
+}
+
 #if defined(USE_AURA)
 namespace {
 
@@ -3293,7 +3302,7 @@ void UpdateUserActivationStateMsgWaiter::Wait() {
 }
 
 void UpdateUserActivationStateMsgWaiter::OnUpdateUserActivationState(
-    blink::UserActivationUpdateType) {
+    blink::mojom::UserActivationUpdateType) {
   received_ = true;
   run_loop_.Quit();
 }

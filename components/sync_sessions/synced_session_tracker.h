@@ -117,8 +117,9 @@ class SyncedSessionTracker {
   // |session_tag|. If none existed for that session, creates one. Similarly, if
   // the session did not exist yet, creates it. Ownership of the SessionWindow
   // remains within the SyncedSessionTracker.
-  // Attempting to add a window to a session multiple times will have no effect.
-  void PutWindowInSession(const std::string& session_tag, SessionID window_id);
+  // Attempting to add a window to a session multiple times will have no effect
+  // and in that case the function returns false.
+  bool PutWindowInSession(const std::string& session_tag, SessionID window_id);
 
   // Adds the tab with id |tab_id| to the window |window_id|. If none existed
   // for that session, creates one. Ownership of the SessionTab remains within

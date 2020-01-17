@@ -33,9 +33,7 @@ jumbo_component("win") {
 
   defines = [ "IS_UI_BASE_IME_WIN_IMPL" ]
 
-  public_deps = [
-    "//ui/base/ime",
-  ]
+  public_deps = [ "//ui/base/ime" ]
 
   deps = [
     "//ui/base",

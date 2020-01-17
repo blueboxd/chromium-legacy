@@ -20,18 +20,14 @@ action("generate_tracing_grd") {
     "$tracing_gen_dir/about_tracing.js",
   ]
   inputs = input_pages
-  outputs = [
-    tracing_grd,
-  ]
+  outputs = [ tracing_grd ]
 
   args = rebase_path(input_pages, target_gen_dir) + [
            "--output",
            rebase_path(tracing_grd, root_build_dir),
          ]
 
-  deps = [
-    "//third_party/catapult/tracing:generate_about_tracing",
-  ]
+  deps = [ "//third_party/catapult/tracing:generate_about_tracing" ]
 }
 
 grit("resources") {
@@ -49,7 +45,5 @@ grit("resources") {
   defines =
       [ "SHARED_INTERMEDIATE_DIR=" + rebase_path(root_gen_dir, root_build_dir) ]
 
-  deps = [
-    ":generate_tracing_grd",
-  ]
+  deps = [ ":generate_tracing_grd" ]
 }

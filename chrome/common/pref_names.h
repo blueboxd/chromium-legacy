@@ -823,6 +823,7 @@ extern const char kMediaGalleriesRememberedGalleries[];
 #if defined(OS_CHROMEOS)
 extern const char kPolicyPinnedLauncherApps[];
 extern const char kShelfDefaultPinLayoutRolls[];
+extern const char kShelfDefaultPinLayoutRollsForTabletFormFactor[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)

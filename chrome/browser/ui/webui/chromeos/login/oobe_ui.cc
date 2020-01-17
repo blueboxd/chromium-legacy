@@ -198,6 +198,9 @@ void AddFingerprintResources(content::WebUIDataSource* source) {
       is_lottie_animation = true;
       animation_id = IDR_LOGIN_FINGER_PRINT_TABLET_ANIMATION;
       break;
+    case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_LEFT:
+      animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_BOTTOM_LEFT_ANIMATION;
+      break;
     case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
       animation_id =
           IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_BOTTOM_RIGHT_ANIMATION;

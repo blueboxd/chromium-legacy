@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/browser/chromeos/arc/accessibility/geometry_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
@@ -203,22 +204,6 @@ ArcAccessibilityHelperBridge::KeyForNotification(std::string notification_key) {
   return arc::KeyForNotification(std::move(notification_key));
 }
 
-void ArcAccessibilityHelperBridge::UpdateCaptionSettings() const {
-  arc::mojom::CaptionStylePtr caption_style =
-      GetCaptionStyleFromPrefs(profile_->GetPrefs());
-
-  if (!caption_style)
-    return;
-
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->accessibility_helper(), SetCaptionStyle);
-
-  if (!instance)
-    return;
-
-  instance->SetCaptionStyle(std::move(caption_style));
-}
-
 // The list of prefs we want to observe.
 const char* const kCaptionStylePrefsToObserve[] = {
     prefs::kAccessibilityCaptionsTextSize,
@@ -352,133 +337,6 @@ void ArcAccessibilityHelperBridge::OnConnectionClosed() {
     surface_manager->RemoveObserver(this);
 }
 
-extensions::EventRouter* ArcAccessibilityHelperBridge::GetEventRouter() const {
-  return extensions::EventRouter::Get(profile_);
-}
-
-void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
-    mojom::AccessibilityEventDataPtr event_data) {
-  if (event_data->event_type ==
-      arc::mojom::AccessibilityEventType::ANNOUNCEMENT) {
-    if (!event_data->eventText.has_value())
-      return;
-
-    extensions::EventRouter* event_router = GetEventRouter();
-    std::unique_ptr<base::ListValue> event_args(
-        extensions::api::accessibility_private::OnAnnounceForAccessibility::
-            Create(*(event_data->eventText)));
-    std::unique_ptr<extensions::Event> event(new extensions::Event(
-        extensions::events::ACCESSIBILITY_PRIVATE_ON_ANNOUNCE_FOR_ACCESSIBILITY,
-        extensions::api::accessibility_private::OnAnnounceForAccessibility::
-            kEventName,
-        std::move(event_args)));
-    event_router->BroadcastEvent(std::move(event));
-    return;
-  }
-
-  if (event_data->node_data.empty())
-    return;
-
-  AXTreeSourceArc* tree_source = nullptr;
-  bool is_notification_event = event_data->notification_key.has_value();
-  if (is_notification_event) {
-    const std::string& notification_key = event_data->notification_key.value();
-
-    // This bridge must receive OnNotificationStateChanged call for the
-    // notification_key before this receives an accessibility event for it.
-    tree_source = GetFromKey(KeyForNotification(notification_key));
-    DCHECK(tree_source);
-  } else if (event_data->is_input_method_window) {
-    exo::InputMethodSurface* input_method_surface =
-        exo::InputMethodSurface::GetInputMethodSurface();
-
-    if (!input_method_surface)
-      return;
-
-    if (!trees_.count(KeyForInputMethod())) {
-      auto* tree = CreateFromKey(KeyForInputMethod());
-      ui::AXTreeData tree_data;
-      tree->GetTreeData(&tree_data);
-      input_method_surface->SetChildAxTreeId(tree_data.tree_id);
-    }
-
-    tree_source = GetFromKey(KeyForInputMethod());
-  } else {
-    aura::Window* active_window = GetActiveWindow();
-    if (!active_window)
-      return;
-
-    auto task_id = arc::GetWindowTaskId(active_window);
-    if (event_data->task_id != kNoTaskId) {
-      // Event data has task ID. Check task ID.
-      if (task_id != event_data->task_id)
-        return;
-    } else {
-      // Event data does not have task ID. Check window ID instead.
-      auto window_id = exo::GetShellClientAccessibilityId(active_window);
-      if (window_id != event_data->window_id)
-        return;
-    }
-
-    auto key = KeyForTaskId(task_id);
-    tree_source = GetFromKey(key);
-
-    if (!tree_source) {
-      tree_source = CreateFromKey(key);
-
-      ui::AXTreeData tree_data;
-      tree_source->GetTreeData(&tree_data);
-      exo::Surface* surface = exo::GetShellMainSurface(active_window);
-      if (surface) {
-        views::Widget* widget =
-            views::Widget::GetWidgetForNativeWindow(active_window);
-        static_cast<exo::ShellSurfaceBase*>(widget->widget_delegate())
-            ->SetChildAxTreeId(tree_data.tree_id);
-      }
-    }
-  }
-
-  if (!tree_source)
-    return;
-
-  tree_source->NotifyAccessibilityEvent(event_data.get());
-
-  if (is_notification_event &&
-      event_data->event_type ==
-          arc::mojom::AccessibilityEventType::VIEW_TEXT_SELECTION_CHANGED) {
-    // If text selection changed event is dispatched from Android, it
-    // means that user is trying to type a text in Android notification.
-    // Dispatch text selection changed event to notification content view
-    // as the view can take necessary actions, e.g. activate itself, etc.
-    auto* surface_manager = ArcNotificationSurfaceManager::Get();
-    if (surface_manager) {
-      ArcNotificationSurface* surface =
-          surface_manager->GetArcSurface(event_data->notification_key.value());
-      if (surface) {
-        surface->GetAttachedHost()->NotifyAccessibilityEvent(
-            ax::mojom::Event::kTextSelectionChanged, true);
-      }
-    }
-  } else if (!is_notification_event) {
-    UpdateWindowProperties(GetActiveWindow());
-  }
-
-  if (is_focus_highlight_enabled_ &&
-      event_data->event_type ==
-          arc::mojom::AccessibilityEventType::VIEW_FOCUSED) {
-    DispatchFocusChange(
-        tree_source->GetFromId(event_data->source_id)->GetNode(), profile_);
-  }
-}
-
-void ArcAccessibilityHelperBridge::HandleFilterTypeFocusEvent(
-    mojom::AccessibilityEventDataPtr event_data) {
-  if (event_data.get()->node_data.size() == 1 &&
-      event_data->event_type ==
-          arc::mojom::AccessibilityEventType::VIEW_FOCUSED)
-    DispatchFocusChange(event_data.get()->node_data[0].get(), profile_);
-}
-
 void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
     mojom::AccessibilityEventDataPtr event_data) {
   arc::mojom::AccessibilityFilterType filter_type =
@@ -519,161 +377,61 @@ void ArcAccessibilityHelperBridge::OnNotificationStateChanged(
   }
 }
 
-AXTreeSourceArc* ArcAccessibilityHelperBridge::GetFromKey(const TreeKey& key) {
-  auto tree_it = trees_.find(key);
-  if (tree_it == trees_.end())
-    return nullptr;
-
-  return tree_it->second.get();
-}
-
-AXTreeSourceArc* ArcAccessibilityHelperBridge::CreateFromKey(TreeKey key) {
-  auto tree = std::make_unique<AXTreeSourceArc>(this);
-  auto* tree_ptr = tree.get();
-  trees_.insert(std::make_pair(std::move(key), std::move(tree)));
-  return tree_ptr;
-}
-
-void ArcAccessibilityHelperBridge::UpdateTreeIdOfNotificationSurface(
-    const std::string& notification_key,
-    ui::AXTreeID tree_id) {
-  auto* surface_manager = ArcNotificationSurfaceManager::Get();
-  if (!surface_manager)
-    return;
-
-  ArcNotificationSurface* surface =
-      surface_manager->GetArcSurface(notification_key);
-  if (!surface)
-    return;
-
-  surface->SetAXTreeId(tree_id);
-
-  if (surface->IsAttached()) {
-    // Dispatch ax::mojom::Event::kChildrenChanged to force AXNodeData of the
-    // notification updated.
-    surface->GetAttachedHost()->NotifyAccessibilityEvent(
-        ax::mojom::Event::kChildrenChanged, false);
-  }
-}
-
-AXTreeSourceArc* ArcAccessibilityHelperBridge::GetFromTreeId(
-    ui::AXTreeID tree_id) const {
-  for (auto it = trees_.begin(); it != trees_.end(); ++it) {
-    ui::AXTreeData tree_data;
-    it->second->GetTreeData(&tree_data);
-    if (tree_data.tree_id == tree_id)
-      return it->second.get();
-  }
-  return nullptr;
-}
-
 void ArcAccessibilityHelperBridge::OnAction(
     const ui::AXActionData& data) const {
   DCHECK(data.target_node_id);
+
+  AXTreeSourceArc* tree_source = GetFromTreeId(data.target_tree_id);
+  if (!tree_source)
+    return;
+
+  if (data.action == ax::mojom::Action::kInternalInvalidateTree) {
+    tree_source->InvalidateTree();
+    return;
+  }
+
+  base::Optional<int32_t> window_id = tree_source->window_id();
+  if (!window_id)
+    return;
 
   arc::mojom::AccessibilityActionDataPtr action_data =
       arc::mojom::AccessibilityActionData::New();
 
   action_data->node_id = data.target_node_id;
 
-  AXTreeSourceArc* tree_source = GetFromTreeId(data.target_tree_id);
-  if (!tree_source)
-    return;
-
-  base::Optional<int32_t> window_id = tree_source->window_id();
-  if (!window_id)
-    return;
   action_data->window_id = window_id.value();
 
-  switch (data.action) {
-    case ax::mojom::Action::kDoDefault:
-      action_data->action_type = arc::mojom::AccessibilityActionType::CLICK;
-      break;
-    case ax::mojom::Action::kFocus:
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::ACCESSIBILITY_FOCUS;
-      break;
-    case ax::mojom::Action::kScrollToMakeVisible:
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::SHOW_ON_SCREEN;
-      break;
-    case ax::mojom::Action::kScrollBackward:
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::SCROLL_BACKWARD;
-      break;
-    case ax::mojom::Action::kScrollForward:
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::SCROLL_FORWARD;
-      break;
-    case ax::mojom::Action::kScrollUp:
-      action_data->action_type = arc::mojom::AccessibilityActionType::SCROLL_UP;
-      break;
-    case ax::mojom::Action::kScrollDown:
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::SCROLL_DOWN;
-      break;
-    case ax::mojom::Action::kScrollLeft:
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::SCROLL_LEFT;
-      break;
-    case ax::mojom::Action::kScrollRight:
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::SCROLL_RIGHT;
-      break;
-    case ax::mojom::Action::kCustomAction:
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::CUSTOM_ACTION;
-      action_data->custom_action_id = data.custom_action_id;
-      break;
-    case ax::mojom::Action::kSetAccessibilityFocus:
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::ACCESSIBILITY_FOCUS;
-      break;
-    case ax::mojom::Action::kClearAccessibilityFocus:
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::CLEAR_ACCESSIBILITY_FOCUS;
-      break;
-    case ax::mojom::Action::kGetTextLocation: {
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::GET_TEXT_LOCATION;
-      action_data->start_index = data.start_index;
-      action_data->end_index = data.end_index;
+  const base::Optional<mojom::AccessibilityActionType> action =
+      ConvertToAndroidAction(data.action);
+  if (!action.has_value())
+    return;
 
-      auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-          arc_bridge_service_->accessibility_helper(), RefreshWithExtraData);
-      if (!instance) {
-        OnActionResult(data, false);
-        return;
-      }
+  action_data->action_type = action.value();
 
-      instance->RefreshWithExtraData(
-          std::move(action_data),
-          base::BindOnce(
-              &ArcAccessibilityHelperBridge::OnGetTextLocationDataResult,
-              base::Unretained(this), data));
+  if (action_data->action_type ==
+      arc::mojom::AccessibilityActionType::GET_TEXT_LOCATION) {
+    action_data->start_index = data.start_index;
+    action_data->end_index = data.end_index;
+    auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_bridge_service_->accessibility_helper(), RefreshWithExtraData);
+    if (!instance) {
+      OnActionResult(data, false);
       return;
     }
-    case ax::mojom::Action::kShowTooltip: {
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::SHOW_TOOLTIP;
-      break;
-    }
-    case ax::mojom::Action::kHideTooltip: {
-      action_data->action_type =
-          arc::mojom::AccessibilityActionType::HIDE_TOOLTIP;
-      break;
-    }
-    case ax::mojom::Action::kInternalInvalidateTree:
-      tree_source->InvalidateTree();
-      break;
-    default:
-      return;
+    instance->RefreshWithExtraData(
+        std::move(action_data),
+        base::BindOnce(
+            &ArcAccessibilityHelperBridge::OnGetTextLocationDataResult,
+            base::Unretained(this), data));
+    return;
+  } else if (action_data->action_type ==
+             arc::mojom::AccessibilityActionType::CUSTOM_ACTION) {
+    action_data->custom_action_id = data.custom_action_id;
   }
-
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->accessibility_helper(), PerformAction);
   if (!instance) {
-    // This case should probably destroy all trees.
+    // TODO (b/146809329): This case should probably destroy all trees.
     OnActionResult(data, false);
     return;
   }
@@ -682,6 +440,80 @@ void ArcAccessibilityHelperBridge::OnAction(
       std::move(action_data),
       base::BindOnce(&ArcAccessibilityHelperBridge::OnActionResult,
                      base::Unretained(this), data));
+}
+
+void ArcAccessibilityHelperBridge::OnTaskDestroyed(int32_t task_id) {
+  trees_.erase(KeyForTaskId(task_id));
+}
+
+void ArcAccessibilityHelperBridge::OnAndroidVirtualKeyboardVisibilityChanged(
+    bool visible) {
+  if (!visible)
+    trees_.erase(KeyForInputMethod());
+}
+
+void ArcAccessibilityHelperBridge::OnNotificationSurfaceAdded(
+    ArcNotificationSurface* surface) {
+  const std::string& notification_key = surface->GetNotificationKey();
+
+  auto* const tree = GetFromKey(KeyForNotification(notification_key));
+  if (!tree)
+    return;
+
+  ui::AXTreeData tree_data;
+  if (!tree->GetTreeData(&tree_data))
+    return;
+
+  surface->SetAXTreeId(tree_data.tree_id);
+
+  // Dispatch ax::mojom::Event::kChildrenChanged to force AXNodeData of the
+  // notification updated. As order of OnNotificationSurfaceAdded call is not
+  // guaranteed, we are dispatching the event in both
+  // ArcAccessibilityHelperBridge and ArcNotificationContentView. The event
+  // needs to be dispatched after 1. ax tree id is set to the surface, 2 the
+  // surface is attached to the content view.
+  if (surface->IsAttached()) {
+    surface->GetAttachedHost()->NotifyAccessibilityEvent(
+        ax::mojom::Event::kChildrenChanged, false);
+  }
+}
+
+aura::Window* ArcAccessibilityHelperBridge::GetActiveWindow() {
+  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
+  if (!wm_helper)
+    return nullptr;
+
+  return wm_helper->GetActiveWindow();
+}
+
+extensions::EventRouter* ArcAccessibilityHelperBridge::GetEventRouter() const {
+  return extensions::EventRouter::Get(profile_);
+}
+
+void ArcAccessibilityHelperBridge::UpdateCaptionSettings() const {
+  arc::mojom::CaptionStylePtr caption_style =
+      GetCaptionStyleFromPrefs(profile_->GetPrefs());
+
+  if (!caption_style)
+    return;
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->accessibility_helper(), SetCaptionStyle);
+
+  if (!instance)
+    return;
+
+  instance->SetCaptionStyle(std::move(caption_style));
+}
+
+void ArcAccessibilityHelperBridge::OnWindowActivated(
+    ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
+  if (gained_active == lost_active)
+    return;
+
+  UpdateWindowProperties(gained_active);
 }
 
 void ArcAccessibilityHelperBridge::OnActionResult(const ui::AXActionData& data,
@@ -836,58 +668,175 @@ void ArcAccessibilityHelperBridge::SetExploreByTouchEnabled(bool enabled) {
     instance->SetExploreByTouchEnabled(enabled);
 }
 
-aura::Window* ArcAccessibilityHelperBridge::GetActiveWindow() {
-  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
-  if (!wm_helper)
-    return nullptr;
-
-  return wm_helper->GetActiveWindow();
-}
-
-void ArcAccessibilityHelperBridge::OnWindowActivated(
-    ActivationReason reason,
-    aura::Window* gained_active,
-    aura::Window* lost_active) {
-  if (gained_active == lost_active)
+void ArcAccessibilityHelperBridge::UpdateTreeIdOfNotificationSurface(
+    const std::string& notification_key,
+    ui::AXTreeID tree_id) {
+  auto* surface_manager = ArcNotificationSurfaceManager::Get();
+  if (!surface_manager)
     return;
 
-  UpdateWindowProperties(gained_active);
-}
-
-void ArcAccessibilityHelperBridge::OnTaskDestroyed(int32_t task_id) {
-  trees_.erase(KeyForTaskId(task_id));
-}
-
-void ArcAccessibilityHelperBridge::OnNotificationSurfaceAdded(
-    ArcNotificationSurface* surface) {
-  const std::string& notification_key = surface->GetNotificationKey();
-
-  auto* const tree = GetFromKey(KeyForNotification(notification_key));
-  if (!tree)
+  ArcNotificationSurface* surface =
+      surface_manager->GetArcSurface(notification_key);
+  if (!surface)
     return;
 
-  ui::AXTreeData tree_data;
-  if (!tree->GetTreeData(&tree_data))
-    return;
+  surface->SetAXTreeId(tree_id);
 
-  surface->SetAXTreeId(tree_data.tree_id);
-
-  // Dispatch ax::mojom::Event::kChildrenChanged to force AXNodeData of the
-  // notification updated. As order of OnNotificationSurfaceAdded call is not
-  // guaranteed, we are dispatching the event in both
-  // ArcAccessibilityHelperBridge and ArcNotificationContentView. The event
-  // needs to be dispatched after 1. ax tree id is set to the surface, 2 the
-  // surface is attached to the content view.
   if (surface->IsAttached()) {
+    // Dispatch ax::mojom::Event::kChildrenChanged to force AXNodeData of the
+    // notification updated.
     surface->GetAttachedHost()->NotifyAccessibilityEvent(
         ax::mojom::Event::kChildrenChanged, false);
   }
 }
 
-void ArcAccessibilityHelperBridge::OnAndroidVirtualKeyboardVisibilityChanged(
-    bool visible) {
-  if (!visible)
-    trees_.erase(KeyForInputMethod());
+void ArcAccessibilityHelperBridge::HandleFilterTypeFocusEvent(
+    mojom::AccessibilityEventDataPtr event_data) {
+  if (event_data.get()->node_data.size() == 1 &&
+      event_data->event_type ==
+          arc::mojom::AccessibilityEventType::VIEW_FOCUSED)
+    DispatchFocusChange(event_data.get()->node_data[0].get(), profile_);
+}
+
+void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
+    mojom::AccessibilityEventDataPtr event_data) {
+  if (event_data->event_type ==
+      arc::mojom::AccessibilityEventType::ANNOUNCEMENT) {
+    if (!event_data->eventText.has_value())
+      return;
+
+    extensions::EventRouter* event_router = GetEventRouter();
+    std::unique_ptr<base::ListValue> event_args(
+        extensions::api::accessibility_private::OnAnnounceForAccessibility::
+            Create(*(event_data->eventText)));
+    std::unique_ptr<extensions::Event> event(new extensions::Event(
+        extensions::events::ACCESSIBILITY_PRIVATE_ON_ANNOUNCE_FOR_ACCESSIBILITY,
+        extensions::api::accessibility_private::OnAnnounceForAccessibility::
+            kEventName,
+        std::move(event_args)));
+    event_router->BroadcastEvent(std::move(event));
+    return;
+  }
+
+  if (event_data->node_data.empty())
+    return;
+
+  AXTreeSourceArc* tree_source = nullptr;
+  bool is_notification_event = event_data->notification_key.has_value();
+  if (is_notification_event) {
+    const std::string& notification_key = event_data->notification_key.value();
+
+    // This bridge must receive OnNotificationStateChanged call for the
+    // notification_key before this receives an accessibility event for it.
+    tree_source = GetFromKey(KeyForNotification(notification_key));
+    DCHECK(tree_source);
+  } else if (event_data->is_input_method_window) {
+    exo::InputMethodSurface* input_method_surface =
+        exo::InputMethodSurface::GetInputMethodSurface();
+
+    if (!input_method_surface)
+      return;
+
+    if (!trees_.count(KeyForInputMethod())) {
+      auto* tree = CreateFromKey(KeyForInputMethod());
+      ui::AXTreeData tree_data;
+      tree->GetTreeData(&tree_data);
+      input_method_surface->SetChildAxTreeId(tree_data.tree_id);
+    }
+
+    tree_source = GetFromKey(KeyForInputMethod());
+  } else {
+    aura::Window* active_window = GetActiveWindow();
+    if (!active_window)
+      return;
+
+    auto task_id = arc::GetWindowTaskId(active_window);
+    if (event_data->task_id != kNoTaskId) {
+      // Event data has task ID. Check task ID.
+      if (task_id != event_data->task_id)
+        return;
+    } else {
+      // Event data does not have task ID. Check window ID instead.
+      auto window_id = exo::GetShellClientAccessibilityId(active_window);
+      if (window_id != event_data->window_id)
+        return;
+    }
+
+    auto key = KeyForTaskId(task_id);
+    tree_source = GetFromKey(key);
+
+    if (!tree_source) {
+      tree_source = CreateFromKey(key);
+
+      ui::AXTreeData tree_data;
+      tree_source->GetTreeData(&tree_data);
+      exo::Surface* surface = exo::GetShellMainSurface(active_window);
+      if (surface) {
+        views::Widget* widget =
+            views::Widget::GetWidgetForNativeWindow(active_window);
+        static_cast<exo::ShellSurfaceBase*>(widget->widget_delegate())
+            ->SetChildAxTreeId(tree_data.tree_id);
+      }
+    }
+  }
+
+  if (!tree_source)
+    return;
+
+  tree_source->NotifyAccessibilityEvent(event_data.get());
+
+  if (is_notification_event &&
+      event_data->event_type ==
+          arc::mojom::AccessibilityEventType::VIEW_TEXT_SELECTION_CHANGED) {
+    // If text selection changed event is dispatched from Android, it
+    // means that user is trying to type a text in Android notification.
+    // Dispatch text selection changed event to notification content view
+    // as the view can take necessary actions, e.g. activate itself, etc.
+    auto* surface_manager = ArcNotificationSurfaceManager::Get();
+    if (surface_manager) {
+      ArcNotificationSurface* surface =
+          surface_manager->GetArcSurface(event_data->notification_key.value());
+      if (surface) {
+        surface->GetAttachedHost()->NotifyAccessibilityEvent(
+            ax::mojom::Event::kTextSelectionChanged, true);
+      }
+    }
+  } else if (!is_notification_event) {
+    UpdateWindowProperties(GetActiveWindow());
+  }
+
+  if (is_focus_highlight_enabled_ &&
+      event_data->event_type ==
+          arc::mojom::AccessibilityEventType::VIEW_FOCUSED) {
+    DispatchFocusChange(
+        tree_source->GetFromId(event_data->source_id)->GetNode(), profile_);
+  }
+}
+
+AXTreeSourceArc* ArcAccessibilityHelperBridge::CreateFromKey(TreeKey key) {
+  auto tree = std::make_unique<AXTreeSourceArc>(this);
+  auto* tree_ptr = tree.get();
+  trees_.insert(std::make_pair(std::move(key), std::move(tree)));
+  return tree_ptr;
+}
+
+AXTreeSourceArc* ArcAccessibilityHelperBridge::GetFromKey(const TreeKey& key) {
+  auto tree_it = trees_.find(key);
+  if (tree_it == trees_.end())
+    return nullptr;
+
+  return tree_it->second.get();
+}
+
+AXTreeSourceArc* ArcAccessibilityHelperBridge::GetFromTreeId(
+    ui::AXTreeID tree_id) const {
+  for (auto it = trees_.begin(); it != trees_.end(); ++it) {
+    ui::AXTreeData tree_data;
+    it->second->GetTreeData(&tree_data);
+    if (tree_data.tree_id == tree_id)
+      return it->second.get();
+  }
+  return nullptr;
 }
 
 }  // namespace arc

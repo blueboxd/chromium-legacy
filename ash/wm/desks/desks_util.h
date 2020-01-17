@@ -29,6 +29,11 @@ ASH_EXPORT bool IsDeskContainer(const aura::Window* container);
 
 ASH_EXPORT bool IsDeskContainerId(int id);
 
+// NOTE: The below *ActiveDesk* functions work with the currently active desk.
+// If they can be called during a desk-switch animation, you might be interested
+// in the soon-to-be active desk when the animation ends.
+// See `DesksController::GetTargetActiveDesk()`.
+
 ASH_EXPORT int GetActiveDeskContainerId();
 
 ASH_EXPORT bool IsActiveDeskContainer(const aura::Window* container);

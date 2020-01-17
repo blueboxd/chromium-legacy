@@ -36,6 +36,7 @@
 
     <color name="black_alpha_11" tools:ignore="UnusedResources">#1D000000</color>
     <color name="black_alpha_38" tools:ignore="UnusedResources">#61000000</color>
+    <color name="black_alpha_65" tools:ignore="UnusedResources">#A6000000</color>
 
     <color name="white_alpha_8" tools:ignore="UnusedResources">#14FFFFFF</color>
     <color name="white_alpha_10" tools:ignore="UnusedResources">#1AFFFFFF</color>
@@ -69,4 +70,7 @@
     <color name="black_alpha_30" tools:ignore="UnusedResources">#4D000000</color>
 
     <color name="white_alpha_65" tools:ignore="UnusedResources">#A6FFFFFF</color>
+
+    <color name="progress_bar_background_deprecated" tools:ignore="UnusedResources">#3D4386F7</color>
+
 </resources>

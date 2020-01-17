@@ -95,6 +95,9 @@ contribution can be accepted:
    # Uncomment if you want new branches to track the current branch.
    # git config --global branch.autosetupmerge always
    ```
+3. Visit <https://chromium-review.googlesource.com/settings/> to ensure that
+   your preferred email is set to the same one you use in your git
+   configuration.
 
 ## Creating a change
 

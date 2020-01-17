@@ -36,8 +36,7 @@ class MODULES_EXPORT PresentationReceiver final
   USING_GARBAGE_COLLECTED_MIXIN(PresentationReceiver);
   DEFINE_WRAPPERTYPEINFO();
   using ConnectionListProperty =
-      ScriptPromiseProperty<Member<PresentationReceiver>,
-                            Member<PresentationConnectionList>,
+      ScriptPromiseProperty<Member<PresentationConnectionList>,
                             Member<DOMException>>;
 
  public:

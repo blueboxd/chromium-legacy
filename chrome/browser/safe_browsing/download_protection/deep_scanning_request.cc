@@ -1,0 +1,225 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
+
+#include "base/strings/string_number_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
+#include "chrome/browser/safe_browsing/dm_token_utils.h"
+#include "chrome/browser/safe_browsing/download_protection/download_item_request.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
+#include "components/download/public/common/download_item.h"
+#include "components/policy/core/browser/url_util.h"
+#include "components/policy/core/common/cloud/dm_token.h"
+#include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
+#include "components/url_matcher/url_matcher.h"
+#include "content/public/browser/download_item_utils.h"
+
+namespace safe_browsing {
+
+namespace {
+
+void DeepScanningClientResponseToDownloadCheckResult(
+    const DeepScanningClientResponse& response,
+    DownloadCheckResult* download_result) {
+  if (response.has_malware_scan_verdict() &&
+      response.malware_scan_verdict().verdict() ==
+          MalwareDeepScanningVerdict::MALWARE) {
+    *download_result = DownloadCheckResult::DANGEROUS;
+    return;
+  }
+
+  if (response.has_malware_scan_verdict() &&
+      response.malware_scan_verdict().verdict() ==
+          MalwareDeepScanningVerdict::UWS) {
+    *download_result = DownloadCheckResult::POTENTIALLY_UNWANTED;
+    return;
+  }
+
+  if (response.has_dlp_scan_verdict()) {
+    bool should_dlp_block = std::any_of(
+        response.dlp_scan_verdict().triggered_rules().begin(),
+        response.dlp_scan_verdict().triggered_rules().end(),
+        [](const DlpDeepScanningVerdict::TriggeredRule& rule) {
+          return rule.action() == DlpDeepScanningVerdict::TriggeredRule::BLOCK;
+        });
+    if (should_dlp_block) {
+      *download_result = DownloadCheckResult::SENSITIVE_CONTENT_BLOCK;
+      return;
+    }
+
+    bool should_dlp_warn = std::any_of(
+        response.dlp_scan_verdict().triggered_rules().begin(),
+        response.dlp_scan_verdict().triggered_rules().end(),
+        [](const DlpDeepScanningVerdict::TriggeredRule& rule) {
+          return rule.action() == DlpDeepScanningVerdict::TriggeredRule::WARN;
+        });
+    if (should_dlp_warn) {
+      *download_result = DownloadCheckResult::SENSITIVE_CONTENT_WARNING;
+      return;
+    }
+  }
+
+  *download_result = DownloadCheckResult::DEEP_SCANNED_SAFE;
+}
+
+bool ShouldUploadForDlpScanByPolicy(download::DownloadItem* item) {
+  if (!base::FeatureList::IsEnabled(kContentComplianceEnabled))
+    return false;
+
+  int check_content_compliance = g_browser_process->local_state()->GetInteger(
+      prefs::kCheckContentCompliance);
+  if (check_content_compliance !=
+          CheckContentComplianceValues::CHECK_DOWNLOADS &&
+      check_content_compliance !=
+          CheckContentComplianceValues::CHECK_UPLOADS_AND_DOWNLOADS)
+    return false;
+
+  const base::ListValue* domains = g_browser_process->local_state()->GetList(
+      prefs::kURLsToCheckComplianceOfDownloadedContent);
+  url_matcher::URLMatcher matcher;
+  policy::url_util::AddAllowFilters(&matcher, domains);
+  return !matcher.MatchURL(item->GetURL()).empty();
+}
+
+bool ShouldUploadForMalwareScanByPolicy(download::DownloadItem* item) {
+  if (!base::FeatureList::IsEnabled(kMalwareScanEnabled))
+    return false;
+
+  content::BrowserContext* browser_context =
+      content::DownloadItemUtils::GetBrowserContext(item);
+  if (!browser_context)
+    return false;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile)
+    return false;
+
+  int send_files_for_malware_check = profile->GetPrefs()->GetInteger(
+      prefs::kSafeBrowsingSendFilesForMalwareCheck);
+  if (send_files_for_malware_check !=
+          SendFilesForMalwareCheckValues::SEND_DOWNLOADS &&
+      send_files_for_malware_check !=
+          SendFilesForMalwareCheckValues::SEND_UPLOADS_AND_DOWNLOADS)
+    return false;
+
+  return true;
+}
+
+}  // namespace
+
+DeepScanningRequest::DeepScanningRequest(
+    download::DownloadItem* item,
+    DeepScanTrigger trigger,
+    CheckDownloadRepeatingCallback callback,
+    DownloadProtectionService* download_service)
+    : item_(item),
+      trigger_(trigger),
+      callback_(callback),
+      download_service_(download_service),
+      weak_ptr_factory_(this) {
+  item_->AddObserver(this);
+}
+
+DeepScanningRequest::~DeepScanningRequest() {
+  item_->RemoveObserver(this);
+}
+
+void DeepScanningRequest::Start() {
+  // Indicate we're now scanning the file.
+  callback_.Run(DownloadCheckResult::ASYNC_SCANNING);
+
+  auto request = std::make_unique<DownloadItemRequest>(
+      item_, /*read_immediately=*/true,
+      base::BindOnce(&DeepScanningRequest::OnScanComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(item_));
+
+  if (trigger_ == DeepScanTrigger::TRIGGER_APP_PROMPT) {
+    MalwareDeepScanningClientRequest malware_request;
+    malware_request.set_population(
+        MalwareDeepScanningClientRequest::POPULATION_TITANIUM);
+    malware_request.set_download_token(
+        DownloadProtectionService::GetDownloadPingToken(item_));
+    request->set_request_malware_scan(std::move(malware_request));
+  } else if (trigger_ == DeepScanTrigger::TRIGGER_POLICY) {
+    policy::DMToken dm_token = GetDMToken(profile);
+    request->set_dm_token(dm_token.value());
+
+    if (ShouldUploadForDlpScanByPolicy(item_)) {
+      DlpDeepScanningClientRequest dlp_request;
+      dlp_request.set_content_source(
+          DlpDeepScanningClientRequest::FILE_DOWNLOAD);
+      request->set_request_dlp_scan(std::move(dlp_request));
+    }
+
+    if (ShouldUploadForMalwareScanByPolicy(item_)) {
+      MalwareDeepScanningClientRequest malware_request;
+      malware_request.set_population(
+          MalwareDeepScanningClientRequest::POPULATION_ENTERPRISE);
+      malware_request.set_download_token(
+          DownloadProtectionService::GetDownloadPingToken(item_));
+      request->set_request_malware_scan(std::move(malware_request));
+    }
+  }
+
+  upload_start_time_ = base::TimeTicks::Now();
+  BinaryUploadService* binary_upload_service =
+      download_service_->GetBinaryUploadService(profile);
+  if (binary_upload_service) {
+    binary_upload_service->MaybeUploadForDeepScanning(std::move(request));
+  } else {
+    OnScanComplete(BinaryUploadService::Result::UNKNOWN,
+                   DeepScanningClientResponse());
+  }
+}
+
+void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
+                                         DeepScanningClientResponse response) {
+  RecordDeepScanMetrics(
+      /*access_point=*/DeepScanAccessPoint::DOWNLOAD,
+      /*duration=*/base::TimeTicks::Now() - upload_start_time_,
+      /*total_size=*/item_->GetTotalBytes(), /*result=*/result,
+      /*response=*/response);
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(item_));
+  if (profile) {
+    std::string raw_digest_sha256 = item_->GetHash();
+    MaybeReportDeepScanningVerdict(
+        profile, item_->GetURL(), item_->GetTargetFilePath().AsUTF8Unsafe(),
+        base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
+        item_->GetMimeType(),
+        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+        item_->GetTotalBytes(), result, response);
+  }
+
+  DownloadCheckResult download_result = DownloadCheckResult::UNKNOWN;
+  if (result == BinaryUploadService::Result::SUCCESS) {
+    DeepScanningClientResponseToDownloadCheckResult(response, &download_result);
+  }
+
+  FinishRequest(download_result);
+}
+
+void DeepScanningRequest::OnDownloadDestroyed(
+    download::DownloadItem* download) {
+  FinishRequest(DownloadCheckResult::UNKNOWN);
+}
+
+void DeepScanningRequest::FinishRequest(DownloadCheckResult result) {
+  callback_.Run(result);
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  item_->RemoveObserver(this);
+  download_service_->RequestFinished(this);
+}
+
+}  // namespace safe_browsing

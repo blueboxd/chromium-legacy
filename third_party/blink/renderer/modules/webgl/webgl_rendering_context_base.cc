@@ -1378,6 +1378,11 @@ void WebGLRenderingContextBase::MarkContextChanged(
   }
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+WebGLRenderingContextBase::GetContextTaskRunner() {
+  return task_runner_;
+}
+
 void WebGLRenderingContextBase::DidDraw(const SkIRect& dirty_rect) {
   MarkContextChanged(kCanvasChanged);
   CanvasRenderingContext::DidDraw(dirty_rect);

@@ -19,7 +19,7 @@ Polymer({
    * Selects the password on tap if revealed.
    * @private
    */
-  onReadonlyInputTap_: function() {
+  onReadonlyInputTap_() {
     if (this.item.password) {
       this.$$('#password').select();
     }
@@ -29,7 +29,7 @@ Polymer({
    * Opens the password action menu.
    * @private
    */
-  onPasswordMenuTap_: function() {
+  onPasswordMenuTap_() {
     this.fire(
         'password-menu-tap', {target: this.$.passwordMenu, listItem: this});
   },
@@ -39,7 +39,7 @@ Polymer({
    * @param {!PasswordManagerProxy.UiEntryWithPassword} item This row's item.
    * @private
    */
-  getMoreActionsLabel_: function(item) {
+  getMoreActionsLabel_(item) {
     // Avoid using I18nBehavior.i18n, because it will filter sequences, which
     // are otherwise not illegal for usernames. Polymer still protects against
     // XSS injection.

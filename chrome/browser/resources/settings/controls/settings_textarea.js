@@ -63,12 +63,12 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onInputChange_: function(e) {
+  onInputChange_(e) {
     this.fire('change', {sourceEvent: e});
   },
 
   /**@private */
-  onInputFocusChange_: function() {
+  onInputFocusChange_() {
     // focused_ is used instead of :focus-within, so focus on elements within
     // the suffix slot does not trigger a change in input styles.
     if (this.shadowRoot.activeElement == this.$.input) {
@@ -79,7 +79,7 @@ Polymer({
   },
 
   /**@private */
-  onDisabledChanged_: function() {
+  onDisabledChanged_() {
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
   },
 });

@@ -27,13 +27,9 @@ source_set("rlz_utils") {
     "lib/string_utils.h",
   ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 
-  deps = [
-    "//third_party/zlib",
-  ]
+  deps = [ "//third_party/zlib" ]
 }
 
 if (!is_android) {
@@ -159,9 +155,7 @@ if (!is_android) {
       "//base/test:test_support",
       "//testing/gtest",
     ]
-    deps = [
-      ":rlz_lib",
-    ]
+    deps = [ ":rlz_lib" ]
     if (is_chromeos) {
       public_deps += [ "//chromeos/system" ]
     }
@@ -206,9 +200,7 @@ if (!is_android) {
 
 if (!is_ios && !is_android) {
   executable("rlz_id") {
-    sources = [
-      "examples/rlz_id.cc",
-    ]
+    sources = [ "examples/rlz_id.cc" ]
     deps = [
       ":rlz_lib",
       "//build/win:default_exe_manifest",

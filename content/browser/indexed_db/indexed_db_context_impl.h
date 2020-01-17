@@ -46,18 +46,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
     : public IndexedDBContext,
       public storage::mojom::IndexedDBControl {
  public:
-  // Recorded in histograms, so append only.
-  enum ForceCloseReason {
-    FORCE_CLOSE_DELETE_ORIGIN = 0,
-    FORCE_CLOSE_BACKING_STORE_FAILURE,
-    FORCE_CLOSE_INTERNALS_PAGE,
-    FORCE_CLOSE_COPY_ORIGIN,
-    FORCE_SCHEMA_DOWNGRADE_INTERNALS_PAGE,
-    // Append new values here and update IDBContextForcedCloseReason in
-    // enums.xml.
-    FORCE_CLOSE_REASON_MAX
-  };
-
   class Observer {
    public:
     virtual void OnIndexedDBListChanged(const url::Origin& origin) = 0;
@@ -89,6 +77,18 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void GetUsage(GetUsageCallback usage_callback) override;
   void DeleteForOrigin(const url::Origin& origin,
                        DeleteForOriginCallback callback) override;
+  void ForceClose(const url::Origin& origin,
+                  storage::mojom::ForceCloseReason reason,
+                  base::OnceClosure callback) override;
+  void GetConnectionCount(const url::Origin& origin,
+                          GetConnectionCountCallback callback) override;
+  void DownloadOriginData(const url::Origin& origin,
+                          DownloadOriginDataCallback callback) override;
+  void GetAllOriginsDetails(GetAllOriginsDetailsCallback callback) override;
+
+  // TODO(enne): fix internal indexeddb callers to use ForceClose async instead.
+  void ForceCloseSync(const url::Origin& origin,
+                      storage::mojom::ForceCloseReason reason);
 
   IndexedDBFactoryImpl* GetIDBFactory();
 
@@ -130,11 +130,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // Used by IndexedDBInternalsUI to populate internals page.
   base::ListValue* GetAllOriginsDetails();
 
-  // ForceClose takes a value rather than a reference since it may release the
-  // owning object.
-  // ForceClose needs to move to async to support multi-thread scopes. See
-  // https://crbug.com/965142.
-  void ForceClose(const url::Origin origin, ForceCloseReason reason);
   bool ForceSchemaDowngrade(const url::Origin& origin);
   V2SchemaCorruptionStatus HasV2SchemaCorruption(const url::Origin& origin);
   // GetStoragePaths returns all paths owned by this database, in arbitrary
@@ -143,7 +138,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   base::FilePath data_path() const { return data_path_; }
   bool IsInMemoryContext() const { return data_path_.empty(); }
-  size_t GetConnectionCount(const url::Origin& origin);
+  size_t GetConnectionCountSync(const url::Origin& origin);
   int GetOriginBlobFileCount(const url::Origin& origin);
 
   // For unit tests allow to override the |data_path_|.

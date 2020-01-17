@@ -307,10 +307,11 @@ void SystemWebAppManager::RecordSystemWebAppInstallMetrics(
 
   // Record aggregate result.
   for (const auto& url_and_result : install_results)
-    base::UmaHistogramEnumeration(kInstallResultHistogramName,
-                                  shutting_down_
-                                      ? InstallResultCode::kFailedShuttingDown
-                                      : url_and_result.second);
+    base::UmaHistogramEnumeration(
+        kInstallResultHistogramName,
+        shutting_down_
+            ? InstallResultCode::kCancelledOnWebAppProviderShuttingDown
+            : url_and_result.second);
 
   // Record per-app result.
   for (const auto type_and_app_info : system_app_infos_) {
@@ -320,19 +321,21 @@ void SystemWebAppManager::RecordSystemWebAppInstallMetrics(
       const std::string app_histogram_name =
           std::string(kInstallResultHistogramName) + ".Apps." +
           type_and_app_info.second.name_for_logging;
-      base::UmaHistogramEnumeration(app_histogram_name,
-                                    shutting_down_
-                                        ? InstallResultCode::kFailedShuttingDown
-                                        : url_and_result->second);
+      base::UmaHistogramEnumeration(
+          app_histogram_name,
+          shutting_down_
+              ? InstallResultCode::kCancelledOnWebAppProviderShuttingDown
+              : url_and_result->second);
     }
   }
 
   // Record per-profile result.
   for (const auto url_and_result : install_results) {
-    base::UmaHistogramEnumeration(install_result_per_profile_histogram_name_,
-                                  shutting_down_
-                                      ? InstallResultCode::kFailedShuttingDown
-                                      : url_and_result.second);
+    base::UmaHistogramEnumeration(
+        install_result_per_profile_histogram_name_,
+        shutting_down_
+            ? InstallResultCode::kCancelledOnWebAppProviderShuttingDown
+            : url_and_result.second);
   }
 }
 

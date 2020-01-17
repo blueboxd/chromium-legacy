@@ -48,8 +48,7 @@ class TestBrowserViewRenderer : public BrowserViewRenderer {
 }  // namespace
 
 RenderingTest::RenderingTest()
-    : task_environment_(
-          std::make_unique<base::test::SingleThreadTaskEnvironment>()) {
+    : task_environment_(std::make_unique<base::test::TaskEnvironment>()) {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 

@@ -66,6 +66,7 @@ js_library("search_engines_page") {
   deps = [
     ":search_engines_browser_proxy",
     "..:global_scroll_target_behavior",
+    "..:route",
     "//third_party/polymer/v1_0/components-chromium/iron-resizable-behavior:iron-resizable-behavior-extracted",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",

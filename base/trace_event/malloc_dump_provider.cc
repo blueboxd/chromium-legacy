@@ -134,11 +134,6 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
 // TODO(fuchsia): Port, see https://crbug.com/706592.
 #else
   struct mallinfo info = mallinfo();
-#if !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER)
-  // Sanitizers override mallinfo.
-  DCHECK_GT(static_cast<int>(info.uordblks), 0);
-#endif
-
   // In case of Android's jemalloc |arena| is 0 and the outer pages size is
   // reported by |hblkhd|. In case of dlmalloc the total is given by
   // |arena| + |hblkhd|. For more details see link: http://goo.gl/fMR8lF.

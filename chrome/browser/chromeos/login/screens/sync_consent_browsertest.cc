@@ -28,7 +28,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/pref_names.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using testing::Contains;
+using testing::UnorderedElementsAre;
 
 namespace chromeos {
 namespace {
@@ -328,22 +332,21 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, DefaultFlow) {
   // Consent was recorded for the confirmation button.
   EXPECT_EQ(SyncConsentScreen::CONSENT_GIVEN,
             consent_recorded_waiter.consent_given_);
-  EXPECT_EQ("Accept and continue",
-            consent_recorded_waiter.consent_confirmation_string_);
-  EXPECT_EQ(IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE,
+  EXPECT_EQ("Continue", consent_recorded_waiter.consent_confirmation_string_);
+  EXPECT_EQ(IDS_LOGIN_OS_SYNC_CONSENT_CONTINUE,
             consent_recorded_waiter.consent_confirmation_id_);
 
   // Consent was recorded for all descriptions, including the confirmation
   // button label.
-  // TODO(jamescook): When PLACEHOLDER strings are replaced, add checks for the
-  // correct text and IDs here.
-  std::vector<std::string> expected_desc_strings = {"Accept and continue"};
-  std::vector<int> expected_desc_ids = {
-      IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE};
-  EXPECT_EQ(expected_desc_strings,
-            consent_recorded_waiter.consent_description_strings_);
-  EXPECT_EQ(expected_desc_ids,
-            consent_recorded_waiter.consent_description_ids_);
+  EXPECT_THAT(consent_recorded_waiter.consent_description_ids_,
+              UnorderedElementsAre(IDS_LOGIN_OS_SYNC_CONSENT_TITLE,
+                                   IDS_LOGIN_OS_SYNC_CONSENT_TOGGLE_NAME,
+                                   IDS_LOGIN_OS_SYNC_CONSENT_TOGGLE_DESCRIPTION,
+                                   IDS_LOGIN_OS_SYNC_CONSENT_CONTINUE));
+
+  // Verify device-name substitution happened. Tests use "Chrome device".
+  EXPECT_THAT(consent_recorded_waiter.consent_description_strings_,
+              Contains("Sync my Chrome device"));
 
   // Toggle button is on-by-default, so OS sync should be on.
   EXPECT_TRUE(prefs->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled));

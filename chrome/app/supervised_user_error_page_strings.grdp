@@ -47,7 +47,7 @@
         We could not reach your parents at the moment. Please try again.
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_SEND_FEEDBACK" desc="The text for a link to submit feedback about a blocked site.">
-        Was this unexpected? <ph name="BEGIN_LINK">&lt;a href="#" id="feedback-link"&gt;</ph>Send feedback<ph name="END_LINK">&lt;/a&gt;</ph>
+        Was this result unexpected? <ph name="BEGIN_LINK">&lt;a href="#" id="feedback-link"&gt;</ph>Send feedback<ph name="END_LINK">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_SHOW_DETAILS" desc="The text for the link to show details about the interstitial.">
         Details

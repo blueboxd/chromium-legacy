@@ -12,9 +12,7 @@ mojom("mojom") {
     "printing_service.mojom",
   ]
 
-  deps = [
-    "//ui/gfx/geometry/mojom",
-  ]
+  deps = [ "//ui/gfx/geometry/mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",

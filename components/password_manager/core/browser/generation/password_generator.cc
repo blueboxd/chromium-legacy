@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -203,12 +204,21 @@ base::string16 GenerateMaxEntropyPassword(PasswordRequirementsSpec spec) {
 
 }  // namespace
 
+void ConditionallyAddNumericDigitsToAlphabet(PasswordRequirementsSpec* spec) {
+  DCHECK(spec);
+  if (spec->lower_case().max() == 0 && spec->upper_case().max() == 0)
+    spec->mutable_numeric()->mutable_character_set()->append("01");
+}
+
 base::string16 GeneratePassword(const PasswordRequirementsSpec& spec) {
   PasswordRequirementsSpec actual_spec = BuildDefaultSpec();
 
   // Override all fields that are set in |spec|. Character classes are merged
   // recursively.
   actual_spec.MergeFrom(spec);
+
+  // For passwords without letters, add the '0' and '1' to the numeric alphabet.
+  ConditionallyAddNumericDigitsToAlphabet(&actual_spec);
 
   base::string16 password = GenerateMaxEntropyPassword(std::move(actual_spec));
 

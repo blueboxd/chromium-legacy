@@ -86,7 +86,7 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
                void(quic::QuicStreamId stream_id,
                     quic::QuicStreamId promised_stream_id,
                     size_t frame_len));
-  MOCK_CONST_METHOD0(IsCryptoHandshakeConfirmed, bool());
+  MOCK_CONST_METHOD0(OneRttKeysAvailable, bool());
   // Methods taking non-copyable types like spdy::SpdyHeaderBlock by value
   // cannot be mocked directly.
   size_t WriteHeadersOnHeadersStream(
@@ -170,7 +170,7 @@ class QuicChromiumClientStreamTest
     quic::test::QuicConfigPeer::
         SetReceivedInitialMaxStreamDataBytesOutgoingBidirectional(
             session_.config(), quic::kMinimumFlowControlSendWindow);
-    quic::test::QuicConfigPeer::SetReceivedMaxIncomingUnidirectionalStreams(
+    quic::test::QuicConfigPeer::SetReceivedMaxUnidirectionalStreams(
         session_.config(), 10);
     session_.OnConfigNegotiated();
     stream_ = new QuicChromiumClientStream(

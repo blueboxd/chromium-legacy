@@ -69,18 +69,12 @@ if (current_cpu == "x86") {
     }
     nacl64_label = ":nacl64($x64_toolchain)"
     nacl64_out_dir = get_label_info(nacl64_label, "root_out_dir")
-    sources = [
-      "$nacl64_out_dir/nacl64.exe",
-    ]
+    sources = [ "$nacl64_out_dir/nacl64.exe" ]
     if (symbol_level != 0) {
       sources += [ "$nacl64_out_dir/nacl64.exe.pdb" ]
     }
-    outputs = [
-      "$root_out_dir/{{source_file_part}}",
-    ]
-    deps = [
-      nacl64_label,
-    ]
+    outputs = [ "$root_out_dir/{{source_file_part}}" ]
+    deps = [ nacl64_label ]
   }
 } else if (current_cpu == "x64") {
   # In the x64 toolchain context, build nacl64.exe for real.
@@ -98,9 +92,7 @@ if (current_cpu == "x86") {
       ldflags = [ "/OPT:REF" ]
     }
 
-    sources = [
-      "//chrome/nacl/nacl_exe_win_64.cc",
-    ]
+    sources = [ "//chrome/nacl/nacl_exe_win_64.cc" ]
 
     deps = [
       ":broker",

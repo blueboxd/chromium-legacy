@@ -28,13 +28,9 @@ blink_core_sources("mojo") {
 
 jumbo_source_set("unit_tests") {
   testonly = true
-  sources = [
-    "tests/js_to_cpp_test.cc",
-  ]
+  sources = [ "tests/js_to_cpp_test.cc" ]
 
-  data = [
-    "tests/JsToCppTest.js",
-  ]
+  data = [ "tests/JsToCppTest.js" ]
 
   configs += [
     "//third_party/blink/renderer/core:blink_core_pch",
@@ -57,7 +53,5 @@ jumbo_source_set("unit_tests") {
 }
 
 mojom("test_bindings") {
-  sources = [
-    "tests/js_to_cpp.mojom",
-  ]
+  sources = [ "tests/js_to_cpp.mojom" ]
 }

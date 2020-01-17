@@ -137,20 +137,3 @@ export let MaxFpsInfo;
  * @typedef {Array<!FpsRange>}
  */
 export let FpsRangeList;
-
-/** @const */
-cca.Resolution = Resolution;
-/** @const */
-cca.Mode = Mode;
-/** @const */
-cca.PerfInformation = PerfInformation;
-/** @const */
-cca.VideoConfig = VideoConfig;
-/** @const */
-cca.FpsRange = FpsRange;
-/** @const */
-cca.ResolutionList = ResolutionList;
-/** @const */
-cca.MaxFpsInfo = MaxFpsInfo;
-/** @const */
-cca.FpsRangeList = FpsRangeList;

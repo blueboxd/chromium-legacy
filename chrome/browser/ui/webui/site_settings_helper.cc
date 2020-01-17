@@ -93,6 +93,8 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
      "native-file-system-write"},
     {ContentSettingsType::MIXEDSCRIPT, "mixed-script"},
+    {ContentSettingsType::VR, "vr"},
+    {ContentSettingsType::AR, "ar"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions do have UI in
@@ -125,8 +127,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::NFC, nullptr},
     {ContentSettingsType::BLUETOOTH_CHOOSER_DATA, nullptr},
     {ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA, nullptr},
-    {ContentSettingsType::VR, nullptr},
-    {ContentSettingsType::AR, nullptr},
 };
 static_assert(base::size(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.

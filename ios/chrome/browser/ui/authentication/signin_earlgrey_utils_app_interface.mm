@@ -104,7 +104,8 @@
       chrome_test_util::GetOriginalBrowserState();
   AuthenticationService* authentication_service =
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
-  authentication_service->SignOut(signin_metrics::SIGNOUT_TEST, nil);
+  authentication_service->SignOut(signin_metrics::SIGNOUT_TEST,
+                                  /*force_clear_browsing_data=*/false, nil);
 }
 
 + (void)addBookmark:(NSString*)urlString withTitle:(NSString*)title {

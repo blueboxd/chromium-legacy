@@ -18,6 +18,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "crypto/sha2.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
@@ -30,6 +31,7 @@ class BluetoothAdapterMac;
 class BluetoothRemoteGattServiceMac;
 class BluetoothRemoteGattCharacteristicMac;
 class BluetoothRemoteGattDescriptorMac;
+class BluetoothUUID;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
     : public BluetoothDeviceMac {
@@ -83,7 +85,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
 
  protected:
   // BluetoothDevice override.
-  void CreateGattConnectionImpl() override;
+  void CreateGattConnectionImpl(
+      base::Optional<BluetoothUUID> serivce_uuid) override;
   void DisconnectGatt() override;
 
   // Methods used by BluetoothLowEnergyPeripheralBridge.

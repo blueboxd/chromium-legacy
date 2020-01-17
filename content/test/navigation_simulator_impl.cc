@@ -1327,6 +1327,15 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
     params->document_sequence_number = ++g_unique_identifier;
   }
 
+  // Simulate embedding token creation.
+  if (!same_document && !request_->IsInMainFrame()) {
+    RenderFrameHostImpl* parent = request_->GetParentFrame();
+    if (parent && parent->GetSiteInstance() !=
+                      request_->GetRenderFrameHost()->GetSiteInstance()) {
+      params->embedding_token = base::UnguessableToken::Create();
+    }
+  }
+
   params->page_state =
       page_state_.value_or(PageState::CreateForTestingWithSequenceNumbers(
           navigation_url_, params->item_sequence_number,

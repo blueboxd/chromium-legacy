@@ -197,6 +197,9 @@ void PrintProcessState(FILE* out,
 
 // TODO(manzagop): flesh out as StabilityReport gets fleshed out.
 void PrintReport(FILE* out, const browser_watcher::StabilityReport& report) {
+  for (std::string message : report.log_messages())
+    fprintf(out, "log message:\n%s\n", message.c_str());
+
   if (report.has_system_memory_state() &&
       report.system_memory_state().has_windows_memory()) {
     const auto& windows_memory = report.system_memory_state().windows_memory();

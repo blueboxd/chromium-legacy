@@ -293,6 +293,13 @@ jboolean ProfileSyncServiceAndroid::IsPassphraseRequiredForPreferredDataTypes(
       ->IsPassphraseRequiredForPreferredDataTypes();
 }
 
+jboolean ProfileSyncServiceAndroid::IsTrustedVaultKeyRequired(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return sync_service_->GetUserSettings()->IsTrustedVaultKeyRequired();
+}
+
 jboolean
 ProfileSyncServiceAndroid::IsTrustedVaultKeyRequiredForPreferredDataTypes(
     JNIEnv* env,

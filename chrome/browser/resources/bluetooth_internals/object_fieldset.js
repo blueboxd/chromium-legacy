@@ -37,7 +37,7 @@ cr.define('object_fieldset', function() {
     /**
      * Decorates the element as an ObjectFieldset.
      */
-    decorate: function() {
+    decorate() {
       this.classList.add('object-fieldset');
 
       /** @type {?Object} */
@@ -51,7 +51,7 @@ cr.define('object_fieldset', function() {
      * Sets the object data to be displayed in the fieldset.
      * @param {!Object} value
      */
-    setObject: function(value) {
+    setObject(value) {
       this.value = value;
       this.redraw();
     },
@@ -61,14 +61,14 @@ cr.define('object_fieldset', function() {
      * name is not provided, the default property name will be used.
      * @param {!Object<string, string>} nameMap
      */
-    setPropertyDisplayNames: function(nameMap) {
+    setPropertyDisplayNames(nameMap) {
       this.nameMap_ = nameMap;
     },
 
     /**
      * Deletes and recreates the table structure with current object data.
      */
-    redraw: function() {
+    redraw() {
       this.innerHTML = '';
 
       Object.keys(assert(this.value)).forEach(function(propName) {

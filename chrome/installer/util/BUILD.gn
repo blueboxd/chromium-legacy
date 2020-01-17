@@ -40,9 +40,7 @@ import("//testing/test.gni")
 # we would still need the variant with no strings for when chrome.dll replaces
 # all strings with its own versions.
 static_library("with_no_strings") {
-  public_deps = [
-    ":constants",
-  ]
+  public_deps = [ ":constants" ]
 
   deps = [
     "//base",
@@ -192,9 +190,7 @@ static_library("with_no_strings") {
 # Use this version of installer_util to link to the generated strings in .rc
 # format.
 group("with_rc_strings") {
-  public_deps = [
-    ":with_no_strings",
-  ]
+  public_deps = [ ":with_no_strings" ]
   if (is_win) {
     public_deps += [ ":strings" ]
   }
@@ -230,19 +226,13 @@ generate_embedded_i18n("generate_strings") {
 # Compile the generated .rc file.
 source_set("strings") {
   sources = get_target_outputs(":generate_strings")
-  public_deps = [
-    ":generate_strings",
-  ]
+  public_deps = [ ":generate_strings" ]
 }
 
 source_set("constants") {
-  public = [
-    "master_preferences_constants.h",
-  ]
+  public = [ "master_preferences_constants.h" ]
 
-  sources = [
-    "master_preferences_constants.cc",
-  ]
+  sources = [ "master_preferences_constants.cc" ]
 
   if (is_win) {
     public += [
@@ -255,21 +245,15 @@ source_set("constants") {
       "util_constants.cc",
     ]
 
-    public_deps = [
-      "//base",
-    ]
+    public_deps = [ "//base" ]
   }
 }
 
 if (is_win) {
   source_set("did_run_support") {
-    public = [
-      "update_did_run_state.h",
-    ]
+    public = [ "update_did_run_state.h" ]
 
-    sources = [
-      "update_did_run_state.cc",
-    ]
+    sources = [ "update_did_run_state.cc" ]
 
     deps = [
       ":constants",

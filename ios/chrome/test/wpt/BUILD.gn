@@ -15,24 +15,18 @@ group("all_tests") {
 }
 
 chrome_ios_eg2_test_app_host("ios_cwt_chromedriver_tests") {
-  deps = [
-    ":eg_app_support+eg2",
-  ]
+  deps = [ ":eg_app_support+eg2" ]
 }
 
 chrome_ios_eg2_test("ios_cwt_chromedriver_tests_module") {
   xcode_test_application_name = "ios_cwt_chromedriver_tests"
 
-  deps = [
-    ":cwt_chromedriver_tests",
-  ]
+  deps = [ ":cwt_chromedriver_tests" ]
 }
 
 source_set("shared_helper_headers") {
   testonly = true
-  sources = [
-    "cwt_webdriver_app_interface.h",
-  ]
+  sources = [ "cwt_webdriver_app_interface.h" ]
 }
 
 source_set("eg_app_support+eg2") {
@@ -40,9 +34,7 @@ source_set("eg_app_support+eg2") {
   testonly = true
   configs += [ "//build/config/compiler:enable_arc" ]
 
-  sources = [
-    "cwt_webdriver_app_interface.mm",
-  ]
+  sources = [ "cwt_webdriver_app_interface.mm" ]
 
   deps = [
     "//base",
@@ -59,9 +51,7 @@ source_set("eg_app_support+eg2") {
     "//ui/gfx",
   ]
 
-  public_deps = [
-    ":shared_helper_headers",
-  ]
+  public_deps = [ ":shared_helper_headers" ]
 }
 
 source_set("cwt_chromedriver_tests") {

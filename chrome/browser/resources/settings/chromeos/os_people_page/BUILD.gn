@@ -40,15 +40,14 @@ js_library("account_manager") {
 }
 
 js_library("fingerprint_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("fingerprint_list") {
   deps = [
     ":fingerprint_browser_proxy",
     "../..:route",
+    "../..:router",
     "//third_party/polymer/v1_0/components-chromium/iron-resizable-behavior:iron-resizable-behavior-extracted",
     "//third_party/polymer/v1_0/components-chromium/paper-ripple:paper-ripple-extracted",
     "//ui/webui/resources/js:assert",
@@ -62,6 +61,7 @@ js_library("fingerprint_list") {
 js_library("kerberos_accounts") {
   deps = [
     ":kerberos_accounts_browser_proxy",
+    "../..:router",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:icon",
@@ -70,9 +70,7 @@ js_library("kerberos_accounts") {
 }
 
 js_library("kerberos_accounts_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("kerberos_add_account_dialog") {
@@ -92,6 +90,7 @@ js_library("lock_screen") {
     ":lock_screen_password_prompt_dialog",
     ":lock_state_behavior",
     "../..:route",
+    "../..:router",
     "../../controls:settings_dropdown_menu",
     "../../controls:settings_toggle_button",
     "//ui/webui/resources/cr_components/chromeos/quick_unlock:lock_screen_constants",
@@ -113,7 +112,7 @@ js_library("lock_screen_password_prompt_dialog") {
 
 js_library("lock_state_behavior") {
   deps = [
-    "../..:route",
+    "../..:router",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
@@ -128,7 +127,8 @@ js_library("os_people_page") {
     ":lock_state_behavior",
     ":os_sync_controls",
     "..:os_page_visibility",
-    "../../:route",
+    "../..:route",
+    "../..:router",
     "../../settings_page:settings_animated_pages",
     "../localized_link:localized_link",
     "//chrome/browser/resources/settings/people_page:profile_info_browser_proxy",
@@ -155,7 +155,7 @@ js_library("os_sync_browser_proxy") {
 js_library("os_sync_controls") {
   deps = [
     ":os_sync_browser_proxy",
-    "../../:route",
+    "../../:router",
     "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:web_ui_listener_behavior",
@@ -175,7 +175,7 @@ js_library("setup_fingerprint_dialog") {
 js_library("setup_pin_dialog") {
   deps = [
     ":lock_screen_password_prompt_dialog",
-    "../..:route",
+    "../..:router",
     "//ui/webui/resources/cr_components/chromeos/quick_unlock:setup_pin_keyboard",
     "//ui/webui/resources/js:i18n_behavior",
   ]
@@ -184,6 +184,7 @@ js_library("setup_pin_dialog") {
 js_library("user_list") {
   deps = [
     "../..:route",
+    "../..:router",
     "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
     "//ui/webui/resources/js:i18n_behavior",
   ]
@@ -194,9 +195,7 @@ js_library("user_list") {
 }
 
 js_library("users_add_user_dialog") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
+  deps = [ "//ui/webui/resources/js:assert" ]
   externs_list = [ "$externs_path/users_private.js" ]
 }
 

@@ -81,9 +81,7 @@ instrumentation_test_apk("chrome_java_test_pagecontroller_codelab") {
   apk_name = "ChromePageControllerCodelab"
   apk_under_test = "//chrome/android:chrome_public_apk"
   android_manifest = "javatests/src/org/chromium/chrome/test/pagecontroller/tests/AndroidManifest.xml"
-  sources = [
-    "javatests/src/org/chromium/chrome/test/pagecontroller/tests/codelab/SettingsForCodelabTest.java",
-  ]
+  sources = [ "javatests/src/org/chromium/chrome/test/pagecontroller/tests/codelab/SettingsForCodelabTest.java" ]
   deps = [
     ":chrome_java_test_pagecontroller",
     "//third_party/junit",

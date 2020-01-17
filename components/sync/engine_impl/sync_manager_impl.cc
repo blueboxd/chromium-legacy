@@ -593,6 +593,7 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
 void SyncManagerImpl::InvalidateCredentials() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   connection_manager_->SetAccessToken(std::string());
+  scheduler_->OnCredentialsInvalidated();
 }
 
 void SyncManagerImpl::AddObserver(SyncManager::Observer* observer) {

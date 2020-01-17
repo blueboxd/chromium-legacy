@@ -33,6 +33,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/filename_util.h"
@@ -158,6 +159,88 @@ void LogCanAccessDataForOriginCrashKeys(
 }
 
 }  // namespace
+
+ChildProcessSecurityPolicyImpl::Handle::Handle()
+    : child_id_(ChildProcessHost::kInvalidUniqueID) {}
+
+ChildProcessSecurityPolicyImpl::Handle::Handle(int child_id)
+    : child_id_(child_id) {
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->AddProcessReference(child_id_))
+    child_id_ = ChildProcessHost::kInvalidUniqueID;
+}
+
+ChildProcessSecurityPolicyImpl::Handle::Handle(Handle&& rhs)
+    : child_id_(rhs.child_id_) {
+  rhs.child_id_ = ChildProcessHost::kInvalidUniqueID;
+}
+
+ChildProcessSecurityPolicyImpl::Handle::~Handle() {
+  if (child_id_ != ChildProcessHost::kInvalidUniqueID) {
+    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+    policy->RemoveProcessReference(child_id_);
+  }
+}
+
+ChildProcessSecurityPolicyImpl::Handle& ChildProcessSecurityPolicyImpl::Handle::
+operator=(Handle&& rhs) {
+  if (child_id_ != ChildProcessHost::kInvalidUniqueID &&
+      child_id_ != rhs.child_id_) {
+    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+    policy->RemoveProcessReference(child_id_);
+  }
+  child_id_ = rhs.child_id_;
+  rhs.child_id_ = ChildProcessHost::kInvalidUniqueID;
+  return *this;
+}
+
+bool ChildProcessSecurityPolicyImpl::Handle::is_valid() const {
+  return child_id_ != ChildProcessHost::kInvalidUniqueID;
+}
+
+bool ChildProcessSecurityPolicyImpl::Handle::CanCommitURL(const GURL& url) {
+  if (child_id_ == ChildProcessHost::kInvalidUniqueID)
+    return false;
+
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  return policy->CanCommitURL(child_id_, url);
+}
+
+bool ChildProcessSecurityPolicyImpl::Handle::CanReadFile(
+    const base::FilePath& file) {
+  if (child_id_ == ChildProcessHost::kInvalidUniqueID)
+    return false;
+
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  return policy->CanReadFile(child_id_, file);
+}
+
+bool ChildProcessSecurityPolicyImpl::Handle::CanReadFileSystemFile(
+    const storage::FileSystemURL& url) {
+  if (child_id_ == ChildProcessHost::kInvalidUniqueID)
+    return false;
+
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  return policy->CanReadFileSystemFile(child_id_, url);
+}
+
+bool ChildProcessSecurityPolicyImpl::Handle::CanAccessDataForOrigin(
+    const GURL& url) {
+  if (child_id_ == ChildProcessHost::kInvalidUniqueID)
+    return false;
+
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  return policy->CanAccessDataForOrigin(child_id_, url);
+}
+
+bool ChildProcessSecurityPolicyImpl::Handle::CanAccessDataForOrigin(
+    const url::Origin& origin) {
+  if (child_id_ == ChildProcessHost::kInvalidUniqueID)
+    return false;
+
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  return policy->CanAccessDataForOrigin(child_id_, origin);
+}
 
 // The SecurityState class is used to maintain per-child process security state
 // information.
@@ -389,7 +472,10 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     return BrowserOrResourceContext();
   }
 
-  void ClearBrowserContext() { browser_context_ = nullptr; }
+  void ClearBrowserContextIfMatches(const BrowserContext* browser_context) {
+    if (browser_context == browser_context_)
+      browser_context_ = nullptr;
+  }
 
  private:
   enum class CommitRequestPolicy {
@@ -563,12 +649,13 @@ void ChildProcessSecurityPolicyImpl::Add(int child_id,
   DCHECK(browser_context);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
-  if (security_state_.count(child_id) != 0) {
+  if (security_state_.find(child_id) != security_state_.end()) {
     NOTREACHED() << "Add child process at most once.";
     return;
   }
 
   security_state_[child_id] = std::make_unique<SecurityState>(browser_context);
+  CHECK(AddProcessReferenceLocked(child_id));
 }
 
 void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
@@ -579,27 +666,13 @@ void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
   if (state == security_state_.end())
     return;
 
-  state->second->ClearBrowserContext();
-
   // Moving the existing SecurityState object into a pending map so
   // that we can preserve permission state and avoid mutations to this
   // state after Remove() has been called.
   pending_remove_state_[child_id] = std::move(state->second);
   security_state_.erase(child_id);
 
-  // |child_id| could be inside tasks that are on the IO thread task queues. We
-  // need to keep the |pending_remove_state_| entry around until we have
-  // successfully executed a task on the IO thread. This should ensure that any
-  // pending tasks on the IO thread will have completed before we remove the
-  // entry.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(
-                     [](ChildProcessSecurityPolicyImpl* policy, int child_id) {
-                       DCHECK_CURRENTLY_ON(BrowserThread::IO);
-                       base::AutoLock lock(policy->lock_);
-                       policy->pending_remove_state_.erase(child_id);
-                     },
-                     base::Unretained(this), child_id));
+  RemoveProcessReferenceLocked(child_id);
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterWebSafeScheme(
@@ -1005,13 +1078,13 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
     if (base::Contains(schemes_okay_to_commit_in_any_process_, scheme))
       return true;
 
-    auto state = security_state_.find(child_id);
-    if (state == security_state_.end())
+    auto* state = GetSecurityState(child_id);
+    if (!state)
       return false;
 
     // Otherwise, we consult the child process's security state to see if it is
     // allowed to commit the URL.
-    return state->second->CanCommitURL(url);
+    return state->CanCommitURL(url);
   }
 }
 
@@ -1239,10 +1312,10 @@ bool ChildProcessSecurityPolicyImpl::CanReadRawCookies(int child_id) {
 
 bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
     int child_id, const base::FilePath& file, int permissions) {
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return false;
-  return state->second->HasPermissionsForFile(file, permissions);
+  return state->HasPermissionsForFile(file, permissions);
 }
 
 CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
@@ -1510,10 +1583,10 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystem(
     int permission) {
   base::AutoLock lock(lock_);
 
-  auto state = security_state_.find(child_id);
-  if (state == security_state_.end())
+  auto* state = GetSecurityState(child_id);
+  if (!state)
     return false;
-  return state->second->HasPermissionsForFileSystem(filesystem_id, permission);
+  return state->HasPermissionsForFileSystem(filesystem_id, permission);
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterFileSystemPermissionPolicy(
@@ -1635,22 +1708,33 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
   }
 }
 
-void ChildProcessSecurityPolicyImpl::RemoveIsolatedOriginsForBrowserContext(
+void ChildProcessSecurityPolicyImpl::RemoveStateForBrowserContext(
     const BrowserContext& browser_context) {
-  base::AutoLock isolated_origins_lock(isolated_origins_lock_);
+  {
+    base::AutoLock isolated_origins_lock(isolated_origins_lock_);
 
-  for (auto& iter : isolated_origins_) {
-    base::EraseIf(iter.second,
-                  [&browser_context](const IsolatedOriginEntry& entry) {
-                    // Remove if BrowserContext matches.
-                    return (entry.browser_context() == &browser_context);
-                  });
+    for (auto& iter : isolated_origins_) {
+      base::EraseIf(iter.second,
+                    [&browser_context](const IsolatedOriginEntry& entry) {
+                      // Remove if BrowserContext matches.
+                      return (entry.browser_context() == &browser_context);
+                    });
+    }
+
+    // Also remove map entries for site URLs which no longer have any
+    // IsolatedOriginEntries remaining.
+    base::EraseIf(isolated_origins_,
+                  [](const auto& pair) { return pair.second.empty(); });
   }
 
-  // Also remove map entries for site URLs which no longer have any
-  // IsolatedOriginEntries remaining.
-  base::EraseIf(isolated_origins_,
-                [](const auto& pair) { return pair.second.empty(); });
+  {
+    base::AutoLock lock(lock_);
+    for (auto& pair : security_state_)
+      pair.second->ClearBrowserContextIfMatches(&browser_context);
+
+    for (auto& pair : pending_remove_state_)
+      pair.second->ClearBrowserContextIfMatches(&browser_context);
+  }
 }
 
 bool ChildProcessSecurityPolicyImpl::IsIsolatedOrigin(
@@ -1823,14 +1907,28 @@ ChildProcessSecurityPolicyImpl::GetSecurityState(int child_id) {
   if (itr != security_state_.end())
     return itr->second.get();
 
-  // Check to see if |child_id| is in the pending removal map since this
-  // may be a call that was already on the IO thread's task queue when the
-  // Remove() call occurred.
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    itr = pending_remove_state_.find(child_id);
-    if (itr != pending_remove_state_.end())
-      return itr->second.get();
+  auto pending_itr = pending_remove_state_.find(child_id);
+  if (pending_itr == pending_remove_state_.end())
+    return nullptr;
+
+  // At this point the SecurityState in the map is being kept alive
+  // by a Handle object or we are waiting for the deletion task to be run on
+  // the IO thread.
+  SecurityState* pending_security_state = pending_itr->second.get();
+
+  auto count_itr = process_reference_counts_.find(child_id);
+  if (count_itr != process_reference_counts_.end()) {
+    // There must be a Handle that still holds a reference to this
+    // pending state so it is safe to return. The assumption is that the
+    // owner of this Handle is making a security check.
+    return pending_security_state;
   }
+
+  // Since we don't have an entry in |process_reference_counts_| it means
+  // that we are waiting for the deletion task posted to the IO thread to run.
+  // Only allow the state to be accessed by the IO thread in this situation.
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO))
+    return pending_security_state;
 
   return nullptr;
 }
@@ -1874,6 +1972,61 @@ void ChildProcessSecurityPolicyImpl::LogKilledProcessOriginLock(int child_id) {
 
   base::debug::SetCrashKeyString(GetKilledProcessOriginLockKey(),
                                  GetKilledProcessOriginLock(security_state));
+}
+
+ChildProcessSecurityPolicyImpl::Handle
+ChildProcessSecurityPolicyImpl::CreateHandle(int child_id) {
+  return Handle(child_id);
+}
+
+bool ChildProcessSecurityPolicyImpl::AddProcessReference(int child_id) {
+  base::AutoLock lock(lock_);
+  return AddProcessReferenceLocked(child_id);
+}
+
+bool ChildProcessSecurityPolicyImpl::AddProcessReferenceLocked(int child_id) {
+  // Make sure that we aren't trying to add references after the process has
+  // been destroyed.
+  if (security_state_.find(child_id) == security_state_.end())
+    return false;
+
+  ++process_reference_counts_[child_id];
+  return true;
+}
+
+void ChildProcessSecurityPolicyImpl::RemoveProcessReference(int child_id) {
+  base::AutoLock lock(lock_);
+  RemoveProcessReferenceLocked(child_id);
+}
+
+void ChildProcessSecurityPolicyImpl::RemoveProcessReferenceLocked(
+    int child_id) {
+  auto itr = process_reference_counts_.find(child_id);
+  CHECK(itr != process_reference_counts_.end());
+
+  if (itr->second > 1) {
+    itr->second--;
+    return;
+  }
+
+  DCHECK_EQ(itr->second, 1);
+  process_reference_counts_.erase(itr);
+
+  // |child_id| could be inside tasks that are on the IO thread task queues. We
+  // need to keep the |pending_remove_state_| entry around until we have
+  // successfully executed a task on the IO thread. This should ensure that any
+  // pending tasks on the IO thread will have completed before we remove the
+  // entry.
+  // TODO(acolwell): Remove this call once all objects on the IO thread have
+  // been converted to use Handles.
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(
+                     [](ChildProcessSecurityPolicyImpl* policy, int child_id) {
+                       DCHECK_CURRENTLY_ON(BrowserThread::IO);
+                       base::AutoLock lock(policy->lock_);
+                       policy->pending_remove_state_.erase(child_id);
+                     },
+                     base::Unretained(this), child_id));
 }
 
 }  // namespace content

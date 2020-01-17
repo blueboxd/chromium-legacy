@@ -15,25 +15,19 @@ import("//testing/test.gni")
 ##------------------------------------------------------------------------------
 
 process_version_rc_template("chrome_elf_resources") {
-  sources = [
-    "chrome_elf.ver",
-  ]
+  sources = [ "chrome_elf.ver" ]
   output = "$target_gen_dir/chrome_elf_version.rc"
 }
 
 # This manifest matches what GYP produces. It may not even be necessary.
 windows_manifest("chrome_elf_manifest") {
-  sources = [
-    as_invoker_manifest,
-  ]
+  sources = [ as_invoker_manifest ]
 }
 
 # Users of chrome_elf exports can depend on this target, which doesn't
 # pin them to linking either chrome_elf.dll or test_stubs.
 source_set("chrome_elf_main_include") {
-  sources = [
-    "chrome_elf_main.h",
-  ]
+  sources = [ "chrome_elf_main.h" ]
 }
 
 # For code that isn't Chrome-the browser, like test binaries, these stubs stand
@@ -130,9 +124,7 @@ static_library("crash") {
 }
 
 source_set("dll_hash") {
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   sources = [
     "dll_hash/dll_hash.cc",
     "dll_hash/dll_hash.h",
@@ -140,9 +132,7 @@ source_set("dll_hash") {
 }
 
 executable("dll_hash_main") {
-  sources = [
-    "dll_hash/dll_hash_main.cc",
-  ]
+  sources = [ "dll_hash/dll_hash_main.cc" ]
   deps = [
     ":dll_hash",
     "//build/win:default_exe_manifest",
@@ -159,9 +149,7 @@ static_library("hook_util") {
     ":nt_registry",  # utils
     "//base:base_static",  # pe_image
   ]
-  public_deps = [
-    "//sandbox",
-  ]
+  public_deps = [ "//sandbox" ]
 }
 
 # This target contains utility functions which must only depend on
@@ -315,9 +303,7 @@ shared_library("hook_util_test_dll") {
 
 shared_library("main_unittest_dll_1") {
   testonly = true
-  sources = [
-    "third_party_dlls/main_unittest_dll_1.cc",
-  ]
+  sources = [ "third_party_dlls/main_unittest_dll_1.cc" ]
 
   # Disable sanitizer instrumentation in the test DLLs to avoid unwanted
   # exports.

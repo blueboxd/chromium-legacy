@@ -32,6 +32,7 @@
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
+#include "components/infobars/core/infobar_feature.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -408,7 +409,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
                                     "DetectMainThreadFreeze")},
     {"infobar-ui-reboot", flag_descriptions::kInfobarUIRebootName,
      flag_descriptions::kInfobarUIRebootDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kInfobarUIReboot)},
+     FEATURE_VALUE_TYPE(kIOSInfobarUIReboot)},
     {"find-in-page-iframe", flag_descriptions::kFindInPageiFrameName,
      flag_descriptions::kFindInPageiFrameDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kFindInPageiFrame)},

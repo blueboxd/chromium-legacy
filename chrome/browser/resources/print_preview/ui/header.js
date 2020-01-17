@@ -61,7 +61,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isPdfOrDrive_: function() {
+  isPdfOrDrive_() {
     return this.destination &&
         (this.destination.id === Destination.GooglePromotedId.SAVE_AS_PDF ||
          this.destination.id === Destination.GooglePromotedId.DOCS);
@@ -71,7 +71,7 @@ Polymer({
    * @return {!LabelInfo}
    * @private
    */
-  computeLabelInfo_: function() {
+  computeLabelInfo_() {
     const saveToPdfOrDrive = this.isPdfOrDrive_();
     let numPages = this.getSettingValue('pages').length;
     let numSheets = numPages;
@@ -103,7 +103,7 @@ Polymer({
   },
 
   /** @private */
-  update_: function() {
+  update_() {
     switch (this.state) {
       case (State.PRINTING):
         this.summary_ = loadTimeData.getString(
@@ -126,7 +126,7 @@ Polymer({
    * @return {string} The error message to display.
    * @private
    */
-  getErrorMessage_: function() {
+  getErrorMessage_() {
     switch (this.error) {
       case Error.PRINT_FAILED:
         return loadTimeData.getString('couldNotPrint');
@@ -142,7 +142,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSummary_: function(labelInfo) {
+  getSummary_(labelInfo) {
     return labelInfo.numSheets === 0 ?
         '' :
         loadTimeData.getStringF(

@@ -605,6 +605,7 @@ blink_core_tests("unit_tests") {
     "css_style_declaration_test.cc",
     "css_style_sheet_test.cc",
     "css_syntax_string_parser_test.cc",
+    "cssom/computed_style_property_map_test.cc",
     "cssom/cross_thread_style_value_test.cc",
     "cssom/css_math_invert_test.cc",
     "cssom/css_math_negate_test.cc",

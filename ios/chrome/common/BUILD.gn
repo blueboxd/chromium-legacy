@@ -26,9 +26,7 @@ source_set("common") {
     "//url",
   ]
 
-  public_deps = [
-    ":timing",
-  ]
+  public_deps = [ ":timing" ]
 
   libs = [ "QuartzCore.framework" ]
 }
@@ -41,9 +39,7 @@ source_set("common_extension") {
 
   libs = [ "UIKit.framework" ]
 
-  public_deps = [
-    ":timing",
-  ]
+  public_deps = [ ":timing" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -88,9 +84,7 @@ source_set("unit_tests") {
 source_set("noarc_unit_tests") {
   visibility = [ ":unit_tests" ]
   testonly = true
-  sources = [
-    "noarc_block_unittest.mm",
-  ]
+  sources = [ "noarc_block_unittest.mm" ]
   deps = [
     ":common",
     "//base",

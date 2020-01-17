@@ -56,7 +56,7 @@ Polymer({
    * @return {boolean} Whether the system dialog link should be visible.
    * @private
    */
-  computeShouldShowSystemDialogLink_: function() {
+  computeShouldShowSystemDialogLink_() {
     if (this.appKioskMode) {
       return false;
     }
@@ -72,12 +72,12 @@ Polymer({
    * @return {boolean} Whether the system dialog link should be disabled
    * @private
    */
-  computeSystemDialogLinkDisabled_: function() {
+  computeSystemDialogLinkDisabled_() {
     return isWindows && this.disabled;
   },
 
   /** @private */
-  onSystemDialogClick_: function() {
+  onSystemDialogClick_() {
     if (!this.shouldShowSystemDialogLink_) {
       return;
     }
@@ -90,14 +90,14 @@ Polymer({
 
   // <if expr="is_macosx">
   /** @private */
-  onOpenInPreviewClick_: function() {
+  onOpenInPreviewClick_() {
     this.openingInPreview_ = true;
     this.fire('open-pdf-in-preview');
   },
   // </if>
 
   /** @return {boolean} Whether the system dialog link is available. */
-  systemDialogLinkAvailable: function() {
+  systemDialogLinkAvailable() {
     return this.shouldShowSystemDialogLink_ && !this.systemDialogLinkDisabled_;
   },
 });

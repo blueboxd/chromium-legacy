@@ -146,8 +146,8 @@ bool ShowAllSavedPasswordsContextMenuEnabled(
     return false;
 
   LogContextOfShowAllSavedPasswordsShown(
-      password_manager::metrics_util::
-          SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU);
+      password_manager::metrics_util::ShowAllSavedPasswordsContext::
+          kContextMenu);
 
   return true;
 }

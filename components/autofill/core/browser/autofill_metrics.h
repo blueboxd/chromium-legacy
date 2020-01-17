@@ -36,12 +36,6 @@ class CreditCard;
 // A given maximum is enforced to minimize the number of buckets generated.
 extern const int kMaxBucketsCount;
 
-// Reduce FormSignature space (in UKM) to a small range for privacy reasons.
-int64_t HashFormSignature(autofill::FormSignature form_signature);
-
-// Reduce FieldSignature space (in UKM) to a small range for privacy reasons.
-int64_t HashFieldSignature(autofill::FieldSignature field_signature);
-
 class AutofillMetrics {
  public:
   enum AutofillProfileAction {

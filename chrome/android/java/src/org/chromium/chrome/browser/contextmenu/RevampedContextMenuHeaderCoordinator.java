@@ -16,6 +16,7 @@ import android.webkit.URLUtil;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
+import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -42,6 +43,8 @@ class RevampedContextMenuHeaderCoordinator {
                 .with(RevampedContextMenuHeaderProperties.URL, url)
                 .with(RevampedContextMenuHeaderProperties.URL_MAX_LINES,
                         TextUtils.isEmpty(title) ? 2 : 1)
+                .with(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS,
+                        PerformanceClass.PERFORMANCE_UNKNOWN)
                 .with(RevampedContextMenuHeaderProperties.IMAGE, null)
                 .with(RevampedContextMenuHeaderProperties.CIRCLE_BG_VISIBLE, false)
                 .build();

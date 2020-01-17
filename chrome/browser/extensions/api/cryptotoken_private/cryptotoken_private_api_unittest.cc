@@ -14,10 +14,10 @@
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_function_dispatcher.h"
@@ -171,7 +171,7 @@ class CryptoTokenPermissionTest : public ExtensionApiUnittest {
 
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
-    tab_id_ = SessionTabHelper::IdForTab(web_contents).id();
+    tab_id_ = sessions::SessionTabHelper::IdForTab(web_contents).id();
     PermissionRequestManager::CreateForWebContents(web_contents);
     prompt_factory_ = std::make_unique<MockPermissionPromptFactory>(
         PermissionRequestManager::FromWebContents(web_contents));

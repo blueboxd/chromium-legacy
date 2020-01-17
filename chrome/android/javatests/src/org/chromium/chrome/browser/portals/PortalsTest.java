@@ -199,6 +199,24 @@ public class PortalsTest {
         JavaScriptUtils.executeJavaScriptAndWaitForResult(tab.getWebContents(), "removePortal();");
     }
 
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testFocusTransfersAcrossActivation() throws Exception {
+        mActivityTestRule.startMainActivityWithURL(
+                mTestServer.getURL("/chrome/test/data/android/portals/focus-transfer.html"));
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        executeScriptAndAwaitSwap(tab, "activatePortal()");
+        JavaScriptUtils.runJavascriptWithAsyncResult(tab.getWebContents(),
+                "focusPromise.then(() => domAutomationController.send(true));");
+        Assert.assertEquals("true",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        tab.getWebContents(), "windowBlurred()"));
+        Assert.assertEquals("true",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        tab.getWebContents(), "buttonBlurred()"));
+    }
+
     /**
      * Tests that a drag that started in the predecessor page causes a scroll in the activated page
      * after a scroll triggered activation.

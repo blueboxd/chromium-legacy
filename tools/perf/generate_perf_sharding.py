@@ -422,7 +422,7 @@ def _ValidateShardMaps(args):
           '`./generate_perf_sharding.py update-timing --filter-only` '
           'to regenerate it.'.format(cycletimes=_CYCLETIME_CONTRIBUTION))
 
-    builders = _GetBuilderPlatforms(builders=None, waterfall='perf')
+    builders = _GetBuilderPlatforms(builders=None, waterfall='all')
     for builder in builders:
       output_file = os.path.join(
           tempdir, os.path.basename(builder.timing_file_path))

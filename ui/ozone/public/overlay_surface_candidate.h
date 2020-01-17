@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/overlay_transform.h"
 
 namespace ui {
@@ -30,8 +31,8 @@ class COMPONENT_EXPORT(OZONE_BASE) OverlaySurfaceCandidate {
   ~OverlaySurfaceCandidate();
   OverlaySurfaceCandidate& operator=(const OverlaySurfaceCandidate& other);
 
-  // Note that |clip_rect|, |is_clipped| and |overlay_handled| are
-  // *not* used as part of the comparison.
+  // Note that |clip_rect|, |is_clipped|, |overlay_handled| and |native_pixmap|
+  // are *not* used as part of the comparison.
   bool operator<(const OverlaySurfaceCandidate& other) const;
 
   // Transformation to apply to layer during composition.
@@ -55,6 +56,14 @@ class COMPONENT_EXPORT(OZONE_BASE) OverlaySurfaceCandidate {
   bool is_clipped = false;
   // If the quad doesn't require blending.
   bool is_opaque = false;
+  // Optionally contains a pointer to the NativePixmap corresponding to this
+  // candidate.
+  scoped_refptr<gfx::NativePixmap> native_pixmap = nullptr;
+  // A unique ID corresponding to |native_pixmap|. The ID is not reused even if
+  // |native_pixmap| is destroyed. Zero if |native_pixmap| is null.
+  // TODO(samans): This will not be necessary once Ozone/DRM not longer uses a
+  // cache for overlay testing. https://crbug.com/1034559
+  uint32_t native_pixmap_unique_id = 0;
   // To be modified by the implementer if this candidate can go into
   // an overlay.
   bool overlay_handled = false;

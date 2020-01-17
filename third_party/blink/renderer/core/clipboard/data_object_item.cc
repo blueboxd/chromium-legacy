@@ -41,6 +41,7 @@
 
 namespace blink {
 
+// static
 DataObjectItem* DataObjectItem::CreateFromString(const String& type,
                                                  const String& data) {
   DataObjectItem* item =
@@ -49,6 +50,7 @@ DataObjectItem* DataObjectItem::CreateFromString(const String& type,
   return item;
 }
 
+// static
 DataObjectItem* DataObjectItem::CreateFromFile(File* file) {
   DataObjectItem* item =
       MakeGarbageCollected<DataObjectItem>(kFileKind, file->type());
@@ -56,6 +58,7 @@ DataObjectItem* DataObjectItem::CreateFromFile(File* file) {
   return item;
 }
 
+// static
 DataObjectItem* DataObjectItem::CreateFromFileWithFileSystemId(
     File* file,
     const String& file_system_id) {
@@ -66,6 +69,7 @@ DataObjectItem* DataObjectItem::CreateFromFileWithFileSystemId(
   return item;
 }
 
+// static
 DataObjectItem* DataObjectItem::CreateFromURL(const String& url,
                                               const String& title) {
   DataObjectItem* item =
@@ -75,6 +79,7 @@ DataObjectItem* DataObjectItem::CreateFromURL(const String& url,
   return item;
 }
 
+// static
 DataObjectItem* DataObjectItem::CreateFromHTML(const String& html,
                                                const KURL& base_url) {
   DataObjectItem* item =
@@ -84,6 +89,7 @@ DataObjectItem* DataObjectItem::CreateFromHTML(const String& html,
   return item;
 }
 
+// static
 DataObjectItem* DataObjectItem::CreateFromSharedBuffer(
     scoped_refptr<SharedBuffer> buffer,
     const KURL& source_url,
@@ -100,26 +106,37 @@ DataObjectItem* DataObjectItem::CreateFromSharedBuffer(
   return item;
 }
 
-DataObjectItem* DataObjectItem::CreateFromClipboard(const String& type,
-                                                    uint64_t sequence_number) {
+// static
+DataObjectItem* DataObjectItem::CreateFromClipboard(
+    SystemClipboard* system_clipboard,
+    const String& type,
+    uint64_t sequence_number) {
   if (type == kMimeTypeImagePng) {
-    return MakeGarbageCollected<DataObjectItem>(kFileKind, type,
-                                                sequence_number);
+    return MakeGarbageCollected<DataObjectItem>(
+        kFileKind, type, sequence_number, system_clipboard);
   }
-  return MakeGarbageCollected<DataObjectItem>(kStringKind, type,
-                                              sequence_number);
+  return MakeGarbageCollected<DataObjectItem>(
+      kStringKind, type, sequence_number, system_clipboard);
 }
 
 DataObjectItem::DataObjectItem(ItemKind kind, const String& type)
-    : source_(kInternalSource), kind_(kind), type_(type), sequence_number_(0) {}
+    : source_(kInternalSource),
+      kind_(kind),
+      type_(type),
+      sequence_number_(0),
+      system_clipboard_(nullptr) {}
 
 DataObjectItem::DataObjectItem(ItemKind kind,
                                const String& type,
-                               uint64_t sequence_number)
+                               uint64_t sequence_number,
+                               SystemClipboard* system_clipboard)
     : source_(kClipboardSource),
       kind_(kind),
       type_(type),
-      sequence_number_(sequence_number) {}
+      sequence_number_(sequence_number),
+      system_clipboard_(system_clipboard) {
+  DCHECK(system_clipboard_);
+}
 
 File* DataObjectItem::GetAsFile() const {
   if (Kind() != kFileKind)
@@ -137,8 +154,8 @@ File* DataObjectItem::GetAsFile() const {
 
   DCHECK_EQ(source_, kClipboardSource);
   if (GetType() == kMimeTypeImagePng) {
-    SkBitmap bitmap = SystemClipboard::GetInstance().ReadImage(
-        mojom::ClipboardBuffer::kStandard);
+    SkBitmap bitmap =
+        system_clipboard_->ReadImage(mojom::ClipboardBuffer::kStandard);
 
     SkPixmap pixmap;
     bitmap.peekPixels(&pixmap);
@@ -175,21 +192,19 @@ String DataObjectItem::GetAsString() const {
   String data;
   // This is ugly but there's no real alternative.
   if (type_ == kMimeTypeTextPlain) {
-    data = SystemClipboard::GetInstance().ReadPlainText();
+    data = system_clipboard_->ReadPlainText();
   } else if (type_ == kMimeTypeTextRTF) {
-    data = SystemClipboard::GetInstance().ReadRTF();
+    data = system_clipboard_->ReadRTF();
   } else if (type_ == kMimeTypeTextHTML) {
     KURL ignored_source_url;
     unsigned ignored;
-    data = SystemClipboard::GetInstance().ReadHTML(ignored_source_url, ignored,
-                                                   ignored);
+    data = system_clipboard_->ReadHTML(ignored_source_url, ignored, ignored);
   } else {
-    data = SystemClipboard::GetInstance().ReadCustomData(type_);
+    data = system_clipboard_->ReadCustomData(type_);
   }
 
-  return SystemClipboard::GetInstance().SequenceNumber() == sequence_number_
-             ? data
-             : String();
+  return system_clipboard_->SequenceNumber() == sequence_number_ ? data
+                                                                 : String();
 }
 
 bool DataObjectItem::IsFilename() const {
@@ -209,6 +224,7 @@ String DataObjectItem::FileSystemId() const {
 
 void DataObjectItem::Trace(blink::Visitor* visitor) {
   visitor->Trace(file_);
+  visitor->Trace(system_clipboard_);
 }
 
 }  // namespace blink

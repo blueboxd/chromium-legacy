@@ -15,7 +15,6 @@
 namespace net {
 
 namespace {
-const url::Origin kOrigin = url::Origin::Create(GURL("https://example.test/"));
 
 NetworkErrorLoggingService::NelPolicy MakePolicyForOrigin(url::Origin origin) {
   NetworkErrorLoggingService::NelPolicy policy;
@@ -66,6 +65,9 @@ TEST(MockPersistentNelStoreTest, FinishLoading) {
 }
 
 TEST(MockPersistentNelStoreTest, PreStoredPolicies) {
+  const url::Origin kOrigin =
+      url::Origin::Create(GURL("https://example.test/"));
+
   MockPersistentNelStore store;
   MockPersistentNelStore::CommandList expected_commands;
   std::vector<NetworkErrorLoggingService::NelPolicy> loaded_policies;
@@ -95,7 +97,7 @@ TEST(MockPersistentNelStoreTest, FailedLoad) {
   std::vector<NetworkErrorLoggingService::NelPolicy> loaded_policies;
 
   std::vector<NetworkErrorLoggingService::NelPolicy> prestored_policies = {
-      MakePolicyForOrigin(kOrigin)};
+      MakePolicyForOrigin(url::Origin::Create(GURL("https://example.test/")))};
   store.SetPrestoredPolicies(std::move(prestored_policies));
   EXPECT_EQ(1, store.StoredPoliciesCount());
 
@@ -113,6 +115,9 @@ TEST(MockPersistentNelStoreTest, FailedLoad) {
 }
 
 TEST(MockPersistentNelStoreTest, Add) {
+  const url::Origin kOrigin =
+      url::Origin::Create(GURL("https://example.test/"));
+
   MockPersistentNelStore store;
   MockPersistentNelStore::CommandList expected_commands;
   std::vector<NetworkErrorLoggingService::NelPolicy> loaded_policies;
@@ -145,6 +150,9 @@ TEST(MockPersistentNelStoreTest, Add) {
 }
 
 TEST(MockPersistentNelStoreTest, AddThenDelete) {
+  const url::Origin kOrigin =
+      url::Origin::Create(GURL("https://example.test/"));
+
   MockPersistentNelStore store;
   MockPersistentNelStore::CommandList expected_commands;
   std::vector<NetworkErrorLoggingService::NelPolicy> loaded_policies;
@@ -183,6 +191,9 @@ TEST(MockPersistentNelStoreTest, AddThenDelete) {
 }
 
 TEST(MockPersistentNelStoreTest, AddFlushThenDelete) {
+  const url::Origin kOrigin =
+      url::Origin::Create(GURL("https://example.test/"));
+
   MockPersistentNelStore store;
   MockPersistentNelStore::CommandList expected_commands;
   std::vector<NetworkErrorLoggingService::NelPolicy> loaded_policies;
@@ -226,6 +237,9 @@ TEST(MockPersistentNelStoreTest, AddFlushThenDelete) {
 }
 
 TEST(MockPersistentNelStoreTest, AddThenUpdate) {
+  const url::Origin kOrigin =
+      url::Origin::Create(GURL("https://example.test/"));
+
   MockPersistentNelStore store;
   MockPersistentNelStore::CommandList expected_commands;
   std::vector<NetworkErrorLoggingService::NelPolicy> loaded_policies;

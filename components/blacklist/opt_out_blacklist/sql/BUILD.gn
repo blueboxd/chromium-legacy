@@ -17,9 +17,7 @@ static_library("opt_out_blacklist_sql") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "opt_out_store_sql_unittest.cc",
-  ]
+  sources = [ "opt_out_store_sql_unittest.cc" ]
 
   deps = [
     ":opt_out_blacklist_sql",

@@ -18,6 +18,7 @@
 #include "base/version.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/optimization_guide/memory_hint.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/store_update_data.h"
 
@@ -27,7 +28,6 @@ class SequencedTaskRunner;
 
 namespace optimization_guide {
 namespace proto {
-class Hint;
 class StoreEntry;
 }  // namespace proto
 
@@ -38,8 +38,7 @@ class StoreEntry;
 class OptimizationGuideStore {
  public:
   using HintLoadedCallback =
-      base::OnceCallback<void(const std::string&,
-                              std::unique_ptr<proto::Hint>)>;
+      base::OnceCallback<void(const std::string&, std::unique_ptr<MemoryHint>)>;
   using PredictionModelLoadedCallback =
       base::OnceCallback<void(std::unique_ptr<proto::PredictionModel>)>;
   using HostModelFeaturesLoadedCallback =

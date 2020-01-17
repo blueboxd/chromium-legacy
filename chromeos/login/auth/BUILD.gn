@@ -9,9 +9,7 @@ assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
 component("auth") {
   defines = [ "IS_CHROMEOS_LOGIN_AUTH_IMPL" ]
-  public_deps = [
-    ":challenge_response_key",
-  ]
+  public_deps = [ ":challenge_response_key" ]
   deps = [
     "//base",
     "//base:i18n",
@@ -110,9 +108,7 @@ source_set("test_support") {
 # chromeos/cryptohome.
 source_set("challenge_response_key") {
   defines = [ "IS_CHROMEOS_LOGIN_AUTH_IMPL" ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   sources = [
     "challenge_response_key.cc",
     "challenge_response_key.h",

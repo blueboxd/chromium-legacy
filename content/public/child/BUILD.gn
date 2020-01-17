@@ -8,13 +8,9 @@ import("//ppapi/buildflags/buildflags.gni")
 # See //content/BUILD.gn for how this works.
 group("child") {
   if (is_component_build) {
-    public_deps = [
-      "//content",
-    ]
+    public_deps = [ "//content" ]
   } else {
-    public_deps = [
-      ":child_sources",
-    ]
+    public_deps = [ ":child_sources" ]
     if (!is_android) {
       public_deps += [ "//content/gpu" ]
     }

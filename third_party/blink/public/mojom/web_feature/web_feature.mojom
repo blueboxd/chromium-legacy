@@ -1289,10 +1289,6 @@ enum WebFeature {
   kV8HTMLVideoElement_Poster_AttributeGetter = 1815,
   kV8HTMLVideoElement_Poster_AttributeSetter = 1816,
   kNotificationPermissionRequestedIframe = 1817,
-  kPresentationReceiverInsecureOrigin = 1819,
-  kPresentationReceiverSecureOrigin = 1820,
-  kPresentationRequestInsecureOrigin = 1821,
-  kPresentationRequestSecureOrigin = 1822,
   kRtcpMuxPolicyNegotiate = 1823,
   kDOMClobberedVariableAccessed = 1824,
   kHTMLDocumentCreateProcessingInstruction = 1825,
@@ -2461,7 +2457,7 @@ enum WebFeature {
   kRegisterProtocolHandlerSameOriginAsTop = 3092,
   kRegisterProtocolHandlerCrossOriginSubframe = 3093,
   kWebNfcNdefReaderScan = 3094,
-  kWebNfcNdefWriterPush = 3095,
+  kWebNfcNdefWriterWrite = 3095,
   kHTMLPortalElement = 3096,
   kV8HTMLPortalElement_Activate_Method = 3097,
   kV8HTMLPortalElement_PostMessage_Method = 3098,
@@ -2493,6 +2489,8 @@ enum WebFeature {
   kWebkitBoxPackCenterDoesSomething = 3124,
   kWebkitBoxPackEndDoesSomething = 3125,
   kV8KeyframeEffect_Constructor = 3126,
+  kWebNfcAPI = 3127,
+  kHostCandidateAttributeGetter = 3128,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -91,7 +91,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     findMenuItem_(node) {
-      while (node && node.parentNode != this && !(node instanceof MenuItem)) {
+      while (node && node.parentNode !== this && !(node instanceof MenuItem)) {
         node = node.parentNode;
       }
       return node ? assertInstanceof(node, MenuItem) : null;
@@ -218,7 +218,7 @@ cr.define('cr.ui', function() {
       }
       // A "position: fixed" element won't have an offsetParent, so we have to
       // do the full style computation.
-      return window.getComputedStyle(menuItem).display != 'none';
+      return window.getComputedStyle(menuItem).display !== 'none';
     },
 
     /**
@@ -254,7 +254,7 @@ cr.define('cr.ui', function() {
           return;
         }
         let i = self.selectedIndex;
-        if (i == -1 && m == -1) {
+        if (i === -1 && m === -1) {
           // Edge case when needed to go the last item first.
           i = 0;
         }
@@ -269,7 +269,7 @@ cr.define('cr.ui', function() {
 
           // Check not to enter into infinite loop if all items are hidden or
           // disabled.
-          if (i == startPosition) {
+          if (i === startPosition) {
             break;
           }
 

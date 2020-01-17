@@ -369,12 +369,6 @@
       このポリシーは Chrome 88 で削除されます。
 
       詳しくは、https://www.chromestatus.com/feature/5989473649164288 をご覧ください。</translation>
-<translation id="1559980755219453326">このポリシーでは、拡張機能とプラグインの情報について、レポートを作成するかどうかを管理します。
-
-      このポリシーが未設定または True に設定されている場合、拡張機能とプラグインのデータが収集されます。
-      このポリシーが False に設定されている場合、拡張機能とプラグインのデータは収集されません。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="1560205870554624777">Kerberos 機能が有効かどうかを制御します。Kerberos は、ウェブアプリやファイル共有の認証に使用できる認証プロトコルです。
 
           このポリシーが有効に設定されている場合、Kerberos 機能は有効になります。このとき、Kerberos アカウントは「Kerberos アカウントを設定する」ポリシーまたは [人物の設定] ページの Kerberos アカウント設定から追加できます。
@@ -719,12 +713,6 @@
 
       このポリシーが未設定の場合は、有効にした場合と同じ結果になります（上の説明をご覧ください）。</translation>
 <translation id="2113068765175018713">自動再起動を行ってデバイスの稼働時間を制限する</translation>
-<translation id="2116790137063002724">このポリシーでは、ユーザーを識別できる情報（OS のログイン、<ph name="PRODUCT_NAME" /> プロフィールのログイン、<ph name="PRODUCT_NAME" /> プロフィール名、<ph name="PRODUCT_NAME" /> プロフィールのパス、<ph name="PRODUCT_NAME" /> 実行ファイルのパスなど）について、レポートを作成するかどうかを管理します。
-
-      このポリシーが未設定または True に設定されている場合、ユーザーを識別できる情報が収集されます。
-      このポリシーが False に設定されている場合、ユーザーを識別できる情報は収集されません。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="2127599828444728326">これらのサイトの通知を許可する</translation>
 <translation id="2131902621292742709">画面が暗くなるまでの時間（バッテリー電源での実行時）</translation>
 <translation id="2134437727173969994">画面のロックを許可</translation>
@@ -2974,9 +2962,6 @@
         このポリシーが false に設定されている場合、ユーザーは Google にフィードバックを送信できません。
 
         このポリシーが未設定か true に設定されている場合、ユーザーはメニューの [ヘルプ] で [問題の報告] をクリックするか、ショートカット キーを押して、Google にフィードバックを送信できます。</translation>
-<translation id="5581292529942108810">Chrome レポート拡張機能に関するポリシーを設定します。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="5583806683960333345">この設定が有効な場合、ユーザーはインスタント テザリングを使用できます。インスタント テザリングを利用して、Google スマートフォンは関連デバイスとモバイルデータを共有できます。
 
       この設定が無効な場合、ユーザーはインスタント テザリングを使用できません。
@@ -3622,12 +3607,6 @@
 
       <ph name="PRODUCT_NAME" /> の起動時に適用するフラグを指定します。指定したフラグはログイン画面にのみ適用されます。このポリシーで設定したフラグはユーザーのセッションには影響しません。</translation>
 <translation id="685769593149966548">YouTube で制限付きモード「強」を強制する</translation>
-<translation id="6857824281777105940">このポリシーでは、セーフ ブラウジングの警告数、セーフ ブラウジングの警告のクリック数といったセーフ ブラウジングに関する情報について、レポートを作成するかどうかを管理します。
-
-      このポリシーが未設定または True に設定されている場合、セーフ ブラウジング データが収集されます。
-      このポリシーが False に設定されている場合、セーフ ブラウジング データは収集されません。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="686079137349561371">Microsoft Windows 7 以降</translation>
 <translation id="6864244339257535116">パスワードで保護されているファイルのアップロードとダウンロードを許可する</translation>
 <translation id="687046793986382807">このポリシーは <ph name="PRODUCT_NAME" /> バージョン 35 で廃止されました。
@@ -3969,12 +3948,6 @@
 <translation id="7311458740754205918">このオプションが true に設定されているか、未設定の場合、[新しいタブ] ページには、ユーザーの閲覧履歴、興味・関心、場所に応じておすすめのコンテンツが表示されます。
 
       このオプションが false に設定されている場合、自動生成のおすすめのコンテンツは [新しいタブ] ページに表示されません。</translation>
-<translation id="7313793931637495417">このポリシーでは、バージョン情報（OS バージョン、OS プラットフォーム、OS アーキテクチャ、<ph name="PRODUCT_NAME" /> のバージョン、<ph name="PRODUCT_NAME" /> のチャンネルなど）について、レポートを作成するかどうかを管理します。
-
-      このポリシーが未設定または True に設定されている場合、バージョン情報が収集されます。
-      このポリシーが False に設定されている場合、バージョン情報は収集されません。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" /> の追加コマンド ライン パラメータ</translation>
 <translation id="7326394567531622570">このオプションは Wipe（値 2）と似ていますが、ログイン トークンを保持するように動作します（この場合、ユーザーの再ログインが不要になります）。</translation>
 <translation id="7329968046053403405">「<ph name="HTTP_NEGOTIATE" />」認証（Kerberos 認証など）に対応している Android 認証アプリによって提供されるアカウントの種類を指定します。この情報は、認証アプリの提供者から入手します。詳しくは、https://goo.gl/hajyfN をご覧ください。
@@ -3995,12 +3968,6 @@
 <translation id="7339315111520512972">ネットワーク用のコードをブラウザ プロセスで実行します</translation>
 <translation id="7340034977315324840">デバイス操作時間を報告する</translation>
 <translation id="7343497214039883642">デバイスの企業プリンタ設定ファイル</translation>
-<translation id="735902178936442460">このポリシーでは、マシンを識別できる情報（マシン名、ネットワーク アドレスなど）について、レポートを作成するかどうかを管理します。
-
-      このポリシーが未設定または True に設定されている場合、マシンを識別できる情報が収集されます。
-      このポリシーが False に設定されている場合、マシンを識別できる情報は収集されません。
-
-      のポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="7359307926583593395">
       このポリシーはログイン画面に適用されます。ユーザー セッションに適用される <ph name="SITE_PER_PROCESS_POLICY_NAME" /> ポリシーもご覧になり、両方のポリシーを同じ値に設定することをおすすめします。値が一致しない場合、ユーザー セッションの開始時にはユーザー ポリシーで指定された値が適用されますが、その際に遅延が生じる可能性があります。
       </translation>
@@ -4395,12 +4362,6 @@
       このポリシーを有効に設定するか、未設定のままにした場合、ウェブサイトは保存されているお支払い方法があるかどうかを確認できます。</translation>
 <translation id="8118665053362250806">メディア ディスクのキャッシュ サイズを設定します</translation>
 <translation id="8124468781472887384">デバイス プリンタの設定へのアクセス ポリシー</translation>
-<translation id="8138009212169037227">このポリシーでは、ポリシーデータとポリシーの取得日時について、レポートを作成するかどうかを管理します。
-
-      このポリシーが未設定または True に設定されている場合、ポリシーデータとポリシーの取得日時が収集されます。
-      このポリシーが False に設定されている場合、ポリシーデータとポリシーの取得日時は収集されません。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="8140204717286305802">ネットワーク インターフェース（とそのタイプ）とハードウェア アドレスのリストをサーバーに報告します。
 
       このポリシーが False に設定されている場合、インターフェースのリストは報告されません。</translation>

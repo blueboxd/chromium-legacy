@@ -178,6 +178,11 @@ class ManualFillingComponentBridge {
                 webContents, available);
     }
 
+    @VisibleForTesting
+    public static void disableServerPredictionsForTesting() {
+        ManualFillingComponentBridgeJni.get().disableServerPredictionsForTesting();
+    }
+
     @NativeMethods
     interface Natives {
         void onFillingTriggered(long nativeManualFillingViewAndroid,
@@ -188,5 +193,6 @@ class ManualFillingComponentBridge {
                 WebContents webContents, String[] userNames, String[] passwords);
         void notifyFocusedFieldTypeForTesting(WebContents webContents, int focusedFieldType);
         void signalAutoGenerationStatusForTesting(WebContents webContents, boolean available);
+        void disableServerPredictionsForTesting();
     }
 }

@@ -7,7 +7,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/browser/webui/web_ui_browsertest_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
@@ -17,13 +16,24 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/web_ui_browsertest_util.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "ipc/ipc_security_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/url_constants.h"
 
 namespace content {
+
+namespace {
+
+const char kAddIframeScript[] =
+    "var frame = document.createElement('iframe');\n"
+    "frame.src = $1;\n"
+    "document.body.appendChild(frame);\n";
+
+}  // namespace
 
 class WebUINavigationBrowserTest : public ContentBrowserTest {
  public:
@@ -161,16 +171,11 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
   EXPECT_EQ(BINDINGS_POLICY_WEB_UI,
             root->current_frame_host()->GetEnabledBindings());
 
-  std::string add_iframe_script =
-      "var frame = document.createElement('iframe');\n"
-      "frame.src = $1;\n"
-      "document.body.appendChild(frame);\n";
-
   // Navigate to a Web URL and verify that the navigation was blocked.
   {
     TestNavigationObserver observer(shell()->web_contents());
     GURL web_url(embedded_test_server()->GetURL("/title2.html"));
-    EXPECT_TRUE(ExecJs(shell(), JsReplace(add_iframe_script, web_url),
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, web_url),
                        EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
     observer.Wait();
     EXPECT_FALSE(observer.last_navigation_succeeded());
@@ -180,10 +185,42 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
   {
     TestNavigationObserver observer(shell()->web_contents());
     GURL data_url("data:text/html,foo");
-    EXPECT_TRUE(ExecJs(shell(), JsReplace(add_iframe_script, data_url),
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, data_url),
                        EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
     observer.Wait();
     EXPECT_FALSE(observer.last_navigation_succeeded());
+  }
+
+  // Navigate to a chrome-untrusted URL and verify that the navigation was
+  // blocked by a renderer-side check.
+  {
+    // Add a DataSource for chrome-untrusted:// that can be iframe'd.
+    AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
+                           "test-host", /*child_src=*/base::nullopt,
+                           /*disable_xfo=*/true);
+    GURL untrusted_url(GetChromeUntrustedUIURL("test-host/title1.html"));
+
+    auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
+        shell()->web_contents(),
+        "Not allowed to load local resource: " + untrusted_url.spec());
+
+    // Save the delegate since we are about to replace it.
+    auto* web_contents_delegate = shell()->web_contents()->GetDelegate();
+    shell()->web_contents()->SetDelegate(console_delegate.get());
+
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, untrusted_url),
+                       EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+
+    console_delegate->Wait();
+    FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                              ->GetFrameTree()
+                              ->root();
+    EXPECT_EQ(3U, root->child_count());
+    RenderFrameHost* child = root->child_at(2)->current_frame_host();
+    EXPECT_EQ(GURL(), child->GetLastCommittedURL());
+
+    // Restore the delegate that we replaced.
+    shell()->web_contents()->SetDelegate(web_contents_delegate);
   }
 
   // Verify that an iframe with "about:blank" URL is actually allowed. Not
@@ -193,7 +230,57 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
   {
     TestNavigationObserver observer(shell()->web_contents());
     GURL about_blank_url("about:blank");
-    EXPECT_TRUE(ExecJs(shell(), JsReplace(add_iframe_script, about_blank_url),
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, about_blank_url),
+                       EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+    observer.Wait();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+  }
+}
+
+// Verify that a chrome-untrusted:// scheme document can add iframes with web
+// content when the CSP allows it. This is different from chrome:// URLs where
+// no web content can be loaded, even if the CSP allows it.
+IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
+                       WebFrameInChromeUntrustedSchemeAllowedByCSP) {
+  // Add a DataSource with no iframe restrictions.
+  AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
+                         "test-host", /*child_src=*/"");
+  GURL main_frame_url(GetChromeUntrustedUIURL("test-host/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(0, root->current_frame_host()->GetEnabledBindings());
+
+  // Add iframe and navigate it to a Web URL and verify that the navigation
+  // succeeded.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    GURL web_url(embedded_test_server()->GetURL("/title2.html"));
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, web_url),
+                       EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+    observer.Wait();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+  }
+
+  // Add iframe and navigate it to a data URL and verify that the navigation
+  // succeeded.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    GURL data_url("data:text/html,foo");
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, data_url),
+                       EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+    observer.Wait();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+  }
+
+  // Add iframe and navigate it to "about:blank" and verify that the navigation
+  // succeeded.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    GURL about_blank_url("about:blank");
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, about_blank_url),
                        EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
     observer.Wait();
     EXPECT_TRUE(observer.last_navigation_succeeded());
@@ -216,17 +303,270 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
   {
     GURL web_url(embedded_test_server()->GetURL("/title2.html"));
     TestNavigationObserver navigation_observer(shell()->web_contents());
-    EXPECT_TRUE(
-        ExecJs(shell(),
-               JsReplace("var frame = document.createElement('iframe');\n"
-                         "frame.src = $1;\n"
-                         "document.body.appendChild(frame);\n",
-                         web_url),
-               EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, web_url),
+                       EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
     navigation_observer.Wait();
 
     EXPECT_FALSE(navigation_observer.last_navigation_succeeded());
   }
+}
+
+// Verify that a chrome-untrusted:// scheme document cannot add iframes with web
+// content when the CSP disallows it.
+IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
+                       WebFrameInChromeUntrustedSchemeDisallowedByCSP) {
+  // Add a DataSource which disallows iframes by default.
+  AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
+                         "test-host");
+  GURL main_frame_url(GetChromeUntrustedUIURL("test-host/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(0, root->current_frame_host()->GetEnabledBindings());
+
+  // Add iframe and navigate it to a Web URL and verify that the navigation was
+  // blocked.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    GURL web_url(embedded_test_server()->GetURL("/title2.html"));
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, web_url),
+                       EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+    observer.Wait();
+    EXPECT_FALSE(observer.last_navigation_succeeded());
+  }
+
+  // Add iframe and navigate it to a data URL and verify that the navigation was
+  // blocked.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    GURL data_url("data:text/html,foo");
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, data_url),
+                       EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+    observer.Wait();
+    EXPECT_FALSE(observer.last_navigation_succeeded());
+  }
+
+  // Add iframe and navigate it to a chrome-untrusted URL and verify that the
+  // navigation was blocked.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    // Add a DataSource for chrome-untrusted:// that can be iframe'd.
+    AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
+                           "test-iframe-host", /*child_src=*/base::nullopt,
+                           /*disable_xfo=*/true);
+    GURL untrusted_url(GetChromeUntrustedUIURL("test-host/title1.html"));
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, untrusted_url),
+                       EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+    observer.Wait();
+    EXPECT_FALSE(observer.last_navigation_succeeded());
+  }
+
+  // Add iframe and verify that an iframe with "about:blank" URL is actually
+  // allowed. Not sure why this would be useful, but from a security perspective
+  // it can only host content coming from the parent document, so it effectively
+  // has the same security context.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    GURL about_blank_url("about:blank");
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, about_blank_url),
+                       EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+    observer.Wait();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+  }
+}
+
+// Verify that a browser check stops websites from embeding chrome:// iframes.
+// This tests the FrameHostMsg_OpenURL path.
+IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
+                       DisallowEmbeddingChromeSchemeFromWebFrameBrowserCheck) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  GURL webui_url(GetWebUIURL("web-ui/title1.html?noxfo=true"));
+
+  // Add iframe but don't navigate it to a chrome:// URL yet.
+  EXPECT_TRUE(ExecJs(shell(),
+                     "var frame = document.createElement('iframe');\n"
+                     "document.body.appendChild(frame);\n",
+                     EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(1U, root->child_count());
+  RenderFrameHost* child = root->child_at(0)->current_frame_host();
+  EXPECT_EQ("about:blank", child->GetLastCommittedURL());
+
+  // Simulate an IPC message to navigate the subframe to a chrome:// URL.
+  // This bypasses the renderer-side check that would have stopped the
+  // navigation.
+  TestNavigationObserver observer(shell()->web_contents());
+  content::PwnMessageHelper::OpenURL(child->GetProcess(), child->GetRoutingID(),
+                                     webui_url);
+  observer.Wait();
+
+  child = root->child_at(0)->current_frame_host();
+  EXPECT_EQ(kBlockedURL, child->GetLastCommittedURL());
+}
+
+// Verify that a browser check stops websites from embeding chrome-untrusted://
+// iframes. This tests the FrameHostMsg_OpenURL path.
+IN_PROC_BROWSER_TEST_F(
+    WebUINavigationBrowserTest,
+    DisallowEmbeddingChromeUntrustedSchemeFromWebFrameBrowserCheck) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
+                         "test-iframe-host", /*child_src=*/base::nullopt,
+                         /*disable_xfo=*/true);
+
+  GURL untrusted_url(GetChromeUntrustedUIURL("test-iframe-host/title1.html"));
+
+  // Add iframe but don't navigate it to a chrome-untrusted:// URL yet.
+  EXPECT_TRUE(ExecJs(shell(),
+                     "var frame = document.createElement('iframe');\n"
+                     "document.body.appendChild(frame);\n",
+                     EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(1U, root->child_count());
+  RenderFrameHost* child = root->child_at(0)->current_frame_host();
+  EXPECT_EQ("about:blank", child->GetLastCommittedURL());
+
+  // Simulate an IPC message to navigate the subframe to a
+  // chrome-untrusted:// URL. This bypasses the renderer-side check that would
+  // have stopped the navigation.
+  TestNavigationObserver observer(shell()->web_contents());
+  content::PwnMessageHelper::OpenURL(child->GetProcess(), child->GetRoutingID(),
+                                     untrusted_url);
+  observer.Wait();
+
+  child = root->child_at(0)->current_frame_host();
+  EXPECT_EQ(kBlockedURL, child->GetLastCommittedURL());
+}
+
+// Verify that a renderer check stops websites from embeding chrome:// iframes.
+IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
+                       DisallowEmbeddingChromeSchemeFromWebFrameRendererCheck) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  GURL webui_url(GetWebUIURL("web-ui/title1.html?noxfo=true"));
+  auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(),
+      "Not allowed to load local resource: " + webui_url.spec());
+  shell()->web_contents()->SetDelegate(console_delegate.get());
+
+  // Add iframe and navigate it to a chrome:// URL and verify that the
+  // navigation was blocked.
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, webui_url),
+                     EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+  console_delegate->Wait();
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(1U, root->child_count());
+  RenderFrameHost* child = root->child_at(0)->current_frame_host();
+  EXPECT_EQ(GURL(), child->GetLastCommittedURL());
+}
+
+// Verify that a renderer check stops websites from embeding chrome-untrusted://
+// iframes.
+IN_PROC_BROWSER_TEST_F(
+    WebUINavigationBrowserTest,
+    DisallowEmbeddingChromeUntrustedSchemeFromWebFrameRendererCheck) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
+                         "test-iframe-host", /*child_src=*/base::nullopt,
+                         /*disable_xfo=*/true);
+
+  GURL untrusted_url(GetChromeUntrustedUIURL("test-iframe-host/title1.html"));
+  auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(),
+      "Not allowed to load local resource: " + untrusted_url.spec());
+  shell()->web_contents()->SetDelegate(console_delegate.get());
+
+  // Add iframe and navigate it to a chrome-untrusted:// URL and verify that the
+  // navigation was blocked.
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, untrusted_url),
+                     EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+  console_delegate->Wait();
+
+  EXPECT_EQ(1U, root->child_count());
+  RenderFrameHost* child = root->child_at(0)->current_frame_host();
+  EXPECT_EQ(GURL(), child->GetLastCommittedURL());
+}
+
+// Used to test browser-side checks by disabling some renderer-side checks.
+class WebUINavigationDisabledWebSecurityBrowserTest
+    : public WebUINavigationBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Disable Web Security to skip renderer-side checks so that we can test
+    // browser-side checks.
+    command_line->AppendSwitch(switches::kDisableWebSecurity);
+  }
+};
+
+// Verify that a browser check stops websites from embeding chrome:// iframes.
+// This tests the Frame::BeginNavigation path.
+IN_PROC_BROWSER_TEST_F(WebUINavigationDisabledWebSecurityBrowserTest,
+                       DisallowEmbeddingChromeSchemeFromWebFrameBrowserCheck2) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  GURL webui_url(GetWebUIURL("web-ui/title1.html?noxfo=true"));
+
+  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, webui_url),
+                     EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+  observer.Wait();
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(1U, root->child_count());
+  RenderFrameHost* child = root->child_at(0)->current_frame_host();
+  EXPECT_EQ(kBlockedURL, child->GetLastCommittedURL());
+}
+
+// Verify that a browser check stops websites from embeding chrome-untrusted://
+// iframes. This tests the Frame::BeginNavigation path.
+IN_PROC_BROWSER_TEST_F(
+    WebUINavigationDisabledWebSecurityBrowserTest,
+    DisallowEmbeddingChromeUntrustedSchemeFromWebFrameBrowserCheck2) {
+  GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
+                         "test-iframe-host", /*child_src=*/base::nullopt,
+                         /*disable_xfo=*/true);
+
+  GURL untrusted_url(GetChromeUntrustedUIURL("test-iframe-host/title1.html"));
+
+  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_TRUE(ExecJs(shell(), JsReplace(kAddIframeScript, untrusted_url),
+                     EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+  observer.Wait();
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(1U, root->child_count());
+  RenderFrameHost* child = root->child_at(0)->current_frame_host();
+  EXPECT_EQ(kBlockedURL, child->GetLastCommittedURL());
 }
 
 // Verify that a WebUI document in the main frame is allowed to navigate to
@@ -314,6 +654,47 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
 
   // Navigate to a WebUI page.
   EXPECT_TRUE(NavigateToURL(shell(), chrome_url));
+
+  // Verify that the "hostname" is also part of the site URL.
+  GURL site_url = web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL();
+  EXPECT_EQ(expected_site_url, site_url);
+
+  // Ask the page to create a blob URL and return back the blob URL.
+  const char* kScript = R"(
+          var blob = new Blob(['foo'], {type : 'text/html'});
+          var url = URL.createObjectURL(blob);
+          url;
+      )";
+  GURL blob_url(
+      EvalJs(shell(), kScript, EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */)
+          .ExtractString());
+  EXPECT_EQ(url::kBlobScheme, blob_url.scheme());
+
+  // Verify that the blob also requires a dedicated process and that it would
+  // use the same site url as the original page.
+  EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+      IsolationContext(browser_context), blob_url));
+  EXPECT_EQ(expected_site_url,
+            SiteInstance::GetSiteForURL(browser_context, blob_url));
+}
+
+// Verify chrome-untrusted:// uses a dedicated process.
+IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
+                       UntrustedWebUIOriginsRequireDedicatedProcess) {
+  // Add a DataSource which disallows iframes by default.
+  AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
+                         "test-host");
+  GURL chrome_untrusted_url(GetChromeUntrustedUIURL("test-host/title1.html"));
+  GURL expected_site_url(GetChromeUntrustedUIURL("test-host"));
+
+  // chrome-untrusted:// URLs should require a dedicated process.
+  WebContents* web_contents = shell()->web_contents();
+  BrowserContext* browser_context = web_contents->GetBrowserContext();
+  EXPECT_TRUE(SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+      IsolationContext(browser_context), chrome_untrusted_url));
+
+  // Navigate to a chrome-untrusted:// page.
+  EXPECT_TRUE(NavigateToURL(shell(), chrome_untrusted_url));
 
   // Verify that the "hostname" is also part of the site URL.
   GURL site_url = web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL();

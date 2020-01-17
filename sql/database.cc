@@ -217,7 +217,7 @@ void Database::StatementRef::Close(bool forced) {
     // TODO(paivanof@gmail.com): This should move to the beginning
     // of the function. http://crbug.com/136655.
     base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-    InitScopedBlockingCall(&scoped_blocking_call);
+    InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
     sqlite3_finalize(stmt_);
     stmt_ = nullptr;
   }
@@ -309,9 +309,9 @@ void Database::CloseInternal(bool forced) {
     // TODO(paivanof@gmail.com): This should move to the beginning
     // of the function. http://crbug.com/136655.
     base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-    InitScopedBlockingCall(&scoped_blocking_call);
+    InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
-    // Reseting acquires a lock to ensure no dump is happening on the database
+    // Resetting acquires a lock to ensure no dump is happening on the database
     // at the same time. Unregister takes ownership of provider and it is safe
     // since the db is reset. memory_dump_provider_ could be null if db_ was
     // poisoned.
@@ -353,7 +353,7 @@ void Database::Preload() {
   }
 
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  InitScopedBlockingCall(&scoped_blocking_call);
+  InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   // Maximum number of bytes that will be prefetched from the database.
   //
@@ -636,7 +636,7 @@ bool Database::SetMmapAltStatus(int64_t status) {
 
 size_t Database::GetAppropriateMmapSize() {
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  InitScopedBlockingCall(&scoped_blocking_call);
+  InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   // How much to map if no errors are found.  50MB encompasses the 99th
   // percentile of Chrome databases in the wild, so this should be good.
@@ -777,7 +777,7 @@ void Database::TrimMemory() {
 // size, then backup that database over the existing database.
 bool Database::Raze() {
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  InitScopedBlockingCall(&scoped_blocking_call);
+  InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   if (!db_) {
     DCHECK(poisoned_) << "Cannot raze null db";
@@ -1079,7 +1079,7 @@ int Database::ExecuteAndReturnErrorCode(const char* sql) {
   }
 
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  InitScopedBlockingCall(&scoped_blocking_call);
+  InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   int rc = SQLITE_OK;
   while ((rc == SQLITE_OK) && *sql) {
@@ -1198,7 +1198,7 @@ scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
     return base::MakeRefCounted<StatementRef>(nullptr, nullptr, poisoned_);
 
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  InitScopedBlockingCall(&scoped_blocking_call);
+  InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   // TODO(pwnall): Cached statements (but not unique statements) should be
   //               prepared with prepFlags set to SQLITE_PREPARE_PERSISTENT.
@@ -1247,7 +1247,7 @@ std::string Database::GetSchema() const {
 
 bool Database::IsSQLValid(const char* sql) {
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  InitScopedBlockingCall(&scoped_blocking_call);
+  InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
   if (!db_) {
     DCHECK(poisoned_) << "Illegal use of Database without a db";
     return false;
@@ -1352,7 +1352,7 @@ bool Database::OpenInternal(const std::string& file_name,
   }
 
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  InitScopedBlockingCall(&scoped_blocking_call);
+  InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   EnsureSqliteInitialized();
 

@@ -298,7 +298,7 @@ TEST_F(IncrementalMarkingTest, ManualWriteBarrierTriggersWhenMarkingIsOn) {
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {object});
     EXPECT_FALSE(object->IsMarked());
-    MarkingVisitor::WriteBarrier(object);
+    MarkingVisitor::WriteBarrier(&object);
     EXPECT_TRUE(object->IsMarked());
   }
 }
@@ -306,7 +306,7 @@ TEST_F(IncrementalMarkingTest, ManualWriteBarrierTriggersWhenMarkingIsOn) {
 TEST_F(IncrementalMarkingTest, ManualWriteBarrierBailoutWhenMarkingIsOff) {
   auto* object = MakeGarbageCollected<Object>();
   EXPECT_FALSE(object->IsMarked());
-  MarkingVisitor::WriteBarrier(object);
+  MarkingVisitor::WriteBarrier(&object);
   EXPECT_FALSE(object->IsMarked());
 }
 

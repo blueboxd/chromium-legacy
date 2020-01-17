@@ -5,9 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "unzipper.mojom",
-  ]
+  sources = [ "unzipper.mojom" ]
 
   public_deps = [
     "//components/services/filesystem/public/mojom",

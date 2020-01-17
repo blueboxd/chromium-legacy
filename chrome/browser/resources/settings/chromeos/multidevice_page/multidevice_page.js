@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview
- * Settings page for managing MultiDevice features.
- */
-cr.exportPath('settings');
-
 Polymer({
   is: 'settings-multidevice-page',
 
@@ -29,7 +23,7 @@ Polymer({
      */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.MULTIDEVICE_FEATURES) {
           map.set(
@@ -79,7 +73,7 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = settings.MultiDeviceBrowserProxyImpl.getInstance();
 
     this.addWebUIListener(
@@ -94,7 +88,7 @@ Polymer({
    * Overridden from settings.RouteObserverBehavior.
    * @protected
    */
-  currentRouteChanged: function() {
+  currentRouteChanged() {
     this.leaveNestedPageIfNoHostIsSet_();
   },
 
@@ -105,7 +99,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getMultiDeviceItemLabelBlockCssClass_: function() {
+  getMultiDeviceItemLabelBlockCssClass_() {
     return this.isHostSet() ? 'middle' : 'start';
   },
 
@@ -113,7 +107,7 @@ Polymer({
    * @return {string} Translated item label.
    * @private
    */
-  getLabelText_: function() {
+  getLabelText_() {
     return this.pageContentData.hostDeviceName ||
         this.i18n('multideviceSetupItemHeading');
   },
@@ -122,7 +116,7 @@ Polymer({
    * @return {string} Translated sublabel with a "learn more" link.
    * @private
    */
-  getSubLabelInnerHtml_: function() {
+  getSubLabelInnerHtml_() {
     if (!this.isSuiteAllowedByPolicy()) {
       return this.i18nAdvanced('multideviceSetupSummary');
     }
@@ -145,7 +139,7 @@ Polymer({
    * @return {string} Translated button text.
    * @private
    */
-  getButtonText_: function() {
+  getButtonText_() {
     switch (this.pageContentData.mode) {
       case settings.MultiDeviceSettingsMode.NO_HOST_SET:
         return this.i18n('multideviceSetupButton');
@@ -163,7 +157,7 @@ Polymer({
    *                  should be aria-hidden or not.
    * @private
    */
-  getTextAriaHidden_: function() {
+  getTextAriaHidden_() {
     // When host is set and verified, we only show subpage arrow button and
     // toggle. In this case, we avoid the navigation stops on the text to make
     // navigating easier. The arrow button is labeled and described by the text,
@@ -177,7 +171,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowButton_: function() {
+  shouldShowButton_() {
     return [
       settings.MultiDeviceSettingsMode.NO_HOST_SET,
       settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
@@ -189,7 +183,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowToggle_: function() {
+  shouldShowToggle_() {
     return this.pageContentData.mode ===
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
   },
@@ -200,7 +194,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowSeparatorAndSubpageArrow_: function() {
+  shouldShowSeparatorAndSubpageArrow_() {
     return this.pageContentData.mode !==
         settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS;
   },
@@ -209,12 +203,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  doesClickOpenSubpage_: function() {
+  doesClickOpenSubpage_() {
     return this.isHostSet();
   },
 
   /** @private */
-  handleItemClick_: function(event) {
+  handleItemClick_(event) {
     // We do not open the subpage if the click was on a link.
     if (event.path[0].tagName === 'A') {
       event.stopPropagation();
@@ -225,11 +219,12 @@ Polymer({
       return;
     }
 
-    settings.navigateTo(settings.routes.MULTIDEVICE_FEATURES);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.MULTIDEVICE_FEATURES);
   },
 
   /** @private */
-  handleButtonClick_: function(event) {
+  handleButtonClick_(event) {
     event.stopPropagation();
     switch (this.pageContentData.mode) {
       case settings.MultiDeviceSettingsMode.NO_HOST_SET:
@@ -245,11 +240,11 @@ Polymer({
   },
 
   /** @private */
-  openPasswordPromptDialog_: function() {
+  openPasswordPromptDialog_() {
     this.showPasswordPromptDialog_ = true;
   },
 
-  onDialogClose_: function(event) {
+  onDialogClose_(event) {
     event.stopPropagation();
     if (event.path.some(
             element => element.id === 'multidevicePasswordPrompt')) {
@@ -258,7 +253,7 @@ Polymer({
   },
 
   /** @private */
-  onPasswordPromptDialogClose_: function() {
+  onPasswordPromptDialogClose_() {
     // The password prompt should only be shown when there is a feature waiting
     // to be enabled.
     assert(this.featureToBeEnabledOnceAuthenticated_ !== null);
@@ -297,7 +292,7 @@ Polymer({
    * }>} event
    * @private
    */
-  onFeatureToggleClicked_: function(event) {
+  onFeatureToggleClicked_(event) {
     const feature = event.detail.feature;
     const enabled = event.detail.enabled;
 
@@ -320,7 +315,7 @@ Polymer({
    * @return {boolean} Whether authentication is required to enable the feature.
    * @private
    */
-  isAuthenticationRequiredToEnable_: function(feature) {
+  isAuthenticationRequiredToEnable_(feature) {
     // Enabling SmartLock always requires authentication.
     if (feature == settings.MultiDeviceFeature.SMART_LOCK) {
       return true;
@@ -347,9 +342,9 @@ Polymer({
   },
 
   /** @private */
-  onForgetDeviceRequested_: function() {
+  onForgetDeviceRequested_() {
     this.browserProxy_.removeHostDevice();
-    settings.navigateTo(settings.routes.MULTIDEVICE);
+    settings.Router.getInstance().navigateTo(settings.routes.MULTIDEVICE);
   },
 
   /**
@@ -357,7 +352,7 @@ Polymer({
    * navigates them back to the main page.
    * @private
    */
-  leaveNestedPageIfNoHostIsSet_: function() {
+  leaveNestedPageIfNoHostIsSet_() {
     // Wait for data to arrive.
     if (!this.pageContentData) {
       return;
@@ -366,18 +361,20 @@ Polymer({
     // If the user gets to the a nested page without a host (e.g. by clicking a
     // stale 'existing user' notifications after forgetting their host) we
     // direct them back to the main settings page.
-    if (settings.routes.MULTIDEVICE != settings.getCurrentRoute() &&
-        settings.routes.MULTIDEVICE.contains(settings.getCurrentRoute()) &&
+    if (settings.routes.MULTIDEVICE !=
+            settings.Router.getInstance().getCurrentRoute() &&
+        settings.routes.MULTIDEVICE.contains(
+            settings.Router.getInstance().getCurrentRoute()) &&
         !this.isHostSet()) {
-      settings.navigateTo(settings.routes.MULTIDEVICE);
+      settings.Router.getInstance().navigateTo(settings.routes.MULTIDEVICE);
     }
   },
 
   /**
-   * @param {!MultiDevicePageContentData} newData
+   * @param {!settings.MultiDevicePageContentData} newData
    * @private
    */
-  onPageContentDataChanged_: function(newData) {
+  onPageContentDataChanged_(newData) {
     this.pageContentData = newData;
     this.leaveNestedPageIfNoHostIsSet_();
   },

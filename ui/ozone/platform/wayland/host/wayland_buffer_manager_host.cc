@@ -150,6 +150,15 @@ class WaylandBufferManagerHost::Surface {
     if (pending_buffer_ == buffer)
       pending_buffer_ = nullptr;
 
+    // Remove the buffer from pending presentation feedbacks.
+    for (auto it = presentation_feedbacks_.begin();
+         it != presentation_feedbacks_.end(); ++it) {
+      if (it->first == buffer_id) {
+        presentation_feedbacks_.erase(it);
+        break;
+      }
+    }
+
     auto result = buffers_.erase(buffer_id);
     return result;
   }
@@ -212,7 +221,7 @@ class WaylandBufferManagerHost::Surface {
   bool HasWindow() const { return !!window_; }
 
  private:
-  using PresentationFeedbackQueue = base::queue<
+  using PresentationFeedbackQueue = std::vector<
       std::pair<uint32_t, wl::Object<struct wp_presentation_feedback>>>;
 
   bool CommitBufferInternal(WaylandBuffer* buffer) {
@@ -274,14 +283,40 @@ class WaylandBufferManagerHost::Surface {
       pending_damage_region.set_size(buffer->size);
     DCHECK(!pending_damage_region.size().IsEmpty());
 
-    wl_surface_damage_buffer(window_->surface(), pending_damage_region.x(),
-                             pending_damage_region.y(),
-                             pending_damage_region.width(),
-                             pending_damage_region.height());
+    if (connection_->compositor_version() >=
+        WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
+      // wl_surface_damage_buffer relies on compositor API version 4. See
+      // https://bit.ly/2u00lv6 for details.
+      // We don't need to apply any scaling because pending_damage_region is
+      // already in buffer coordinates.
+      wl_surface_damage_buffer(window_->surface(), pending_damage_region.x(),
+                               pending_damage_region.y(),
+                               pending_damage_region.width(),
+                               pending_damage_region.height());
+    } else {
+      // The calculation for damage region relies on two assumptions:
+      // 1) The buffer is always attached at surface location (0, 0)
+      // 2) The API wl_surface::set_buffer_transform is not used.
+      // It's possible to write logic that accounts for both cases above, but
+      // it's currently unnecessary.
+      //
+      // Note: The damage region may not be an integer multiple of scale. To
+      // keep the implementation simple, the x() and y() coordinates round down,
+      // and the width() and height() calculations always add an extra pixel.
+      int scale = window_->buffer_scale();
+      wl_surface_damage(window_->surface(), pending_damage_region.x() / scale,
+                        pending_damage_region.y() / scale,
+                        pending_damage_region.width() / scale + 1,
+                        pending_damage_region.height() / scale + 1);
+    }
   }
 
   void AttachBuffer(WaylandBuffer* buffer) {
     DCHECK(window_);
+
+    // The logic in DamageBuffer currently relies on attachment coordinates of
+    // (0, 0). If this changes, then the calculation in DamageBuffer will also
+    // need to be updated.
     wl_surface_attach(window_->surface(), buffer->wl_buffer.get(), 0, 0);
   }
 
@@ -310,7 +345,7 @@ class WaylandBufferManagerHost::Surface {
         &Surface::FeedbackSyncOutput, &Surface::FeedbackPresented,
         &Surface::FeedbackDiscarded};
 
-    presentation_feedbacks_.push(std::make_pair(
+    presentation_feedbacks_.push_back(std::make_pair(
         buffer_id,
         wl::Object<struct wp_presentation_feedback>(wp_presentation_feedback(
             connection_->presentation(), window_->surface()))));
@@ -463,7 +498,7 @@ class WaylandBufferManagerHost::Surface {
     DCHECK(self);
     auto presentation = std::move(self->presentation_feedbacks_.front());
     DCHECK(presentation.second.get() == wp_presentation_feedback);
-    self->presentation_feedbacks_.pop();
+    self->presentation_feedbacks_.erase(self->presentation_feedbacks_.begin());
     self->OnPresentation(
         presentation.first,
         gfx::PresentationFeedback(
@@ -479,7 +514,7 @@ class WaylandBufferManagerHost::Surface {
     DCHECK(self);
     auto presentation = std::move(self->presentation_feedbacks_.front());
     DCHECK(presentation.second.get() == wp_presentation_feedback);
-    self->presentation_feedbacks_.pop();
+    self->presentation_feedbacks_.erase(self->presentation_feedbacks_.begin());
     self->OnPresentation(presentation.first,
                          gfx::PresentationFeedback::Failure());
   }

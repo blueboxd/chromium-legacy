@@ -8,15 +8,19 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/mode.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/ukm/content/source_url_recorder.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -83,6 +87,17 @@ vr::XrConsentPromptLevel GetRequiredConsentLevel(
   }
 
   return vr::XrConsentPromptLevel::kDefault;
+}
+
+ContentSettingsType GetRequiredPermission(device::mojom::XRSessionMode mode) {
+  switch (mode) {
+    case device::mojom::XRSessionMode::kInline:
+      return ContentSettingsType::SENSORS;
+    case device::mojom::XRSessionMode::kImmersiveVr:
+      return ContentSettingsType::VR;
+    case device::mojom::XRSessionMode::kImmersiveAr:
+      return ContentSettingsType::AR;
+  }
 }
 
 }  // namespace
@@ -409,16 +424,38 @@ void VRServiceImpl::ShowConsentPrompt(
   DCHECK_NE(options->mode, device::mojom::XRSessionMode::kImmersiveAr);
 #endif
 
+  bool consent_granted = false;
   XrConsentPromptLevel consent_level =
       GetRequiredConsentLevel(options->mode, runtime, requested_features);
+  if (!base::FeatureList::IsEnabled(features::kWebXrPermissionsApi)) {
+    consent_granted =
+        ((consent_level == XrConsentPromptLevel::kNone) ||
+         IsConsentGrantedForDevice(runtime->GetId(), consent_level));
+  }
 
   // Skip the consent prompt if the user has already consented for this device,
   // or if consent is not needed.
-  if (consent_level == XrConsentPromptLevel::kNone ||
-      IsConsentGrantedForDevice(runtime->GetId(), consent_level) ||
-      IsXrDeviceConsentPromptDisabledForTesting()) {
+  if (consent_granted || IsXrDeviceConsentPromptDisabledForTesting()) {
     DoRequestSession(std::move(options), std::move(callback), runtime,
                      std::move(requested_features));
+    return;
+  }
+
+  if (base::FeatureList::IsEnabled(features::kWebXrPermissionsApi)) {
+    PermissionManager* permission_manager = PermissionManager::Get(
+        Profile::FromBrowserContext(GetWebContents()->GetBrowserContext()));
+    DCHECK(permission_manager);
+
+    // Need to calculate the permission before the call below, as otherwise
+    // std::move nulls options out before GetRequiredPermission runs.
+    ContentSettingsType permission = GetRequiredPermission(options->mode);
+    permission_manager->RequestPermission(
+        permission, render_frame_host_,
+        render_frame_host_->GetLastCommittedURL(), true,
+        base::BindOnce(&VRServiceImpl::OnPermissionResult,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(options),
+                       std::move(callback), runtime->GetId(),
+                       std::move(requested_features), consent_level));
     return;
   }
 
@@ -460,6 +497,20 @@ void VRServiceImpl::ShowConsentPrompt(
 #endif
 
   NOTREACHED();
+}
+
+// TODO(alcooper): Once the ConsentFlow can be removed expected_runtime_id and
+// consent_level shouldn't be needed.
+void VRServiceImpl::OnPermissionResult(
+    device::mojom::XRSessionOptionsPtr options,
+    device::mojom::VRService::RequestSessionCallback callback,
+    device::mojom::XRDeviceId expected_runtime_id,
+    std::set<device::mojom::XRSessionFeature> enabled_features,
+    XrConsentPromptLevel consent_level,
+    ContentSetting setting_value) {
+  OnConsentResult(std::move(options), std::move(callback), expected_runtime_id,
+                  std::move(enabled_features), consent_level,
+                  setting_value == ContentSetting::CONTENT_SETTING_ALLOW);
 }
 
 void VRServiceImpl::OnConsentResult(

@@ -9,12 +9,14 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/signatures_util.h"
 
 using base::checked_cast;
 using base::DictionaryValue;
@@ -101,6 +103,60 @@ void SavePasswordProgressLogger::LogPasswordForm(
   log.SetBoolean(GetStringFromID(STRING_PSL_MATCH),
                  form.is_public_suffix_match);
   LogValue(label, log);
+}
+
+std::string FormSignatureToDebugString(autofill::FormSignature form_signature) {
+  return base::StrCat(
+      {NumberToString(form_signature), " - ",
+       NumberToString(autofill::HashFormSignature(form_signature))});
+}
+
+void SavePasswordProgressLogger::LogFormData(
+    SavePasswordProgressLogger::StringID label,
+    const FormData& form_data) {
+  std::string message = GetStringFromID(label) + ": {\n";
+  message +=
+      GetStringFromID(STRING_FORM_SIGNATURE) + ": " +
+      FormSignatureToDebugString(autofill::CalculateFormSignature(form_data)) +
+      "\n";
+  message +=
+      GetStringFromID(STRING_ORIGIN) + ": " + ScrubURL(form_data.url) + "\n";
+  message +=
+      GetStringFromID(STRING_ACTION) + ": " + ScrubURL(form_data.action) + "\n";
+  if (form_data.main_frame_origin.GetURL().is_valid())
+    message += GetStringFromID(STRING_MAIN_FRAME_ORIGIN) + ": " +
+               ScrubURL(form_data.main_frame_origin.GetURL()) + "\n";
+  message += GetStringFromID(STRING_FORM_NAME) + ": " +
+             ScrubElementID(form_data.name) + "\n";
+
+  message += GetStringFromID(STRING_IS_FORM_TAG) + ": " +
+             (form_data.is_form_tag ? "true" : "false") + "\n";
+
+  if (form_data.is_form_tag) {
+    message +=
+        "Form renderer id: " + NumberToString(form_data.unique_renderer_id) +
+        "\n";
+  }
+
+  // Log fields.
+  message += GetStringFromID(STRING_FIELDS) + ": " + "\n";
+  for (const auto& field : form_data.fields) {
+    std::string is_visible = field.is_focusable ? "visible" : "invisible";
+    std::string is_empty = field.value.empty() ? "empty" : "non-empty";
+    std::string autocomplete =
+        field.autocomplete_attribute.empty()
+            ? std::string()
+            : (", autocomplete=" +
+               ScrubElementID(field.autocomplete_attribute));
+    std::string field_info =
+        ScrubElementID(field.name) +
+        ": type=" + ScrubElementID(field.form_control_type) +
+        ", renderer_id = " + NumberToString(field.unique_renderer_id) + ", " +
+        is_visible + ", " + is_empty + autocomplete + "\n";
+    message += field_info;
+  }
+  message += "}";
+  SendLog(message);
 }
 
 void SavePasswordProgressLogger::LogHTMLForm(

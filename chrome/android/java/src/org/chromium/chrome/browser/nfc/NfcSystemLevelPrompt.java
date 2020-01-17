@@ -71,7 +71,7 @@ public class NfcSystemLevelPrompt implements ModalDialogProperties.Controller {
                                       .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
                                               R.string.nfc_prompt_turn_on)
                                       .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
-                                              R.string.no_thanks)
+                                              R.string.cancel)
                                       .with(ModalDialogProperties.CONTENT_DESCRIPTION, resources,
                                               R.string.nfc_disabled_on_device_message)
                                       .with(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY, true)

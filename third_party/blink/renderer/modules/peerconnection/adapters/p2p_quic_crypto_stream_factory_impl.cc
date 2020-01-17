@@ -24,14 +24,14 @@ P2PQuicCryptoStreamFactoryImpl::CreateClientCryptoStream(
       proof_handler);
 }
 
-std::unique_ptr<quic::QuicCryptoServerStream>
+std::unique_ptr<quic::QuicCryptoServerStreamBase>
 P2PQuicCryptoStreamFactoryImpl::CreateServerCryptoStream(
     const quic::QuicCryptoServerConfig* crypto_config,
     quic::QuicCompressedCertsCache* compressed_certs_cache,
     quic::QuicSession* session,
     quic::QuicCryptoServerStream::Helper* helper) {
-  return std::make_unique<quic::QuicCryptoServerStream>(
-      crypto_config, compressed_certs_cache, session, helper);
+  return quic::CreateCryptoServerStream(crypto_config, compressed_certs_cache,
+                                        session, helper);
 }
 
 }  // namespace blink

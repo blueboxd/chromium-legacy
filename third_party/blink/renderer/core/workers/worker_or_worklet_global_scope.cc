@@ -365,7 +365,7 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher(
   for (const auto& policy_and_type : outside_content_security_policy_headers_) {
     content_security_policy->DidReceiveHeader(
         policy_and_type.first, policy_and_type.second,
-        kContentSecurityPolicyHeaderSourceHTTP);
+        network::mojom::ContentSecurityPolicySource::kHTTP);
   }
 
   OutsideSettingsCSPDelegate* csp_delegate =
@@ -438,7 +438,7 @@ void WorkerOrWorkletGlobalScope::InitContentSecurityPolicyFromVector(
   for (const auto& policy_and_type : headers) {
     GetContentSecurityPolicy()->DidReceiveHeader(
         policy_and_type.first, policy_and_type.second,
-        kContentSecurityPolicyHeaderSourceHTTP);
+        network::mojom::ContentSecurityPolicySource::kHTTP);
   }
 }
 

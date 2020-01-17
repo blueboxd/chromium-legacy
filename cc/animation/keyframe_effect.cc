@@ -46,9 +46,8 @@ std::vector<size_t> FindAnimationsWithSameGroupId(
 
 }  // namespace
 
-KeyframeEffect::KeyframeEffect(KeyframeEffectId id)
-    : animation_(),
-      id_(id),
+KeyframeEffect::KeyframeEffect(Animation* animation)
+    : animation_(animation),
       element_animations_(),
       needs_to_start_keyframe_models_(false),
       scroll_offset_animation_was_interrupted_(false),
@@ -57,14 +56,6 @@ KeyframeEffect::KeyframeEffect(KeyframeEffectId id)
 
 KeyframeEffect::~KeyframeEffect() {
   DCHECK(!has_bound_element_animations());
-}
-
-std::unique_ptr<KeyframeEffect> KeyframeEffect::Create(KeyframeEffectId id) {
-  return std::make_unique<KeyframeEffect>(id);
-}
-
-std::unique_ptr<KeyframeEffect> KeyframeEffect::CreateImplInstance() const {
-  return KeyframeEffect::Create(id());
 }
 
 void KeyframeEffect::SetNeedsPushProperties() {
@@ -364,7 +355,7 @@ void KeyframeEffect::AbortKeyframeModelsWithProperty(
   }
 }
 
-void KeyframeEffect::ActivateKeyframeEffects() {
+void KeyframeEffect::ActivateKeyframeModels() {
   DCHECK(has_bound_element_animations());
 
   bool keyframe_model_activated = false;
@@ -770,14 +761,10 @@ void KeyframeEffect::PushPropertiesTo(KeyframeEffect* keyframe_effect_impl) {
   if (element_id_ != keyframe_effect_impl->element_id_) {
     // We have to detach/attach via the Animation as it may need to inform
     // the host as well.
-    if (keyframe_effect_impl->has_attached_element()) {
-      keyframe_effect_impl->animation_->DetachElementForKeyframeEffect(
-          keyframe_effect_impl->element_id_, keyframe_effect_impl->id_);
-    }
-    if (element_id_) {
-      keyframe_effect_impl->animation_->AttachElementForKeyframeEffect(
-          element_id_, id_);
-    }
+    if (keyframe_effect_impl->has_attached_element())
+      keyframe_effect_impl->animation_->DetachElement();
+    if (element_id_)
+      keyframe_effect_impl->animation_->AttachElement(element_id_);
   }
 
   keyframe_effect_impl->scroll_offset_animation_was_interrupted_ =
@@ -807,10 +794,6 @@ void KeyframeEffect::PushPropertiesTo(KeyframeEffect* keyframe_effect_impl) {
   }
 
   keyframe_effect_impl->UpdateTickingState();
-}
-
-void KeyframeEffect::SetAnimation(Animation* animation) {
-  animation_ = animation;
 }
 
 std::string KeyframeEffect::KeyframeModelsToString() const {
@@ -1087,7 +1070,7 @@ void KeyframeEffect::GenerateEvent(AnimationEvents* events,
 
   AnimationEvent event(type,
                        {animation_->animation_timeline()->id(),
-                        animation_->id(), id(), keyframe_model.id()},
+                        animation_->id(), keyframe_model.id()},
                        keyframe_model.group(),
                        keyframe_model.target_property_id(), monotonic_time);
   event.is_impl_only = keyframe_model.is_impl_only();
@@ -1109,7 +1092,7 @@ void KeyframeEffect::GenerateTakeoverEventForScrollAnimation(
 
   AnimationEvent takeover_event(AnimationEvent::TAKEOVER,
                                 {animation_->animation_timeline()->id(),
-                                 animation_->id(), id(), keyframe_model.id()},
+                                 animation_->id(), keyframe_model.id()},
                                 keyframe_model.group(),
                                 keyframe_model.target_property_id(),
                                 monotonic_time);
@@ -1122,7 +1105,7 @@ void KeyframeEffect::GenerateTakeoverEventForScrollAnimation(
 
   AnimationEvent finished_event(AnimationEvent::FINISHED,
                                 {animation_->animation_timeline()->id(),
-                                 animation_->id(), id(), keyframe_model.id()},
+                                 animation_->id(), keyframe_model.id()},
                                 keyframe_model.group(),
                                 keyframe_model.target_property_id(),
                                 monotonic_time);

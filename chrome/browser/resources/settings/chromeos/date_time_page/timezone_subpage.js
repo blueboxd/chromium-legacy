@@ -25,7 +25,7 @@ Polymer({
    * Returns value list for timeZoneResolveMethodDropdown menu.
    * @private
    */
-  getTimeZoneResolveMethodsList_: function() {
+  getTimeZoneResolveMethodsList_() {
     const result = [];
     const pref =
         this.getPref('generated.resolve_timezone_by_geolocation_method_short');

@@ -250,7 +250,7 @@ cr.define('settings_people_page', function() {
 
       test('NavigateDirectlyToSignOutURL', function() {
         // Navigate to chrome://settings/signOut
-        settings.navigateTo(settings.routes.SIGN_OUT);
+        settings.Router.getInstance().navigateTo(settings.routes.SIGN_OUT);
 
         return new Promise(function(resolve) {
                  peoplePage.async(resolve);
@@ -281,7 +281,8 @@ cr.define('settings_people_page', function() {
       test('Signout dialog suppressed when not signed in', function() {
         return browserProxy.whenCalled('getSyncStatus')
             .then(function() {
-              settings.navigateTo(settings.routes.SIGN_OUT);
+              settings.Router.getInstance().navigateTo(
+                  settings.routes.SIGN_OUT);
               return new Promise(function(resolve) {
                 peoplePage.async(resolve);
               });
@@ -305,7 +306,8 @@ cr.define('settings_people_page', function() {
                 listenOnce(window, 'popstate', resolve);
               });
 
-              settings.navigateTo(settings.routes.SIGN_OUT);
+              settings.Router.getInstance().navigateTo(
+                  settings.routes.SIGN_OUT);
 
               return popstatePromise;
             });
@@ -493,7 +495,9 @@ cr.define('settings_people_page', function() {
       peoplePage.$$('#sync-setup').click();
       Polymer.dom.flush();
 
-      assertEquals(settings.getCurrentRoute(), settings.routes.SYNC);
+      assertEquals(
+          settings.Router.getInstance().getCurrentRoute(),
+          settings.routes.SYNC);
     });
   });
 
@@ -680,9 +684,9 @@ cr.define('settings_people_page', function() {
         assertTrue(subpageArrow.hidden);
 
         // Clicking on profile icon doesn't navigate to a new route.
-        const oldRoute = settings.getCurrentRoute();
+        const oldRoute = settings.Router.getInstance().getCurrentRoute();
         profileIcon.click();
-        assertEquals(oldRoute, settings.getCurrentRoute());
+        assertEquals(oldRoute, settings.Router.getInstance().getCurrentRoute());
       });
     });
   }

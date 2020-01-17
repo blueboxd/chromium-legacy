@@ -9,6 +9,8 @@ source_set("find_bar") {
     "find_bar_controller_ios.mm",
     "find_bar_coordinator.h",
     "find_bar_coordinator.mm",
+    "find_bar_mediator.h",
+    "find_bar_mediator.mm",
     "find_bar_view.h",
     "find_bar_view.mm",
     "find_bar_view_controller.h",
@@ -58,9 +60,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "find_in_page_egtest.mm",
-  ]
+  sources = [ "find_in_page_egtest.mm" ]
   deps = [
     ":constants",
     ":eg_test_support+eg2",
@@ -83,9 +83,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "find_in_page_egtest.mm",
-  ]
+  sources = [ "find_in_page_egtest.mm" ]
   deps = [
     ":constants",
     ":test_support",
@@ -111,9 +109,7 @@ source_set("test_support") {
     "find_in_page_controller_app_interface.h",
     "find_in_page_controller_app_interface.mm",
   ]
-  deps = [
-    "//ios/chrome/browser/find_in_page",
-  ]
+  deps = [ "//ios/chrome/browser/find_in_page" ]
 }
 
 source_set("eg_app_support+eg2") {
@@ -127,9 +123,7 @@ source_set("eg_app_support+eg2") {
     "find_in_page_controller_app_interface.h",
     "find_in_page_controller_app_interface.mm",
   ]
-  deps = [
-    "//ios/chrome/browser/find_in_page",
-  ]
+  deps = [ "//ios/chrome/browser/find_in_page" ]
 }
 
 source_set("eg_test_support+eg2") {
@@ -139,7 +133,5 @@ source_set("eg_test_support+eg2") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "find_in_page_controller_app_interface.h",
-  ]
+  sources = [ "find_in_page_controller_app_interface.h" ]
 }

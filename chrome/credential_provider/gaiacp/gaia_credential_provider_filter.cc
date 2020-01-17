@@ -68,10 +68,10 @@ HRESULT CGaiaCredentialProviderFilter::Filter(
     return S_OK;
   }
 
-  // Check to see if any users need to have their access to this system
-  // using the normal credential providers revoked.
-  AssociatedUserValidator::Get()->DenySigninForUsersWithInvalidTokenHandles(
-      cpus);
+  // Update sid mapping at least once before invoking any other  methods in the
+  // later stages.
+  AssociatedUserValidator::Get()->UpdateAssociatedSids(nullptr);
+
   return S_OK;
 }
 
@@ -105,7 +105,7 @@ HRESULT CGaiaCredentialProviderFilter::UpdateRemoteCredential(
 
   // Check if this user needs a reauth, if not, just pass the serialization
   // to the default handler.
-  if (AssociatedUserValidator::Get()->IsTokenHandleValidForUser(
+  if (!AssociatedUserValidator::Get()->IsAuthEnforcedForUser(
           serialization_sid)) {
     return E_NOTIMPL;
   }

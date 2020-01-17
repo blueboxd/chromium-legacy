@@ -43,9 +43,6 @@ class BrowserDMTokenStorageLinux : public BrowserDMTokenStorage {
 
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, InitClientId);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, InitEnrollmentToken);
-  // TODO(crbug.com/907589): Remove once no longer in use.
-  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest,
-                           InitOldEnrollmentToken);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, InitDMToken);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest,
                            InitDMTokenWithoutDirectory);

@@ -73,10 +73,11 @@ class SmoothnessHelperTest : public testing::Test {
 
  public:
   void SetUp() override {
-    auto ltc = std::make_unique<MockLearningTaskController>();
-    ltc_ = ltc.get();
+    auto consecutive_ltc = std::make_unique<MockLearningTaskController>();
+    consecutive_ltc_ = consecutive_ltc.get();
     features_.push_back(FeatureValue(123));
-    helper_ = SmoothnessHelper::Create(std::move(ltc), features_, &client_);
+    helper_ = SmoothnessHelper::Create(std::move(consecutive_ltc), features_,
+                                       &client_);
     segment_size_ = SmoothnessHelper::SegmentSizeForTesting();
   }
 
@@ -99,101 +100,62 @@ class SmoothnessHelperTest : public testing::Test {
   // Helper under test
   std::unique_ptr<SmoothnessHelper> helper_;
 
-  MockLearningTaskController* ltc_ = nullptr;
+  MockLearningTaskController* consecutive_ltc_;
+
   MockClient client_;
   FeatureVector features_;
 
   base::TimeDelta segment_size_;
 };
 
-TEST_F(SmoothnessHelperTest, PauseWithoutPlayDoesNothing) {
-  EXPECT_CALL(*ltc_, BeginObservation(_, _, _)).Times(0);
-  helper_->NotifyPlayState(false);
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(SmoothnessHelperTest, PlayThenImmediatePauseCancelsObservation) {
-  // If not enough time has elapsed, play then pause shouldn't record anything.
-  // Note that Begin then Cancel would be okay too, but it's hard to set
-  // expectations for either case.  So, we just pick the one that it actually
-  // does in this case.
-  EXPECT_CALL(*ltc_, BeginObservation(_, _, _)).Times(0);
-  helper_->NotifyPlayState(true);
-  helper_->NotifyPlayState(false);
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(SmoothnessHelperTest, PlayRecordsWorstSegment) {
-  // Record three segments, and see if it chooses the worst.
+TEST_F(SmoothnessHelperTest, MaxBadWindowsRecordsTrue) {
+  // Record three bad segments, and verify that it records 'true'.
   SetFrameCounters(0, 0);
-  helper_->NotifyPlayState(true);
   base::RunLoop().RunUntilIdle();
+  int dropped_frames = 0;
+  int total_frames = 0;
 
-  // First segment has no dropped frames..
-  EXPECT_CALL(*ltc_, BeginObservation(_, _, OPT_TARGET(Eq(0.0)))).Times(1);
-  SetFrameCounters(0, 1000);
-  FastForwardBy(segment_size_);
-  base::RunLoop().RunUntilIdle();
-
-  // Second segment has quite a lot of dropped frames.
-  EXPECT_CALL(*ltc_, UpdateDefaultTarget(_, OPT_TARGET(Gt(0.99)))).Times(1);
-  SetFrameCounters(999, 2000);
-  FastForwardBy(segment_size_);
-  base::RunLoop().RunUntilIdle();
-
-  // Third segment has no dropped frames, so the default shouldn't change.
-  EXPECT_CALL(*ltc_, UpdateDefaultTarget(_, OPT_TARGET(Gt(0.99)))).Times(1);
-  SetFrameCounters(999, 3000);
-  FastForwardBy(segment_size_);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_CALL(*ltc_, CompleteObservation(_, COMPLETION_TARGET(Gt(0.99))))
+  // First segment has no dropped frames.  Should record 0.
+  EXPECT_CALL(*consecutive_ltc_, BeginObservation(_, _, OPT_TARGET(0.0)))
       .Times(1);
-  helper_->NotifyPlayState(false);
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(SmoothnessHelperTest, PlayIgnoresTrailingPartialSegments) {
-  helper_->NotifyPlayState(true);
-  base::RunLoop().RunUntilIdle();
-
-  // First segment has no dropped frames.
-  EXPECT_CALL(*ltc_, BeginObservation(_, _, OPT_TARGET(Eq(0.0)))).Times(1);
-  SetFrameCounters(0, 1000);
+  SetFrameCounters(dropped_frames += 0, total_frames += 1000);
   FastForwardBy(segment_size_);
   base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(consecutive_ltc_);
 
-  // Second segment has a lot of dropped frames, but isn't a full segment.
-  SetFrameCounters(1000, 2000);
-  FastForwardBy(segment_size_ / 2);
-  base::RunLoop().RunUntilIdle();
-
-  // On completion, we the observation should have no dropped frames.
-  EXPECT_CALL(*ltc_, CompleteObservation(_, COMPLETION_TARGET(Lt(0.1))))
+  // Second segment has a lot of dropped frames, so the target should increase.
+  EXPECT_CALL(*consecutive_ltc_, UpdateDefaultTarget(_, OPT_TARGET(1.0)))
       .Times(1);
-  helper_->NotifyPlayState(false);
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(SmoothnessHelperTest, DestructionRecordsObservations) {
-  // Destroying |helper_| should not send any observation; the last default
-  // value should be used.
-  helper_->NotifyPlayState(true);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_CALL(*ltc_, BeginObservation(_, _, _)).Times(AnyNumber());
-  EXPECT_CALL(*ltc_, UpdateDefaultTarget(_, _)).Times(AnyNumber());
-  EXPECT_CALL(*ltc_, CancelObservation(_)).Times(0);
-  EXPECT_CALL(*ltc_, CompleteObservation(_, _)).Times(0);
-
-  // Fast forward so that we're sure that there is something to record.
-  SetFrameCounters(0, 1000);
+  SetFrameCounters(dropped_frames += 999, total_frames += 1000);
   FastForwardBy(segment_size_);
-  SetFrameCounters(0, 2000);
-  FastForwardBy(segment_size_);
-  helper_.reset();
-
   base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(consecutive_ltc_);
+
+  // Third segment looks nice, so nothing should update.
+  EXPECT_CALL(*consecutive_ltc_, UpdateDefaultTarget(_, OPT_TARGET(_)))
+      .Times(0);
+  SetFrameCounters(dropped_frames += 0, total_frames += 1000);
+  FastForwardBy(segment_size_);
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(consecutive_ltc_);
+
+  // Fourth segment has dropped frames, but the default shouldn't change.
+  // It's okay if it changes to the same value, but we just memorize that it
+  // won't change at all.
+  EXPECT_CALL(*consecutive_ltc_, UpdateDefaultTarget(_, OPT_TARGET(_)))
+      .Times(0);
+  SetFrameCounters(dropped_frames += 999, total_frames += 1000);
+  FastForwardBy(segment_size_);
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(consecutive_ltc_);
+
+  // The last segment is also bad, and should increase the max.
+  EXPECT_CALL(*consecutive_ltc_, UpdateDefaultTarget(_, OPT_TARGET(2.0)))
+      .Times(1);
+  SetFrameCounters(dropped_frames += 999, total_frames += 1000);
+  FastForwardBy(segment_size_);
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(consecutive_ltc_);
 }
 
 }  // namespace media

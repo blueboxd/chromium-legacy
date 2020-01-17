@@ -355,7 +355,7 @@ void PasswordManager::UpdateFormManagers() {
 void PasswordManager::DropFormManagers() {
   form_managers_.clear();
   owned_submitted_form_manager_.reset();
-  all_visible_forms_.clear();
+  visible_forms_data_.clear();
   TryToFindPredictionsToPossibleUsernameData();
   predictions_.clear();
 }
@@ -364,10 +364,9 @@ bool PasswordManager::IsPasswordFieldDetectedOnPage() {
   return !form_managers_.empty();
 }
 
-void PasswordManager::OnPasswordFormSubmitted(
-    password_manager::PasswordManagerDriver* driver,
-    const PasswordForm& password_form) {
-  ProvisionallySaveForm(password_form.form_data, driver, false);
+void PasswordManager::OnPasswordFormSubmitted(PasswordManagerDriver* driver,
+                                              const FormData& form_data) {
+  ProvisionallySaveForm(form_data, driver, false);
 }
 
 void PasswordManager::OnPasswordFormSubmittedNoChecks(
@@ -403,14 +402,14 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
 
 #if defined(OS_IOS)
 void PasswordManager::OnPasswordFormSubmittedNoChecksForiOS(
-    password_manager::PasswordManagerDriver* driver,
-    const PasswordForm& password_form) {
+    PasswordManagerDriver* driver,
+    const FormData& form_data) {
   if (password_manager_util::IsLoggingActive(client_)) {
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
     logger.LogMessage(Logger::STRING_ON_SAME_DOCUMENT_NAVIGATION);
   }
 
-  ProvisionallySaveForm(password_form.form_data, driver, false);
+  ProvisionallySaveForm(form_data, driver, false);
 
   if (IsAutomaticSavePromptAvailable())
     OnLoginSuccessful();
@@ -427,21 +426,18 @@ void PasswordManager::OnUserModifiedNonPasswordField(
                              renderer_id, value, base::Time::Now(), driver_id);
 }
 
-void PasswordManager::ShowManualFallbackForSaving(
-    password_manager::PasswordManagerDriver* driver,
-    const PasswordForm& password_form) {
-  PasswordFormManager* manager =
-      ProvisionallySaveForm(password_form.form_data, driver, true);
+void PasswordManager::ShowManualFallbackForSaving(PasswordManagerDriver* driver,
+                                                  const FormData& form_data) {
+  PasswordFormManager* manager = ProvisionallySaveForm(form_data, driver, true);
 
-  if (manager && password_form.form_data.is_gaia_with_skip_save_password_form) {
+  if (manager && form_data.is_gaia_with_skip_save_password_form) {
     manager->GetMetricsRecorder()
         ->set_user_typed_password_on_chrome_sign_in_page();
   }
 
   if (!client_->GetProfilePasswordStore()->IsAbleToSavePasswords() ||
-      !client_->IsSavingAndFillingEnabled(password_form.origin) ||
-      ShouldBlockPasswordForSameOriginButDifferentScheme(
-          password_form.origin)) {
+      !client_->IsSavingAndFillingEnabled(form_data.url) ||
+      ShouldBlockPasswordForSameOriginButDifferentScheme(form_data.url)) {
     return;
   }
 
@@ -477,9 +473,9 @@ void PasswordManager::HideManualFallbackForSaving() {
 }
 
 void PasswordManager::OnPasswordFormsParsed(
-    password_manager::PasswordManagerDriver* driver,
-    const std::vector<PasswordForm>& forms) {
-  CreatePendingLoginManagers(driver, forms);
+    PasswordManagerDriver* driver,
+    const std::vector<FormData>& form_data) {
+  CreatePendingLoginManagers(driver, form_data);
 
   PasswordGenerationFrameHelper* password_generation_manager =
       driver ? driver->GetPasswordGenerationHelper() : nullptr;
@@ -490,8 +486,8 @@ void PasswordManager::OnPasswordFormsParsed(
 }
 
 void PasswordManager::CreatePendingLoginManagers(
-    password_manager::PasswordManagerDriver* driver,
-    const std::vector<PasswordForm>& forms) {
+    PasswordManagerDriver* driver,
+    const std::vector<FormData>& forms_data) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
@@ -499,14 +495,14 @@ void PasswordManager::CreatePendingLoginManagers(
     logger->LogMessage(Logger::STRING_CREATE_LOGIN_MANAGERS_METHOD);
   }
 
-  CreateFormManagers(driver, forms);
+  CreateFormManagers(driver, forms_data);
 
   // Record whether or not this top-level URL has at least one password field.
-  client_->AnnotateNavigationEntry(!forms.empty());
+  client_->AnnotateNavigationEntry(!forms_data.empty());
 
   // Only report SSL error status for cases where there are potentially forms to
   // fill or save from.
-  if (!forms.empty()) {
+  if (!forms_data.empty()) {
     metrics_util::CertificateError cert_error =
         metrics_util::CertificateError::NONE;
     const net::CertStatus cert_status = client_->GetMainFrameCertStatus();
@@ -530,16 +526,16 @@ void PasswordManager::CreatePendingLoginManagers(
 }
 
 void PasswordManager::CreateFormManagers(
-    password_manager::PasswordManagerDriver* driver,
-    const std::vector<PasswordForm>& forms) {
+    PasswordManagerDriver* driver,
+    const std::vector<FormData>& forms_data) {
   // Find new forms.
-  std::vector<const PasswordForm*> new_forms;
-  for (const PasswordForm& form : forms) {
-    if (!client_->IsFillingEnabled(form.origin))
+  std::vector<const FormData*> new_forms_data;
+  for (const FormData& form_data : forms_data) {
+    if (!client_->IsFillingEnabled(form_data.url))
       continue;
 
     PasswordFormManager* manager =
-        FindMatchedManager(form.form_data, form_managers_, driver);
+        FindMatchedManager(form_data, form_managers_, driver);
 
     if (manager) {
       // This extra filling is just duplicating redundancy that was in
@@ -547,15 +543,15 @@ void PasswordManager::CreateFormManagers(
       // filled values.
       // TODO(https://crbug.com/831123): Implement more robust filling and
       // remove the next line.
-      manager->FillForm(form.form_data);
+      manager->FillForm(form_data);
     } else {
-      new_forms.push_back(&form);
+      new_forms_data.push_back(&form_data);
     }
   }
 
   // Create form manager for new forms.
-  for (const PasswordForm* new_form : new_forms)
-    CreateFormManager(driver, new_form->form_data);
+  for (const FormData* new_form_data : new_forms_data)
+    CreateFormManager(driver, *new_form_data);
 }
 
 PasswordFormManager* PasswordManager::CreateFormManager(
@@ -742,9 +738,9 @@ bool PasswordManager::ShouldBlockPasswordForSameOriginButDifferentScheme(
 
 void PasswordManager::OnPasswordFormsRendered(
     password_manager::PasswordManagerDriver* driver,
-    const std::vector<PasswordForm>& visible_forms,
+    const std::vector<FormData>& visible_forms_data,
     bool did_stop_loading) {
-  CreatePendingLoginManagers(driver, visible_forms);
+  CreatePendingLoginManagers(driver, visible_forms_data);
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
@@ -769,13 +765,13 @@ void PasswordManager::OnPasswordFormsRendered(
 
   if (logger) {
     logger->LogNumber(Logger::STRING_NUMBER_OF_VISIBLE_FORMS,
-                      visible_forms.size());
+                      visible_forms_data.size());
   }
 
   // Record all visible forms from the frame.
-  all_visible_forms_.insert(all_visible_forms_.end(), visible_forms.begin(),
-                            visible_forms.end());
-
+  visible_forms_data_.insert(visible_forms_data_.end(),
+                             visible_forms_data.begin(),
+                             visible_forms_data.end());
   if (!did_stop_loading &&
       !submitted_manager->GetSubmittedForm()
            ->form_data.is_gaia_with_skip_save_password_form) {
@@ -796,21 +792,21 @@ void PasswordManager::OnPasswordFormsRendered(
   // If we see the login form again, then the login failed.
   if (submitted_manager->GetPendingCredentials().scheme ==
       PasswordForm::Scheme::kHtml) {
-    for (const PasswordForm& form : all_visible_forms_) {
-      if (submitted_manager->IsEqualToSubmittedForm(form.form_data)) {
+    for (const FormData& form_data : visible_forms_data_) {
+      if (submitted_manager->IsEqualToSubmittedForm(form_data)) {
         if (submitted_manager->IsPossibleChangePasswordFormWithoutUsername() &&
-            AreAllFieldsEmpty(form.form_data)) {
+            AreAllFieldsEmpty(form_data)) {
           continue;
         }
         submitted_manager->GetMetricsRecorder()->LogSubmitFailed();
         if (logger) {
-          logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,
-                                  form);
+          logger->LogFormData(Logger::STRING_PASSWORD_FORM_REAPPEARED,
+                              form_data);
           logger->LogMessage(Logger::STRING_DECISION_DROP);
         }
         owned_submitted_form_manager_.reset();
-        // Clear all_visible_forms_ once we found the match.
-        all_visible_forms_.clear();
+        // Clear visible_forms_data_ once we found the match.
+        visible_forms_data_.clear();
         return;
       }
     }
@@ -818,9 +814,8 @@ void PasswordManager::OnPasswordFormsRendered(
     if (logger)
       logger->LogMessage(Logger::STRING_PROVISIONALLY_SAVED_FORM_IS_NOT_HTML);
   }
-
-  // Clear all_visible_forms_ after checking all the visible forms.
-  all_visible_forms_.clear();
+  // Clear visible_forms_data_ after checking all the visible forms.
+  visible_forms_data_.clear();
 
   // Looks like a successful login attempt. Either show an infobar or
   // automatically save the login data. We prompt when the user hasn't

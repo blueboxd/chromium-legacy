@@ -28,9 +28,7 @@ source_set("lib") {
     "//skia",
   ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 }
 
 source_set("tests") {

@@ -5,12 +5,13 @@
 #import "ios/web/web_state/ui/crw_web_view_scroll_view_proxy+internal.h"
 
 #import <objc/runtime.h>
-
 #include <memory>
 
 #include "base/auto_reset.h"
 #import "base/ios/crb_protocol_observers.h"
 #include "base/mac/foundation_util.h"
+#include "ios/web/common/features.h"
+#import "ios/web/web_state/ui/crw_properties_store.h"
 #import "ios/web/web_state/ui/crw_web_view_scroll_view_delegate_proxy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -78,7 +79,7 @@
 @property(nonatomic, strong)
     CRBProtocolObservers<CRWWebViewScrollViewProxyObserver>* observers;
 
-@property(nonatomic, weak) UIScrollView* underlyingScrollView;
+@property(nonatomic, strong) UIScrollView* underlyingScrollView;
 
 // This exists for compatibility with UIScrollView (see -asUIScrollView).
 @property(nonatomic, weak) id<UIScrollViewDelegate> delegate;
@@ -107,6 +108,10 @@
   NSMutableDictionary<NSString*,
                       NSMapTable<id, CRWKeyValueObserverForwarder*>*>*
       _keyValueObserverForwarders;
+
+  // A storage used to preserve values of the scroll view properties on
+  // resetting the underlying scroll view.
+  CRWPropertiesStore* _propertiesStore;
 }
 
 - (instancetype)init {
@@ -119,6 +124,47 @@
     _delegateProxy = [[CRWWebViewScrollViewDelegateProxy alloc]
         initWithScrollViewProxy:self];
     _keyValueObserverForwarders = [[NSMutableDictionary alloc] init];
+
+    if (base::FeatureList::IsEnabled(
+            web::features::kPreserveScrollViewProperties)) {
+      _propertiesStore = [[CRWPropertiesStore alloc] init];
+
+      // A list of properties preserved on resetting the underlying scroll view.
+      //
+      // The underlying scroll view can be nil or can be reassigned. Properties
+      // of the underlying scroll view are usually not preserved when the scroll
+      // view is reassigned. Properties listed here will be preserved i.e.:
+      //   - If the property is assigned while the underlying scroll view is
+      //   nil,
+      //     the assignment is applied when the underlying scroll view is
+      //     assigned.
+      //   - The property is preserved when the underlying scroll view is
+      //     reassigned.
+      //
+      // This list should contain all properties of UIScrollView and its
+      // ancestor classes (not limited to properties explicitly declared in
+      // CRWWebViewScrollViewProxy) which:
+      //   - is a readwrite property
+      //   - AND is supposed to be modified directly, considering it's a scroll
+      //     view of a web view. e.g., |frame| and |subviews| do not meet this
+      //     condition because they are managed by the web view.
+      //
+      // TODO(crbug.com/1023250): Make this list comprehensive.
+      [_propertiesStore
+          registerNonObjectPropertyWithGetter:@selector
+          (isDirectionalLockEnabled)
+                                       setter:@selector
+                                       (setDirectionalLockEnabled:)
+                                         size:sizeof(BOOL)];
+      [_propertiesStore
+          registerObjectPropertyWithGetter:@selector(tintColor)
+                                    setter:@selector(setTintColor:)
+                                 attribute:CRWStoredPropertyAttributeStrong];
+      [_propertiesStore
+          registerObjectPropertyWithGetter:@selector(backgroundColor)
+                                    setter:@selector(setBackgroundColor:)
+                                 attribute:CRWStoredPropertyAttributeCopy];
+    }
   }
   return self;
 }
@@ -146,16 +192,36 @@
 - (void)setScrollView:(UIScrollView*)scrollView {
   if (self.underlyingScrollView == scrollView)
     return;
+
+  // Clean up the delegate/observers of the old scroll view, and save its
+  // properties for later restoration.
   [self.underlyingScrollView setDelegate:nil];
   [self stopObservingScrollView:self.underlyingScrollView];
+  if (base::FeatureList::IsEnabled(
+          web::features::kPreserveScrollViewProperties) &&
+      self.underlyingScrollView) {
+    [_propertiesStore savePropertiesFromObject:self.underlyingScrollView];
+  }
+
+  // Set up the delegate/observers of the new scroll view, and restore its
+  // properties.
   DCHECK(!scrollView.delegate);
   scrollView.delegate = self.delegateProxy;
   [self startObservingScrollView:scrollView];
+  if (base::FeatureList::IsEnabled(
+          web::features::kPreserveScrollViewProperties) &&
+      scrollView) {
+    [_propertiesStore loadPropertiesToObject:scrollView];
+    // Clear the stored values of the properties. This prevents from keeping
+    // retaining old property values.
+    [_propertiesStore clearValues];
+  }
+
   self.underlyingScrollView = scrollView;
+
   if (_storedClipsToBounds) {
     scrollView.clipsToBounds = *_storedClipsToBounds;
   }
-
   // Assigns |contentInsetAdjustmentBehavior| which was set before setting the
   // scroll view.
   if (_storedContentInsetAdjustmentBehavior) {
@@ -352,9 +418,33 @@
 
 - (void)forwardInvocation:(NSInvocation*)invocation {
   // Called when this proxy is accessed through -asUIScrollView and the method
-  // is not implemented in this class. self.underlyingScrollView may be nil, but
-  // it is safe. nil can respond to any invocation (and does nothing).
-  [invocation invokeWithTarget:self.underlyingScrollView];
+  // is not implemented in this class.
+  if (self.underlyingScrollView) {
+    // Forwards the invocation to the undelrying scroll view.
+    [invocation invokeWithTarget:self.underlyingScrollView];
+  } else {
+    BOOL handled = NO;
+    if (base::FeatureList::IsEnabled(
+            web::features::kPreserveScrollViewProperties)) {
+      // Forwards the invocation to the property store. If it is an invocation
+      // of a getter or setter of a preserved property, it gets or sets the
+      // property in the property store, which is later restored in the
+      // underlying scroll view.
+      handled =
+          [_propertiesStore forwardInvocationToPropertiesStore:invocation];
+    }
+
+    // If it is not an invocation of a getter or setter of a preserved property,
+    // do nothing and return a zero value. This must be done explicitly because
+    // it looks not guaranteed to return a zero value if it does nothing here or
+    // call [invocation invokeWithTarget:nil].
+    if (!handled && invocation.methodSignature.methodReturnLength > 0) {
+      // NSMutableData is initialized with zero bytes.
+      NSMutableData* zeroData = [NSMutableData
+          dataWithLength:invocation.methodSignature.methodReturnLength];
+      [invocation setReturnValue:zeroData.mutableBytes];
+    }
+  }
 }
 
 #pragma mark - NSObject

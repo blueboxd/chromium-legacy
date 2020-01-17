@@ -8,6 +8,8 @@
 #include <climits>
 
 #include "base/bind.h"
+#include "base/metrics/statistics_recorder.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
@@ -17,7 +19,6 @@
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/scroll_offset_animation_curve_factory.h"
 #include "cc/animation/scroll_offset_animations.h"
-#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/completion_event.h"
@@ -43,9 +44,8 @@ class LayerTreeHostAnimationTest : public LayerTreeTest {
         animation_id_(AnimationIdProvider::NextAnimationId()),
         animation_child_id_(AnimationIdProvider::NextAnimationId()) {
     timeline_ = AnimationTimeline::Create(timeline_id_);
-    animation_ = SingleKeyframeEffectAnimation::Create(animation_id_);
-    animation_child_ =
-        SingleKeyframeEffectAnimation::Create(animation_child_id_);
+    animation_ = Animation::Create(animation_id_);
+    animation_child_ = Animation::Create(animation_child_id_);
 
     animation_->set_animation_delegate(this);
   }
@@ -61,11 +61,10 @@ class LayerTreeHostAnimationTest : public LayerTreeTest {
     AnimationHost* animation_host_impl = GetImplAnimationHost(&host_impl);
     timeline_impl_ = animation_host_impl->GetTimelineById(timeline_id_);
     EXPECT_TRUE(timeline_impl_);
-    animation_impl_ = static_cast<SingleKeyframeEffectAnimation*>(
-        timeline_impl_->GetAnimationById(animation_id_));
+    animation_impl_ = timeline_impl_->GetAnimationById(animation_id_);
     EXPECT_TRUE(animation_impl_);
-    animation_child_impl_ = static_cast<SingleKeyframeEffectAnimation*>(
-        timeline_impl_->GetAnimationById(animation_child_id_));
+    animation_child_impl_ =
+        timeline_impl_->GetAnimationById(animation_child_id_);
     EXPECT_TRUE(animation_child_impl_);
   }
 
@@ -76,12 +75,12 @@ class LayerTreeHostAnimationTest : public LayerTreeTest {
 
  protected:
   scoped_refptr<AnimationTimeline> timeline_;
-  scoped_refptr<SingleKeyframeEffectAnimation> animation_;
-  scoped_refptr<SingleKeyframeEffectAnimation> animation_child_;
+  scoped_refptr<Animation> animation_;
+  scoped_refptr<Animation> animation_child_;
 
   scoped_refptr<AnimationTimeline> timeline_impl_;
-  scoped_refptr<SingleKeyframeEffectAnimation> animation_impl_;
-  scoped_refptr<SingleKeyframeEffectAnimation> animation_child_impl_;
+  scoped_refptr<Animation> animation_impl_;
+  scoped_refptr<Animation> animation_child_impl_;
 
   const int timeline_id_;
   const int animation_id_;
@@ -371,9 +370,8 @@ class LayerTreeHostAnimationTestAddKeyframeModelWithTimingFunction
 
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleKeyframeEffectAnimation> animation_child_impl =
-        static_cast<SingleKeyframeEffectAnimation*>(
-            timeline_impl->GetAnimationById(animation_child_id_));
+    scoped_refptr<Animation> animation_child_impl =
+        timeline_impl->GetAnimationById(animation_child_id_);
 
     KeyframeModel* keyframe_model =
         animation_child_impl->GetKeyframeModel(TargetProperty::OPACITY);
@@ -437,9 +435,8 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
                             bool has_unfinished_animation) override {
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(impl_host)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleKeyframeEffectAnimation> animation_child_impl =
-        static_cast<SingleKeyframeEffectAnimation*>(
-            timeline_impl->GetAnimationById(animation_child_id_));
+    scoped_refptr<Animation> animation_child_impl =
+        timeline_impl->GetAnimationById(animation_child_id_);
 
     KeyframeModel* keyframe_model =
         animation_child_impl->GetKeyframeModel(TargetProperty::OPACITY);
@@ -514,9 +511,8 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleKeyframeEffectAnimation> animation_impl =
-        static_cast<SingleKeyframeEffectAnimation*>(
-            timeline_impl->GetAnimationById(animation_id_));
+    scoped_refptr<Animation> animation_impl =
+        timeline_impl->GetAnimationById(animation_id_);
 
     KeyframeModel* keyframe_model_impl =
         animation_impl->GetKeyframeModel(TargetProperty::OPACITY);
@@ -1049,6 +1045,10 @@ class LayerTreeHostPresentationDuringAnimation
     EXPECT_GT(request_token_, 0u);
     EXPECT_GT(received_token_, request_token_);
     EXPECT_GE(received_token_, 5u);
+    EXPECT_TRUE(base::StatisticsRecorder::FindHistogram(
+        "CompositorLatency.TotalLatency"));
+    EXPECT_FALSE(base::StatisticsRecorder::FindHistogram(
+        "CompositorLatency.Universal.TotalLatency"));
   }
 
  private:
@@ -1158,9 +1158,8 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
 
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleKeyframeEffectAnimation> animation_impl =
-        static_cast<SingleKeyframeEffectAnimation*>(
-            timeline_impl->GetAnimationById(animation_child_id_));
+    scoped_refptr<Animation> animation_impl =
+        timeline_impl->GetAnimationById(animation_child_id_);
 
     LayerImpl* scroll_layer_impl =
         host_impl->active_tree()->LayerById(scroll_layer_->id());
@@ -1360,15 +1359,13 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
                             bool has_unfinished_animation) override {
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleKeyframeEffectAnimation> animation_impl =
-        static_cast<SingleKeyframeEffectAnimation*>(
-            timeline_impl->GetAnimationById(animation_id_));
-    scoped_refptr<SingleKeyframeEffectAnimation> animation_child_impl =
-        static_cast<SingleKeyframeEffectAnimation*>(
-            timeline_impl->GetAnimationById(animation_child_id_));
+    scoped_refptr<Animation> animation_impl =
+        timeline_impl->GetAnimationById(animation_id_);
+    scoped_refptr<Animation> animation_child_impl =
+        timeline_impl->GetAnimationById(animation_child_id_);
 
     // wait for tree activation.
-    if (!animation_impl->keyframe_effect()->element_animations())
+    if (!animation_impl->element_animations())
       return;
 
     KeyframeModel* root_keyframe_model =
@@ -1445,9 +1442,8 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
 
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleKeyframeEffectAnimation> animation_impl =
-        static_cast<SingleKeyframeEffectAnimation*>(
-            timeline_impl->GetAnimationById(animation_id_));
+    scoped_refptr<Animation> animation_impl =
+        timeline_impl->GetAnimationById(animation_id_);
 
     LayerImpl* child = sync_tree->LayerById(layer_->id());
     KeyframeModel* keyframe_model =
@@ -1492,7 +1488,7 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
     animation_host()->AddAnimationTimeline(timeline_.get());
     timeline_->AttachAnimation(animation_.get());
     animation_->AttachElement(layer_->element_id());
-    DCHECK(animation_->keyframe_effect()->element_animations());
+    DCHECK(animation_->element_animations());
 
     AddOpacityTransitionToAnimation(animation_.get(), 10000.0, 0.1f, 0.9f,
                                     true);
@@ -1503,34 +1499,28 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
   void DidCommit() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
-        EXPECT_TRUE(animation_->keyframe_effect()
-                        ->element_animations()
-                        ->has_element_in_active_list());
-        EXPECT_FALSE(animation_->keyframe_effect()
-                         ->element_animations()
-                         ->has_element_in_pending_list());
+        EXPECT_TRUE(
+            animation_->element_animations()->has_element_in_active_list());
+        EXPECT_FALSE(
+            animation_->element_animations()->has_element_in_pending_list());
         EXPECT_TRUE(animation_host()->NeedsTickAnimations());
         break;
       case 1:
         layer_->RemoveFromParent();
-        EXPECT_FALSE(animation_->keyframe_effect()
-                         ->element_animations()
-                         ->has_element_in_active_list());
-        EXPECT_FALSE(animation_->keyframe_effect()
-                         ->element_animations()
-                         ->has_element_in_pending_list());
+        EXPECT_FALSE(
+            animation_->element_animations()->has_element_in_active_list());
+        EXPECT_FALSE(
+            animation_->element_animations()->has_element_in_pending_list());
         // Animations still need one more tick to deliver finished event.
         EXPECT_TRUE(animation_host()->NeedsTickAnimations());
         break;
       case 2:
         EXPECT_FALSE(animation_host()->NeedsTickAnimations());
         layer_tree_host()->root_layer()->AddChild(layer_);
-        EXPECT_TRUE(animation_->keyframe_effect()
-                        ->element_animations()
-                        ->has_element_in_active_list());
-        EXPECT_FALSE(animation_->keyframe_effect()
-                         ->element_animations()
-                         ->has_element_in_pending_list());
+        EXPECT_TRUE(
+            animation_->element_animations()->has_element_in_active_list());
+        EXPECT_FALSE(
+            animation_->element_animations()->has_element_in_pending_list());
         EXPECT_TRUE(animation_host()->NeedsTickAnimations());
         break;
     }
@@ -1539,29 +1529,25 @@ class LayerTreeHostAnimationTestAnimatedLayerRemovedAndAdded
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
-    scoped_refptr<SingleKeyframeEffectAnimation> animation_impl =
-        static_cast<SingleKeyframeEffectAnimation*>(
-            timeline_impl->GetAnimationById(animation_id_));
+    scoped_refptr<Animation> animation_impl =
+        timeline_impl->GetAnimationById(animation_id_);
 
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
-        EXPECT_TRUE(animation_impl->keyframe_effect()
-                        ->element_animations()
-                        ->has_element_in_active_list());
+        EXPECT_TRUE(
+            animation_impl->element_animations()->has_element_in_active_list());
         EXPECT_TRUE(GetImplAnimationHost(host_impl)->NeedsTickAnimations());
         break;
       case 1:
-        EXPECT_FALSE(animation_impl->keyframe_effect()
-                         ->element_animations()
-                         ->has_element_in_active_list());
+        EXPECT_FALSE(
+            animation_impl->element_animations()->has_element_in_active_list());
         // Having updated state on the host_impl during the commit, we no longer
         // need to tick animations.
         EXPECT_FALSE(GetImplAnimationHost(host_impl)->NeedsTickAnimations());
         break;
       case 2:
-        EXPECT_TRUE(animation_impl->keyframe_effect()
-                        ->element_animations()
-                        ->has_element_in_active_list());
+        EXPECT_TRUE(
+            animation_impl->element_animations()->has_element_in_active_list());
         EXPECT_TRUE(GetImplAnimationHost(host_impl)->NeedsTickAnimations());
         EndTest();
         break;
@@ -2041,12 +2027,28 @@ class LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit
       host_impl->RequestImplSideInvalidationForCheckerImagedTiles();
     }
   }
+  void DidInvalidateContentOnImplSide(LayerTreeHostImpl* host_impl) override {
+    completion_.Signal();
+    EndTest();
+  }
+
+  void WillCommit() override {
+    if (layer_tree_host()->SourceFrameNumber() == 1) {
+      // Block until the invalidation is done after animation finishes on the
+      // compositor thread. We need to make sure the pending tree has valid
+      // information based on invalidation only.
+      completion_.Wait();
+    }
+  }
 
  protected:
   scoped_refptr<Layer> layer_;
   FakeContentLayerClient client_;
   bool did_request_impl_side_invalidation_ = false;
   int num_draws_;
+
+ private:
+  CompletionEvent completion_;
 };
 
 class ImplSideInvalidationWithoutCommitTestOpacity
@@ -2072,7 +2074,8 @@ class ImplSideInvalidationWithoutCommitTestOpacity
     const float expected_opacity = 0.8f;
     LayerImpl* layer_impl = host_impl->sync_tree()->LayerById(layer_->id());
     EXPECT_FLOAT_EQ(expected_opacity, layer_impl->Opacity());
-    EndTest();
+    LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit::
+        DidInvalidateContentOnImplSide(host_impl);
   }
 };
 
@@ -2103,7 +2106,8 @@ class ImplSideInvalidationWithoutCommitTestTransform
     LayerImpl* layer_impl = host_impl->sync_tree()->LayerById(layer_->id());
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
                                     layer_impl->DrawTransform());
-    EndTest();
+    LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit::
+        DidInvalidateContentOnImplSide(host_impl);
   }
 };
 
@@ -2139,7 +2143,8 @@ class ImplSideInvalidationWithoutCommitTestFilter
             ->property_trees()
             ->effect_tree.FindNodeFromElementId(layer_->element_id())
             ->filters.ToString());
-    EndTest();
+    LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit::
+        DidInvalidateContentOnImplSide(host_impl);
   }
 };
 
@@ -2169,15 +2174,6 @@ class ImplSideInvalidationWithoutCommitTestScroll
     PostSetNeedsCommitToMainThread();
   }
 
-  void WillCommit() override {
-    if (layer_tree_host()->SourceFrameNumber() == 1) {
-      // Block until the invalidation is done after animation finishes on the
-      // compositor thread. We need to make sure the pending tree has valid
-      // information based on invalidation only.
-      completion_.Wait();
-    }
-  }
-
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     if (num_draws_++ > 0)
       return;
@@ -2193,12 +2189,9 @@ class ImplSideInvalidationWithoutCommitTestScroll
     LayerImpl* layer_impl = host_impl->pending_tree()->LayerById(layer_->id());
     EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(500.f, 550.f),
                         layer_impl->CurrentScrollOffset());
-    completion_.Signal();
-    EndTest();
+    LayerTreeHostAnimationTestImplSideInvalidationWithoutCommit::
+        DidInvalidateContentOnImplSide(host_impl);
   }
-
- private:
-  CompletionEvent completion_;
 };
 
 MULTI_THREAD_TEST_F(ImplSideInvalidationWithoutCommitTestScroll);
@@ -2257,7 +2250,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 
 // Check that transform sync happens correctly at commit when we remove and add
 // a different animation animation to an element.
-class LayerTreeHostAnimationTestChangeSingleKeyframeEffectAnimation
+class LayerTreeHostAnimationTestChangeAnimation
     : public LayerTreeHostAnimationTest {
  public:
   void SetupTree() override {
@@ -2320,8 +2313,7 @@ class LayerTreeHostAnimationTestChangeSingleKeyframeEffectAnimation
   scoped_refptr<Layer> layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostAnimationTestChangeSingleKeyframeEffectAnimation);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestChangeAnimation);
 
 // Check that SetTransformIsPotentiallyAnimatingChanged is called
 // if we destroy ElementAnimations.
@@ -2405,8 +2397,7 @@ class LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction
 MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction);
 
-// Check that we invalidate property trees on
-// SingleKeyframeEffectAnimation::SetNeedsCommit.
+// Check that we invalidate property trees on Animation::SetNeedsCommit.
 class LayerTreeHostAnimationTestRebuildPropertyTreesOnAnimationSetNeedsCommit
     : public LayerTreeHostAnimationTest {
  public:

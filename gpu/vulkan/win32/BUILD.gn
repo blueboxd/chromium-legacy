@@ -24,9 +24,7 @@ component("win32") {
 
   public_configs = [ ":vulkan_win32" ]
 
-  deps = [
-    "//ui/gfx",
-  ]
+  deps = [ "//ui/gfx" ]
 
   public_deps = [
     "//base",

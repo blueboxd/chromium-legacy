@@ -4,9 +4,11 @@
 
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 
+#include "base/feature_list.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "content/public/browser/browser_context.h"
+#include "media/base/media_switches.h"
 
 namespace media_history {
 
@@ -28,5 +30,9 @@ MediaHistoryKeyedService* MediaHistoryKeyedService::Get(Profile* profile) {
 }
 
 MediaHistoryKeyedService::~MediaHistoryKeyedService() = default;
+
+bool MediaHistoryKeyedService::IsEnabled() {
+  return base::FeatureList::IsEnabled(media::kUseMediaHistoryStore);
+}
 
 }  // namespace media_history

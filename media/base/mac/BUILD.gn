@@ -43,9 +43,7 @@ jumbo_source_set("mac") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "video_frame_mac_unittests.cc",
-  ]
+  sources = [ "video_frame_mac_unittests.cc" ]
   libs = [ "CoreVideo.framework" ]
   configs += [ "//media:media_config" ]
   deps = [

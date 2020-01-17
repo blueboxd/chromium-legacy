@@ -728,6 +728,11 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
   EXPECT_THAT(cryptographer, CanDecryptWith(kPassphraseKeyParams));
   EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kPassphraseKeyParams));
+
+  // Regression part of the test, SetKeystoreKeys() call in this scenario used
+  // to cause the crash (see crbug.com/1042203).
+  EXPECT_TRUE(bridge()->SetKeystoreKeys({kRawKeystoreKey}));
+  EXPECT_FALSE(bridge()->NeedKeystoreKey());
 }
 
 // Tests that unsuccessful attempt of |pending_keys| decryption ends up in

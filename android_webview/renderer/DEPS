@@ -4,9 +4,11 @@ include_rules = [
   "+android_webview/renderer",
   "+android_webview/grit",
 
+  "+components/android_system_error_page",
   "+components/autofill/content/renderer",
   "+components/cdm/renderer",
   "+components/page_load_metrics/renderer",
+  "+components/grit",
   "+components/printing/common",
   "+components/printing/renderer",
   "+components/safe_browsing/core/common",
@@ -15,6 +17,7 @@ include_rules = [
   "+components/security_interstitials/core",
   "+components/security_interstitials/content/renderer",
   "+components/spellcheck/renderer",
+  "+components/strings",
   "+components/visitedlink/renderer",
 
   "+content/public/child",

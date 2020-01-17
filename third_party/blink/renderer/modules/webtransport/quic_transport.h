@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBTRANSPORT_QUIC_TRANSPORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBTRANSPORT_QUIC_TRANSPORT_H_
 
+#include "base/containers/span.h"
 #include "base/util/type_safety/pass_key.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -23,9 +24,13 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
+class ReadableStream;
+class ReadableStreamDefaultControllerWithScriptScope;
 class ScriptState;
 class WebTransportCloseInfo;
+class WritableStream;
 
+// https://wicg.github.io/web-transport/#quic-transport
 class MODULES_EXPORT QuicTransport final
     : public ScriptWrappable,
       public ActiveScriptWrappable<QuicTransport>,
@@ -46,6 +51,10 @@ class MODULES_EXPORT QuicTransport final
   ~QuicTransport() override;
 
   // QuicTransport IDL implementation.
+  WritableStream* sendDatagrams() { return outgoing_datagrams_; }
+
+  ReadableStream* receiveDatagrams() { return received_datagrams_; }
+
   void close(const WebTransportCloseInfo*);
 
   // QuicTransportHandshakeClient implementation
@@ -54,6 +63,10 @@ class MODULES_EXPORT QuicTransport final
       mojo::PendingReceiver<network::mojom::blink::QuicTransportClient>)
       override;
   void OnHandshakeFailed() override;
+
+  // QuicTransportClient implementation
+  void OnDatagramReceived(base::span<const uint8_t> data) override;
+  void OnIncomingStreamClosed(uint32_t stream_id, bool fin_received) override;
 
   // Implementation of ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) final;
@@ -65,9 +78,22 @@ class MODULES_EXPORT QuicTransport final
   void Trace(Visitor* visitor) override;
 
  private:
+  class DatagramUnderlyingSink;
+  class DatagramUnderlyingSource;
+
   void Init(const String& url, ExceptionState&);
   void Dispose();
   void OnConnectionError();
+
+  bool cleanly_closed_ = false;
+  Member<ReadableStream> received_datagrams_;
+  Member<ReadableStreamDefaultControllerWithScriptScope>
+      received_datagrams_controller_;
+
+  // This corresponds to the [[SentDatagrams]] internal slot in the standard.
+  Member<WritableStream> outgoing_datagrams_;
+
+  Member<ScriptState> script_state_;
 
   const KURL url_;
   mojo::Remote<network::mojom::blink::QuicTransport> quic_transport_;

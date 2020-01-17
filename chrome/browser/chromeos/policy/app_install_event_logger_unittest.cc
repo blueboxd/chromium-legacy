@@ -27,8 +27,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::Mock;
 using testing::_;
+using testing::Invoke;
+using testing::Mock;
+using testing::WithArgs;
 
 namespace em = enterprise_management;
 
@@ -43,6 +45,7 @@ constexpr char kPackageName3[] = "com.example.app3";
 constexpr char kPackageName4[] = "com.example.app4";
 constexpr char kPackageName5[] = "com.example.app5";
 const int kTimestamp = 123456;
+const int64_t kAndroidId = 0x123456789ABCDEFL;
 
 MATCHER_P(MatchProto, expected, "matches protobuf") {
   return arg.SerializePartialAsString() == expected.SerializePartialAsString();
@@ -67,6 +70,12 @@ ACTION_TEMPLATE(SaveTimestamp,
   *out = testing::get<k>(args).timestamp();
 }
 
+ACTION_TEMPLATE(SaveAndroidId,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_1_VALUE_PARAMS(out)) {
+  *out = testing::get<k>(args).android_id();
+}
+
 int64_t GetCurrentTimestamp() {
   return (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
 }
@@ -76,9 +85,14 @@ class MockAppInstallEventLoggerDelegate
  public:
   MockAppInstallEventLoggerDelegate() = default;
 
+  void GetAndroidId(AndroidIdCallback callback) const override {
+    GetAndroidId_(&callback);
+  }
+
   MOCK_METHOD2(Add,
                void(const std::set<std::string>& packages,
                     const em::AppInstallReportLogEvent& event));
+  MOCK_CONST_METHOD1(GetAndroidId_, void(AndroidIdCallback*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAppInstallEventLoggerDelegate);
@@ -139,6 +153,7 @@ class AppInstallEventLoggerTest : public testing::Test {
   void RunAndVerifyAdd(T function, const std::set<std::string>& packages) {
     Mock::VerifyAndClearExpectations(&delegate_);
 
+    SetAndroidId(0L);
     int64_t timestamp = 0;
     EXPECT_CALL(delegate_, Add(packages, MatchEventExceptTimestamp(event_)))
         .WillOnce(SaveTimestamp<1>(&timestamp));
@@ -160,6 +175,19 @@ class AppInstallEventLoggerTest : public testing::Test {
         },
         {});
     event_.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
+  }
+
+  void SetAndroidId(int64_t android_id) {
+    if (android_id) {
+      event_.set_android_id(android_id);
+    } else {
+      event_.clear_android_id();
+    }
+    EXPECT_CALL(delegate_, GetAndroidId_(_))
+        .WillOnce(WithArgs<0>(Invoke(
+            [=](AppInstallEventLogger::Delegate::AndroidIdCallback* callback) {
+              std::move(*callback).Run(android_id, kAndroidId);
+            })));
   }
 
   content::BrowserTaskEnvironment task_environment_;
@@ -206,6 +234,7 @@ TEST_F(AppInstallEventLoggerTest, Add) {
       std::make_unique<em::AppInstallReportLogEvent>();
   event->MergeFrom(event_);
 
+  SetAndroidId(kAndroidId);
   EXPECT_CALL(delegate_,
               Add(std::set<std::string>{kPackageName}, MatchProto(event_)));
   logger_->Add(kPackageName, false /* gather_disk_space_info */,
@@ -227,6 +256,46 @@ TEST_F(AppInstallEventLoggerTest, AddSetsTimestamp) {
                      std::move(event));
       },
       {kPackageName});
+}
+
+// If an android id is available, verify it is added to the event.
+TEST_F(AppInstallEventLoggerTest, AddsAndroidId) {
+  CreateLogger();
+
+  std::unique_ptr<em::AppInstallReportLogEvent> event =
+      std::make_unique<em::AppInstallReportLogEvent>();
+  event->MergeFrom(event_);
+  event->clear_android_id();
+
+  SetAndroidId(kAndroidId);
+  int64_t android_id = 0;
+  EXPECT_CALL(delegate_, Add(std::set<std::string>{kPackageName},
+                             MatchEventExceptTimestamp(event_)))
+      .WillOnce(SaveAndroidId<1>(&android_id));
+  logger_->Add(kPackageName, false /* gather_disk_space_info */,
+               std::move(event));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(kAndroidId, android_id);
+}
+
+// If an android id isn't available, then the proto field should not be set.
+TEST_F(AppInstallEventLoggerTest, DoesNotAddsAndroidId) {
+  CreateLogger();
+
+  std::unique_ptr<em::AppInstallReportLogEvent> event =
+      std::make_unique<em::AppInstallReportLogEvent>();
+  event->MergeFrom(event_);
+  event->clear_android_id();
+
+  SetAndroidId(0);
+  int64_t android_id = -1L;
+  EXPECT_CALL(delegate_, Add(std::set<std::string>{kPackageName},
+                             MatchEventExceptTimestamp(event_)))
+      .WillOnce(SaveAndroidId<1>(&android_id));
+  logger_->Add(kPackageName, false /* gather_disk_space_info */,
+               std::move(event));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(0, android_id);
 }
 
 // Adds an event with a timestamp, requesting that disk space information be
@@ -252,6 +321,7 @@ TEST_F(AppInstallEventLoggerTest, AddSetsDiskSpaceInfo) {
   Mock::VerifyAndClearExpectations(&delegate_);
 
   EXPECT_CALL(*disk_mount_manager_, disks());
+  SetAndroidId(kAndroidId);
   EXPECT_CALL(delegate_,
               Add(std::set<std::string>{kPackageName}, MatchProto(event_)));
   task_environment_.RunUntilIdle();
@@ -283,6 +353,7 @@ TEST_F(AppInstallEventLoggerTest, AddSetsTimestampAndDiskSpaceInfo) {
 
   int64_t timestamp = 0;
   EXPECT_CALL(*disk_mount_manager_, disks());
+  SetAndroidId(kAndroidId);
   EXPECT_CALL(delegate_, Add(std::set<std::string>{kPackageName},
                              MatchEventExceptTimestamp(event_)))
       .WillOnce(SaveTimestamp<1>(&timestamp));
@@ -333,6 +404,7 @@ TEST_F(AppInstallEventLoggerTest, UpdatePolicy) {
 
   // Expected CANCELED with empty package set
   event_.set_event_type(em::AppInstallReportLogEvent::CANCELED);
+  SetAndroidId(kAndroidId);
   EXPECT_CALL(delegate_,
               Add(std::set<std::string>(), MatchEventExceptTimestamp(event_)));
 
@@ -342,6 +414,7 @@ TEST_F(AppInstallEventLoggerTest, UpdatePolicy) {
 
   // Expected new packages added with disk info.
   event_.set_event_type(em::AppInstallReportLogEvent::SERVER_REQUEST);
+  SetAndroidId(kAndroidId);
   EXPECT_CALL(delegate_, Add(std::set<std::string>{kPackageName, kPackageName3},
                              MatchEventExceptTimestamp(event_)));
   EXPECT_CALL(*disk_mount_manager_, disks());

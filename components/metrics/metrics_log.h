@@ -30,7 +30,6 @@ class HistogramSnapshotManager;
 namespace metrics {
 
 class MetricsProvider;
-class MetricsServiceClient;
 class DelegatingProvider;
 
 namespace internal {

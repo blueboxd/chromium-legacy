@@ -123,8 +123,9 @@ void KeyframeModel::SetRunState(RunState run_state,
       run_state_ == WAITING_FOR_TARGET_AVAILABILITY || run_state_ == STARTING;
 
   if (is_controlling_instance_ && is_waiting_to_start && run_state == RUNNING) {
-    TRACE_EVENT_ASYNC_BEGIN1("cc", "KeyframeModel", this, "Name",
-                             TRACE_STR_COPY(name_buffer));
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("cc", "KeyframeModel",
+                                      TRACE_ID_LOCAL(this), "Name",
+                                      TRACE_STR_COPY(name_buffer));
   }
 
   bool was_finished = is_finished();
@@ -139,8 +140,10 @@ void KeyframeModel::SetRunState(RunState run_state,
 
   const char* new_run_state_name = s_runStateNames[run_state];
 
-  if (is_controlling_instance_ && !was_finished && is_finished())
-    TRACE_EVENT_ASYNC_END0("cc", "KeyframeModel", this);
+  if (is_controlling_instance_ && !was_finished && is_finished()) {
+    TRACE_EVENT_NESTABLE_ASYNC_END0("cc", "KeyframeModel",
+                                    TRACE_ID_LOCAL(this));
+  }
 
   char state_buffer[256];
   base::snprintf(state_buffer, sizeof(state_buffer), "%s->%s",

@@ -72,6 +72,9 @@ class ExtensionApps : public apps::mojom::Publisher,
   void ObserveArc();
 
  private:
+  using GetMenuModelCallback =
+      base::OnceCallback<void(apps::mojom::MenuItemsPtr)>;
+
   void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
 
   // Determines whether the given extension should be treated as type app_type_,
@@ -103,6 +106,9 @@ class ExtensionApps : public apps::mojom::Publisher,
                  bool report_abuse) override;
   void PauseApp(const std::string& app_id) override;
   void UnpauseApps(const std::string& app_id) override;
+  void GetMenuModel(const std::string& app_id,
+                    apps::mojom::MenuType menu_type,
+                    GetMenuModelCallback callback);
   void OpenNativeSettings(const std::string& app_id) override;
   void OnPreferredAppSet(const std::string& app_id,
                          apps::mojom::IntentFilterPtr intent_filter,
@@ -196,6 +202,9 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   bool ShouldRecordAppWindowActivity(extensions::AppWindow* app_window);
   void RegisterInstance(extensions::AppWindow* app_window, InstanceState state);
+
+  void GetMenuModelForChromeBrowserApp(apps::mojom::MenuType menu_type,
+                                       GetMenuModelCallback callback);
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;

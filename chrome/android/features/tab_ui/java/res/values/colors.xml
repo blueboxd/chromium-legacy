@@ -38,4 +38,7 @@
 
     <color name="hovered_tab_grid_card_background_color">@color/modern_secondary_color</color>
     <color name="hovered_tab_grid_card_background_color_incognito">@color/modern_grey_800</color>
+
+    <color name="new_tab_tile_plus_color">@color/default_icon_color_secondary</color>
+    <color name="new_tab_tile_plus_color_incognito">@color/white_alpha_70</color>
 </resources>

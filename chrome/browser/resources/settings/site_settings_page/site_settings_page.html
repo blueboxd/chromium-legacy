@@ -6,10 +6,12 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
+<link rel="import" href="../router.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../site_settings/constants.html">
 <link rel="import" href="../site_settings/site_settings_behavior.html">
 <link rel="import" href="../site_settings/site_settings_prefs_browser_proxy.html">
+<link rel="import" href="../metrics_browser_proxy.html">
 
 <dom-module id="settings-site-settings-page">
   <template>
@@ -288,7 +290,7 @@
 
     <template is="dom-if" if="[[enableInsecureContentContentSetting_]]">
       <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_MIXEDSCRIPT"
-          label="$i18n{siteSettingsInsecureContent}"
+          id="mixedscript" label="$i18n{siteSettingsInsecureContent}"
           on-click="onTapNavigate_"
           start-icon="settings:insecure-content"
           sub-label="$i18n{siteSettingsInsecureContentBlock}"
@@ -305,6 +307,29 @@
               default_.bluetoothScanning,
               '$i18nPolymer{siteSettingsBluetoothScanningAsk}',
               '$i18nPolymer{siteSettingsBluetoothScanningBlock}')]]"
+          role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
+    </template>
+
+    <template is="dom-if" if="[[enableWebXrContentSetting_]]">
+      <cr-link-row class="hr two-line"
+          data-route="SITE_SETTINGS_AR"
+          id="ar" label="$i18n{siteSettingsAr}"
+          on-click="onTapNavigate_" start-icon="settings:vr-headset"
+          sub-label="[[defaultSettingLabel_(
+              default_.ar,
+              '$i18nPolymer{siteSettingsArAsk}',
+              '$i18nPolymer{siteSettingsArBlock}')]]"
+          role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
+      <cr-link-row class="hr two-line"
+          data-route="SITE_SETTINGS_VR"
+          id="vr" label="$i18n{siteSettingsVr}"
+          on-click="onTapNavigate_" start-icon="settings:vr-headset"
+          sub-label="[[defaultSettingLabel_(
+              default_.vr,
+              '$i18nPolymer{siteSettingsVrAsk}',
+              '$i18nPolymer{siteSettingsVrBlock}')]]"
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
     </template>

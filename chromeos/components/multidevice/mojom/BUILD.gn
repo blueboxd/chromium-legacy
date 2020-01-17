@@ -5,21 +5,15 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "multidevice_types.mojom",
-  ]
+  sources = [ "multidevice_types.mojom" ]
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }
 
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "multidevice_mojom_traits_unittest.cc",
-  ]
+  sources = [ "multidevice_mojom_traits_unittest.cc" ]
 
   deps = [
     ":mojom",

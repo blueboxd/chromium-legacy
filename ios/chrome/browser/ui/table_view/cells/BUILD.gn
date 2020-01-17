@@ -74,9 +74,7 @@ source_set("cells_constants") {
     "table_view_cells_constants.h",
     "table_view_cells_constants.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 

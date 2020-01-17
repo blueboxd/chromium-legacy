@@ -100,8 +100,10 @@ class MockBluetoothDevice : public BluetoothDevice {
                void(const BluetoothUUID& uuid,
                     const ConnectToServiceCallback& callback,
                     const ConnectToServiceErrorCallback& error_callback));
-  void CreateGattConnection(GattConnectionCallback callback,
-                            ConnectErrorCallback error_callback) override {
+  void CreateGattConnection(
+      GattConnectionCallback callback,
+      ConnectErrorCallback error_callback,
+      base::Optional<BluetoothUUID> service_uuid) override {
     CreateGattConnection_(callback, error_callback);
   }
   MOCK_METHOD2(CreateGattConnection_,
@@ -115,7 +117,8 @@ class MockBluetoothDevice : public BluetoothDevice {
                      std::vector<BluetoothRemoteGattService*>());
   MOCK_CONST_METHOD1(GetGattService,
                      BluetoothRemoteGattService*(const std::string&));
-  MOCK_METHOD0(CreateGattConnectionImpl, void());
+  MOCK_METHOD1(CreateGattConnectionImpl,
+               void(base::Optional<BluetoothUUID> service_uuid));
   MOCK_METHOD0(DisconnectGatt, void());
 #if defined(OS_CHROMEOS)
   MOCK_METHOD2(ExecuteWrite,

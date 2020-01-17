@@ -20,12 +20,12 @@ Polymer({
     },
   },
 
-  focus: function() {
+  focus() {
     this.$.button.focus();
   },
 
   /** @private */
-  onLinkChanged_: function() {
+  onLinkChanged_() {
     this.$.button.classList.toggle('action-button', !this.link);
   },
 
@@ -33,7 +33,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onClick_: function(e) {
+  onClick_(e) {
     if (this.disabled) {
       e.stopPropagation();
     }
@@ -55,7 +55,7 @@ Polymer({
     ariaLabel: String,
   },
 
-  focus: function() {
+  focus() {
     this.$.iconButton.focus();
   },
 
@@ -63,7 +63,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onClick_: function(e) {
+  onClick_(e) {
     if (this.disabled) {
       e.stopPropagation();
     }

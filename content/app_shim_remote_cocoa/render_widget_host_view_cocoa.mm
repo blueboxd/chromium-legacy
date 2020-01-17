@@ -141,9 +141,10 @@ void ExtractUnderlines(NSAttributedString* string,
       ui::ImeTextSpan::Thickness thickness =
           [style intValue] > 1 ? ui::ImeTextSpan::Thickness::kThick
                                : ui::ImeTextSpan::Thickness::kThin;
-      ui::ImeTextSpan ui_ime_text_span =
-          ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, range.location,
-                          NSMaxRange(range), thickness, SK_ColorTRANSPARENT);
+      ui::ImeTextSpan ui_ime_text_span = ui::ImeTextSpan(
+          ui::ImeTextSpan::Type::kComposition, range.location,
+          NSMaxRange(range), thickness, ui::ImeTextSpan::UnderlineStyle::kSolid,
+          SK_ColorTRANSPARENT);
       ui_ime_text_span.underline_color = color;
       ime_text_spans->push_back(ui_ime_text_span);
     }
@@ -642,9 +643,6 @@ void ExtractUnderlines(NSAttributedString* string,
     return YES;
   }
 
-  // Use hitTest to check whether the mouse is over a nonWebContentView - in
-  // which case the mouse event should not be handled by the render host.
-  const SEL nonWebContentViewSelector = @selector(nonWebContentView);
   NSView* contentView = [window contentView];
   NSView* view = [contentView hitTest:[theEvent locationInWindow]];
   // Traverse the superview hierarchy as the hitTest will return the frontmost
@@ -654,11 +652,6 @@ void ExtractUnderlines(NSAttributedString* string,
   while (view) {
     if (view == self)
       hitSelf = YES;
-    if ([view respondsToSelector:nonWebContentViewSelector] &&
-        [view performSelector:nonWebContentViewSelector]) {
-      // The cursor is over a nonWebContentView - ignore this mouse event.
-      return YES;
-    }
     if ([view isKindOfClass:[self class]] && ![view isEqual:self] &&
         !_hasOpenMouseDown) {
       // The cursor is over an overlapping render widget. This check is done by
@@ -1973,7 +1966,8 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
     // Use a thin black underline by default.
     _ime_text_spans.push_back(ui::ImeTextSpan(
         ui::ImeTextSpan::Type::kComposition, 0, length,
-        ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
+        ui::ImeTextSpan::Thickness::kThin,
+        ui::ImeTextSpan::UnderlineStyle::kSolid, SK_ColorTRANSPARENT));
   }
 
   // If we are handling a key down event, then SetComposition() will be

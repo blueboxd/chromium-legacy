@@ -17,7 +17,7 @@ import androidx.annotation.StringRes;
 
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.widget.Toast;
 
 import java.util.Locale;

@@ -47,27 +47,7 @@ class BackForwardCacheMetricsTest : public RenderViewHostImplTestHarness,
   std::vector<int64_t> navigation_ids_;
 };
 
-using UkmEntry = std::pair<ukm::SourceId, std::map<std::string, int64_t>>;
-
-std::vector<UkmEntry> GetMetrics(ukm::TestUkmRecorder* recorder,
-                                 std::string entry_name,
-                                 std::vector<std::string> metrics) {
-  std::vector<UkmEntry> results;
-  for (const ukm::mojom::UkmEntry* entry :
-       recorder->GetEntriesByName(entry_name)) {
-    UkmEntry result;
-    result.first = entry->source_id;
-    for (const std::string& metric_name : metrics) {
-      const int64_t* metric_value =
-          ukm::TestUkmRecorder::GetEntryMetric(entry, metric_name);
-      EXPECT_TRUE(metric_value) << "Metric " << metric_name
-                                << " is not found in entry " << entry_name;
-      result.second[metric_name] = *metric_value;
-    }
-    results.push_back(std::move(result));
-  }
-  return results;
-}
+using UkmEntry = ukm::TestUkmRecorder::HumanReadableUkmEntry;
 
 ukm::SourceId ToSourceId(int64_t navigation_id) {
   return ukm::ConvertToSourceId(navigation_id,
@@ -108,8 +88,8 @@ TEST_F(BackForwardCacheMetricsTest, HistoryNavigationUKM) {
   std::string time_away = "TimeSinceNavigatedAwayFromDocument";
 
   EXPECT_THAT(
-      GetMetrics(&recorder_, "HistoryNavigation",
-                 {last_navigation_id, time_away}),
+      recorder_.GetEntries("HistoryNavigation",
+                           {last_navigation_id, time_away}),
       testing::ElementsAre(
           UkmEntry{id4, {{last_navigation_id, id2}, {time_away, 0b100}}},
           UkmEntry{id5, {{last_navigation_id, id1}, {time_away, 0b1110}}},
@@ -133,7 +113,7 @@ TEST_F(BackForwardCacheMetricsTest, LongDurationsAreClamped) {
 
   // The original interval of 5h + 50ms is clamped to just 5h.
   EXPECT_THAT(
-      GetMetrics(&recorder_, "HistoryNavigation", {time_away}),
+      recorder_.GetEntries("HistoryNavigation", {time_away}),
       testing::ElementsAre(UkmEntry{
           id3, {{time_away, base::TimeDelta::FromHours(5).InMilliseconds()}}}));
 }
@@ -178,7 +158,7 @@ TEST_F(BackForwardCacheMetricsTest, TimeRecordedAtStart) {
 
   std::string time_away = "TimeSinceNavigatedAwayFromDocument";
 
-  EXPECT_THAT(GetMetrics(&recorder_, "HistoryNavigation", {time_away}),
+  EXPECT_THAT(recorder_.GetEntries("HistoryNavigation", {time_away}),
               testing::ElementsAre(UkmEntry{id3, {{time_away, 0b1000}}}));
 }
 

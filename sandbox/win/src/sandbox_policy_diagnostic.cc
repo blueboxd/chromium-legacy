@@ -31,7 +31,7 @@ namespace {
 base::Value ProcessIdList(std::vector<uint32_t> process_ids) {
   base::Value results(base::Value::Type::LIST);
   for (const auto pid : process_ids) {
-    results.GetList().push_back(base::Value(base::strict_cast<double>(pid)));
+    results.Append(base::strict_cast<double>(pid));
   }
   return results;
 }
@@ -339,7 +339,7 @@ base::Value GetPolicyOpcodes(const PolicyGlobal* policy_rules, IpcTag service) {
     } else {
       cur_rule += " -> ";
       cur_rule += GetPolicyOpcode(opcode, false);
-      entry.GetList().push_back(base::Value(cur_rule));
+      entry.Append(cur_rule);
       cur_rule.clear();
     }
   }

@@ -29,9 +29,8 @@ namespace chromeos {
 // http://git.chromium.org/gitweb/?p=chromiumos/platform/permission_broker.git
 class COMPONENT_EXPORT(PERMISSION_BROKER) PermissionBrokerClient {
  public:
-  // The ResultCallback is used for both the RequestPathAccess and
-  // RequestUsbAccess methods. Its boolean parameter represents the result of
-  // the operation that it was submitted alongside.
+  // The ResultCallback's boolean parameter represents the result of the
+  // operation that it was submitted alongside.
   using ResultCallback = base::OnceCallback<void(bool)>;
 
   // An OpenPathCallback callback is run when an OpenPath request is completed.

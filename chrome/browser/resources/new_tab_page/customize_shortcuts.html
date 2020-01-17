@@ -1,0 +1,347 @@
+<style include="cr-icons">
+  :host {
+    line-height: 20px;
+  }
+
+  #options {
+    display: flex;
+  }
+
+  .option {
+    margin-inline-end: 9px;
+    width: 268px;
+  }
+
+  .option-image {
+    border: 1px solid var(--google-grey-refresh-300);
+    border-radius: 4px;
+    box-sizing: border-box;
+    cursor: pointer;
+    height: 176px;
+    outline: none;
+    position: relative;
+    width: 268px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .option-image {
+      border-color: var(--google-grey-refresh-700);
+    }
+  }
+
+  .selected .option-image {
+    background-color: var(--google-blue-50);
+    border-color: var(--google-blue-600);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .selected .option-image {
+      background-color: rgba(var(--google-blue-200-rgb), .1);
+      border-color: var(--google-blue-refresh-300);
+    }
+  }
+
+  .option-mini {
+    background-color: white;
+    border: 1px solid var(--google-grey-refresh-300);
+    border-radius: 4px;
+    box-sizing: border-box;
+    height: 144px;
+    position: absolute;
+    right: 40px;
+    top: 16px;
+    width: 144px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .option-mini {
+      background-color: var(--google-grey-900);
+      border-color: var(--google-grey-refresh-700);
+    }
+  }
+
+  html[dir=rtl] .option-mini {
+    left: 40px;
+    right: unset;
+  }
+
+  .selected .option-mini {
+    box-shadow: 0 1px 3px 0 rgba(var(--google-grey-800-rgb), .3),
+        0 4px 8px 3px rgba(var(--google-grey-800-rgb), .15);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .selected .option-mini {
+      border-color: transparent;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
+          0 4px 8px 3px rgba(0, 0, 0, .15);
+    }
+  }
+
+  ntp-mini-page {
+    --mini-page-shortcut-color: var(--google-grey-refresh-500);
+  }
+
+  .selected ntp-mini-page {
+    --mini-page-shortcut-color: var(--google-blue-600);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .selected ntp-mini-page {
+      --mini-page-shortcut-color: var(--google-blue-refresh-300);
+    }
+  }
+
+  .option-icon {
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    background: 96px 96px var(--google-grey-200);
+    height: 96px;
+    left: 16px;
+    position: absolute;
+    top: 48px;
+    width: 96px;
+  }
+
+  #optionCustomLinks .option-icon {
+    -webkit-mask-image: url(icons/account_circle.svg);
+  }
+
+  #optionMostVisited .option-icon {
+    -webkit-mask-image: url(icons/generic_globe.svg);
+  }
+
+  html[dir=rtl] .option-icon {
+    right: 16px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .option-icon {
+      background-color: var(--google-grey-refresh-700);
+    }
+  }
+
+  .selected .option-icon {
+    background-color: rgba(var(--google-blue-600-rgb), .24);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .selected .option-icon {
+      background-color: var(--google-blue-refresh-300);
+    }
+  }
+
+  .option-image .selected-circle {
+    box-shadow: 0 3px 6px 1px rgba(0, 0, 0, .16),
+        0 1px 2px 1px rgba(0, 0, 0, .23);
+    height: 22px;
+    left: 209px;
+    top: 9px;
+    width: 22px;
+  }
+
+  html[dir=rtl] .option-image .selected-circle {
+    left: 0;
+    right: 209px;
+  }
+
+  .option-image .selected-check {
+    left: initial;
+    right: 32px;
+    top: 6px;
+  }
+
+  html[dir=rtl] .option-image .selected-check {
+    left: 32px;
+    right: initial;
+  }
+
+  .option-title {
+    font-weight: bold;
+    margin: 8px 0;
+  }
+
+  #hide {
+    align-items: center;
+    border: 1px solid var(--google-grey-refresh-300);
+    border-radius: 4px;
+    box-sizing: border-box;
+    display: flex;
+    height: 64px;
+    margin-top: 24px;
+    max-width: 544px;
+    width: 100%;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    #hide {
+      border-color: var(--google-grey-refresh-700);
+    }
+  }
+
+  #hide.selected {
+    background-color: var(--google-blue-50);
+    border-color: var(--google-blue-600);
+    color: var(--google-blue-600);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    #hide.selected {
+      background-color: rgba(var(--google-blue-200-rgb), .1);
+      border-color: var(--google-blue-refresh-300);
+      color: var(--google-blue-refresh-300);
+    }
+  }
+
+  #hideIcon {
+    margin-inline-end: 20px;
+    margin-inline-start: 24px;
+  }
+
+  .selected #hideIcon {
+    background-color: var(--google-blue-600);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .selected #hideIcon {
+      background-color: var(--google-blue-refresh-300);
+    }
+  }
+
+  #hideTitleContainer {
+    flex-grow: 1;
+  }
+
+  #hideTitle {
+    font-weight: bold;
+  }
+
+  cr-toggle {
+    margin-inline-end: 20px;
+  }
+
+  .selected-border {
+    border: 2px solid rgba(var(--google-blue-600-rgb), .4);
+    border-radius: 4px;
+    box-sizing: border-box;
+    height: 100%;
+    position: relative;
+    width: 100%;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .selected-border {
+      border-color: var(--google-blue-refresh-300);
+    }
+  }
+
+  .selected-circle {
+    background: #FFF no-repeat center;
+    border-radius: 50%;
+    display: none;
+    height: 22px;
+    left: 66px;
+    position: absolute;
+    top: 46px;
+    width: 22px;
+  }
+
+  html[dir=rtl] .selected-circle {
+    left: auto;
+    right: 66px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .selected-circle {
+      background-color: var(--google-grey-900);
+    }
+  }
+
+  .selected-check {
+    background: url(icons/check_circle.svg) no-repeat center;
+    background-size: 28px 28px;
+    display: none;
+    height: 28px;
+    left: 63px;
+    position: absolute;
+    top: 43px;
+    width: 28px;
+  }
+
+  .selected :-webkit-any(.selected-circle, .selected-check) {
+    display: block;
+  }
+
+  html[dir=rtl] .selected-check {
+    left: auto;
+    right: 63px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .selected-check {
+      background: transparent;
+    }
+  }
+
+  /* We use ::after without content to provide the masked check element. */
+  @media (prefers-color-scheme: dark) {
+    .selected-check::after {
+      -webkit-mask-image: url(icons/check_circle.svg);
+      -webkit-mask-repeat: no-repeat;
+      -webkit-mask-size: 28px;
+      background-color: var(--google-blue-refresh-300);
+      content: '';
+      display: block;
+      height: 28px;
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 28px;
+    }
+  }
+</style>
+<div id="options">
+  <div id="optionCustomLinks"
+      class$="option [[getCustomLinksSelected_(customLinksEnabled_, hide_)]]">
+    <div id="optionCustomLinksButton" class="option-image" tabindex="0"
+        role="button"
+        aria-pressed$="[[getCustomLinksAriaPressed_(customLinksEnabled_,
+            hide_)]]"
+        title="$i18n{myShortcuts}" on-click="onCustomLinksClick_">
+      <div class="option-icon"></div>
+      <div class="option-mini">
+        <ntp-mini-page></ntp-mini-page>
+      </div>
+      <div class="selected-circle"></div>
+      <div class="selected-check"></div>
+    </div>
+    <div class="option-title">$i18n{myShortcuts}</div>
+    $i18n{shortcutsCurated}
+  </div>
+  <div id="optionMostVisited"
+      class$="option [[getMostVisitedSelected_(customLinksEnabled_, hide_)]]">
+    <div id="optionMostVisitedButton" class="option-image" tabindex="0"
+        role="button"
+        aria-pressed$="[[getMostVisitedAriaPressed_(customLinksEnabled_,
+            hide_)]]"
+        title="$i18n{mostVisited}" on-click="onMostVisitedClick_">
+      <div class="option-icon"></div>
+      <div class="option-mini">
+        <ntp-mini-page></ntp-mini-page>
+      </div>
+      <div class="selected-circle"></div>
+      <div class="selected-check"></div>
+    </div>
+    <div class="option-title">$i18n{mostVisited}</div>
+    $i18n{shortcutsSuggested}
+  </div>
+</div>
+<div id="hide" class$="[[getHideClass_(hide_)]]">
+  <div id="hideIcon" class="cr-icon icon-visibility-off"></div>
+  <div id="hideTitleContainer">
+    <div id="hideTitle">$i18n{hideShortcuts}</div>
+    $i18n{hideShortcutsDesc}
+  </div>
+  <cr-toggle id="hideToggle" title="$i18n{hideShortcuts}" checked="[[hide_]]"
+      on-change="onHideChange_"></cr-toggle>
+</div>

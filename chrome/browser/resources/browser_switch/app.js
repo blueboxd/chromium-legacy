@@ -34,7 +34,7 @@ Polymer({
      */
     url_: {
       type: String,
-      value: function() {
+      value() {
         return (new URLSearchParams(window.location.search)).get('url') || '';
       },
     },
@@ -60,7 +60,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     // If '?done=...' is specified in the URL, this tab was-reopened, or the
     // entire browser was closed by LBS and re-opened. In that case, go to NTP
     // instead.
@@ -84,7 +84,7 @@ Polymer({
   },
 
   /** @private */
-  launchAndCloseTab_: function() {
+  launchAndCloseTab_() {
     // Mark this page with '?done=...' so that restoring the tab doesn't
     // immediately re-trigger LBS.
     history.pushState({}, '', '/?done=true');
@@ -98,7 +98,7 @@ Polymer({
    * @param {number} seconds
    * @private
    */
-  startCountdown_: function(seconds) {
+  startCountdown_(seconds) {
     this.secondCounter_ = seconds;
     const intervalId = setInterval(() => {
       this.secondCounter_--;
@@ -112,7 +112,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeTitle_: function() {
+  computeTitle_() {
     if (this.error_) {
       return this.i18n('errorTitle', getBrowserName());
     }
@@ -126,7 +126,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeDescription_: function() {
+  computeDescription_() {
     if (this.error_) {
       return this.i18n(
           this.error_, getUrlHostname(this.url_), getBrowserName());

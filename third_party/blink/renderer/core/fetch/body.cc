@@ -351,12 +351,13 @@ ScriptPromise Body::text(ScriptState* script_state,
 }
 
 ReadableStream* Body::body() {
-  auto* execution_context = GetExecutionContext();
-  if (execution_context->IsServiceWorkerGlobalScope()) {
-    execution_context->CountUse(WebFeature::kFetchBodyStreamInServiceWorker);
-  } else {
-    execution_context->CountUse(
-        WebFeature::kFetchBodyStreamOutsideServiceWorker);
+  if (auto* execution_context = GetExecutionContext()) {
+    if (execution_context->IsServiceWorkerGlobalScope()) {
+      execution_context->CountUse(WebFeature::kFetchBodyStreamInServiceWorker);
+    } else {
+      execution_context->CountUse(
+          WebFeature::kFetchBodyStreamOutsideServiceWorker);
+    }
   }
 
   if (!BodyBuffer())

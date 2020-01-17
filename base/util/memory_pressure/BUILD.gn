@@ -39,9 +39,7 @@ source_set("memory_pressure") {
     ]
   }
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("unittests") {

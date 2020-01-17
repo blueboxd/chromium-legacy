@@ -18,6 +18,7 @@ struct DisplaySnapshot {
   display.mojom.DisplayConnectionType type;
   bool is_aspect_preserving_scaling;
   bool has_overscan;
+  bool has_privacy_screen;
   bool has_color_correction_matrix;
   bool color_correction_in_linear_space;
   gfx.mojom.ColorSpace color_space;

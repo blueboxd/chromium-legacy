@@ -44,6 +44,9 @@ const base::Feature kUseJSForErrorPage{"UseJSForErrorPage",
 const base::Feature kUseDefaultUserAgentInWebClient{
     "UseDefaultUserAgentInWebClient", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPreserveScrollViewProperties{
+    "PreserveScrollViewProperties", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool UseWKWebViewLoading() {
   return base::FeatureList::IsEnabled(web::features::kUseWKWebViewLoading);
 }

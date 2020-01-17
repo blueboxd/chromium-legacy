@@ -124,6 +124,9 @@ public class EarlyNativeTest {
     @Test
     @SmallTest
     public void testNativeMethodsReadyAfterLibraryInitialized() {
+        // Test is a no-op if dcheck isn't on.
+        if (!BuildConfig.DCHECK_IS_ON) return;
+
         LibraryLoader.getInstance().enableJniChecks();
 
         Assert.assertFalse(
@@ -147,14 +150,14 @@ public class EarlyNativeTest {
     @Test
     @SmallTest
     public void testNativeMethodsNotReadyThrows() {
+        // Test is a no-op if dcheck isn't on.
+        if (!BuildConfig.DCHECK_IS_ON) return;
+
         LibraryLoader.getInstance().enableJniChecks();
 
         try {
-            // Test is a no-op if dcheck isn't on.
-            if (BuildConfig.DCHECK_IS_ON) {
-                EarlyNativeTestJni.get().isCommandLineInitialized();
-                Assert.fail("Using JNI before the library is loaded should throw an exception.");
-            }
+            EarlyNativeTestJni.get().isCommandLineInitialized();
+            Assert.fail("Using JNI before the library is loaded should throw an exception.");
         } catch (JniException e) {
         }
     }

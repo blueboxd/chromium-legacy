@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.MessageCardViewPr
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_ALPHA;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.MESSAGE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.NEW_TAB_TILE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.OTHERS;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.TAB;
 import static org.chromium.chrome.browser.tasks.tab_management.TabProperties.TAB_ID;
@@ -39,12 +40,13 @@ class TabListModel extends ModelList {
      */
     static class CardProperties {
         /** Supported Model type within this ModelList. */
-        @IntDef({TAB, MESSAGE, OTHERS})
+        @IntDef({TAB, MESSAGE, NEW_TAB_TILE, OTHERS})
         @Retention(RetentionPolicy.SOURCE)
         public @interface ModelType {
             int TAB = 0;
             int MESSAGE = 1;
-            int OTHERS = 2;
+            int NEW_TAB_TILE = 2;
+            int OTHERS = 3;
         }
 
         public static final PropertyModel.ReadableIntPropertyKey CARD_TYPE =
@@ -76,6 +78,20 @@ class TabListModel extends ModelList {
         for (int i = size() - 1; i >= 0; i--) {
             PropertyModel model = get(i).model;
             if (model.get(CARD_TYPE) == MESSAGE && model.get(MESSAGE_TYPE) == messageType) {
+                return i;
+            }
+        }
+        return TabModel.INVALID_TAB_INDEX;
+    }
+
+    /**
+     * Get the index that matches the new tab tile in TabListModel.
+     * @return The index within the model.
+     */
+    public int getIndexForNewTabTile() {
+        for (int i = size() - 1; i >= 0; i--) {
+            PropertyModel model = get(i).model;
+            if (model.get(CARD_TYPE) == NEW_TAB_TILE) {
                 return i;
             }
         }

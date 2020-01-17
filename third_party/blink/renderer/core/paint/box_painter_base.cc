@@ -407,7 +407,13 @@ void DrawTiledBackground(GraphicsContext& context,
   // generated image to be the tile size.
   FloatSize intrinsic_tile_size(image->Size());
   FloatSize scale(1, 1);
-  if (!image->HasIntrinsicSize()) {
+  if (!image->HasIntrinsicSize() ||
+      // TODO(crbug.com/1042783): This is not checking for real empty image
+      // (for which we have checked and skipped the whole FillLayer), but for
+      // that a subpixel image size is rounded to empty, to avoid infinite tile
+      // scale that would be calculated in the |else| part.
+      // We should probably support subpixel size here.
+      intrinsic_tile_size.IsEmpty()) {
     intrinsic_tile_size = tile_size;
   } else {
     scale = FloatSize(tile_size.Width() / intrinsic_tile_size.Width(),
@@ -438,7 +444,7 @@ void DrawTiledBackground(GraphicsContext& context,
     // When respecting image orientation, the drawing code expects the source
     // rect to be in the unrotated image space, but we have computed it here in
     // the rotated space in order to position and size the background. Undo the
-    // src rect rotation if necessaary.
+    // src rect rotation if necessary.
     if (respect_orientation && !image->HasDefaultOrientation()) {
       visible_src_rect = CorrectSrcRectForImageOrientation(ToBitmapImage(image),
                                                            visible_src_rect);

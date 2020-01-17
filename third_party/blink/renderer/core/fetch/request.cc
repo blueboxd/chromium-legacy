@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/fetch/request.h"
 
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/request_mode.h"
@@ -114,6 +115,12 @@ static BodyStreamBuffer* ExtractBody(ScriptState* script_state,
     // Avoid calling into V8 from the following constructor parameters, which
     // is potentially unsafe.
     DOMArrayBuffer* array_buffer = V8ArrayBuffer::ToImpl(body.As<v8::Object>());
+    if (!base::CheckedNumeric<wtf_size_t>(array_buffer->ByteLengthAsSizeT())
+             .IsValid()) {
+      exception_state.ThrowRangeError(
+          "The provided ArrayBuffer exceeds the maximum supported size");
+      return nullptr;
+    }
     return_buffer = BodyStreamBuffer::Create(
         script_state, MakeGarbageCollected<FormDataBytesConsumer>(array_buffer),
         nullptr /* AbortSignal */);
@@ -122,6 +129,13 @@ static BodyStreamBuffer* ExtractBody(ScriptState* script_state,
     // is potentially unsafe.
     DOMArrayBufferView* array_buffer_view =
         V8ArrayBufferView::ToImpl(body.As<v8::Object>());
+    if (!base::CheckedNumeric<wtf_size_t>(
+             array_buffer_view->byteLengthAsSizeT())
+             .IsValid()) {
+      exception_state.ThrowRangeError(
+          "The provided ArrayBufferView exceeds the maximum supported size");
+      return nullptr;
+    }
     return_buffer = BodyStreamBuffer::Create(
         script_state,
         MakeGarbageCollected<FormDataBytesConsumer>(array_buffer_view),
@@ -404,9 +418,10 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If |credentials| is non-null, set |request|'s credentials mode to
   // |credentials|."
 
-  network::mojom::CredentialsMode credentials_mode;
-  if (ParseCredentialsMode(init->credentials(), &credentials_mode)) {
-    request->SetCredentials(credentials_mode);
+  base::Optional<network::mojom::CredentialsMode> credentials_result =
+      ParseCredentialsMode(init->credentials());
+  if (credentials_result) {
+    request->SetCredentials(credentials_result.value());
   } else if (!input_request) {
     request->SetCredentials(network::mojom::CredentialsMode::kSameOrigin);
   }
@@ -638,21 +653,15 @@ Request* Request::Create(
   return MakeGarbageCollected<Request>(script_state, data);
 }
 
-bool Request::ParseCredentialsMode(const String& credentials_mode,
-                                   network::mojom::CredentialsMode* result) {
-  if (credentials_mode == "omit") {
-    *result = network::mojom::CredentialsMode::kOmit;
-    return true;
-  }
-  if (credentials_mode == "same-origin") {
-    *result = network::mojom::CredentialsMode::kSameOrigin;
-    return true;
-  }
-  if (credentials_mode == "include") {
-    *result = network::mojom::CredentialsMode::kInclude;
-    return true;
-  }
-  return false;
+base::Optional<network::mojom::CredentialsMode> Request::ParseCredentialsMode(
+    const String& credentials_mode) {
+  if (credentials_mode == "omit")
+    return network::mojom::CredentialsMode::kOmit;
+  if (credentials_mode == "same-origin")
+    return network::mojom::CredentialsMode::kSameOrigin;
+  if (credentials_mode == "include")
+    return network::mojom::CredentialsMode::kInclude;
+  return base::nullopt;
 }
 
 Request::Request(ScriptState* script_state,

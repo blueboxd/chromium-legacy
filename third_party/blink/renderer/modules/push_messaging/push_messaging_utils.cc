@@ -68,6 +68,10 @@ String PushRegistrationStatusToString(mojom::PushRegistrationStatus status) {
 
     case mojom::PushRegistrationStatus::RENDERER_SHUTDOWN:
       return "Registration failed - renderer shutdown";
+
+    case mojom::PushRegistrationStatus::UNSUPPORTED_GCM_SENDER_ID:
+      return "Registration failed - GCM Sender IDs are no longer supported, "
+             "please upgrade to VAPID authentication instead";
   }
   NOTREACHED();
   return String();
@@ -99,6 +103,7 @@ mojom::PushErrorType PushRegistrationStatusToPushErrorType(
     case mojom::PushRegistrationStatus::MANIFEST_EMPTY_OR_MISSING:
     case mojom::PushRegistrationStatus::STORAGE_CORRUPT:
     case mojom::PushRegistrationStatus::RENDERER_SHUTDOWN:
+    case mojom::PushRegistrationStatus::UNSUPPORTED_GCM_SENDER_ID:
       error_type = mojom::PushErrorType::ABORT;
       break;
   }

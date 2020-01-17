@@ -7,7 +7,7 @@ Polymer({
 
   behaviors: [DiscoverModuleBehavior],
 
-  onClick_: function() {
+  onClick_() {
     this.discoverCall('discover.setWallpaper.launchWallpaperPicker');
   },
 });

@@ -172,13 +172,9 @@ component("midi") {
 }
 
 mojom("mojo") {
-  sources = [
-    "midi_service.mojom",
-  ]
+  sources = [ "midi_service.mojom" ]
 
-  deps = [
-    "//mojo/public/mojom/base",
-  ]
+  deps = [ "//mojo/public/mojom/base" ]
 }
 
 test("midi_unittests") {
@@ -222,23 +218,15 @@ test("midi_unittests") {
 }
 
 fuzzer_test("midi_webmidi_data_validator_fuzzer") {
-  sources = [
-    "midi_webmidi_data_validator_fuzzer.cc",
-  ]
+  sources = [ "midi_webmidi_data_validator_fuzzer.cc" ]
   seed_corpus = "fuzz/corpus"
-  deps = [
-    ":midi",
-  ]
+  deps = [ ":midi" ]
 }
 
 fuzzer_test("midi_message_queue_fuzzer") {
-  sources = [
-    "midi_message_queue_fuzzer.cc",
-  ]
+  sources = [ "midi_message_queue_fuzzer.cc" ]
   seed_corpus = "fuzz/corpus"
-  deps = [
-    ":midi",
-  ]
+  deps = [ ":midi" ]
 }
 
 fuzzer_test("usb_midi_descriptor_parser_fuzzer") {

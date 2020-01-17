@@ -793,6 +793,20 @@
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE" desc="The label on the button that closes dialog while accepting the selected settings.">
     Accept and continue
   </message>
+
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_TITLE" desc="OS sync consent screen dialog title/header">
+    Sync for a personalized experience across devices
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_TOGGLE_NAME" desc="Label for the toggle button that enables OS sync">
+    Sync my <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_TOGGLE_DESCRIPTION" desc="Description for the toggle button that enables OS sync">
+    Your apps, settings, and Wi-Fi preferences will be synced. To make changes, go to Settings at any time after setup.
+  </message>
+  <message name="IDS_LOGIN_OS_SYNC_CONSENT_CONTINUE" desc="Button label for OS sync consent screen.">
+    Continue
+  </message>
+
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_TITLE" desc="The title of the dialog that recommend apps which user has installed in other devices">
     Install apps from your other devices
   </message>
@@ -893,7 +907,7 @@
     Confirm your password
   </message>
   <message name="IDS_DISCOVER_PIN_SETUP_PASSWORD_SUBTITLE" desc="A sub-title of the dialog that starts 'PIN-unlock' setup process, and asks user to type their password first.">
-    Enter your password to configure screen lock and sign-in
+    Enter your password to configure security and sign-in
   </message>
   <message name="IDS_DISCOVER_PIN_SETUP_DONE" desc="Label for the done button on the success screen in 'PIN-unlock' setup dialog.">
     Done
@@ -3595,6 +3609,9 @@
   <message name="IDS_CROSTINI_UPGRADER_LAUNCH_BUTTON" desc="Label for the button in the Crostini upgrader dialog to launch the Linux terminal after upgrading Linux.">
     Launch
   </message>
+    <message name="IDS_CROSTINI_UPGRADER_RESTORE_BUTTON" desc="Label for the button in the Crostini upgrader dialog to restore a backup if there was an error upgrading Linux.">
+    Restore
+  </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKING_UP_TITLE" desc="Title of the Crostini upgrader when the container backup is in progress.">
     Backing up Linux apps and files
   </message>
@@ -3631,6 +3648,9 @@
   <message name="IDS_CROSTINI_UPGRADER_SUCCEEDED" desc="Text shown by the Crostini upgrader when the upgrade is finished successfully.">
     Linux has been successfully upgraded.
   </message>
+  <message name="IDS_CROSTINI_UPGRADER_RESTORE_TITLE" desc="Title of the Crostini upgrader when the container upgrade fails and restore of a backup is in progress.">
+    Restoring Linux
+  </message>
   <message name="IDS_CROSTINI_UPGRADER_ERROR_TITLE" desc="Title of the Crostini upgrader when an error occurs.">
     Error upgrading Linux
   </message>
@@ -3645,6 +3665,12 @@
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKUP_CHANGE_LOCATION" desc="Text shown in the Crostini upgrader dialog next to the backup checkbox with a link enabling the user to change the location to which files are backed up.">
     Change location
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_OFFER_RESTORE_MESSAGE" desc="Text shown in the Crostini upgrader dialog when the upgrade has failed and the previous container backup can be restored.">
+    There was an error while upgrading Linux. We'll restore the container using your backup.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_RESTORE_MESSAGE" desc="Title of the Crostini upgrader when the container upgrade fails and restore of a backup is in progress.">
+    Linux files and apps are being restored to their backed up state.
   </message>
   <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_LABEL" translateable="false" desc="Label for dialog warning user of unavailable Linux container until software configurations are applied.">
     Configuring Linux

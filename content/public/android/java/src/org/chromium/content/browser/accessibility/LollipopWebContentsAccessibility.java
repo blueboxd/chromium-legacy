@@ -171,13 +171,22 @@ public class LollipopWebContentsAccessibility extends KitKatWebContentsAccessibi
                 spannable = new SpannableString(charSequence);
             }
 
+            int spannableLen = spannable.length();
             for (int i = 0; i < suggestionStarts.length; i++) {
+                int start = suggestionStarts[i];
+                int end = suggestionEnds[i];
+                // Ignore any spans outside the range of the spannable string.
+                if (start < 0 || start > spannableLen || end < 0 || end > spannableLen
+                        || start > end) {
+                    continue;
+                }
+
                 String[] suggestionArray = new String[1];
                 suggestionArray[0] = suggestions[i];
                 int flags = SuggestionSpan.FLAG_MISSPELLED;
                 SuggestionSpan suggestionSpan =
                         new SuggestionSpan(mContext, suggestionArray, flags);
-                spannable.setSpan(suggestionSpan, suggestionStarts[i], suggestionEnds[i], 0);
+                spannable.setSpan(suggestionSpan, start, end, 0);
             }
             charSequence = spannable;
         }

@@ -57,7 +57,7 @@ class ToolbarActionViewController {
 
   // Returns the accessible name to use for the given |web_contents|.
   // May be passed null, or a |web_contents| that returns -1 for
-  // |SessionTabHelper::IdForTab(..)|.
+  // |sessions::SessionTabHelper::IdForTab(..)|.
   virtual base::string16 GetAccessibleName(content::WebContents* web_contents)
       const = 0;
 

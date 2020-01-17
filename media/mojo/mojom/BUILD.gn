@@ -85,39 +85,25 @@ mojom("mojom") {
 }
 
 mojom("remoting_common") {
-  sources = [
-    "remoting_common.mojom",
-  ]
+  sources = [ "remoting_common.mojom" ]
 }
 
 mojom("mirror_service_remoting") {
-  sources = [
-    "mirror_service_remoting.mojom",
-  ]
+  sources = [ "mirror_service_remoting.mojom" ]
 
-  public_deps = [
-    ":remoting_common",
-  ]
+  public_deps = [ ":remoting_common" ]
 }
 
 mojom("remoting") {
-  sources = [
-    "remoting.mojom",
-  ]
+  sources = [ "remoting.mojom" ]
 
-  public_deps = [
-    ":remoting_common",
-  ]
+  public_deps = [ ":remoting_common" ]
 }
 
 mojom("test_interfaces") {
   testonly = true
-  sources = [
-    "traits_test_service.mojom",
-  ]
-  public_deps = [
-    ":mojom",
-  ]
+  sources = [ "traits_test_service.mojom" ]
+  public_deps = [ ":mojom" ]
 }
 
 source_set("unit_tests") {

@@ -180,7 +180,7 @@ void AndroidPageLoadMetricsObserver::ReportBufferedMetrics(
       (GetDelegate().GetNavigationStart() - base::TimeTicks()).InMicroseconds();
   const page_load_metrics::ContentfulPaintTimingInfo& largest_contentful_paint =
       largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
-  if (!largest_contentful_paint.IsEmpty()) {
+  if (largest_contentful_paint.ContainsValidTime()) {
     Java_PageLoadMetrics_onLargestContentfulPaint(
         env, java_web_contents, static_cast<jlong>(navigation_id_),
         static_cast<jlong>(navigation_start_tick),

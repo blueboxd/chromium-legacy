@@ -1467,6 +1467,7 @@ void DocumentLoader::InstallNewDocument(
       DocumentInit::Create()
           .WithDocumentLoader(this)
           .WithURL(url)
+          .WithTypeFrom(mime_type)
           .WithOwnerDocument(owner_document)
           .WithInitiatorOrigin(initiator_origin)
           .WithOriginToCommit(origin_to_commit_)
@@ -1503,6 +1504,9 @@ void DocumentLoader::InstallNewDocument(
     previous_security_origin = frame_->GetDocument()->GetSecurityOrigin();
   }
 
+  bool was_cross_origin_subframe =
+      previous_security_origin && frame_->IsCrossOriginSubframe();
+
   // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For
   // example, when a script calls window.open("..."), the browser gives
   // JavaScript a window synchronously but kicks off the load in the window
@@ -1520,8 +1524,7 @@ void DocumentLoader::InstallNewDocument(
   if (!loading_url_as_javascript_)
     WillCommitNavigation();
 
-  Document* document =
-      frame_->DomWindow()->InstallNewDocument(mime_type, init, false);
+  Document* document = frame_->DomWindow()->InstallNewDocument(init, false);
 
   // Clear the user activation state.
   // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
@@ -1560,6 +1563,11 @@ void DocumentLoader::InstallNewDocument(
   // will use stale values from HTMLParserOption.
   if (!loading_url_as_javascript_)
     DidCommitNavigation();
+
+  if (was_cross_origin_subframe != frame_->IsCrossOriginSubframe()) {
+    if (auto* owner = frame_->DeprecatedLocalOwner())
+      owner->FrameCrossOriginStatusChanged();
+  }
 
   if (initiator_origin) {
     const scoped_refptr<const SecurityOrigin> url_origin =

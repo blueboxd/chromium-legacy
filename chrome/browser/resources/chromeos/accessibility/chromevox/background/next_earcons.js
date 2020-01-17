@@ -51,14 +51,14 @@ NextEarcons.prototype = {
   /**
    * @return {string} The human-readable name of the earcon set.
    */
-  getName: function() {
+  getName() {
     return 'ChromeVox Next earcons';
   },
 
   /**
    * @override
    */
-  playEarcon: function(earcon, opt_location) {
+  playEarcon(earcon, opt_location) {
     if (!AbstractEarcons.enabled) {
       return;
     }
@@ -148,7 +148,7 @@ NextEarcons.prototype = {
   /**
    * @override
    */
-  cancelEarcon: function(earcon) {
+  cancelEarcon(earcon) {
     switch (earcon) {
       case Earcon.PAGE_START_LOADING:
         this.engine_.cancelProgress();
@@ -162,7 +162,7 @@ NextEarcons.prototype = {
    * @param {Array<chrome.audio.AudioDeviceInfo>} devices
    * @private
    */
-  updateShouldPanForDevices_: function(devices) {
+  updateShouldPanForDevices_(devices) {
     this.shouldPan_ = !devices.some((device) => {
       return device.isActive &&
           device.deviceType == chrome.audio.DeviceType.INTERNAL_SPEAKER;

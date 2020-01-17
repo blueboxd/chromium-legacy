@@ -129,7 +129,6 @@ jumbo_component("modules") {
     "//third_party/blink/renderer/modules/push_messaging",
     "//third_party/blink/renderer/modules/quota",
     "//third_party/blink/renderer/modules/remoteplayback",
-    "//third_party/blink/renderer/modules/remote_objects",
     "//third_party/blink/renderer/modules/scheduler",
     "//third_party/blink/renderer/modules/screen_enumeration",
     "//third_party/blink/renderer/modules/screen_orientation",
@@ -156,6 +155,10 @@ jumbo_component("modules") {
     "//third_party/blink/renderer/modules/worklet",
     "//third_party/blink/renderer/modules/xr",
   ]
+
+  if (is_android) {
+    sub_modules += [ "//third_party/blink/renderer/modules/remote_objects" ]
+  }
 
   deps = [
     ":make_modules_generated",
@@ -208,6 +211,8 @@ jumbo_source_set("modules_testing") {
     "peerconnection/testing/internals_rtc_certificate.h",
     "peerconnection/testing/internals_rtc_peer_connection.cc",
     "peerconnection/testing/internals_rtc_peer_connection.h",
+    "permissions/testing/internals_permission.cc",
+    "permissions/testing/internals_permission.h",
     "service_worker/testing/internals_service_worker.cc",
     "service_worker/testing/internals_service_worker.h",
     "speech/testing/internals_speech_synthesis.cc",
@@ -318,6 +323,7 @@ jumbo_source_set("unit_tests") {
     "mediarecorder/audio_track_recorder_unittest.cc",
     "mediarecorder/fake_encoded_video_frame.h",
     "mediarecorder/media_recorder_handler_unittest.cc",
+    "mediarecorder/media_recorder_unittest.cc",
     "mediarecorder/track_recorder_unittest.cc",
     "mediarecorder/video_track_recorder_unittest.cc",
     "mediasession/media_session_test.cc",
@@ -480,21 +486,15 @@ jumbo_source_set("unit_tests") {
 }
 
 group("accessibility_unittests_data") {
-  data = [
-    "accessibility/testing/data/",
-  ]
+  data = [ "accessibility/testing/data/" ]
 }
 
 group("mediastream_unittests_data") {
-  data = [
-    "//media/test/data/",
-  ]
+  data = [ "//media/test/data/" ]
 }
 
 fuzzer_test("web_app_manifest_fuzzer") {
-  sources = [
-    "manifest/manifest_fuzzer.cc",
-  ]
+  sources = [ "manifest/manifest_fuzzer.cc" ]
 
   dict = "manifest/manifest_fuzzer.dict"
   seed_corpus = "manifest/fuzzer_seed_corpus"
@@ -507,9 +507,7 @@ fuzzer_test("web_app_manifest_fuzzer") {
 
 if (use_libfuzzer) {
   fuzzer_test("media_capabilities_fuzzer") {
-    sources = [
-      "media_capabilities/media_capabilities_fuzzer.cc",
-    ]
+    sources = [ "media_capabilities/media_capabilities_fuzzer.cc" ]
 
     seed_corpus = "media_capabilities/fuzzer_seed_corpus"
 

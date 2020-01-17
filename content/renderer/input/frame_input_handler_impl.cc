@@ -80,7 +80,7 @@ void FrameInputHandlerImpl::SetCompositionFromExistingText(
   if (!render_frame_)
     return;
 
-  ImeEventGuard guard(render_frame_->GetLocalRootRenderWidget());
+  ImeEventGuard guard(render_frame_->GetLocalRootRenderWidget()->AsWeakPtr());
 
   render_frame_->GetWebFrame()->SetCompositionFromExistingText(
       start, end, ConvertUiImeTextSpansToBlinkImeTextSpans(ui_ime_text_spans));

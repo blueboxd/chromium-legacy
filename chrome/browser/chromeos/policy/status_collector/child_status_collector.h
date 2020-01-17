@@ -79,11 +79,6 @@ class ChildStatusCollector : public StatusCollector,
   bool ShouldReportUsers() const override;
   bool ShouldReportHardwareStatus() const override;
 
-  // How often, in seconds, to poll to see if the user is idle.
-  // Note: This in only used in tests and not referenced in .cc. It should
-  // probably be moved.
-  static const unsigned int kIdlePollIntervalSeconds = 30;
-
   // Returns the amount of time the child has used so far today. If there is no
   // user logged in, it returns 0.
   base::TimeDelta GetActiveChildScreenTime();
@@ -119,18 +114,6 @@ class ChildStatusCollector : public StatusCollector,
   bool GetVersionInfo(enterprise_management::ChildStatusReportRequest* status);
   // Queues async queries!
   bool GetAndroidStatus(const scoped_refptr<ChildStatusCollectorState>& state);
-
-  // TODO(crbug.com/827386): remove after migration.
-  void GetDeviceStatus(scoped_refptr<ChildStatusCollectorState> state);
-  void GetSessionStatus(scoped_refptr<ChildStatusCollectorState> state);
-  bool GetSessionStatusForUser(
-      scoped_refptr<ChildStatusCollectorState> state,
-      enterprise_management::SessionStatusReportRequest* status,
-      const user_manager::User* user);
-  bool GetActivityTimes(
-      enterprise_management::DeviceStatusReportRequest* status);
-  bool GetVersionInfo(enterprise_management::DeviceStatusReportRequest* status);
-  // END.
 
   // Update the cached values of the reporting settings.
   void UpdateReportingSettings();

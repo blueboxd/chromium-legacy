@@ -22,9 +22,7 @@ static_library("cache") {
     "//components/prefs",
     "//net",
   ]
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 }
 
 source_set("cache_unit_tests") {

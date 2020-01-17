@@ -42,7 +42,7 @@ CreateCompositorCollection() {
           // this feature is enabled for official builds.
 
           // .WithDisplayName(IDS_PAINT_PREVIEW_COMPOSITOR_SERVICE_DISPLAY_NAME)
-          .WithSandboxType(service_manager::SandboxType::kPdfCompositor)
+          .WithSandboxType(service_manager::SandboxType::kPrintCompositor)
           .Pass());
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
       discardable_memory_manager;

@@ -23,6 +23,7 @@
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
+#include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -111,8 +112,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   // views::WidgetDelegate:
   void DeleteDelegate() override { delete this; }
-  views::Widget* GetWidget() override { return View::GetWidget(); }
-  const views::Widget* GetWidget() const override { return View::GetWidget(); }
 
   bool CanActivate() const override;
   void ReorderChildLayers(ui::Layer* parent_layer) override;
@@ -608,7 +607,8 @@ void ShelfWidget::PostCreateShelf() {
 }
 
 bool ShelfWidget::IsShowingAppList() const {
-  return GetHomeButton() && GetHomeButton()->IsShowingAppList();
+  return navigation_widget()->GetHomeButton() &&
+         navigation_widget()->GetHomeButton()->IsShowingAppList();
 }
 
 bool ShelfWidget::IsShowingMenu() const {
@@ -631,6 +631,12 @@ gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(
   if (id.IsNull())
     return gfx::Rect();
 
+  if (chromeos::switches::ShouldShowShelfHotseat()) {
+    return hotseat_widget()
+        ->scrollable_shelf_view()
+        ->GetTargetScreenBoundsOfItemIcon(id);
+  }
+
   gfx::Rect bounds(
       hotseat_widget()->GetShelfView()->GetIdealBoundsOfItemIcon(id));
   gfx::Point screen_origin;
@@ -639,14 +645,6 @@ gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(
   return gfx::Rect(screen_origin.x() + bounds.x(),
                    screen_origin.y() + bounds.y(), bounds.width(),
                    bounds.height());
-}
-
-HomeButton* ShelfWidget::GetHomeButton() const {
-  return navigation_widget_.get()->GetHomeButton();
-}
-
-BackButton* ShelfWidget::GetBackButton() const {
-  return navigation_widget_.get()->GetBackButton();
 }
 
 ApplicationDragAndDropHost* ShelfWidget::GetDragAndDropHostForAppList() {

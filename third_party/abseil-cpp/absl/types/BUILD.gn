@@ -29,9 +29,7 @@ source_set("any") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "any.h",
-  ]
+  public = [ "any.h" ]
   deps = [
     ":bad_any_cast",
     "../base:config",
@@ -48,9 +46,7 @@ source_set("bad_any_cast") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "bad_any_cast.h",
-  ]
+  public = [ "bad_any_cast.h" ]
   deps = [
     ":bad_any_cast_impl",
     "../base:config",
@@ -64,12 +60,8 @@ source_set("bad_any_cast_impl") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "bad_any_cast.cc",
-  ]
-  public = [
-    "bad_any_cast.h",
-  ]
+  sources = [ "bad_any_cast.cc" ]
+  public = [ "bad_any_cast.h" ]
   deps = [
     "../base",
     "../base:config",
@@ -85,12 +77,8 @@ source_set("span") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "span.h",
-  ]
-  sources = [
-    "internal/span.h",
-  ]
+  public = [ "span.h" ]
+  sources = [ "internal/span.h" ]
   deps = [
     "../algorithm",
     "../base:core_headers",
@@ -106,12 +94,8 @@ source_set("optional") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/optional.h",
-  ]
-  public = [
-    "optional.h",
-  ]
+  sources = [ "internal/optional.h" ]
+  public = [ "optional.h" ]
   deps = [
     ":bad_optional_access",
     "../base:base_internal",
@@ -130,12 +114,8 @@ source_set("bad_optional_access") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "bad_optional_access.cc",
-  ]
-  public = [
-    "bad_optional_access.h",
-  ]
+  sources = [ "bad_optional_access.cc" ]
+  public = [ "bad_optional_access.h" ]
   deps = [
     "../base",
     "../base:config",
@@ -149,12 +129,8 @@ source_set("bad_variant_access") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "bad_variant_access.cc",
-  ]
-  public = [
-    "bad_variant_access.h",
-  ]
+  sources = [ "bad_variant_access.cc" ]
+  public = [ "bad_variant_access.h" ]
   deps = [
     "../base",
     "../base:config",
@@ -168,12 +144,8 @@ source_set("variant") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/variant.h",
-  ]
-  public = [
-    "variant.h",
-  ]
+  sources = [ "internal/variant.h" ]
+  public = [ "variant.h" ]
   deps = [
     ":bad_variant_access",
     "../base:base_internal",
@@ -191,9 +163,7 @@ source_set("compare") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "compare.h",
-  ]
+  public = [ "compare.h" ]
   deps = [
     "../base:core_headers",
     "../meta:type_traits",

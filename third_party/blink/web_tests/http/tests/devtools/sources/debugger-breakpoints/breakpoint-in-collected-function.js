@@ -24,25 +24,18 @@ foo = null;
                         .map(model => model.collectGarbage()));
 
   TestRunner.addResult('set breakpoint inside function foo and dump it..');
-  let sourceFrame = await new Promise(
-      resolve => SourcesTestRunner.showScriptSource('foo.js', resolve));
-  SourcesTestRunner.toggleBreakpoint(sourceFrame, 1, false);
-  await new Promise(
-      resolve => TestRunner.addSniffer(
-          Sources.DebuggerPlugin.prototype, '_breakpointWasSetForTest',
-          resolve));
+  let sourceFrame = await SourcesTestRunner.showScriptSourcePromise('foo.js');
+  await SourcesTestRunner.createNewBreakpoint(sourceFrame, 1, '', true);
   await SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult(
       'run script again, dump pause location and inline breakpoints..');
+  let inlineBreakpointsReady = SourcesTestRunner.waitDebuggerPluginBreakpoints();
   TestRunner.evaluateInPageAnonymously(script);
-  let inlineBreakpointsReady =
-      SourcesTestRunner.waitDebuggerPluginBreakpoints();
   let callFrames = await SourcesTestRunner.waitUntilPausedPromise();
   SourcesTestRunner.captureStackTrace(callFrames);
 
-  sourceFrame = await new Promise(
-      resolve => SourcesTestRunner.showScriptSource('foo.js', resolve));
+  sourceFrame = await SourcesTestRunner.showScriptSourcePromise('foo.js');
   await inlineBreakpointsReady;
   await SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 

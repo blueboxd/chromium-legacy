@@ -14,10 +14,28 @@ PushEvent::PushEvent(const AtomicString& type,
     : ExtendableEvent(type, ExtendableEventInit::Create(), observer),
       data_(data) {}
 
-PushEvent::PushEvent(const AtomicString& type, const PushEventInit* initializer)
+PushEvent::PushEvent(const AtomicString& type,
+                     const PushEventInit* initializer,
+                     ExceptionState& exception_state)
     : ExtendableEvent(type, initializer) {
-  if (initializer->hasData())
+  if (initializer->hasData()) {
+    const ArrayBufferOrArrayBufferViewOrUSVString& message_data =
+        initializer->data();
+    if (message_data.IsArrayBuffer() || message_data.IsArrayBufferView()) {
+      DOMArrayBuffer* buffer =
+          message_data.IsArrayBufferView()
+              ? message_data.GetAsArrayBufferView().View()->buffer()
+              : message_data.GetAsArrayBuffer();
+      if (!base::CheckedNumeric<uint32_t>(buffer->ByteLengthAsSizeT())
+               .IsValid()) {
+        exception_state.ThrowRangeError(
+            "The provided ArrayBuffer exceeds the maximum supported size "
+            "(4294967295)");
+        return;
+      }
+    }
     data_ = PushMessageData::Create(initializer->data());
+  }
 }
 
 PushEvent::~PushEvent() = default;

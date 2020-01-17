@@ -3553,6 +3553,12 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_TASK_MANAGER_SUBFRAME_INCOGNITO_PREFIX" desc="The prefix for an Incognito out-of-process-iframe process row in the Task Manager (these processes are created when site isolation is enabled, in incognito mode)">
           Incognito Subframe: <ph name="SUBFRAME_SITE">$1<ex>https://youtube.com/</ex></ph>
         </message>
+        <message name="IDS_TASK_MANAGER_PORTAL_PREFIX" desc="The prefix for a portal row in the Task Manager (these processes are created when portals is enabled)">
+          Portal: <ph name="SUBFRAME_SITE">$1<ex>https://youtube.com/</ex></ph>
+        </message>
+        <message name="IDS_TASK_MANAGER_PORTAL_INCOGNITO_PREFIX" desc="The prefix for an Incognito portal row in the Task Manager (these processes are created when portals is enabled, in incognito mode)">
+          Incognito Portal: <ph name="SUBFRAME_SITE">$1<ex>https://youtube.com/</ex></ph>
+        </message>
         <message name="IDS_TASK_MANAGER_ARC_PREFIX" desc="The prefix for an ARC general process row">
           App: <ph name="ARC_PROCESS_NAME">$1<ex>com.android.systemui</ex></ph>
         </message>
@@ -4543,13 +4549,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_MENU_UNPIN_BUTTON_TOOLTIP" desc="The tooltip for the pinning button for individual extensions in the Extensions Menu">
         Unpin extension
       </message>
-      <message name="IDS_EXTENSIONS_MENU_ACCESSING_SITE_DATA" desc="Header for section of extensions that are able to access the current site's data">
+      <message name="IDS_EXTENSIONS_MENU_ACCESSING_SITE_DATA_SHORT" desc="Header for section of extensions that are able to access the current site's data">
+        Full access
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_ACCESSING_SITE_DATA" desc="Longer explanation for section of extensions that are able to access the current site's data">
         These extensions can see and change information on this site.
       </message>
-      <message name="IDS_EXTENSIONS_MENU_WANTS_TO_ACCESS_SITE_DATA" desc="Header for section of extensions that want to access the current site's data">
+      <message name="IDS_EXTENSIONS_MENU_WANTS_TO_ACCESS_SITE_DATA_SHORT" desc="Header for section of extensions that want to access the current site's data">
+        Access requested
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_WANTS_TO_ACCESS_SITE_DATA" desc="Longer explanation for section of extensions that want to access the current site's data">
         To give an extension access to this site, click it.
       </message>
-      <message name="IDS_EXTENSIONS_MENU_CANT_ACCESS_SITE_DATA" desc="Header for section of extensions that can't access the current site's data">
+      <message name="IDS_EXTENSIONS_MENU_CANT_ACCESS_SITE_DATA_SHORT" desc="Header for section of extensions that can't access the current site's data">
+        No access needed
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_CANT_ACCESS_SITE_DATA" desc="Longer explanation for section of extensions that can't access the current site's data">
         These extensions don't need to see and change information on this site.
       </message>
 
@@ -6386,7 +6401,7 @@ the Bookmarks menu.">
         </message>
       </if>
 
-      <!-- Tab Group Header Context Menu -->
+      <!-- Tab Group Editor Bubble -->
       <if expr="not use_titlecase">
         <message name="IDS_TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP" desc="The label of the tab group header context menu item for adding a new tab into the current group.">
           New tab in group
@@ -6399,6 +6414,9 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK" desc="The label of the tab group header context menu item for sending feedback for tab groups.">
           Send feedback
+        </message>
+        <message name="IDS_TAB_GROUP_HEADER_BUBBLE_TITLE_PLACEHOLDER" desc="The placeholder text to display within the input field of the tab group editor bubble for naming a tab group.">
+          Name this group
         </message>
       </if>
       <if expr="use_titlecase">
@@ -6413,6 +6431,9 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK" desc="In Title Case: The label of the tab group header context menu item for sending feedback for tab groups.">
           Send Feedback
+        </message>
+        <message name="IDS_TAB_GROUP_HEADER_BUBBLE_TITLE_PLACEHOLDER" desc="In Title Case: The placeholder text to display within the input field of the tab group editor bubble for naming a tab group.">
+          Name This Group
         </message>
       </if>
 
@@ -9026,6 +9047,23 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
       </if>
 
+      <!-- WebXr permissions -->
+      <!-- TODO(crbug.com/1041009): Finalize WebXr Permissions strings -->
+      <message name="IDS_VR_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to use VR. Follows a prompt: 'This site would like to:">
+        Access Virtual Reality devices and data
+      </message>
+      <message name="IDS_AR_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to use AR. Follows a prompt: 'This site would like to:">
+        Track camera position and map your room
+      </message>
+      <if expr="is_android">
+        <message name="IDS_VR_INFOBAR_TEXT" desc="Text requesting permission for a site to use VR">
+          <ph name="URL">$1<ex>google.com</ex></ph> wants to be able to start virtual reality sessions
+        </message>
+        <message name="IDS_AR_INFOBAR_TEXT" desc="Text requesting permission for a site to use AR">
+          <ph name="URL">$1<ex>google.com</ex></ph> wants to track camera position and map your room
+        </message>
+      </if>
+
       <!-- Sensor messages -->
       <message name="IDS_SENSORS_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use device's sensors.">
         This site is using motion or light sensors.
@@ -10404,14 +10442,35 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_DEEP_SCANNING_DIALOG_TITLE" desc="Title shown in tab modal dialog while performing a deep scan of data to see if it complies with enterprise policies">
       Scanning
     </message>
-    <message name="IDS_DEEP_SCANNING_DIALOG_UPLOAD_PENDING_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of uploaded data to see if complies with enterprise policies">
+    <message name="IDS_DEEP_SCANNING_DIALOG_UPLOAD_PENDING_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of uploaded data to see if it complies with enterprise policies">
       Your organization is scanning this upload for security approval.
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_PASTE_PENDING_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of pasted data to see if it complies with enterprise policies">
+      Your organization is scanning the pasted data for security approval.
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_PENDING_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of dragged data to see if it complies with enterprise policies">
+      Your organization is scanning the dragged data for security approval.
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_PENDING_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of dragged files to see if they complies with enterprise policies">
+      Your organization is scanning the dragged files for security approval.
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_SUCCESS_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of data when it complies with enterprise policies">
       Scan complete, everything's good to go.
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_UPLOAD_FAILURE_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of uploaded data when it doesn't comply with enterprise security policies">
       This upload violates your organization's security policies and can't be completed.
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_PASTE_FAILURE_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of pasted data when it doesn't comply with enterprise security policies">
+      This data violates your organization's security policies and can't be pasted.
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_FAILURE_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of dragged data when it doesn't comply with enterprise security policies">
+      This data violates your organization's security policies and can't be dropped.
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_FAILURE_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of dragged files when they doesn't comply with enterprise security policies">
+      These files violate your organization's security policies and can't be dropped.
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_TIMEOUT_MESSAGE" desc="Message shown in tab modal dialog after a deep scan times out.">
+      Something went wrong. Scanning could not be completed. Please try again.
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_CANCEL_UPLOAD_BUTTON" desc="Text shown in the cancel button of a tab modal dialog while performing a deep scan of data to see if it complies with enterprise policies">
       Cancel upload
@@ -10486,6 +10545,35 @@ Please help our engineers fix this problem. Tell us what happened right before y
       The limit on "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" that your parent set ran out. You can use it for <ph name="TIME_LIMIT">$2<ex>2 hours and 30 minutes</ex></ph> tomorrow.
     </message>
 
+    <!-- Extension request -->
+    <if expr="not is_android">
+      <message name="IDS_ENTERPRISE_EXTENSION_REQUEST_APPROVED_TITLE" desc="The notification title when there are some extension requests approved.">
+        {NUM_EXTENSIONS, plural,
+          =1 {An extension has been approved}
+          other {# extensions have been approved}}
+      </message>
+      <message name="IDS_ENTERPRISE_EXTENSION_REQUEST_REJECTED_TITLE" desc="The notification title when there are some extension requests rejected.">
+        {NUM_EXTENSIONS, plural,
+          =1 {An extension has been rejected}
+          other {# extensions have been rejected}}
+      </message>
+      <message name="IDS_ENTERPRISE_EXTENSION_REQUEST_FORCE_INSTALLED_TITLE" desc="The notification title when there are some extension requests force installed.">
+        {NUM_EXTENSIONS, plural,
+          =1 {An extension has been installed by your administrator}
+          other {# extensions have been installed by your administrator}}
+      </message>
+
+      <message name="IDS_ENTERPRISE_EXTENSION_REQUEST_CLICK_TO_INSTALL" desc="The notification message that tell user how to install the approved extension.">
+        {NUM_EXTENSIONS, plural,
+          =1 {Click to install the extension}
+          other {Click to install these extensions}}
+      </message>
+      <message name="IDS_ENTERPRISE_EXTENSION_REQUEST_CLICK_TO_VIEW" desc="The notification message that show user the reviewed installed extension requests.">
+        {NUM_EXTENSIONS, plural,
+          =1 {Click to view the extension}
+          other {Click to view these extensions}}
+      </message>
+    </if>
   </messages>
 </release>
 </grit>

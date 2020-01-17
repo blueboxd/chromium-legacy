@@ -20,16 +20,12 @@ NSString* const kCertificatePolicyCacheStorageDeprecatedKey =
 NSString* const kItemStoragesKey = @"entries";
 NSString* const kHasOpenerKey = @"openedByDOM";
 NSString* const kLastCommittedItemIndexKey = @"lastCommittedItemIndex";
-NSString* const kPreviousItemIndexKey = @"previousItemIndex";
 
 // Deprecated, used for backward compatibility.
 // TODO(crbug.com/708795): Remove this key.
 NSString* const kLastCommittedItemIndexDeprecatedKey =
     @"currentNavigationIndex";
 
-// Deprecated, used for backward compatibility.
-// TODO(crbug.com/708795): Remove this key.
-NSString* const kPreviousItemIndexDeprecatedKey = @"previousNavigationIndex";
 }
 
 @interface CRWSessionStorage () {
@@ -43,7 +39,6 @@ NSString* const kPreviousItemIndexDeprecatedKey = @"previousNavigationIndex";
 
 @synthesize hasOpener = _hasOpener;
 @synthesize lastCommittedItemIndex = _lastCommittedItemIndex;
-@synthesize previousItemIndex = _previousItemIndex;
 @synthesize itemStorages = _itemStorages;
 @synthesize certPolicyCacheStorage = _certPolicyCacheStorage;
 
@@ -74,14 +69,6 @@ NSString* const kPreviousItemIndexDeprecatedKey = @"previousNavigationIndex";
           [decoder decodeIntForKey:kLastCommittedItemIndexDeprecatedKey];
     }
 
-    if ([decoder containsValueForKey:kPreviousItemIndexKey]) {
-      _previousItemIndex = [decoder decodeIntForKey:kPreviousItemIndexKey];
-    } else {
-      // Backward compatibility.
-      _previousItemIndex =
-          [decoder decodeIntForKey:kPreviousItemIndexDeprecatedKey];
-    }
-
     _itemStorages = [[NSMutableArray alloc]
         initWithArray:[decoder decodeObjectForKey:kItemStoragesKey]];
     // Prior to M34, 0 was used as "no index" instead of -1; adjust for that.
@@ -107,7 +94,6 @@ NSString* const kPreviousItemIndexDeprecatedKey = @"previousNavigationIndex";
   [coder encodeBool:self.hasOpener forKey:kHasOpenerKey];
   [coder encodeInt:self.lastCommittedItemIndex
             forKey:kLastCommittedItemIndexKey];
-  [coder encodeInt:self.previousItemIndex forKey:kPreviousItemIndexKey];
   [coder encodeObject:self.itemStorages forKey:kItemStoragesKey];
   [coder encodeObject:self.certPolicyCacheStorage
                forKey:kCertificatePolicyCacheStorageKey];

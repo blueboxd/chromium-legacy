@@ -13,7 +13,6 @@ static_library("app_modal") {
     "javascript_dialog_extensions_client.h",
     "javascript_dialog_manager.cc",
     "javascript_dialog_manager.h",
-    "javascript_native_dialog_factory.h",
     "native_app_modal_dialog.h",
   ]
 
@@ -58,9 +57,7 @@ static_library("app_modal") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "javascript_dialog_manager_unittest.cc",
-  ]
+  sources = [ "javascript_dialog_manager_unittest.cc" ]
 
   deps = [
     ":app_modal",

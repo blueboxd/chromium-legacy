@@ -69,7 +69,7 @@ Polymer({
    * Redoes the search whenever |searchTerm| or |nearbyPrinters| changes.
    * @private
    */
-  onSearchOrPrintersChanged_: function() {
+  onSearchOrPrintersChanged_() {
     if (!this.nearbyPrinters) {
       return;
     }
@@ -92,7 +92,7 @@ Polymer({
    * @param {!CustomEvent<{item: !PrinterListEntry}>} e
    * @private
    */
-  onAddAutomaticPrinter_: function(e) {
+  onAddAutomaticPrinter_(e) {
     const item = e.detail.item;
     this.setActivePrinter_(item);
 
@@ -108,7 +108,7 @@ Polymer({
    * @param {!CustomEvent<{item: !PrinterListEntry}>} e
    * @private
    */
-  onQueryDiscoveredPrinter_: function(e) {
+  onQueryDiscoveredPrinter_(e) {
     const item = e.detail.item;
     this.setActivePrinter_(item);
 
@@ -131,7 +131,7 @@ Polymer({
    * @param {!PrinterListEntry} item
    * @private
    */
-  setActivePrinter_: function(item) {
+  setActivePrinter_(item) {
     this.activePrinterListEntryIndex_ = this.nearbyPrinters.findIndex(
         printer => printer.printerInfo.printerId == item.printerInfo.printerId);
 
@@ -146,7 +146,7 @@ Polymer({
    * @param {!PrinterSetupResult} result
    * @private
    */
-  onAddNearbyPrintersSucceeded_: function(printerName, result) {
+  onAddNearbyPrintersSucceeded_(printerName, result) {
     this.fire(
         'show-cups-printer-toast',
         {resultCode: result, printerName: printerName});
@@ -157,7 +157,7 @@ Polymer({
    * @param {*} printer
    * @private
    */
-  onAddNearbyPrinterFailed_: function(printer) {
+  onAddNearbyPrinterFailed_(printer) {
     this.fire('show-cups-printer-toast', {
       resultCode: PrinterSetupResult.PRINTER_UNREACHABLE,
       printerName: printer.printerName
@@ -170,7 +170,7 @@ Polymer({
    * @param {!PrinterSetupResult} result
    * @private
    */
-  onQueryDiscoveredPrinterSucceeded_: function(printerName, result) {
+  onQueryDiscoveredPrinterSucceeded_(printerName, result) {
     this.fire(
         'show-cups-printer-toast',
         {resultCode: result, printerName: printerName});
@@ -181,7 +181,7 @@ Polymer({
    * @param {!CupsPrinterInfo} printer
    * @private
    */
-  onQueryDiscoveredPrinterFailed_: function(printer) {
+  onQueryDiscoveredPrinterFailed_(printer) {
     this.fire(
         'open-manufacturer-model-dialog-for-specified-printer',
         {item: /** @type {CupsPrinterInfo} */ (printer)});
@@ -191,7 +191,7 @@ Polymer({
    * @return {boolean} Returns true if the no search message should be visible.
    * @private
    */
-  showNoSearchResultsMessage_: function() {
+  showNoSearchResultsMessage_() {
     return !!this.searchTerm && !this.filteredPrinters_.length;
   },
 
@@ -199,7 +199,7 @@ Polymer({
    * @private
    * @return {number} Length of |filteredPrinters_|.
    */
-  getFilteredPrintersLength_: function() {
+  getFilteredPrintersLength_() {
     return this.filteredPrinters_.length;
   },
 });

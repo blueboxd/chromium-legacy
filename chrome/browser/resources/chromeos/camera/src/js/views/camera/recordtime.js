@@ -84,6 +84,3 @@ export class RecordTime {
     return mins;
   }
 }
-
-/** @const */
-cca.views.camera.RecordTime = RecordTime;

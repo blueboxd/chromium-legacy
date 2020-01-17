@@ -21,13 +21,23 @@ Polymer({
     },
 
     /**
+     * Returns true if the 'LiveCaption' media switch is enabled.
+     */
+    enableLiveCaption_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableLiveCaption');
+      },
+    },
+
+    /**
      * List of options for the background opacity drop-down menu.
      * @type {!DropdownMenuOptionList}
      */
     backgroundOpacityOptions_: {
       readOnly: true,
       type: Array,
-      value: function() {
+      value() {
         return [
           {
             value: 100, // Default
@@ -52,7 +62,7 @@ Polymer({
     colorOptions_: {
       readOnly: true,
       type: Array,
-      value: function() {
+      value() {
         return [
           {
             value: '',
@@ -106,7 +116,7 @@ Polymer({
     textOpacityOptions_: {
       readOnly: true,
       type: Array,
-      value: function() {
+      value() {
         return [
           {
             value: 100, // Default
@@ -131,7 +141,7 @@ Polymer({
     textShadowOptions_: {
       readOnly: true,
       type: Array,
-      value: function() {
+      value() {
         return [
           {value: '', name: loadTimeData.getString('captionsTextShadowNone')},
           {
@@ -162,7 +172,7 @@ Polymer({
     textSizeOptions_: {
       readOnly: true,
       type: Array,
-      value: function() {
+      value() {
         return [
           {value: '25%', name: loadTimeData.getString('verySmall')},
           {value: '50%', name: loadTimeData.getString('small')},
@@ -178,12 +188,12 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.FontsBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_.observeAdvancedFontExtensionAvailable();
 
     this.browserProxy_.fetchFontsData().then(this.setFontsData_.bind(this));
@@ -193,7 +203,7 @@ Polymer({
    * @param {!FontsData} response A list of fonts.
    * @private
    */
-  setFontsData_: function(response) {
+  setFontsData_(response) {
     const fontMenuOptions =
         [{value: '', name: loadTimeData.getString('captionsDefaultSetting')}];
     for (const fontData of response.fontList) {
@@ -207,7 +217,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeBackgroundColor_: function() {
+  computeBackgroundColor_() {
     return this.formatRGAString_(
         'prefs.accessibility.captions.background_color.value',
         'prefs.accessibility.captions.background_opacity.value');
@@ -218,7 +228,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeTextColor_: function() {
+  computeTextColor_() {
     return this.formatRGAString_(
         'prefs.accessibility.captions.text_color.value',
         'prefs.accessibility.captions.text_opacity.value');
@@ -233,7 +243,7 @@ Polymer({
    * @return {string} The formatted RGBA string.
    * @private
    */
-  formatRGAString_: function(colorPreference, opacityPreference) {
+  formatRGAString_(colorPreference, opacityPreference) {
     return 'rgba(' + this.get(colorPreference) + ',' +
         parseInt(this.get(opacityPreference), 10) / 100.0 + ')';
   },
@@ -243,7 +253,7 @@ Polymer({
    * @return {string} The padding around the captions text as a percentage.
    * @private
    */
-  computePadding_: function(size) {
+  computePadding_(size) {
     if (size == '') {
       return '1%';
     }

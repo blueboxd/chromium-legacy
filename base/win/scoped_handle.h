@@ -38,7 +38,7 @@ namespace win {
 template <class Traits, class Verifier>
 class GenericScopedHandle {
  public:
-  typedef typename Traits::Handle Handle;
+  using Handle = typename Traits::Handle;
 
   GenericScopedHandle() : handle_(Traits::NullHandle()) {}
 
@@ -113,7 +113,7 @@ class GenericScopedHandle {
 // The traits class for Win32 handles that can be closed via CloseHandle() API.
 class HandleTraits {
  public:
-  typedef HANDLE Handle;
+  using Handle = HANDLE;
 
   // Closes the handle.
   static bool BASE_EXPORT CloseHandle(HANDLE handle);
@@ -133,7 +133,7 @@ class HandleTraits {
 // Do-nothing verifier.
 class DummyVerifierTraits {
  public:
-  typedef HANDLE Handle;
+  using Handle = HANDLE;
 
   static void StartTracking(HANDLE handle,
                             const void* owner,
@@ -151,7 +151,7 @@ class DummyVerifierTraits {
 // Performs actual run-time tracking.
 class BASE_EXPORT VerifierTraits {
  public:
-  typedef HANDLE Handle;
+  using Handle = HANDLE;
 
   static void StartTracking(HANDLE handle,
                             const void* owner,
@@ -166,7 +166,7 @@ class BASE_EXPORT VerifierTraits {
   DISALLOW_IMPLICIT_CONSTRUCTORS(VerifierTraits);
 };
 
-typedef GenericScopedHandle<HandleTraits, VerifierTraits> ScopedHandle;
+using ScopedHandle = GenericScopedHandle<HandleTraits, VerifierTraits>;
 
 // This function may be called by the embedder to disable the use of
 // VerifierTraits at runtime. It has no effect if DummyVerifierTraits is used

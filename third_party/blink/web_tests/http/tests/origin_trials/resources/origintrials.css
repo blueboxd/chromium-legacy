@@ -1,0 +1,5 @@
+@supports(origin-trial-test-property: initial) {
+    html {
+        origin-trial-test-property: none;
+    }
+}

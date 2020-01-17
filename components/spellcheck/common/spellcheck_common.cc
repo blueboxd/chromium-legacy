@@ -117,24 +117,22 @@ base::FilePath GetVersionedFileName(base::StringPiece input_language,
       // Mar 4, 2014: Add Tajik dictionary.
       {"tg-TG", "-5-0"},
 
-      // October 2017: Update from upstream.
-      {"en-AU", "-8-0"},
-      {"en-CA", "-8-0"},
-      {"en-GB", "-8-0"},
-      {"en-US", "-8-0"},
-
       // Feb 2019: Initial check-in of Welsh.
       {"cy-GB", "-1-0"},
 
       // April 2019: Initial check-in of Armenian.
       {"hy", "-1-0"},
 
-      // April 2019: Update Persian
-      {"fa-IR", "-8-0"},
-
       // November 2019: Update Serbian-Latin and Serbian-Cyrillic
       {"sh", "-4-0"},
       {"sr", "-4-0"},
+
+      // January 2020: Update en-* and fa-IR dictionaries from upstream.
+      {"en-AU", "-9-0"},
+      {"en-CA", "-9-0"},
+      {"en-GB", "-9-0"},
+      {"en-US", "-9-0"},
+      {"fa-IR", "-9-0"},
   };
 
   // Generate the bdict file name using default version string or special

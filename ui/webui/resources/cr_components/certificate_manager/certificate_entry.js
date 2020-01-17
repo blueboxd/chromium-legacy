@@ -24,7 +24,7 @@ Polymer({
    * @private
    */
   isLast_(index) {
-    return index == this.model.subnodes.length - 1;
+    return index === this.model.subnodes.length - 1;
   },
 
   getPolicyIndicatorType_() {

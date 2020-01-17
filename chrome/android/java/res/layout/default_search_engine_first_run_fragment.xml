@@ -47,7 +47,7 @@
 
                 <View style="@style/HorizontalDivider" />
 
-                <org.chromium.chrome.browser.ui.widget.RadioButtonLayout
+                <org.chromium.components.browser_ui.widget.RadioButtonLayout
                     android:id="@+id/default_search_engine_dialog_options"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

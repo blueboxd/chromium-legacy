@@ -11,9 +11,7 @@ cast_source_set("reboot_util") {
     "reboot_util_core.cc",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   if (chromecast_branding == "google") {
     deps += [ "//chromecast/internal/system/reboot:reboot_util" ]
@@ -34,9 +32,7 @@ cast_source_set("reboot_util") {
 }
 
 test("cast_reboot_unittests") {
-  sources = [
-    "reboot_util_test.cc",
-  ]
+  sources = [ "reboot_util_test.cc" ]
 
   deps = [
     ":reboot_util",
@@ -50,23 +46,15 @@ test("cast_reboot_unittests") {
 # Target for OEM partners to override reboot shared library, i.e.
 # libcast_reboot_1.0.so.
 cast_shared_library("libcast_reboot_1.0") {
-  sources = [
-    "reboot_dummy.cc",
-  ]
+  sources = [ "reboot_dummy.cc" ]
 
-  public_deps = [
-    "//chromecast/public",
-  ]
+  public_deps = [ "//chromecast/public" ]
 }
 
 if (is_fuchsia) {
   cast_source_set("fuchsia") {
-    sources = [
-      "reboot_fuchsia.cc",
-    ]
-    public_deps = [
-      "//chromecast/public",
-    ]
+    sources = [ "reboot_fuchsia.cc" ]
+    public_deps = [ "//chromecast/public" ]
     deps = [
       "//base",
       "//third_party/fuchsia-sdk/sdk:fidl",

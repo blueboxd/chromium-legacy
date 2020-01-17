@@ -7,14 +7,11 @@ package org.chromium.chrome.browser;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Looper;
-import android.os.SystemClock;
 
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.metrics.UmaUtils;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -29,8 +26,6 @@ public class DeferredStartupHandler {
     }
 
     private boolean mDeferredStartupCompletedForApp;
-    private long mDeferredStartupDuration;
-    private long mMaxTaskDuration;
     private final Context mAppContext;
 
     private final Queue<Runnable> mDeferredTasks;
@@ -62,38 +57,17 @@ public class DeferredStartupHandler {
      * tasks.
      */
     public void queueDeferredTasksOnIdleHandler() {
-        mMaxTaskDuration = 0;
-        mDeferredStartupDuration = 0;
         Looper.myQueue().addIdleHandler(() -> {
             Runnable currentTask = mDeferredTasks.poll();
             if (currentTask == null) {
                 if (!mDeferredStartupCompletedForApp) {
                     mDeferredStartupCompletedForApp = true;
-                    recordDeferredStartupStats();
                 }
                 return false;
             }
-
-            long startTime = SystemClock.uptimeMillis();
             currentTask.run();
-            long timeTaken = SystemClock.uptimeMillis() - startTime;
-
-            mMaxTaskDuration = Math.max(mMaxTaskDuration, timeTaken);
-            mDeferredStartupDuration += timeTaken;
             return true;
         });
-    }
-
-    private void recordDeferredStartupStats() {
-        RecordHistogram.recordLongTimesHistogram(
-                "UMA.Debug.EnableCrashUpload.DeferredStartUpDuration", mDeferredStartupDuration);
-        RecordHistogram.recordLongTimesHistogram(
-                "UMA.Debug.EnableCrashUpload.DeferredStartUpMaxTaskDuration", mMaxTaskDuration);
-        if (UmaUtils.hasComeToForeground()) {
-            RecordHistogram.recordLongTimesHistogram(
-                    "UMA.Debug.EnableCrashUpload.DeferredStartUpCompleteTime",
-                    SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTicks());
-        }
     }
 
     /**

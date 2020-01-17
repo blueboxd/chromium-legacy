@@ -158,7 +158,5 @@ blink_core_sources("loader") {
     "worker_resource_timing_notifier_impl.h",
   ]
 
-  public_deps = [
-    "//third_party/blink/renderer/platform",
-  ]
+  public_deps = [ "//third_party/blink/renderer/platform" ]
 }

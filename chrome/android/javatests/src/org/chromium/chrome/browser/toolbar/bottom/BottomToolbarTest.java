@@ -21,6 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager.Variations;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
@@ -43,7 +44,6 @@ public class BottomToolbarTest {
     @Before
     public void setUp() throws InterruptedException {
         FeatureUtilities.setIsBottomToolbarEnabledForTesting(true);
-        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @After
@@ -54,6 +54,7 @@ public class BottomToolbarTest {
     @Test
     @MediumTest
     public void testBottomToolbarVisibility() {
+        mActivityTestRule.startMainActivityOnBlankPage();
         Assert.assertNotNull("BottomToolbarCoordinator should be constructed.",
                 mActivityTestRule.getActivity().getToolbarManager().getBottomToolbarCoordinator());
 
@@ -64,12 +65,15 @@ public class BottomToolbarTest {
 
     @Test
     @MediumTest
-    public void testBottomToolbarTabSwitcherButton() throws ExecutionException {
+    public void testBottomToolbarTabSwitcherButton_Home_Search_Tab_Switcher()
+            throws ExecutionException {
+        BottomToolbarVariationManager.setVariation(Variations.HOME_SEARCH_TAB_SWITCHER);
+        mActivityTestRule.startMainActivityOnBlankPage();
         Assert.assertFalse("Tab switcher should not be visible.",
                 mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
 
         ViewGroup bottomToolbar = mActivityTestRule.getActivity().findViewById(R.id.bottom_toolbar);
-        View tabSwitcherButton = bottomToolbar.findViewById(R.id.tab_switcher_button);
+        View tabSwitcherButton = bottomToolbar.findViewById(R.id.bottom_tab_switcher_button);
 
         OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
                 mActivityTestRule.getActivity().getOverviewModeBehavior(), true, false);

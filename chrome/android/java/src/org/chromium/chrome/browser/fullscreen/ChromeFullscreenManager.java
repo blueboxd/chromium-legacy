@@ -159,8 +159,7 @@ public class ChromeFullscreenManager extends FullscreenManager
         /**
          * Called when the height of the top controls are changed.
          */
-        default void onTopControlsHeightChanged(
-                int topControlsHeight, int topControlsMinHeight, boolean controlsResizeView) {}
+        default void onTopControlsHeightChanged(int topControlsHeight, int topControlsMinHeight) {}
 
         /**
          * Called when the viewport size of the active content is updated.
@@ -548,7 +547,7 @@ public class ChromeFullscreenManager extends FullscreenManager
         mTopControlsMinHeight = topControlsMinHeight;
         for (int i = 0; i < mListeners.size(); i++) {
             mListeners.get(i).onTopControlsHeightChanged(
-                    mTopControlContainerHeight, mTopControlsMinHeight, mControlsResizeView);
+                    mTopControlContainerHeight, mTopControlsMinHeight);
         }
     }
 

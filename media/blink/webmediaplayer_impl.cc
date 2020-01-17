@@ -1828,13 +1828,8 @@ void WebMediaPlayerImpl::OnMetadata(const PipelineMetadata& metadata) {
   MaybeSetContainerName();
 
   pipeline_metadata_ = metadata;
-  if (power_status_helper_) {
+  if (power_status_helper_)
     power_status_helper_->SetMetadata(metadata);
-    // TODO(liberato): This shouldn't be set here, but it'll do until we get
-    // the fps estimator.
-    power_status_helper_->SetAverageDuration(
-        base::TimeDelta::FromSecondsD(1. / 30));
-  }
 
   UMA_HISTOGRAM_ENUMERATION(
       "Media.VideoRotation",
@@ -2247,6 +2242,8 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
 
 void WebMediaPlayerImpl::OnVideoFrameRateChange(base::Optional<int> fps) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (power_status_helper_)
+    power_status_helper_->SetAverageFrameRate(fps);
 }
 
 void WebMediaPlayerImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {

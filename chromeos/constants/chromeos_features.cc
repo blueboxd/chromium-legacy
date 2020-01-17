@@ -63,6 +63,10 @@ const base::Feature kCrostiniDiskResizing{"CrostiniDiskResizing",
 const base::Feature kCrostiniUseBusterImage{"CrostiniUseBusterImage",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables Crostini Username picking.
+const base::Feature kCrostiniUsername{"CrostiniUsername",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Crostini GPU support.
 const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -126,7 +130,7 @@ const base::Feature kEnableFileManagerFeedbackPanel{
 const base::Feature kEolWarningNotifications{"EolWarningNotifications",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable or disable pointer lock for exo windows.
+// Enable or disable pointer lock for Crostini windows.
 const base::Feature kExoPointerLock{"ExoPointerLock",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 

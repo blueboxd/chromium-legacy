@@ -37,8 +37,16 @@ void OnNoMemorySize(size_t size) {
   LOG(FATAL) << "Out of memory.";
 }
 
-void OnNoMemory() {
+// NOINLINE as base::`anonymous namespace`::OnNoMemory() is recognized by the
+// crash server.
+NOINLINE void OnNoMemory() {
   OnNoMemorySize(0);
+}
+
+void ReleaseReservationOrTerminate() {
+  if (internal::ReleaseAddressSpaceReservation())
+    return;
+  OnNoMemory();
 }
 
 }  // namespace
@@ -49,7 +57,7 @@ void EnableTerminationOnHeapCorruption() {
 
 void EnableTerminationOnOutOfMemory() {
   // Set the new-out of memory handler.
-  std::set_new_handler(&OnNoMemory);
+  std::set_new_handler(&ReleaseReservationOrTerminate);
   // If we're using glibc's allocator, the above functions will override
   // malloc and friends and make them die on out of memory.
 

@@ -5,9 +5,7 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":browser_proxy",
-  ]
+  deps = [ ":browser_proxy" ]
 }
 
 js_library("browser_proxy") {
@@ -15,9 +13,6 @@ js_library("browser_proxy") {
     "browser_proxy.js",
     "browser_proxy_interface.js",
     "webui_browser_proxy.js",
-  ]
-  deps = [
-    "..:namespace",
   ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }

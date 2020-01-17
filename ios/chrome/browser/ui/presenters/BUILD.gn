@@ -22,9 +22,7 @@ source_set("unit_tests") {
   testonly = true
   configs += [ "//build/config/compiler:enable_arc" ]
 
-  sources = [
-    "vertical_animation_container_unittest.mm",
-  ]
+  sources = [ "vertical_animation_container_unittest.mm" ]
 
   deps = [
     ":presenters",

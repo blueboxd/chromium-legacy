@@ -19,8 +19,8 @@ import androidx.annotation.LayoutRes;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
-import org.chromium.chrome.browser.ui.widget.RoundedCornerImageView;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
+import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
 
 /**
  * Base layout for common suggestion types. Includes support for a configurable suggestion content

@@ -31,9 +31,7 @@ action("instrumentation_probes") {
 }
 
 source_set("generated") {
-  deps = [
-    ":instrumentation_probes",
-  ]
+  deps = [ ":instrumentation_probes" ]
 }
 
 # Compiles the sources generated above.

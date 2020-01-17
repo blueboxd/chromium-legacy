@@ -8,8 +8,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -53,7 +53,7 @@ void RealTimeUrlLookupService::StartLookup(
     const GURL& url,
     RTLookupRequestCallback request_callback,
     RTLookupResponseCallback response_callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   DCHECK(url.is_valid());
 
   std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
@@ -129,7 +129,7 @@ void RealTimeUrlLookupService::OnURLLoaderComplete(
     network::SimpleURLLoader* url_loader,
     base::TimeTicks request_start_time,
     std::unique_ptr<std::string> response_body) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
 
   auto it = pending_requests_.find(url_loader);
   DCHECK(it != pending_requests_.end()) << "Request not found";
@@ -184,7 +184,7 @@ std::unique_ptr<RTLookupRequest> RealTimeUrlLookupService::FillRequestProto(
 }
 
 size_t RealTimeUrlLookupService::GetBackoffDurationInSeconds() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   return did_successful_lookup_since_last_backoff_
              ? kMinBackOffResetDurationInSeconds
              : std::min(kMaxBackOffResetDurationInSeconds,
@@ -192,7 +192,7 @@ size_t RealTimeUrlLookupService::GetBackoffDurationInSeconds() const {
 }
 
 void RealTimeUrlLookupService::HandleLookupError() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   consecutive_failures_++;
 
   // Any successful lookup clears both |consecutive_failures_| as well as
@@ -226,7 +226,7 @@ void RealTimeUrlLookupService::HandleLookupError() {
 }
 
 void RealTimeUrlLookupService::HandleLookupSuccess() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   ResetFailures();
 
   // |did_successful_lookup_since_last_backoff_| is set to true only when we
@@ -235,12 +235,12 @@ void RealTimeUrlLookupService::HandleLookupSuccess() {
 }
 
 bool RealTimeUrlLookupService::IsInBackoffMode() const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   return backoff_timer_.IsRunning();
 }
 
 void RealTimeUrlLookupService::ResetFailures() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   consecutive_failures_ = 0;
   backoff_timer_.Stop();
 }

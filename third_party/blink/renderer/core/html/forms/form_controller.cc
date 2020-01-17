@@ -62,8 +62,9 @@ const AtomicString& ControlType(const ListedElement& control) {
 }
 
 bool IsDirtyControl(const ListedElement& control) {
-  if (control.IsFormControlElementWithState())
-    return ToHTMLFormControlElementWithState(control).UserHasEditedTheField();
+  if (auto* form_control_element =
+          DynamicTo<HTMLFormControlElementWithState>(control))
+    return form_control_element->UserHasEditedTheField();
   if (control.IsElementInternals()) {
     // We have no ways to know the dirtiness of a form-associated custom
     // element.  Assume it is dirty if it has focus.

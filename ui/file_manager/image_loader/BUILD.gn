@@ -22,9 +22,7 @@ js_type_check("closure_compile_module") {
 }
 
 js_library("background") {
-  deps = [
-    ":image_loader",
-  ]
+  deps = [ ":image_loader" ]
 }
 
 js_library("cache") {
@@ -110,9 +108,7 @@ js_library("request") {
 }
 
 js_library("scheduler") {
-  deps = [
-    ":request",
-  ]
+  deps = [ ":request" ]
 }
 
 js_test_gen_html("js_test_gen_html") {

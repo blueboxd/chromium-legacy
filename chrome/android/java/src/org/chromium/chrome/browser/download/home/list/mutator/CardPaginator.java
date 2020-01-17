@@ -24,9 +24,7 @@ public class CardPaginator {
      * @param dateAndDomain The date and domain for the items in the card.
      */
     public void loadMore(Pair<Date, String> dateAndDomain) {
-        assert mPageCountForCard.containsKey(dateAndDomain);
-        int currentPages = mPageCountForCard.get(dateAndDomain);
-        mPageCountForCard.put(dateAndDomain, currentPages + 1);
+        mPageCountForCard.put(dateAndDomain, getCurrentPageCount(dateAndDomain) + 1);
     }
 
     /**
@@ -44,9 +42,7 @@ public class CardPaginator {
      * @return The number of items being shown on the card.
      */
     public int getItemCountForCard(Pair<Date, String> dateAndDomain) {
-        return mPageCountForCard.containsKey(dateAndDomain)
-                ? mPageCountForCard.get(dateAndDomain) * ITEM_COUNT_PER_PAGE
-                : 0;
+        return getCurrentPageCount(dateAndDomain) * ITEM_COUNT_PER_PAGE;
     }
 
     /**
@@ -62,5 +58,11 @@ public class CardPaginator {
      */
     public void reset() {
         mPageCountForCard.clear();
+    }
+
+    /** @return The number of pages currently being displayed. Default is 1.*/
+    private int getCurrentPageCount(Pair<Date, String> dateAndDomain) {
+        return mPageCountForCard.containsKey(dateAndDomain) ? mPageCountForCard.get(dateAndDomain)
+                                                            : 1;
     }
 }

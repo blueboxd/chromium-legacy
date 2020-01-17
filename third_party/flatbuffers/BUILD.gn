@@ -18,9 +18,7 @@ source_set("flatbuffers") {
   ]
 
   if (is_win) {
-    data_deps = [
-      "//build/win:runtime_libs",
-    ]
+    data_deps = [ "//build/win:runtime_libs" ]
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -80,15 +78,11 @@ source_set("compiler_files") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   visibility = [ ":*" ]
-  deps = [
-    ":flatbuffers",
-  ]
+  deps = [ ":flatbuffers" ]
 }
 
 executable("flatc") {
-  sources = [
-    "src/src/flatc_main.cpp",
-  ]
+  sources = [ "src/src/flatc_main.cpp" ]
   deps = [
     ":compiler_files",
     ":flatbuffers",

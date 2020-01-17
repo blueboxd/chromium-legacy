@@ -77,12 +77,6 @@ class V8TestIntegerIndexedGlobal {
 };
 
 template <>
-struct NativeValueTraits<TestIntegerIndexedGlobal> : public NativeValueTraitsBase<TestIntegerIndexedGlobal> {
-  CORE_EXPORT static TestIntegerIndexedGlobal* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestIntegerIndexedGlobal* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestIntegerIndexedGlobal> {
   typedef V8TestIntegerIndexedGlobal Type;
 };

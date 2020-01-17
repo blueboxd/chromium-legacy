@@ -21,7 +21,6 @@ struct CC_ANIMATION_EXPORT AnimationEvent {
   struct UniqueKeyframeModelId {
     int timeline_id;
     int animation_id;
-    KeyframeEffectId effect_id;
     int model_id;
   };
 

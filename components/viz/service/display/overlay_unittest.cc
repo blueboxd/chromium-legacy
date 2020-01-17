@@ -2220,8 +2220,12 @@ class OverlayInfoRendererGL : public GLRenderer {
   OverlayInfoRendererGL(const RendererSettings* settings,
                         OutputSurface* output_surface,
                         DisplayResourceProvider* resource_provider,
-                        bool use_overlay_processor)
-      : GLRenderer(settings, output_surface, resource_provider, nullptr),
+                        SingleOverlayProcessor* overlay_processor)
+      : GLRenderer(settings,
+                   output_surface,
+                   resource_provider,
+                   overlay_processor,
+                   nullptr),
         expect_overlays_(false) {}
 
   MOCK_METHOD2(DoDrawQuad,
@@ -2248,16 +2252,12 @@ class OverlayInfoRendererGL : public GLRenderer {
 
   void AddExpectedRectToOverlayProcessor(const gfx::RectF& rect) {
     DCHECK(overlay_processor_);
-    static_cast<SingleOverlayProcessor*>(overlay_processor_.get())
+    static_cast<SingleOverlayProcessor*>(overlay_processor_)
         ->AddExpectedRect(rect);
   }
 
   void set_expect_overlays(bool expect_overlays) {
     expect_overlays_ = expect_overlays;
-  }
-
-  void SetOverlayProcessor() {
-    overlay_processor_.reset(new SingleOverlayProcessor());
   }
 
  private:
@@ -2299,14 +2299,13 @@ class GLRendererWithOverlaysTest : public testing::Test {
   }
 
   void Init(bool use_overlay_processor) {
+    if (use_overlay_processor)
+      owned_overlay_processor_ = std::make_unique<SingleOverlayProcessor>();
     renderer_ = std::make_unique<OverlayInfoRendererGL>(
         &settings_, output_surface_.get(), resource_provider_.get(),
-        use_overlay_processor);
+        owned_overlay_processor_.get());
     renderer_->Initialize();
     renderer_->SetVisible(true);
-    if (use_overlay_processor) {
-      renderer_->SetOverlayProcessor();
-    }
   }
 
   void DrawFrame(RenderPassList* pass_list, const gfx::Size& viewport_size) {
@@ -2337,6 +2336,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<OverlayOutputSurface> output_surface_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<SingleOverlayProcessor> owned_overlay_processor_;
   std::unique_ptr<OverlayInfoRendererGL> renderer_;
   scoped_refptr<TestContextProvider> provider_;
   scoped_refptr<TestContextProvider> child_provider_;

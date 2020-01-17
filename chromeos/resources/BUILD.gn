@@ -69,6 +69,7 @@ grit("help_app_bundle_resources") {
   }
 
   source_is_generated = true
+  use_brotli = true
 
   outputs = [
     "grit/chromeos_help_app_bundle_resources.h",
@@ -118,6 +119,7 @@ grit("media_app_bundle_resources") {
   }
 
   source_is_generated = true
+  use_brotli = true
 
   outputs = [
     "grit/chromeos_media_app_bundle_resources.h",

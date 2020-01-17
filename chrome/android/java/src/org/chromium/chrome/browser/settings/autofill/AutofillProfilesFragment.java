@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
-import org.chromium.chrome.browser.settings.MainPreferences;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 
 /**
@@ -97,7 +96,7 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
                 pref.setFragment(AutofillServerProfileFragment.class.getName());
             }
             Bundle args = pref.getExtras();
-            args.putString(MainPreferences.AUTOFILL_GUID, profile.getGUID());
+            args.putString(AutofillEditorBase.AUTOFILL_GUID, profile.getGUID());
             try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                 getPreferenceScreen().addPreference(pref);
             }

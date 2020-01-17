@@ -532,9 +532,7 @@ template("mojom") {
       script = mojom_generator_script
       inputs = mojom_generator_sources + jinja2_sources
       sources = invoker.sources
-      deps = [
-        ":$parsed_target_name",
-      ]
+      deps = [ ":$parsed_target_name" ]
       outputs = []
       filelist = []
       foreach(source, invoker.sources) {
@@ -752,18 +750,14 @@ template("mojom") {
         testonly = invoker.testonly
       }
       output_name = "$shared_component_output_name"
-      public_deps = [
-        ":$shared_cpp_sources_target_name",
-      ]
+      public_deps = [ ":$shared_cpp_sources_target_name" ]
     }
   } else {
     group(shared_cpp_library_target_name) {
       if (defined(invoker.testonly)) {
         testonly = invoker.testonly
       }
-      public_deps = [
-        ":$shared_cpp_sources_target_name",
-      ]
+      public_deps = [ ":$shared_cpp_sources_target_name" ]
     }
   }
 
@@ -992,9 +986,7 @@ template("mojom") {
     action(type_mappings_target_name) {
       inputs = _bindings_configuration_files + mojom_generator_sources +
                jinja2_sources
-      outputs = [
-        type_mappings_path,
-      ]
+      outputs = [ type_mappings_path ]
       script = "$mojom_generator_root/generate_type_mappings.py"
       deps = []
       args = [
@@ -1229,9 +1221,7 @@ template("mojom") {
               process_file_template(enabled_sources, generator_java_outputs)
         }
         output = "$target_gen_dir/$target_name.srcjar"
-        outputs = [
-          output,
-        ]
+        outputs = [ output ]
         rebase_inputs = rebase_path(inputs, root_build_dir)
         rebase_output = rebase_path(output, root_build_dir)
         args = [
@@ -1240,9 +1230,7 @@ template("mojom") {
         ]
         deps = []
         if (enabled_sources != []) {
-          deps = [
-            ":$java_generator_target_name",
-          ]
+          deps = [ ":$java_generator_target_name" ]
         }
       }
 
@@ -1466,9 +1454,7 @@ template("mojom") {
       script = compile_typescript_script
       sources = ts_outputs
       outputs = js_outputs
-      public_deps = [
-        ":$generator_ts_target_name",
-      ]
+      public_deps = [ ":$generator_ts_target_name" ]
       response_file_contents = ts_filelist
       args = [ "--filelist={{response_file_name}}" ]
     }
@@ -1488,9 +1474,7 @@ template("mojom") {
 
     group(js_data_deps_target_name) {
       data = process_file_template(invoker.sources, js_outputs)
-      deps = [
-        ":$generator_js_target_name",
-      ]
+      deps = [ ":$generator_js_target_name" ]
       data_deps = []
       foreach(d, all_deps) {
         full_name = get_label_info(d, "label_no_toolchain")

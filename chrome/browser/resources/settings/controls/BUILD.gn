@@ -50,7 +50,7 @@ js_library("extension_controlled_indicator") {
 
 js_library("password_prompt_dialog") {
   deps = [
-    "..:route",
+    "..:router",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
     "//ui/webui/resources/cr_elements/cr_input:cr_input",
   ]
@@ -59,9 +59,7 @@ js_library("password_prompt_dialog") {
 }
 
 js_library("pref_control_behavior") {
-  deps = [
-    "../prefs:prefs_types",
-  ]
+  deps = [ "../prefs:prefs_types" ]
 }
 
 js_library("settings_boolean_control_behavior") {
@@ -74,9 +72,7 @@ js_library("settings_boolean_control_behavior") {
 }
 
 js_library("settings_checkbox") {
-  deps = [
-    ":settings_boolean_control_behavior",
-  ]
+  deps = [ ":settings_boolean_control_behavior" ]
 }
 
 js_library("settings_dropdown_menu") {

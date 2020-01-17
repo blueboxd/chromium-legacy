@@ -37,8 +37,10 @@ using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
-LayerTreePixelTest::LayerTreePixelTest()
-    : pixel_comparator_(new ExactPixelComparator(true)),
+LayerTreePixelTest::LayerTreePixelTest(
+    LayerTreeTest::RendererType renderer_type)
+    : LayerTreeTest(renderer_type),
+      pixel_comparator_(new ExactPixelComparator(true)),
       pending_texture_mailbox_callbacks_(0) {}
 
 LayerTreePixelTest::~LayerTreePixelTest() = default;
@@ -254,20 +256,16 @@ void LayerTreePixelTest::CreateSolidColorLayerPlusBorders(
   layers.push_back(border_bottom);
 }
 
-void LayerTreePixelTest::RunPixelTest(RendererType renderer_type,
-                                      scoped_refptr<Layer> content_root,
+void LayerTreePixelTest::RunPixelTest(scoped_refptr<Layer> content_root,
                                       base::FilePath file_name) {
-  renderer_type_ = renderer_type;
   content_root_ = content_root;
   readback_target_ = nullptr;
   ref_file_ = file_name;
   RunTest(CompositorMode::THREADED);
 }
 
-void LayerTreePixelTest::RunPixelTest(RendererType renderer_type,
-                                      scoped_refptr<Layer> content_root,
+void LayerTreePixelTest::RunPixelTest(scoped_refptr<Layer> content_root,
                                       const SkBitmap& expected_bitmap) {
-  renderer_type_ = renderer_type;
   content_root_ = content_root;
   readback_target_ = nullptr;
   ref_file_ = base::FilePath();
@@ -275,19 +273,15 @@ void LayerTreePixelTest::RunPixelTest(RendererType renderer_type,
   RunTest(CompositorMode::THREADED);
 }
 
-void LayerTreePixelTest::RunPixelTestWithLayerList(RendererType renderer_type,
-                                                   base::FilePath file_name) {
-  renderer_type_ = renderer_type;
+void LayerTreePixelTest::RunPixelTestWithLayerList(base::FilePath file_name) {
   readback_target_ = nullptr;
   ref_file_ = file_name;
   RunTest(CompositorMode::THREADED);
 }
 
 void LayerTreePixelTest::RunSingleThreadedPixelTest(
-    RendererType renderer_type,
     scoped_refptr<Layer> content_root,
     base::FilePath file_name) {
-  renderer_type_ = renderer_type;
   content_root_ = content_root;
   readback_target_ = nullptr;
   ref_file_ = file_name;
@@ -295,11 +289,9 @@ void LayerTreePixelTest::RunSingleThreadedPixelTest(
 }
 
 void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
-    RendererType renderer_type,
     scoped_refptr<Layer> content_root,
     Layer* target,
     base::FilePath file_name) {
-  renderer_type_ = renderer_type;
   content_root_ = content_root;
   readback_target_ = target;
   ref_file_ = file_name;

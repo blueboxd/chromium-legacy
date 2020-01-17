@@ -83,6 +83,7 @@ class UI_BASE_EXPORT Accelerator {
   bool IsShiftDown() const;
   bool IsCtrlDown() const;
   bool IsAltDown() const;
+  bool IsAltGrDown() const;
   bool IsCmdDown() const;
   bool IsRepeat() const;
 

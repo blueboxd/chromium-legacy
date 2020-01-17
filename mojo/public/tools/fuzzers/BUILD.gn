@@ -14,9 +14,7 @@ group("fuzzers") {
 }
 
 mojom("fuzz_mojom") {
-  sources = [
-    "fuzz.mojom",
-  ]
+  sources = [ "fuzz.mojom" ]
 }
 
 fuzzer_test("mojo_parse_message_fuzzer") {
@@ -61,7 +59,5 @@ fuzzer_test("mojo_parse_message_proto_fuzzer") {
 }
 
 proto_library("mojo_fuzzer_proto") {
-  sources = [
-    "mojo_fuzzer.proto",
-  ]
+  sources = [ "mojo_fuzzer.proto" ]
 }

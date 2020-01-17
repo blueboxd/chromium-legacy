@@ -84,6 +84,8 @@ static void GetNativeThemeExtraParams(
           extra_params->text_field.background_color;
       native_theme_extra_params->text_field.has_border =
           extra_params->text_field.has_border;
+      native_theme_extra_params->text_field.auto_complete_active =
+          extra_params->text_field.auto_complete_active;
       break;
     case WebThemeEngine::kPartMenuList:
       native_theme_extra_params->menu_list.has_border =

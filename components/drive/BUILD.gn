@@ -39,15 +39,11 @@ static_library("drive") {
     "//third_party/leveldatabase",
     "//third_party/re2",
   ]
-  public_deps = [
-    ":proto",
-  ]
+  public_deps = [ ":proto" ]
 }
 
 proto_library("proto") {
-  sources = [
-    "drive.proto",
-  ]
+  sources = [ "drive.proto" ]
 }
 
 static_library("test_support") {

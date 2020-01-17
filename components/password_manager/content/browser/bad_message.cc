@@ -30,13 +30,13 @@ void ReceivedBadMessage(content::RenderProcessHost* host,
       content::RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
 }
 
+}  // namespace
+
 bool CheckChildProcessSecurityPolicyForURL(content::RenderFrameHost* frame,
-                                           const GURL& url,
+                                           const GURL& form_url,
                                            BadMessageReason reason) {
-  // Renderer-side logic should prevent any password manager usage for
-  // about:blank frames as well as data URLs.  If that's not the case, kill the
-  // renderer, as it might be exploited.
-  if (url.SchemeIs(url::kAboutScheme) || url.SchemeIs(url::kDataScheme)) {
+  if (form_url.SchemeIs(url::kAboutScheme) ||
+      form_url.SchemeIs(url::kDataScheme)) {
     SYSLOG(WARNING) << "Killing renderer: illegal password access from about: "
                     << "or data: URL. Reason: " << static_cast<int>(reason);
     bad_message::ReceivedBadMessage(frame->GetProcess(), reason);
@@ -45,7 +45,7 @@ bool CheckChildProcessSecurityPolicyForURL(content::RenderFrameHost* frame,
 
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
-  if (!policy->CanAccessDataForOrigin(frame->GetProcess()->GetID(), url)) {
+  if (!policy->CanAccessDataForOrigin(frame->GetProcess()->GetID(), form_url)) {
     SYSLOG(WARNING) << "Killing renderer: illegal password access. Reason: "
                     << static_cast<int>(reason);
     bad_message::ReceivedBadMessage(frame->GetProcess(), reason);
@@ -54,8 +54,6 @@ bool CheckChildProcessSecurityPolicyForURL(content::RenderFrameHost* frame,
 
   return true;
 }
-
-}  // namespace
 
 bool CheckChildProcessSecurityPolicy(
     content::RenderFrameHost* frame,
@@ -76,6 +74,19 @@ bool CheckChildProcessSecurityPolicy(
   for (const auto& form : forms) {
     if (!bad_message::CheckChildProcessSecurityPolicy(frame, form, reason))
       return false;
+  }
+  return true;
+}
+
+bool CheckChildProcessSecurityPolicy(
+    content::RenderFrameHost* frame,
+    const std::vector<autofill::FormData>& forms_data,
+    BadMessageReason reason) {
+  for (const auto& form_data : forms_data) {
+    if (!bad_message::CheckChildProcessSecurityPolicyForURL(
+            frame, form_data.url, reason)) {
+      return false;
+    }
   }
   return true;
 }

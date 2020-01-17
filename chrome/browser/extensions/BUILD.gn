@@ -624,6 +624,8 @@ jumbo_static_library("extensions") {
     "install_gate.h",
     "install_observer.cc",
     "install_observer.h",
+    "install_prompt_permissions.cc",
+    "install_prompt_permissions.h",
     "install_signer.cc",
     "install_signer.h",
     "install_tracker.cc",
@@ -658,8 +660,6 @@ jumbo_static_library("extensions") {
     "permissions_based_management_policy_provider.h",
     "permissions_updater.cc",
     "permissions_updater.h",
-    "plugin_manager.cc",
-    "plugin_manager.h",
     "policy_extension_reinstaller.cc",
     "policy_extension_reinstaller.h",
     "policy_handlers.cc",
@@ -1146,6 +1146,13 @@ jumbo_static_library("extensions") {
       "api/input_ime/input_ime_api_nonchromeos.h",
       "api/input_ime/input_ime_event_router_base.cc",
       "api/input_ime/input_ime_event_router_base.h",
+    ]
+  }
+
+  if (enable_plugins) {
+    sources += [
+      "plugin_manager.cc",
+      "plugin_manager.h",
     ]
   }
 

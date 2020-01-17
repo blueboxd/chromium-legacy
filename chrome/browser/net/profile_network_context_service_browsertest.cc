@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/profile_network_context_service.h"
-
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -16,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -24,24 +23,19 @@
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
+#include "chrome/browser/net/profile_network_context_service_test_utils.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_window.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
@@ -61,7 +55,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -193,6 +186,9 @@ class ProfileNetworkContextServiceCacheSameBrowsertest
 
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheSameBrowsertest,
                        TestCacheResetParameter) {
+  base::RunLoop().RunUntilIdle();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
+
   // At this point, we have already called the initialization once on startup.
   // Verify that we have the correct values in the local_state.
   PrefService* local_state = g_browser_process->local_state();
@@ -229,6 +225,9 @@ class ProfileNetworkContextServiceCacheChangeBrowsertest
 
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheChangeBrowsertest,
                        TestCacheResetParameter) {
+  base::RunLoop().RunUntilIdle();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
+
   // At this point, we have already called the initialization once on startup.
   // Verify that we have the correct values in the local_state.
   PrefService* local_state = g_browser_process->local_state();
@@ -240,28 +239,14 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheChangeBrowsertest,
   CheckCacheReset();
 }
 
-enum class AmbientAuthProfileBit {
-  INCOGNITO = 1,
-  GUEST = 2,
-};
-
-// Indicates the state of the feature flags
-// |kEnableAmbientAuthenticationInIncognito| and
-// |kEnableAmbientAuthenticationInGuestSession|
-enum class AmbientAuthenticationFeatureState {
-  GUEST_OFF_INCOGNITO_OFF = 0,  // 00
-  GUEST_OFF_INCOGNITO_ON = 1,   // 01
-  GUEST_ON_INCOGNITO_OFF = 2,   // 10
-  GUEST_ON_INCOGNITO_ON = 3,    // 11
-};
-
 class AmbientAuthenticationTestWithPolicy
     : public policy::PolicyTest,
       public testing::WithParamInterface<AmbientAuthenticationFeatureState> {
  public:
   AmbientAuthenticationTestWithPolicy() {
     feature_state_ = GetParam();
-    CookTheFeatureList();
+    AmbientAuthenticationTestHelper::CookTheFeatureList(scoped_feature_list_,
+                                                        feature_state_);
     policy::PolicyTest::SetUpInProcessBrowserTestFixture();
   }
 
@@ -270,113 +255,27 @@ class AmbientAuthenticationTestWithPolicy
     int policy_value =
         service->GetInteger(prefs::kAmbientAuthenticationInPrivateModesEnabled);
 
-    EXPECT_TRUE(IsAmbientAuthAllowedForProfile(GetRegularProfile()));
-    EXPECT_EQ(IsAmbientAuthAllowedForProfile(GetIncognitoProfile()),
-              IsIncognitoAllowedInFeature() ||
-                  IsIncognitoAllowedInPolicy(policy_value));
+    Profile* regular_profile = browser()->profile();
+    Profile* incognito_profile = regular_profile->GetOffTheRecordProfile();
+
+    EXPECT_TRUE(AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
+        regular_profile));
+    EXPECT_EQ(AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
+                  incognito_profile),
+              AmbientAuthenticationTestHelper::IsIncognitoAllowedInFeature(
+                  feature_state_) ||
+                  AmbientAuthenticationTestHelper::IsIncognitoAllowedInPolicy(
+                      policy_value));
 // ChromeOS guest sessions don't have the capability to
 // do ambient authentications.
 #if !defined(OS_CHROMEOS)
-    EXPECT_EQ(
-        IsAmbientAuthAllowedForProfile(GetGuestProfile()),
-        IsGuestAllowedInFeature() || IsGuestAllowedInPolicy(policy_value));
+    EXPECT_EQ(AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
+                  AmbientAuthenticationTestHelper::GetGuestProfile()),
+              AmbientAuthenticationTestHelper::IsGuestAllowedInFeature(
+                  feature_state_) ||
+                  AmbientAuthenticationTestHelper::IsGuestAllowedInPolicy(
+                      policy_value));
 #endif
-  }
-
- protected:
-  inline bool IsIncognitoAllowedInFeature() const {
-    return static_cast<int>(feature_state_) &
-           static_cast<int>(AmbientAuthProfileBit::INCOGNITO);
-  }
-
-  inline bool IsGuestAllowedInFeature() const {
-    return static_cast<int>(feature_state_) &
-           static_cast<int>(AmbientAuthProfileBit::GUEST);
-  }
-
-  inline bool IsIncognitoAllowedInPolicy(int policy_value) const {
-    return policy_value & static_cast<int>(AmbientAuthProfileBit::INCOGNITO);
-  }
-
-  inline bool IsGuestAllowedInPolicy(int policy_value) const {
-    return policy_value & static_cast<int>(AmbientAuthProfileBit::GUEST);
-  }
-
-  void CookTheFeatureList() {
-    std::vector<base::Feature> enabled_feature_list;
-    std::vector<base::Feature> disabled_feature_list;
-
-    if (IsIncognitoAllowedInFeature())
-      enabled_feature_list.push_back(
-          features::kEnableAmbientAuthenticationInIncognito);
-    else
-      disabled_feature_list.push_back(
-          features::kEnableAmbientAuthenticationInIncognito);
-
-    if (IsGuestAllowedInFeature())
-      enabled_feature_list.push_back(
-          features::kEnableAmbientAuthenticationInGuestSession);
-    else
-      disabled_feature_list.push_back(
-          features::kEnableAmbientAuthenticationInGuestSession);
-
-    scoped_feature_list_.InitWithFeatures(enabled_feature_list,
-                                          disabled_feature_list);
-  }
-
-  Profile* GetIncognitoProfile() {
-    Profile* regular_profile = browser()->profile();
-    Profile* off_the_record_profile = regular_profile->GetOffTheRecordProfile();
-    EXPECT_TRUE(regular_profile->HasOffTheRecordProfile());
-    return off_the_record_profile;
-  }
-
-  Profile* GetGuestProfile() {
-    Profile* guest_profile = OpenGuestBrowser()->profile();
-    return guest_profile;
-  }
-
-  Profile* GetRegularProfile() { return browser()->profile(); }
-
-  bool IsAmbientAuthAllowedForProfile(Profile* profile) {
-    ProfileNetworkContextService* profile_network_context_service =
-        ProfileNetworkContextServiceFactory::GetForContext(profile);
-    base::FilePath empty_relative_partition_path;
-    network::mojom::NetworkContextParamsPtr network_context_params_ptr =
-        profile_network_context_service->CreateNetworkContextParams(
-            /*in_memory=*/false, empty_relative_partition_path);
-    return network_context_params_ptr->http_auth_static_network_context_params
-               ->allow_default_credentials ==
-           net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS;
-  }
-  // OpenGuestBrowser method code borrowed from
-  // chrome/browser/profiles/profile_window_browsertest.cc
-  Browser* OpenGuestBrowser() {
-    size_t num_browsers = BrowserList::GetInstance()->size();
-
-    // Create a guest browser nicely. Using CreateProfile() and CreateBrowser()
-    // does incomplete initialization that would lead to
-    // SystemUrlRequestContextGetter being leaked.
-    profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
-    ui_test_utils::WaitForBrowserToOpen();
-
-    DCHECK_NE(static_cast<Profile*>(nullptr),
-              g_browser_process->profile_manager()->GetProfileByPath(
-                  ProfileManager::GetGuestProfilePath()));
-    EXPECT_EQ(num_browsers + 1, BrowserList::GetInstance()->size());
-
-    Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(
-        ProfileManager::GetGuestProfilePath());
-    Browser* browser = chrome::FindAnyBrowser(guest, true);
-    EXPECT_TRUE(browser);
-
-    // When |browser| closes a BrowsingDataRemover will be created and executed.
-    // It needs a loaded TemplateUrlService or else it hangs on to a
-    // CallbackList::Subscription forever.
-    search_test_utils::WaitForTemplateURLServiceToLoad(
-        TemplateURLServiceFactory::GetForProfile(guest));
-
-    return browser;
   }
 
   void EnablePolicyWithValue(net::AmbientAuthAllowedProfileTypes value) {
@@ -393,7 +292,7 @@ class AmbientAuthenticationTestWithPolicy
 };
 
 INSTANTIATE_TEST_CASE_P(
-    ,
+    AmbientAuthAllFeatureValuesTest,
     AmbientAuthenticationTestWithPolicy,
     testing::Values(AmbientAuthenticationFeatureState::GUEST_OFF_INCOGNITO_OFF,
                     AmbientAuthenticationFeatureState::GUEST_OFF_INCOGNITO_ON,

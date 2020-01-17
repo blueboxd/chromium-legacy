@@ -197,14 +197,15 @@ cr.define('app_management.util', function() {
   function openAppDetailPage(appId) {
     const params = new URLSearchParams;
     params.append('id', appId);
-    settings.navigateTo(settings.routes.APP_MANAGEMENT_DETAIL, params);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.APP_MANAGEMENT_DETAIL, params);
   }
 
   /**
    * Navigates to the main App Management list page.
    */
   function openMainPage() {
-    settings.navigateTo(settings.routes.APP_MANAGEMENT);
+    settings.Router.getInstance().navigateTo(settings.routes.APP_MANAGEMENT);
   }
 
   /**

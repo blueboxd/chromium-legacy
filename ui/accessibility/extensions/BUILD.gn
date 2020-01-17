@@ -17,9 +17,7 @@ group("extensions") {
 group("extension_tests") {
   testonly = true
   if (is_chromeos) {
-    deps = [
-      "chromevoxclassic:chromevox_tests",
-    ]
+    deps = [ "chromevoxclassic:chromevox_tests" ]
   }
 }
 
@@ -115,9 +113,7 @@ colorenhancer_files = [
 
 copy("colorenhancer_copy") {
   sources = colorenhancer_files
-  outputs = [
-    "$root_out_dir/{{source_target_relative}}",
-  ]
+  outputs = [ "$root_out_dir/{{source_target_relative}}" ]
 }
 
 #
@@ -157,7 +153,5 @@ caretbrowsing_files = [
 
 copy("caretbrowsing_copy") {
   sources = caretbrowsing_files
-  outputs = [
-    "$root_out_dir/caretbrowsing/{{source_file_part}}",
-  ]
+  outputs = [ "$root_out_dir/caretbrowsing/{{source_file_part}}" ]
 }

@@ -1584,7 +1584,9 @@ void TabDragController::PerformDeferredAttach() {
 
 void TabDragController::RevertDrag() {
   std::vector<TabSlotView*> views;
-  for (size_t i = 0; i < drag_data_.size(); ++i) {
+  if (header_drag_)
+    views.push_back(drag_data_[0].attached_view);
+  for (size_t i = first_tab_index(); i < drag_data_.size(); ++i) {
     if (drag_data_[i].contents) {
       // Contents is NULL if a tab was destroyed while the drag was under way.
       views.push_back(drag_data_[i].attached_view);

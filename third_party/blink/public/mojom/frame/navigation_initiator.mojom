@@ -4,12 +4,7 @@
 
 module blink.mojom;
 
-// Represents the disposition of a CSP violation's policy as defined in:
-// https://w3c.github.io/webappsec-csp/#policy-disposition
-enum WebContentSecurityPolicyType {
-  WebContentSecurityPolicyTypeReport,
-  WebContentSecurityPolicyTypeEnforce
-};
+import "services/network/public/mojom/content_security_policy.mojom";
 
 // Represents the source location of a CSP violation which contains the
 // three fields in:
@@ -52,7 +47,7 @@ struct CSPViolationParams {
   string header;
 
   // The associated disposition, which is either "enforce" or "report".
-  WebContentSecurityPolicyType disposition;
+  network.mojom.ContentSecurityPolicyType disposition;
 
   // Whether or not the violation happened after a redirect.
   bool after_redirect;

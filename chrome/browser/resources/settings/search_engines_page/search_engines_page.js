@@ -94,7 +94,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     settings.SearchEnginesBrowserProxyImpl.getInstance()
         .getSearchEnginesList()
         .then(this.enginesChanged_.bind(this));
@@ -112,14 +112,14 @@ Polymer({
    * @param {!HTMLElement} anchorElement
    * @private
    */
-  openDialog_: function(searchEngine, anchorElement) {
+  openDialog_(searchEngine, anchorElement) {
     this.dialogModel_ = searchEngine;
     this.dialogAnchorElement_ = anchorElement;
     this.showDialog_ = true;
   },
 
   /** @private */
-  onCloseDialog_: function() {
+  onCloseDialog_() {
     this.showDialog_ = false;
     const anchor = /** @type {!HTMLElement} */ (this.dialogAnchorElement_);
     cr.ui.focusWithoutInk(anchor);
@@ -134,12 +134,12 @@ Polymer({
    * }>} e
    * @private
    */
-  onEditSearchEngine_: function(e) {
+  onEditSearchEngine_(e) {
     this.openDialog_(e.detail.engine, e.detail.anchorElement);
   },
 
   /** @private */
-  extensionsChanged_: function() {
+  extensionsChanged_() {
     if (this.showExtensionsList_ && this.$.extensions) {
       this.$.extensions.notifyResize();
     }
@@ -149,7 +149,7 @@ Polymer({
    * @param {!SearchEnginesInfo} searchEnginesInfo
    * @private
    */
-  enginesChanged_: function(searchEnginesInfo) {
+  enginesChanged_(searchEnginesInfo) {
     this.defaultEngines = searchEnginesInfo.defaults;
 
     // Sort |otherEngines| in alphabetical order.
@@ -164,13 +164,13 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onAddSearchEngineTap_: function(e) {
+  onAddSearchEngineTap_(e) {
     e.preventDefault();
     this.openDialog_(null, assert(this.$.addSearchEngine));
   },
 
   /** @private */
-  computeShowExtensionsList_: function() {
+  computeShowExtensionsList_() {
     return this.extensions.length > 0;
   },
 
@@ -180,7 +180,7 @@ Polymer({
    * @return {!Array<!SearchEngine>}
    * @private
    */
-  computeMatchingEngines_: function(list) {
+  computeMatchingEngines_(list) {
     if (this.filter == '') {
       return list;
     }
@@ -198,7 +198,7 @@ Polymer({
    * @return {boolean} Whether to show the "no results" message.
    * @private
    */
-  showNoResultsMessage_: function(list, filteredList) {
+  showNoResultsMessage_(list, filteredList) {
     return list.length > 0 && filteredList.length == 0;
   },
 });

@@ -321,9 +321,7 @@ source_set("wayland_unittests") {
 
 fuzzer_test("wayland_buffer_fuzzer") {
   defines = [ "WL_HIDE_DEPRECATED" ]
-  sources = [
-    "fuzzer/wayland_buffer_fuzzer.cc",
-  ]
+  sources = [ "fuzzer/wayland_buffer_fuzzer.cc" ]
   deps = [
     ":test_support",
     ":wayland",

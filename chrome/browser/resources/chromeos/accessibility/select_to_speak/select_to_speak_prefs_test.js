@@ -29,7 +29,7 @@ function SelectToSpeakPrefsTest() {
   chrome.settingsPrivate = this.mockSettingsPrivate_;
 
   chrome.i18n = {
-    getMessage: function(msgid) {
+    getMessage(msgid) {
       return msgid;
     }
   };
@@ -40,14 +40,14 @@ function SelectToSpeakPrefsTest() {
 SelectToSpeakPrefsTest.prototype = {
   __proto__: SelectToSpeakE2ETest.prototype,
 
-  resetStorage: function() {
+  resetStorage() {
     this.mockStorage_.clear();
     selectToSpeak.prefsManager_.initPreferences();
   },
 
   // This must be done before setting STS rate and pitch for tests to work
   // properly.
-  setGlobalRateAndPitch: function(rate, pitch) {
+  setGlobalRateAndPitch(rate, pitch) {
     let unused = () => {};
     this.mockSettingsPrivate_.setPref(
         'settings.tts.speech_rate', rate, '', unused);
@@ -55,12 +55,12 @@ SelectToSpeakPrefsTest.prototype = {
         'settings.tts.speech_pitch', pitch, '', unused);
   },
 
-  setStsRateAndPitch: function(rate, pitch) {
+  setStsRateAndPitch(rate, pitch) {
     this.mockStorage_.sync.set({'rate': rate});
     this.mockStorage_.sync.set({'pitch': pitch});
   },
 
-  ensurePrefsRemovedAndGlobalSetTo: function(rate, pitch) {
+  ensurePrefsRemovedAndGlobalSetTo(rate, pitch) {
     let onPrefsRemovedFromStorage = this.newCallback(() => {
       // Once prefs are removed from storage, make sure the global prefs are
       // updated to the appropriate values.

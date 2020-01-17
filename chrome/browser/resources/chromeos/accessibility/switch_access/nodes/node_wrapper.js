@@ -20,6 +20,9 @@ class NodeWrapper extends SAChildNode {
 
     /** @private {boolean} */
     this.isGroup_ = SwitchAccessPredicate.isGroup(this.baseNode_, parent);
+
+    /** @private {function(chrome.automation.AutomationEvent)} */
+    this.locationChangedHandler_ = SwitchAccess.refreshFocusRings;
   }
 
   // ================= Getters and setters =================
@@ -93,12 +96,42 @@ class NodeWrapper extends SAChildNode {
 
   /** @override */
   isEquivalentTo(node) {
+    if (node instanceof NodeWrapper || node instanceof RootNodeWrapper) {
+      return this.baseNode_ === node.baseNode_;
+    }
+
+    if (node instanceof SAChildNode) {
+      return node.isEquivalentTo(this);
+    }
     return this.baseNode_ === node;
   }
 
   /** @override */
   isGroup() {
     return this.isGroup_;
+  }
+
+  /** @override */
+  isValidAndVisible() {
+    // Nodes without a role are not valid.
+    if (!this.baseNode_.role) {
+      return false;
+    }
+    return SwitchAccessPredicate.isVisible(this.baseNode_);
+  }
+
+  /** @override */
+  onFocus() {
+    this.baseNode_.addEventListener(
+        chrome.automation.EventType.LOCATION_CHANGED,
+        this.locationChangedHandler_, false /* is_capture */);
+  }
+
+  /** @override */
+  onUnfocus() {
+    this.baseNode_.removeEventListener(
+        chrome.automation.EventType.LOCATION_CHANGED,
+        this.locationChangedHandler_, false /* is_capture */);
   }
 
   /** @override */
@@ -175,6 +208,9 @@ class RootNodeWrapper extends SARootNode {
 
     /** @private {!AutomationNode} */
     this.baseNode_ = baseNode;
+
+    /** @private {function(chrome.automation.AutomationEvent)} */
+    this.locationChangedHandler_ = SwitchAccess.refreshFocusRings;
   }
 
   // ================= Getters and setters =================
@@ -202,13 +238,34 @@ class RootNodeWrapper extends SARootNode {
   }
 
   /** @override */
-  isEquivalentTo(automationNode) {
-    return this.baseNode_ === automationNode;
+  isEquivalentTo(node) {
+    if (node instanceof RootNodeWrapper || node instanceof NodeWrapper) {
+      return this.baseNode_ === node.baseNode_;
+    }
+
+    if (node instanceof SAChildNode) {
+      return node.isEquivalentTo(this);
+    }
+    return this.baseNode_ === node;
   }
 
   /** @override */
-  isValid() {
-    return !!this.baseNode_.role;
+  isValidGroup() {
+    return !!this.baseNode_.role && super.isValidGroup();
+  }
+
+  /** @override */
+  onFocus() {
+    this.baseNode_.addEventListener(
+        chrome.automation.EventType.LOCATION_CHANGED,
+        this.locationChangedHandler_, false /* is_capture */);
+  }
+
+  /** @override */
+  onUnfocus() {
+    this.baseNode_.removeEventListener(
+        chrome.automation.EventType.LOCATION_CHANGED,
+        this.locationChangedHandler_, false /* is_capture */);
   }
 
   // ================= Static methods =================
@@ -228,8 +285,7 @@ class RootNodeWrapper extends SARootNode {
     }
 
     const childConstructor = (autoNode) => new NodeWrapper(autoNode, root);
-    let children = interestingChildren.map(childConstructor);
-    root.children = children;
+    root.children = interestingChildren.map(childConstructor);
 
     return root;
   }

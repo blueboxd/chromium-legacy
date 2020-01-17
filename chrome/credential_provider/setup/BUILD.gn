@@ -22,9 +22,7 @@ source_set("common") {
     "setup_lib.cc",
     "setup_lib.h",
   ]
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
   deps = [
     "../gaiacp:common",
     "//chrome/installer/util:with_no_strings",
@@ -33,9 +31,7 @@ source_set("common") {
 
 grit("setup_resources") {
   source = "gcp_setup_resources.grd"
-  inputs = [
-    "gcp_icon.ico",
-  ]
+  inputs = [ "gcp_icon.ico" ]
   outputs = [
     "grit/gcp_setup_resources.h",
     "grit/gcp_setup_resources.rc",

@@ -31,7 +31,7 @@ Polymer({
      */
     siteGroupMap: {
       type: Object,
-      value: function() {
+      value() {
         return new Map();
       },
     },
@@ -146,7 +146,7 @@ Polymer({
   localDataBrowserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.localDataBrowserProxy_ =
         settings.LocalDataBrowserProxyImpl.getInstance();
   },
@@ -156,7 +156,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'onStorageListFetched', this.onStorageListFetched.bind(this));
     this.addEventListener('site-entry-selected', e => {
@@ -166,7 +166,8 @@ Polymer({
     });
 
     if (this.storagePressureFlagEnabled_) {
-      const sortParam = settings.getQueryParameters().get('sort');
+      const sortParam =
+          settings.Router.getInstance().getQueryParameters().get('sort');
       if (Object.values(this.sortMethods_).includes(sortParam)) {
         this.$.sortMethod.value = sortParam;
       }
@@ -175,7 +176,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     // Set scrollOffset so the iron-list scrolling accounts for the space the
     // title takes.
     Polymer.RenderStatus.afterNextRender(this, () => {
@@ -190,7 +191,7 @@ Polymer({
    * @param {!settings.Route} currentRoute
    * @protected
    */
-  currentRouteChanged: function(currentRoute) {
+  currentRouteChanged(currentRoute) {
     settings.GlobalScrollTargetBehaviorImpl.currentRouteChanged.call(
         this, currentRoute);
     if (currentRoute == settings.routes.SITE_SETTINGS_ALL) {
@@ -202,7 +203,7 @@ Polymer({
    * Retrieves a list of all known sites with site details.
    * @private
    */
-  populateList_: function() {
+  populateList_() {
     /** @type {!Array<settings.ContentSettingsTypes>} */
     const contentTypes = this.getCategoryList();
     // Make sure to include cookies, because All Sites handles data storage +
@@ -229,7 +230,7 @@ Polymer({
    * may be overlap between the existing sites.
    * @param {!Array<!SiteGroup>} list The list of sites using storage.
    */
-  onStorageListFetched: function(list) {
+  onStorageListFetched(list) {
     // Create a new map to make an observable change.
     const newMap = /** @type {!Map<string, !SiteGroup>} */
                     (new Map(this.siteGroupMap));
@@ -247,7 +248,7 @@ Polymer({
    * to the list
    * @private
    */
-  updateTotalUsage_: function() {
+  updateTotalUsage_() {
     let usageSum = 0;
     for (const [etldPlus1, siteGroup] of this.siteGroupMap) {
       siteGroup.origins.forEach(origin => {
@@ -266,7 +267,7 @@ Polymer({
    * @return {!Array<!SiteGroup>}
    * @private
    */
-  filterPopulatedList_: function(siteGroupMap, searchQuery) {
+  filterPopulatedList_(siteGroupMap, searchQuery) {
     const result = [];
     for (const [etldPlus1, siteGroup] of siteGroupMap) {
       if (siteGroup.origins.find(
@@ -283,7 +284,7 @@ Polymer({
    * @return {!Array<!SiteGroup>}
    * @private
    */
-  sortSiteGroupList_: function(siteGroupList) {
+  sortSiteGroupList_(siteGroupList) {
     const sortMethod = this.$.sortMethod.value;
     if (!this.sortMethods_) {
       return siteGroupList;
@@ -308,7 +309,7 @@ Polymer({
    * @param {!SiteGroup} siteGroup2
    * @private
    */
-  mostVisitedComparator_: function(siteGroup1, siteGroup2) {
+  mostVisitedComparator_(siteGroup1, siteGroup2) {
     const getMaxEngagement = (max, originInfo) => {
       return (max > originInfo.engagement) ? max : originInfo.engagement;
     };
@@ -324,7 +325,7 @@ Polymer({
    * @param {!SiteGroup} siteGroup2
    * @private
    */
-  storageComparator_: function(siteGroup1, siteGroup2) {
+  storageComparator_(siteGroup1, siteGroup2) {
     const getOverallUsage = siteGroup => {
       let usage = 0;
       siteGroup.origins.forEach(originInfo => {
@@ -346,7 +347,7 @@ Polymer({
    * @param {!SiteGroup} siteGroup2
    * @private
    */
-  nameComparator_: function(siteGroup1, siteGroup2) {
+  nameComparator_(siteGroup1, siteGroup2) {
     return siteGroup1.etldPlus1.localeCompare(siteGroup2.etldPlus1);
   },
 
@@ -354,7 +355,7 @@ Polymer({
    * Called when the user chooses a different sort method to the default.
    * @private
    */
-  onSortMethodChanged_: function() {
+  onSortMethodChanged_() {
     this.sortMethod_ = this.$.sortMethod.value;
     this.filteredList_ =
         this.sortSiteGroupList_(this.filteredList_);
@@ -367,7 +368,7 @@ Polymer({
    * the search query and the sort method, then re-renders it.
    * @private
    */
-  forceListUpdate_: function() {
+  forceListUpdate_() {
     this.filteredList_ =
         this.filterPopulatedList_(this.siteGroupMap, this.filter);
     this.$.allSitesList.fire('iron-resize');
@@ -378,7 +379,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  siteGroupMapEmpty_: function() {
+  siteGroupMapEmpty_() {
     return !this.siteGroupMap.size;
   },
 
@@ -387,7 +388,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  noSearchResultFound_: function() {
+  noSearchResultFound_() {
     return !this.filteredList_.length && !this.siteGroupMapEmpty_();
   },
 
@@ -395,7 +396,7 @@ Polymer({
    * Focus on previously selected entry.
    * @private
    */
-  focusOnLastSelectedEntry_: function() {
+  focusOnLastSelectedEntry_() {
     if (this.selectedItem_ == null || this.siteGroupMap.size == 0) {
       return;
     }
@@ -418,7 +419,7 @@ Polymer({
    *    }>} e
    * @private
    */
-  onOpenMenu_: function(e) {
+  onOpenMenu_(e) {
     const index = e.detail.index;
     const list = /** @type {IronListElement} */ (this.$['allSitesList']);
     if (index < list.firstVisibleIndex || index > list.lastVisibleIndex) {
@@ -435,7 +436,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onConfirmResetSettings_: function(e) {
+  onConfirmResetSettings_(e) {
     e.preventDefault();
     this.$.confirmResetSettings.get().showModal();
   },
@@ -445,7 +446,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onConfirmClearData_: function(e) {
+  onConfirmClearData_(e) {
     e.preventDefault();
     if (this.storagePressureFlagEnabled_) {
       this.$.confirmClearDataNew.get().showModal();
@@ -459,14 +460,14 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onConfirmClearAllData_: function(e) {
+  onConfirmClearAllData_(e) {
     e.preventDefault();
     this.clearAllData_ = true;
     this.$.confirmClearAllData.get().showModal();
   },
 
   /** @private */
-  onCloseDialog_: function(e) {
+  onCloseDialog_(e) {
     e.target.closest('cr-dialog').close();
     this.actionMenuModel_ = null;
     this.$.menu.get().close();
@@ -479,7 +480,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getFormatString_: function(label, name) {
+  getFormatString_(label, name) {
     return loadTimeData.substituteString(label, name);
   },
 
@@ -488,7 +489,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onResetSettings_: function(e) {
+  onResetSettings_(e) {
     const contentSettingsTypes = this.getCategoryList();
     const index = this.actionMenuModel_.index;
     this.browserProxy.recordAction(settings.AllSitesAction.RESET_PERMISSIONS);
@@ -547,7 +548,7 @@ Polymer({
    *                        that should be cleared.
    * @private
    */
-  clearDataForSiteGroupIndex_: function(index) {
+  clearDataForSiteGroupIndex_(index) {
     this.browserProxy.clearEtldPlus1DataAndCookies(
         this.filteredList_[index].etldPlus1);
     const updatedSiteGroup = {
@@ -577,7 +578,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onClearData_: function(e) {
+  onClearData_(e) {
     this.clearDataForSiteGroupIndex_(this.actionMenuModel_.index);
     this.$.allSitesList.fire('iron-resize');
     this.updateTotalUsage_();
@@ -589,7 +590,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onClearAllData_: function(e) {
+  onClearAllData_(e) {
     for (let index = this.filteredList_.length - 1; index >= 0; index--) {
       this.clearDataForSiteGroupIndex_(index);
     }

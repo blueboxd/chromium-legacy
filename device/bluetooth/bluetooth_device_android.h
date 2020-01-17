@@ -13,10 +13,13 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "device/bluetooth/bluetooth_adapter_android.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace device {
+
+class BluetoothUUID;
 
 // BluetoothDeviceAndroid along with its owned Java class
 // org.chromium.device.bluetooth.ChromeBluetoothDevice implement
@@ -113,7 +116,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceAndroid final
   BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter);
 
   // BluetoothDevice:
-  void CreateGattConnectionImpl() override;
+  void CreateGattConnectionImpl(
+      base::Optional<device::BluetoothUUID> service_uuid) override;
   void DisconnectGatt() override;
 
   // Java object org.chromium.device.bluetooth.ChromeBluetoothDevice.

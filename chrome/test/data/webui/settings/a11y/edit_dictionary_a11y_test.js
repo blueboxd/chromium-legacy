@@ -82,7 +82,7 @@ AccessibilityTest.define('EditDictionaryA11yTest', {
           this.languageSettingsPrivate_;
     }
 
-    settings.navigateTo(settings.routes.EDIT_DICTIONARY);
+    settings.Router.getInstance().navigateTo(settings.routes.EDIT_DICTIONARY);
     Polymer.dom.flush();
     await test_util.flushTasks();
   },

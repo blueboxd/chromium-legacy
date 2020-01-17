@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/accelerator_priority.h"
 #include "chrome/browser/ui/extensions/extension_action_platform_delegate.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
@@ -113,7 +113,7 @@ base::string16 ExtensionActionViewController::GetAccessibleName(
     return base::UTF8ToUTF16(extension()->name());
 
   std::string title = extension_action()->GetTitle(
-      SessionTabHelper::IdForTab(web_contents).id());
+      sessions::SessionTabHelper::IdForTab(web_contents).id());
 
   base::string16 title_utf16 =
       base::UTF8ToUTF16(title.empty() ? extension()->name() : title);
@@ -155,7 +155,7 @@ bool ExtensionActionViewController::IsEnabled(
     return false;
 
   return extension_action_->GetIsVisible(
-             SessionTabHelper::IdForTab(web_contents).id()) ||
+             sessions::SessionTabHelper::IdForTab(web_contents).id()) ||
          HasBeenBlocked(web_contents);
 }
 
@@ -170,7 +170,7 @@ bool ExtensionActionViewController::HasPopup(
   if (!ExtensionIsValid())
     return false;
 
-  SessionID tab_id = SessionTabHelper::IdForTab(web_contents);
+  SessionID tab_id = sessions::SessionTabHelper::IdForTab(web_contents);
   return tab_id.is_valid() ? extension_action_->HasPopup(tab_id.id()) : false;
 }
 
@@ -260,7 +260,7 @@ bool ExtensionActionViewController::ExecuteAction(PopupShowAction show_action,
   if (action_runner->RunAction(extension(), grant_tab_permissions) ==
       ExtensionAction::ACTION_SHOW_POPUP) {
     GURL popup_url = extension_action_->GetPopupUrl(
-        SessionTabHelper::IdForTab(web_contents).id());
+        sessions::SessionTabHelper::IdForTab(web_contents).id());
     return GetPreferredPopupViewController()
         ->TriggerPopupWithUrl(show_action, popup_url, grant_tab_permissions);
   }
@@ -312,7 +312,7 @@ ExtensionActionViewController::GetPageInteractionStatus(
   // This is a bit more complex, and it's unclear if this is a better UX, since
   // it would lead to much less determinism in terms of what extensions look
   // like on a given host.
-  const int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+  const int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
   const GURL& url = web_contents->GetLastCommittedURL();
   if (extension_->permissions_data()->GetPageAccess(url, tab_id,
                                                     /*error=*/nullptr) ==
@@ -447,7 +447,7 @@ std::unique_ptr<IconWithBadgeImageSource>
 ExtensionActionViewController::GetIconImageSource(
     content::WebContents* web_contents,
     const gfx::Size& size) {
-  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
   std::unique_ptr<IconWithBadgeImageSource> image_source(
       new IconWithBadgeImageSource(size));
 
@@ -491,7 +491,7 @@ bool ExtensionActionViewController::PageActionWantsToRun(
   return extension_action_->action_type() ==
              extensions::ActionInfo::TYPE_PAGE &&
          extension_action_->GetIsVisible(
-             SessionTabHelper::IdForTab(web_contents).id());
+             sessions::SessionTabHelper::IdForTab(web_contents).id());
 }
 
 bool ExtensionActionViewController::HasBeenBlocked(

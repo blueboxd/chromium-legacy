@@ -44,7 +44,7 @@ ChromeVoxKeySequenceUnitTest.prototype = {
    *  prefixKey: Whether or not the prefix key was entered.
    * @return {Object} The mock event.
    */
-  createMockEvent: function(keyCode, eventParams) {
+  createMockEvent(keyCode, eventParams) {
     var mockEvent = {};
     mockEvent.keyCode = keyCode;
 
@@ -81,7 +81,7 @@ ChromeVoxKeySequenceUnitTest.prototype = {
   },
 
   /** @override */
-  setUp: function() {
+  setUp() {
     // Set up mock ChromeVox modifier
     ChromeVox.modKeyStr = 'Alt';
 

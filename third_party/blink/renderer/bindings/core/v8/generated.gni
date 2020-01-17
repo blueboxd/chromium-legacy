@@ -209,23 +209,32 @@ generated_demo_files = []
 
 if (use_v8_bind_gen_for_dictionary) {
   generated_core_dictionary_files +=
-      process_file_template(core_dictionary_idl_files,
-                            [
-                              "{{source_gen_dir}}/{{source_name_part}}.cc",
-                              "{{source_gen_dir}}/{{source_name_part}}.h",
-                            ])
+      process_file_template(
+          core_dictionary_idl_files,
+          [
+            "$bindings_core_v8_output_dir/v8_{{source_name_part}}.cc",
+            "$bindings_core_v8_output_dir/v8_{{source_name_part}}.h",
+          ])
+
+  generated_core_testing_dictionary_files =
+      process_file_template(
+          core_testing_dictionary_idl_files,
+          [
+            "$bindings_core_v8_output_dir/v8_{{source_name_part}}.cc",
+            "$bindings_core_v8_output_dir/v8_{{source_name_part}}.h",
+          ])
 
   # Generated file from demonstration_and_testing.idl, which won't be compiled.
   generated_demo_files += [
-    "$bindings_scripts_output_dir/web_idl/example_dictionary.cc",
-    "$bindings_scripts_output_dir/web_idl/example_dictionary.h",
+    "$bindings_core_v8_output_dir/v8_example_dictionary.cc",
+    "$bindings_core_v8_output_dir/v8_example_dictionary.h",
   ]
+} else {
+  generated_core_testing_dictionary_files =
+      process_file_template(
+          core_testing_dictionary_idl_files,
+          [
+            "$blink_core_output_dir/testing/{{source_name_part}}.cc",
+            "$blink_core_output_dir/testing/{{source_name_part}}.h",
+          ])
 }
-
-generated_core_testing_dictionary_files =
-    process_file_template(
-        core_testing_dictionary_idl_files,
-        [
-          "$blink_core_output_dir/testing/{{source_name_part}}.cc",
-          "$blink_core_output_dir/testing/{{source_name_part}}.h",
-        ])

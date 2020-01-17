@@ -769,8 +769,8 @@ chrome.automation.AutomationNode.prototype.activeDescendantFor;
 chrome.automation.AutomationNode.prototype.inPageLinkTarget;
 
 /**
- * A node that provides more details about the current node.
- * @type {(!chrome.automation.AutomationNode|undefined)}
+ * The nodes, if any that provide more details about the current node.
+ * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-details
  */
 chrome.automation.AutomationNode.prototype.details;

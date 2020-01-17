@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
@@ -68,7 +69,6 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_client.h"
-#include "third_party/blink/renderer/modules/remote_objects/remote_object_gateway_impl.h"
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
@@ -98,6 +98,10 @@
 
 #if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)
 #include "third_party/blink/renderer/modules/webgl/webgl2_compute_rendering_context.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "third_party/blink/renderer/modules/remote_objects/remote_object_gateway_impl.h"
 #endif
 
 namespace blink {
@@ -171,8 +175,10 @@ void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
       &AppBannerController::BindMojoRequest, WrapWeakPersistent(&frame)));
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &TextSuggestionBackendImpl::Create, WrapWeakPersistent(&frame)));
+#if defined(OS_ANDROID)
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &RemoteObjectGatewayFactoryImpl::Create, WrapWeakPersistent(&frame)));
+#endif  // OS_ANDROID
 }
 
 void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
@@ -254,10 +260,12 @@ void ModulesInitializer::OnClearWindowObjectInMainWorld(
     PresentationReceiver::From(document);
   }
 
+#if defined(OS_ANDROID)
   LocalFrame* frame = document.GetFrame();
   DCHECK(frame);
   if (auto* gateway = RemoteObjectGatewayImpl::From(*frame))
     gateway->OnClearWindowObjectInMainWorld();
+#endif  // OS_ANDROID
 }
 
 std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(

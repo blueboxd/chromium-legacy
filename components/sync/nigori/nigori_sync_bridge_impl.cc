@@ -700,13 +700,15 @@ std::string NigoriSyncBridgeImpl::GetLastKeystoreKey() const {
 
 bool NigoriSyncBridgeImpl::NeedKeystoreKey() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // We explicitly ask the server for keystore keys iff it's first-time sync,
-  // i.e. if we have no keystore keys yet. In case of key rotation, it's a
-  // server responsibility to send updated keystore keys. |keystore_keys_| is
-  // expected to be non-empty before MergeSyncData() call, regardless of
-  // passphrase type.
+  // Explicitly asks the server for keystore keys if it's first-time sync, i.e.
+  // if there is no keystore keys yet or remote keybag wasn't decryptable due
+  // to absence of some keystore key. In case of key rotation, it's a server
+  // responsibility to send updated keystore keys. |keystore_keys_| is expected
+  // to be non-empty before MergeSyncData() call, regardless of passphrase
+  // type.
   return state_.keystore_keys_cryptographer->IsEmpty() ||
-         state_.pending_keystore_decryptor_token.has_value();
+         (state_.pending_keystore_decryptor_token.has_value() &&
+          state_.pending_keys.has_value());
 }
 
 bool NigoriSyncBridgeImpl::SetKeystoreKeys(
@@ -724,7 +726,12 @@ bool NigoriSyncBridgeImpl::SetKeystoreKeys(
     return false;
   }
 
-  if (state_.pending_keystore_decryptor_token.has_value()) {
+  // TODO(crbug.com/1042251): having |pending_keystore_decryptor_token| without
+  // |pending_keys| means that new |keystore_decryptor_token| could be build
+  // in order to replace the potentially corrupted remote
+  // |keystore_decryptor_token|.
+  if (state_.pending_keystore_decryptor_token.has_value() &&
+      state_.pending_keys.has_value()) {
     // Newly arrived keystore keys could resolve pending encryption state in
     // keystore mode.
     DCHECK_EQ(state_.passphrase_type, NigoriSpecifics::KEYSTORE_PASSPHRASE);

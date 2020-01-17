@@ -117,6 +117,11 @@ int MultiChannelResampler::ChunkSize() const {
   return resamplers_[0]->ChunkSize();
 }
 
+int MultiChannelResampler::GetMaxInputFramesRequested(
+    int output_frames_requested) const {
+  DCHECK(!resamplers_.empty());
+  return resamplers_[0]->GetMaxInputFramesRequested(output_frames_requested);
+}
 
 double MultiChannelResampler::BufferedFrames() const {
   DCHECK(!resamplers_.empty());

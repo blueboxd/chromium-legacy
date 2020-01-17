@@ -24,7 +24,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
-#include "base/win/registry.h"
 #include "base/win/shlwapi.h"
 #include "base/win/shortcut.h"
 #include "base/win/win_util.h"
@@ -107,11 +106,18 @@ HWND CreateUACForegroundWindow() {
 
 // Returns Registry key path of Chrome policies. This is used by the policies
 // that are shared between Chrome and installer.
-base::string16 GetChromePoliciesRegistryPath() {
-  base::string16 key_path = L"SOFTWARE\\Policies\\";
+std::wstring GetChromePoliciesRegistryPath() {
+  std::wstring key_path = L"SOFTWARE\\Policies\\";
   install_static::AppendChromeInstallSubDirectory(
-      install_static::InstallDetails::Get().mode(), false /* !include_suffix */,
+      install_static::InstallDetails::Get().mode(), /*include_suffix=*/false,
       &key_path);
+  return key_path;
+}
+
+std::wstring GetCloudManagementPoliciesRegistryPath() {
+  std::wstring key_path = L"SOFTWARE\\Policies\\";
+  key_path.append(install_static::kCompanyPathName);
+  key_path.append(L"\\CloudManagement");
   return key_path;
 }
 
@@ -579,35 +585,56 @@ void InstallUtil::AddUpdateDowngradeVersionItem(
 }
 
 // static
-void InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentTokenRegistryPath(
-    base::string16* key_path,
-    base::string16* value_name,
-    base::string16* old_value_name) {
-  // This token applies to all installs on the machine, even though only a
-  // system install can set it.  This is to prevent users from doing a user
-  // install of chrome to get around policies.
-  *key_path = GetChromePoliciesRegistryPath();
-  *value_name = L"CloudManagementEnrollmentToken";
-  *old_value_name = L"MachineLevelUserCloudPolicyEnrollmentToken";
+std::vector<std::pair<std::wstring, std::wstring>>
+InstallUtil::GetCloudManagementEnrollmentTokenRegistryPaths() {
+  std::vector<std::pair<std::wstring, std::wstring>> paths;
+  // Prefer the product-agnostic location used by Google Update.
+  paths.emplace_back(GetCloudManagementPoliciesRegistryPath(),
+                     L"EnrollmentToken");
+  // Follow that with the Google Chrome policy.
+  paths.emplace_back(GetChromePoliciesRegistryPath(),
+                     L"CloudManagementEnrollmentToken");
+  return paths;
 }
 
 // static
-void InstallUtil::GetMachineLevelUserCloudPolicyDMTokenRegistryPath(
-    base::string16* key_path,
-    base::string16* value_name) {
-  // This token applies to all installs on the machine, even though only a
-  // system install can set it.  This is to prevent users from doing a user
-  // install of chrome to get around policies.
-  *key_path = L"SOFTWARE\\";
-  install_static::AppendChromeInstallSubDirectory(
-      install_static::InstallDetails::Get().mode(), false /* !include_suffix */,
-      key_path);
-  key_path->append(L"\\Enrollment");
-  *value_name = L"dmtoken";
+std::pair<base::win::RegKey, std::wstring>
+InstallUtil::GetCloudManagementDmTokenLocation(
+    ReadOnly read_only,
+    BrowserLocation browser_location) {
+  // The location dictates the path and WoW bit.
+  REGSAM wow_access = 0;
+  std::wstring key_path(L"SOFTWARE\\");
+  if (browser_location) {
+    wow_access |= KEY_WOW64_64KEY;
+    install_static::AppendChromeInstallSubDirectory(
+        install_static::InstallDetails::Get().mode(), /*include_suffix=*/false,
+        &key_path);
+  } else {
+    wow_access |= KEY_WOW64_32KEY;
+    key_path.append(install_static::kCompanyPathName);
+  }
+  key_path.append(L"\\Enrollment");
+
+  base::win::RegKey key;
+  if (read_only) {
+    key.Open(HKEY_LOCAL_MACHINE, key_path.c_str(),
+             KEY_QUERY_VALUE | wow_access);
+  } else {
+    auto result = key.Create(HKEY_LOCAL_MACHINE, key_path.c_str(),
+                             KEY_SET_VALUE | wow_access);
+    if (result != ERROR_SUCCESS) {
+      ::SetLastError(result);
+      PLOG(ERROR) << "Failed to create/open registry key HKLM\\" << key_path
+                  << " for writing";
+    }
+  }
+
+  return {std::move(key), L"dmtoken"};
 }
 
 // static
-base::string16 InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentToken() {
+base::string16 InstallUtil::GetCloudManagementEnrollmentToken() {
   // Because chrome needs to know if machine level user cloud policies must be
   // initialized even before the entire policy service is brought up, this
   // helper function exists to directly read the token from the system policies.
@@ -617,18 +644,18 @@ base::string16 InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentToken() {
   // this token via SCCM.
   // TODO(rogerta): This may not be the best place for the helpers dealing with
   // the enrollment and/or DM tokens.  See crbug.com/823852 for details.
-  base::string16 key_path;
-  base::string16 value_name;
-  base::string16 old_value_name;
-  GetMachineLevelUserCloudPolicyEnrollmentTokenRegistryPath(
-      &key_path, &value_name, &old_value_name);
-
+  RegKey key;
   base::string16 value;
-  RegKey key(HKEY_LOCAL_MACHINE, key_path.c_str(), KEY_QUERY_VALUE);
-  if (key.ReadValue(value_name.c_str(), &value) == ERROR_FILE_NOT_FOUND)
-    key.ReadValue(old_value_name.c_str(), &value);
+  for (const auto& key_and_value :
+           GetCloudManagementEnrollmentTokenRegistryPaths()) {
+    if (key.Open(HKEY_LOCAL_MACHINE, key_and_value.first.c_str(),
+                 KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+        key.ReadValue(key_and_value.second.c_str(), &value) == ERROR_SUCCESS) {
+      return value;
+    }
+  }
 
-  return value;
+  return base::string16();
 }
 
 // static

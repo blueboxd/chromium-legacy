@@ -315,6 +315,14 @@ std::unique_ptr<JSONArray> ArrayForSkMatrix(const SkMatrix& matrix) {
   return matrix_array;
 }
 
+std::unique_ptr<JSONArray> ArrayForSkScalars(size_t count,
+                                             const SkScalar array[]) {
+  auto points_array_item = std::make_unique<JSONArray>();
+  for (size_t i = 0; i < count; ++i)
+    points_array_item->PushDouble(array[i]);
+  return points_array_item;
+}
+
 std::unique_ptr<JSONObject> ObjectForSkShader(const SkShader& shader) {
   return std::make_unique<JSONObject>();
 }
@@ -677,7 +685,12 @@ void LoggingCanvas::didSetMatrix(const SkMatrix& matrix) {
   AutoLogger logger(this);
   JSONObject* params = logger.LogItemWithParams("setMatrix");
   params->SetArray("matrix", ArrayForSkMatrix(matrix));
-  this->SkCanvas::didSetMatrix(matrix);
+}
+
+void LoggingCanvas::didConcat44(const SkScalar m[16]) {
+  AutoLogger logger(this);
+  JSONObject* params = logger.LogItemWithParams("concat44");
+  params->SetArray("matrix44", ArrayForSkScalars(16, m));
 }
 
 void LoggingCanvas::didConcat(const SkMatrix& matrix) {
@@ -701,7 +714,20 @@ void LoggingCanvas::didConcat(const SkMatrix& matrix) {
       params = logger.LogItemWithParams("concat");
       params->SetArray("matrix", ArrayForSkMatrix(matrix));
   }
-  this->SkCanvas::didConcat(matrix);
+}
+
+void LoggingCanvas::didScale(SkScalar x, SkScalar y) {
+  AutoLogger logger(this);
+  JSONObject* params = logger.LogItemWithParams("scale");
+  params->SetDouble("scaleX", x);
+  params->SetDouble("scaleY", y);
+}
+
+void LoggingCanvas::didTranslate(SkScalar x, SkScalar y) {
+  AutoLogger logger(this);
+  JSONObject* params = logger.LogItemWithParams("translate");
+  params->SetDouble("dx", x);
+  params->SetDouble("dy", y);
 }
 
 void LoggingCanvas::willSave() {

@@ -6,10 +6,11 @@
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
+#include "base/time/time.h"
 #include "chrome/android/chrome_jni_headers/SharingServiceProxy_jni.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/sharing/sharing_constants.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_device_source.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "chrome/browser/sharing/sharing_service.h"
@@ -64,7 +65,8 @@ void SharingServiceProxyAndroid::SendSharedClipboardMessage(
       base::BindOnce(base::android::RunIntCallbackAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(j_runnable));
   sharing_service_->SendMessageToDevice(
-      device, kSendMessageTimeout, std::move(sharing_message),
+      device, base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get()),
+      std::move(sharing_message),
       base::BindOnce(
           [](base::OnceCallback<void(int)> callback,
              SharingSendMessageResult result,

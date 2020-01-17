@@ -85,6 +85,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="chrome/android/modules/test_dummy/internal/java/src"/>
     <classpathentry kind="src" path="chrome/android/modules/test_dummy/provider/java/src"/>
     <classpathentry kind="src" path="chrome/android/modules/test_dummy/public/java/src"/>
+    <classpathentry kind="src" path="chrome/android/native_java_unittests/src"/>
     <classpathentry kind="src" path="chrome/android/public/crypto/java/src"/>
     <classpathentry kind="src" path="chrome/android/public/profiles/java/src"/>
     <classpathentry kind="src" path="chrome/android/third_party/compositor_animator/java/src"/>

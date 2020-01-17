@@ -154,13 +154,9 @@ View::~View() {
 
 // Tree operations -------------------------------------------------------------
 
-const Widget* View::GetWidget() const {
+const Widget* View::GetWidgetImpl() const {
   // The root view holds a reference to this view hierarchy's Widget.
   return parent_ ? parent_->GetWidget() : nullptr;
-}
-
-Widget* View::GetWidget() {
-  return const_cast<Widget*>(const_cast<const View*>(this)->GetWidget());
 }
 
 void View::ReorderChildView(View* view, int index) {

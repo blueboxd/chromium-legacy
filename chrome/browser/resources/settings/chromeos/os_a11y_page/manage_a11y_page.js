@@ -24,7 +24,7 @@ Polymer({
     screenMagnifierZoomOptions_: {
       readOnly: true,
       type: Array,
-      value: function() {
+      value() {
         // These values correspond to the i18n values in settings_strings.grdp.
         // If these values get changed then those strings need to be changed as
         // well.
@@ -46,7 +46,7 @@ Polymer({
     autoClickDelayOptions_: {
       readOnly: true,
       type: Array,
-      value: function() {
+      value() {
         // These values correspond to the i18n values in settings_strings.grdp.
         // If these values get changed then those strings need to be changed as
         // well.
@@ -72,7 +72,7 @@ Polymer({
     autoClickMovementThresholdOptions_: {
       readOnly: true,
       type: Array,
-      value: function() {
+      value() {
         return [
           {
             value: 5,
@@ -100,7 +100,7 @@ Polymer({
 
     showExperimentalSwitchAccess_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean(
             'showExperimentalAccessibilitySwitchAccess');
       },
@@ -109,7 +109,7 @@ Polymer({
     /** @private */
     isGuest_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isGuest');
       }
     },
@@ -136,7 +136,7 @@ Polymer({
   route_: settings.routes.MANAGE_ACCESSIBILITY,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'has-mouse-changed', this.set.bind(this, 'hasMouse_'));
     this.addWebUIListener(
@@ -149,7 +149,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'startup-sound-enabled-updated',
         this.updateStartupSoundEnabled_.bind(this));
@@ -171,7 +171,7 @@ Polymer({
    * @param {boolean} hasTouchpad
    * @private
    */
-  pointersChanged_: function(hasMouse, hasTouchpad) {
+  pointersChanged_(hasMouse, hasTouchpad) {
     this.$.pointerSubpageButton.hidden = !hasMouse && !hasTouchpad;
   },
 
@@ -188,7 +188,7 @@ Polymer({
    * @param {string} noKeyboardString String to show when there is no keyboard
    * @private
    */
-  getSelectToSpeakDescription_: function(
+  getSelectToSpeakDescription_(
       enabled, hasKeyboard, disabledString, keyboardString, noKeyboardString) {
     return !enabled ? disabledString :
                       hasKeyboard ? keyboardString : noKeyboardString;
@@ -198,7 +198,7 @@ Polymer({
    * @param {!CustomEvent<boolean>} e
    * @private
    */
-  toggleStartupSoundEnabled_: function(e) {
+  toggleStartupSoundEnabled_(e) {
     chrome.send('setStartupSoundEnabled', [e.detail]);
   },
 
@@ -206,58 +206,61 @@ Polymer({
    * @param {boolean} enabled
    * @private
    */
-  updateStartupSoundEnabled_: function(enabled) {
+  updateStartupSoundEnabled_(enabled) {
     this.$.startupSoundEnabled.checked = enabled;
   },
 
   /** @private */
-  onManageTtsSettingsTap_: function() {
-    settings.navigateTo(settings.routes.MANAGE_TTS_SETTINGS);
+  onManageTtsSettingsTap_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.MANAGE_TTS_SETTINGS);
   },
 
   /** @private */
-  onChromeVoxSettingsTap_: function() {
+  onChromeVoxSettingsTap_() {
     chrome.send('showChromeVoxSettings');
   },
 
   /** @private */
-  onCaptionsClick_: function() {
-    settings.navigateTo(settings.routes.MANAGE_CAPTION_SETTINGS);
+  onCaptionsClick_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.MANAGE_CAPTION_SETTINGS);
   },
 
   /** @private */
-  onSelectToSpeakSettingsTap_: function() {
+  onSelectToSpeakSettingsTap_() {
     chrome.send('showSelectToSpeakSettings');
   },
 
   /** @private */
-  onSwitchAccessSettingsTap_: function() {
-    settings.navigateTo(settings.routes.MANAGE_SWITCH_ACCESS_SETTINGS);
+  onSwitchAccessSettingsTap_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.MANAGE_SWITCH_ACCESS_SETTINGS);
   },
 
   /** @private */
-  onDisplayTap_: function() {
-    settings.navigateTo(
+  onDisplayTap_() {
+    settings.Router.getInstance().navigateTo(
         settings.routes.DISPLAY,
         /* dynamicParams */ null, /* removeSearch */ true);
   },
 
   /** @private */
-  onAppearanceTap_: function() {
+  onAppearanceTap_() {
     // Open browser appearance section in a new browser tab.
     window.open('chrome://settings/appearance');
   },
 
   /** @private */
-  onKeyboardTap_: function() {
-    settings.navigateTo(
+  onKeyboardTap_() {
+    settings.Router.getInstance().navigateTo(
         settings.routes.KEYBOARD,
         /* dynamicParams */ null, /* removeSearch */ true);
   },
 
   /** @private */
-  onMouseTap_: function() {
-    settings.navigateTo(
+  onMouseTap_() {
+    settings.Router.getInstance().navigateTo(
         settings.routes.POINTERS,
         /* dynamicParams */ null, /* removeSearch */ true);
   },

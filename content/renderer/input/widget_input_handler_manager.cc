@@ -565,7 +565,9 @@ void WidgetInputHandlerManager::HandleInputEvent(
     const ui::WebScopedInputEvent& event,
     const ui::LatencyInfo& latency,
     mojom::WidgetInputHandler::DispatchEventCallback callback) {
-  if (!render_widget_ || render_widget_->IsUndeadOrProvisional()) {
+  // Input messages must not be processed if the RenderWidget was destroyed or
+  // was just recreated for a provisional frame.
+  if (!render_widget_ || render_widget_->IsForProvisionalFrame()) {
     if (callback) {
       std::move(callback).Run(InputEventAckSource::MAIN_THREAD, latency,
                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt,

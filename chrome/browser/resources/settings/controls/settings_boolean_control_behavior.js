@@ -71,7 +71,7 @@ const SettingsBooleanControlBehaviorImpl = {
     'prefValueChanged_(pref.value)',
   ],
 
-  notifyChangedByUserInteraction: function() {
+  notifyChangedByUserInteraction() {
     this.fire('settings-boolean-control-change');
 
     if (!this.pref || this.noSetPref) {
@@ -81,12 +81,12 @@ const SettingsBooleanControlBehaviorImpl = {
   },
 
   /** Reset the checked state to match the current pref value. */
-  resetToPrefValue: function() {
+  resetToPrefValue() {
     this.checked = this.getNewValue_(this.pref.value);
   },
 
   /** Update the pref to the current |checked| value. */
-  sendPrefChange: function() {
+  sendPrefChange() {
     // Ensure that newValue is the correct type for the pref type, either
     // a boolean or a number.
     if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
@@ -102,7 +102,7 @@ const SettingsBooleanControlBehaviorImpl = {
    * @param {*} prefValue
    * @private
    */
-  prefValueChanged_: function(prefValue) {
+  prefValueChanged_(prefValue) {
     this.checked = this.getNewValue_(prefValue);
   },
 
@@ -111,7 +111,7 @@ const SettingsBooleanControlBehaviorImpl = {
    * @return {boolean} The value as a boolean, inverted if |inverted| is true.
    * @private
    */
-  getNewValue_: function(value) {
+  getNewValue_(value) {
     // For numeric prefs, the control is only false if the value is exactly
     // equal to the unchecked-equivalent value.
     if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
@@ -125,7 +125,7 @@ const SettingsBooleanControlBehaviorImpl = {
    * @return {boolean} Whether the control should be disabled.
    * @protected
    */
-  controlDisabled: function() {
+  controlDisabled() {
     return this.disabled || this.isPrefEnforced();
   },
 };

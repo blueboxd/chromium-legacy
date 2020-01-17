@@ -118,6 +118,8 @@ class DesksController::DeskAnimationBase
  public:
   ~DeskAnimationBase() override = default;
 
+  const Desk* ending_desk() const { return ending_desk_; }
+
   // Launches the animation. This should be done once all animators
   // are created and added to `desk_switch_animators_`. This is to avoid any
   // potential race conditions that might happen if one animator finished phase
@@ -200,8 +202,11 @@ class DesksController::DeskAnimationBase
   }
 
  protected:
-  explicit DeskAnimationBase(DesksController* controller)
-      : controller_(controller) {}
+  DeskAnimationBase(DesksController* controller, const Desk* ending_desk)
+      : controller_(controller), ending_desk_(ending_desk) {
+    DCHECK(controller_);
+    DCHECK(ending_desk_);
+  }
 
   // Abstract functions that can be overridden by child classes to do different
   // things when phase (1), and phase (3) completes. Note that
@@ -223,6 +228,9 @@ class DesksController::DeskAnimationBase
   // this list is cleared.
   std::vector<std::unique_ptr<RootWindowDeskSwitchAnimator>>
       desk_switch_animators_;
+
+  // The desk that will be active after this animation ends.
+  const Desk* const ending_desk_;
 
  private:
   // Computes the animation smoothness and reports an UMA stat for it.
@@ -249,7 +257,7 @@ class DesksController::DeskActivationAnimation
   DeskActivationAnimation(DesksController* controller,
                           const Desk* ending_desk,
                           bool move_left)
-      : DeskAnimationBase(controller) {
+      : DeskAnimationBase(controller, ending_desk) {
     for (auto* root : Shell::GetAllRootWindows()) {
       desk_switch_animators_.emplace_back(
           std::make_unique<RootWindowDeskSwitchAnimator>(root, ending_desk,
@@ -262,6 +270,7 @@ class DesksController::DeskActivationAnimation
 
   // DesksController::AbstractDeskSwitchAnimation:
   void OnStartingDeskScreenshotTakenInternal(const Desk* ending_desk) override {
+    DCHECK_EQ(ending_desk_, ending_desk);
     // The order here matters. Overview must end before ending tablet split view
     // before switching desks. (If clamshell split view is active on one or more
     // displays, then it simply will end when we end overview.) That's because
@@ -312,7 +321,7 @@ class DesksController::DeskRemovalAnimation
                        const Desk* desk_to_activate,
                        bool move_left,
                        DesksCreationRemovalSource source)
-      : DeskAnimationBase(controller),
+      : DeskAnimationBase(controller, desk_to_activate),
         desk_to_remove_(desk_to_remove),
         request_source_(source) {
     DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
@@ -330,6 +339,7 @@ class DesksController::DeskRemovalAnimation
 
   // DesksController::AbstractDeskSwitchAnimation:
   void OnStartingDeskScreenshotTakenInternal(const Desk* ending_desk) override {
+    DCHECK_EQ(ending_desk_, ending_desk);
     DCHECK_EQ(controller_->active_desk(), desk_to_remove_);
     // We are removing the active desk, which may have tablet split view active.
     // We will restore the split view state of the newly activated desk at the
@@ -391,6 +401,12 @@ DesksController::~DesksController() {
 // static
 DesksController* DesksController::Get() {
   return Shell::Get()->desks_controller();
+}
+
+const Desk* DesksController::GetTargetActiveDesk() const {
+  if (!animations_.empty())
+    return animations_.back()->ending_desk();
+  return active_desk();
 }
 
 void DesksController::Shutdown() {

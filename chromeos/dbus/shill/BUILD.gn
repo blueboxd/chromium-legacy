@@ -61,9 +61,7 @@ component("shill") {
 
 source_set("test_support") {
   testonly = true
-  public_deps = [
-    ":shill",
-  ]
+  public_deps = [ ":shill" ]
   deps = [
     "//base",
     "//base/test:test_support",

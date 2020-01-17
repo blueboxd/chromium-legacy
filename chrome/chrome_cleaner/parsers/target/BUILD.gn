@@ -31,9 +31,7 @@ static_library("parser_sandbox_target") {
 source_set("unittest_sources") {
   testonly = true
 
-  sources = [
-    "parser_impl_unittest.cc",
-  ]
+  sources = [ "parser_impl_unittest.cc" ]
   deps = [
     ":parser_sandbox_target",
     "//base",

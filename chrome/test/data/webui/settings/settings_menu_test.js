@@ -70,18 +70,21 @@ cr.define('settings_menu', function() {
       ironSelector.forceSynchronousItemUpdate();
 
       const urlParams = new URLSearchParams('search=foo');
-      settings.navigateTo(settings.routes.BASIC, urlParams);
+      settings.Router.getInstance().navigateTo(
+          settings.routes.BASIC, urlParams);
       assertEquals(
-          urlParams.toString(), settings.getQueryParameters().toString());
+          urlParams.toString(),
+          settings.Router.getInstance().getQueryParameters().toString());
       settingsMenu.$.people.click();
-      assertEquals('', settings.getQueryParameters().toString());
+      assertEquals(
+          '', settings.Router.getInstance().getQueryParameters().toString());
     });
   });
 
   suite('SettingsMenuReset', function() {
     setup(function() {
       PolymerTest.clearBody();
-      settings.navigateTo(settings.routes.RESET, '');
+      settings.Router.getInstance().navigateTo(settings.routes.RESET, '');
       settingsMenu = document.createElement('settings-menu');
       document.body.appendChild(settingsMenu);
     });
@@ -101,7 +104,7 @@ cr.define('settings_menu', function() {
       let path = new window.URL(selector.selected).pathname;
       assertEquals('/reset', path);
 
-      settings.navigateTo(settings.routes.PEOPLE, '');
+      settings.Router.getInstance().navigateTo(settings.routes.PEOPLE, '');
       Polymer.dom.flush();
 
       path = new window.URL(selector.selected).pathname;
@@ -113,7 +116,7 @@ cr.define('settings_menu', function() {
       const path = new window.URL(selector.selected).pathname;
       assertEquals('/reset', path);
 
-      settings.navigateTo(settings.routes.BASIC, '');
+      settings.Router.getInstance().navigateTo(settings.routes.BASIC, '');
       Polymer.dom.flush();
 
       // BASIC has no sub page selected.

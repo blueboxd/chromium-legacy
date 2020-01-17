@@ -55,6 +55,8 @@ class ProfileInfoCacheTest : public testing::Test {
   base::FilePath GetProfilePath(const std::string& base_name);
   void ResetCache();
   void RemoveObserver();
+  base::string16 GetConcatenation(const base::string16& gaia_name,
+                                  const base::string16 profile_name);
 
  private:
   // BrowserTaskEnvironment needs to be up through the destruction of the

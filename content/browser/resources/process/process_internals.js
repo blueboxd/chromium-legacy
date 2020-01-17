@@ -22,7 +22,7 @@ function selectTab(id) {
   for (let i = 0; i < tabContents.length; i++) {
     const tabContent = tabContents[i];
     const tabHeader = tabHeaders[i];
-    const isTargetTab = tabContent.id == id;
+    const isTargetTab = tabContent.id === id;
 
     found = found || isTargetTab;
     tabContent.classList.toggle('selected', isTargetTab);

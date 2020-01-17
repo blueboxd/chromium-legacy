@@ -27,14 +27,26 @@
       <include name="IDR_NEW_TAB_PAGE_CUSTOMIZE_DIALOG_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/customize_dialog.js"
           use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_CUSTOMIZE_SHORTCUTS_JS"
+          file="${root_gen_dir}/chrome/browser/resources/new_tab_page/customize_shortcuts.js"
+          use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_CUSTOMIZE_THEMES_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/customize_themes.js"
           use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_THEME_ICON_JS"
           file="${root_gen_dir}/chrome/browser/resources/new_tab_page/theme_icon.js"
           use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_GRID_JS"
+          file="${root_gen_dir}/chrome/browser/resources/new_tab_page/grid.js"
+          use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_ACCOUNT_CIRCLE_SVG"
+          file="icons/account_circle.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_BRUSH_ICON_SVG"
           file="icons/brush.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_CHECK_CIRCLE_SVG"
+          file="icons/check_circle.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_GENERIC_GLOBE_SVG"
+          file="icons/generic_globe.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_PENCIL_ICON_SVG"
           file="icons/icon_pencil.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_LINK_ICON_SVG"
@@ -45,6 +57,13 @@
           file="icons/colors.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_COLORIZE_ICON_SVG"
           file="icons/colorize.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_SHORTCUT_CIRCLES_SVG"
+          file="icons/shortcut_circles.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_HEADER_SVG"
+          file="icons/header.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_MINI_PAGE_JS"
+          file="${root_gen_dir}/chrome/browser/resources/new_tab_page/mini_page.js"
+          use_base_dir="false" type="BINDATA" compress="gzip" />
     </includes>
     <structures>
       <structure name="IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_HTML"

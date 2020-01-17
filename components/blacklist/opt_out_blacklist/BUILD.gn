@@ -13,9 +13,7 @@ static_library("opt_out_blacklist") {
     "opt_out_store.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {

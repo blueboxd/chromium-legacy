@@ -21,20 +21,14 @@ jumbo_source_set("latency") {
     "//ui/gfx",
   ]
 
-  public_deps = [
-    "//services/metrics/public/cpp:metrics_cpp",
-  ]
+  public_deps = [ "//services/metrics/public/cpp:metrics_cpp" ]
 }
 
 jumbo_source_set("test_support") {
   testonly = true
-  sources = [
-    "latency_info_test_support.cc",
-  ]
+  sources = [ "latency_info_test_support.cc" ]
 
-  public_deps = [
-    ":latency",
-  ]
+  public_deps = [ ":latency" ]
 }
 
 test("latency_unittests") {

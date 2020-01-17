@@ -37,7 +37,7 @@ Polymer({
    * Updates the input string when the setting has been initialized.
    * @private
    */
-  onSettingsChanged_: function() {
+  onSettingsChanged_() {
     const copies = this.getSetting('copies');
     if (this.inputValid_) {
       this.currentValue_ = /** @type {string} */ (copies.value.toString());
@@ -51,7 +51,7 @@ Polymer({
    * and current value of the copies input.
    * @private
    */
-  onInputChanged_: function() {
+  onInputChanged_() {
     if (this.currentValue_ !== '' &&
         this.currentValue_ !== this.getSettingValue('copies').toString()) {
       this.setSetting(
@@ -64,13 +64,13 @@ Polymer({
    * @return {boolean} Whether collate checkbox should be hidden.
    * @private
    */
-  collateHidden_: function() {
+  collateHidden_() {
     return !this.inputValid_ || this.currentValue_ === '' ||
         parseInt(this.currentValue_, 10) === 1;
   },
 
   /** @private */
-  onCollateChange_: function() {
+  onCollateChange_() {
     this.setSetting('collate', this.$.collate.checked);
   },
 });

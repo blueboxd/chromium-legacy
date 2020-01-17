@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.ui.widget.ViewResourceFrameLayout
+<org.chromium.components.browser_ui.widget.ViewResourceFrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/status_indicator"
     android:layout_width="match_parent"
@@ -18,4 +18,4 @@
         android:minHeight="20dp"
         android:textAlignment="center"
         android:drawablePadding="8dp" />
-</org.chromium.chrome.browser.ui.widget.ViewResourceFrameLayout>
+</org.chromium.components.browser_ui.widget.ViewResourceFrameLayout>

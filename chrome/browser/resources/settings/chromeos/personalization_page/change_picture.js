@@ -59,7 +59,7 @@ Polymer({
      */
     cameraVideoModeEnabled_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('changePictureVideoModeEnabled');
       },
       readOnly: true,
@@ -87,14 +87,14 @@ Polymer({
   oldImagePending_: false,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = settings.ChangePictureBrowserProxyImpl.getInstance();
     this.pictureList_ =
         /** @type {CrPictureListElement} */ (this.$.pictureList);
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'default-images-changed', this.receiveDefaultImages_.bind(this));
     this.addWebUIListener(
@@ -109,7 +109,7 @@ Polymer({
 
 
   /** @protected */
-  currentRouteChanged: function(newRoute) {
+  currentRouteChanged(newRoute) {
     if (newRoute == settings.routes.CHANGE_PICTURE) {
       this.browserProxy_.initialize();
       this.browserProxy_.requestSelectedImage();
@@ -125,7 +125,7 @@ Polymer({
    * @param {{first: number, images: !Array<!settings.DefaultImage>}} info
    * @private
    */
-  receiveDefaultImages_: function(info) {
+  receiveDefaultImages_(info) {
     this.defaultImages_ = info.images;
     this.firstDefaultImageIndex_ = info.first;
   },
@@ -136,7 +136,7 @@ Polymer({
    * @param {string} imageUrl
    * @private
    */
-  receiveSelectedImage_: function(imageUrl) {
+  receiveSelectedImage_(imageUrl) {
     this.pictureList_.setSelectedImageUrl(imageUrl);
   },
 
@@ -148,7 +148,7 @@ Polymer({
    * @param {!{url: string, index: number}} imageInfo
    * @private
    */
-  receiveOldImage_: function(imageInfo) {
+  receiveOldImage_(imageInfo) {
     this.oldImageLabel_ = this.i18n(
         CrPngBehavior.isEncodedPngDataUrlAnimated(imageInfo.url) ? 'oldVideo' :
                                                                    'oldPhoto');
@@ -162,7 +162,7 @@ Polymer({
    * @param {boolean} selected
    * @private
    */
-  receiveProfileImage_: function(imageUrl, selected) {
+  receiveProfileImage_(imageUrl, selected) {
     this.pictureList_.setProfileImageUrl(imageUrl, selected);
   },
 
@@ -171,7 +171,7 @@ Polymer({
    * @param {boolean} cameraPresent
    * @private
    */
-  receiveCameraPresence_: function(cameraPresent) {
+  receiveCameraPresence_(cameraPresent) {
     this.cameraPresent_ = cameraPresent;
   },
 
@@ -180,7 +180,7 @@ Polymer({
    * @param {!CrPicture.ImageElement} image
    * @private
    */
-  selectImage_: function(image) {
+  selectImage_(image) {
     switch (image.dataset.type) {
       case CrPicture.SelectionTypes.CAMERA:
         /** CrPicturePaneElement */ (this.$.picturePane).takePhoto();
@@ -212,12 +212,12 @@ Polymer({
    * @param {!CustomEvent<!CrPicture.ImageElement>} event
    * @private
    */
-  onImageActivate_: function(event) {
+  onImageActivate_(event) {
     this.selectImage_(event.detail);
   },
 
   /** Focus the action button in the picture pane. */
-  onFocusAction_: function() {
+  onFocusAction_() {
     /** CrPicturePaneElement */ (this.$.picturePane).focusActionButton();
   },
 
@@ -225,7 +225,7 @@ Polymer({
    * @param {!CustomEvent<{photoDataUrl: string}>} event
    * @private
    */
-  onPhotoTaken_: function(event) {
+  onPhotoTaken_(event) {
     this.oldImagePending_ = true;
     this.browserProxy_.photoTaken(event.detail.photoDataUrl);
     this.pictureList_.setOldImageUrl(event.detail.photoDataUrl);
@@ -238,7 +238,7 @@ Polymer({
    * @param {!CustomEvent<boolean>} event
    * @private
    */
-  onSwitchMode_: function(event) {
+  onSwitchMode_(event) {
     const videomode = event.detail;
     announceAccessibleMessage(this.i18n(
         videomode ? 'videoModeAccessibleText' : 'photoModeAccessibleText'));
@@ -256,7 +256,7 @@ Polymer({
   },
 
   /** @private */
-  onDiscardImage_: function() {
+  onDiscardImage_() {
     // Prevent image from being discarded if old image is pending.
     if (this.oldImagePending_) {
       return;
@@ -272,7 +272,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getImageSrc_: function(selectedItem) {
+  getImageSrc_(selectedItem) {
     return (selectedItem && selectedItem.dataset.url) || '';
   },
 
@@ -281,7 +281,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getImageType_: function(selectedItem) {
+  getImageType_(selectedItem) {
     return (selectedItem && selectedItem.dataset.type) ||
         CrPicture.SelectionTypes.NONE;
   },
@@ -301,7 +301,7 @@ Polymer({
    * @return {boolean} True if the author credit text is shown.
    * @private
    */
-  isAuthorCreditShown_: function(selectedItem) {
+  isAuthorCreditShown_(selectedItem) {
     return !!selectedItem &&
         (selectedItem.dataset.type == CrPicture.SelectionTypes.DEFAULT ||
          (selectedItem.dataset.imageIndex !== undefined &&
@@ -315,7 +315,7 @@ Polymer({
    *     string is returned if there is no valid author name.
    * @private
    */
-  getAuthorCredit_: function(selectedItem, defaultImages) {
+  getAuthorCredit_(selectedItem, defaultImages) {
     const index = selectedItem ? selectedItem.dataset.imageIndex : undefined;
     if (index === undefined || index < 0 || index >= defaultImages.length) {
       return '';
@@ -331,7 +331,7 @@ Polymer({
    *     string is returned if there is no valid author name.
    * @private
    */
-  getAuthorWebsite_: function(selectedItem, defaultImages) {
+  getAuthorWebsite_(selectedItem, defaultImages) {
     const index = selectedItem ? selectedItem.dataset.imageIndex : undefined;
     if (index === undefined || index < 0 || index >= defaultImages.length) {
       return '';

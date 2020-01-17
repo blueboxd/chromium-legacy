@@ -16,6 +16,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/gpu/metal_context_provider.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
@@ -315,11 +316,17 @@ void GpuServiceImpl::InitializeWithHost(
   }
 
   if (!shared_image_manager) {
-    // The shared image will be only used on GPU main thread, so it doesn't need
-    // to be thread safe.
-    owned_shared_image_manager_ =
-        std::make_unique<gpu::SharedImageManager>(false /* thread_safe */);
+    // When using real buffers for testing overlay configurations, we need
+    // access to SharedImageManager on the viz thread to obtain the buffer
+    // corresponding to a mailbox.
+    bool thread_safe_manager = features::ShouldUseRealBuffersForPageFlipTest();
+    owned_shared_image_manager_ = std::make_unique<gpu::SharedImageManager>(
+        thread_safe_manager, false /* display_context_on_another_thread */);
     shared_image_manager = owned_shared_image_manager_.get();
+  } else {
+    // With this feature enabled, we don't expect to receive an external
+    // SharedImageManager.
+    DCHECK(!features::ShouldUseRealBuffersForPageFlipTest());
   }
 
   shutdown_event_ = shutdown_event;

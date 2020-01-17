@@ -21,13 +21,13 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onShowPowerwashDialog_: function(e) {
+  onShowPowerwashDialog_(e) {
     e.preventDefault();
     this.showPowerwashDialog_ = true;
   },
 
   /** @private */
-  onPowerwashDialogClose_: function() {
+  onPowerwashDialogClose_() {
     this.showPowerwashDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$.powerwash));
   },

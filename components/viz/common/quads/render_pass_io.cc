@@ -376,7 +376,7 @@ std::string PaintFilterToString(const sk_sp<cc::PaintFilter>& filter) {
   // constraints explicitly disable serializing images using the transfer cache
   // and serialization of PaintRecords.
   cc::PaintOp::SerializeOptions options(nullptr, nullptr, nullptr, nullptr,
-                                        nullptr, nullptr, false, false, 0, 0.f,
+                                        nullptr, nullptr, false, false, 0,
                                         SkMatrix::I());
   cc::PaintOpWriter writer(buffer.data(), buffer.size(), options,
                            true /* enable_security_constraints */);
@@ -614,6 +614,7 @@ const char* ColorSpaceTransferIdToString(gfx::ColorSpace::TransferID id) {
     MATCH_ENUM_CASE(TransferID, LINEAR_HDR)
     MATCH_ENUM_CASE(TransferID, CUSTOM)
     MATCH_ENUM_CASE(TransferID, CUSTOM_HDR)
+    MATCH_ENUM_CASE(TransferID, PIECEWISE_HDR)
   }
 }
 
@@ -693,6 +694,7 @@ uint8_t StringToColorSpaceTransferId(const std::string& token) {
   MATCH_ENUM_CASE(TransferID, LINEAR_HDR)
   MATCH_ENUM_CASE(TransferID, CUSTOM)
   MATCH_ENUM_CASE(TransferID, CUSTOM_HDR)
+  MATCH_ENUM_CASE(TransferID, PIECEWISE_HDR)
   return -1;
 }
 

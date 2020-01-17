@@ -7,11 +7,11 @@ Polymer({
   is: 'add-printer-dialog',
 
   /** @private */
-  attached: function() {
+  attached() {
     this.$.dialog.showModal();
   },
 
-  close: function() {
+  close() {
     this.$.dialog.close();
   },
 });

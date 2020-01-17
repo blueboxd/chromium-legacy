@@ -47,6 +47,10 @@ bool Value::operator>(const Value& rhs) const {
   return value_ > rhs.value_;
 }
 
+bool Value::operator>=(const Value& rhs) const {
+  return value_ >= rhs.value_;
+}
+
 std::ostream& operator<<(std::ostream& out, const Value& value) {
   return out << value.value_;
 }

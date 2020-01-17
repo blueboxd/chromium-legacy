@@ -67,7 +67,12 @@ def GetResourceWhitelistPDB(path):
     if '`' not in line:
       continue
     sym_name = line[line.find('`') + 1:line.rfind('`')]
-    if 'WhitelistedResource' in sym_name:
+    # Under certain conditions such as the GN arg `use_clang_coverage = true` it
+    # is possible for the compiler to emit additional symbols that do not match
+    # the standard mangled-name format.
+    # Example: __profd_??$WhitelistedResource@$0BGPH@@ui@@YAXXZ
+    # C++ mangled names are supposed to begin with `?`, so check for that.
+    if 'WhitelistedResource' in sym_name and sym_name.startswith('?'):
       names += sym_name + '\n'
   exit_code = pdbutil.wait()
   if exit_code != 0:

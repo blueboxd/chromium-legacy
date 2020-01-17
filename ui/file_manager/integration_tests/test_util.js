@@ -48,7 +48,7 @@ function wait(time) {
  * Verifies if there are no Javascript errors in the given app window by
  * asserting the count returned by the app.getErrorCount remote call.
  * @param {!RemoteCall} app RemoteCall interface to the app window.
- * @param {function()} callback Completion callback.
+ * @param {function()=} callback Completion callback.
  * @return {Promise} Promise to be fulfilled on completion.
  */
 async function checkIfNoErrorsOccuredOnApp(app, callback) {
@@ -113,11 +113,11 @@ function getCaller() {
 
 /**
  * Returns a pending marker. See also the repeatUntil function.
- * @param {string} name of test function that originated the operation,
+ * @param {string} caller name of test function that originated the operation,
  *     it's the return of getCaller() function.
  * @param {string} message Pending reason including %s, %d, or %j markers. %j
  *     format an object as JSON.
- * @param {Array<*>} var_args Values to be assigined to %x markers.
+ * @param {...*} var_args Values to be assigined to %x markers.
  * @return {Object} Object which returns true for the expression: obj instanceof
  *     pending.
  */
@@ -149,7 +149,7 @@ function pending(caller, message, var_args) {
  * Waits until the checkFunction returns a value but a pending marker.
  * @param {function():*} checkFunction Function to check a condition. It can
  *     return a pending marker created by a pending function.
- * @return {Promise} Promise to be fulfilled with the return value of
+ * @return {!Promise} Promise to be fulfilled with the return value of
  *     checkFunction when the checkFunction reutrns a value but a pending
  *     marker.
  */
@@ -230,7 +230,8 @@ function waitForAppWindowCount(appId, expectedCount) {
   const command = {'name': 'countAppWindows', 'appId': appId};
   return repeatUntil(async () => {
     if (await sendTestMessage(command) != expectedCount) {
-      return pending(caller, 'waitForAppWindowCount ' + appId + ' ' + result);
+      return pending(
+          caller, 'waitForAppWindowCount ' + appId + ' ' + expectedCount);
     }
     return true;
   });
@@ -263,7 +264,7 @@ async function getBrowserWindows() {
  */
 async function addEntries(volumeNames, entries, opt_callback) {
   if (volumeNames.length == 0) {
-    callback(true);
+    opt_callback && opt_callback(true);
     return;
   }
   const volumeResultPromises = volumeNames.map(function(volume) {
@@ -289,33 +290,38 @@ async function addEntries(volumeNames, entries, opt_callback) {
  * @enum {string}
  * @const
  */
-const EntryType = Object.freeze({
+const EntryType = {
   FILE: 'file',
   DIRECTORY: 'directory',
   LINK: 'link',
   SHARED_DRIVE: 'team_drive',
   COMPUTER: 'Computer'
-});
+};
+Object.freeze(EntryType);
 
 /**
  * @enum {string}
  * @const
  */
-const SharedOption = Object.freeze({
+
+const SharedOption = {
   NONE: 'none',
   SHARED: 'shared',
   SHARED_WITH_ME: 'sharedWithMe',
   NESTED_SHARED_WITH_ME: 'nestedSharedWithMe',
-});
+};
+Object.freeze(SharedOption);
 
 /**
  * @enum {string}
  */
-const RootPath = Object.seal({
+
+const RootPath = {
   DOWNLOADS: '/must-be-filled-in-test-setup',
   DRIVE: '/must-be-filled-in-test-setup',
   ANDROID_FILES: '/must-be-filled-in-test-setup',
-});
+};
+Object.seal(RootPath);
 
 
 /**
@@ -323,130 +329,79 @@ const RootPath = Object.seal({
  * TestEntryCapabilities in file_manager_browsertest_base.cc. All capabilities
  * default to true if not specified.
  *
- * @record
- * @struct
+ * @typedef {{
+ *    canCopy: (boolean|undefined),
+ *    canDelete: (boolean|undefined),
+ *    canRename: (boolean|undefined),
+ *    canAddChildren: (boolean|undefined),
+ *    canShare: (boolean|undefined),
+ * }}
  */
-function TestEntryCapabilities() {}
-
-/**
- * @type {boolean|undefined}
- */
-TestEntryCapabilities.prototype.canCopy = true;
-
-/**
- * @type {boolean|undefined}
- */
-TestEntryCapabilities.prototype.canDelete = true;
-
-/**
- * @type {boolean|undefined}
- */
-TestEntryCapabilities.prototype.canRename = true;
-
-/**
- * @type {boolean|undefined}
- */
-TestEntryCapabilities.prototype.canAddChildren = true;
-
-/**
- * @type {boolean|undefined}
- */
-TestEntryCapabilities.prototype.canShare = true;
+let TestEntryCapabilities;
 
 /**
  * The folder features for the test entry. Structure should match
  * TestEntryFolderFeature in file_manager_browsertest_base.cc. All features
  * default to false is not specified.
  *
- * @record
- * @struct
+ * @typedef {{
+ *    isMachineRoot: (boolean|undefined),
+ *    isArbitrarySyncFolder: (boolean|undefined),
+ *    isExternalMedia: (boolean|undefined),
+ * }}
  */
-function TestEntryFolderFeature() {}
-
-/**
- * @type {boolean|undefined}
- */
-TestEntryFolderFeature.prototype.isMachineRoot = false;
-
-/**
- * @type {boolean|undefined}
- */
-TestEntryFolderFeature.prototype.isArbitrarySyncFolder = false;
-
-/**
- * @type {boolean|undefined}
- */
-TestEntryFolderFeature.prototype.isExternalMedia = false;
+let TestEntryFolderFeature;
 
 /**
  * Parameters to creat a Test Entry in the file manager. Structure should match
  * TestEntryInfo in file_manager_browsertest_base.cc.
  *
- * @record
- * @struct
+ * Field details:
+ *
+ * sourceFileName: Source file name that provides file contents (file location
+ * relative to /chrome/test/data/chromeos/file_manager/).
+ *
+ * targetPath: Name of entry on the test file system. Used to determine the
+ * actual name of the file.
+ *
+ * teamDriveName: Name of the team drive this entry is in. Defaults to a blank
+ * string (no team drive). Team Drive names must be unique.
+ *
+ * computerName: Name of the computer this entry is in. Defaults to a blank
+ * string (no computer). Computer names must be unique.
+ *
+ * lastModifiedTime: Last modified time as a text to be shown in the last
+ * modified column.
+ *
+ * nameText: File name to be shown in the name column.
+ *
+ * sizeText: Size text to be shown in the size column.
+ *
+ * typeText: Type name to be shown in the type column.
+ *
+ * capabilities:  Capabilities of this file. Defaults to all capabilities
+ * available (read-write access).
+ *
+ * folderFeature: Folder features of this file. Defaults to all features
+ * disabled.
+ *
+ * @typedef {{
+ *    type: EntryType,
+ *    sourceFileName: (string|undefined),
+ *    targetPath: (string|undefined),
+ *    teamDriveName: (string|undefined),
+ *    computerName: (string|undefined),
+ *    mimeType: (string|undefined),
+ *    sharedOption: (SharedOption|undefined),
+ *    lastModifiedTime: (string|undefined),
+ *    nameText: (string|undefined),
+ *    sizeText: (string|undefined),
+ *    typeText: (string|undefined),
+ *    capabilities: (TestEntryCapabilities|undefined),
+ *    folderFeature: (TestEntryFolderFeature|undefined),
+ * }}
  */
-function TestEntryInfoOptions() {}
-
-/**
- * @type {EntryType} Entry type.
- */
-TestEntryInfoOptions.prototype.type;
-/**
- * @type {string|undefined} Source file name that provides file contents
- *     (file location relative to /chrome/test/data/chromeos/file_manager/).
- */
-TestEntryInfoOptions.prototype.sourceFileName;
-/**
- * @type {string} Name of entry on the test file system. Used to determine the
- *     actual name of the file.
- */
-TestEntryInfoOptions.prototype.targetPath;
-/**
- * @type {string} Name of the team drive this entry is in. Defaults to a blank
- *     string (no team drive). Team Drive names must be unique.
- */
-TestEntryInfoOptions.prototype.teamDriveName;
-/**
- * @type {string} Name of the computer this entry is in. Defaults to a blank
- *     string (no computer). Computer names must be unique.
- */
-TestEntryInfoOptions.prototype.computerName;
-/**
- * @type {string|undefined} Mime type.
- */
-TestEntryInfoOptions.prototype.mimeType;
-/**
- * @type {SharedOption|undefined} Shared option. Defaults to NONE (not shared).
- */
-TestEntryInfoOptions.prototype.sharedOption;
-/**
- * @type {string} Last modified time as a text to be shown in the last modified
- *     column.
- */
-TestEntryInfoOptions.prototype.lastModifiedTime;
-/**
- * @type {string} File name to be shown in the name column.
- */
-TestEntryInfoOptions.prototype.nameText;
-/**
- * @type {string} Size text to be shown in the size column.
- */
-TestEntryInfoOptions.prototype.sizeText;
-/**
- * @type {string} Type name to be shown in the type column.
- */
-TestEntryInfoOptions.prototype.typeText;
-/**
- * @type {TestEntryCapabilities|undefined} Capabilities of this file. Defaults
- *     to all capabilities available (read-write access).
- */
-TestEntryInfoOptions.prototype.capabilities;
-
-/**
- * @type {TestEntryFolderFeature|undefined} Foder features of this file.
- *     Defaults to all features disabled.
- */
-TestEntryInfoOptions.prototype.folderFeature;
+let TestEntryInfoOptions;
 
 /**
  * File system entry information for tests. Structure should match TestEntryInfo
@@ -454,6 +409,7 @@ TestEntryInfoOptions.prototype.folderFeature;
  * TODO(sashab): Remove this, rename TestEntryInfoOptions to TestEntryInfo and
  * set the defaults in the record definition above.
  *
+ * @constructor
  * @param {TestEntryInfoOptions} options Parameters to create the TestEntryInfo.
  */
 function TestEntryInfo(options) {
@@ -1346,11 +1302,12 @@ const ENTRIES = {
  * @return {!Promise<number>} A promise fulfilled with the count.
  */
 async function getHistogramCount(name, value) {
-  return JSON.parse(await sendTestMessage({
+  const result = await sendTestMessage({
     'name': 'getHistogramCount',
     'histogramName': name,
     'value': value,
-  }));
+  });
+  return /** @type {number} */ (JSON.parse(result));
 }
 
 /**
@@ -1359,27 +1316,9 @@ async function getHistogramCount(name, value) {
  * @return {!Promise<number>} A promise fulfilled with the count.
  */
 async function getUserActionCount(name) {
-  return JSON.parse(await sendTestMessage({
+  const result = await sendTestMessage({
     'name': 'getUserActionCount',
     'userActionName': name,
-  }));
-}
-
-/**
- * Simulate Click in the UI in the middle of the element.
- * @param{string} appId ID of the app that contains the element. NOTE: The click
- *     is simulated on most recent window in the window system.
- * @param {string|!Array<string>} query Query to the element to be clicked.
- * @return {!Promise} A promise fulfilled after the click event.
- */
-async function simulateUiClick(appId, query) {
-  const element =
-      await remoteCall.waitForElementStyles(appId, query, ['display']);
-  chrome.test.assertTrue(!!element, 'element for simulateUiClick not found');
-
-  // Find the middle of the element.
-  const x = Math.floor(element.renderedLeft + (element.renderedWidth / 2));
-  const y = Math.floor(element.renderedTop + (element.renderedHeight / 2));
-
-  return sendTestMessage({name: 'simulateClick', 'clickX': x, 'clickY': y});
+  });
+  return /** @type {number} */ (JSON.parse(result));
 }

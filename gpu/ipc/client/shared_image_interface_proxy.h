@@ -59,6 +59,9 @@ class SharedImageInterfaceProxy : public SharedImageInterface {
   void ReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id) override;
 #endif  // defined(OS_FUCHSIA)
 
+  scoped_refptr<gfx::NativePixmap> GetNativePixmap(
+      const gpu::Mailbox& mailbox) override;
+
  private:
   bool GetSHMForPixelData(base::span<const uint8_t> pixel_data,
                           size_t* shm_offset,

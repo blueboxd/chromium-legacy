@@ -93,11 +93,13 @@ int GetLazyFrameLoadingViewportDistanceThresholdPx(const Document& document) {
 }  // namespace
 
 struct LazyLoadFrameObserver::LazyLoadRequestInfo {
-  LazyLoadRequestInfo(const ResourceRequest& resource_request,
+  LazyLoadRequestInfo(const ResourceRequest& passed_resource_request,
                       WebFrameLoadType frame_load_type)
-      : resource_request(resource_request), frame_load_type(frame_load_type) {}
+      : frame_load_type(frame_load_type) {
+    resource_request.CopyFrom(passed_resource_request);
+  }
 
-  const ResourceRequest resource_request;
+  ResourceRequest resource_request;
   const WebFrameLoadType frame_load_type;
 };
 

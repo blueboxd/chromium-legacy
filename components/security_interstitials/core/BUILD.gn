@@ -57,16 +57,12 @@ static_library("core") {
     "//ui/base",
   ]
 
-  public_deps = [
-    "//components/security_interstitials/core/common/mojom",
-  ]
+  public_deps = [ "//components/security_interstitials/core/common/mojom" ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "ssl_error_options_mask_unittest.cc",
-  ]
+  sources = [ "ssl_error_options_mask_unittest.cc" ]
 
   deps = [
     ":core",

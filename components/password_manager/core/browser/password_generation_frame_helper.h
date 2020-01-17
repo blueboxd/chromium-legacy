@@ -66,8 +66,7 @@ class PasswordGenerationFrameHelper {
       const GURL& last_committed_url,
       autofill::FormSignature form_signature,
       autofill::FieldSignature field_signature,
-      uint32_t max_length,
-      uint32_t* spec_priority);
+      uint32_t max_length);
 
  private:
   friend class PasswordGenerationFrameHelperTest;

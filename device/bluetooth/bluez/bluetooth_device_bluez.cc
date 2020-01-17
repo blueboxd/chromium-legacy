@@ -241,7 +241,8 @@ device::BluetoothTransport BluetoothDeviceBlueZ::GetType() const {
   return device::BLUETOOTH_TRANSPORT_INVALID;
 }
 
-void BluetoothDeviceBlueZ::CreateGattConnectionImpl() {
+void BluetoothDeviceBlueZ::CreateGattConnectionImpl(
+    base::Optional<BluetoothUUID> service_uuid) {
   // TODO(crbug.com/630586): Until there is a way to create a reference counted
   // GATT connection in bluetoothd, simply do a regular connect.
   Connect(nullptr,

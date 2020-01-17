@@ -47,9 +47,7 @@ cast_source_set("crash") {
 }
 
 cast_executable("crash_uploader") {
-  sources = [
-    "linux/crash_uploader.cc",
-  ]
+  sources = [ "linux/crash_uploader.cc" ]
 
   deps = [
     ":crash",

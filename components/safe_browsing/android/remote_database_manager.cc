@@ -18,6 +18,7 @@
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/resource_type.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using content::BrowserThread;

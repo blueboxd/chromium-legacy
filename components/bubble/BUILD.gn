@@ -15,9 +15,7 @@ static_library("bubble") {
     "bubble_ui.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 static_library("test_support") {
@@ -39,9 +37,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "bubble_manager_unittest.cc",
-  ]
+  sources = [ "bubble_manager_unittest.cc" ]
 
   deps = [
     ":bubble",

@@ -10,8 +10,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/features.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
@@ -328,7 +328,7 @@ void CanonicalizeDomainList(
 
 bool IsURLWhitelistedByPolicy(const GURL& url,
                               StringListPrefMember* pref_member) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   if (!pref_member)
     return false;
 
@@ -340,7 +340,7 @@ bool IsURLWhitelistedByPolicy(const GURL& url,
 }
 
 bool IsURLWhitelistedByPolicy(const GURL& url, const PrefService& pref) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   if (!pref.HasPrefPath(prefs::kSafeBrowsingWhitelistDomains))
     return false;
   const base::ListValue* whitelist =

@@ -84,6 +84,8 @@ if (is_win) {
 
   static_library("stability_common") {
     sources = [
+      "activity_tracker_annotation.cc",
+      "activity_tracker_annotation.h",
       "minidump_user_streams.h",
       "stability_report_extractor.cc",
       "stability_report_extractor.h",
@@ -93,6 +95,7 @@ if (is_win) {
       ":stability_report_proto",
       "//base",
       "//components/variations",
+      "//third_party/crashpad/crashpad/client:client",
       "//third_party/crashpad/crashpad/util",
     ]
   }
@@ -119,6 +122,7 @@ if (is_win) {
   source_set("unit_tests") {
     testonly = true
     sources = [
+      "activity_tracker_annotation_unittest.cc",
       "endsession_watcher_window_win_unittest.cc",
       "exit_code_watcher_win_unittest.cc",
       "postmortem_minidump_writer_win_unittest.cc",
@@ -140,6 +144,7 @@ if (is_win) {
       ":stability_report_proto",
       "//base",
       "//base/test:test_support",
+      "//components/crash/core/common:crash_key_lib",
       "//components/metrics:metrics",
       "//testing/gmock",
       "//testing/gtest",

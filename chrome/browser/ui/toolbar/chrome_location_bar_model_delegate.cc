@@ -113,14 +113,14 @@ bool ChromeLocationBarModelDelegate::ShouldDisplayURL() const {
     return true;
   }
 
+  const auto is_ntp = [](const GURL& url) {
+    return url.SchemeIs(content::kChromeUIScheme) &&
+           url.host() == chrome::kChromeUINewTabHost;
+  };
+
   GURL url = entry->GetURL();
-  GURL virtual_url = entry->GetVirtualURL();
-  if (url.SchemeIs(content::kChromeUIScheme) ||
-      virtual_url.SchemeIs(content::kChromeUIScheme)) {
-    if (!url.SchemeIs(content::kChromeUIScheme))
-      url = virtual_url;
-    return url.host() != chrome::kChromeUINewTabHost;
-  }
+  if (is_ntp(entry->GetVirtualURL()) || is_ntp(url))
+    return false;
 
   Profile* profile = GetProfile();
   return !profile || !search::IsInstantNTPURL(url, profile);

@@ -42,4 +42,9 @@ public interface ContextMenuPopulator {
      * @return       Whether or not the selection was handled.
      */
     public boolean onItemSelected(ContextMenuHelper helper, ContextMenuParams params, int itemId);
+
+    /**
+     * Called when the context menu is closed.
+     */
+    public void onMenuClosed();
 }

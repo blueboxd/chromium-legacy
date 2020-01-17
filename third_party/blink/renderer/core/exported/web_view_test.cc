@@ -120,6 +120,8 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/fake_web_plugin.h"
+#include "third_party/blink/renderer/core/testing/mock_clipboard_host.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/event_timing.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -1646,8 +1648,10 @@ TEST_F(WebViewTest, SetCompositionFromExistingText) {
       base_url_ + "input_field_populated.html");
   web_view->SetInitialFocus(false);
   WebVector<WebImeTextSpan> ime_text_spans(static_cast<size_t>(1));
-  ime_text_spans[0] = WebImeTextSpan(WebImeTextSpan::Type::kComposition, 0, 4,
-                                     ui::mojom::ImeTextSpanThickness::kThin, 0);
+  ime_text_spans[0] =
+      WebImeTextSpan(WebImeTextSpan::Type::kComposition, 0, 4,
+                     ui::mojom::ImeTextSpanThickness::kThin,
+                     ui::mojom::ImeTextSpanUnderlineStyle::kSolid, 0, 0);
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   WebInputMethodController* active_input_method_controller =
       frame->GetInputMethodController();
@@ -1673,8 +1677,10 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea) {
       base_url_ + "text_area_populated.html");
   web_view->SetInitialFocus(false);
   WebVector<WebImeTextSpan> ime_text_spans(static_cast<size_t>(1));
-  ime_text_spans[0] = WebImeTextSpan(WebImeTextSpan::Type::kComposition, 0, 4,
-                                     ui::mojom::ImeTextSpanThickness::kThin, 0);
+  ime_text_spans[0] =
+      WebImeTextSpan(WebImeTextSpan::Type::kComposition, 0, 4,
+                     ui::mojom::ImeTextSpanThickness::kThin,
+                     ui::mojom::ImeTextSpanUnderlineStyle::kSolid, 0, 0);
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   WebInputMethodController* active_input_method_controller =
       frame->FrameWidget()->GetActiveWebInputMethodController();
@@ -1714,8 +1720,10 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInRichText) {
       base_url_ + "content_editable_rich_text.html");
   web_view->SetInitialFocus(false);
   WebVector<WebImeTextSpan> ime_text_spans(static_cast<size_t>(1));
-  ime_text_spans[0] = WebImeTextSpan(WebImeTextSpan::Type::kComposition, 0, 4,
-                                     ui::mojom::ImeTextSpanThickness::kThin, 0);
+  ime_text_spans[0] =
+      WebImeTextSpan(WebImeTextSpan::Type::kComposition, 0, 4,
+                     ui::mojom::ImeTextSpanThickness::kThin,
+                     ui::mojom::ImeTextSpanUnderlineStyle::kSolid, 0, 0);
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetEditableSelectionOffsets(1, 1);
   WebDocument document = web_view->MainFrameImpl()->GetDocument();
@@ -3280,6 +3288,14 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
     UpdateAllLifecyclePhases();
     RunPendingTasks();
 
+    LocalFrame* local_frame =
+        To<WebLocalFrameImpl>(web_view->MainFrame())->GetFrame();
+
+    // Setup a mock clipboard.  On linux, middle click can paste from the
+    // clipboard, so the input handler below will access the clipboard.
+    PageTestBase::MockClipboardHostProvider mock_clip_host_provider(
+        local_frame->GetBrowserInterfaceBroker());
+
     WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
@@ -3295,9 +3311,6 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
         WebCoalescedInputEvent(mouse_event));
 
     EXPECT_EQ(current_test.expected_cursor, client.GetLastCursorType());
-
-    LocalFrame* local_frame =
-        To<WebLocalFrameImpl>(web_view->MainFrame())->GetFrame();
 
     // Even if a plugin tries to change the cursor type, that should be ignored
     // during middle-click autoscroll.
@@ -4396,8 +4409,8 @@ class MockUnhandledTapNotifierImpl : public mojom::blink::UnhandledTapNotifier {
     font_size_ = unhandled_tap_info->font_size_in_pixels;
   }
   bool WasUnhandledTap() const { return was_unhandled_tap_; }
-  int GetTappedXPos() const { return tapped_position_.X(); }
-  int GetTappedYPos() const { return tapped_position_.Y(); }
+  int GetTappedXPos() const { return tapped_position_.x(); }
+  int GetTappedYPos() const { return tapped_position_.y(); }
   int GetFontSize() const { return font_size_; }
   int GetElementTextRunLength() const { return element_text_run_length_; }
   void Reset() {
@@ -4410,7 +4423,7 @@ class MockUnhandledTapNotifierImpl : public mojom::blink::UnhandledTapNotifier {
 
  private:
   bool was_unhandled_tap_ = false;
-  IntPoint tapped_position_;
+  gfx::Point tapped_position_;
   int element_text_run_length_ = 0;
   int font_size_ = 0;
 

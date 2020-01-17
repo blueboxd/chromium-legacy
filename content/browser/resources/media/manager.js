@@ -177,8 +177,8 @@ var Manager = (function() {
       var formatDict = {};
       for (var i in parts) {
         var kv = parts[i].split(': ');
-        if (kv.length == 2) {
-          if (kv[0] == 'pixel format') {
+        if (kv.length === 2) {
+          if (kv[0] === 'pixel format') {
             // The camera does not actually output I420,
             // so this info is misleading.
             continue;
@@ -186,7 +186,7 @@ var Manager = (function() {
           formatDict[kv[0]] = kv[1];
         } else {
           kv = parts[i].split('@');
-          if (kv.length == 2) {
+          if (kv.length === 2) {
             formatDict['resolution'] = kv[0].replace(/[)(]/g, '');
             // Round down the FPS to 2 decimals.
             formatDict['fps'] =

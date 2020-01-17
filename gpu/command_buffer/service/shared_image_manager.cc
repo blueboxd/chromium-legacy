@@ -20,6 +20,10 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/trace_util.h"
 
+#if defined(OS_ANDROID)
+#include "gpu/command_buffer/service/shared_image_batch_access_manager.h"
+#endif
+
 #if DCHECK_IS_ON()
 #define CALLED_ON_VALID_THREAD()                      \
   do {                                                \
@@ -72,9 +76,15 @@ class SCOPED_LOCKABLE SharedImageManager::AutoLock {
   DISALLOW_COPY_AND_ASSIGN(AutoLock);
 };
 
-SharedImageManager::SharedImageManager(bool thread_safe) {
+SharedImageManager::SharedImageManager(bool thread_safe,
+                                       bool display_context_on_another_thread)
+    : display_context_on_another_thread_(display_context_on_another_thread) {
+  DCHECK(!display_context_on_another_thread || thread_safe);
   if (thread_safe)
     lock_.emplace();
+#if defined(OS_ANDROID)
+  batch_access_manager_ = std::make_unique<SharedImageBatchAccessManager>();
+#endif
   CALLED_ON_VALID_THREAD();
 }
 
@@ -323,6 +333,31 @@ void SharedImageManager::OnMemoryDump(const Mailbox& mailbox,
   // Allow the SharedImageBacking to attach additional data to the dump
   // or dump additional sub-paths.
   backing->OnMemoryDump(dump_name, dump, pmd, client_tracing_id);
+}
+
+scoped_refptr<gfx::NativePixmap> SharedImageManager::GetNativePixmap(
+    const gpu::Mailbox& mailbox) {
+  AutoLock autolock(this);
+  auto found = images_.find(mailbox);
+  if (found == images_.end())
+    return nullptr;
+  return (*found)->GetNativePixmap();
+}
+
+bool SharedImageManager::BeginBatchReadAccess() {
+#if defined(OS_ANDROID)
+  return batch_access_manager_->BeginBatchReadAccess();
+#else
+  return true;
+#endif
+}
+
+bool SharedImageManager::EndBatchReadAccess() {
+#if defined(OS_ANDROID)
+  return batch_access_manager_->EndBatchReadAccess();
+#else
+  return true;
+#endif
 }
 
 }  // namespace gpu

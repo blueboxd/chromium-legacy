@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -123,6 +125,7 @@ void ExistingTabGroupSubMenuModel::ExecuteCommand(int command_id,
                                                   int event_flags) {
   const int group_index = command_id - kFirstCommandIndex;
   DCHECK_LT(size_t{group_index}, model_->group_model()->ListTabGroups().size());
+  base::RecordAction(base::UserMetricsAction("TabContextMenu_NewTabInGroup"));
   model_->ExecuteAddToExistingGroupCommand(context_index_,
                                            GetOrderedTabGroups()[group_index]);
 }

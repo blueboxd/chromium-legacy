@@ -138,7 +138,7 @@ export function navigateTo(route, step) {
  */
 export const NavigationBehavior = {
   /** @override */
-  attached: function() {
+  attached() {
     assert(!routeObservers.has(this));
     routeObservers.add(this);
 
@@ -160,7 +160,7 @@ export const NavigationBehavior = {
   },
 
   /** Called to update focus when progressing through the modules. */
-  updateFocusForA11y: function() {
+  updateFocusForA11y() {
     const header = this.$$('h1');
     if (header) {
       afterNextRender(this, () => header.focus());
@@ -168,7 +168,7 @@ export const NavigationBehavior = {
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     assert(routeObservers.delete(this));
   },
 
@@ -176,11 +176,11 @@ export const NavigationBehavior = {
    * @param {!Routes} route
    * @param {number} step
    */
-  onRouteChange: function(route, step) {},
+  onRouteChange(route, step) {},
 
-  onRouteEnter: function() {},
+  onRouteEnter() {},
 
-  onRouteExit: function() {},
+  onRouteExit() {},
 
-  onRouteUnload: function() {},
+  onRouteUnload() {},
 };

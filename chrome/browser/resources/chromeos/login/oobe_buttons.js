@@ -33,20 +33,20 @@ Polymer({
     },
   },
 
-  focus: function() {
+  focus() {
     this.$.textButton.focus();
   },
 
-  onClick_: function(e) {
+  onClick_(e) {
     if (this.disabled)
       e.stopPropagation();
   },
 
-  onInverseChanged_: function() {
+  onInverseChanged_() {
     this.$.textButton.classList.toggle('action-button', this.inverse);
   },
 
-  ariaLabel_: function(labelForAria, locale, textKey) {
+  ariaLabel_(labelForAria, locale, textKey) {
     if ((typeof labelForAria !== 'undefined') && (labelForAria !== '')) {
       return labelForAria;
     }
@@ -79,7 +79,7 @@ Polymer({
     },
   },
 
-  focus: function() {
+  focus() {
     this.$.button.focus();
   },
 
@@ -87,7 +87,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onClick_: function(e) {
+  onClick_(e) {
     if (this.disabled) {
       e.stopPropagation();
     }
@@ -115,11 +115,11 @@ Polymer({
     },
   },
 
-  focus: function() {
+  focus() {
     this.$.button.focus();
   },
 
-  onClick_: function(e) {
+  onClick_(e) {
     if (this.disabled)
       e.stopPropagation();
   }
@@ -151,19 +151,19 @@ Polymer({
     },
   },
 
-  focus: function() {
+  focus() {
     this.$.button.focus();
   },
 
-  updateIconVisibility_: function() {
+  updateIconVisibility_() {
     this.$.icon.hidden = (this.icon1x === undefined || this.icon1x.length == 0);
   },
 
-  click: function() {
+  click() {
     this.$.button.click();
   },
 
-  ariaLabel_: function(labelForAria, locale, textKey) {
+  ariaLabel_(labelForAria, locale, textKey) {
     if ((typeof labelForAria !== 'undefined') && (labelForAria !== '')) {
       return labelForAria;
     }

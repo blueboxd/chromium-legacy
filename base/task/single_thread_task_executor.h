@@ -44,6 +44,12 @@ class BASE_EXPORT SingleThreadTaskExecutor {
 
   MessagePumpType type() const { return type_; }
 
+  // Sets the number of application tasks executed every time the MessagePump
+  // asks its delegate to DoWork(). Defaults to 1. Can be increased in some
+  // scenarios where the native pump (i.e. not MessagePumpType::DEFAULT) has
+  // high overhead and yielding to native isn't critical.
+  void SetWorkBatchSize(size_t work_batch_size);
+
  private:
   explicit SingleThreadTaskExecutor(MessagePumpType type,
                                     std::unique_ptr<MessagePump> pump);

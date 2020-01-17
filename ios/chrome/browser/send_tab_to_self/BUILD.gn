@@ -44,9 +44,7 @@ source_set("send_tab_to_self") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "send_tab_to_self_util_unittest.mm",
-  ]
+  sources = [ "send_tab_to_self_util_unittest.mm" ]
   deps = [
     ":send_tab_to_self",
     "//base",

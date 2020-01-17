@@ -4,6 +4,9 @@
 
 #include "chrome/browser/performance_manager/decorators/process_metrics_decorator.h"
 
+#include "base/feature_list.h"
+#include "build/build_config.h"
+#include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "components/performance_manager/graph/graph_impl.h"
 #include "components/performance_manager/graph/node_attached_data_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
@@ -14,8 +17,18 @@ namespace performance_manager {
 
 
 namespace {
-// The process metrics refresh interval.
-constexpr base::TimeDelta kRefreshTimerPeriod = base::TimeDelta::FromMinutes(2);
+
+// The default process metrics refresh interval.
+constexpr base::TimeDelta kDefaultRefreshTimerPeriod =
+    base::TimeDelta::FromMinutes(2);
+
+#if !defined(OS_ANDROID)
+// The fast process metrics refresh interval. Used in certain situations, see
+// the comment in ProcessMetricsDecorator::StartTimer for more details.
+constexpr base::TimeDelta kFastRefreshTimerPeriod =
+    base::TimeDelta::FromSeconds(20);
+#endif
+
 }  // namespace
 
 ProcessMetricsDecorator::ProcessMetricsDecorator() = default;
@@ -32,8 +45,20 @@ void ProcessMetricsDecorator::OnTakenFromGraph(Graph* graph) {
 }
 
 void ProcessMetricsDecorator::StartTimer() {
+  base::TimeDelta refresh_period = kDefaultRefreshTimerPeriod;
+
+#if !defined(OS_ANDROID)
+  // Bump the refresh frequency when urgent discarding is done from the graph as
+  // this relies on relatively fresh data.
+  // TODO(sebmarchand): Measure the performance impact of this.
+  if (base::FeatureList::IsEnabled(
+          features::kUrgentDiscardingFromPerformanceManager)) {
+    refresh_period = kFastRefreshTimerPeriod;
+  }
+#endif
+
   refresh_timer_.Start(
-      FROM_HERE, kRefreshTimerPeriod,
+      FROM_HERE, refresh_period,
       base::BindRepeating(&ProcessMetricsDecorator::RefreshMetrics,
                           base::Unretained(this)));
 }
@@ -50,6 +75,7 @@ void ProcessMetricsDecorator::RefreshMetrics() {
 void ProcessMetricsDecorator::RequestProcessesMemoryMetrics(
     memory_instrumentation::MemoryInstrumentation::RequestGlobalDumpCallback
         callback) {
+  // TODO(sebmarchand): Use the synchronous calls once they are available.
   auto* mem_instrumentation =
       memory_instrumentation::MemoryInstrumentation::GetInstance();
   // The memory instrumentation service is not available in unit tests unless

@@ -252,6 +252,9 @@ class FakeGaia {
   void HandleGetReAuthProofToken(
       const net::test_server::HttpRequest& request,
       net::test_server::BasicHttpResponse* http_response);
+  // HTTP handler for /OAuth/Multilogin.
+  void HandleMultilogin(const net::test_server::HttpRequest& request,
+                        net::test_server::BasicHttpResponse* http_response);
 
   // Returns the access token associated with |auth_token| that matches the
   // given |client_id| and |scope_string|. If |scope_string| is empty, the first

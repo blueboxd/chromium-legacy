@@ -12,6 +12,16 @@ namespace cros_healthd {
 FakeCrosHealthdService::FakeCrosHealthdService() = default;
 FakeCrosHealthdService::~FakeCrosHealthdService() = default;
 
+void FakeCrosHealthdService::GetProbeService(
+    mojom::CrosHealthdProbeServiceRequest service) {
+  probe_receiver_set_.Add(this, std::move(service));
+}
+
+void FakeCrosHealthdService::GetDiagnosticsService(
+    mojom::CrosHealthdDiagnosticsServiceRequest service) {
+  diagnostics_receiver_set_.Add(this, std::move(service));
+}
+
 void FakeCrosHealthdService::GetAvailableRoutines(
     GetAvailableRoutinesCallback callback) {
   std::move(callback).Run(available_routines_);

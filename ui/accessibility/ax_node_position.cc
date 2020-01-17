@@ -153,6 +153,14 @@ AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id,
   return nullptr;
 }
 
+int32_t AXNodePosition::GetAnchorID(AXNode* node) const {
+  return node->id();
+}
+
+AXTreeID AXNodePosition::GetTreeID(AXNode* node) const {
+  return node->tree()->GetAXTreeID();
+}
+
 base::string16 AXNodePosition::GetText() const {
   if (IsNullPosition())
     return {};

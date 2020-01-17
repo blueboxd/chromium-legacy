@@ -46,6 +46,7 @@
 #include "skia/public/mojom/skcolor.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
@@ -147,7 +148,9 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/fake_local_frame_host.h"
 #include "third_party/blink/renderer/core/testing/fake_remote_frame_host.h"
+#include "third_party/blink/renderer/core/testing/mock_clipboard_host.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -8421,19 +8424,21 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
       web_widget_client.layer_tree_host();
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
-
   Document* document = frame->GetDocument();
-  EXPECT_FALSE(document->IsImmersiveArOverlay());
-  document->SetIsImmersiveArOverlay(true);
-  EXPECT_TRUE(document->IsImmersiveArOverlay());
 
   Element* overlay = document->getElementById("overlay");
   EXPECT_FALSE(Fullscreen::IsFullscreenElement(*overlay));
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
 
-  // Fullscreen should work without separate user activation while in ArOverlay
-  // mode.
+  // It's not legal to switch the fullscreen element while in immersive-ar mode,
+  // so set the fullscreen element first before activating that. This requires
+  // user activation.
+  LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*overlay);
+  EXPECT_FALSE(document->IsImmersiveArOverlay());
+  document->SetIsImmersiveArOverlay(true);
+  EXPECT_TRUE(document->IsImmersiveArOverlay());
+
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_TRUE(Fullscreen::IsFullscreenElement(*overlay));
@@ -10536,21 +10541,30 @@ TEST_F(WebFrameTest, CopyImageDocument) {
 
   ASSERT_TRUE(document);
   EXPECT_TRUE(IsA<ImageDocument>(document));
-  EXPECT_TRUE(SystemClipboard::GetInstance().ReadAvailableTypes().IsEmpty());
+
+  // Setup a mock clipboard host.
+  PageTestBase::MockClipboardHostProvider mock_clipboard_host_provider(
+      web_frame->GetFrame()->GetBrowserInterfaceBroker());
+
+  SystemClipboard* system_clipboard =
+      document->GetFrame()->GetSystemClipboard();
+  ASSERT_TRUE(system_clipboard);
+
+  EXPECT_TRUE(system_clipboard->ReadAvailableTypes().IsEmpty());
 
   bool result = web_frame->ExecuteCommand("Copy");
   test::RunPendingTasks();
 
   EXPECT_TRUE(result);
 
-  Vector<String> types = SystemClipboard::GetInstance().ReadAvailableTypes();
+  Vector<String> types = system_clipboard->ReadAvailableTypes();
   EXPECT_EQ(2u, types.size());
   EXPECT_EQ("text/html", types[0]);
   EXPECT_EQ("image/png", types[1]);
 
   // Clear clipboard data
-  SystemClipboard::GetInstance().WritePlainText("");
-  SystemClipboard::GetInstance().CommitWrite();
+  system_clipboard->WritePlainText("");
+  system_clipboard->CommitWrite();
 }
 
 class CallbackOrderingWebFrameClient
@@ -10897,24 +10911,24 @@ TEST_F(WebFrameTest, SaveImageAt) {
   web_view->MainFrameWidget()->Resize(WebSize(400, 400));
   UpdateAllLifecyclePhases(web_view);
 
-  WebLocalFrame* local_frame = web_view->MainFrameImpl();
+  LocalFrame* local_frame = To<LocalFrame>(web_view->GetPage()->MainFrame());
 
   client.Reset();
-  local_frame->SaveImageAt(WebPoint(1, 1));
+  local_frame->SaveImageAt(gfx::Point(1, 1));
   EXPECT_EQ(
       WebString::FromUTF8("data:image/gif;base64"
                           ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
       client.Result());
 
   client.Reset();
-  local_frame->SaveImageAt(WebPoint(1, 2));
+  local_frame->SaveImageAt(gfx::Point(1, 2));
   EXPECT_EQ(WebString(), client.Result());
 
   web_view->SetPageScaleFactor(4);
   web_view->SetVisualViewportOffset(gfx::PointF(1, 1));
 
   client.Reset();
-  local_frame->SaveImageAt(WebPoint(3, 3));
+  local_frame->SaveImageAt(gfx::Point(3, 3));
   EXPECT_EQ(
       WebString::FromUTF8("data:image/gif;base64"
                           ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
@@ -10935,24 +10949,24 @@ TEST_F(WebFrameTest, SaveImageWithImageMap) {
   WebViewImpl* web_view = helper.InitializeAndLoad(url, &client);
   web_view->MainFrameWidget()->Resize(WebSize(400, 400));
 
-  WebLocalFrame* local_frame = web_view->MainFrameImpl();
+  LocalFrame* local_frame = To<LocalFrame>(web_view->GetPage()->MainFrame());
 
   client.Reset();
-  local_frame->SaveImageAt(WebPoint(25, 25));
+  local_frame->SaveImageAt(gfx::Point(25, 25));
   EXPECT_EQ(
       WebString::FromUTF8("data:image/gif;base64"
                           ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
       client.Result());
 
   client.Reset();
-  local_frame->SaveImageAt(WebPoint(75, 25));
+  local_frame->SaveImageAt(gfx::Point(75, 25));
   EXPECT_EQ(
       WebString::FromUTF8("data:image/gif;base64"
                           ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
       client.Result());
 
   client.Reset();
-  local_frame->SaveImageAt(WebPoint(125, 25));
+  local_frame->SaveImageAt(gfx::Point(125, 25));
   EXPECT_EQ(WebString(), client.Result());
 
   // Explicitly reset to break dependency on locally scoped client.
@@ -10972,22 +10986,22 @@ TEST_F(WebFrameTest, CopyImageWithImageMap) {
   web_view->MainFrameWidget()->Resize(WebSize(400, 400));
 
   client.Reset();
-  WebLocalFrame* local_frame = web_view->MainFrameImpl();
-  local_frame->SaveImageAt(WebPoint(25, 25));
+  LocalFrame* local_frame = To<LocalFrame>(web_view->GetPage()->MainFrame());
+  local_frame->SaveImageAt(gfx::Point(25, 25));
   EXPECT_EQ(
       WebString::FromUTF8("data:image/gif;base64"
                           ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
       client.Result());
 
   client.Reset();
-  local_frame->SaveImageAt(WebPoint(75, 25));
+  local_frame->SaveImageAt(gfx::Point(75, 25));
   EXPECT_EQ(
       WebString::FromUTF8("data:image/gif;base64"
                           ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
       client.Result());
 
   client.Reset();
-  local_frame->SaveImageAt(WebPoint(125, 25));
+  local_frame->SaveImageAt(gfx::Point(125, 25));
   EXPECT_EQ(WebString(), client.Result());
   // Explicitly reset to break dependency on locally scoped client.
   helper.Reset();
@@ -12816,6 +12830,10 @@ TEST_F(WebFrameTest, ExecuteCommandProducesUserGesture) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad("about:blank");
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
+
+  // Setup a mock clipboard host.
+  PageTestBase::MockClipboardHostProvider mock_clipboard_host_provider(
+      frame->GetFrame()->GetBrowserInterfaceBroker());
 
   EXPECT_FALSE(frame->GetFrame()->HasStickyUserActivation());
   frame->ExecuteScript(WebScriptSource(WebString("document.execCommand('copy');")));

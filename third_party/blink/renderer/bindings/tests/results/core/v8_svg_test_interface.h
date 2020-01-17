@@ -55,12 +55,6 @@ class V8SVGTestInterface {
 };
 
 template <>
-struct NativeValueTraits<SVGTestInterface> : public NativeValueTraitsBase<SVGTestInterface> {
-  CORE_EXPORT static SVGTestInterface* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static SVGTestInterface* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<SVGTestInterface> {
   typedef V8SVGTestInterface Type;
 };

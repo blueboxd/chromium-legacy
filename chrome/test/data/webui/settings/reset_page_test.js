@@ -117,7 +117,7 @@ cr.define('settings_reset_page', function() {
     }
 
     test(TestNames.ResetProfileDialogOriginUnknown, function() {
-      settings.navigateTo(settings.routes.RESET_DIALOG);
+      settings.Router.getInstance().navigateTo(settings.routes.RESET_DIALOG);
       return resetPageBrowserProxy.whenCalled('onShowResetProfileDialog')
           .then(function() {
             return testResetRequestOrigin('');
@@ -133,7 +133,8 @@ cr.define('settings_reset_page', function() {
     });
 
     test(TestNames.ResetProfileDialogOriginTriggeredReset, function() {
-      settings.navigateTo(settings.routes.TRIGGERED_RESET_DIALOG);
+      settings.Router.getInstance().navigateTo(
+          settings.routes.TRIGGERED_RESET_DIALOG);
       return resetPageBrowserProxy.whenCalled('onShowResetProfileDialog')
           .then(function() {
             return testResetRequestOrigin('triggeredreset');

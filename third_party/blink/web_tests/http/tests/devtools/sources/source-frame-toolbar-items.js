@@ -18,19 +18,19 @@
     }
     //# sourceURL=foo.js`);
 
-  SourcesTestRunner.runTestFunctionAndWaitUntilPausedPromise();
+  await SourcesTestRunner.runTestFunctionAndWaitUntilPausedPromise();
   await TestRunner.addSnifferPromise(
             Sources.ScriptOriginPlugin.prototype, 'rightToolbarItems');
 
   TestRunner.addResult('Items for foo.js:');
-  dumpToolbarItems(Sources.SourcesPanel.instance().visibleView);
+  await dumpToolbarItems(Sources.SourcesPanel.instance().visibleView);
   TestRunner.addResult('Items for test.js:');
-  dumpToolbarItems(await SourcesTestRunner.showScriptSourcePromise('test.js'));
+  await dumpToolbarItems(await SourcesTestRunner.showScriptSourcePromise('test.js'));
 
   SourcesTestRunner.completeDebuggerTest();
 
-  function dumpToolbarItems(sourceFrame) {
-    const items = sourceFrame.syncToolbarItems();
+  async function dumpToolbarItems(sourceFrame) {
+    const items = await sourceFrame.toolbarItems();
     for (let item of items)
       TestRunner.addResult(item.element.deepTextContent());
   }

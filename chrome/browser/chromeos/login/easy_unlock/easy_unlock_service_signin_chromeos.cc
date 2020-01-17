@@ -590,9 +590,13 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
   remote_device_cache_->SetRemoteDevices(remote_devices);
 
   base::Optional<multidevice::RemoteDeviceRef> unlock_key_device =
-      remote_device_cache_->GetRemoteDevice(unlock_key_id);
+      remote_device_cache_->GetRemoteDevice(
+          base::nullopt /* instance_id */,
+          unlock_key_id /* legacy_device_id */);
   base::Optional<multidevice::RemoteDeviceRef> local_device =
-      remote_device_cache_->GetRemoteDevice(local_device_id);
+      remote_device_cache_->GetRemoteDevice(
+          base::nullopt /* instance_id */,
+          local_device_id /* legacy_device_id */);
 
   // TODO(hansberry): It is possible that there may not be an unlock key by this
   // point. If this occurs, it is due to a bug in how device metadata is

@@ -45,6 +45,9 @@ const char kAccessibilityVirtualKeyboardEnabled[] =
 const char kAccessibilityMonoAudioEnabled[] = "settings.a11y.mono_audio";
 // A boolean pref which determines whether autoclick is enabled.
 const char kAccessibilityAutoclickEnabled[] = "settings.a11y.autoclick";
+// A boolean pref which determines whether the accessibility shortcuts are
+// enabled or not.
+const char kAccessibilityShortcutsEnabled[] = "settings.a11y.shortcuts_enabled";
 // An integer pref which determines time in ms between when the mouse cursor
 // stops and when an autoclick event is triggered.
 const char kAccessibilityAutoclickDelayMs[] =

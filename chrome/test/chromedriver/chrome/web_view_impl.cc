@@ -972,23 +972,7 @@ Status WebViewImpl::TakeHeapSnapshot(std::unique_ptr<base::Value>* snapshot) {
 Status WebViewImpl::InitProfileInternal() {
   base::DictionaryValue params;
 
-  // TODO: Remove Debugger.enable after Chrome 36 stable is released.
-  Status status_debug = client_->SendCommand("Debugger.enable", params);
-
-  if (status_debug.IsError())
-    return status_debug;
-
-  Status status_profiler = client_->SendCommand("Profiler.enable", params);
-
-  if (status_profiler.IsError()) {
-    Status status_debugger = client_->SendCommand("Debugger.disable", params);
-    if (status_debugger.IsError())
-      return status_debugger;
-
-    return status_profiler;
-  }
-
-  return Status(kOk);
+  return client_->SendCommand("Profiler.enable", params);
 }
 
 Status WebViewImpl::StopProfileInternal() {

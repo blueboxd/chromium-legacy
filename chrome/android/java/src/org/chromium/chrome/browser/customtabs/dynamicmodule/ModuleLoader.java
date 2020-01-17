@@ -27,8 +27,8 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics.DestructionReason;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.crash.CrashKeyIndex;
 import org.chromium.components.crash.CrashKeys;
 

@@ -15,13 +15,9 @@ group("zip_archiver") {
 zip_archiver_dir = "$root_out_dir/resources/chromeos/zip_archiver"
 
 copy("zip_archiver_css") {
-  sources = [
-    "css/passphrase.css",
-  ]
+  sources = [ "css/passphrase.css" ]
 
-  outputs = [
-    "$zip_archiver_dir/css/{{source_file_part}}",
-  ]
+  outputs = [ "$zip_archiver_dir/css/{{source_file_part}}" ]
 }
 
 copy("zip_archiver_html") {
@@ -30,9 +26,7 @@ copy("zip_archiver_html") {
     "html/passphrase.html",
   ]
 
-  outputs = [
-    "$zip_archiver_dir/html/{{source_file_part}}",
-  ]
+  outputs = [ "$zip_archiver_dir/html/{{source_file_part}}" ]
 }
 
 copy("zip_archiver_icons") {
@@ -44,9 +38,7 @@ copy("zip_archiver_icons") {
     "icons/icon96.png",
   ]
 
-  outputs = [
-    "$zip_archiver_dir/icons/{{source_file_part}}",
-  ]
+  outputs = [ "$zip_archiver_dir/icons/{{source_file_part}}" ]
 }
 
 copy("zip_archiver_js") {
@@ -66,9 +58,7 @@ copy("zip_archiver_js") {
     "js/volume.js",
   ]
 
-  outputs = [
-    "$zip_archiver_dir/js/{{source_file_part}}",
-  ]
+  outputs = [ "$zip_archiver_dir/js/{{source_file_part}}" ]
 }
 
 copy("zip_archiver_root") {
@@ -76,9 +66,7 @@ copy("zip_archiver_root") {
           "//chrome/browser/resources/chromeos/zip_archiver/cpp:zip_archiver_pnacl(//build/toolchain/nacl:newlib_pnacl)",
           "root_out_dir")
 
-  deps = [
-    "//chrome/browser/resources/chromeos/zip_archiver/cpp:zip_archiver_pnacl(//build/toolchain/nacl:newlib_pnacl)",
-  ]
+  deps = [ "//chrome/browser/resources/chromeos/zip_archiver/cpp:zip_archiver_pnacl(//build/toolchain/nacl:newlib_pnacl)" ]
 
   sources = [
     "$pexe_dir/zip_archiver_pnacl.pexe",
@@ -86,9 +74,7 @@ copy("zip_archiver_root") {
     "module.nmf",
   ]
 
-  outputs = [
-    "$zip_archiver_dir/{{source_file_part}}",
-  ]
+  outputs = [ "$zip_archiver_dir/{{source_file_part}}" ]
 }
 
 static_library("char_coding") {
@@ -97,7 +83,5 @@ static_library("char_coding") {
     "cpp/char_coding.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

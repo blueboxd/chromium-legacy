@@ -4,8 +4,7 @@
   <span id="margins-label" slot="title">$i18n{marginsLabel}</span>
   <div slot="controls">
     <select class="md-select" aria-labelledby="margins-label"
-        disabled$="[[getMarginsSettingsDisabled_(disabled,
-                         settings.pagesPerSheet.value)]]"
+        disabled$="[[marginsDisabled_]]"
         value="{{selectedValue::change}}">
       <!-- The order of these options must match the natural order of their
       values, which come from MarginsType. -->

@@ -161,9 +161,7 @@ static_library("arc_base_enums") {
     "session/arc_supervision_transition.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("arc_features") {
@@ -172,9 +170,7 @@ source_set("arc_features") {
     "arc_features.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 static_library("arc_base_utils") {
@@ -183,9 +179,7 @@ static_library("arc_base_utils") {
     "arc_util.h",
   ]
 
-  public_deps = [
-    ":arc_features",
-  ]
+  public_deps = [ ":arc_features" ]
   deps = [
     "//ash/public/cpp",
     "//base",
@@ -351,9 +345,7 @@ static_library("arc_test_support") {
 }
 
 source_set("arc_metrics_constants") {
-  sources = [
-    "metrics/arc_metrics_constants.h",
-  ]
+  sources = [ "metrics/arc_metrics_constants.h" ]
 }
 
 source_set("unit_tests") {

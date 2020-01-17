@@ -612,13 +612,16 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     // when frame is enabled.
     ash::NonClientFrameViewAsh* frame_view = GetFrameView();
 
+    // The client's geometry uses fullscreen in client controlled,
+    // (but the surface is placed under the frame), so just use
+    // the window bounds instead for maximixed state.
     // Snapped window states in tablet mode do not include the caption height.
     const bool becoming_snapped =
         requested_state == ash::WindowStateType::kLeftSnapped ||
         requested_state == ash::WindowStateType::kRightSnapped;
     const bool is_tablet_mode = WMHelper::GetInstance()->InTabletMode();
     gfx::Rect client_bounds =
-        becoming_snapped && is_tablet_mode
+        widget_->IsMaximized() || (becoming_snapped && is_tablet_mode)
             ? window_bounds
             : frame_view->GetClientBoundsForWindowBounds(window_bounds);
     gfx::Size current_size = frame_view->GetBoundsForClientView().size();
@@ -965,7 +968,13 @@ base::Optional<gfx::Rect> ClientControlledShellSurface::GetWidgetBounds()
     const {
   const ash::NonClientFrameViewAsh* frame_view = GetFrameView();
   if (frame_view->GetVisible()) {
-    return frame_view->GetWindowBoundsForClientBounds(GetVisibleBounds());
+    gfx::Rect visible_bounds = ShellSurfaceBase::GetVisibleBounds();
+    if (widget_->IsMaximized() && frame_type_ == SurfaceFrameType::NORMAL) {
+      // When the widget is maximized in clamshell mode, client sends
+      // |geometry_| without taking caption height into account.
+      visible_bounds.Offset(0, frame_view->NonClientTopBorderHeight());
+    }
+    return frame_view->GetWindowBoundsForClientBounds(visible_bounds);
   }
 
   return GetVisibleBounds();
@@ -1083,10 +1092,25 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
   if (expected_orientation_ == orientation_)
     orientation_compositor_lock_.reset();
 
-  widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
-                                          pending_always_on_top_
-                                              ? ui::ZOrderLevel::kFloatingWindow
-                                              : ui::ZOrderLevel::kNormal);
+
+  ui::ZOrderLevel z_order_level = pending_always_on_top_
+                                   ? ui::ZOrderLevel::kFloatingWindow
+                                   : ui::ZOrderLevel::kNormal;
+  ash::WindowState* window_state = GetWindowState();
+  if (window_state->IsPip()) {
+    // CTS requires a PIP window to stay at the initial position that Android
+    // calculates. UpdatePipBounds() is triggered by setting the window always
+    // on top, and depending on the density, it's adjusted by one pixel, which
+    // makes CTS fail.
+    // TODO(takise): Remove this workaround once ARC P is gone. See b/147847272
+    // for more detail.
+    base::AutoReset<bool> resetter(&ignore_bounds_change_request_, true);
+    widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
+                                            z_order_level);
+  } else {
+    widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
+                                            z_order_level);
+  }
 }
 
 void ClientControlledShellSurface::OnSurfaceDestroying(Surface* surface) {

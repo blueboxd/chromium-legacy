@@ -38,6 +38,11 @@ uint64_t StrToHash64Bit(const std::string& str);
 // Returns 32-bit hash of the string.
 uint32_t StrToHash32Bit(const std::string& str);
 
+// Reduce FieldSignature space (in UKM) to a small range for privacy reasons.
+int64_t HashFormSignature(autofill::FormSignature form_signature);
+
+// Reduce FieldSignature space (in UKM) to a small range for privacy reasons.
+int64_t HashFieldSignature(autofill::FieldSignature field_signature);
 }
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_SIGNATURES_UTIL_H_

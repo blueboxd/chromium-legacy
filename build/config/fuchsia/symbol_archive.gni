@@ -20,13 +20,9 @@ template("symbol_archive") {
 
     script = "//build/config/fuchsia/build_symbol_archive.py"
 
-    inputs = [
-      _ids_txt,
-    ]
+    inputs = [ _ids_txt ]
 
-    outputs = [
-      _build_ids,
-    ]
+    outputs = [ _build_ids ]
 
     deps = invoker.deps
 

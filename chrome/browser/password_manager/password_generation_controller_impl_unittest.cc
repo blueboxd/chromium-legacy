@@ -95,12 +95,11 @@ class MockPasswordGenerationHelper
                                password_manager::PasswordManagerDriver* driver)
       : password_manager::PasswordGenerationFrameHelper(client, driver) {}
 
-  MOCK_METHOD5(GeneratePassword,
+  MOCK_METHOD4(GeneratePassword,
                base::string16(const GURL&,
                               autofill::FormSignature,
                               autofill::FieldSignature,
-                              uint32_t,
-                              uint32_t*));
+                              uint32_t));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordGenerationHelper);
@@ -248,7 +247,7 @@ void PasswordGenerationControllerTest::InitializeAutomaticGeneration(
       mock_password_manager_driver_.get(), GetTestGenerationUIData1(),
       gfx::RectF(100, 20));
 
-  ON_CALL(*mock_generation_helper_, GeneratePassword(_, _, _, _, _))
+  ON_CALL(*mock_generation_helper_, GeneratePassword(_, _, _, _))
       .WillByDefault(Return(password));
 }
 
@@ -257,7 +256,7 @@ void PasswordGenerationControllerTest::InitializeManualGeneration(
   ON_CALL(*mock_password_manager_driver_, GetPasswordGenerationHelper())
       .WillByDefault(Return(mock_generation_helper_.get()));
 
-  ON_CALL(*mock_generation_helper_, GeneratePassword(_, _, _, _, _))
+  ON_CALL(*mock_generation_helper_, GeneratePassword(_, _, _, _))
       .WillByDefault(Return(password));
 }
 
@@ -309,7 +308,7 @@ TEST_F(PasswordGenerationControllerTest,
       .WillOnce(Return(mock_generation_helper_.get()));
   EXPECT_CALL(*mock_generation_helper_,
               GeneratePassword(_, form_signature, field_signature,
-                               uint32_t(new_ui_data.max_length), _))
+                               uint32_t(new_ui_data.max_length)))
       .WillOnce(Return(generated_password));
   EXPECT_CALL(*raw_dialog_view,
               Show(generated_password,

@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.search_engines;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 
@@ -17,10 +18,6 @@ import java.lang.annotation.RetentionPolicy;
 
 /** Hosts common code for search engine choice metrics reporting. */
 public class SearchEngineChoiceMetrics {
-    /** Key used to store the default Search Engine Type before choice is presented. */
-    @VisibleForTesting
-    public static final String PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE =
-            "search_engine_choice_default_type_before";
 
     /**
      * AndroidSearchEngineChoiceEvents defined in tools/metrics/histograms/enums.xml. These values
@@ -112,25 +109,23 @@ public class SearchEngineChoiceMetrics {
 
     /** @return True if the current search engine is possibly different from the previous one. */
     static boolean isSearchEnginePossiblyDifferent() {
-        return ContextUtils.getAppSharedPreferences().contains(
-                PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE);
+        return SharedPreferencesManager.getInstance().contains(
+                ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE);
     }
 
     /** Remove the stored choice from prefs. */
     @VisibleForTesting
     static void removePreviousSearchEngineType() {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .remove(PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE)
-                .apply();
+        SharedPreferencesManager.getInstance().removeKey(
+                ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE);
     }
 
     /** Retrieves the previously set search engine from Android prefs. */
     @VisibleForTesting
     @SearchEngineType
     static int getPreviousSearchEngineType() {
-        return ContextUtils.getAppSharedPreferences().getInt(
-                PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE,
+        return SharedPreferencesManager.getInstance().readInt(
+                ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE,
                 SearchEngineType.SEARCH_ENGINE_UNKNOWN);
     }
 
@@ -139,10 +134,8 @@ public class SearchEngineChoiceMetrics {
      */
     @VisibleForTesting
     static void setPreviousSearchEngineType(@SearchEngineType int engine) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putInt(PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE, engine)
-                .apply();
+        SharedPreferencesManager.getInstance().writeInt(
+                ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE, engine);
     }
 
     /** Translates from the default search engine url to the {@link SearchEngineType} int. */

@@ -49,16 +49,16 @@ Polymer({
   behaviors: [I18nBehavior],
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.dialog.showModal();
   },
 
-  getSigninFrame: function() {
+  getSigninFrame() {
     return this.$['signin-frame'];
   },
 
   /** @private */
-  onCloseTap_: function() {
+  onCloseTap_() {
     chrome.send('dialogClose');
   },
 });

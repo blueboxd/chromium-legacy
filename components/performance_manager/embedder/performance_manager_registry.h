@@ -8,21 +8,24 @@
 #include <memory>
 
 namespace content {
+class BrowserContext;
 class RenderProcessHost;
 class WebContents;
 }  // namespace content
 
 namespace performance_manager {
 
-// Allows tracking of WebContents and RenderProcessHosts in the
-// PerformanceManager.
+// Allows tracking of WebContents, RenderProcessHosts and SharedWorkerInstances
+// in the PerformanceManager.
 //
 // A process that embeds the PerformanceManager should create a single instance
-// of this and notify it when WebContents or RenderProcessHosts are created.
+// of this and notify it when WebContents, RenderProcessHosts or BrowserContexts
+// are created.
 //
 // TearDown() must be called prior to destroying this object. This will schedule
-// deletion of PageNodes and ProcessNodes retained by this registry, even if the
-// associated WebContents and RenderProcessHosts still exist.
+// deletion of PageNodes, ProcessNodes and WorkerNodes retained by this
+// registry, even if the associated WebContents, RenderProcessHosts and
+// SharedWorkerInstances still exist.
 //
 // This class can only be accessed on the main thread.
 class PerformanceManagerRegistry {
@@ -54,6 +57,14 @@ class PerformanceManagerRegistry {
   // ProcessNode in the PerformanceManager, if it doesn't already exist.
   virtual void CreateProcessNodeForRenderProcessHost(
       content::RenderProcessHost* render_process_host) = 0;
+
+  // Must be invoked when a BrowserContext is added/removed.
+  // Registers/unregisters an observer that creates WorkerNodes when
+  // SharedWorkerInstances are added in the BrowserContext.
+  virtual void NotifyBrowserContextAdded(
+      content::BrowserContext* browser_context) = 0;
+  virtual void NotifyBrowserContextRemoved(
+      content::BrowserContext* browser_context) = 0;
 
   // Must be invoked prior to destroying the object. Schedules deletion of
   // PageNodes and ProcessNodes retained by this registry, even if the

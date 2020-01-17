@@ -23,7 +23,7 @@ Polymer({
    * occurrences of the search term in bold.
    * @private
    */
-  setSearchedTextToBold_: function() {
+  setSearchedTextToBold_() {
     if (this.title === undefined) {
       return;
     }

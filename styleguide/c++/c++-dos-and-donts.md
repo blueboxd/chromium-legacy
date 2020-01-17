@@ -80,7 +80,7 @@ general rules:
 
    ```cpp
    MyClass c(1.7, false, "test");
-   std::vector<double> v(500, 0.97);  // Creates 50 copies of the provided initializer
+   std::vector<double> v(500, 0.97);  // Creates 500 copies of the provided initializer
    ```
 3. Use C++11 "uniform init" syntax ("{}" without '=') only when neither of the
    above work:

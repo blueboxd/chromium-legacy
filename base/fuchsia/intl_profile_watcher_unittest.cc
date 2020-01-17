@@ -167,14 +167,6 @@ class IntlProfileWatcherTest : public testing::Test {
   base::RunLoop run_loop_;
 };
 
-// Unit tests are run in an environment where intl is not provided, so the FIDL
-// calls always fail.
-TEST(IntlServiceNotAvailableTest, GetPrimaryTimeZoneIdForIcuInitialization) {
-  EXPECT_STREQ(
-      "",
-      IntlProfileWatcher::GetPrimaryTimeZoneIdForIcuInitialization().c_str());
-}
-
 // Unit tests are run in an environment where intl is not provided.
 // However, this is not exposed by the API.
 TEST(IntlServiceNotAvailableTest, IntlProfileWatcher) {

@@ -40,7 +40,5 @@ source_set("unit_tests") {
     "//services/network/public/cpp",
     "//testing/gtest",
   ]
-  sources = [
-    "simple_geolocation_unittest.cc",
-  ]
+  sources = [ "simple_geolocation_unittest.cc" ]
 }

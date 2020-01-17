@@ -18,7 +18,7 @@ Polymer({
     /** @private */
     isChild_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isChild');
       }
     },
@@ -26,19 +26,19 @@ Polymer({
     /** @private */
     online_: {
       type: Boolean,
-      value: function() {
+      value() {
         return navigator.onLine;
       }
     },
   },
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = parental_controls.BrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     // Set up online/offline listeners.
     window.addEventListener('offline', this.onOffline_.bind(this));
     window.addEventListener('online', this.onOnline_.bind(this));
@@ -48,7 +48,7 @@ Polymer({
    * Updates the UI when the device goes offline.
    * @private
    */
-  onOffline_: function() {
+  onOffline_() {
     this.online_ = false;
   },
 
@@ -56,7 +56,7 @@ Polymer({
    * Updates the UI when the device comes online.
    * @private
    */
-  onOnline_: function() {
+  onOnline_() {
     this.online_ = true;
   },
 
@@ -65,7 +65,7 @@ Polymer({
    * description area for non-child users.
    * @private
    */
-  getSetupLabelText_: function(online) {
+  getSetupLabelText_(online) {
     if (online) {
       return this.i18n('parentalControlsPageSetUpLabel');
     } else {
@@ -74,13 +74,13 @@ Polymer({
   },
 
   /** @private */
-  handleSetupButtonClick_: function(event) {
+  handleSetupButtonClick_(event) {
     event.stopPropagation();
     this.browserProxy_.showAddSupervisionDialog();
   },
 
   /** @private */
-  handleFamilyLinkButtonClick_: function(event) {
+  handleFamilyLinkButtonClick_(event) {
     event.stopPropagation();
     this.browserProxy_.launchFamilyLinkSettings();
   },

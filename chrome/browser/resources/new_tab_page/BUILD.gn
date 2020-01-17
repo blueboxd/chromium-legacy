@@ -11,6 +11,7 @@ js_type_check("closure_compile") {
     ":app",
     ":browser_proxy",
     ":customize_dialog",
+    ":grid",
     ":theme_icon",
     ":utils",
   ]
@@ -49,6 +50,7 @@ js_library("most_visited") {
 
 js_library("customize_dialog") {
   deps = [
+    ":customize_shortcuts",
     ":customize_themes",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
@@ -58,11 +60,33 @@ js_library("customize_dialog") {
 
 js_library("customize_themes") {
   deps = [
+    ":grid",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
+js_library("mini_page") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("customize_shortcuts") {
+  deps = [
+    ":browser_proxy",
+    ":mini_page",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
+  ]
+}
+
 js_library("theme_icon") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("grid") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
@@ -77,15 +101,27 @@ polymer_modulizer("app") {
   html_type = "v3-ready"
 }
 
+polymer_modulizer("customize_dialog") {
+  js_file = "customize_dialog.js"
+  html_file = "customize_dialog.html"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("mini_page") {
+  js_file = "mini_page.js"
+  html_file = "mini_page.html"
+  html_type = "v3-ready"
+}
+
 polymer_modulizer("most_visited") {
   js_file = "most_visited.js"
   html_file = "most_visited.html"
   html_type = "v3-ready"
 }
 
-polymer_modulizer("customize_dialog") {
-  js_file = "customize_dialog.js"
-  html_file = "customize_dialog.html"
+polymer_modulizer("customize_shortcuts") {
+  js_file = "customize_shortcuts.js"
+  html_file = "customize_shortcuts.html"
   html_type = "v3-ready"
 }
 
@@ -101,11 +137,20 @@ polymer_modulizer("theme_icon") {
   html_type = "v3-ready"
 }
 
+polymer_modulizer("grid") {
+  js_file = "grid.js"
+  html_file = "grid.html"
+  html_type = "v3-ready"
+}
+
 group("polymer3_elements") {
   deps = [
     ":app_module",
     ":customize_dialog_module",
+    ":customize_shortcuts_module",
     ":customize_themes_module",
+    ":grid_module",
+    ":mini_page_module",
     ":most_visited_module",
     ":theme_icon_module",
   ]

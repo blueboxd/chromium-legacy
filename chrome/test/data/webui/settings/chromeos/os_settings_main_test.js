@@ -60,7 +60,7 @@ cr.define('settings_main_page', function() {
     let settingsMain = null;
 
     setup(function() {
-      settings.navigateTo(settings.routes.BASIC);
+      settings.Router.getInstance().navigateTo(settings.routes.BASIC);
       searchManager = new TestSearchManager();
       settings.setSearchManagerForTesting(searchManager);
       PolymerTest.clearBody();
@@ -132,7 +132,7 @@ cr.define('settings_main_page', function() {
       Polymer.dom.flush();
 
       assertTrue(showManagedHeader());
-      settings.navigateTo(settings.routes.ABOUT);
+      settings.Router.getInstance().navigateTo(settings.routes.ABOUT);
 
       assertFalse(showManagedHeader());
     });
@@ -238,7 +238,7 @@ cr.define('settings_main_page', function() {
       await settingsMain.searchContents('');
 
       // Imitate behavior of clearing search.
-      settings.navigateTo(settings.routes.BASIC);
+      settings.Router.getInstance().navigateTo(settings.routes.BASIC);
       Polymer.dom.flush();
       await assertPageVisibility('block', expectedAdvanced);
     }
@@ -255,11 +255,11 @@ cr.define('settings_main_page', function() {
     // whose parent is the "advanced" page.
     test('exiting search mode, advanced expanded', async () => {
       // Trigger basic page to be rendered once.
-      settings.navigateTo(settings.routes.DEVICE);
+      settings.Router.getInstance().navigateTo(settings.routes.DEVICE);
       Polymer.dom.flush();
 
       // Navigate to an "advanced" subpage.
-      settings.navigateTo(settings.routes.DATETIME);
+      settings.Router.getInstance().navigateTo(settings.routes.DATETIME);
       Polymer.dom.flush();
       await assertAdvancedVisibilityAfterSearch('block');
     });
@@ -268,38 +268,38 @@ cr.define('settings_main_page', function() {
     // lands the user in a page where both basic and advanced sections are
     // visible, because the page is still in search mode.
     test('returning from subpage to search results', async () => {
-      settings.navigateTo(settings.routes.BASIC);
+      settings.Router.getInstance().navigateTo(settings.routes.BASIC);
       Polymer.dom.flush();
 
       searchManager.setMatchesFound(true);
       await settingsMain.searchContents('Query1');
       // Simulate navigating into a subpage.
-      settings.navigateTo(settings.routes.DISPLAY);
+      settings.Router.getInstance().navigateTo(settings.routes.DISPLAY);
       settingsMain.$$('os-settings-page').fire('subpage-expand');
       Polymer.dom.flush();
 
       // Simulate clicking the left arrow to go back to the search results.
-      settings.navigateTo(settings.routes.BASIC);
+      settings.Router.getInstance().navigateTo(settings.routes.BASIC);
       await assertPageVisibility('block', 'block');
     });
 
     test('navigating to a basic page does not collapse advanced', async () => {
-      settings.navigateTo(settings.routes.DATETIME);
+      settings.Router.getInstance().navigateTo(settings.routes.DATETIME);
       Polymer.dom.flush();
 
       assertToggleContainerVisible(true);
 
-      settings.navigateTo(settings.routes.DEVICE);
+      settings.Router.getInstance().navigateTo(settings.routes.DEVICE);
       Polymer.dom.flush();
 
       await assertPageVisibility('block', 'block');
     });
 
     test('updates the title based on current route', function() {
-      settings.navigateTo(settings.routes.BASIC);
+      settings.Router.getInstance().navigateTo(settings.routes.BASIC);
       assertEquals(document.title, loadTimeData.getString('settings'));
 
-      settings.navigateTo(settings.routes.ABOUT);
+      settings.Router.getInstance().navigateTo(settings.routes.ABOUT);
       assertEquals(
           document.title,
           loadTimeData.getStringF(

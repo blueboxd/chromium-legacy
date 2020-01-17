@@ -11,6 +11,7 @@
 #include "ash/app_list/views/assistant/assistant_main_view.h"
 #include "ash/app_list/views/assistant/assistant_page_view.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/test/test_assistant_web_view_factory.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -53,10 +54,17 @@ void CheckCanProcessEvents(const views::View* view) {
   }
 }
 
+void PressHomeButton() {
+  Shell::Get()->app_list_controller()->ToggleAppList(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+      AppListShowSource::kShelfButton, base::TimeTicks::Now());
+}
+
 }  // namespace
 
 AssistantAshTestBase::AssistantAshTestBase()
-    : test_api_(AssistantTestApi::Create()) {}
+    : test_api_(AssistantTestApi::Create()),
+      test_web_view_factory_(std::make_unique<TestAssistantWebViewFactory>()) {}
 
 AssistantAshTestBase::~AssistantAshTestBase() = default;
 
@@ -115,6 +123,10 @@ void AssistantAshTestBase::CloseAssistantUi(AssistantExitPoint exit_point) {
   controller_->ui_controller()->CloseUi(exit_point);
 }
 
+void AssistantAshTestBase::OpenLauncher() {
+  PressHomeButton();
+}
+
 void AssistantAshTestBase::CloseLauncher() {
   Shell::Get()->app_list_controller()->ViewClosing();
 }
@@ -143,6 +155,13 @@ views::View* AssistantAshTestBase::app_list_view() {
   return test_api_->app_list_view();
 }
 
+views::View* AssistantAshTestBase::root_view() {
+  views::View* result = app_list_view();
+  while (result && result->parent())
+    result = result->parent();
+  return result;
+}
+
 void AssistantAshTestBase::MockAssistantInteractionWithResponse(
     const std::string& response_text) {
   MockAssistantInteractionWithQueryAndResponse(/*query=*/"input text",
@@ -167,7 +186,11 @@ void AssistantAshTestBase::SendQueryThroughTextField(const std::string& query) {
 
 void AssistantAshTestBase::TapOnAndWait(views::View* view) {
   CheckCanProcessEvents(view);
-  GetEventGenerator()->GestureTapAt(GetPointInside(view));
+  TapAndWait(GetPointInside(view));
+}
+
+void AssistantAshTestBase::TapAndWait(gfx::Point position) {
+  GetEventGenerator()->GestureTapAt(position);
 
   base::RunLoop().RunUntilIdle();
 }
@@ -220,6 +243,12 @@ views::View* AssistantAshTestBase::keyboard_input_toggle() {
 void AssistantAshTestBase::ShowKeyboard() {
   auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(/*lock=*/false);
+}
+
+void AssistantAshTestBase::DismissKeyboard() {
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+  keyboard_controller->HideKeyboardImplicitlyByUser();
+  EXPECT_FALSE(IsKeyboardShowing());
 }
 
 bool AssistantAshTestBase::IsKeyboardShowing() const {

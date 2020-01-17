@@ -491,6 +491,10 @@ id<GREYMatcher> SettingsBottomToolbarDeleteButton() {
   return [ChromeMatchersAppInterface settingsBottomToolbarDeleteButton];
 }
 
+id<GREYMatcher> SettingsSearchEngineButton() {
+  return [ChromeMatchersAppInterface settingsSearchEngineButton];
+}
+
 id<GREYMatcher> AutofillSuggestionViewMatcher() {
   return [ChromeMatchersAppInterface autofillSuggestionViewMatcher];
 }

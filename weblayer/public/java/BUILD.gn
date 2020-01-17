@@ -32,7 +32,10 @@ android_library("java") {
     "org/chromium/weblayer/ChildProcessService.java",
     "org/chromium/weblayer/CrashReporterCallback.java",
     "org/chromium/weblayer/CrashReporterController.java",
+    "org/chromium/weblayer/Download.java",
     "org/chromium/weblayer/DownloadCallback.java",
+    "org/chromium/weblayer/DownloadError.java",
+    "org/chromium/weblayer/DownloadState.java",
     "org/chromium/weblayer/ErrorPageCallback.java",
     "org/chromium/weblayer/FullscreenCallback.java",
     "org/chromium/weblayer/LoadError.java",
@@ -99,7 +102,5 @@ process_version("client_version") {
   template_file =
       "org/chromium/weblayer/WebLayerClientVersionConstants.java.version"
   output = _version_constants_java_file
-  sources = [
-    "//chrome/VERSION",
-  ]
+  sources = [ "//chrome/VERSION" ]
 }

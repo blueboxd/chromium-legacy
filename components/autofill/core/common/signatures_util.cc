@@ -115,4 +115,12 @@ uint32_t StrToHash32Bit(const std::string& str) {
   return hash32;
 }
 
+int64_t HashFormSignature(autofill::FormSignature form_signature) {
+  return static_cast<uint64_t>(form_signature) % 1021;
+}
+
+int64_t HashFieldSignature(autofill::FieldSignature field_signature) {
+  return static_cast<uint64_t>(field_signature) % 1021;
+}
+
 }  // namespace autofill

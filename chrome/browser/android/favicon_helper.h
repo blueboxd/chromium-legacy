@@ -12,6 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_types.h"
 #include "url/gurl.h"
@@ -55,6 +56,8 @@ class FaviconHelper {
  private:
   FRIEND_TEST_ALL_PREFIXES(FaviconHelperTest, GetLargestSizeIndex);
 
+  virtual ~FaviconHelper();
+
   static void OnFaviconImageResultAvailable(
       const base::android::ScopedJavaGlobalRef<jobject>&
           j_availability_callback,
@@ -79,9 +82,16 @@ class FaviconHelper {
 
   static size_t GetLargestSizeIndex(const std::vector<gfx::Size>& sizes);
 
+  // This function is expected to be bound to a WeakPtr<FaviconHelper>, so that
+  // it won't be run if the FaviconHelper is deleted and
+  // |j_favicon_image_callback| isn't executed in that case.
+  void OnFaviconBitmapResultAvailable(
+      const base::android::JavaRef<jobject>& j_favicon_image_callback,
+      const favicon_base::FaviconRawBitmapResult& result);
+
   std::unique_ptr<base::CancelableTaskTracker> cancelable_task_tracker_;
 
-  virtual ~FaviconHelper();
+  base::WeakPtrFactory<FaviconHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FaviconHelper);
 };

@@ -77,7 +77,7 @@ editing.TextEditHandler.prototype = {
    * spoken feedback for the event.
    * @param {!(AutomationEvent|CustomAutomationEvent)} evt
    */
-  onEvent: function(evt) {
+  onEvent(evt) {
     if (evt.type !== EventType.TEXT_CHANGED &&
         evt.type !== EventType.TEXT_SELECTION_CHANGED &&
         evt.type !== EventType.DOCUMENT_SELECTION_CHANGED &&
@@ -96,7 +96,7 @@ editing.TextEditHandler.prototype = {
    * Returns true if selection starts at the first line.
    * @return {boolean}
    */
-  isSelectionOnFirstLine: function() {
+  isSelectionOnFirstLine() {
     return this.editableText_.isSelectionOnFirstLine();
   },
 
@@ -104,14 +104,14 @@ editing.TextEditHandler.prototype = {
    * Returns true if selection ends at the last line.
    * @return {boolean}
    */
-  isSelectionOnLastLine: function() {
+  isSelectionOnLastLine() {
     return this.editableText_.isSelectionOnLastLine();
   },
 
   /**
    * Moves range to after this text field.
    */
-  moveToAfterEditText: function() {
+  moveToAfterEditText() {
     var after = AutomationUtil.findNextNode(
                     this.node_, Dir.FORWARD, AutomationPredicate.object,
                     {skipInitialSubtree: true}) ||
@@ -154,7 +154,7 @@ AutomationEditableText.prototype = {
    * Called when the text field has been updated.
    * @param {string|undefined} eventFrom
    */
-  onUpdate: function(eventFrom) {
+  onUpdate(eventFrom) {
     var oldValue = this.value;
     var oldStart = this.start;
     var oldEnd = this.end;
@@ -172,19 +172,19 @@ AutomationEditableText.prototype = {
   /**
    * Returns true if selection starts on the first line.
    */
-  isSelectionOnFirstLine: function() {
+  isSelectionOnFirstLine() {
     return this.getLineIndex(this.start) == 0;
   },
 
   /**
    * Returns true if selection ends on the last line.
    */
-  isSelectionOnLastLine: function() {
+  isSelectionOnLastLine() {
     return this.getLineIndex(this.end) >= this.lineBreaks_.length - 1;
   },
 
   /** @override */
-  getLineIndex: function(charIndex) {
+  getLineIndex(charIndex) {
     var lineIndex = 0;
     while (charIndex > this.lineBreaks_[lineIndex]) {
       lineIndex++;
@@ -193,7 +193,7 @@ AutomationEditableText.prototype = {
   },
 
   /** @override */
-  getLineStart: function(lineIndex) {
+  getLineStart(lineIndex) {
     if (lineIndex == 0) {
       return 0;
     }
@@ -204,12 +204,12 @@ AutomationEditableText.prototype = {
   },
 
   /** @override */
-  getLineEnd: function(lineIndex) {
+  getLineEnd(lineIndex) {
     return this.lineBreaks_[lineIndex];
   },
 
   /** @private */
-  outputBraille_: function(oldValue, oldStart, oldEnd) {
+  outputBraille_(oldValue, oldStart, oldEnd) {
     var lineIndex = this.getLineIndex(this.start);
     // Output braille at the end of the selection that changed, if start and end
     // differ.
@@ -237,7 +237,7 @@ AutomationEditableText.prototype = {
    * @return {string|undefined}
    * @private
    */
-  getProcessedValue_: function(node) {
+  getProcessedValue_(node) {
     var value = node.value;
     return (value && node.inputType == 'tel') ? value['trimEnd']() : value;
   },
@@ -245,7 +245,7 @@ AutomationEditableText.prototype = {
   /**
    * @private
    */
-  updateLineBreaks_: function(value) {
+  updateLineBreaks_(value) {
     if (value == this.value) {
       return;
     }
@@ -324,7 +324,7 @@ AutomationRichEditableText.prototype = {
   __proto__: AutomationEditableText.prototype,
 
   /** @override */
-  isSelectionOnFirstLine: function() {
+  isSelectionOnFirstLine() {
     var deep = this.line_.end_.node;
     while (deep.previousOnLine) {
       deep = deep.previousOnLine;
@@ -341,7 +341,7 @@ AutomationRichEditableText.prototype = {
   },
 
   /** @override */
-  isSelectionOnLastLine: function() {
+  isSelectionOnLastLine() {
     var deep = this.line_.end_.node;
     while (deep.nextOnLine) {
       deep = deep.nextOnLine;
@@ -358,7 +358,7 @@ AutomationRichEditableText.prototype = {
   },
 
   /** @override */
-  onUpdate: function(eventFrom) {
+  onUpdate(eventFrom) {
     var root = this.node_.root;
     if (!root.selectionStartObject || !root.selectionEndObject ||
         root.selectionStartOffset === undefined ||
@@ -586,7 +586,7 @@ AutomationRichEditableText.prototype = {
    * @param {number} endOffset
    * @return {string}
    */
-  getTextSelection_: function(startNode, startOffset, endNode, endOffset) {
+  getTextSelection_(startNode, startOffset, endNode, endOffset) {
     if (!startNode || !endNode) {
       return '';
     }
@@ -623,7 +623,7 @@ AutomationRichEditableText.prototype = {
    * @param {number} selEnd
    * @private
    */
-  speakTextMarker_: function(container, selStart, selEnd) {
+  speakTextMarker_(container, selStart, selEnd) {
     var markersWithinSelection = {};
     var markers = container.markers;
     if (markers) {
@@ -662,7 +662,7 @@ AutomationRichEditableText.prototype = {
    * @param {!AutomationNode} style
    * @private
    */
-  speakTextStyle_: function(style) {
+  speakTextStyle_(style) {
     var msgs = [];
     var fontSize = style.fontSize;
     var fontColor = Color.getColorDescription(style.color);
@@ -732,7 +732,7 @@ AutomationRichEditableText.prototype = {
    * @param {editing.EditableLine} prevLine
    * @private
    */
-  speakCurrentRichLine_: function(prevLine) {
+  speakCurrentRichLine_(prevLine) {
     var prev = (prevLine && prevLine.startContainer_.role) ?
         prevLine.startContainer_ :
         null;
@@ -764,7 +764,7 @@ AutomationRichEditableText.prototype = {
   },
 
   /** @private */
-  brailleCurrentRichLine_: function() {
+  brailleCurrentRichLine_() {
     var isFirstLine = this.isSelectionOnFirstLine();
     var cur = this.line_;
     if (cur.value_ === null) {
@@ -838,7 +838,7 @@ AutomationRichEditableText.prototype = {
   },
 
   /** @override */
-  describeSelectionChanged: function(evt) {
+  describeSelectionChanged(evt) {
     // Note that since Chrome allows for selection to be placed immediately at
     // the end of a line (i.e. end == value.length) and since we try to describe
     // the character to the right, just describe it as a new line.
@@ -852,22 +852,22 @@ AutomationRichEditableText.prototype = {
   },
 
   /** @override */
-  getLineIndex: function(charIndex) {
+  getLineIndex(charIndex) {
     return 0;
   },
 
   /** @override */
-  getLineStart: function(lineIndex) {
+  getLineStart(lineIndex) {
     return 0;
   },
 
   /** @override */
-  getLineEnd: function(lineIndex) {
+  getLineEnd(lineIndex) {
     return this.value.length;
   },
 
   /** @override */
-  changed: function(evt) {
+  changed(evt) {
     // This path does not use the Output module to synthesize speech.
     Output.forceModeForNextSpeechUtterance(undefined);
     ChromeVoxEditableTextBase.prototype.changed.call(this, evt);
@@ -877,7 +877,7 @@ AutomationRichEditableText.prototype = {
    * @private
    * @param {editing.EditableLine} cur Current line.
    */
-  updateIntraLineState_: function(cur) {
+  updateIntraLineState_(cur) {
     var text = cur.text;
     if (text == '\n') {
       text = '';
@@ -915,7 +915,7 @@ editing.EditingChromeVoxStateObserver.prototype = {
   __proto__: ChromeVoxStateObserver,
 
   /** @override */
-  onCurrentRangeChanged: function(range) {
+  onCurrentRangeChanged(range) {
     var inputType = range && range.start.node.inputType;
     if (inputType == 'email' || inputType == 'url') {
       BrailleBackground.getInstance().getTranslatorManager().refresh(
@@ -1005,7 +1005,7 @@ editing.EditableLine = function(
 
 editing.EditableLine.prototype = {
   /** @private */
-  computeLineData_: function(opt_baseLineOnStart) {
+  computeLineData_(opt_baseLineOnStart) {
     // Note that we calculate the line based only upon |start_| or
     // |end_| even if they do not fall on the same line. It is up to
     // the caller to specify which end to base this line upon since it requires
@@ -1250,7 +1250,7 @@ editing.EditableLine.prototype = {
   },
 
   /** @return {boolean} */
-  hasCollapsedSelection: function() {
+  hasCollapsedSelection() {
     return this.start_.equals(this.end_);
   },
 
@@ -1270,7 +1270,7 @@ editing.EditableLine.prototype = {
    * @param {editing.EditableLine} otherLine
    * @return {boolean}
    */
-  isSameLine: function(otherLine) {
+  isSameLine(otherLine) {
     // Equality is intentionally loose here as any of the state nodes can be
     // invalidated at any time. We rely upon the start/anchor of the line
     // staying the same.
@@ -1292,7 +1292,7 @@ editing.EditableLine.prototype = {
    * @param {editing.EditableLine} otherLine
    * @return {boolean}
    */
-  isSameLineAndSelection: function(otherLine) {
+  isSameLineAndSelection(otherLine) {
     return this.isSameLine(otherLine) &&
         this.startOffset == otherLine.startOffset &&
         this.endOffset == otherLine.endOffset;
@@ -1302,7 +1302,7 @@ editing.EditableLine.prototype = {
    * Returns whether this line comes before |otherLine| in document order.
    * @return {boolean}
    */
-  isBeforeLine: function(otherLine) {
+  isBeforeLine(otherLine) {
     if (this.isSameLine(otherLine) || !this.lineStartContainer_ ||
         !otherLine.lineStartContainer_) {
       return false;
@@ -1316,7 +1316,7 @@ editing.EditableLine.prototype = {
    * Performs a validation that this line still refers to a line given its
    * internally tracked state.
    */
-  isValidLine: function() {
+  isValidLine() {
     if (!this.lineStartContainer_ || !this.lineEndContainer_) {
       return false;
     }

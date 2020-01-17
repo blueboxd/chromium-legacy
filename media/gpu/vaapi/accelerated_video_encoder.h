@@ -16,6 +16,7 @@
 #include "media/base/video_codecs.h"
 #include "media/gpu/codec_picture.h"
 #include "media/video/video_encode_accelerator.h"
+#include "media/video/video_encoder_info.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -146,6 +147,8 @@ class AcceleratedVideoEncoder {
   // encoder to encode one frame. The client should be able to provide up to
   // at least this many frames simultaneously for encode to make progress.
   virtual size_t GetMaxNumOfRefFrames() const = 0;
+
+  virtual ScalingSettings GetScalingSettings() const = 0;
 
   // Prepares a new |encode_job| to be executed in Accelerator and returns true
   // on success. The caller may then call Execute() on the job to run it.

@@ -161,6 +161,7 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
   DCHECK_EQ(suggestions_.size(), elided_values_.size());
   DCHECK_EQ(suggestions_.size(), elided_labels_.size());
 
+  selected_line_.reset();
   // Remove all the old data list values, which should always be at the top of
   // the list if they are present.
   while (!suggestions_.empty() &&

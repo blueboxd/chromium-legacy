@@ -155,6 +155,9 @@ constexpr char kJSEmailBody[] = "body";
 // Rotation (Page -> Plugin)
 constexpr char kJSRotateClockwiseType[] = "rotateClockwise";
 constexpr char kJSRotateCounterclockwiseType[] = "rotateCounterclockwise";
+// Toggle two-up view (Page -> Plugin)
+constexpr char kJSSetTwoUpViewType[] = "setTwoUpView";
+constexpr char kJSEnableTwoUpView[] = "enableTwoUpView";
 // Select all text in the document (Page -> Plugin)
 constexpr char kJSSelectAllType[] = "selectAll";
 // Get the selected text in the document (Page -> Plugin)
@@ -716,6 +719,8 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     RotateClockwise();
   } else if (type == kJSRotateCounterclockwiseType) {
     RotateCounterclockwise();
+  } else if (type == kJSSetTwoUpViewType) {
+    SetTwoUpView(dict.Get(pp::Var(kJSEnableTwoUpView)).AsBool());
   } else if (type == kJSSelectAllType) {
     engine_->SelectAll();
   } else if (type == kJSBackgroundColorChangedType) {
@@ -1783,6 +1788,10 @@ void OutOfProcessInstance::RotateClockwise() {
 
 void OutOfProcessInstance::RotateCounterclockwise() {
   engine_->RotateCounterclockwise();
+}
+
+void OutOfProcessInstance::SetTwoUpView(bool enable_two_up_view) {
+  engine_->SetTwoUpView(enable_two_up_view);
 }
 
 std::string OutOfProcessInstance::GetFileNameFromUrl(const std::string& url) {

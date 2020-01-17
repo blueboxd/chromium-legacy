@@ -71,8 +71,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
-#include "components/services/pdf_compositor/pdf_compositor_impl.h"  // nogncheck
-#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"  // nogncheck
+#include "components/services/print_compositor/print_compositor_impl.h"  // nogncheck
+#include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"  // nogncheck
 #endif
 
 #include "components/services/paint_preview_compositor/paint_preview_compositor_collection_impl.h"
@@ -185,9 +185,9 @@ auto RunPaintPreviewCompositor(
 #endif  // BUILDFLAG(ENABLE_PAINT_PREVIEW)
 
 #if BUILDFLAG(ENABLE_PRINTING)
-auto RunPdfCompositor(
-    mojo::PendingReceiver<printing::mojom::PdfCompositor> receiver) {
-  return std::make_unique<printing::PdfCompositorImpl>(
+auto RunPrintCompositor(
+    mojo::PendingReceiver<printing::mojom::PrintCompositor> receiver) {
+  return std::make_unique<printing::PrintCompositorImpl>(
       std::move(receiver), true /* initialize_environment */,
       content::UtilityThread::Get()->GetIOTaskRunner());
 }
@@ -268,7 +268,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
-    RunPdfCompositor,
+    RunPrintCompositor,
 #endif
 
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW)

@@ -400,9 +400,7 @@ feed_conformance_test_lib_sources = [
 
 android_resources("sharedstream_ui_resources") {
   resource_dirs = [ "sharedstream/ui/res" ]
-  deps = [
-    "//chrome/android:chrome_app_java_resources",
-  ]
+  deps = [ "//chrome/android:chrome_app_java_resources" ]
   custom_package = "org.chromium.chrome.browser.feed.library.sharedstream.ui"
 }
 
@@ -413,18 +411,14 @@ android_resources("piet_resources") {
 
 android_resources("basicstream_internal_drivers_resources") {
   resource_dirs = [ "sharedstream/ui/res" ]
-  deps = [
-    "//chrome/android:chrome_app_java_resources",
-  ]
+  deps = [ "//chrome/android:chrome_app_java_resources" ]
   custom_package =
       "org.chromium.chrome.browser.feed.library.basicstream.internal.drivers"
 }
 
 android_resources("basicstream_internal_viewholders_resources") {
   resource_dirs = [ "basicstream/internal/viewholders/res" ]
-  deps = [
-    ":sharedstream_ui_resources",
-  ]
+  deps = [ ":sharedstream_ui_resources" ]
   custom_package = "org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders"
 }
 
@@ -433,9 +427,7 @@ android_resources("basicstream_resources") {
     "basicstream/res/",
     "sharedstream/ui/res",
   ]
-  deps = [
-    "//chrome/android:chrome_app_java_resources",
-  ]
+  deps = [ "//chrome/android:chrome_app_java_resources" ]
   custom_package = "org.chromium.chrome.browser.feed.library.basicstream"
 }
 
@@ -446,9 +438,7 @@ android_resources("shared_stream_publicapi_menumeasurer_resources") {
 
 android_resources("sharedstream_contextmenumanager_resources") {
   resource_dirs = [ "sharedstream/ui/res" ]
-  deps = [
-    "//chrome/android:chrome_app_java_resources",
-  ]
+  deps = [ "//chrome/android:chrome_app_java_resources" ]
   custom_package =
       "org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager"
 }

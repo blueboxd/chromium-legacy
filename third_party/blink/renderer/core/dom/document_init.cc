@@ -30,13 +30,19 @@
 #include "third_party/blink/renderer/core/dom/document_init.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/plugin_data.h"
+#include "third_party/blink/renderer/platform/network/mime/content_type.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 
 namespace blink {
@@ -146,6 +152,83 @@ DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader) {
 
 LocalFrame* DocumentInit::GetFrame() const {
   return document_loader_ ? document_loader_->GetFrame() : nullptr;
+}
+
+DocumentInit& DocumentInit::WithTypeFrom(const String& type) {
+  mime_type_ = type;
+
+  if (GetFrame() && GetFrame()->InViewSourceMode()) {
+    type_ = Type::kViewSource;
+    return *this;
+  }
+
+  // Plugins cannot take HTML and XHTML from us, and we don't even need to
+  // initialize the plugin database for those.
+  if (type == "text/html") {
+    type_ = Type::kHTML;
+    return *this;
+  }
+  if (type == "application/xhtml+xml") {
+    type_ = Type::kXHTML;
+    return *this;
+  }
+  // multipart/x-mixed-replace is only supported for images.
+  if (MIMETypeRegistry::IsSupportedImageResourceMIMEType(type) ||
+      type == "multipart/x-mixed-replace") {
+    type_ = Type::kImage;
+    return *this;
+  }
+  if (HTMLMediaElement::GetSupportsType(ContentType(type))) {
+    type_ = Type::kMedia;
+    return *this;
+  }
+
+  PluginData* plugin_data = nullptr;
+  if (GetFrame() && GetFrame()->GetPage() &&
+      GetFrame()->Loader().AllowPlugins(kNotAboutToInstantiatePlugin)) {
+    // If the document is being created for the main frame,
+    // frame()->tree().top()->securityContext() returns nullptr.
+    // For that reason, the origin must be retrieved directly from url().
+    if (GetFrame()->IsMainFrame()) {
+      scoped_refptr<const SecurityOrigin> origin =
+          SecurityOrigin::Create(Url());
+      plugin_data = GetFrame()->GetPage()->GetPluginData(origin.get());
+    } else {
+      auto* top_security_origin =
+          GetFrame()->Tree().Top().GetSecurityContext()->GetSecurityOrigin();
+      plugin_data = GetFrame()->GetPage()->GetPluginData(top_security_origin);
+    }
+  }
+
+  // Everything else except text/plain can be overridden by plugins.
+  // Disallowing plugins to use text/plain prevents plugins from hijacking a
+  // fundamental type that the browser is expected to handle, and also serves as
+  // an optimization to prevent loading the plugin database in the common case.
+  if (type != "text/plain" && plugin_data &&
+      plugin_data->SupportsMimeType(type)) {
+    // Plugins handled by MimeHandlerView do not create a PluginDocument. They
+    // are rendered inside cross-process frames and the notion of a PluginView
+    // (which is associated with PluginDocument) is irrelevant here.
+    if (plugin_data->IsExternalPluginMimeType(type)) {
+      type_ = Type::kHTML;
+      is_for_external_handler_ = true;
+    } else {
+      type_ = Type::kPlugin;
+      plugin_background_color_ =
+          plugin_data->PluginBackgroundColorForMimeType(type);
+    }
+    return *this;
+  }
+
+  if (DOMImplementation::IsTextMIMEType(type))
+    type_ = Type::kText;
+  else if (type == "image/svg+xml")
+    type_ = Type::kSVG;
+  else if (DOMImplementation::IsXMLMIMEType(type))
+    type_ = Type::kXML;
+  else
+    type_ = Type::kHTML;
+  return *this;
 }
 
 DocumentInit& DocumentInit::WithContextDocument(Document* context_document) {

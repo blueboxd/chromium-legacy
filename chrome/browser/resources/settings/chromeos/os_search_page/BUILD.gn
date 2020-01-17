@@ -5,14 +5,13 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":os_search_page",
-  ]
+  deps = [ ":os_search_page" ]
 }
 
 js_library("os_search_page") {
   deps = [
     "../..:route",
+    "../..:router",
     "../../prefs",
     "../../search_engines_page:search_engines_browser_proxy",
     "../../settings_page:settings_animated_pages",

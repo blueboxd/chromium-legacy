@@ -193,33 +193,37 @@ IDNSpoofChecker::IDNSpoofChecker() {
   combining_diacritics_exceptions_.freeze();
 
   const WholeScriptConfusableData kWholeScriptConfusables[] = {
+      {// Armenian
+       "[[:Armn:]]",
+       "[ագզէլհյոսւօՙ]",
+       {"am"}},
       {// Cyrillic
        "[[:Cyrl:]]",
        "[аысԁеԍһіюјӏорԗԛѕԝхуъЬҽпгѵѡ]",
        // TLDs containing most of the Cyrillic domains.
        {"bg", "by", "kz", "pyc", "ru", "su", "ua", "uz"}},
-      {// Hebrew
-       "[[:Hebr:]]",
-       "[דוחיןסװײ׳ﬦ]",
-       // TLDs containing most of the Hebrew domains.
-       {"il"}},
       {// Ethiopic (Ge'ez). Variants of these characters such as ሁ and ሡ could
        // arguably be added to this list. However, we are only restricting
        // the more obvious characters to keep the list short and to reduce the
        // probability of false positives.
-       // (Potential set: [ሀሁሃሠሡሰሱሲስበቡቢተቱቲታነከኩኪካኬክዐዑዕዖዘዙዚዛዝዞጠጡጢጣጦፐፒꬁꬂꬅ])
+       // Potential set: [ሀሁሃሠሡሰሱሲስበቡቢተቱቲታነከኩኪካኬክዐዑዕዖዘዙዚዛዝዞጠጡጢጣጦፐፒꬁꬂꬅ]
        "[[:Ethi:]]",
        "[ሀሠሰስበነተከዐዕዘጠፐꬅ]",
        {"er", "et"}},
+      {// Georgian
+       "[[:Geor:]]",
+       "[იოყძხჽჿ]",
+       {"ge"}},
       {// Greek
        "[[:Grek:]]",
        // This ignores variants such as ά, έ, ή, ί.
        "[αικνρυωηοτ]",
        {"gr"}},
-      {// Armenian
-       "[[:Armn:]]",
-       "[ագզէլհյոսւօՙ]",
-       {"am"}},
+      {// Hebrew
+       "[[:Hebr:]]",
+       "[דוחיןסװײ׳ﬦ]",
+       // TLDs containing most of the Hebrew domains.
+       {"il"}},
       // Indic scripts in the recommended set. No ccTLDs are allowlisted.
       {// Bengali
        "[[:Beng:]]", "[০৭]"},

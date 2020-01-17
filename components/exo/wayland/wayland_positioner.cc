@@ -216,15 +216,18 @@ WaylandPositioner::Result WaylandPositioner::CalculatePosition(
   }
 
   // Exo overrides the ability to slide in cases when the orthogonal
-  // anchor+gravity would mean the slide can occlude |anchor_rect_|.
+  // anchor+gravity would mean the slide can occlude |anchor_rect_|, unless it
+  // already is occluded.
   //
   // We are doing this in order to stop a common case of clients allowing
   // dropdown menus to occlude the menu header. Whilst this may cause some
   // popups to avoid sliding where they could, for UX reasons we'd rather that
   // than allowing menus to be occluded.
-  if (!(anchor_x == gravity_x && anchor_x != kNeutral))
+  bool x_occluded = !(anchor_x == gravity_x && anchor_x != kNeutral);
+  bool y_occluded = !(anchor_y == gravity_y && anchor_y != kNeutral);
+  if (x_occluded && !y_occluded)
     adjustments_y.slide = false;
-  if (!(anchor_y == gravity_y && anchor_y != kNeutral))
+  if (y_occluded && !x_occluded)
     adjustments_x.slide = false;
 
   std::pair<Range1D, ConstraintAdjustment> x =

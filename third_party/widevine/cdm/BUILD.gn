@@ -74,22 +74,16 @@ if (bundle_widevine_cdm && enable_widevine_cdm_host_verification) {
 
 copy("version_h") {
   visibility = [ ":*" ]  # Depend on ":headers" instead.
-  sources = [
-    widevine_cdm_version_h_file,
-  ]
+  sources = [ widevine_cdm_version_h_file ]
 
   # TODO(brettw) this should go into target_out_dir and callers should include
   # it from there. This requires, however, renaming the default
   # widevine_cdm_version.h in this directory to avoid conflicts.
-  outputs = [
-    "$root_gen_dir/widevine_cdm_version.h",
-  ]
+  outputs = [ "$root_gen_dir/widevine_cdm_version.h" ]
 }
 
 source_set("headers") {
-  public = [
-    "widevine_cdm_common.h",
-  ]
+  public = [ "widevine_cdm_common.h" ]
 
   public_deps = [
     ":version_h",  # Forward permission to use version header.
@@ -101,9 +95,7 @@ source_set("headers") {
 if (widevine_cdm_manifest_and_license_files != []) {
   copy("widevine_cdm_manifest_and_license") {
     sources = widevine_cdm_manifest_and_license_files
-    outputs = [
-      "$root_out_dir/WidevineCdm/{{source_file_part}}",
-    ]
+    outputs = [ "$root_out_dir/WidevineCdm/{{source_file_part}}" ]
   }
 } else {
   group("widevine_cdm_manifest_and_license") {
@@ -114,9 +106,7 @@ if (widevine_cdm_manifest_and_license_files != []) {
 if (widevine_cdm_binary_files != []) {
   copy("widevine_cdm_binary") {
     sources = widevine_cdm_binary_files
-    outputs = [
-      "$root_out_dir/$widevine_cdm_path/{{source_file_part}}",
-    ]
+    outputs = [ "$root_out_dir/$widevine_cdm_path/{{source_file_part}}" ]
 
     # TODO(jrummell)
     # 'COPY_PHASE_STRIP': 'NO',
@@ -146,8 +136,6 @@ group("cdm") {
 # on the license server.
 group("widevine_test_license_server") {
   if (bundle_widevine_cdm && is_linux) {
-    data = [
-      "//third_party/widevine/test/license_server/",
-    ]
+    data = [ "//third_party/widevine/test/license_server/" ]
   }
 }

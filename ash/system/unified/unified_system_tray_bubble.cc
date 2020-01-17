@@ -285,6 +285,13 @@ void UnifiedSystemTrayBubble::FocusEntered(bool reverse) {
   unified_view_->FocusEntered(reverse);
 }
 
+void UnifiedSystemTrayBubble::OnMessageCenterActivated() {
+  // When the message center is activated, we no longer need to reroute key
+  // events to this bubble. Otherwise, we interfere with notifications that may
+  // require key input like inline replies. See crbug.com/1040738.
+  bubble_view_->StopReroutingEvents();
+}
+
 void UnifiedSystemTrayBubble::OnDisplayConfigurationChanged() {
   UpdateBubbleBounds();
 }
@@ -312,13 +319,17 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
     return;
   }
 
-  // Don't close the bubble if the message center is gaining activation.
+  // Don't close the bubble if the message center is gaining or losing
+  // activation.
   if (features::IsUnifiedMessageCenterRefactorEnabled() &&
       tray_->IsMessageCenterBubbleShown()) {
     views::Widget* message_center_widget =
         tray_->message_center_bubble()->GetBubbleWidget();
     if (message_center_widget ==
-        views::Widget::GetWidgetForNativeView(gained_active)) {
+            views::Widget::GetWidgetForNativeView(gained_active) ||
+        (lost_active &&
+         message_center_widget ==
+             views::Widget::GetWidgetForNativeView(lost_active))) {
       return;
     }
   }

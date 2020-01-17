@@ -143,7 +143,7 @@ class ExtensionDownloaderDelegate {
   };
 
   // Contains the error codes when Force installed extension fail to install
-  // with error CRX_FETCH_FAILED.
+  // with error CRX_FETCH_FAILED or MANIFEST_FETCH_FAILED.
   struct FailureData {
     FailureData();
     FailureData(const FailureData& other);

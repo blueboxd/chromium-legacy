@@ -222,11 +222,13 @@ SyncServerConnectionManager::SyncServerConnectionManager(
 SyncServerConnectionManager::~SyncServerConnectionManager() = default;
 
 bool SyncServerConnectionManager::PostBufferToPath(
-    PostBufferParams* params,
+    const std::string& buffer_in,
     const std::string& path,
-    const std::string& access_token) {
+    const std::string& access_token,
+    std::string* buffer_out,
+    HttpResponse* http_response) {
   if (access_token.empty()) {
-    params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
+    http_response->server_status = HttpResponse::SYNC_AUTH_ERROR;
     // Print a log to distinguish this "known failure" from others.
     DVLOG(1) << "ServerConnectionManager forcing SYNC_AUTH_ERROR due to missing"
                 " access token";
@@ -234,7 +236,7 @@ bool SyncServerConnectionManager::PostBufferToPath(
   }
 
   if (cancelation_signal_->IsSignalled()) {
-    params->response.server_status = HttpResponse::CONNECTION_UNAVAILABLE;
+    http_response->server_status = HttpResponse::CONNECTION_UNAVAILABLE;
     return false;
   }
 
@@ -245,18 +247,17 @@ bool SyncServerConnectionManager::PostBufferToPath(
   // Note that |post| may be aborted by now, which will just cause Init to fail
   // with CONNECTION_UNAVAILABLE.
   bool ok = connection->Init(connection_url, sync_server_port_, access_token,
-                             params->buffer_in, &params->response);
+                             buffer_in, http_response);
 
-  if (params->response.server_status == HttpResponse::SYNC_AUTH_ERROR) {
+  if (http_response->server_status == HttpResponse::SYNC_AUTH_ERROR) {
     ClearAccessToken();
   }
 
-  if (!ok || net::HTTP_OK != params->response.http_status_code)
+  if (!ok || net::HTTP_OK != http_response->http_status_code)
     return false;
 
-  if (connection->ReadBufferResponse(&params->buffer_out, &params->response,
-                                     true)) {
-    params->response.server_status = HttpResponse::SERVER_CONNECTION_OK;
+  if (connection->ReadBufferResponse(buffer_out, http_response, true)) {
+    http_response->server_status = HttpResponse::SERVER_CONNECTION_OK;
     return true;
   }
   return false;

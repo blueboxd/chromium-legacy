@@ -88,12 +88,6 @@ class V8TestInterfaceCheckSecurity {
 };
 
 template <>
-struct NativeValueTraits<TestInterfaceCheckSecurity> : public NativeValueTraitsBase<TestInterfaceCheckSecurity> {
-  CORE_EXPORT static TestInterfaceCheckSecurity* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestInterfaceCheckSecurity* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestInterfaceCheckSecurity> {
   typedef V8TestInterfaceCheckSecurity Type;
 };

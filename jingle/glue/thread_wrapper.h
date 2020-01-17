@@ -97,12 +97,6 @@ class JingleThreadWrapper
   void Restart() override;
   bool Get(rtc::Message* message, int delay_ms, bool process_io) override;
   bool Peek(rtc::Message* message, int delay_ms) override;
-  void PostAt(const rtc::Location& posted_from,
-              uint32_t timestamp,
-              rtc::MessageHandler* handler,
-              uint32_t id,
-              rtc::MessageData* data) override;
-  void ReceiveSends() override;
   int GetDelay() override;
 
   // rtc::Thread overrides.

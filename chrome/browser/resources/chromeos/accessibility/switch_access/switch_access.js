@@ -289,12 +289,13 @@ class SwitchAccess {
     }
   }
 
-  /** @return {chrome.automation.AutomationNode} */
+  /** @return {?chrome.automation.AutomationNode} */
   getBackButtonAutomationNode() {
     if (!this.backButtonAutomationNode_) {
       this.findBackButtonNode_();
       if (!this.backButtonAutomationNode_) {
         console.log('Error: unable to find back button');
+        return null;
       }
     }
     return this.backButtonAutomationNode_;
@@ -338,6 +339,13 @@ class SwitchAccess {
   getTreeForDebugging(wholeTree = false) {
     if (this.navigationManager_) {
       return this.navigationManager_.getTreeForDebugging(wholeTree);
+    }
+  }
+
+  static refreshFocusRings() {
+    const switchAccess = SwitchAccess.get();
+    if (switchAccess.navigationManager_) {
+      switchAccess.navigationManager_.refreshFocusRings();
     }
   }
 }

@@ -94,11 +94,6 @@ luci.console_view(
             short_name = 'asn',
         ),
         luci.console_view_entry(
-            builder = 'ci/Android CFI',
-            category = 'cfi',
-            short_name = 'and',
-        ),
-        luci.console_view_entry(
             builder = 'ci/Linux CFI',
             category = 'cfi',
             short_name = 'lnx',

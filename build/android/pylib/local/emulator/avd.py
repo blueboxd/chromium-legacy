@@ -537,9 +537,13 @@ class _AvdInstance(object):
     """Stops the emulator process."""
     if self._emulator_proc:
       if self._emulator_proc.poll() is None:
-        self._emulator_proc.terminate()
+        if self._emulator_serial:
+          device_utils.DeviceUtils(self._emulator_serial).adb.Emu('kill')
+        else:
+          self._emulator_proc.terminate()
         self._emulator_proc.wait()
       self._emulator_proc = None
+
     if self._sink:
       self._sink.close()
       self._sink = None

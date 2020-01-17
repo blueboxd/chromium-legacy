@@ -33,6 +33,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/notification_utils.h"
@@ -44,6 +45,7 @@
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_focus_cycler.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -783,10 +785,10 @@ void HandleToggleAppList(const ui::Accelerator& accelerator,
   if (accelerator.key_code() == ui::VKEY_LWIN)
     base::RecordAction(UserMetricsAction("Accel_Search_LWin"));
 
-  Shelf::ForWindow(Shell::GetRootWindowForNewWindows())
-      ->shelf_widget()
-      ->GetHomeButton()
-      ->OnPressed(show_source, accelerator.time_stamp());
+  aura::Window* const root_window = Shell::GetRootWindowForNewWindows();
+  Shell::Get()->app_list_controller()->ToggleAppList(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window).id(),
+      show_source, accelerator.time_stamp());
 }
 
 void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
@@ -1150,37 +1152,61 @@ void RemoveStickyNotitification(const std::string& notification_id) {
                                                            false /* by_user */);
 }
 
-void SetDockedMagnifierEnabled(bool enabled) {
-  Shell::Get()->docked_magnifier_controller()->SetEnabled(enabled);
+// Return false if the accessibility shortcuts have been disabled, or if
+// the accessibility feature itself associated with |accessibility_pref_name|
+// is being enforced by the administrator.
+bool IsAccessibilityShortcutEnabled(
+    const std::string& accessibility_pref_name) {
+  Shell* shell = Shell::Get();
+  return shell->accessibility_controller()->accessibility_shortcuts_enabled() &&
+         !shell->session_controller()
+              ->GetActivePrefService()
+              ->IsManagedPreference(accessibility_pref_name);
+}
 
-  // We need to show the notification only if the state actually changed.
-  const bool actual_enabled =
-      Shell::Get()->docked_magnifier_controller()->GetEnabled();
+void SetDockedMagnifierEnabled(bool enabled) {
+  Shell* shell = Shell::Get();
+  // Check that the attempt to change the value of the accessibility feature
+  // will be done only when the accessibility shortcuts are enabled, and
+  // the feature isn't being enforced by the administrator.
+  DCHECK(IsAccessibilityShortcutEnabled(prefs::kDockedMagnifierEnabled));
+
+  shell->docked_magnifier_controller()->SetEnabled(enabled);
+
   RemoveStickyNotitification(kDockedMagnifierToggleAccelNotificationId);
-  if (enabled && actual_enabled) {
+  if (shell->docked_magnifier_controller()->GetEnabled()) {
     CreateAndShowStickyNotification(IDS_DOCKED_MAGNIFIER_ACCEL_TITLE,
                                     IDS_DOCKED_MAGNIFIER_ACCEL_MSG,
                                     kDockedMagnifierToggleAccelNotificationId);
-  } else if (enabled != actual_enabled) {
-    NotifyAccessibilityFeatureDisabledByAdmin(
-        IDS_ASH_DOCKED_MAGNIFIER_SHORTCUT_DISABLED, actual_enabled,
-        kDockedMagnifierToggleAccelNotificationId);
   }
 }
 
 void HandleToggleDockedMagnifier() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Docked_Magnifier"));
 
+  Shell* shell = Shell::Get();
+
+  RemoveStickyNotitification(kDockedMagnifierToggleAccelNotificationId);
+  if (!IsAccessibilityShortcutEnabled(prefs::kDockedMagnifierEnabled)) {
+    NotifyAccessibilityFeatureDisabledByAdmin(
+        IDS_ASH_DOCKED_MAGNIFIER_SHORTCUT_DISABLED,
+        shell->docked_magnifier_controller()->GetEnabled(),
+        kDockedMagnifierToggleAccelNotificationId);
+    return;
+  }
+
   DockedMagnifierControllerImpl* docked_magnifier_controller =
-      Shell::Get()->docked_magnifier_controller();
+      shell->docked_magnifier_controller();
+  AccessibilityControllerImpl* accessibility_controller =
+      shell->accessibility_controller();
+
   const bool current_enabled = docked_magnifier_controller->GetEnabled();
   const bool dialog_ever_accepted =
-      Shell::Get()
-          ->accessibility_controller()
+      accessibility_controller
           ->HasDockedMagnifierAcceleratorDialogBeenAccepted();
 
   if (!current_enabled && !dialog_ever_accepted) {
-    Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
+    shell->accelerator_controller()->MaybeShowConfirmationDialog(
         IDS_ASH_DOCKED_MAGNIFIER_TITLE, IDS_ASH_DOCKED_MAGNIFIER_BODY,
         base::BindOnce([]() {
           Shell::Get()
@@ -1199,54 +1225,63 @@ void SetFullscreenMagnifierEnabled(bool enabled) {
   // Necessary to make magnification controller in ash observe changes to the
   // prefs iteself.
   Shell* shell = Shell::Get();
+  // Check that the attempt to change the value of the accessibility feature
+  // will be done only when the accessibility shortcuts are enabled, and
+  // the feature isn't being enforced by the administrator.
+  DCHECK(IsAccessibilityShortcutEnabled(
+      prefs::kAccessibilityScreenMagnifierEnabled));
+
   shell->accessibility_controller()->SetFullscreenMagnifierEnabled(enabled);
 
-  // We need to show the notification only if the state actually changed.
-  const bool actual_enabled =
-      Shell::Get()->magnification_controller()->IsEnabled();
   RemoveStickyNotitification(kFullscreenMagnifierToggleAccelNotificationId);
-  if (enabled && actual_enabled) {
+  if (shell->magnification_controller()->IsEnabled()) {
     CreateAndShowStickyNotification(
         IDS_FULLSCREEN_MAGNIFIER_ACCEL_TITLE,
         IDS_FULLSCREEN_MAGNIFIER_ACCEL_MSG,
-        kFullscreenMagnifierToggleAccelNotificationId);
-  } else if (enabled != actual_enabled) {
-    NotifyAccessibilityFeatureDisabledByAdmin(
-        IDS_ASH_FULLSCREEN_MAGNIFIER_SHORTCUT_DISABLED, actual_enabled,
         kFullscreenMagnifierToggleAccelNotificationId);
   }
 }
 
 void SetHighContrastEnabled(bool enabled) {
-  AccessibilityControllerImpl* accessibility_controller =
-      Shell::Get()->accessibility_controller();
-  accessibility_controller->SetHighContrastEnabled(enabled);
-  // Value could differ from one that were set because of higher-priority pref
-  // source, eg. policy. See crbug.com/953245.
-  const bool actual_enabled = accessibility_controller->high_contrast_enabled();
+  Shell* shell = Shell::Get();
+  // Check that the attempt to change the value of the accessibility feature
+  // will be done only when the accessibility shortcuts are enabled, and
+  // the feature isn't being enforced by the administrator.
+  DCHECK(
+      IsAccessibilityShortcutEnabled(prefs::kAccessibilityHighContrastEnabled));
+
+  shell->accessibility_controller()->SetHighContrastEnabled(enabled);
+
   RemoveStickyNotitification(kHighContrastToggleAccelNotificationId);
-  if (enabled && actual_enabled) {
+  if (shell->accessibility_controller()->high_contrast_enabled()) {
     CreateAndShowStickyNotification(IDS_HIGH_CONTRAST_ACCEL_TITLE,
                                     IDS_HIGH_CONTRAST_ACCEL_MSG,
                                     kHighContrastToggleAccelNotificationId);
-  } else if (enabled != actual_enabled) {
-    NotifyAccessibilityFeatureDisabledByAdmin(
-        IDS_ASH_HIGH_CONTRAST_SHORTCUT_DISABLED, actual_enabled,
-        kHighContrastToggleAccelNotificationId);
   }
 }
 
 void HandleToggleHighContrast() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_High_Contrast"));
 
-  AccessibilityControllerImpl* controller =
-      Shell::Get()->accessibility_controller();
+  Shell* shell = Shell::Get();
+
+  RemoveStickyNotitification(kHighContrastToggleAccelNotificationId);
+  if (!IsAccessibilityShortcutEnabled(
+          prefs::kAccessibilityHighContrastEnabled)) {
+    NotifyAccessibilityFeatureDisabledByAdmin(
+        IDS_ASH_HIGH_CONTRAST_SHORTCUT_DISABLED,
+        shell->accessibility_controller()->high_contrast_enabled(),
+        kHighContrastToggleAccelNotificationId);
+    return;
+  }
+
+  AccessibilityControllerImpl* controller = shell->accessibility_controller();
   const bool current_enabled = controller->high_contrast_enabled();
   const bool dialog_ever_accepted =
       controller->HasHighContrastAcceleratorDialogBeenAccepted();
 
   if (!current_enabled && !dialog_ever_accepted) {
-    Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
+    shell->accelerator_controller()->MaybeShowConfirmationDialog(
         IDS_ASH_HIGH_CONTRAST_TITLE, IDS_ASH_HIGH_CONTRAST_BODY,
         base::BindOnce([]() {
           Shell::Get()
@@ -1263,15 +1298,30 @@ void HandleToggleHighContrast() {
 void HandleToggleFullscreenMagnifier() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Fullscreen_Magnifier"));
 
-  MagnificationController* controller =
-      Shell::Get()->magnification_controller();
-  const bool current_enabled = controller->IsEnabled();
+  Shell* shell = Shell::Get();
+
+  RemoveStickyNotitification(kFullscreenMagnifierToggleAccelNotificationId);
+  if (!IsAccessibilityShortcutEnabled(
+          prefs::kAccessibilityScreenMagnifierEnabled)) {
+    NotifyAccessibilityFeatureDisabledByAdmin(
+        IDS_ASH_FULLSCREEN_MAGNIFIER_SHORTCUT_DISABLED,
+        shell->magnification_controller()->IsEnabled(),
+        kFullscreenMagnifierToggleAccelNotificationId);
+    return;
+  }
+
+  MagnificationController* magnification_controller =
+      shell->magnification_controller();
+  AccessibilityControllerImpl* accessibility_controller =
+      shell->accessibility_controller();
+
+  const bool current_enabled = magnification_controller->IsEnabled();
   const bool dialog_ever_accepted =
-      Shell::Get()
-          ->accessibility_controller()
+      accessibility_controller
           ->HasScreenMagnifierAcceleratorDialogBeenAccepted();
+
   if (!current_enabled && !dialog_ever_accepted) {
-    Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
+    shell->accelerator_controller()->MaybeShowConfirmationDialog(
         IDS_ASH_SCREEN_MAGNIFIER_TITLE, IDS_ASH_SCREEN_MAGNIFIER_BODY,
         base::BindOnce([]() {
           Shell::Get()
@@ -1288,20 +1338,21 @@ void HandleToggleFullscreenMagnifier() {
 void HandleToggleSpokenFeedback() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Spoken_Feedback"));
 
-  AccessibilityControllerImpl* controller =
-      Shell::Get()->accessibility_controller();
-  bool old_value = controller->spoken_feedback_enabled();
-  controller->SetSpokenFeedbackEnabled(!controller->spoken_feedback_enabled(),
-                                       A11Y_NOTIFICATION_SHOW);
-  // If we tried to enable it and didn't succeed — show disabled by policy
-  // toast.
+  Shell* shell = Shell::Get();
+  const bool old_value =
+      shell->accessibility_controller()->spoken_feedback_enabled();
+
   RemoveStickyNotitification(kSpokenFeedbackToggleAccelNotificationId);
-  if (!controller->spoken_feedback_enabled() && !old_value) {
+  if (!IsAccessibilityShortcutEnabled(
+          prefs::kAccessibilitySpokenFeedbackEnabled)) {
     NotifyAccessibilityFeatureDisabledByAdmin(
-        IDS_ASH_SPOKEN_FEEDBACK_SHORTCUT_DISABLED,
-        controller->spoken_feedback_enabled(),
+        IDS_ASH_SPOKEN_FEEDBACK_SHORTCUT_DISABLED, old_value,
         kSpokenFeedbackToggleAccelNotificationId);
+    return;
   }
+
+  shell->accessibility_controller()->SetSpokenFeedbackEnabled(
+      !old_value, A11Y_NOTIFICATION_SHOW);
 }
 
 // Percent by which the volume should be changed when a volume key is pressed.

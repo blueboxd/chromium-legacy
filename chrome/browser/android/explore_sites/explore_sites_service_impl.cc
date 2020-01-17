@@ -69,10 +69,7 @@ ExploreSitesServiceImpl::~ExploreSitesServiceImpl() {}
 
 // static
 bool ExploreSitesServiceImpl::IsExploreSitesEnabled() {
-  ExploreSitesVariation variation = GetExploreSitesVariation();
-  return variation == ExploreSitesVariation::ENABLED ||
-         variation == ExploreSitesVariation::PERSONALIZED ||
-         variation == ExploreSitesVariation::MOST_LIKELY;
+  return GetExploreSitesVariation() == ExploreSitesVariation::ENABLED;
 }
 
 void ExploreSitesServiceImpl::GetCatalog(CatalogCallback callback) {
@@ -84,16 +81,6 @@ void ExploreSitesServiceImpl::GetCatalog(CatalogCallback callback) {
   task_queue_.AddTask(std::make_unique<GetCatalogTask>(
       explore_sites_store_.get(), /*update_current*/ true,
       std::move(callback)));
-}
-
-void ExploreSitesServiceImpl::GetCategoryImage(int category_id,
-                                               int pixel_size,
-                                               BitmapCallback callback) {
-  task_queue_.AddTask(std::make_unique<GetImagesTask>(
-      explore_sites_store_.get(), category_id, kFaviconsPerCategoryImage,
-      base::BindOnce(&ExploreSitesServiceImpl::ComposeCategoryImage,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     pixel_size)));
 }
 
 void ExploreSitesServiceImpl::GetSummaryImage(int pixel_size,
@@ -164,11 +151,6 @@ void ExploreSitesServiceImpl::ClearActivities(base::Time begin,
       base::BindOnce(
           [](base::OnceClosure callback, bool) { std::move(callback).Run(); },
           std::move(callback))));
-}
-
-void ExploreSitesServiceImpl::IncrementNtpShownCount(int category_id) {
-  task_queue_.AddTask(std::make_unique<IncrementShownCountTask>(
-      explore_sites_store_.get(), category_id));
 }
 
 void ExploreSitesServiceImpl::ClearCachedCatalogsForDebugging() {

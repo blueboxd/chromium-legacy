@@ -29,22 +29,16 @@ js_library("cr_policy_indicator") {
 }
 
 js_library("cr_policy_indicator_behavior") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
+  deps = [ "//ui/webui/resources/js:assert" ]
 }
 
 js_library("cr_policy_pref_behavior") {
-  deps = [
-    ":cr_policy_indicator_behavior",
-  ]
+  deps = [ ":cr_policy_indicator_behavior" ]
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 
 js_library("cr_policy_pref_indicator") {
-  deps = [
-    ":cr_policy_indicator_behavior",
-  ]
+  deps = [ ":cr_policy_indicator_behavior" ]
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 
@@ -79,9 +73,7 @@ polymer_modulizer("cr_tooltip_icon") {
 
 js_type_check("closure_compile_module") {
   is_polymer3 = true
-  deps = [
-    ":cr_tooltip_icon.m",
-  ]
+  deps = [ ":cr_tooltip_icon.m" ]
 }
 
 js_library("cr_tooltip_icon.m") {

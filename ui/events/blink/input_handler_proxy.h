@@ -87,8 +87,13 @@ class InputHandlerProxy : public cc::InputHandlerClient,
       const cc::InputHandlerPointerResult& pointer_result,
       const LatencyInfo& latency_info,
       const base::TimeTicks now);
+  // TODO(arakeri): Update tests in input_handler_proxy_unittests to call
+  // HandleInputEventWithLatencyInfo instead of directly calling
+  // RouteToTypeSpecificHandler. Once that is done, make
+  // RouteToTypeSpecificHandler private. WIP CL: https://crrev.com/c/2001288
   EventDisposition RouteToTypeSpecificHandler(
       const blink::WebInputEvent& event,
+      EventWithCallback* event_with_callback = nullptr,
       const LatencyInfo& original_latency_info = LatencyInfo());
 
   // cc::InputHandlerClient implementation.

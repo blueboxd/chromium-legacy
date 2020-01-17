@@ -11,6 +11,8 @@ viz_component("host") {
   sources = [
     "client_frame_sink_video_capturer.cc",
     "client_frame_sink_video_capturer.h",
+    "compositing_mode_reporter_impl.cc",
+    "compositing_mode_reporter_impl.h",
     "gpu_client.cc",
     "gpu_client.h",
     "gpu_client_delegate.h",
@@ -41,7 +43,6 @@ viz_component("host") {
   deps = [
     "//base",
     "//components/ui_devtools:buildflags",
-    "//components/viz/common",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
     "//services/viz/privileged/mojom",
@@ -54,6 +55,7 @@ viz_component("host") {
   ]
 
   public_deps = [
+    "//components/viz/common",
     "//gpu/command_buffer/client",
     "//gpu/ipc/host",
     "//services/viz/privileged/mojom/compositing",
@@ -95,9 +97,7 @@ viz_source_set("unit_tests") {
 }
 
 fuzzer_test("hit_test_query_fuzzer") {
-  sources = [
-    "hit_test/hit_test_query_fuzzer.cc",
-  ]
+  sources = [ "hit_test/hit_test_query_fuzzer.cc" ]
 
   libfuzzer_options = [ "max_len=4096" ]
 

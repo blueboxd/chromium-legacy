@@ -18,6 +18,9 @@ const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
 const base::Feature kAutoNightLight{"AutoNightLight",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDisplayChangeModal{"DisplayChangeModal",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDockedMagnifier{"DockedMagnifier",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -103,6 +106,9 @@ const base::Feature kSwipingFromLeftEdgeToGoBack{
 
 const base::Feature kDragFromShelfToHomeOrOverview{
     "DragFromShelfToHomeOrOverview", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kHideShelfControlsInTabletMode{
+    "HideShelfControlsInTabletMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
@@ -214,6 +220,15 @@ bool IsDragFromShelfToHomeOrOverviewEnabled() {
 
 bool IsReduceDisplayNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kReduceDisplayNotifications);
+}
+
+bool IsHideShelfControlsInTabletModeEnabled() {
+  return base::FeatureList::IsEnabled(kHideShelfControlsInTabletMode) &&
+         IsDragFromShelfToHomeOrOverviewEnabled();
+}
+
+bool IsDisplayChangeModalEnabled() {
+  return base::FeatureList::IsEnabled(kDisplayChangeModal);
 }
 
 }  // namespace features

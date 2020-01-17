@@ -179,6 +179,7 @@ class CORE_EXPORT HTMLSelectElement final
 
  private:
   const AtomicString& FormControlType() const override;
+  void UpdateFromElement() override;
 
   bool MayTriggerVirtualKeyboard() const override;
 
@@ -242,6 +243,7 @@ class CORE_EXPORT HTMLSelectElement final
   void ParseMultipleAttribute(const AtomicString&);
   HTMLOptionElement* LastSelectedOption() const;
   void UpdateSelectedState(HTMLOptionElement*, bool multi, bool shift);
+  void DidUpdateMenuListActiveOption(HTMLOptionElement*);
   void MenuListDefaultEventHandler(Event&);
   void HandlePopupOpenKeyboardEvent(Event&);
   bool ShouldOpenPopupForKeyDownEvent(const KeyboardEvent&);
@@ -272,6 +274,8 @@ class CORE_EXPORT HTMLSelectElement final
                                                   SkipDirection) const;
   HTMLOptionElement* EventTargetOption(const Event&);
   AutoscrollController* GetAutoscrollController() const;
+  LayoutBox* AutoscrollBox() override;
+  void StopAutoscroll() override;
   void ScrollToOptionTask();
 
   bool AreAuthorShadowsAllowed() const override { return false; }
@@ -301,6 +305,8 @@ class CORE_EXPORT HTMLSelectElement final
   Member<HTMLOptionElement> active_selection_end_;
   Member<HTMLOptionElement> option_to_scroll_to_;
   Member<HTMLOptionElement> suggested_option_;
+  int ax_menulist_last_active_index_ = -1;
+  bool has_updated_menulist_active_option_ = false;
   bool is_multiple_;
   bool is_in_non_contiguous_selection_;
   bool active_selection_state_;

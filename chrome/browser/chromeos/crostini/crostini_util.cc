@@ -97,7 +97,7 @@ void OnCrostiniRestarted(Profile* profile,
                          base::OnceClosure callback,
                          crostini::CrostiniResult result) {
   if (ShouldPromptContainerUpgrade()) {
-    chromeos::CrostiniUpgraderDialog::Show(profile, std::move(callback));
+    chromeos::CrostiniUpgraderDialog::Show(std::move(callback));
     return;
   }
   if (result != crostini::CrostiniResult::SUCCESS) {
@@ -338,9 +338,11 @@ bool IsCrostiniRunning(Profile* profile) {
 bool ShouldConfigureDefaultContainer(Profile* profile) {
   const base::FilePath ansible_playbook_file_path =
       profile->GetPrefs()->GetFilePath(prefs::kCrostiniAnsiblePlaybookFilePath);
+  bool default_container_configured = profile->GetPrefs()->GetBoolean(
+      prefs::kCrostiniDefaultContainerConfigured);
   return base::FeatureList::IsEnabled(
              features::kCrostiniAnsibleInfrastructure) &&
-         !ansible_playbook_file_path.empty();
+         !default_container_configured && !ansible_playbook_file_path.empty();
 }
 
 // TODO(davidmunro): Answer based on flag and current container version.

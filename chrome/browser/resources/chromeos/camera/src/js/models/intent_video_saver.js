@@ -47,6 +47,3 @@ export class IntentVideoSaver extends FileVideoSaver {
     return new IntentVideoSaver(intent, tmpFile, writer);
   }
 }
-
-/** @const */
-cca.models.IntentVideoSaver = IntentVideoSaver;

@@ -231,7 +231,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
     password_client_->NavigateToManagePasswordsPage(
         ManagePasswordsReferrer::kPasswordDropdown);
     metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
-        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
+        metrics_util::ShowAllSavedPasswordsContext::kPassword);
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kShowAll,
         password_client_->IsIncognito());
@@ -345,7 +345,7 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     suggestions.push_back(suggestion);
 
     metrics_util::LogContextOfShowAllSavedPasswordsShown(
-        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
+        metrics_util::ShowAllSavedPasswordsContext::kPassword);
   }
 
   if (show_account_storage_optin) {
@@ -408,7 +408,7 @@ bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
     suggestions.push_back(suggestion);
 
     metrics_util::LogContextOfShowAllSavedPasswordsShown(
-        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
+        metrics_util::ShowAllSavedPasswordsContext::kPassword);
   }
 
   if (!password_manager_driver_->CanShowAutofillUi())

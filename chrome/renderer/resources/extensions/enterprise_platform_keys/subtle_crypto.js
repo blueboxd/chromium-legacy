@@ -44,7 +44,7 @@ function CreateOperationError() {
 // returns true.
 function catchInvalidTokenError(reject) {
   if (chrome.runtime.lastError &&
-      chrome.runtime.lastError.message == errorInvalidToken) {
+      chrome.runtime.lastError.message === errorInvalidToken) {
     reject(chrome.runtime.lastError);
     return true;
   }

@@ -57,7 +57,7 @@
                 android:layout_marginTop="3dp"
                 android:layout_marginEnd="6dp"
                 android:contentDescription="@string/accessibility_play_video"
-                app:srcCompat="@drawable/ic_play_circle_24dp_white" />
+                app:srcCompat="@drawable/ic_play_circle_filled_white_24dp" />
         </LinearLayout>
     </FrameLayout>
 
@@ -68,7 +68,7 @@
         android:layout_gravity="center"
         android:contentDescription="@string/accessibility_play_video"
         android:visibility="gone"
-        app:srcCompat="@drawable/ic_play_circle_24dp_white" />
+        app:srcCompat="@drawable/ic_play_circle_filled_white_24dp" />
 
     <ImageView
         android:id="@+id/selected"

@@ -22,6 +22,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
@@ -91,6 +92,7 @@ public class SplashController extends EmptyTabObserver implements InflationObser
     private final Activity mActivity;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final TabObserverRegistrar mTabObserverRegistrar;
+    private final TwaFinishHandler mFinishHandler;
 
     private SplashDelegate mDelegate;
 
@@ -124,12 +126,13 @@ public class SplashController extends EmptyTabObserver implements InflationObser
 
     @Inject
     public SplashController(Activity activity, ActivityLifecycleDispatcher lifecycleDispatcher,
-            TabObserverRegistrar tabObserverRegistrar) {
+            TabObserverRegistrar tabObserverRegistrar, TwaFinishHandler finishHandler) {
         mActivity = activity;
         mLifecycleDispatcher = lifecycleDispatcher;
         mTabObserverRegistrar = tabObserverRegistrar;
         mObservers = new ObserverList<>();
         mTranslucencyRemovalStrategy = TranslucencyRemoval.NONE;
+        mFinishHandler = finishHandler;
 
         mLifecycleDispatcher.register(this);
         mTabObserverRegistrar.registerTabObserver(this);
@@ -246,6 +249,11 @@ public class SplashController extends EmptyTabObserver implements InflationObser
             // SurfaceView is attached.
             removeTranslucency();
         }
+
+        // If the client's activity is opaque, finishing the activities one after another may lead
+        // to bottom activity showing itself in a short flash. The problem can be solved by bottom
+        // activity killing the whole task.
+        mFinishHandler.setShouldAttemptFinishingTask(true);
     }
 
     private static @TranslucencyRemoval int computeTranslucencyRemovalStrategy(
@@ -355,6 +363,8 @@ public class SplashController extends EmptyTabObserver implements InflationObser
         assert mSplashShownTimestamp != 0;
         mDelegate.onSplashHidden(tab, reason, mSplashShownTimestamp, splashHiddenTimestamp);
         notifySplashscreenHidden(mSplashShownTimestamp, splashHiddenTimestamp);
+
+        mFinishHandler.setShouldAttemptFinishingTask(false);
 
         mLifecycleDispatcher.unregister(this);
 

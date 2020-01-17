@@ -37,7 +37,7 @@ class CORE_EXPORT DevToolsAgent : public GarbageCollected<DevToolsAgent>,
     virtual ~Client() {}
     virtual void AttachSession(DevToolsSession*, bool restore) = 0;
     virtual void DetachSession(DevToolsSession*) = 0;
-    virtual void InspectElement(const WebPoint&) = 0;
+    virtual void InspectElement(const gfx::Point&) = 0;
     virtual void DebuggerTaskStarted() = 0;
     virtual void DebuggerTaskFinished() = 0;
   };
@@ -79,7 +79,7 @@ class CORE_EXPORT DevToolsAgent : public GarbageCollected<DevToolsAgent>,
       mojo::PendingReceiver<mojom::blink::DevToolsSession> io_session,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state,
       bool client_expects_binary_responses) override;
-  void InspectElement(const WebPoint& point) override;
+  void InspectElement(const gfx::Point& point) override;
   void ReportChildWorkers(bool report,
                           bool wait_for_debugger,
                           base::OnceClosure callback) override;

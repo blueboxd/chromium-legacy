@@ -75,6 +75,9 @@
 
 namespace blink {
 
+using network::mojom::ContentSecurityPolicySource;
+using network::mojom::ContentSecurityPolicyType;
+
 class DocumentTest : public PageTestBase {
  protected:
   void TearDown() override {
@@ -997,8 +1000,8 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
   // Set a CSP for the main world.
   const char* kMainWorldCSP = "connect-src https://google.com;";
   GetDocument().GetContentSecurityPolicy()->DidReceiveHeader(
-      kMainWorldCSP, kContentSecurityPolicyHeaderTypeEnforce,
-      kContentSecurityPolicyHeaderSourceHTTP);
+      kMainWorldCSP, ContentSecurityPolicyType::kEnforce,
+      ContentSecurityPolicySource::kHTTP);
 
   LocalFrame* frame = GetDocument().GetFrame();
   ScriptState* main_world_script_state = ToScriptStateForMainWorld(frame);
@@ -1032,7 +1035,7 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
     ScriptState::Scope scope(main_world_script_state);
     EXPECT_THAT(get_csp_headers(),
                 ElementsAre(CSPHeaderAndType(
-                    {kMainWorldCSP, kContentSecurityPolicyHeaderTypeEnforce})));
+                    {kMainWorldCSP, ContentSecurityPolicyType::kEnforce})));
   }
 
   {
@@ -1043,7 +1046,7 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
     // CSP.
     EXPECT_THAT(get_csp_headers(),
                 ElementsAre(CSPHeaderAndType(
-                    {kMainWorldCSP, kContentSecurityPolicyHeaderTypeEnforce})));
+                    {kMainWorldCSP, ContentSecurityPolicyType::kEnforce})));
   }
 
   {
@@ -1063,7 +1066,7 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
       EXPECT_THAT(
           get_csp_headers(),
           ElementsAre(CSPHeaderAndType(
-              {kIsolatedWorldCSP, kContentSecurityPolicyHeaderTypeEnforce})));
+              {kIsolatedWorldCSP, ContentSecurityPolicyType::kEnforce})));
     }
   }
 }

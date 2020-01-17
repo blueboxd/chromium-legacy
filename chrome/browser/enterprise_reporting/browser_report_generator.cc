@@ -4,6 +4,9 @@
 
 #include "chrome/browser/enterprise_reporting/browser_report_generator.h"
 
+#include <string>
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,12 +18,15 @@
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/browser/plugin_service.h"
+#endif
 
 namespace {
 
@@ -48,7 +54,7 @@ void BrowserReportGenerator::Generate(ReportCallback callback) {
 
   // std::move is required here because the function completes the report
   // asynchronously.
-  GeneratePlugins(std::move(report));
+  GeneratePluginsIfNeeded(std::move(report));
 }
 
 void BrowserReportGenerator::GenerateBasicInfos(em::BrowserReport* report) {
@@ -79,9 +85,9 @@ void BrowserReportGenerator::GenerateProfileInfos(em::BrowserReport* report) {
   }
 }
 
-void BrowserReportGenerator::GeneratePlugins(
+void BrowserReportGenerator::GeneratePluginsIfNeeded(
     std::unique_ptr<em::BrowserReport> report) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || !BUILDFLAG(ENABLE_PLUGINS)
   std::move(callback_).Run(std::move(report));
 #else
   content::PluginService::GetInstance()->GetPlugins(
@@ -90,6 +96,7 @@ void BrowserReportGenerator::GeneratePlugins(
 #endif
 }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
 void BrowserReportGenerator::OnPluginsReady(
     std::unique_ptr<em::BrowserReport> report,
     const std::vector<content::WebPluginInfo>& plugins) {
@@ -103,5 +110,6 @@ void BrowserReportGenerator::OnPluginsReady(
 
   std::move(callback_).Run(std::move(report));
 }
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 }  // namespace enterprise_reporting

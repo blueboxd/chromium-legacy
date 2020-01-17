@@ -387,4 +387,11 @@ void SharedImageInterfaceProxy::ReleaseSysmemBufferCollection(
 }
 #endif  // defined(OS_FUCHSIA)
 
+scoped_refptr<gfx::NativePixmap> SharedImageInterfaceProxy::GetNativePixmap(
+    const gpu::Mailbox& mailbox) {
+  // Clients outside of the GPU process cannot obtain the backing NativePixmap
+  // for SharedImages.
+  return nullptr;
+}
+
 }  // namespace gpu

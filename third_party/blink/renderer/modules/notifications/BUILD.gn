@@ -22,7 +22,6 @@ blink_modules_sources("notifications") {
     "timestamp_trigger.cc",
     "timestamp_trigger.h",
   ]
-  deps = [
-    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
-  ]
+  deps =
+      [ "//services/resource_coordinator/public/cpp:resource_coordinator_cpp" ]
 }

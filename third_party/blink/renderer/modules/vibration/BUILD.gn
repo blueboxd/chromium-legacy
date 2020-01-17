@@ -12,7 +12,5 @@ blink_modules_sources("vibration") {
     "vibration_controller.h",
   ]
 
-  deps = [
-    "//services/service_manager/public/cpp",
-  ]
+  deps = [ "//services/service_manager/public/cpp" ]
 }

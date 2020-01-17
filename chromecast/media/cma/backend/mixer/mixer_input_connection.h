@@ -111,6 +111,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
                               RenderingDelay rendering_delay,
                               ::media::AudioBus* buffer) override;
   void OnAudioPlaybackError(MixerError error) override;
+  void OnOutputUnderrun() override;
   void FinalizeAudioPlayback() override;
 
   // AudioProvider implementation:
@@ -131,6 +132,8 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   void PostPcmCompletion();
   void PostEos();
   void PostError(MixerError error);
+  void PostStreamUnderrun();
+  void PostOutputUnderrun();
   void PostAudioReadyForPlayback();
   void DropAudio(int64_t frames) EXCLUSIVE_LOCKS_REQUIRED(lock_);
   void CheckAndStartPlaybackIfNecessary(int num_frames,
@@ -208,6 +211,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   base::RepeatingClosure pcm_completion_task_;
   base::RepeatingClosure eos_task_;
   base::RepeatingClosure ready_for_playback_task_;
+  base::RepeatingClosure post_stream_underrun_task_;
 
   base::WeakPtr<MixerInputConnection> weak_this_;
   base::WeakPtrFactory<MixerInputConnection> weak_factory_;

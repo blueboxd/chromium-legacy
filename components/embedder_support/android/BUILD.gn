@@ -6,9 +6,7 @@ import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
 
 android_library("application_java") {
-  deps = [
-    "//base:base_java",
-  ]
+  deps = [ "//base:base_java" ]
   sources = [
     "java/src/org/chromium/components/embedder_support/application/ClassLoaderContextWrapperFactory.java",
     "java/src/org/chromium/components/embedder_support/application/FontPreloadingWorkaround.java",
@@ -51,15 +49,11 @@ android_library("view_java") {
     "//ui/android:ui_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  sources = [
-    "java/src/org/chromium/components/embedder_support/view/ContentViewRenderView.java",
-  ]
+  sources = [ "java/src/org/chromium/components/embedder_support/view/ContentViewRenderView.java" ]
 }
 
 generate_jni("view_jni_headers") {
-  sources = [
-    "java/src/org/chromium/components/embedder_support/view/ContentViewRenderView.java",
-  ]
+  sources = [ "java/src/org/chromium/components/embedder_support/view/ContentViewRenderView.java" ]
 }
 
 java_strings_grd("web_contents_delegate_strings_grd") {
@@ -94,9 +88,7 @@ static_library("web_contents_delegate") {
 android_resources("web_contents_delegate_java_resources") {
   custom_package = "org.chromium.components.embedder_support.delegate"
   resource_dirs = [ "java/res" ]
-  deps = [
-    ":web_contents_delegate_strings_grd",
-  ]
+  deps = [ ":web_contents_delegate_strings_grd" ]
 }
 
 android_library("web_contents_delegate_java") {

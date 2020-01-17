@@ -651,6 +651,7 @@ TEST_F(CollectUserDataActionTest, SelectDateTimeRange) {
   SetDateTimeProto(date_time_proto->mutable_max(), 2020, 11, 5, 16, 0, 0);
   date_time_proto->set_start_label("Pick up");
   date_time_proto->set_end_label("Return");
+  date_time_proto->set_invalid_error_message("Return == Pick up");
 
   DateTimeProto actual_pickup_time;
   DateTimeProto actual_return_time;

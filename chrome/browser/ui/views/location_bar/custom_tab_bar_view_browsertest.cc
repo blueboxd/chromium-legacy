@@ -26,6 +26,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/views/controls/button/image_button.h"
 
 namespace {
 

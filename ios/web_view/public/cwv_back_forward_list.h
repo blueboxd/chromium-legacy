@@ -9,10 +9,9 @@
 
 #import "cwv_export.h"
 
-#import "ios/web_view/public/cwv_back_forward_list_item.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
+@class CWVBackForwardListItem;
 @class CWVWebView;
 
 // This just behaves like a NSArray<CWVBackForwardListItem*>.

@@ -32,9 +32,7 @@ jumbo_component("message_center") {
     "//url",
   ]
 
-  public_deps = [
-    "//ui/message_center/public/cpp",
-  ]
+  public_deps = [ "//ui/message_center/public/cpp" ]
 
   defines = [ "MESSAGE_CENTER_IMPLEMENTATION" ]
 
@@ -131,9 +129,7 @@ jumbo_component("message_center") {
     }
   } else {
     # Notification service disabled.
-    sources = [
-      "dummy_message_center.cc",
-    ]
+    sources = [ "dummy_message_center.cc" ]
   }
 }
 

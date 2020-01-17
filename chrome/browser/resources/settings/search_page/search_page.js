@@ -18,7 +18,7 @@ Polymer({
      */
     searchEngines_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       }
     },
@@ -34,12 +34,12 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.SearchEnginesBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     // Omnibox search engine
     const updateSearchEngines = searchEngines => {
       this.set('searchEngines_', searchEngines.defaults);
@@ -55,20 +55,20 @@ Polymer({
   },
 
   /** @private */
-  onChange_: function() {
+  onChange_() {
     const select = /** @type {!HTMLSelectElement} */ (this.$$('select'));
     const searchEngine = this.searchEngines_[select.selectedIndex];
     this.browserProxy_.setDefaultSearchEngine(searchEngine.modelIndex);
   },
 
   /** @private */
-  onDisableExtension_: function() {
+  onDisableExtension_() {
     this.fire('refresh-pref', 'default_search_provider.enabled');
   },
 
   /** @private */
-  onManageSearchEnginesTap_: function() {
-    settings.navigateTo(settings.routes.SEARCH_ENGINES);
+  onManageSearchEnginesTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.SEARCH_ENGINES);
   },
 
   /**
@@ -76,7 +76,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDefaultSearchControlledByPolicy_: function(pref) {
+  isDefaultSearchControlledByPolicy_(pref) {
     return pref.controlledBy == chrome.settingsPrivate.ControlledBy.USER_POLICY;
   },
 
@@ -85,7 +85,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDefaultSearchEngineEnforced_: function(pref) {
+  isDefaultSearchEngineEnforced_(pref) {
     return pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 });

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/dom/live_node_list_base.h"
 #include "third_party/blink/renderer/core/html/collection_items_cache.h"
 #include "third_party/blink/renderer/core/html/collection_type.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -212,11 +213,12 @@ class CORE_EXPORT HTMLCollection : public ScriptWrappable,
   mutable CollectionItemsCache<HTMLCollection, Element> collection_items_cache_;
 };
 
-DEFINE_TYPE_CASTS(HTMLCollection,
-                  LiveNodeListBase,
-                  collection,
-                  IsHTMLCollectionType(collection->GetType()),
-                  IsHTMLCollectionType(collection.GetType()));
+template <>
+struct DowncastTraits<HTMLCollection> {
+  static bool AllowFrom(const LiveNodeListBase& collection) {
+    return IsHTMLCollectionType(collection.GetType());
+  }
+};
 
 DISABLE_CFI_PERF
 inline void HTMLCollection::InvalidateCacheForAttribute(

@@ -36,7 +36,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.DATETIME_TIMEZONE_SUBPAGE) {
           map.set(
@@ -72,7 +72,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'can-set-date-time-changed', this.onCanSetDateTimeChanged_.bind(this));
     this.addWebUIListener(
@@ -86,12 +86,12 @@ Polymer({
    * @param {boolean} canSetDateTime Whether date and time are settable.
    * @private
    */
-  onCanSetDateTimeChanged_: function(canSetDateTime) {
+  onCanSetDateTimeChanged_(canSetDateTime) {
     this.canSetDateTime_ = canSetDateTime;
   },
 
   /** @private */
-  onSetDateTimeTap_: function() {
+  onSetDateTimeTap_() {
     chrome.send('showSetDateTimeUI');
   },
 
@@ -99,7 +99,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeTimeZoneSettingSubLabel_: function() {
+  computeTimeZoneSettingSubLabel_() {
     if (!this.getPref('generated.resolve_timezone_by_geolocation_on_off')
              .value) {
       return this.activeTimeZoneDisplayName;
@@ -124,7 +124,7 @@ Polymer({
    * accounts the method is invoked immediately.
    * @private
    */
-  onTimeZoneSettings_: function() {
+  onTimeZoneSettings_() {
     if (this.isChild_) {
       chrome.send('handleShowParentAccessForTimeZone');
       return;
@@ -133,7 +133,8 @@ Polymer({
   },
 
   /** @private */
-  openTimeZoneSubpage_: function() {
-    settings.navigateTo(settings.routes.DATETIME_TIMEZONE_SUBPAGE);
+  openTimeZoneSubpage_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.DATETIME_TIMEZONE_SUBPAGE);
   },
 });

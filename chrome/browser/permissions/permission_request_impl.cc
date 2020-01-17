@@ -58,6 +58,9 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return IDR_ANDROID_INFOBAR_CLIPBOARD;
     case ContentSettingsType::NFC:
       return IDR_ANDROID_INFOBAR_NFC;
+    case ContentSettingsType::VR:
+    case ContentSettingsType::AR:
+      return IDR_ANDROID_INFOBAR_VR_HEADSET;
     default:
       NOTREACHED();
       return IDR_ANDROID_INFOBAR_WARNING;
@@ -85,6 +88,9 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return vector_icons::kAccessibilityIcon;
     case ContentSettingsType::CLIPBOARD_READ_WRITE:
       return kContentPasteIcon;
+    case ContentSettingsType::VR:
+    case ContentSettingsType::AR:
+      return kVrHeadsetIcon;
     default:
       NOTREACHED();
       return kExtensionIcon;
@@ -123,6 +129,12 @@ base::string16 PermissionRequestImpl::GetTitleText() const {
     case ContentSettingsType::NFC:
       message_id = IDS_NFC_PERMISSION_TITLE;
       break;
+    // TODO(andypaicu): GetTitleText is no longer used, but we have to return
+    // something at present to avoid crashing. This both avoids the crash and
+    // avoids adding an unused string.
+    case ContentSettingsType::VR:
+    case ContentSettingsType::AR:
+      return base::string16();
     default:
       NOTREACHED();
       return base::string16();
@@ -162,6 +174,12 @@ base::string16 PermissionRequestImpl::GetMessageText() const {
       break;
     case ContentSettingsType::NFC:
       message_id = IDS_NFC_INFOBAR_TEXT;
+      break;
+    case ContentSettingsType::VR:
+      message_id = IDS_VR_INFOBAR_TEXT;
+      break;
+    case ContentSettingsType::AR:
+      message_id = IDS_AR_INFOBAR_TEXT;
       break;
     default:
       NOTREACHED();
@@ -230,6 +248,12 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
       break;
     case ContentSettingsType::NFC:
       message_id = IDS_NFC_PERMISSION_FRAGMENT;
+      break;
+    case ContentSettingsType::VR:
+      message_id = IDS_VR_PERMISSION_FRAGMENT;
+      break;
+    case ContentSettingsType::AR:
+      message_id = IDS_AR_PERMISSION_FRAGMENT;
       break;
     default:
       NOTREACHED();

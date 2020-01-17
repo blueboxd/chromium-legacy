@@ -47,9 +47,8 @@ class MODULES_EXPORT FetchEvent final
   USING_GARBAGE_COLLECTED_MIXIN(FetchEvent);
 
  public:
-  using PreloadResponseProperty = ScriptPromiseProperty<Member<FetchEvent>,
-                                                        Member<Response>,
-                                                        Member<DOMException>>;
+  using PreloadResponseProperty =
+      ScriptPromiseProperty<Member<Response>, Member<DOMException>>;
   static FetchEvent* Create(ScriptState*,
                             const AtomicString& type,
                             const FetchEventInit*);

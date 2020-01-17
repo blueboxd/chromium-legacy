@@ -559,12 +559,11 @@ TEST(RasterSourceTest, RasterTransformWithoutRecordingScale) {
   StrictMock<MockCanvas> mock_canvas;
   Sequence s;
 
-  SkMatrix m;
-  m.setScale(1.f / recording_scale, 1.f / recording_scale);
+  SkScalar scale = 1.f / recording_scale;
 
   // The recording source has no ops, so will only do the setup.
   EXPECT_CALL(mock_canvas, willSave()).InSequence(s);
-  EXPECT_CALL(mock_canvas, didConcat(m)).InSequence(s);
+  EXPECT_CALL(mock_canvas, didScale(scale, scale)).InSequence(s);
   EXPECT_CALL(mock_canvas, willRestore()).InSequence(s);
 
   gfx::Size small_size(50, 50);

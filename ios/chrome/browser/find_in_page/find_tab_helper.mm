@@ -90,12 +90,6 @@ void FindTabHelper::RestoreSearchTerm() {
   [controller_ restoreSearchTerm];
 }
 
-void FindTabHelper::DidFinishNavigation(
-    web::WebState* web_state,
-    web::NavigationContext* navigation_context) {
-  StopFinding(nil);
-}
-
 void FindTabHelper::WebStateDestroyed(web::WebState* web_state) {
   [controller_ detachFromWebState];
   web_state->RemoveObserver(this);

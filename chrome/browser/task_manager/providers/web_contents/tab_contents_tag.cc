@@ -6,7 +6,7 @@
 
 namespace task_manager {
 
-TabContentsTask* TabContentsTag::CreateTask() const {
+TabContentsTask* TabContentsTag::CreateTask(WebContentsTaskProvider*) const {
   return new TabContentsTask(web_contents());
 }
 

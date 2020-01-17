@@ -66,30 +66,15 @@ const ClipboardFormatType& ClipboardFormatType::GetUrlType() {
 }
 
 // static
-const ClipboardFormatType& ClipboardFormatType::GetUrlWType() {
-  return ClipboardFormatType::GetUrlType();
-}
-
-// static
 const ClipboardFormatType& ClipboardFormatType::GetPlainTextType() {
   static base::NoDestructor<ClipboardFormatType> type(NSPasteboardTypeString);
   return *type;
 }
 
 // static
-const ClipboardFormatType& ClipboardFormatType::GetPlainTextWType() {
-  return ClipboardFormatType::GetPlainTextType();
-}
-
-// static
 const ClipboardFormatType& ClipboardFormatType::GetFilenameType() {
   static base::NoDestructor<ClipboardFormatType> type(NSFilenamesPboardType);
   return *type;
-}
-
-// static
-const ClipboardFormatType& ClipboardFormatType::GetFilenameWType() {
-  return ClipboardFormatType::GetFilenameType();
 }
 
 // static

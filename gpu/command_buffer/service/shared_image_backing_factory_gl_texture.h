@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -22,6 +23,7 @@ class ColorSpace;
 
 namespace gpu {
 class SharedImageBacking;
+class SharedImageBatchAccessManager;
 class GpuDriverBugWorkarounds;
 struct GpuFeatureInfo;
 struct GpuPreferences;
@@ -41,10 +43,12 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
     bool supports_unpack_subimage = false;
   };
 
-  SharedImageBackingFactoryGLTexture(const GpuPreferences& gpu_preferences,
-                                     const GpuDriverBugWorkarounds& workarounds,
-                                     const GpuFeatureInfo& gpu_feature_info,
-                                     ImageFactory* image_factory);
+  SharedImageBackingFactoryGLTexture(
+      const GpuPreferences& gpu_preferences,
+      const GpuDriverBugWorkarounds& workarounds,
+      const GpuFeatureInfo& gpu_feature_info,
+      ImageFactory* image_factory,
+      SharedImageBatchAccessManager* batch_access_manager);
   ~SharedImageBackingFactoryGLTexture() override;
 
   // SharedImageBackingFactory implementation.
@@ -167,6 +171,10 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
   int32_t max_texture_size_ = 0;
   bool texture_usage_angle_ = false;
   UnpackStateAttribs attribs;
+
+#if defined(OS_ANDROID)
+  SharedImageBatchAccessManager* batch_access_manager_ = nullptr;
+#endif
 };
 
 }  // namespace gpu

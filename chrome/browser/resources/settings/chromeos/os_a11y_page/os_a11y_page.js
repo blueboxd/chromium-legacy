@@ -40,7 +40,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.MANAGE_ACCESSIBILITY) {
           map.set(
@@ -56,7 +56,7 @@ Polymer({
      */
     showExperimentalSwitchAccess_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean(
             'showExperimentalAccessibilitySwitchAccess');
       },
@@ -64,7 +64,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'screen-reader-state-changed',
         this.onScreenReaderStateChanged_.bind(this));
@@ -75,14 +75,14 @@ Polymer({
    * @private
    * @param {boolean} hasScreenReader Whether a screen reader is enabled.
    */
-  onScreenReaderStateChanged_: function(hasScreenReader) {
+  onScreenReaderStateChanged_(hasScreenReader) {
     // TODO(katie): Remove showExperimentalA11yLabels flag before launch.
     this.showAccessibilityLabelsSetting_ = hasScreenReader &&
         loadTimeData.getBoolean('showExperimentalA11yLabels');
   },
 
   /** @private */
-  onToggleAccessibilityImageLabels_: function() {
+  onToggleAccessibilityImageLabels_() {
     const a11yImageLabelsOn = this.$.a11yImageLabels.checked;
     if (a11yImageLabelsOn) {
       chrome.send('confirmA11yImageLabels');
@@ -93,8 +93,9 @@ Polymer({
   },
 
   /** @private */
-  onManageAccessibilityFeaturesTap_: function() {
-    settings.navigateTo(settings.routes.MANAGE_ACCESSIBILITY);
+  onManageAccessibilityFeaturesTap_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.MANAGE_ACCESSIBILITY);
   },
 
 });

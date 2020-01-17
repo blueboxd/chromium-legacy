@@ -6,21 +6,13 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   generate_java = true
-  sources = [
-    "ime_types.mojom",
-  ]
+  sources = [ "ime_types.mojom" ]
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }
 
 mojom("test_interfaces") {
-  sources = [
-    "ime_mojom_traits_test.mojom",
-  ]
+  sources = [ "ime_mojom_traits_test.mojom" ]
 
-  public_deps = [
-    ":mojom",
-  ]
+  public_deps = [ ":mojom" ]
 }

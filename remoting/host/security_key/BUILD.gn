@@ -97,9 +97,7 @@ source_set("unit_tests") {
     "security_key_message_writer_impl_unittest.cc",
   ]
 
-  public_deps = [
-    ":test_support",
-  ]
+  public_deps = [ ":test_support" ]
   deps = [
     "//mojo/core/test:test_support",
     "//remoting:test_support",

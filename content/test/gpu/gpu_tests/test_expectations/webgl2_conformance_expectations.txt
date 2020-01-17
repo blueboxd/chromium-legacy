@@ -59,9 +59,6 @@ crbug.com/891861 [ android no-passthrough ] WebglExtension_WEBGL_multi_draw_inst
 
 crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 
-crbug.com/1025652 [ intel passthrough d3d11 ] conformance/uniforms/uniform-samplers-test.html [ Failure ]
-crbug.com/1025652 [ intel passthrough opengl ] conformance/uniforms/uniform-samplers-test.html [ Failure ]
-
 crbug.com/949249 [ win passthrough opengl nvidia ] conformance2/extensions/ovr_multiview2.html [ Failure ]
 crbug.com/949249 [ win passthrough no-use-gl ] conformance2/extensions/ovr_multiview2.html [ Failure ]
 crbug.com/949249 [ linux passthrough opengl ] conformance2/extensions/ovr_multiview2.html [ Failure ]
@@ -110,17 +107,8 @@ crbug.com/792210 [ nvidia ] conformance/glsl/bugs/in-parameter-passed-as-inout-a
 ####################
 
 # Intel flaky issues
-crbug.com/945942 [ win passthrough intel ] conformance/uniforms/no-over-optimization-on-uniform-array-00.html [ RetryOnFailure ]
-crbug.com/620379 [ d3d11 win intel ] deqp/functional/gles3/lifetime.html [ RetryOnFailure ]
 crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
 crbug.com/1033662 [ opengl win passthrough intel ] deqp/functional/gles3/sync.html [ RetryOnFailure ]
-
-# It's unfortunate that these suppressions need to be so broad, but it
-# looks like the D3D11 device can be lost spontaneously on this
-# configuration while running basically any test.
-crbug.com/628395 [ d3d11 win intel ] conformance/* [ RetryOnFailure ]
-crbug.com/628395 [ d3d11 win intel ] conformance2/* [ RetryOnFailure ]
-crbug.com/628395 [ d3d11 win intel ] deqp/* [ RetryOnFailure ]
 
 # Intel failed issues
 crbug.com/795030 [ opengl win passthrough intel ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
@@ -553,9 +541,13 @@ crbug.com/665197 [ mac intel-0xa2e ] conformance2/textures/image_bitmap_from_can
 crbug.com/665197 [ mac intel-0xa2e ] conformance2/textures/image_bitmap_from_canvas/tex-2d-r8ui-red_integer-unsigned_byte.html [ Failure ]
 crbug.com/665197 [ mac intel-0xa2e ] conformance2/textures/image_bitmap_from_canvas/tex-2d-rg8ui-rg_integer-unsigned_byte.html [ Failure ]
 crbug.com/658930 [ mac intel ] conformance2/textures/misc/integer-cubemap-texture-sampling.html [ Failure ]
-crbug.com/731877 [ mac intel-0xa2e no-passthrough ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
 crbug.com/782317 [ mac intel ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
 crbug.com/1039465 [ mac intel ] conformance/textures/canvas/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
+
+# Mac Intel No-Passthrough
+crbug.com/731877 [ mac intel-0xa2e no-passthrough ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
+crbug.com/1042011 [ mac intel-0xa2e no-passthrough ] conformance2/textures/canvas_sub_rectangle/tex-3d-r11f_g11f_b10f-rgb-half_float.html [ RetryOnFailure ]
+
 
 # Mac Passthrough
 crbug.com/982294 [ mac passthrough ] conformance/rendering/negative-one-index.html [ Failure ]
@@ -603,7 +595,6 @@ crbug.com/982294 [ mac passthrough ] deqp/functional/gles3/transformfeedback/ran
 
 # Intel failed issues
 crbug.com/950552 [ linux intel no-passthrough ] conformance2/textures/misc/tex-3d-size-limit.html [ Failure ]
-crbug.com/1014429 [ linux intel opengl passthrough ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
 
 # Intel driver issues
 crbug.com/950552 [ linux intel mesa_lt_19.1.2 ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]

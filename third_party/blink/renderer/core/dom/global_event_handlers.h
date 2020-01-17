@@ -127,6 +127,14 @@ class GlobalEventHandlers {
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(touchstart, kTouchstart)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(volumechange, kVolumechange)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(waiting, kWaiting)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitanimationend,
+                                         kWebkitAnimationEnd)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitanimationiteration,
+                                         kWebkitAnimationIteration)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitanimationstart,
+                                         kWebkitAnimationStart)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkittransitionend,
+                                         kWebkitTransitionEnd)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(wheel, kWheel)
 };
 

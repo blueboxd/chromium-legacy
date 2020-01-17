@@ -25,9 +25,7 @@ js_library("set_time_dialog") {
 }
 
 js_library("set_time_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
@@ -38,7 +36,5 @@ polymer_modulizer("set_time_dialog") {
 }
 
 group("polymer3_elements") {
-  deps = [
-    ":set_time_dialog_module",
-  ]
+  deps = [ ":set_time_dialog_module" ]
 }

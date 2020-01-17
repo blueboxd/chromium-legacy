@@ -183,8 +183,7 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
                       dispatcher:(id<BrowserCommands>)dispatcher {
   DCHECK(bookmark);
   DCHECK(browserState);
-  self = [super initWithTableViewStyle:UITableViewStylePlain
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     DCHECK(!bookmark->is_folder());
     DCHECK(!browserState->IsOffTheRecord());

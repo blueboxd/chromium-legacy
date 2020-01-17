@@ -1428,6 +1428,19 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mp4aVariants) {
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"mp4a.4.5\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"mp4a.400.5\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"mp4a.040.5\"'"));
+
+// xHE-AAC support is currently only available on P+.
+#if defined(OS_ANDROID)
+  const char* kXHE_AACProbably =
+      base::android::BuildInfo::GetInstance()->sdk_int() >=
+              base::android::SDK_VERSION_P
+          ? kProbably
+          : kNot;
+#else
+  const char* kXHE_AACProbably = kNot;
+#endif
+  EXPECT_EQ(kXHE_AACProbably, CanPlay("'audio/mp4; codecs=\"mp4a.40.42\"'"));
+  EXPECT_EQ(kXHE_AACProbably, CanPlay("'video/mp4; codecs=\"mp4a.40.42\"'"));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_HLS) {

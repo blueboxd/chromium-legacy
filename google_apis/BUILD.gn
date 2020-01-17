@@ -193,9 +193,7 @@ static_library("test_support") {
 
 source_set("run_all_unittests") {
   testonly = true
-  sources = [
-    "run_all_unittests.cc",
-  ]
+  sources = [ "run_all_unittests.cc" ]
 
   deps = [
     "//base/test:test_support",
@@ -220,9 +218,7 @@ test("google_apis_unittests") {
     "google_api_keys_unittest.h",
   ]
 
-  data = [
-    "test/",
-  ]
+  data = [ "test/" ]
 
   configs += [ ":key_defines" ]
 

@@ -13,6 +13,7 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
+<link rel="import" href="../router.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="all_sites_icons.html">
 <link rel="import" href="clear_storage_dialog_css.html">
@@ -297,6 +298,18 @@
             category="{{ContentSettingsTypes.MIXEDSCRIPT}}"
             icon="settings:insecure-content" id="mixed-script"
             label="$i18n{siteSettingsInsecureContent}">
+        </site-details-permission>
+      </template>
+      <template is="dom-if" if="[[enableWebXrContentSetting_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.AR}}"
+            icon="settings:vr-headset" id="ar"
+            label="$i18n{siteSettingsAr}">
+        </site-details-permission>
+        <site-details-permission
+            category="{{ContentSettingsTypes.VR}}"
+            icon="settings:vr-headset" id="vr"
+            label="$i18n{siteSettingsVr}">
         </site-details-permission>
       </template>
     </div>

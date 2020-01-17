@@ -27,6 +27,9 @@
         "background:tools:gmail": {
             "DEFAULT": "system_health_mobile_043.wprgo"
         },
+        "background:tools:gmail:2019": {
+            "DEFAULT": "system_health_mobile_8da411a0f4.wprgo"
+        },
         "browse:chrome:newtab": {
             "DEFAULT": "system_health_mobile_056.wprgo"
         },
@@ -401,6 +404,9 @@
         },
         "load:tools:gmail": {
             "DEFAULT": "system_health_mobile_048.wprgo"
+        },
+        "load:tools:gmail:2019": {
+            "DEFAULT": "system_health_mobile_b8a3bd8e6d.wprgo"
         },
         "load:tools:maps": {
             "DEFAULT": "system_health_mobile_004.wprgo"

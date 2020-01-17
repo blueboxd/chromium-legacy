@@ -40,9 +40,7 @@ source_set("flags") {
     "crash_report_flags.cc",
     "crash_report_flags.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("crash_report_internal") {

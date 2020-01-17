@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.customtabs.CloseButtonVisibilityManager;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
@@ -55,6 +56,7 @@ public class TrustedWebActivityBrowserControlsVisibilityManagerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mTabProvider.getTab()).thenReturn(mTab);
+        when(mTab.getParentId()).thenReturn(Tab.INVALID_TAB_ID);
         setTabSecurityLevel(ConnectionSecurityLevel.NONE);
     }
 

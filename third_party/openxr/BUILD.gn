@@ -59,9 +59,7 @@ if (enable_openxr) {
       "src/src",
     ]
 
-    deps = [
-      "//third_party/jsoncpp",
-    ]
+    deps = [ "//third_party/jsoncpp" ]
 
     public_configs = [ ":config" ]
 

@@ -34,9 +34,7 @@ void KeyedServiceBaseFactory::DependsOn(KeyedServiceBaseFactory* rhs) {
 }
 
 void KeyedServiceBaseFactory::AssertContextWasntDestroyed(void* context) const {
-  // TODO(crbug.com/701326): We should DCHECK(CalledOnValidThread()) here, but
-  // currently some code doesn't do service getting on the main thread.
-  // This needs to be fixed and DCHECK should be restored here.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   dependency_manager_->AssertContextWasntDestroyed(context);
 }
 

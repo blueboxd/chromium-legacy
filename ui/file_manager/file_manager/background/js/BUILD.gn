@@ -160,9 +160,7 @@ js_library("crostini") {
 
 js_library("mock_crostini") {
   testonly = true
-  deps = [
-    ":crostini",
-  ]
+  deps = [ ":crostini" ]
   externs_list = [ "//ui/file_manager/externs/background/crostini.js" ]
   visibility = []
   visibility = [ "//ui/file_manager/file_manager/*" ]
@@ -201,9 +199,7 @@ js_unittest("device_handler_unittest") {
 
 js_library("mock_drive_sync_handler") {
   testonly = true
-  deps = [
-    "//ui/webui/resources/js/cr:event_target",
-  ]
+  deps = [ "//ui/webui/resources/js/cr:event_target" ]
   externs_list =
       [ "//ui/file_manager/externs/background/drive_sync_handler.js" ]
   visibility = []
@@ -252,9 +248,7 @@ js_unittest("duplicate_finder_unittest") {
 }
 
 js_library("entry_location_impl") {
-  deps = [
-    "//ui/file_manager/base/js:volume_manager_types",
-  ]
+  deps = [ "//ui/file_manager/base/js:volume_manager_types" ]
   externs_list = [ "//ui/file_manager/externs/entry_location.js" ]
 }
 
@@ -316,9 +310,7 @@ js_library("file_operation_util") {
 }
 
 js_library("metadata_proxy") {
-  deps = [
-    "//ui/file_manager/file_manager/common/js:lru_cache",
-  ]
+  deps = [ "//ui/file_manager/file_manager/common/js:lru_cache" ]
 }
 
 js_unittest("metadata_proxy_unittest") {
@@ -455,9 +447,7 @@ js_library("progress_center") {
 }
 
 js_library("task_queue") {
-  deps = [
-    "//ui/file_manager/file_manager/common/js:importer_common",
-  ]
+  deps = [ "//ui/file_manager/file_manager/common/js:importer_common" ]
   externs_list = [ "//ui/file_manager/externs/background/task_queue.js" ]
 }
 
@@ -507,9 +497,7 @@ js_library("runtime_loaded_test_util") {
 }
 
 js_library("volume_info_impl") {
-  deps = [
-    "//ui/file_manager/base/js:volume_manager_types",
-  ]
+  deps = [ "//ui/file_manager/base/js:volume_manager_types" ]
   externs_list = [ "//ui/file_manager/externs/volume_info.js" ]
 }
 
@@ -525,9 +513,7 @@ js_library("volume_info_list_impl") {
 }
 
 js_library("mount_metrics") {
-  deps = [
-    "//ui/file_manager/file_manager/common/js:metrics",
-  ]
+  deps = [ "//ui/file_manager/file_manager/common/js:metrics" ]
 }
 
 js_unittest("mount_metrics_unittest") {
@@ -550,9 +536,7 @@ js_library("volume_manager_impl") {
 }
 
 js_library("volume_manager_factory") {
-  deps = [
-    ":volume_manager_impl",
-  ]
+  deps = [ ":volume_manager_impl" ]
 }
 
 js_unittest("volume_manager_unittest") {

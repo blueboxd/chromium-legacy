@@ -68,7 +68,5 @@ source_set("clear_key_cdm_proxy") {
 }
 
 source_set("cdm_proxy_common") {
-  sources = [
-    "cdm_proxy_common.h",
-  ]
+  sources = [ "cdm_proxy_common.h" ]
 }

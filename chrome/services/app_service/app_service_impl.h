@@ -27,6 +27,9 @@ namespace apps {
 // See chrome/services/app_service/README.md.
 class AppServiceImpl : public apps::mojom::AppService {
  public:
+  using GetMenuModelCallback =
+      base::OnceCallback<void(apps::mojom::MenuItemsPtr)>;
+
   explicit AppServiceImpl(PrefService* profile_prefs);
   ~AppServiceImpl() override;
 
@@ -73,6 +76,10 @@ class AppServiceImpl : public apps::mojom::AppService {
                 const std::string& app_id) override;
   void UnpauseApps(apps::mojom::AppType app_type,
                    const std::string& app_id) override;
+  void GetMenuModel(apps::mojom::AppType app_type,
+                    const std::string& app_id,
+                    apps::mojom::MenuType menu_type,
+                    GetMenuModelCallback callback);
   void OpenNativeSettings(apps::mojom::AppType app_type,
                           const std::string& app_id) override;
   void AddPreferredApp(apps::mojom::AppType app_type,

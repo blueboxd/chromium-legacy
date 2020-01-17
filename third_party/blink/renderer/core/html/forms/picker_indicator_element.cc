@@ -110,6 +110,7 @@ void PickerIndicatorElement::DidChooseValue(double value) {
 
 void PickerIndicatorElement::DidEndChooser() {
   chooser_.Clear();
+  picker_indicator_owner_->DidEndChooser();
 }
 
 void PickerIndicatorElement::OpenPopup() {

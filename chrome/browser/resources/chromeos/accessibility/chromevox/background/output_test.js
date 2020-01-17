@@ -109,7 +109,7 @@ ChromeVoxOutputE2ETest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
   /** @override */
-  setUp: function() {
+  setUp() {
     window.Dir = AutomationUtil.Dir;
     window.RoleType = chrome.automation.RoleType;
     this.forceContextualLastOutput();
@@ -1285,5 +1285,24 @@ TEST_F('ChromeVoxOutputE2ETest', 'InitialSpeechProperties', function() {
         assertEqualsJSON(
             [{phoneticCharacters: true, category: TtsCategory.NAV}],
             this.currentProperties);
+      });
+});
+
+TEST_F('ChromeVoxOutputE2ETest', 'NameOrTextContent', function() {
+  this.runWithLoadedTree(
+      `
+        <div tabindex=-1>
+          <div aria-label="hello there world">
+            <p>hello world</p>
+          </div>
+        </div>
+      `,
+      function(root) {
+        var focusableDiv = root.firstChild;
+        assertEquals(RoleType.GENERIC_CONTAINER, focusableDiv.role);
+        assertEquals(
+            chrome.automation.NameFromType.CONTENTS, focusableDiv.nameFrom);
+        var o = new Output().withSpeech(cursors.Range.fromNode(focusableDiv));
+        assertEquals('hello there world', o.speechOutputForTest.string_);
       });
 });

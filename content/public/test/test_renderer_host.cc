@@ -24,11 +24,11 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/navigation_policy.h"
-#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/content_browser_sanity_checker.h"
+#include "content/test/test_navigation_url_loader_factory.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_frame_host_factory.h"
 #include "content/test/test_render_view_host.h"
@@ -112,7 +112,8 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
     : rph_factory_(new MockRenderProcessHostFactory()),
       rvh_factory_(new TestRenderViewHostFactory(rph_factory_.get())),
       rfh_factory_(new TestRenderFrameHostFactory()),
-      rwhi_factory_(new TestRenderWidgetHostFactory()) {
+      rwhi_factory_(new TestRenderWidgetHostFactory()),
+      loader_factory_(new TestNavigationURLLoaderFactory()) {
   // A TaskEnvironment is needed on the main thread for Mojo bindings to
   // graphics services. Some tests have their own, so this only creates one
   // (single-threaded) when none exists. This means tests must ensure any
@@ -262,11 +263,9 @@ void RenderViewHostTestHarness::SetUp() {
   browser_context_ = CreateBrowserContext();
 
   SetContents(CreateTestWebContents());
-  BrowserSideNavigationSetUp();
 }
 
 void RenderViewHostTestHarness::TearDown() {
-  BrowserSideNavigationTearDown();
   DeleteContents();
 #if defined(USE_AURA)
   aura_test_helper_->TearDown();

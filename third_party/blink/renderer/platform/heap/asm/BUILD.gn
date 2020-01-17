@@ -8,9 +8,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
   nasm_assemble("asm") {
     assert(current_cpu == "x86" || current_cpu == "x64")
 
-    sources = [
-      "SaveRegisters_x86.asm",
-    ]
+    sources = [ "SaveRegisters_x86.asm" ]
 
     defines = []
     if (is_mac) {
@@ -31,25 +29,15 @@ if (current_cpu == "x86" || current_cpu == "x64") {
 } else {  # current_cpu == "x86" || current_cpu == "x64"
   source_set("asm") {
     if (current_cpu == "arm") {
-      sources = [
-        "SaveRegisters_arm.S",
-      ]
+      sources = [ "SaveRegisters_arm.S" ]
     } else if (current_cpu == "arm64") {
-      sources = [
-        "SaveRegisters_arm64.S",
-      ]
+      sources = [ "SaveRegisters_arm64.S" ]
     } else if (current_cpu == "mipsel") {
-      sources = [
-        "SaveRegisters_mips.S",
-      ]
+      sources = [ "SaveRegisters_mips.S" ]
     } else if (current_cpu == "mips64el") {
-      sources = [
-        "SaveRegisters_mips64.S",
-      ]
+      sources = [ "SaveRegisters_mips64.S" ]
     } else if (current_cpu == "ppc64") {
-      sources = [
-        "SaveRegisters_ppc64.S",
-      ]
+      sources = [ "SaveRegisters_ppc64.S" ]
     }
 
     if (current_cpu == "arm") {

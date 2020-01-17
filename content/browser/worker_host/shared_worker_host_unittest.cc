@@ -51,20 +51,15 @@ class SharedWorkerHostTest : public testing::Test {
 
   base::WeakPtr<SharedWorkerHost> CreateHost() {
     GURL url("http://www.example.com/w.js");
-    std::string name("name");
-    url::Origin origin = url::Origin::Create(url);
-    std::string content_security_policy;
-    network::mojom::ContentSecurityPolicyType content_security_policy_type =
-        network::mojom::ContentSecurityPolicyType::kReport;
-    network::mojom::IPAddressSpace creation_address_space =
-        network::mojom::IPAddressSpace::kPublic;
-    blink::mojom::SharedWorkerCreationContextType creation_context_type =
-        blink::mojom::SharedWorkerCreationContextType::kSecure;
 
     SharedWorkerInstance instance(
-        service_.next_shared_worker_instance_id_++, url, name, origin,
-        content_security_policy, content_security_policy_type,
-        creation_address_space, creation_context_type);
+        service_.next_shared_worker_instance_id_++, url,
+        blink::mojom::ScriptType::kClassic,
+        network::mojom::CredentialsMode::kSameOrigin, "name",
+        url::Origin::Create(url), /*content_security_policy=*/"",
+        network::mojom::ContentSecurityPolicyType::kReport,
+        network::mojom::IPAddressSpace::kPublic,
+        blink::mojom::SharedWorkerCreationContextType::kSecure);
     auto host = std::make_unique<SharedWorkerHost>(&service_, instance,
                                                    &mock_render_process_host_);
     auto weak_host = host->AsWeakPtr();

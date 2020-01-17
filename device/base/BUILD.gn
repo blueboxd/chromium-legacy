@@ -20,13 +20,9 @@ component("base") {
 
   defines = [ "DEVICE_BASE_IMPLEMENTATION" ]
 
-  deps = [
-    "//device/vr/buildflags",
-  ]
+  deps = [ "//device/vr/buildflags" ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 
   if (use_udev) {
     sources += [

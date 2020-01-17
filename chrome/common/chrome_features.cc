@@ -33,6 +33,13 @@ const base::Feature kApkWebAppInstalls{"ApkWebAppInstalls",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS)
+// Enables app activity reporting for child user.
+// Requires |kPerAppTimeLimits| to be enabled.
+const base::Feature kAppActivityReporting{"AppActivityReporting",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_MACOSX)
 // Enable the new multi-profile-aware app shim mode.
 // TODO(https://crbug.com/982024): Delete this flag when feature is complete.
@@ -263,6 +270,11 @@ const base::Feature kDesktopPWAsCacheDuringDefaultInstall{
 // changes its manifest.
 const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Whether PWA update check throttling persists across browser restarts.
+const base::Feature kDesktopPWAsLocalUpdatingThrottlePersistence{
+    "DesktopPWAsLocalUpdatingThrottlePersistence",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Adds a tab strip to PWA windows, used for UI experimentation.
 const base::Feature kDesktopPWAsTabStrip{"DesktopPWAsTabStrip",
@@ -596,6 +608,11 @@ const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
 const base::Feature kPrerenderFallbackToPreconnect{
     "PrerenderFallbackToPreconnect", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Forces all eligible prerenders to be done in an isolated manner such that no
+// user-identifying information is used during the prefetch.
+const base::Feature kIsolatePrerenders{"IsolatePrerenders",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether to display redesign of the chrome privacy settings page
 // to the user.
 const base::Feature kPrivacySettingsRedesign{"PrivacySettingsRedesign",
@@ -663,7 +680,7 @@ const base::Feature kSitePerProcess {
 // SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled() rather than
 // checking the feature directly, since that decision is influenced by other
 // factors as well.
-const base::Feature kSiteIsolationForPasswordSites{
+const base::Feature kSiteIsolationForPasswordSites {
   "site-isolation-for-password-sites",
 // Enabled by default on Android; see https://crbug.com/849815.  Note that this
 // should not affect Android Webview, which does not include this code.
@@ -704,8 +721,8 @@ const base::Feature kSoundContentSetting{"SoundContentSetting",
 
 #if !defined(OS_ANDROID)
 // Enables or disables the Javascript API to propagate sync encryption keys.
-const base::Feature kSyncEncryptionKeysWebApi{
-    "SyncEncryptionKeysWebApi", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSyncEncryptionKeysWebApi{"SyncEncryptionKeysWebApi",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

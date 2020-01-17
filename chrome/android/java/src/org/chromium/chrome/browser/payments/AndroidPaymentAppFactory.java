@@ -10,7 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.Pair;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppCreatedCallback;
 import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppFactoryAddition;
 import org.chromium.components.payments.PaymentManifestDownloader;
@@ -56,8 +56,9 @@ public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
     public static Map<String, Pair<String, Drawable>> getAndroidPaymentAppsInfo() {
         Map<String, Pair<String, Drawable>> paymentAppsInfo = new HashMap<>();
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_PAYMENT_APPS))
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_PAYMENT_APPS)) {
             return paymentAppsInfo;
+        }
 
         PackageManagerDelegate packageManagerDelegate = new PackageManagerDelegate();
         Intent payIntent = new Intent(AndroidPaymentApp.ACTION_PAY);

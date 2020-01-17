@@ -14,7 +14,6 @@ namespace {
 
 bool IsPendingState(LifecycleUnitState state) {
   return state == LifecycleUnitState::PENDING_FREEZE ||
-         state == LifecycleUnitState::PENDING_DISCARD ||
          state == LifecycleUnitState::PENDING_UNFREEZE;
 }
 
@@ -23,8 +22,6 @@ const char* GetTabStateEventName(LifecycleUnitState state) {
   switch (state) {
     case LifecycleUnitState::PENDING_FREEZE:
       return kPendingFreezeTracingEventName;
-    case LifecycleUnitState::PENDING_DISCARD:
-      return kPendingDiscardTracingEventName;
     case LifecycleUnitState::PENDING_UNFREEZE:
       return kPendingUnfreezeTracingEventName;
     default:
@@ -36,7 +33,6 @@ const char* GetTabStateEventName(LifecycleUnitState state) {
 }  // namespace
 
 const char kPendingFreezeTracingEventName[] = "Tab State: Pending Freeze";
-const char kPendingDiscardTracingEventName[] = "Tab State: Pending Discard";
 const char kPendingUnfreezeTracingEventName[] = "Tab State: Pending Unfreeze";
 
 TracingLifecycleUnitObserver::TracingLifecycleUnitObserver() = default;

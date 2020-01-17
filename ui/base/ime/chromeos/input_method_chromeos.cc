@@ -698,6 +698,7 @@ void InputMethodChromeOS::ExtractCompositionText(
       ImeTextSpan ime_text_span(ui::ImeTextSpan::Type::kComposition,
                                 char16_offsets[start], char16_offsets[end],
                                 text_ime_text_span.thickness,
+                                ui::ImeTextSpan::UnderlineStyle::kSolid,
                                 text_ime_text_span.background_color);
       ime_text_span.underline_color = text_ime_text_span.underline_color;
       out_composition->ime_text_spans.push_back(ime_text_span);
@@ -708,10 +709,10 @@ void InputMethodChromeOS::ExtractCompositionText(
   if (text.selection.start() < text.selection.end()) {
     const uint32_t start = text.selection.start();
     const uint32_t end = text.selection.end();
-    ImeTextSpan ime_text_span(ui::ImeTextSpan::Type::kComposition,
-                              char16_offsets[start], char16_offsets[end],
-                              ui::ImeTextSpan::Thickness::kThick,
-                              SK_ColorTRANSPARENT);
+    ImeTextSpan ime_text_span(
+        ui::ImeTextSpan::Type::kComposition, char16_offsets[start],
+        char16_offsets[end], ui::ImeTextSpan::Thickness::kThick,
+        ui::ImeTextSpan::UnderlineStyle::kSolid, SK_ColorTRANSPARENT);
     out_composition->ime_text_spans.push_back(ime_text_span);
 
     // If the cursor is at start or end of this ime_text_span, then we treat
@@ -728,9 +729,10 @@ void InputMethodChromeOS::ExtractCompositionText(
 
   // Use a thin underline with text color by default.
   if (out_composition->ime_text_spans.empty()) {
-    out_composition->ime_text_spans.push_back(
-        ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, length,
-                    ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
+    out_composition->ime_text_spans.push_back(ImeTextSpan(
+        ui::ImeTextSpan::Type::kComposition, 0, length,
+        ui::ImeTextSpan::Thickness::kThin,
+        ui::ImeTextSpan::UnderlineStyle::kSolid, SK_ColorTRANSPARENT));
   }
 }
 

@@ -195,8 +195,8 @@ public class NavigationSheetTest {
             Tab tab = mActivityTestRule.getActivity().getActivityTabProvider().get();
             NavigationSheet navigationSheet =
                     NavigationSheet.create(tab.getContentView(), mActivityTestRule.getActivity(),
-                            mActivityTestRule.getActivity()::getBottomSheetController,
-                            new TestSheetDelegate(controller));
+                            mActivityTestRule.getActivity()::getBottomSheetController);
+            navigationSheet.setDelegate(new TestSheetDelegate(controller));
             navigationSheet.startAndExpand(false, false);
             return navigationSheet;
         });

@@ -124,8 +124,7 @@ class DriveAPIService : public DriveServiceInterface,
   void RemoveObserver(DriveServiceObserver* observer) override;
   bool CanSendRequest() const override;
   bool HasAccessToken() const override;
-  void RequestAccessToken(
-      const google_apis::AuthStatusCallback& callback) override;
+  void RequestAccessToken(google_apis::AuthStatusCallback callback) override;
   bool HasRefreshToken() const override;
   void ClearAccessToken() override;
   void ClearRefreshToken() override;

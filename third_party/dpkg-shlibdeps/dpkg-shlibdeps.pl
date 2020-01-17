@@ -24,7 +24,7 @@
 use warnings;
 use feature qw(state);
 
-use List::Util qw(any none);
+use List::Util qw(reduce);
 use Cwd qw(realpath);
 use File::Basename qw(dirname);
 
@@ -49,6 +49,11 @@ use constant {
     WARN_DEP_AVOIDABLE => 2,
     WARN_NOT_NEEDED => 4,
 };
+
+sub none (&@) { my $code=shift; reduce { $a && !$code->(local $_ = $b) } 1, @_; }
+sub any  (&@) { my $code=shift; reduce { $a ||  $code->(local $_ = $b) } 0, @_; }
+
+sub g_ { return shift; }
 
 # By increasing importance
 my @depfields = qw(Suggests Recommends Depends Pre-Depends);

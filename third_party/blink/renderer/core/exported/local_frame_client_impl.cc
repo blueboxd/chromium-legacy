@@ -38,7 +38,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -951,11 +951,11 @@ KURL LocalFrameClientImpl::OverrideFlashEmbedWithHTML(const KURL& url) {
 void LocalFrameClientImpl::NotifyUserActivation(
     bool need_browser_verification) {
   DCHECK(web_frame_->Client());
-  UserActivationUpdateType update_type =
+  mojom::blink::UserActivationUpdateType update_type =
       need_browser_verification
-          ? UserActivationUpdateType::
+          ? mojom::blink::UserActivationUpdateType::
                 kNotifyActivationPendingBrowserVerification
-          : UserActivationUpdateType::kNotifyActivation;
+          : mojom::blink::UserActivationUpdateType::kNotifyActivation;
   web_frame_->Client()->UpdateUserActivationState(update_type);
   if (WebAutofillClient* autofill_client = web_frame_->AutofillClient())
     autofill_client->UserGestureObserved();
@@ -964,7 +964,7 @@ void LocalFrameClientImpl::NotifyUserActivation(
 void LocalFrameClientImpl::ConsumeTransientUserActivation() {
   DCHECK(web_frame_->Client());
   web_frame_->Client()->UpdateUserActivationState(
-      UserActivationUpdateType::kConsumeTransientActivation);
+      mojom::blink::UserActivationUpdateType::kConsumeTransientActivation);
 }
 
 void LocalFrameClientImpl::AbortClientNavigation() {

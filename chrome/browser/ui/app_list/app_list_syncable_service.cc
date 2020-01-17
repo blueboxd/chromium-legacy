@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_model_builder.h"
@@ -39,7 +40,9 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model/sync_merge_result.h"
@@ -408,6 +411,20 @@ void AppListSyncableService::BuildModel() {
 
   if (wait_until_ready_to_sync_cb_)
     std::move(wait_until_ready_to_sync_cb_).Run();
+
+  // Install default page brakes for tablet form factor devices here as
+  // these devices do not have app list sync turned on.
+  if (chromeos::switches::IsTabletFormFactor() && profile_->IsNewProfile()) {
+    DCHECK(!ProfileSyncServiceFactory::GetForProfile(profile_)
+                ->GetActiveDataTypes()
+                .Has(syncer::APP_LIST));
+    // Post a task to avoid adding the default page break items to allow other
+    // list items to be added first.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AppListSyncableService::InstallDefaultPageBreaks,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void AppListSyncableService::AddObserverAndStart(Observer* observer) {

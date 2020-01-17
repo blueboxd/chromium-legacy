@@ -42,7 +42,7 @@ Polymer({
     /** @private */
     isGuest_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isGuest');
       }
     },
@@ -90,12 +90,12 @@ Polymer({
   advancedExtensionUrl_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.FontsBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'advanced-font-settings-installed',
         this.setAdvancedExtensionInstalled_.bind(this));
@@ -105,7 +105,7 @@ Polymer({
   },
 
   /** @private */
-  openAdvancedExtension_: function() {
+  openAdvancedExtension_() {
     if (this.advancedExtensionInstalled_) {
       this.browserProxy_.openAdvancedFontSettings();
     } else {
@@ -118,7 +118,7 @@ Polymer({
    *     extension is installed.
    * @private
    */
-  setAdvancedExtensionInstalled_: function(isInstalled) {
+  setAdvancedExtensionInstalled_(isInstalled) {
     this.advancedExtensionInstalled_ = isInstalled;
     this.advancedExtensionSublabel_ = this.i18n(
         isInstalled ? 'openAdvancedFontSettings' : 'requiresWebStoreExtension');
@@ -129,7 +129,7 @@ Polymer({
    *     font settings extension URL.
    * @private
    */
-  setFontsData_: function(response) {
+  setFontsData_(response) {
     const fontMenuOptions = [];
     for (const fontData of response.fontList) {
       fontMenuOptions.push({value: fontData[0], name: fontData[1]});
@@ -143,14 +143,14 @@ Polymer({
    * @return {number}
    * @private
    */
-  computeMinimumFontSize_: function() {
+  computeMinimumFontSize_() {
     const prefValue = this.get('prefs.webkit.webprefs.minimum_font_size.value');
     return /** @type {number} */ (prefValue) || MINIMUM_FONT_SIZE_RANGE[0];
   },
 
 
   /** @private */
-  onMinimumSizeChange_: function() {
+  onMinimumSizeChange_() {
     this.$.minimumSizeSample.hidden = this.computeMinimumFontSize_() <= 0;
   },
 });

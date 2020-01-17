@@ -142,9 +142,9 @@ cr.define('cr.ui', function() {
       const horizontalPadding =
           parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
 
-      if (this.lastOffsetWidth_ == offsetWidth &&
-          this.lastOverflowY == overflowY &&
-          this.horizontalPadding_ == horizontalPadding) {
+      if (this.lastOffsetWidth_ === offsetWidth &&
+          this.lastOverflowY === overflowY &&
+          this.horizontalPadding_ === horizontalPadding) {
         this.lastOffsetHeight_ = offsetHeight;
         return;
       }
@@ -155,7 +155,7 @@ cr.define('cr.ui', function() {
       this.horizontalPadding_ = horizontalPadding;
       this.columns_ = 0;
 
-      if (overflowY == 'auto' && offsetWidth > 0) {
+      if (overflowY === 'auto' && offsetWidth > 0) {
         // Column number may depend on whether scrollbar is present or not.
         const originalClientWidth = this.clientWidth;
         // At first make sure there is no scrollbar and calculate clientWidth
@@ -163,7 +163,7 @@ cr.define('cr.ui', function() {
         this.style.overflowY = 'hidden';
         this.clientWidthWithoutScrollbar_ = this.clientWidth;
         this.clientHeight_ = this.clientHeight;
-        if (this.clientWidth != originalClientWidth) {
+        if (this.clientWidth !== originalClientWidth) {
           // If clientWidth changed then previously scrollbar was shown.
           this.clientWidthWithScrollbar_ = originalClientWidth;
         } else {
@@ -191,7 +191,7 @@ cr.define('cr.ui', function() {
       return this.columns_ || 1;
     },
     set columns(value) {
-      if (value >= 0 && value != this.columns_) {
+      if (value >= 0 && value !== this.columns_) {
         this.columns_ = value;
         this.redraw();
       }
@@ -273,7 +273,7 @@ cr.define('cr.ui', function() {
       const afterFiller = this.afterFiller_;
       const columns = this.columns;
 
-      for (let item = this.beforeFiller_.nextSibling; item != afterFiller;) {
+      for (let item = this.beforeFiller_.nextSibling; item !== afterFiller;) {
         const next = item.nextSibling;
         if (isSpacer(item)) {
           // Spacer found on a place it mustn't be.
@@ -287,7 +287,7 @@ cr.define('cr.ui', function() {
         // Invisible pinned item could be outside of the
         // [firstIndex, lastIndex). Ignore it.
         if (index >= firstIndex && nextIndex < lastIndex &&
-            nextIndex % columns == 0) {
+            nextIndex % columns === 0) {
           if (isSpacer(next)) {
             // Leave the spacer on its place.
             item = next.nextSibling;
@@ -305,7 +305,7 @@ cr.define('cr.ui', function() {
 
       function isSpacer(child) {
         return child.classList.contains('spacer') &&
-            child != afterFiller;  // Must not be removed.
+            child !== afterFiller;  // Must not be removed.
       }
     },
 
@@ -332,14 +332,14 @@ cr.define('cr.ui', function() {
      */
     isItem(child) {
       // Non-items are before-, afterFiller and spacers added in mergeItems.
-      return child.nodeType == Node.ELEMENT_NODE &&
+      return child.nodeType === Node.ELEMENT_NODE &&
           !child.classList.contains('spacer');
     },
 
     redraw() {
       this.updateMetrics_();
       const itemCount = this.dataModel ? this.dataModel.length : 0;
-      if (this.lastItemCount_ != itemCount) {
+      if (this.lastItemCount_ !== itemCount) {
         this.lastItemCount_ = itemCount;
         // Force recalculation.
         this.columns_ = 0;
@@ -390,7 +390,7 @@ cr.define('cr.ui', function() {
         return this.getIndexAfter(index);
       }
       const last = this.getLastIndex();
-      if (index == last) {
+      if (index === last) {
         return -1;
       }
       index += this.grid_.columns;
@@ -407,7 +407,7 @@ cr.define('cr.ui', function() {
       if (this.isAccessibilityEnabled()) {
         return this.getIndexBefore(index);
       }
-      if (index == 0) {
+      if (index === 0) {
         return -1;
       }
       index -= this.grid_.columns;
@@ -431,7 +431,7 @@ cr.define('cr.ui', function() {
      * @override
      */
     getIndexAfter(index) {
-      if (index == this.getLastIndex()) {
+      if (index === this.getLastIndex()) {
         return -1;
       }
       return index + 1;

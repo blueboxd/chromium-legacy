@@ -929,21 +929,25 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionWithTime) {
       param3, 1, buttons, SyntheticPointerActionParams::Button::LEFT));
 }
 
-TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
+TEST_F(SyntheticPointerActionTest, PointerMouseRelease) {
   CreateSyntheticPointerActionTarget<MockSyntheticPointerMouseActionTarget>();
 
-  // Cannot send a mouse up without sending a mouse down first.
+  // Verify a mouse up sends without a prior mouse down
   SyntheticPointerActionParams param = SyntheticPointerActionParams(
       SyntheticPointerActionParams::PointerActionType::RELEASE);
   params_.PushPointerActionParams(param);
   pointer_action_.reset(new SyntheticPointerAction(params_));
 
   ForwardSyntheticPointerAction();
-  EXPECT_EQ(0, num_success_);
-  EXPECT_EQ(1, num_failure_);
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+}
+
+TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
+  CreateSyntheticPointerActionTarget<MockSyntheticPointerMouseActionTarget>();
 
   // Send a mouse down for one finger.
-  param.set_pointer_action_type(
+  SyntheticPointerActionParams param = SyntheticPointerActionParams(
       SyntheticPointerActionParams::PointerActionType::PRESS);
   param.set_position(gfx::PointF(54, 89));
   params_ = SyntheticPointerActionListParams();
@@ -957,7 +961,7 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
   MockSyntheticPointerMouseActionTarget* pointer_mouse_target =
       static_cast<MockSyntheticPointerMouseActionTarget*>(target_.get());
   EXPECT_EQ(1, num_success_);
-  EXPECT_EQ(1, num_failure_);
+  EXPECT_EQ(0, num_failure_);
   std::vector<SyntheticPointerActionParams::Button> buttons(
       1, SyntheticPointerActionParams::Button::LEFT);
   EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
@@ -965,7 +969,7 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
 
   ForwardSyntheticPointerAction();
   EXPECT_EQ(1, num_success_);
-  EXPECT_EQ(2, num_failure_);
+  EXPECT_EQ(1, num_failure_);
 }
 
 TEST_F(SyntheticPointerActionTest, PointerPenAction) {

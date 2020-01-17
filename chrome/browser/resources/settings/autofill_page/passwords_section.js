@@ -101,7 +101,7 @@ Polymer({
     /** @private */
     showImportPasswords_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.valueExists('showImportPasswords') &&
             loadTimeData.getBoolean('showImportPasswords');
       }
@@ -189,7 +189,7 @@ Polymer({
   setPasswordExceptionsListener_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     // Create listener functions.
     const setSavedPasswordsListener = list => {
       const newList = list.map(entry => ({entry: entry, password: ''}));
@@ -250,7 +250,7 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.passwordManager_.removeSavedPasswordListChangedListener(
         /**
          * @type {function(!Array<PasswordManagerProxy.PasswordUiEntry>):void}
@@ -282,18 +282,18 @@ Polymer({
    *     that it is non-empty (i.e. not expired).
    * @private
    */
-  onAuthTokenChanged_: function(newToken) {
+  onAuthTokenChanged_(newToken) {
     if (newToken) {
       this.tokenRequestManager_.resolve();
     }
   },
 
-  onPasswordPromptClosed_: function() {
+  onPasswordPromptClosed_() {
     this.showPasswordPromptDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
   },
 
-  openPasswordPromptDialog_: function() {
+  openPasswordPromptDialog_() {
     this.activeDialogAnchorStack_.push(getDeepActiveElement());
     this.showPasswordPromptDialog_ = true;
   },
@@ -304,14 +304,14 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onMenuEditPasswordTap_: function(e) {
+  onMenuEditPasswordTap_(e) {
     e.preventDefault();
     /** @type {CrActionMenuElement} */ (this.$.menu).close();
     this.showPasswordEditDialog_ = true;
   },
 
   /** @private */
-  onPasswordEditDialogClosed_: function() {
+  onPasswordEditDialogClosed_() {
     this.showPasswordEditDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
 
@@ -324,7 +324,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeHidePasswordsLink_: function() {
+  computeHidePasswordsLink_() {
     return !!this.syncStatus_ && !!this.syncStatus_.signedIn &&
         !!this.syncPrefs_ && !!this.syncPrefs_.encryptAllData;
   },
@@ -334,7 +334,7 @@ Polymer({
    * @return {!Array<!PasswordManagerProxy.UiEntryWithPassword>}
    * @private
    */
-  getFilteredPasswords_: function(filter) {
+  getFilteredPasswords_(filter) {
     if (!filter) {
       return this.savedPasswords.slice();
     }
@@ -349,7 +349,7 @@ Polymer({
    * @return {function(!chrome.passwordsPrivate.ExceptionEntry): boolean}
    * @private
    */
-  passwordExceptionFilter_: function(filter) {
+  passwordExceptionFilter_(filter) {
     return exception => exception.urls.shown.toLowerCase().includes(
                filter.toLowerCase());
   },
@@ -358,7 +358,7 @@ Polymer({
    * Fires an event that should delete the saved password.
    * @private
    */
-  onMenuRemovePasswordTap_: function() {
+  onMenuRemovePasswordTap_() {
     this.passwordManager_.removeSavedPassword(
         this.activePassword.item.entry.id);
     cr.toastManager.getToastManager().show(this.i18n('passwordDeleted'));
@@ -373,7 +373,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onUndoKeyBinding_: function(event) {
+  onUndoKeyBinding_(event) {
     const activeElement = getDeepActiveElement();
     if (!activeElement || !isEditable(activeElement)) {
       this.passwordManager_.undoRemoveSavedPasswordOrException();
@@ -385,7 +385,7 @@ Polymer({
   },
 
   /** @private */
-  onUndoButtonClick_: function() {
+  onUndoButtonClick_() {
     this.passwordManager_.undoRemoveSavedPasswordOrException();
     cr.toastManager.getToastManager().hide();
   },
@@ -395,7 +395,7 @@ Polymer({
    * @param {!ExceptionEntryEntryEvent} e The polymer event.
    * @private
    */
-  onRemoveExceptionButtonTap_: function(e) {
+  onRemoveExceptionButtonTap_(e) {
     this.passwordManager_.removeException(e.model.item.id);
   },
 
@@ -404,7 +404,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onPasswordMenuTap_: function(event) {
+  onPasswordMenuTap_(event) {
     const menu = /** @type {!CrActionMenuElement} */ (this.$.menu);
     const target = /** @type {!HTMLElement} */ (event.detail.target);
 
@@ -418,7 +418,7 @@ Polymer({
    * Opens the export/import action menu.
    * @private
    */
-  onImportExportMenuTap_: function() {
+  onImportExportMenuTap_() {
     const menu = /** @type {!CrActionMenuElement} */ (this.$.exportImportMenu);
     const target =
         /** @type {!HTMLElement} */ (this.$$('#exportImportMenuButton'));
@@ -431,7 +431,7 @@ Polymer({
    * Fires an event that should trigger the password import process.
    * @private
    */
-  onImportTap_: function() {
+  onImportTap_() {
     this.passwordManager_.importPasswords();
     this.$.exportImportMenu.close();
   },
@@ -440,13 +440,13 @@ Polymer({
    * Opens the export passwords dialog.
    * @private
    */
-  onExportTap_: function() {
+  onExportTap_() {
     this.showPasswordsExportDialog_ = true;
     this.$.exportImportMenu.close();
   },
 
   /** @private */
-  onPasswordsExportDialogClosed_: function() {
+  onPasswordsExportDialogClosed_() {
     this.showPasswordsExportDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
   },
@@ -457,12 +457,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasSome_: function(list) {
+  hasSome_(list) {
     return !!(list && list.length);
   },
 
   /** @private */
-  hasPasswords_: function() {
+  hasPasswords_() {
     return this.savedPasswords.length > 0;
   },
 
@@ -472,8 +472,7 @@ Polymer({
    * @param {boolean} showImportPasswords
    * @return {boolean}
    */
-  showImportOrExportPasswords_: function(
-      showExportPasswords, showImportPasswords) {
+  showImportOrExportPasswords_(showExportPasswords, showImportPasswords) {
     return showExportPasswords || showImportPasswords;
   },
 });

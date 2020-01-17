@@ -38,7 +38,6 @@ public class WebappDataStorage {
     static final String SHARED_PREFS_FILE_PREFIX = "webapp_";
     static final String KEY_SPLASH_ICON = "splash_icon";
     static final String KEY_LAST_USED = "last_used";
-    static final String KEY_HAS_BEEN_LAUNCHED = "has_been_launched";
     static final String KEY_URL = "url";
     static final String KEY_SCOPE = "scope";
     static final String KEY_ICON = "icon";
@@ -317,7 +316,6 @@ public class WebappDataStorage {
         SharedPreferences.Editor editor = mPreferences.edit();
 
         editor.remove(KEY_LAST_USED);
-        editor.remove(KEY_HAS_BEEN_LAUNCHED);
         editor.remove(KEY_URL);
         editor.remove(KEY_SCOPE);
         editor.remove(KEY_LAST_CHECK_WEB_MANIFEST_UPDATE_TIME);
@@ -392,16 +390,6 @@ public class WebappDataStorage {
      */
     void updateLastUsedTime() {
         mPreferences.edit().putLong(KEY_LAST_USED, sClock.currentTimeMillis()).apply();
-    }
-
-    /** Returns true if the web app has been launched at least once from the home screen. */
-    boolean hasBeenLaunched() {
-        return mPreferences.getBoolean(KEY_HAS_BEEN_LAUNCHED, false);
-    }
-
-    /** Sets whether the web app was launched at least once from the home screen. */
-    void setHasBeenLaunched() {
-        mPreferences.edit().putBoolean(KEY_HAS_BEEN_LAUNCHED, true).apply();
     }
 
     /**

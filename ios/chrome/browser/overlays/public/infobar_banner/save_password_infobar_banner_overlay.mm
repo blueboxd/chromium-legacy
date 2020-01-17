@@ -45,5 +45,6 @@ SavePasswordInfobarBannerOverlayRequestConfig::
 void SavePasswordInfobarBannerOverlayRequestConfig::CreateAuxilliaryData(
     base::SupportsUserData* user_data) {
   InfobarOverlayRequestConfig::CreateForUserData(
-      user_data, static_cast<InfoBarIOS*>(infobar_));
+      user_data, static_cast<InfoBarIOS*>(infobar_),
+      InfobarOverlayType::kBanner);
 }

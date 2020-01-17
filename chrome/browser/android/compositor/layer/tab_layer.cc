@@ -144,7 +144,7 @@ void TabLayer::SetProperties(int id,
                              int toolbar_textbox_background_color,
                              float toolbar_textbox_alpha,
                              float toolbar_alpha,
-                             float toolbar_y_offset,
+                             float content_offset,
                              float side_border_scale,
                              bool inset_border) {
   if (alpha <= 0) {
@@ -231,15 +231,12 @@ void TabLayer::SetProperties(int id,
   toolbar_layer_->PushResource(
       toolbar_resource_id, toolbar_background_color, anonymize_toolbar,
       toolbar_textbox_background_color, toolbar_textbox_resource_id,
-      toolbar_textbox_alpha, view_height,
-      // TODO(mdjones): Feels odd to pass 0 here when
-      // we have access to toolbar_y_offset.
-      0, false, false);
+      toolbar_textbox_alpha, view_height, content_offset, false, false);
   toolbar_layer_->UpdateProgressBar(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
   float toolbar_impact_height = 0;
   if (show_toolbar && !back_visible)
-    toolbar_impact_height = toolbar_layer_->layer()->bounds().height();
+    toolbar_impact_height = content_offset;
 
   //----------------------------------------------------------------------------
   // Compute Alpha and Visibility
@@ -292,9 +289,8 @@ void TabLayer::SetProperties(int id,
       descaled_local_content_area.height() - toolbar_impact_height);
 
   // Shrink the toolbar layer so we properly clip if it's offset.
-  gfx::Size toolbar_size(
-      toolbar_layer_->layer()->bounds().width(),
-      toolbar_layer_->layer()->bounds().height() - toolbar_y_offset);
+  gfx::Size toolbar_size(toolbar_layer_->layer()->bounds().width(),
+                         toolbar_layer_->layer()->bounds().height());
 
   //----------------------------------------------------------------------------
   // Compute Layer Positions

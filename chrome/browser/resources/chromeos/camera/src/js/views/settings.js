@@ -3,16 +3,20 @@
 // found in the LICENSE file.
 
 // eslint-disable-next-line no-unused-vars
+import {assertInstanceof} from '../chrome_util.js';
+// eslint-disable-next-line no-unused-vars
 import {Camera3DeviceInfo} from '../device/camera3_device_info.js';
-import {PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
-        VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+import {
+  PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+  VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
 } from '../device/constraints_preferrer.js';
 // eslint-disable-next-line no-unused-vars
 import {DeviceInfoUpdater} from '../device/device_info_updater.js';
 import * as nav from '../nav.js';
 import * as state from '../state.js';
-import {Resolution,      // eslint-disable-line no-unused-vars
-        ResolutionList,  // eslint-disable-line no-unused-vars
+import {
+  Resolution,      // eslint-disable-line no-unused-vars
+  ResolutionList,  // eslint-disable-line no-unused-vars
 } from '../type.js';
 import * as util from '../util.js';
 import {View, ViewName} from './view.js';
@@ -175,25 +179,41 @@ export class ResolutionSettings extends BaseSettings {
     this.videoPreferrer_ = videoPreferrer;
 
     /**
-     * @type {!HTMLElement}
-     * @private
+     * @const {!BaseSettings}
+     * @public
      */
-    this.resMenu_ = /** @type {!HTMLElement} */ (
-        document.querySelector('#resolutionsettings>div.menu'));
+    this.photoResolutionSettings =
+        new BaseSettings(ViewName.PHOTO_RESOLUTION_SETTINGS);
+
+    /**
+     * @const {!BaseSettings}
+     * @public
+     */
+    this.videoResolutionSettings =
+        new BaseSettings(ViewName.VIDEO_RESOLUTION_SETTINGS);
 
     /**
      * @type {!HTMLElement}
      * @private
      */
-    this.videoResMenu_ = /** @type {!HTMLElement} */ (
-        document.querySelector('#videoresolutionsettings>div.menu'));
+    this.resMenu_ =
+        assertInstanceof(this.root.querySelector('div.menu'), HTMLElement);
 
     /**
      * @type {!HTMLElement}
      * @private
      */
-    this.photoResMenu_ = /** @type {!HTMLElement} */ (
-        document.querySelector('#photoresolutionsettings>div.menu'));
+    this.videoResMenu_ = assertInstanceof(
+        this.videoResolutionSettings.root.querySelector('div.menu'),
+        HTMLElement);
+
+    /**
+     * @type {!HTMLElement}
+     * @private
+     */
+    this.photoResMenu_ = assertInstanceof(
+        this.photoResolutionSettings.root.querySelector('div.menu'),
+        HTMLElement);
 
     /**
      * @type {!HTMLElement}
@@ -633,10 +653,3 @@ export class ResolutionSettings extends BaseSettings {
     });
   }
 }
-
-/** @const */
-cca.views.BaseSettings = BaseSettings;
-/** @const */
-cca.views.MasterSettings = MasterSettings;
-/** @const */
-cca.views.ResolutionSettings = ResolutionSettings;

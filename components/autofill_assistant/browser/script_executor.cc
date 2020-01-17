@@ -420,6 +420,13 @@ void ScriptExecutor::GetOuterHtml(
   delegate_->GetWebController()->GetOuterHtml(selector, std::move(callback));
 }
 
+void ScriptExecutor::GetElementTag(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&, const std::string&)>
+        callback) {
+  delegate_->GetWebController()->GetElementTag(selector, std::move(callback));
+}
+
 void ScriptExecutor::ExpectNavigation() {
   expected_navigation_step_ = ExpectedNavigationStep::EXPECTED;
 }

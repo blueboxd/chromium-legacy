@@ -2331,6 +2331,27 @@ void LayoutBlockFlow::AddVisualOverflowFromFloats() {
   }
 }
 
+void LayoutBlockFlow::AddVisualOverflowFromFloats(
+    const NGPhysicalContainerFragment& fragment) {
+  DCHECK(fragment.HasFloatingDescendantsForPaint());
+  for (const NGLink& child : fragment.Children()) {
+    if (child->HasSelfPaintingLayer())
+      continue;
+
+    if (child->IsFloating()) {
+      AddVisualOverflowFromChild(ToLayoutBox(*child->GetLayoutObject()));
+      continue;
+    }
+
+    if (const NGPhysicalContainerFragment* child_container =
+            DynamicTo<NGPhysicalContainerFragment>(child.get())) {
+      if (child_container->HasFloatingDescendantsForPaint() &&
+          !child_container->IsBlockFormattingContextRoot())
+        AddVisualOverflowFromFloats(*child_container);
+    }
+  }
+}
+
 void LayoutBlockFlow::AddLayoutOverflowFromFloats() {
   if (!floating_objects_)
     return;
@@ -2369,6 +2390,7 @@ void LayoutBlockFlow::ComputeVisualOverflow(
        HasSelfPaintingLayer()))
     AddVisualOverflowFromFloats();
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
+    InvalidateIntersectionObserverCachedRects();
     SetShouldCheckForPaintInvalidation();
     GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
   }

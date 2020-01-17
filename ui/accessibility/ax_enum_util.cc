@@ -1577,8 +1577,6 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "descriptionFrom";
     case ax::mojom::IntAttribute::kActivedescendantId:
       return "activedescendantId";
-    case ax::mojom::IntAttribute::kDetailsId:
-      return "detailsId";
     case ax::mojom::IntAttribute::kErrormessageId:
       return "errormessageId";
     case ax::mojom::IntAttribute::kInPageLinkTargetId:
@@ -1705,8 +1703,6 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kDescriptionFrom;
   if (0 == strcmp(int_attribute, "activedescendantId"))
     return ax::mojom::IntAttribute::kActivedescendantId;
-  if (0 == strcmp(int_attribute, "detailsId"))
-    return ax::mojom::IntAttribute::kDetailsId;
   if (0 == strcmp(int_attribute, "errormessageId"))
     return ax::mojom::IntAttribute::kErrormessageId;
   if (0 == strcmp(int_attribute, "inPageLinkTargetId"))
@@ -1894,6 +1890,8 @@ const char* ToString(ax::mojom::IntListAttribute int_list_attribute) {
       return "indirectChildIds";
     case ax::mojom::IntListAttribute::kControlsIds:
       return "controlsIds";
+    case ax::mojom::IntListAttribute::kDetailsIds:
+      return "detailsIds";
     case ax::mojom::IntListAttribute::kDescribedbyIds:
       return "describedbyIds";
     case ax::mojom::IntListAttribute::kFlowtoIds:
@@ -1931,6 +1929,8 @@ ax::mojom::IntListAttribute ParseIntListAttribute(
     return ax::mojom::IntListAttribute::kIndirectChildIds;
   if (0 == strcmp(int_list_attribute, "controlsIds"))
     return ax::mojom::IntListAttribute::kControlsIds;
+  if (0 == strcmp(int_list_attribute, "detailsIds"))
+    return ax::mojom::IntListAttribute::kDetailsIds;
   if (0 == strcmp(int_list_attribute, "describedbyIds"))
     return ax::mojom::IntListAttribute::kDescribedbyIds;
   if (0 == strcmp(int_list_attribute, "flowtoIds"))

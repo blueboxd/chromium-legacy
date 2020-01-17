@@ -5,9 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "viz_main.mojom",
-  ]
+  sources = [ "viz_main.mojom" ]
 
   public_deps = [
     "//components/discardable_memory/public/mojom",
@@ -22,9 +20,7 @@ mojom("mojom") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "mojom_traits_unittest.cc",
-  ]
+  sources = [ "mojom_traits_unittest.cc" ]
 
   deps = [
     "//base/test:test_support",

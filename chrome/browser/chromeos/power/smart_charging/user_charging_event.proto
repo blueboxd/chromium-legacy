@@ -117,3 +117,21 @@ message UserChargingEvent {
   optional Features features = 1;
   optional Event event = 2;
 }
+
+// PastChargingEvents contain a list of events that have information about "past
+// charging events". It will only store the plug/unplug pair of the last charge
+// and a recent plug/halt event if any.
+message PastChargingEvents {
+  message Event {
+    // Time of the event in minutes since Windows epoch.
+    optional int32 time = 1;
+    // Battery percentage of the device.
+    optional int32 battery_percent = 2;
+    // Timezone of the device.
+    optional int32 timezone = 3;
+    // Reason for the event.
+    optional UserChargingEvent.Event.Reason reason = 4;
+  }
+  // A list containing past charging events.
+  repeated Event events = 1;
+}

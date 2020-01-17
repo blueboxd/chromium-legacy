@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -2354,26 +2355,17 @@ void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
 }
 
 void BrowserView::OnWindowBeginUserBoundsChange() {
-  if (interactive_resize_)
+  if (interactive_resize_in_progress_)
     return;
   WebContents* web_contents = GetActiveWebContents();
   if (!web_contents)
     return;
-  interactive_resize_ = ResizeSession();
-  interactive_resize_->begin_timestamp = base::TimeTicks::Now();
+  interactive_resize_in_progress_ = true;
   web_contents->GetRenderViewHost()->NotifyMoveOrResizeStarted();
 }
 
 void BrowserView::OnWindowEndUserBoundsChange() {
-  if (!interactive_resize_)
-    return;
-  auto now = base::TimeTicks::Now();
-  DCHECK(!interactive_resize_->begin_timestamp.is_null());
-  UMA_HISTOGRAM_TIMES("BrowserWindow.Resize.Duration",
-                      now - interactive_resize_->begin_timestamp);
-  UMA_HISTOGRAM_COUNTS_1000("BrowserWindow.Resize.StepCount",
-                            interactive_resize_->step_count);
-  interactive_resize_.reset();
+  interactive_resize_in_progress_ = false;
 }
 
 void BrowserView::OnWidgetMove() {
@@ -2398,14 +2390,6 @@ void BrowserView::OnWidgetMove() {
   LocationBarView* location_bar_view = GetLocationBarView();
   if (location_bar_view)
     location_bar_view->GetOmniboxView()->CloseOmniboxPopup();
-}
-
-views::Widget* BrowserView::GetWidget() {
-  return View::GetWidget();
-}
-
-const views::Widget* BrowserView::GetWidget() const {
-  return View::GetWidget();
 }
 
 void BrowserView::RevealTabStripIfNeeded() {
@@ -2627,32 +2611,6 @@ void BrowserView::PaintChildren(const views::PaintInfo& paint_info) {
         MaybeRecordValueAndCreateInstanceOnBrowserPaint(
             GetWidget()->GetCompositor());
   }
-}
-
-void BrowserView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (!interactive_resize_)
-    return;
-  auto now = base::TimeTicks::Now();
-  if (!interactive_resize_->last_resize_timestamp.is_null()) {
-    const auto& current_size = size();
-    // If size doesn't change, then do not update the timestamp.
-    if (current_size == previous_bounds.size())
-      return;
-    UMA_HISTOGRAM_CUSTOM_TIMES("BrowserWindow.Resize.StepInterval",
-                               now - interactive_resize_->last_resize_timestamp,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromSeconds(1), 50);
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "BrowserWindow.Resize.StepBoundsChange.Width",
-        std::abs(previous_bounds.size().width() - current_size.width()),
-        1 /* min */, 300 /* max */, 100 /* buckets */);
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "BrowserWindow.Resize.StepBoundsChange.Height",
-        std::abs(previous_bounds.size().height() - current_size.height()),
-        1 /* min */, 300 /* max */, 100 /* buckets */);
-  }
-  ++interactive_resize_->step_count;
-  interactive_resize_->last_resize_timestamp = now;
 }
 
 void BrowserView::ChildPreferredSizeChanged(View* child) {
@@ -3035,10 +2993,19 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
   if (command_id == IDC_HELP_PAGE_VIA_KEYBOARD && key_code == ui::VKEY_F1)
     base::RecordAction(UserMetricsAction("ShowHelpTabViaF1"));
 
-  if (command_id == IDC_BOOKMARK_THIS_TAB)
+  if (command_id == IDC_BOOKMARK_THIS_TAB) {
     UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
                               BOOKMARK_ENTRY_POINT_ACCELERATOR,
                               BOOKMARK_ENTRY_POINT_LIMIT);
+  }
+  if (base::FeatureList::IsEnabled(features::kTabGroups) &&
+      command_id == IDC_NEW_TAB &&
+      browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)) {
+    TabStripModel* const model = browser_->tab_strip_model();
+    const auto group_id = model->GetTabGroupForTab(model->active_index());
+    if (group_id.has_value())
+      base::RecordAction(base::UserMetricsAction("Accel_NewTabInGroup"));
+  }
 
 #if defined(OS_CHROMEOS)
   // Collect information about the relative popularity of various accelerators
@@ -3104,8 +3071,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     return;
   }
 #endif
-  ProfileMenuViewBase::ShowBubble(bubble_view_mode, access_point, avatar_button,
-                                  browser(), focus_first_profile_button);
+  ProfileMenuViewBase::ShowBubble(bubble_view_mode, avatar_button, browser(),
+                                  focus_first_profile_button);
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 

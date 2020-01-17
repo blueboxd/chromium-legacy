@@ -74,12 +74,8 @@ template("manifest") {
       version_file,
       version_script,
     ]
-    sources = [
-      template_file,
-    ]
-    outputs = [
-      output_file,
-    ]
+    sources = [ template_file ]
+    outputs = [ output_file ]
     args = [
       "--key=$key",
       "--version_file=" + rebase_path(version_file, root_build_dir),
@@ -105,9 +101,7 @@ source_set("browser_tests") {
   testonly = true
   assert(enable_extensions)
 
-  deps = [
-    ":select_to_speak_extjs_tests",
-  ]
+  deps = [ ":select_to_speak_extjs_tests" ]
 
   # TODO(jamescook): Figure out which of these are really necessary.
   data = [
@@ -198,9 +192,7 @@ js_library("select_to_speak") {
 }
 
 js_library("select_to_speak_options") {
-  deps = [
-    ":prefs_manager",
-  ]
+  deps = [ ":prefs_manager" ]
   externs_list = [
     "$externs_path/accessibility_private.js",
     "$externs_path/automation.js",
@@ -218,9 +210,7 @@ js_library("node_utils") {
 }
 
 js_library("word_utils") {
-  deps = [
-    ":paragraph_utils",
-  ]
+  deps = [ ":paragraph_utils" ]
   externs_list = [ "$externs_path/automation.js" ]
 }
 
@@ -233,9 +223,7 @@ js_library("paragraph_utils") {
 }
 
 js_library("input_handler") {
-  deps = [
-    ":rect_utils",
-  ]
+  deps = [ ":rect_utils" ]
 }
 
 js_library("rect_utils") {
@@ -246,9 +234,7 @@ js_library("prefs_manager") {
 }
 
 js_library("metrics_utils") {
-  deps = [
-    ":prefs_manager",
-  ]
+  deps = [ ":prefs_manager" ]
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
@@ -276,9 +262,7 @@ js_library("../chromevox/background/tree_walker") {
 }
 
 js_library("../chromevox/background/automation_predicate") {
-  deps = [
-    ":../chromevox/background/constants",
-  ]
+  deps = [ ":../chromevox/background/constants" ]
   externs_list = [
     "$externs_path/automation.js",
     "$externs_path/chrome_extensions.js",

@@ -45,11 +45,11 @@ const SocketsView = (function() {
     // Inherit the superclass's methods.
     __proto__: superClass.prototype,
 
-    closeIdleSockets: function() {
+    closeIdleSockets() {
       g_browser.sendCloseIdleSockets();
     },
 
-    flushSocketPools: function() {
+    flushSocketPools() {
       g_browser.sendFlushSocketPools();
     }
   };

@@ -43,7 +43,7 @@ Polymer({
    * @param {!Object<!Array<string>>} paths
    * @private
    */
-  onCrostiniSharedPathsChanged_: function(paths) {
+  onCrostiniSharedPathsChanged_(paths) {
     const vmPaths = [];
     for (const path in paths) {
       const vms = paths[path];
@@ -63,7 +63,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onRemoveSharedPathTap_: function(event) {
+  onRemoveSharedPathTap_(event) {
     settings.CrostiniBrowserProxyImpl.getInstance().removeCrostiniSharedPath(
         DEFAULT_CROSTINI_VM, event.model.item.path);
   },

@@ -58,4 +58,19 @@ TEST(AudioDecoderConfigStructTraitsTest, ConvertAudioDecoderConfig_Encrypted) {
   EXPECT_TRUE(output.Matches(input));
 }
 
+TEST(AudioDecoderConfigStructTraitsTest,
+     ConvertAudioDecoderConfig_WithPorilfe) {
+  AudioDecoderConfig input;
+  input.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
+                   EmptyExtraData(), EncryptionScheme::kUnencrypted,
+                   base::TimeDelta(), 0);
+  input.set_profile(AudioCodecProfile::kXHE_AAC);
+  std::vector<uint8_t> data =
+      media::mojom::AudioDecoderConfig::Serialize(&input);
+  AudioDecoderConfig output;
+  EXPECT_TRUE(
+      media::mojom::AudioDecoderConfig::Deserialize(std::move(data), &output));
+  EXPECT_TRUE(output.Matches(input));
+}
+
 }  // namespace media

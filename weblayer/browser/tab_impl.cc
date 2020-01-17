@@ -39,6 +39,7 @@
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
 #include "base/trace_event/trace_event.h"
+#include "components/autofill/android/autofill_provider_android.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/top_controls_container_view.h"
@@ -61,6 +62,9 @@ base::TimeDelta GetBrowserControlsAllowHideDelay() {
 
   return base::TimeDelta::FromSeconds(3);
 }
+
+bool g_system_autofill_disabled_for_testing = false;
+
 #endif
 
 NewTabType NewTabTypeFromWindowDisposition(WindowOpenDisposition disposition) {
@@ -232,6 +236,11 @@ void TabImpl::AttachToView(views::WebView* web_view) {
 #endif
 
 #if defined(OS_ANDROID)
+// static
+void TabImpl::DisableAutofillSystemIntegrationForTesting() {
+  g_system_autofill_disabled_for_testing = true;
+}
+
 static jlong JNI_TabImpl_CreateTab(
     JNIEnv* env,
     jlong profile,
@@ -276,6 +285,30 @@ void TabImpl::SetJavaImpl(JNIEnv* env,
   java_impl_ = impl;
 }
 
+void TabImpl::OnAutofillProviderChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& autofill_provider) {
+  if (g_system_autofill_disabled_for_testing)
+    return;
+
+  if (!autofill_provider_) {
+    // The first invocation should be when instantiating the autofill
+    // infrastructure, at which point the Java-side object should not be null.
+    DCHECK(autofill_provider);
+
+    // Initialize the native side of the autofill infrastructure.
+    autofill_provider_ = std::make_unique<autofill::AutofillProviderAndroid>(
+        autofill_provider, web_contents_.get());
+    InitializeAutofill();
+    return;
+  }
+
+  // The AutofillProvider Java object has been changed; inform
+  // |autofill_provider_|.
+  auto* provider =
+      static_cast<autofill::AutofillProviderAndroid*>(autofill_provider_.get());
+  provider->OnJavaAutofillProviderChanged(env, autofill_provider);
+}
 #endif
 
 content::WebContents* TabImpl::OpenURLFromTab(
@@ -470,6 +503,8 @@ Tab* Tab::GetLastTabForTesting() {
 
 void TabImpl::InitializeAutofillForTests(
     std::unique_ptr<autofill::AutofillProvider> provider) {
+  DCHECK(!autofill_provider_);
+
   autofill_provider_ = std::move(provider);
   InitializeAutofill();
 }

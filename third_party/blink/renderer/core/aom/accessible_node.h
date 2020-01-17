@@ -70,12 +70,12 @@ enum class AOMUIntProperty {
 
 enum class AOMRelationProperty {
   kActiveDescendant,
-  kDetails,
   kErrorMessage,
 };
 
 enum class AOMRelationListProperty {
   kDescribedBy,
+  kDetails,
   kControls,
   kFlowTo,
   kLabeledBy,
@@ -234,8 +234,8 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   AtomicString description() const;
   void setDescription(const AtomicString&);
 
-  AccessibleNode* details() const;
-  void setDetails(AccessibleNode*);
+  AccessibleNodeList* details() const;
+  void setDetails(AccessibleNodeList*);
 
   bool disabled(bool& is_null) const;
   void setDisabled(bool, bool is_null);

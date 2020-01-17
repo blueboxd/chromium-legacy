@@ -24,13 +24,13 @@
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/blocked_action_bubble_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "components/crx_file/id_util.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -119,7 +119,7 @@ ExtensionAction::ShowAction ExtensionActionRunner::RunAction(
 
   // Anything that gets here should have a page or browser action.
   DCHECK(extension_action);
-  int tab_id = SessionTabHelper::IdForTab(web_contents()).id();
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents()).id();
   if (!extension_action->GetIsVisible(tab_id))
     return ExtensionAction::ACTION_NONE;
 
@@ -230,7 +230,7 @@ ExtensionActionRunner::RequiresUserConsentForScriptInjection(
     return PermissionsData::PageAccess::kAllowed;
 
   GURL url = web_contents()->GetVisibleURL();
-  int tab_id = SessionTabHelper::IdForTab(web_contents()).id();
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents()).id();
   switch (type) {
     case UserScript::CONTENT_SCRIPT:
       return extension->permissions_data()->GetContentScriptAccess(url, tab_id,

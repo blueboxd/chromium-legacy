@@ -8,9 +8,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.util.AttributeSet;
 
-import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
-import org.chromium.chrome.browser.explore_sites.MostLikelyVariation;
-
 /**
  * The view for a top sites tile. Displays the title of the site beneath a large icon.
  */
@@ -26,8 +23,7 @@ public class TopSitesTileView extends SuggestionsTileView {
     protected void setIconViewLayoutParams(Tile tile) {
         MarginLayoutParams params = (MarginLayoutParams) mIconView.getLayoutParams();
         Resources resources = getResources();
-        if (tile.getType() == TileVisualType.ICON_REAL
-                && ExploreSitesBridge.getIconVariation() == MostLikelyVariation.ICON_GROUPED) {
+        if (tile.getType() == TileVisualType.ICON_REAL) {
             // Grouped icons have extra large size.
             params.width = resources.getDimensionPixelOffset(
                     org.chromium.chrome.R.dimen.tile_view_icon_size);

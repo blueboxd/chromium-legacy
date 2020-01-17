@@ -32,10 +32,10 @@ FakeCrosHealthdClient* FakeCrosHealthdClient::Get() {
   return g_instance;
 }
 
-mojo::Remote<mojom::CrosHealthdService>
+mojo::Remote<mojom::CrosHealthdServiceFactory>
 FakeCrosHealthdClient::BootstrapMojoConnection(
     base::OnceCallback<void(bool success)> result_callback) {
-  mojo::Remote<mojom::CrosHealthdService> remote(
+  mojo::Remote<mojom::CrosHealthdServiceFactory> remote(
       receiver_.BindNewPipeAndPassRemote());
 
   std::move(result_callback).Run(/*success=*/true);

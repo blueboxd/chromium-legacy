@@ -83,9 +83,7 @@ if (is_chromeos) {
   }
 
   mojom("camera_intent") {
-    sources = [
-      "camera_intent.mojom",
-    ]
+    sources = [ "camera_intent.mojom" ]
   }
 
   mojom("notifications") {
@@ -94,9 +92,7 @@ if (is_chromeos) {
       "notifications.mojom",
     ]
 
-    deps = [
-      ":media",  # for gfx.mojom
-    ]
+    deps = [ ":media" ]  # for gfx.mojom
   }
 
   # Media related mojo interfaces. These are used by
@@ -113,15 +109,11 @@ if (is_chromeos) {
       "video_protected_buffer_allocator.mojom",
     ]
 
-    public_deps = [
-      "//ui/gfx/geometry/mojom",
-    ]
+    public_deps = [ "//ui/gfx/geometry/mojom" ]
   }
 
   source_set("mojom_traits") {
-    sources = [
-      "ime_mojom_traits.h",
-    ]
+    sources = [ "ime_mojom_traits.h" ]
 
     deps = [
       ":mojom",
@@ -131,9 +123,7 @@ if (is_chromeos) {
 
   source_set("unit_tests") {
     testonly = true
-    sources = [
-      "video_accelerator_mojom_traits_unittest.cc",
-    ]
+    sources = [ "video_accelerator_mojom_traits_unittest.cc" ]
 
     deps = [
       ":mojom",

@@ -84,6 +84,9 @@ bool StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan>::Read(
   out->underline_color = data.underline_color();
   if (!data.ReadThickness(&out->thickness))
     return false;
+  if (!data.ReadUnderlineStyle(&out->underline_style))
+    return false;
+  out->text_color = data.text_color();
   out->background_color = data.background_color();
   out->suggestion_highlight_color = data.suggestion_highlight_color();
   out->remove_on_finish_composing = data.remove_on_finish_composing();
@@ -159,6 +162,50 @@ bool EnumTraits<ui::mojom::ImeTextSpanThickness, ui::ImeTextSpan::Thickness>::
       return true;
     case ui::mojom::ImeTextSpanThickness::kThick:
       *out = ui::ImeTextSpan::Thickness::kThick;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
+ui::mojom::ImeTextSpanUnderlineStyle EnumTraits<
+    ui::mojom::ImeTextSpanUnderlineStyle,
+    ui::ImeTextSpan::UnderlineStyle>::ToMojom(ui::ImeTextSpan::UnderlineStyle
+                                                  underline_style) {
+  switch (underline_style) {
+    case ui::ImeTextSpan::UnderlineStyle::kNone:
+      return ui::mojom::ImeTextSpanUnderlineStyle::kNone;
+    case ui::ImeTextSpan::UnderlineStyle::kSolid:
+      return ui::mojom::ImeTextSpanUnderlineStyle::kSolid;
+    case ui::ImeTextSpan::UnderlineStyle::kDot:
+      return ui::mojom::ImeTextSpanUnderlineStyle::kDot;
+    case ui::ImeTextSpan::UnderlineStyle::kDash:
+      return ui::mojom::ImeTextSpanUnderlineStyle::kDash;
+  }
+
+  NOTREACHED();
+  return ui::mojom::ImeTextSpanUnderlineStyle::kSolid;
+}
+
+// static
+bool EnumTraits<ui::mojom::ImeTextSpanUnderlineStyle,
+                ui::ImeTextSpan::UnderlineStyle>::
+    FromMojom(ui::mojom::ImeTextSpanUnderlineStyle input,
+              ui::ImeTextSpan::UnderlineStyle* out) {
+  switch (input) {
+    case ui::mojom::ImeTextSpanUnderlineStyle::kNone:
+      *out = ui::ImeTextSpan::UnderlineStyle::kNone;
+      return true;
+    case ui::mojom::ImeTextSpanUnderlineStyle::kSolid:
+      *out = ui::ImeTextSpan::UnderlineStyle::kSolid;
+      return true;
+    case ui::mojom::ImeTextSpanUnderlineStyle::kDot:
+      *out = ui::ImeTextSpan::UnderlineStyle::kDot;
+      return true;
+    case ui::mojom::ImeTextSpanUnderlineStyle::kDash:
+      *out = ui::ImeTextSpan::UnderlineStyle::kDash;
       return true;
   }
 

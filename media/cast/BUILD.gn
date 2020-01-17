@@ -10,9 +10,7 @@ import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("logging_proto") {
-  sources = [
-    "logging/proto/raw_events.proto",
-  ]
+  sources = [ "logging/proto/raw_events.proto" ]
 }
 
 # Common code shared by all cast components.
@@ -120,9 +118,7 @@ jumbo_source_set("net") {
     "//net",
   ]
 
-  public_deps = [
-    ":common",
-  ]
+  public_deps = [ ":common" ]
 }
 
 jumbo_source_set("sender") {
@@ -391,9 +387,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
 
   test("cast_benchmarks") {
     testonly = true
-    sources = [
-      "test/cast_benchmarks.cc",
-    ]
+    sources = [ "test/cast_benchmarks.cc" ]
     deps = [
       ":common",
       ":net",
@@ -411,9 +405,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
 
   executable("cast_receiver_app") {
     testonly = true
-    sources = [
-      "test/receiver.cc",
-    ]
+    sources = [ "test/receiver.cc" ]
     deps = [
       ":common",
       ":net",
@@ -441,9 +433,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
 
   executable("cast_sender_app") {
     testonly = true
-    sources = [
-      "test/sender.cc",
-    ]
+    sources = [ "test/sender.cc" ]
     deps = [
       ":common",
       ":net",
@@ -457,16 +447,12 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
 
   proto_library("network_simulation_model_proto") {
     visibility = [ ":cast_simulator" ]
-    sources = [
-      "test/proto/network_simulation_model.proto",
-    ]
+    sources = [ "test/proto/network_simulation_model.proto" ]
   }
 
   executable("cast_simulator") {
     testonly = true
-    sources = [
-      "test/simulator.cc",
-    ]
+    sources = [ "test/simulator.cc" ]
     deps = [
       ":common",
       ":net",
@@ -483,9 +469,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
 
   executable("generate_barcode_video") {
     testonly = true
-    sources = [
-      "test/utility/generate_barcode_video.cc",
-    ]
+    sources = [ "test/utility/generate_barcode_video.cc" ]
     deps = [
       ":test_support",
       "//base",
@@ -496,9 +480,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
 
   executable("generate_timecode_audio") {
     testonly = true
-    sources = [
-      "test/utility/generate_timecode_audio.cc",
-    ]
+    sources = [ "test/utility/generate_timecode_audio.cc" ]
     deps = [
       ":test_support",
       "//base",
@@ -509,9 +491,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
 
   executable("udp_proxy") {
     testonly = true
-    sources = [
-      "test/utility/udp_proxy_main.cc",
-    ]
+    sources = [ "test/utility/udp_proxy_main.cc" ]
     deps = [
       ":test_support",
       "//base",
@@ -527,9 +507,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
 
 if (is_linux && !is_chromeos) {
   test("tap_proxy") {
-    sources = [
-      "test/utility/tap_proxy.cc",
-    ]
+    sources = [ "test/utility/tap_proxy.cc" ]
 
     deps = [
       ":test_support",
@@ -548,15 +526,11 @@ if (is_linux && !is_chromeos) {
 static_library("cast_sender") {
   complete_static_lib = true
   configs -= [ "//build/config/compiler:thin_archive" ]
-  deps = [
-    ":sender",
-  ]
+  deps = [ ":sender" ]
 }
 
 static_library("cast_receiver") {
   complete_static_lib = true
   configs -= [ "//build/config/compiler:thin_archive" ]
-  deps = [
-    ":receiver",
-  ]
+  deps = [ ":receiver" ]
 }

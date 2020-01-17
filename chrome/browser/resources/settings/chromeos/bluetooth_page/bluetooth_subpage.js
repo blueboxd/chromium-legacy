@@ -54,7 +54,7 @@ Polymer({
      */
     deviceList_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -164,7 +164,7 @@ Polymer({
   updateTimerId_: undefined,
 
   /** @override */
-  detached: function() {
+  detached() {
     if (this.updateTimerId_ !== undefined) {
       window.clearInterval(this.updateTimerId_);
       this.updateTimerId_ = undefined;
@@ -177,24 +177,24 @@ Polymer({
    * @param {!settings.Route} route
    * @protected
    */
-  currentRouteChanged: function(route) {
+  currentRouteChanged(route) {
     this.updateDiscovery_();
     this.startOrStopRefreshingDeviceList_();
   },
 
   /** @private */
-  computeShowSpinner_: function() {
+  computeShowSpinner_() {
     return !this.dialogShown_ && this.get('adapterState.discovering');
   },
 
   /** @private */
-  adapterStateChanged_: function() {
+  adapterStateChanged_() {
     this.updateDiscovery_();
     this.startOrStopRefreshingDeviceList_();
   },
 
   /** @private */
-  deviceListChanged_: function() {
+  deviceListChanged_() {
     this.updateList(
         'pairedDeviceList_', item => item.address,
         this.getUpdatedDeviceList_(
@@ -220,7 +220,7 @@ Polymer({
    * @return {!Array<!chrome.bluetooth.Device>}
    * @private
    */
-  getUpdatedDeviceList_: function(oldDeviceList, newDeviceList) {
+  getUpdatedDeviceList_(oldDeviceList, newDeviceList) {
     const newDeviceMap = new Map(newDeviceList.map(d => [d.address, d]));
     const updatedDeviceList = [];
 
@@ -245,11 +245,12 @@ Polymer({
   },
 
   /** @private */
-  updateDiscovery_: function() {
+  updateDiscovery_() {
     if (!this.adapterState || !this.adapterState.powered) {
       return;
     }
-    if (settings.getCurrentRoute() == settings.routes.BLUETOOTH_DEVICES) {
+    if (settings.Router.getInstance().getCurrentRoute() ==
+        settings.routes.BLUETOOTH_DEVICES) {
       this.startDiscovery_();
     } else {
       this.stopDiscovery_();
@@ -257,7 +258,7 @@ Polymer({
   },
 
   /** @private */
-  startDiscovery_: function() {
+  startDiscovery_() {
     if (!this.adapterState || this.adapterState.discovering) {
       return;
     }
@@ -274,7 +275,7 @@ Polymer({
   },
 
   /** @private */
-  stopDiscovery_: function() {
+  stopDiscovery_() {
     if (!this.get('adapterState.discovering')) {
       return;
     }
@@ -297,7 +298,7 @@ Polymer({
    * }>} e
    * @private
    */
-  onDeviceEvent_: function(e) {
+  onDeviceEvent_(e) {
     const action = e.detail.action;
     const device = e.detail.device;
     if (action == 'connect') {
@@ -315,7 +316,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onEnableTap_: function(event) {
+  onEnableTap_(event) {
     if (this.isToggleEnabled_()) {
       this.bluetoothToggleState = !this.bluetoothToggleState;
     }
@@ -329,7 +330,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getOnOffString_: function(enabled, onstr, offstr) {
+  getOnOffString_(enabled, onstr, offstr) {
     // If these strings are changed to convey more information other than "On"
     // and "Off" in the future, revisit the a11y implementation to ensure no
     // meaningful information is skipped.
@@ -340,7 +341,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isToggleEnabled_: function() {
+  isToggleEnabled_() {
     return this.adapterState !== undefined && this.adapterState.available &&
         !this.stateChangeInProgress;
   },
@@ -351,7 +352,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showDevices_: function(bluetoothToggleState, deviceList) {
+  showDevices_(bluetoothToggleState, deviceList) {
     return bluetoothToggleState && deviceList.length > 0;
   },
 
@@ -361,7 +362,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showNoDevices_: function(bluetoothToggleState, deviceList) {
+  showNoDevices_(bluetoothToggleState, deviceList) {
     return bluetoothToggleState && deviceList.length == 0;
   },
 
@@ -369,7 +370,7 @@ Polymer({
    * @param {!chrome.bluetooth.Device} device
    * @private
    */
-  connectDevice_: function(device) {
+  connectDevice_(device) {
     if (device.connecting || device.connected) {
       return;
     }
@@ -414,7 +415,7 @@ Polymer({
    * @param {!chrome.bluetooth.Device} device
    * @private
    */
-  disconnectDevice_: function(device) {
+  disconnectDevice_(device) {
     this.bluetoothPrivate.disconnectAll(device.address, function() {
       if (chrome.runtime.lastError) {
         console.error(
@@ -428,7 +429,7 @@ Polymer({
    * @param {!chrome.bluetooth.Device} device
    * @private
    */
-  forgetDevice_: function(device) {
+  forgetDevice_(device) {
     this.bluetoothPrivate.forgetDevice(device.address, () => {
       if (chrome.runtime.lastError) {
         console.error(
@@ -439,7 +440,7 @@ Polymer({
   },
 
   /** @private */
-  openDialog_: function() {
+  openDialog_() {
     if (this.dialogShown_) {
       return;
     }
@@ -450,7 +451,7 @@ Polymer({
   },
 
   /** @private */
-  onDialogClose_: function() {
+  onDialogClose_() {
     this.dialogShown_ = false;
     this.pairingDevice_ = undefined;
     // The list is dynamic so focus the first item.
@@ -465,7 +466,7 @@ Polymer({
    * results are returned from chrome.
    * @private
    */
-  refreshBluetoothList_: function() {
+  refreshBluetoothList_() {
     const filter = {
       filterType: chrome.bluetooth.FilterType.KNOWN,
       limit: MAX_NUMBER_DEVICE_SHOWN
@@ -476,7 +477,7 @@ Polymer({
   },
 
   /** @private */
-  startOrStopRefreshingDeviceList_: function() {
+  startOrStopRefreshingDeviceList_() {
     if (this.adapterState && this.adapterState.powered) {
       if (this.updateTimerId_ !== undefined) {
         return;
@@ -498,7 +499,7 @@ Polymer({
    * Restarts the timer when the frequency changes, which happens
    * during tests.
    */
-  listUpdateFrequencyMsChanged_: function() {
+  listUpdateFrequencyMsChanged_() {
     if (this.updateTimerId_ === undefined) {
       return;
     }
@@ -516,7 +517,7 @@ Polymer({
    *     result.
    * @private
    */
-  recordUserInitiatedReconnectionAttemptResult_: function(result) {
+  recordUserInitiatedReconnectionAttemptResult_(result) {
     let success;
     if (chrome.runtime.lastError) {
       success = false;
@@ -548,7 +549,7 @@ Polymer({
    *     of the device.
    * @private
    */
-  recordDeviceSelectionDuration_: function(wasPaired, transport) {
+  recordDeviceSelectionDuration_(wasPaired, transport) {
     if (!this.discoveryStartTimestampMs_) {
       // It's not necessarily an error that |discoveryStartTimestampMs_| isn't
       // present; it's intentionally cleared after the first device selection

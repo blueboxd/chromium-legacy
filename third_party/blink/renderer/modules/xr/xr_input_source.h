@@ -20,6 +20,7 @@ class Gamepad;
 
 namespace blink {
 
+class Element;
 class XRGripSpace;
 class XRInputSourceEvent;
 class XRSession;
@@ -89,6 +90,15 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
       const device::mojom::blink::XRInputSourceStatePtr& state);
   void OnRemoved();
 
+  // Check which element within the DOM overlay is hit by the input source's
+  // pointer ray, and update primary input state based on that, including
+  // suppressing event data for cross-origin iframes. For background, see
+  // https://immersive-web.github.io/dom-overlays/#cross-origin-content-events
+  void ProcessOverlayHitTest(
+      Element* overlay_element,
+      const device::mojom::blink::XRInputSourceStatePtr& state);
+  bool IsVisible() const { return state_.is_visible; }
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -98,6 +108,8 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
     int16_t active_frame_id = -1;
     bool primary_input_pressed = false;
     bool selection_cancelled = false;
+    bool xr_select_events_suppressed = false;
+    bool is_visible = true;
     const uint32_t source_id;
     device::mojom::XRHandedness handedness = device::mojom::XRHandedness::NONE;
     device::mojom::XRTargetRayMode target_ray_mode;

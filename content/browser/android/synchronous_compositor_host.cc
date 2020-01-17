@@ -156,7 +156,8 @@ SynchronousCompositorHost::SynchronousCompositorHost(
 }
 
 SynchronousCompositorHost::~SynchronousCompositorHost() {
-  SetBeginFrameSource(nullptr);
+  if (outstanding_begin_frame_requests_ && begin_frame_source_)
+    begin_frame_source_->RemoveObserver(this);
   client_->DidDestroyCompositor(this, frame_sink_id_);
   bridge_->HostDestroyedOnUIThread();
 }
@@ -531,7 +532,8 @@ void SynchronousCompositorHost::LayerTreeFrameSinkCreated() {
   DCHECK(compositor);
   compositor->SetMemoryPolicy(bytes_limit_);
 
-  SendBeginFramePaused();
+  if (begin_frame_paused_)
+    SendBeginFramePaused();
 }
 
 void SynchronousCompositorHost::UpdateState(
@@ -643,10 +645,8 @@ bool SynchronousCompositorHost::WantsAnimateOnlyBeginFrames() const {
 }
 
 void SynchronousCompositorHost::SendBeginFramePaused() {
-  bool paused = begin_frame_paused_ || !observed_root_window_;
-
   if (mojom::SynchronousCompositor* compositor = GetSynchronousCompositor())
-    compositor->SetBeginFrameSourcePaused(paused);
+    compositor->SetBeginFrameSourcePaused(begin_frame_paused_);
 }
 
 void SynchronousCompositorHost::SendBeginFrame(viz::BeginFrameArgs args) {
@@ -654,8 +654,7 @@ void SynchronousCompositorHost::SendBeginFrame(viz::BeginFrameArgs args) {
                "frame_number", args.frame_id.sequence_number, "frame_time_us",
                args.frame_time);
 
-  DCHECK(observed_root_window_);
-  if (!bridge_->WaitAfterVSyncOnUIThread(observed_root_window_))
+  if (!bridge_->WaitAfterVSyncOnUIThread())
     return;
   mojom::SynchronousCompositor* compositor = GetSynchronousCompositor();
   DCHECK(compositor);
@@ -663,40 +662,11 @@ void SynchronousCompositorHost::SendBeginFrame(viz::BeginFrameArgs args) {
   timing_details_.clear();
 }
 
-void SynchronousCompositorHost::StartObservingRootWindow(
-    ui::WindowAndroid* window) {
-  DCHECK(window);
-  if (observed_root_window_) {
-    DCHECK(observed_root_window_ == window);
-    return;
-  }
-
-  observed_root_window_ = window;
-  SendBeginFramePaused();
-  SetBeginFrameSource(window->GetBeginFrameSource());
-}
-
-void SynchronousCompositorHost::StopObservingRootWindow() {
-  if (!observed_root_window_)
-    return;
-
-  // Reset window state variables to their defaults.
-  observed_root_window_ = nullptr;
-  SendBeginFramePaused();
-  SetBeginFrameSource(nullptr);
-  DCHECK(!begin_frame_source_);
-}
-
 void SynchronousCompositorHost::SetBeginFrameSource(
     viz::BeginFrameSource* begin_frame_source) {
-  if (begin_frame_source_ == begin_frame_source)
-    return;
-
-  if (begin_frame_source_ && outstanding_begin_frame_requests_)
-    begin_frame_source_->RemoveObserver(this);
+  DCHECK(!begin_frame_source_);
+  DCHECK(!outstanding_begin_frame_requests_);
   begin_frame_source_ = begin_frame_source;
-  if (begin_frame_source_ && outstanding_begin_frame_requests_)
-    begin_frame_source_->AddObserver(this);
 }
 
 void SynchronousCompositorHost::AddBeginFrameRequest(
@@ -724,6 +694,11 @@ void SynchronousCompositorHost::ClearBeginFrameRequest(
 
 void SynchronousCompositorHost::RequestOneBeginFrame() {
   AddBeginFrameRequest(BEGIN_FRAME);
+}
+
+void SynchronousCompositorHost::AddBeginFrameCompletionCallback(
+    base::OnceClosure callback) {
+  client_->AddBeginFrameCompletionCallback(std::move(callback));
 }
 
 }  // namespace content

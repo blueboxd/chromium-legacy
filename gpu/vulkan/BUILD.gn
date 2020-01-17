@@ -67,9 +67,7 @@ if (enable_vulkan) {
       "//base",
       "//ui/gfx",
     ]
-    public_deps = [
-      "//gpu/config:vulkan_info",
-    ]
+    public_deps = [ "//gpu/config:vulkan_info" ]
     data_deps = []
 
     if (is_posix) {
@@ -98,9 +96,7 @@ if (enable_vulkan) {
 
   jumbo_static_library("test_support") {
     testonly = true
-    sources = [
-      "tests/native_window.h",
-    ]
+    sources = [ "tests/native_window.h" ]
 
     deps = [
       "//ui/gfx",

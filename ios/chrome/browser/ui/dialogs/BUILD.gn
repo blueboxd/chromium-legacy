@@ -33,9 +33,7 @@ source_set("feature_flags") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "java_script_dialog_blocking_state_unittest.mm",
-  ]
+  sources = [ "java_script_dialog_blocking_state_unittest.mm" ]
 
   deps = [
     ":dialogs",
@@ -96,9 +94,7 @@ source_set("completion_block_util") {
     "completion_block_util.h",
     "completion_block_util.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests_internal") {
@@ -132,9 +128,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "javascript_dialog_egtest.mm",
-  ]
+  sources = [ "javascript_dialog_egtest.mm" ]
   deps = [
     ":constants",
     ":feature_flags",
@@ -171,9 +165,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "javascript_dialog_egtest.mm",
-  ]
+  sources = [ "javascript_dialog_egtest.mm" ]
   deps = [
     ":constants",
     ":feature_flags",

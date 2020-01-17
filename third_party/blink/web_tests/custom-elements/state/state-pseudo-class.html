@@ -11,6 +11,7 @@
 #state-and-part:state(outerFoo)::part(inner) {
   opacity: 0.25;
 }
+:state( \(escaped\ state  ) {}
 </style>
 <body>
 <script>
@@ -65,6 +66,8 @@ test(() => {
 test(() => {
   assert_equals(document.styleSheets[0].cssRules[1].cssText,
       '#state-and-part::part(inner):state(innerFoo) { opacity: 0.5; }');
+  assert_equals(document.styleSheets[0].cssRules[3].selectorText,
+      ':state(\\(escaped\\ state)');
 }, ':state() serialization');
 
 test(() => {

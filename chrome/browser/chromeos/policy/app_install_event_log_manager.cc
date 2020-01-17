@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/policy/app_install_event_log.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_uploader.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
@@ -120,6 +121,11 @@ void AppInstallEventLogManager::Add(const std::set<std::string>& packages,
       base::BindOnce(&Log::Add, base::Unretained(log_.get()), packages, event),
       base::BindOnce(&AppInstallEventLogManager::OnLogChange,
                      log_weak_factory_.GetWeakPtr()));
+}
+
+void AppInstallEventLogManager::GetAndroidId(
+    AppInstallEventLogger::Delegate::AndroidIdCallback callback) const {
+  arc::GetAndroidId(std::move(callback));
 }
 
 void AppInstallEventLogManager::SerializeForUpload(

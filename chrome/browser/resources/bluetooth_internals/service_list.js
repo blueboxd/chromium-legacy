@@ -56,7 +56,7 @@ cr.define('service_list', function() {
      * references to the created header and fieldset.
      * @override
      */
-    decorate: function() {
+    decorate() {
       this.classList.add('service-list-item');
 
       /** @private {!object_fieldset.ObjectFieldSet} */
@@ -103,7 +103,7 @@ cr.define('service_list', function() {
     },
 
     /** @override */
-    onExpandInternal: function(expanded) {
+    onExpandInternal(expanded) {
       this.characteristicList_.load(this.deviceAddress_, this.info.id);
     },
   };
@@ -119,7 +119,7 @@ cr.define('service_list', function() {
     __proto__: ExpandableList.prototype,
 
     /** @override */
-    decorate: function() {
+    decorate() {
       ExpandableList.prototype.decorate.call(this);
 
       /** @private {?string} */
@@ -132,7 +132,7 @@ cr.define('service_list', function() {
     },
 
     /** @override */
-    createItem: function(data) {
+    createItem(data) {
       return new ServiceListItem(data, assert(this.deviceAddress_));
     },
 
@@ -142,7 +142,7 @@ cr.define('service_list', function() {
      * exists, one is created.
      * @param {string} deviceAddress
      */
-    load: function(deviceAddress) {
+    load(deviceAddress) {
       if (this.servicesRequested_ || !this.isSpinnerShowing()) {
         return;
       }

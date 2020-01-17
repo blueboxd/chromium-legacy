@@ -75,9 +75,7 @@ js_library("certificate_manager") {
 }
 
 js_library("certificate_manager_types") {
-  deps = [
-    ":certificates_browser_proxy",
-  ]
+  deps = [ ":certificates_browser_proxy" ]
 }
 
 js_library("certificate_password_decryption_dialog") {
@@ -113,9 +111,7 @@ js_library("certificate_subentry") {
 }
 
 js_library("certificates_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("certificates_error_dialog") {

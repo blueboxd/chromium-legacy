@@ -32,10 +32,17 @@ void NavigatorClipboard::Trace(blink::Visitor* visitor) {
 
 NavigatorClipboard::NavigatorClipboard(Navigator& navigator)
     : Supplement<Navigator>(navigator) {
+  // TODO(crbug.com/1028591): Figure out how navigator.clipboard is supposed to
+  // behave in a detached execution context.
+  if (!GetSupplementable()->GetFrame())
+    return;
+
+  SystemClipboard* system_clipboard =
+      GetSupplementable()->GetFrame()->GetSystemClipboard();
   clipboard_ = MakeGarbageCollected<Clipboard>(
-      GetSupplementable()->GetFrame()
-          ? GetSupplementable()->GetFrame()->GetDocument()
-          : nullptr);
+      system_clipboard, GetSupplementable()->GetFrame()
+                            ? GetSupplementable()->GetFrame()->GetDocument()
+                            : nullptr);
 }
 
 }  // namespace blink

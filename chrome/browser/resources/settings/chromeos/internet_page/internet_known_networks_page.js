@@ -31,7 +31,7 @@ Polymer({
      */
     networkStateList_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       }
     },
@@ -58,18 +58,18 @@ Polymer({
   networkConfig_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
                               .getMojoServiceRemote();
   },
 
   /** CrosNetworkConfigObserver impl */
-  onNetworkStateListChanged: function() {
+  onNetworkStateListChanged() {
     this.refreshNetworks_();
   },
 
   /** @private */
-  networkTypeChanged_: function() {
+  networkTypeChanged_() {
     this.refreshNetworks_();
   },
 
@@ -78,7 +78,7 @@ Polymer({
    * once the results are returned from Chrome.
    * @private
    */
-  refreshNetworks_: function() {
+  refreshNetworks_() {
     if (this.networkType === undefined) {
       return;
     }
@@ -97,7 +97,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  networkIsPreferred_: function(networkState) {
+  networkIsPreferred_(networkState) {
     // Currently we treat NetworkStateProperties.Priority as a boolean.
     return networkState.priority > 0;
   },
@@ -107,7 +107,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  networkIsNotPreferred_: function(networkState) {
+  networkIsNotPreferred_(networkState) {
     return networkState.priority == 0;
   },
 
@@ -115,7 +115,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  havePreferred_: function() {
+  havePreferred_() {
     return this.networkStateList_.find(
                state => this.networkIsPreferred_(state)) !== undefined;
   },
@@ -124,7 +124,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  haveNotPreferred_: function() {
+  haveNotPreferred_() {
     return this.networkStateList_.find(
                state => this.networkIsNotPreferred_(state)) !== undefined;
   },
@@ -134,7 +134,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getNetworkDisplayName_: function(networkState) {
+  getNetworkDisplayName_(networkState) {
     return OncMojo.getNetworkStateDisplayName(networkState);
   },
 
@@ -142,7 +142,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onMenuButtonTap_: function(event) {
+  onMenuButtonTap_(event) {
     const button = event.target;
     const networkState =
         /** @type {!OncMojo.NetworkStateProperties} */ (event.model.item);
@@ -177,7 +177,7 @@ Polymer({
    * @param {!chromeos.networkConfig.mojom.ConfigProperties} config
    * @private
    */
-  setProperties_: function(config) {
+  setProperties_(config) {
     this.networkConfig_.setProperties(this.selectedGuid_, config)
         .then(response => {
           if (!response.success) {
@@ -189,7 +189,7 @@ Polymer({
   },
 
   /** @private */
-  onRemovePreferredTap_: function() {
+  onRemovePreferredTap_() {
     assert(this.networkType !== undefined);
     const config = OncMojo.getDefaultConfigProperties(this.networkType);
     config.priority = {value: 0};
@@ -198,7 +198,7 @@ Polymer({
   },
 
   /** @private */
-  onAddPreferredTap_: function() {
+  onAddPreferredTap_() {
     assert(this.networkType !== undefined);
     const config = OncMojo.getDefaultConfigProperties(this.networkType);
     config.priority = {value: 1};
@@ -207,7 +207,7 @@ Polymer({
   },
 
   /** @private */
-  onForgetTap_: function() {
+  onForgetTap_() {
     this.networkConfig_.forgetNetwork(this.selectedGuid_).then(response => {
       if (!response.success) {
         console.error('Froget network failed for: ' + this.selectedGuid_);
@@ -222,7 +222,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  fireShowDetails_: function(event) {
+  fireShowDetails_(event) {
     const networkState =
         /** @type {!OncMojo.NetworkStateProperties} */ (event.model.item);
     this.fire('show-detail', networkState);
@@ -234,7 +234,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  doNothing_: function(event) {
+  doNothing_(event) {
     event.stopPropagation();
   },
 });

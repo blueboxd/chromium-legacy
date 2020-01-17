@@ -56,7 +56,6 @@ public class ChromeWindow extends ActivityWindowAndroid {
 
     @Override
     public ModalDialogManager getModalDialogManager() {
-        // TODO(estade): consider replacing null check with an assert.
         ChromeActivity activity = (ChromeActivity) getActivity().get();
         return activity == null ? null : activity.getModalDialogManager();
     }

@@ -22,8 +22,8 @@ function initPage() {
   const isGiantWebView = loadTimeData.getBoolean('is_giant');
   const darkModeAvailable = loadTimeData.getBoolean('darkModeAvailable');
   const interstitialType = loadTimeData.getString('type');
-  const safebrowsing = interstitialType == "SAFEBROWSING";
-  const heavyAd = interstitialType == "HEAVYAD";
+  const safebrowsing = interstitialType === 'SAFEBROWSING';
+  const heavyAd = interstitialType === 'HEAVYAD';
 
   document.body.className = isGiantWebView ? 'giant' : '';
 

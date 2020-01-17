@@ -44,9 +44,7 @@ source_set("test_support") {
     "fake_async_audio_data_supplier.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {

@@ -30,9 +30,7 @@ jumbo_component("init") {
     "//ui/gl:buildflags",
   ]
 
-  public_deps = [
-    "//ui/gl",
-  ]
+  public_deps = [ "//ui/gl" ]
 
   if (is_android) {
     sources += [

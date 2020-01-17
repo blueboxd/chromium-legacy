@@ -11,9 +11,7 @@ static_library("json_splicer") {
     "json_splicer.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 static_library("json_parser") {
@@ -43,9 +41,7 @@ static_library("json_parser") {
 source_set("unittest_sources") {
   testonly = true
 
-  sources = [
-    "json_splicer_unittest.cc",
-  ]
+  sources = [ "json_splicer_unittest.cc" ]
 
   deps = [
     ":json_parser",

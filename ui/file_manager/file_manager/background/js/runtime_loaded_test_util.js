@@ -41,28 +41,29 @@ function extractElementInfo(element, contentWindow, opt_styleNames) {
     return result;
   }
 
-  const styles = {};
+  // Force a style resolve and record the requested style values.
+  result.styles = {};
   const size = element.getBoundingClientRect();
-  const computedStyles = contentWindow.getComputedStyle(element);
+  const computedStyle = contentWindow.getComputedStyle(element);
   for (let i = 0; i < styleNames.length; i++) {
-    styles[styleNames[i]] = computedStyles[styleNames[i]];
+    result.styles[styleNames[i]] = computedStyle[styleNames[i]];
   }
-
-  result.styles = styles;
 
   // These attributes are set when element is <img> or <canvas>.
   result.imageWidth = Number(element.width);
   result.imageHeight = Number(element.height);
 
-  // These attributes are set in any element.
+  // Get the element client rectangle properties.
   result.renderedWidth = size.width;
   result.renderedHeight = size.height;
   result.renderedTop = size.top;
   result.renderedLeft = size.left;
 
-  // Get the scroll position of the element.
+  // Get the element scroll properties.
   result.scrollLeft = element.scrollLeft;
   result.scrollTop = element.scrollTop;
+  result.scrollWidth = element.scrollWidth;
+  result.scrollHeight = element.scrollHeight;
 
   return result;
 }
@@ -283,6 +284,37 @@ test.util.sync.getActiveElement = (contentWindow, opt_styleNames) => {
 
   return extractElementInfo(
       contentWindow.document.activeElement, contentWindow, opt_styleNames);
+};
+
+/**
+ * Gets the information of the active element. However, unlike the previous
+ * helper, the shadow roots are searched as well.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {Array<string>=} opt_styleNames List of CSS property name to be
+ *     obtained.
+ * @return {?{attributes:Object<string>, text:string,
+ *                  styles:(Object<string>|undefined), hidden:boolean}} Element
+ *     information that contains contentText, attribute names and
+ *     values, hidden attribute, and style names and values. If there is no
+ *     active element, returns null.
+ */
+test.util.sync.deepGetActiveElement = (contentWindow, opt_styleNames) => {
+  if (!contentWindow.document || !contentWindow.document.activeElement) {
+    return null;
+  }
+
+  let activeElement = contentWindow.document.activeElement;
+  while (true) {
+    const shadow = activeElement.shadowRoot;
+    if (shadow && shadow.activeElement) {
+      activeElement = shadow.activeElement;
+    } else {
+      break;
+    }
+  }
+
+  return extractElementInfo(activeElement, contentWindow, opt_styleNames);
 };
 
 /**

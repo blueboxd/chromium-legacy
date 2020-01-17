@@ -293,6 +293,8 @@ jumbo_source_set("testing") {
     "testing/internal_settings.h",
     "testing/internals.cc",
     "testing/internals.h",
+    "testing/mock_clipboard_host.cc",
+    "testing/mock_clipboard_host.h",
     "testing/mock_hyphenation.cc",
     "testing/mock_hyphenation.h",
     "testing/null_execution_context.cc",
@@ -1600,6 +1602,7 @@ jumbo_source_set("unit_tests") {
   deps = [
     ":core",
     ":unit_test_support",
+    "//components/paint_preview/common:common",
     "//mojo/public/cpp/system",
     "//skia:skcms",
     "//testing/gmock",

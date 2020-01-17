@@ -41,9 +41,9 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -501,6 +501,21 @@ public class TabGroupUiMediatorUnitTest {
         mTabModelObserverArgumentCaptor.getValue().restoreCompleted();
 
         mVisibilityControllerInOrder.verify(mVisibilityController).setBottomControlsVisible(true);
+    }
+
+    @Test
+    public void restoreCompleted_OverviewModeVisible() {
+        // Assume mTab2 is selected, and it has related tabs mTab2 and mTab3. Also, the overview
+        // mode is visible when restoring completed.
+        initAndAssertProperties(mTab2);
+        doReturn(POSITION2).when(mTabModel).index();
+        doReturn(mTab2).when(mTabModelSelector).getCurrentTab();
+        doReturn(true).when(mOverviewModeBehavior).overviewVisible();
+        // Simulate restore finished.
+        mTabModelObserverArgumentCaptor.getValue().restoreCompleted();
+
+        mVisibilityControllerInOrder.verify(mVisibilityController, never())
+                .setBottomControlsVisible(anyBoolean());
     }
 
     @Test

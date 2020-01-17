@@ -24,9 +24,7 @@ source_set("common") {
     "stub_overlay_manager.h",
   ]
 
-  public_deps = [
-    "//ui/ozone:ozone_base",
-  ]
+  public_deps = [ "//ui/ozone:ozone_base" ]
 
   deps = [
     "//ui/gfx/ipc/color",
@@ -34,9 +32,7 @@ source_set("common") {
     "//ui/gl:buildflags",
   ]
 
-  data_deps = [
-    "//third_party/mesa_headers",
-  ]
+  data_deps = [ "//third_party/mesa_headers" ]
 
   visibility = [ "//ui/ozone/platform/*" ]
 

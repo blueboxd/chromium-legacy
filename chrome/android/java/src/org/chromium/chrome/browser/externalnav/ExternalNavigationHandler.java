@@ -27,10 +27,11 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.LaunchSourceType;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -150,6 +151,15 @@ public class ExternalNavigationHandler {
 
         String browserFallbackUrl =
                 IntentUtils.safeGetStringExtra(targetIntent, EXTRA_BROWSER_FALLBACK_URL);
+        // TOOD(b/145195894): This is temporary workaround. The fallback URL should be configured
+        // in the intent directly on the SRP page. This is here for testing purposes and will be
+        // removed as soon as the SRP intents are updated.
+        if (browserFallbackUrl == null
+                && AutofillAssistantFacade.isAutofillAssistantByIntentTriggeringEnabled(
+                        targetIntent)
+                && mDelegate.isSerpReferrer()) {
+            browserFallbackUrl = targetIntent.getDataString();
+        }
         if (browserFallbackUrl != null
                 && !UrlUtilities.isValidForIntentFallbackNavigation(browserFallbackUrl)) {
             browserFallbackUrl = null;
@@ -678,10 +688,11 @@ public class ExternalNavigationHandler {
      * and "picking Chrome" is handled inside the support library.
      */
     private boolean shouldKeepIntentRedirectInChrome(ExternalNavigationParams params,
-            boolean incomingIntentRedirect, Intent targetIntent, boolean isExternalProtocol) {
+            boolean incomingIntentRedirect, List<ResolveInfo> resolvingInfos,
+            boolean isExternalProtocol) {
         if (params.getRedirectHandler() != null && incomingIntentRedirect && !isExternalProtocol
                 && !params.getRedirectHandler().isFromCustomTabIntent()
-                && !params.getRedirectHandler().hasNewResolver(targetIntent)) {
+                && !params.getRedirectHandler().hasNewResolver(resolvingInfos)) {
             if (DEBUG) Log.i(TAG, "Custom tab redirect no handled");
             return true;
         }
@@ -724,6 +735,22 @@ public class ExternalNavigationHandler {
         return true;
     }
 
+    private boolean handleWithAutofillAssistant(
+            ExternalNavigationParams params, Intent targetIntent, String browserFallbackUrl) {
+        if (browserFallbackUrl != null && !params.isIncognito()
+                && AutofillAssistantFacade.isAutofillAssistantByIntentTriggeringEnabled(
+                        targetIntent)
+                && mDelegate.isSerpReferrer()) {
+            if (params.getTab() != null) {
+                AutofillAssistantFacade.start(((TabImpl) params.getTab()).getActivity(),
+                        targetIntent.getExtras(), browserFallbackUrl);
+            }
+            if (DEBUG) Log.i(TAG, "Handling with Assistant");
+            return true;
+        }
+        return false;
+    }
+
     private @OverrideUrlLoadingResult int shouldOverrideUrlLoadingInternal(
             ExternalNavigationParams params, Intent targetIntent,
             @Nullable String browserFallbackUrl) {
@@ -731,6 +758,10 @@ public class ExternalNavigationHandler {
 
         if (blockExternalNavWhileBackgrounded(params) || blockExternalNavFromBackgroundTab(params)
                 || ignoreBackForwardNav(params)) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        if (handleWithAutofillAssistant(params, targetIntent, browserFallbackUrl)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
@@ -841,7 +872,7 @@ public class ExternalNavigationHandler {
         }
 
         if (shouldKeepIntentRedirectInChrome(
-                    params, incomingIntentRedirect, targetIntent, isExternalProtocol)) {
+                    params, incomingIntentRedirect, resolvingInfos, isExternalProtocol)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 

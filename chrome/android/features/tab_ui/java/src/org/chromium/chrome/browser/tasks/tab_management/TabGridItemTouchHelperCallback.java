@@ -105,9 +105,13 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        final int dragFlags =
-                viewHolder.getItemViewType() == TabProperties.UiType.MESSAGE ? 0 : mDragFlags;
-        final int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
+        final int dragFlags = viewHolder.getItemViewType() == TabProperties.UiType.MESSAGE
+                        || viewHolder.getItemViewType() == TabProperties.UiType.NEW_TAB_TILE
+                ? 0
+                : mDragFlags;
+        final int swipeFlags = viewHolder.getItemViewType() == TabProperties.UiType.NEW_TAB_TILE
+                ? 0
+                : ItemTouchHelper.START | ItemTouchHelper.END;
         mRecyclerView = recyclerView;
         return makeMovementFlags(dragFlags, swipeFlags);
     }
@@ -115,7 +119,10 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     @Override
     public boolean canDropOver(@NonNull RecyclerView recyclerView,
             @NonNull RecyclerView.ViewHolder current, @NonNull RecyclerView.ViewHolder target) {
-        if (target.getItemViewType() == TabProperties.UiType.MESSAGE) return false;
+        if (target.getItemViewType() == TabProperties.UiType.MESSAGE
+                || target.getItemViewType() == TabProperties.UiType.NEW_TAB_TILE) {
+            return false;
+        }
         return super.canDropOver(recyclerView, current, target);
     }
 
@@ -202,8 +209,10 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                     onTabMergeToGroup(mSelectedTabIndex, mHoveredTabIndex);
                     mRecyclerView.getLayoutManager().removeView(selectedItemView);
                 }
+            } else {
+                mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
             }
-            mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
+
             if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX && shouldUpdate) {
                 mModel.updateHoveredTabForMergeToGroup(mSelectedTabIndex > mHoveredTabIndex
                                 ? mHoveredTabIndex

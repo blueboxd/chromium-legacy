@@ -42,7 +42,5 @@ jumbo_component("host") {
     "//url",
   ]
 
-  public_deps = [
-    "//ipc",
-  ]
+  public_deps = [ "//ipc" ]
 }

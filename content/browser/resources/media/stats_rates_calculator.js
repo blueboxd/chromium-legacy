@@ -135,8 +135,8 @@ class StatsReport {
         }
       };
       Object.keys(stats).forEach(metricName => {
-        if (metricName == 'id' || metricName == 'type' ||
-            metricName == 'timestamp') {
+        if (metricName === 'id' || metricName === 'type' ||
+            metricName === 'timestamp') {
           return;  // continue;
         }
         internalReport.stats.values.push(metricName);
@@ -159,14 +159,14 @@ class StatsReport {
   toString() {
     let str = '';
     for (let stats of this.statsById.values()) {
-      if (str != '') {
+      if (str !== '') {
         str += ',';
       }
       str += JSON.stringify(stats);
     }
     let str2 = '';
     for (let stats of this.calculatedStatsById.values()) {
-      if (str2 != '') {
+      if (str2 !== '') {
         str2 += ',';
       }
       str2 += stats.toString();
@@ -181,7 +181,7 @@ class StatsReport {
   getByType(type) {
     const result = [];
     for (let stats of this.statsById.values()) {
-      if (stats.type == type) {
+      if (stats.type === type) {
         result.push(stats);
       }
     }
@@ -221,7 +221,7 @@ class RateCalculator {
     const accumulativeMetric = this.modifier.bitrate ?
         this.accumulativeMetric + '_in_bits' :
         this.accumulativeMetric;
-    if (this.samplesMetric == 'timestamp') {
+    if (this.samplesMetric === 'timestamp') {
       return '[' + accumulativeMetric + '/s]';
     }
     return '[' + accumulativeMetric + '/' + this.samplesMetric +
@@ -254,13 +254,13 @@ class RateCalculator {
     // int64, uint64 and double) are passed as strings.
     const previousValue = Number(previousStats[accumulativeMetric]);
     const currentValue = Number(currentStats[accumulativeMetric]);
-    if (typeof previousValue != 'number' || typeof currentValue != 'number') {
+    if (typeof previousValue !== 'number' || typeof currentValue !== 'number') {
       return undefined;
     }
     const previousSamples = Number(previousStats[samplesMetric]);
     const currentSamples = Number(currentStats[samplesMetric]);
-    if (typeof previousSamples != 'number' ||
-        typeof currentSamples != 'number') {
+    if (typeof previousSamples !== 'number' ||
+        typeof currentSamples !== 'number') {
       return undefined;
     }
     const deltaValue = currentValue - previousValue;
@@ -365,14 +365,14 @@ class StandardDeviationCalculator {
     const previousSquaredSumValue =
         Number(previousStats[totalSquaredSumMetric]);
     const currentSquaredSumValue = Number(currentStats[totalSquaredSumMetric]);
-    if (typeof previousSquaredSumValue != 'number' ||
-        typeof currentSquaredSumValue != 'number') {
+    if (typeof previousSquaredSumValue !== 'number' ||
+        typeof currentSquaredSumValue !== 'number') {
       return undefined;
     }
     const previousSumValue = Number(previousStats[totalSumMetric]);
     const currentSumValue = Number(currentStats[totalSumMetric]);
-    if (typeof previousSumValue != 'number' ||
-        typeof currentSumValue != 'number') {
+    if (typeof previousSumValue !== 'number' ||
+        typeof currentSumValue !== 'number') {
       return undefined;
     }
 

@@ -34,7 +34,6 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueRequest;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueResponse;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaBackgroundDownload;
@@ -42,6 +41,7 @@ import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDow
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -1206,6 +1206,9 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         DownloadManagerServiceJni.get().onProfileAdded(
                 mNativeDownloadManagerService, DownloadManagerService.this);
     }
+
+    @Override
+    public void onProfileDestroyed(Profile profile) {}
 
     @CalledByNative
     void onResumptionFailed(String downloadGuid) {

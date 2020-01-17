@@ -178,12 +178,8 @@ source_set("unit_tests") {
 action("generate_idl") {
   script = "//build/util/version.py"
 
-  inputs = [
-    "chromoting_lib_idl.templ",
-  ]
-  outputs = [
-    "$target_gen_dir/chromoting_lib.idl",
-  ]
+  inputs = [ "chromoting_lib_idl.templ" ]
+  outputs = [ "$target_gen_dir/chromoting_lib.idl" ]
 
   args = [
     "-e",
@@ -196,9 +192,7 @@ action("generate_idl") {
 midl("remoting_lib_idl") {
   sources = get_target_outputs(":generate_idl")
   dynamic_guid = rdp_desktop_session_clsid
-  deps = [
-    ":generate_idl",
-  ]
+  deps = [ ":generate_idl" ]
   writes_tlb = true
 }
 
@@ -241,16 +235,12 @@ static_library("remoting_lib_ps") {
     "REGISTER_PROXY_DLL",
   ]
 
-  deps = [
-    ":remoting_lib_idl",
-  ]
+  deps = [ ":remoting_lib_idl" ]
 }
 
 # Makes the .mc file from the .mc.jinja file.
 remoting_localize("messages_localizing") {
-  sources = [
-    "host_messages.mc.jinja2",
-  ]
+  sources = [ "host_messages.mc.jinja2" ]
   locales = remoting_locales
   locale_dir = resources_locale_dir
   encoding = "utf-16"
@@ -269,9 +259,7 @@ remoting_localize("messages_localizing") {
 message_compiler("messages") {
   compile_generated_code = false
   sources = get_target_outputs(":messages_localizing")
-  deps = [
-    ":messages_localizing",
-  ]
+  deps = [ ":messages_localizing" ]
 }
 
 executable("remoting_console") {
@@ -496,9 +484,7 @@ executable("remoting_native_messaging_host") {
 }
 
 remoting_localize("remoting_windows_resources") {
-  deps = [
-    "//remoting/resources",
-  ]
+  deps = [ "//remoting/resources" ]
 
   sources = [
     "core.rc.jinja2",

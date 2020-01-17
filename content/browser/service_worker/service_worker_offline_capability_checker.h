@@ -17,7 +17,7 @@ class GURL;
 namespace content {
 
 class ServiceWorkerRegistration;
-class ServiceWorkerStorage;
+class ServiceWorkerRegistry;
 class ServiceWorkerVersion;
 
 // Utility class used to check a service worker's offline capability.
@@ -41,7 +41,7 @@ class ServiceWorkerOfflineCapabilityChecker {
 
   // It's the caller's responsibility to make sure that |this| outlives
   // |callback|.
-  void Start(ServiceWorkerStorage* storage,
+  void Start(ServiceWorkerRegistry* registry,
              ServiceWorkerContext::CheckOfflineCapabilityCallback callback);
 
  private:

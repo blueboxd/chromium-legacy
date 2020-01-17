@@ -35,9 +35,7 @@ static_library("send_tab_to_self") {
     "//ui/base",
     "//url",
   ]
-  public_deps = [
-    "//components/send_tab_to_self/proto:send_tab_to_self_proto",
-  ]
+  public_deps = [ "//components/send_tab_to_self/proto:send_tab_to_self_proto" ]
   if (is_android) {
     sources += [
       "send_tab_to_self_infobar_delegate.cc",

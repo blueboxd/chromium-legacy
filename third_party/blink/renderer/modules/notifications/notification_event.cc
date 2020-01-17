@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/notifications/notification_event.h"
 
-#include "third_party/blink/renderer/modules/notifications/notification_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_notification_event_init.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {

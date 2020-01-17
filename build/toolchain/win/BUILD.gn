@@ -192,9 +192,7 @@ template("msvc_toolchain") {
       # full file name and will quote automatically when necessary.
       depsformat = "msvc"
       description = "CC {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.obj",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.obj" ]
 
       command = "$coverage_wrapper$env_wrapper$cl /nologo /showIncludes $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
     }
@@ -208,9 +206,7 @@ template("msvc_toolchain") {
       # See comment in CC tool about quoting.
       depsformat = "msvc"
       description = "CXX {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.obj",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.obj" ]
 
       command = "$coverage_wrapper$env_wrapper$cl /nologo /showIncludes $sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
     }
@@ -218,9 +214,7 @@ template("msvc_toolchain") {
     tool("rc") {
       command = "$python_path $tool_wrapper_path rc-wrapper $env rc.exe /nologo $sys_include_flags{{defines}} {{include_dirs}} /fo{{output}} {{source}}"
       depsformat = "msvc"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.res",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.res" ]
       description = "RC {{output}}"
     }
 
@@ -253,9 +247,7 @@ template("msvc_toolchain") {
       }
       command = "$python_path $tool_wrapper_path asm-wrapper $env $ml {{defines}} {{include_dirs}} {{asmflags}} {{source}}"
       description = "ASM {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.obj",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.obj" ]
     }
 
     tool("alink") {
@@ -320,9 +312,7 @@ template("msvc_toolchain") {
       default_output_extension = ".dll"
       default_output_dir = "{{root_out_dir}}"
       description = "LINK_MODULE(DLL) {{output}}"
-      outputs = [
-        dllname,
-      ]
+      outputs = [ dllname ]
       if (symbol_level != 0) {
         outputs += [ pdbname ]
       }
@@ -344,9 +334,7 @@ template("msvc_toolchain") {
       default_output_extension = ".exe"
       default_output_dir = "{{root_out_dir}}"
       description = "LINK {{output}}"
-      outputs = [
-        exename,
-      ]
+      outputs = [ exename ]
       if (symbol_level != 0) {
         outputs += [ pdbname ]
       }

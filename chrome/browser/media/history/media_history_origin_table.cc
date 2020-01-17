@@ -9,6 +9,8 @@
 
 namespace media_history {
 
+const char MediaHistoryOriginTable::kTableName[] = "origin";
+
 MediaHistoryOriginTable::MediaHistoryOriginTable(
     scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner)
     : MediaHistoryTableBase(std::move(db_task_runner)) {}
@@ -19,10 +21,12 @@ sql::InitStatus MediaHistoryOriginTable::CreateTableIfNonExistent() {
   if (!CanAccessDatabase())
     return sql::INIT_FAILURE;
 
-  bool success = DB()->Execute(
-      "CREATE TABLE IF NOT EXISTS origin("
-      "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-      "origin TEXT NOT NULL UNIQUE)");
+  bool success =
+      DB()->Execute(base::StringPrintf("CREATE TABLE IF NOT EXISTS %s("
+                                       "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                       "origin TEXT NOT NULL UNIQUE)",
+                                       kTableName)
+                        .c_str());
 
   if (!success) {
     ResetDB();
@@ -39,11 +43,11 @@ bool MediaHistoryOriginTable::CreateOriginId(const std::string& origin) {
     return false;
 
   // Insert the origin into the table if it does not exist.
-  sql::Statement statement(
-      DB()->GetCachedStatement(SQL_FROM_HERE,
-                               "INSERT OR IGNORE INTO origin"
-                               "(origin) "
-                               "VALUES (?)"));
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE, base::StringPrintf("INSERT OR IGNORE INTO %s"
+                                        "(origin) VALUES (?)",
+                                        kTableName)
+                         .c_str()));
   statement.BindString(0, origin);
   if (!statement.Run()) {
     LOG(ERROR) << "Failed to create the origin ID.";

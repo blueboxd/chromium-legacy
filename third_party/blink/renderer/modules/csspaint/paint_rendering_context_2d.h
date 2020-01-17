@@ -84,13 +84,8 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   bool CanCreateCanvas2dResourceProvider() const final { return false; }
   bool IsAccelerated() const final { return false; }
 
-  void setTransform(double m11,
-                    double m12,
-                    double m21,
-                    double m22,
-                    double dx,
-                    double dy) final;
-  void setTransform(DOMMatrix2DInit*, ExceptionState&) final;
+  DOMMatrix* getTransform() final;
+  void resetTransform() final;
 
   sk_sp<PaintRecord> GetRecord();
 

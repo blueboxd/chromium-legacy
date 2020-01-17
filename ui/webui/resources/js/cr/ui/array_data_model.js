@@ -189,7 +189,7 @@ cr.define('cr.ui', function() {
           this.doSort_(this.sortStatus.field, this.sortStatus.direction);
       if (sortPermutation) {
         const splicePermutation = deletePermutation.map(function(element) {
-          return element != -1 ? sortPermutation[element] : -1;
+          return element !== -1 ? sortPermutation[element] : -1;
         });
         this.dispatchPermutedEvent_(splicePermutation);
         spliceEvent.index = sortPermutation[index];
@@ -322,8 +322,8 @@ cr.define('cr.ui', function() {
       setTimeout(function() {
         // If the sort status has been changed, sorting has already done
         // on the change event.
-        if (field == self.sortStatus.field &&
-            direction == self.sortStatus.direction) {
+        if (field === self.sortStatus.field &&
+            direction === self.sortStatus.direction) {
           self.sort(field, direction);
         }
       }, 0);
@@ -360,7 +360,7 @@ cr.define('cr.ui', function() {
         positions[this.indexes_[i]] = i;
       }
       const sorted = this.indexes_.every(function(element, index, array) {
-        return index == 0 || compareFunction(element, array[index - 1]) >= 0;
+        return index === 0 || compareFunction(element, array[index - 1]) >= 0;
       });
       if (!sorted) {
         this.indexes_.sort(compareFunction);
@@ -369,7 +369,7 @@ cr.define('cr.ui', function() {
       const sortPermutation = [];
       let changed = false;
       for (let i = 0; i < this.length; i++) {
-        if (positions[this.indexes_[i]] != i) {
+        if (positions[this.indexes_[i]] !== i) {
           changed = true;
         }
         sortPermutation[positions[this.indexes_[i]]] = i;
@@ -424,7 +424,7 @@ cr.define('cr.ui', function() {
       if (field !== null) {
         compareFunction = this.createCompareFunction_(field);
       }
-      const dirMultiplier = direction == 'desc' ? -1 : 1;
+      const dirMultiplier = direction === 'desc' ? -1 : 1;
 
       return function(index1, index2) {
         const item1 = this.array_[index1];
@@ -434,7 +434,7 @@ cr.define('cr.ui', function() {
         if (typeof (compareFunction) === 'function') {
           compareResult = compareFunction.call(null, item1, item2);
         }
-        if (compareResult != 0) {
+        if (compareResult !== 0) {
           return dirMultiplier * compareResult;
         }
         return dirMultiplier *

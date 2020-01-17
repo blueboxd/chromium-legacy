@@ -33,6 +33,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -1398,6 +1399,7 @@ TEST_P(OverviewSessionTest,
        DropTargetRemovedIfWindowDraggedFromTopIsDestroyed) {
   EnterTabletMode();
   std::unique_ptr<aura::Window> window = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
   window->SetProperty(aura::client::kAppType,
                       static_cast<int>(AppType::BROWSER));
   std::unique_ptr<WindowResizer> resizer =
@@ -2914,7 +2916,7 @@ TEST_P(OverviewSessionWithDragFromShelfFeatureTest, TapOnBackgroundGoToHome) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   GetEventGenerator()->GestureTapAt(
-      gfx::Point(ToplevelWindowEventHandler::kStartGoingBackLeftEdgeInset, 10));
+      gfx::Point(BackGestureEventHandler::kStartGoingBackLeftEdgeInset, 10));
   ShellTestApi().WaitForOverviewAnimationState(
       OverviewAnimationState::kExitAnimationComplete);
 
@@ -3172,13 +3174,11 @@ TEST_P(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
   OverviewItem* leftmost_window = GetOverviewItemForWindow(windows[0].get());
 
   GenerateScrollSequence(
-      gfx::Point(ToplevelWindowEventHandler::kStartGoingBackLeftEdgeInset + 5,
-                 50),
+      gfx::Point(BackGestureEventHandler::kStartGoingBackLeftEdgeInset + 5, 50),
       gfx::Point(5000, 50));
   const gfx::RectF left_bounds = leftmost_window->target_bounds();
   GenerateScrollSequence(
-      gfx::Point(ToplevelWindowEventHandler::kStartGoingBackLeftEdgeInset + 5,
-                 50),
+      gfx::Point(BackGestureEventHandler::kStartGoingBackLeftEdgeInset + 5, 50),
       gfx::Point(5000, 50));
   EXPECT_EQ(left_bounds, leftmost_window->target_bounds());
 

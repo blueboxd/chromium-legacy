@@ -235,8 +235,8 @@ class ModellerImplTest : public testing::Test {
  protected:
   void WriteModelToFile(const Model& model) {
     const ModellerImpl::ModelSavingSpec& model_saving_spec =
-        ModellerImpl::ModellerImpl::GetModelSavingSpecFromProfile(
-            profile_.get());
+        ModellerImpl::ModellerImpl::GetModelSavingSpecFromProfilePath(
+            profile_->GetPath());
     CHECK(!model_saving_spec.global_curve.empty());
     CHECK(!model_saving_spec.personal_curve.empty());
     CHECK(!model_saving_spec.iteration_count.empty());

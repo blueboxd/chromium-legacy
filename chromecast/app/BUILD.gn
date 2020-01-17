@@ -72,9 +72,7 @@ cast_source_set("cast_crash_client") {
 
 cast_source_set("test_support") {
   testonly = true
-  sources = [
-    "cast_test_launcher.cc",
-  ]
+  sources = [ "cast_test_launcher.cc" ]
 
   deps = [
     ":app",
@@ -89,9 +87,7 @@ cast_source_set("test_support") {
 
 cast_source_set("unittests") {
   testonly = true
-  sources = [
-    "linux/cast_crash_reporter_client_unittest.cc",
-  ]
+  sources = [ "linux/cast_crash_reporter_client_unittest.cc" ]
 
   deps = [
     "//base",
@@ -125,16 +121,12 @@ grit("chromecast_settings") {
   source = "//chromecast/app/resources/chromecast_settings.grd"
   resource_ids = "//chromecast/app/resources/resource_ids"
 
-  outputs = [
-    "grit/chromecast_settings.h",
-  ]
+  outputs = [ "grit/chromecast_settings.h" ]
   foreach(locale, cast_locales) {
     outputs += [ "chromecast_settings_${locale}.pak" ]
   }
 
-  deps = [
-    ":verify_cast_locales",
-  ]
+  deps = [ ":verify_cast_locales" ]
 }
 
 # This target ensures that Chromecast developers are notified when locales
@@ -154,7 +146,5 @@ action("verify_cast_locales") {
 
   args += cast_locales
 
-  outputs = [
-    stamp_file,
-  ]
+  outputs = [ stamp_file ]
 }

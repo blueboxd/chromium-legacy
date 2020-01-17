@@ -12,9 +12,7 @@ if (is_mac) {
 
 component("embedder_internal") {
   output_name = "mojo_core_embedder_internal"
-  public_deps = [
-    ":impl_for_embedder",
-  ]
+  public_deps = [ ":impl_for_embedder" ]
   visibility = [
     ":test_sources",
     "//mojo:*",
@@ -180,9 +178,7 @@ if (is_chromeos || is_linux || is_android || is_win) {
 
   shared_library("shared_library") {
     output_name = "mojo_core"
-    sources = [
-      "mojo_core.cc",
-    ]
+    sources = [ "mojo_core.cc" ]
     defines = [ "MOJO_CORE_SHARED_LIBRARY" ]
     deps = [
       ":impl_for_shared_library",
@@ -212,24 +208,16 @@ if (is_chromeos || is_linux || is_android || is_win) {
     }
 
     copy("shared_library_arc32") {
-      sources = [
-        "${root_out_dir}/${android32_toolchain}/libmojo_core.so",
-      ]
-      outputs = [
-        "${root_out_dir}/libmojo_core_arc32.so",
-      ]
+      sources = [ "${root_out_dir}/${android32_toolchain}/libmojo_core.so" ]
+      outputs = [ "${root_out_dir}/libmojo_core_arc32.so" ]
       deps = [
         ":shared_library(//build/toolchain/android:${android32_toolchain})",
       ]
     }
 
     copy("shared_library_arc64") {
-      sources = [
-        "${root_out_dir}/${android64_toolchain}/libmojo_core.so",
-      ]
-      outputs = [
-        "${root_out_dir}/libmojo_core_arc64.so",
-      ]
+      sources = [ "${root_out_dir}/${android64_toolchain}/libmojo_core.so" ]
+      outputs = [ "${root_out_dir}/libmojo_core_arc64.so" ]
       deps = [
         ":shared_library(//build/toolchain/android:${android64_toolchain})",
       ]
@@ -237,9 +225,7 @@ if (is_chromeos || is_linux || is_android || is_win) {
   }
 
   config("export_only_thunks_api") {
-    inputs = [
-      "export_only_thunks_api.lst",
-    ]
+    inputs = [ "export_only_thunks_api.lst" ]
     ldflags = [ "-Wl,--version-script=" +
                 rebase_path("//mojo/core/export_only_thunks_api.lst",
                             root_build_dir) ]
@@ -261,9 +247,7 @@ if (is_chromeos || is_linux || is_android || is_win) {
         "//testing/gtest",
       ]
 
-      data_deps = [
-        ":shared_library",
-      ]
+      data_deps = [ ":shared_library" ]
     }
   }
 }
@@ -334,15 +318,11 @@ source_set("test_sources") {
 }
 
 group("core_impl_for_fuzzers") {
-  public_deps = [
-    ":impl_for_embedder",
-  ]
+  public_deps = [ ":impl_for_embedder" ]
 }
 
 fuzzer_test("mojo_core_channel_fuzzer") {
-  sources = [
-    "channel_fuzzer.cc",
-  ]
+  sources = [ "channel_fuzzer.cc" ]
   deps = [
     ":core_impl_for_fuzzers",
     "//base",
@@ -383,9 +363,7 @@ if (is_mac) {
   }
 
   fuzzer_test("mojo_core_channel_mac_fuzzer") {
-    sources = [
-      "channel_mac_fuzzer.cc",
-    ]
+    sources = [ "channel_mac_fuzzer.cc" ]
     seed_corpus = "$target_gen_dir/mojo_core_channel_mac_corpus"
     seed_corpus_deps = [ ":mojo_core_channel_mac_fuzzer_convert_corpus" ]
     deps = [
@@ -400,9 +378,7 @@ if (is_mac) {
 }
 
 fuzzer_test("mojo_core_node_channel_fuzzer") {
-  sources = [
-    "node_channel_fuzzer.cc",
-  ]
+  sources = [ "node_channel_fuzzer.cc" ]
   deps = [
     ":core_impl_for_fuzzers",
     "//base",
@@ -411,9 +387,7 @@ fuzzer_test("mojo_core_node_channel_fuzzer") {
 }
 
 fuzzer_test("mojo_core_port_event_fuzzer") {
-  sources = [
-    "port_event_fuzzer.cc",
-  ]
+  sources = [ "port_event_fuzzer.cc" ]
   deps = [
     ":core_impl_for_fuzzers",
     "//base",
@@ -421,9 +395,7 @@ fuzzer_test("mojo_core_port_event_fuzzer") {
 }
 
 fuzzer_test("mojo_core_user_message_fuzzer") {
-  sources = [
-    "user_message_fuzzer.cc",
-  ]
+  sources = [ "user_message_fuzzer.cc" ]
   deps = [
     ":core_impl_for_fuzzers",
     "//base",

@@ -1672,10 +1672,7 @@ TEST_P(PaintArtifactCompositorTest, ClipPushedUp) {
   }
 }
 
-// TODO(crbug.com/696842): The effect refuses to "decomposite" because it's in
-// a deeper transform space than its chunk. We should allow decomposite if
-// the two transform nodes share the same direct compositing ancestor.
-TEST_P(PaintArtifactCompositorTest, DISABLED_EffectPushedUp) {
+TEST_P(PaintArtifactCompositorTest, EffectPushedUp) {
   // Tests merging of an element which has an effect applied to it,
   // but has an ancestor transform of them. This can happen for fixed-
   // or absolute-position elements which escape scroll transforms.
@@ -1717,10 +1714,7 @@ TEST_P(PaintArtifactCompositorTest, DISABLED_EffectPushedUp) {
   }
 }
 
-// TODO(crbug.com/696842): The effect refuses to "decomposite" because it's in
-// a deeper transform space than its chunk. We should allow decomposite if
-// the two transform nodes share the same direct compositing ancestor.
-TEST_P(PaintArtifactCompositorTest, DISABLED_EffectAndClipPushedUp) {
+TEST_P(PaintArtifactCompositorTest, EffectAndClipPushedUp) {
   // Tests merging of an element which has an effect applied to it,
   // but has an ancestor transform of them. This can happen for fixed-
   // or absolute-position elements which escape scroll transforms.
@@ -1911,6 +1905,50 @@ TEST_P(PaintArtifactCompositorTest, MightOverlap) {
   }
 }
 
+TEST_P(PaintArtifactCompositorTest, UniteRectsKnownToBeOpaque) {
+  // X aligned and intersect: unite.
+  EXPECT_EQ(FloatRect(10, 20, 30, 60),
+            PendingLayer::UniteRectsKnownToBeOpaque(FloatRect(10, 20, 30, 40),
+                                                    FloatRect(10, 30, 30, 50)));
+  // X aligned and adjacent: unite.
+  EXPECT_EQ(FloatRect(10, 20, 30, 90),
+            PendingLayer::UniteRectsKnownToBeOpaque(FloatRect(10, 20, 30, 40),
+                                                    FloatRect(10, 60, 30, 50)));
+  // X aligned and separate: choose the bigger one.
+  EXPECT_EQ(FloatRect(10, 61, 30, 50),
+            PendingLayer::UniteRectsKnownToBeOpaque(FloatRect(10, 20, 30, 40),
+                                                    FloatRect(10, 61, 30, 50)));
+  // Y aligned and intersect: unite.
+  EXPECT_EQ(FloatRect(10, 20, 60, 40),
+            PendingLayer::UniteRectsKnownToBeOpaque(FloatRect(10, 20, 30, 40),
+                                                    FloatRect(30, 20, 40, 40)));
+  // Y aligned and adjacent: unite.
+  EXPECT_EQ(FloatRect(10, 20, 70, 40),
+            PendingLayer::UniteRectsKnownToBeOpaque(FloatRect(10, 20, 30, 40),
+                                                    FloatRect(40, 20, 40, 40)));
+  // Y aligned and separate: choose the bigger one.
+  EXPECT_EQ(FloatRect(41, 20, 40, 40),
+            PendingLayer::UniteRectsKnownToBeOpaque(FloatRect(10, 20, 30, 40),
+                                                    FloatRect(41, 20, 40, 40)));
+  // Get the biggest expanded intersection.
+  EXPECT_EQ(FloatRect(0, 0, 9, 19),
+            PendingLayer::UniteRectsKnownToBeOpaque(FloatRect(0, 0, 10, 10),
+                                                    FloatRect(0, 9, 9, 10)));
+  EXPECT_EQ(FloatRect(0, 0, 19, 9),
+            PendingLayer::UniteRectsKnownToBeOpaque(FloatRect(0, 0, 10, 10),
+                                                    FloatRect(9, 0, 10, 9)));
+  // Otherwise choose the bigger one.
+  EXPECT_EQ(FloatRect(20, 30, 40, 50),
+            PendingLayer::UniteRectsKnownToBeOpaque(FloatRect(10, 20, 30, 40),
+                                                    FloatRect(20, 30, 40, 50)));
+  EXPECT_EQ(FloatRect(10, 20, 40, 50),
+            PendingLayer::UniteRectsKnownToBeOpaque(FloatRect(10, 20, 40, 50),
+                                                    FloatRect(20, 30, 30, 40)));
+  EXPECT_EQ(FloatRect(10, 20, 40, 50),
+            PendingLayer::UniteRectsKnownToBeOpaque(FloatRect(10, 20, 40, 50),
+                                                    FloatRect(20, 30, 40, 50)));
+}
+
 TEST_P(PaintArtifactCompositorTest, PendingLayer) {
   PaintChunk chunk1 = DefaultChunk();
   chunk1.properties = PropertyTreeState::Root();
@@ -1927,52 +1965,164 @@ TEST_P(PaintArtifactCompositorTest, PendingLayer) {
   chunk2.properties = chunk1.properties;
   chunk2.known_to_be_opaque = true;
   chunk2.bounds = IntRect(10, 20, 30, 40);
-  pending_layer.Merge(PendingLayer(chunk2, 1, false),
-                      pending_layer.property_tree_state);
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
 
   // Bounds not equal to one PaintChunk.
   EXPECT_EQ(FloatRect(0, 0, 40, 60), pending_layer.bounds);
   EXPECT_EQ((Vector<wtf_size_t>{0, 1}), pending_layer.paint_chunk_indices);
-  EXPECT_NE(pending_layer.bounds, pending_layer.rect_known_to_be_opaque);
+  EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.rect_known_to_be_opaque);
 
   PaintChunk chunk3 = DefaultChunk();
   chunk3.properties = chunk1.properties;
   chunk3.known_to_be_opaque = true;
   chunk3.bounds = IntRect(-5, -25, 20, 20);
-  pending_layer.Merge(PendingLayer(chunk3, 2, false),
-                      pending_layer.property_tree_state);
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk3, 2, false)));
 
   EXPECT_EQ(FloatRect(-5, -25, 45, 85), pending_layer.bounds);
   EXPECT_EQ((Vector<wtf_size_t>{0, 1, 2}), pending_layer.paint_chunk_indices);
-  EXPECT_NE(pending_layer.bounds, pending_layer.rect_known_to_be_opaque);
+  EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.rect_known_to_be_opaque);
 }
 
-TEST_P(PaintArtifactCompositorTest, PendingLayerWithGeometry) {
-  auto transform =
-      CreateTransform(t0(), TransformationMatrix().Translate(20, 25),
-                      FloatPoint3D(100, 100, 0));
+TEST_P(PaintArtifactCompositorTest, PendingLayerMergeWithGuestTransform) {
+  auto transform = Create2DTranslation(t0(), 20, 25);
 
   PaintChunk chunk1 = DefaultChunk();
   chunk1.properties = PropertyTreeState::Root();
   chunk1.bounds = IntRect(0, 0, 30, 40);
 
-  PendingLayer pending_layer(chunk1, 0, false);
-
-  EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
-
   PaintChunk chunk2 = DefaultChunk();
   chunk2.properties = chunk1.properties;
   SetTransform(chunk2, *transform);
   chunk2.bounds = IntRect(0, 0, 50, 60);
-  pending_layer.Merge(PendingLayer(chunk2, 1, false),
-                      pending_layer.property_tree_state);
 
+  PendingLayer pending_layer(chunk1, 0, false);
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
   EXPECT_EQ(FloatRect(0, 0, 70, 85), pending_layer.bounds);
+  EXPECT_EQ(PropertyTreeState::Root(), pending_layer.property_tree_state);
 }
 
-// TODO(crbug.com/701991):
-// The test is disabled because opaque rect mapping is not implemented yet.
-TEST_P(PaintArtifactCompositorTest, DISABLED_PendingLayerKnownOpaque) {
+TEST_P(PaintArtifactCompositorTest, PendingLayerMergeWithHomeTransform) {
+  auto transform = Create2DTranslation(t0(), 20, 25);
+
+  PaintChunk chunk1 = DefaultChunk();
+  chunk1.properties = PropertyTreeState::Root();
+  SetTransform(chunk1, *transform);
+  chunk1.bounds = IntRect(0, 0, 30, 40);
+
+  PaintChunk chunk2 = DefaultChunk();
+  chunk2.properties = PropertyTreeState::Root();
+  chunk2.bounds = IntRect(0, 0, 50, 60);
+
+  PendingLayer pending_layer(chunk1, 0, false);
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  EXPECT_EQ(FloatRect(0, 0, 50, 65), pending_layer.bounds);
+  EXPECT_EQ(PropertyTreeState::Root(), pending_layer.property_tree_state);
+}
+
+TEST_P(PaintArtifactCompositorTest, PendingLayerMergeWithBothTransforms) {
+  auto t1 = Create2DTranslation(t0(), 20, 25);
+  auto t2 = Create2DTranslation(t0(), -20, -25);
+
+  PaintChunk chunk1 = DefaultChunk();
+  chunk1.properties = PropertyTreeState::Root();
+  SetTransform(chunk1, *t1);
+  chunk1.bounds = IntRect(0, 0, 30, 40);
+
+  PaintChunk chunk2 = DefaultChunk();
+  chunk2.properties = PropertyTreeState::Root();
+  SetTransform(chunk2, *t2);
+  chunk2.bounds = IntRect(0, 0, 50, 60);
+
+  PendingLayer pending_layer(chunk1, 0, false);
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  EXPECT_EQ(FloatRect(-20, -25, 70, 90), pending_layer.bounds);
+  EXPECT_EQ(PropertyTreeState::Root(), pending_layer.property_tree_state);
+}
+
+TEST_P(PaintArtifactCompositorTest, PendingLayerDontMergeSparse) {
+  PaintChunk chunk1 = DefaultChunk();
+  chunk1.properties = PropertyTreeState::Root();  // (t0(), c0(), *e1);
+  chunk1.known_to_be_opaque = true;
+  chunk1.bounds = IntRect(0, 0, 30, 40);
+
+  PaintChunk chunk2 = DefaultChunk();
+  chunk2.properties = chunk1.properties;
+  chunk2.known_to_be_opaque = true;
+  chunk2.bounds = IntRect(200, 200, 30, 40);
+
+  PendingLayer pending_layer(chunk1, 0, false);
+  ASSERT_FALSE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
+  EXPECT_EQ(chunk1.properties, pending_layer.property_tree_state);
+  EXPECT_EQ(Vector<wtf_size_t>{0}, pending_layer.paint_chunk_indices);
+}
+
+TEST_P(PaintArtifactCompositorTest, PendingLayerDontMergeSparseWithTransforms) {
+  auto t1 = Create2DTranslation(t0(), 20, 25);
+  auto t2 = Create2DTranslation(t0(), 1000, 1000);
+
+  PaintChunk chunk1 = DefaultChunk();
+  chunk1.properties = PropertyTreeState::Root();
+  SetTransform(chunk1, *t1);
+  chunk1.bounds = IntRect(0, 0, 30, 40);
+
+  PaintChunk chunk2 = DefaultChunk();
+  chunk2.properties = PropertyTreeState::Root();
+  SetTransform(chunk2, *t2);
+  chunk2.bounds = IntRect(0, 0, 50, 60);
+
+  PendingLayer pending_layer(chunk1, 0, false);
+  ASSERT_FALSE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
+  EXPECT_EQ(chunk1.properties, pending_layer.property_tree_state);
+  EXPECT_EQ(Vector<wtf_size_t>{0}, pending_layer.paint_chunk_indices);
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       PendingLayerDontMergeSparseInCompositedEffect) {
+  auto t1 = Create2DTranslation(t0(), 20, 25);
+  auto t2 = Create2DTranslation(t0(), 1000, 1000);
+  auto e1 =
+      CreateOpacityEffect(e0(), 1.0f, CompositingReason::kWillChangeOpacity);
+
+  PaintChunk chunk1 = DefaultChunk();
+  chunk1.properties = PropertyTreeState(*t1, c0(), *e1);
+  chunk1.bounds = IntRect(0, 0, 30, 40);
+
+  PaintChunk chunk2 = DefaultChunk();
+  chunk2.properties = PropertyTreeState(*t2, c0(), *e1);
+  chunk2.bounds = IntRect(0, 0, 50, 60);
+
+  PendingLayer pending_layer(chunk1, 0, false);
+  ASSERT_FALSE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  EXPECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
+  EXPECT_EQ(chunk1.properties, pending_layer.property_tree_state);
+  EXPECT_EQ(Vector<wtf_size_t>{0}, pending_layer.paint_chunk_indices);
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       PendingLayerMergeSparseInNonCompositedEffect) {
+  auto t1 = Create2DTranslation(t0(), 20, 25);
+  auto t2 = Create2DTranslation(t0(), 1000, 1000);
+  auto e1 = CreateOpacityEffect(e0(), 1.0f, CompositingReason::kNone);
+
+  PaintChunk chunk1 = DefaultChunk();
+  chunk1.properties = PropertyTreeState(*t1, c0(), *e1);
+  chunk1.bounds = IntRect(0, 0, 30, 40);
+
+  PaintChunk chunk2 = DefaultChunk();
+  chunk2.properties = PropertyTreeState(*t2, c0(), *e1);
+  chunk2.bounds = IntRect(0, 0, 50, 60);
+
+  PendingLayer pending_layer(chunk1, 0, false);
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
+  EXPECT_EQ(FloatRect(20, 25, 1030, 1035), pending_layer.bounds);
+  EXPECT_EQ(PropertyTreeState(t0(), c0(), *e1),
+            pending_layer.property_tree_state);
+  EXPECT_EQ((Vector<wtf_size_t>{0, 1}), pending_layer.paint_chunk_indices);
+}
+
+TEST_P(PaintArtifactCompositorTest, PendingLayerKnownOpaque) {
   PaintChunk chunk1 = DefaultChunk();
   chunk1.properties = PropertyTreeState::Root();
   chunk1.bounds = IntRect(0, 0, 30, 40);
@@ -1985,8 +2135,7 @@ TEST_P(PaintArtifactCompositorTest, DISABLED_PendingLayerKnownOpaque) {
   chunk2.properties = chunk1.properties;
   chunk2.bounds = IntRect(0, 0, 25, 35);
   chunk2.known_to_be_opaque = true;
-  pending_layer.Merge(PendingLayer(chunk2, 1, false),
-                      pending_layer.property_tree_state);
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk2, 1, false)));
 
   // Chunk 2 doesn't cover the entire layer, so not opaque.
   EXPECT_EQ(FloatRect(chunk2.bounds), pending_layer.rect_known_to_be_opaque);
@@ -1996,8 +2145,7 @@ TEST_P(PaintArtifactCompositorTest, DISABLED_PendingLayerKnownOpaque) {
   chunk3.properties = chunk1.properties;
   chunk3.bounds = IntRect(0, 0, 50, 60);
   chunk3.known_to_be_opaque = true;
-  pending_layer.Merge(PendingLayer(chunk3, 2, false),
-                      pending_layer.property_tree_state);
+  ASSERT_TRUE(pending_layer.Merge(PendingLayer(chunk3, 2, false)));
 
   // Chunk 3 covers the entire layer, so now it's opaque.
   EXPECT_EQ(FloatRect(chunk3.bounds), pending_layer.bounds);
@@ -2086,6 +2234,47 @@ TEST_P(PaintArtifactCompositorTest, NonCompositedSimpleLuminanceMask) {
   const cc::EffectNode* masked_group =
       GetPropertyTrees().effect_tree.Node(layer->effect_tree_index());
   EXPECT_FALSE(masked_group->HasRenderSurface());
+  EXPECT_EQ(SkBlendMode::kSrcOver, masked_group->blend_mode);
+  EXPECT_TRUE(masked_group->filters.IsEmpty());
+  // It's the last effect node. |masking| has been decomposited.
+  EXPECT_EQ(masked_group, GetPropertyTrees().effect_tree.back());
+}
+
+TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMaskOneChild) {
+  auto masked = CreateOpacityEffect(
+      e0(), 1.0, CompositingReason::kIsolateCompositedDescendants);
+  EffectPaintPropertyNode::State masking_state;
+  masking_state.local_transform_space = &t0();
+  masking_state.output_clip = &c0();
+  masking_state.color_filter = kColorFilterLuminanceToAlpha;
+  masking_state.blend_mode = SkBlendMode::kDstIn;
+  masking_state.direct_compositing_reasons = CompositingReason::kLayerForMask;
+  auto masking =
+      EffectPaintPropertyNode::Create(*masked, std::move(masking_state));
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), c0(), *masked)
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
+  artifact.Chunk(t0(), c0(), *masking)
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
+  Update(artifact.Build());
+  ASSERT_EQ(2u, LayerCount());
+
+  const cc::Layer* masking_layer = LayerAt(1);
+  const cc::EffectNode* masking_group =
+      GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
+
+  // Render surface is not needed for one child.
+  EXPECT_FALSE(masking_group->HasRenderSurface());
+  ASSERT_EQ(1u, masking_group->filters.size());
+  EXPECT_EQ(cc::FilterOperation::REFERENCE,
+            masking_group->filters.at(0).type());
+  EXPECT_EQ(SkBlendMode::kDstIn, masking_group->blend_mode);
+
+  // The parent also has a render surface to define the scope of the backdrop
+  // of the kDstIn blend mode.
+  EXPECT_TRUE(
+      GetPropertyTrees().effect_tree.parent(masking_group)->HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMaskTwoChildren) {
@@ -2121,6 +2310,82 @@ TEST_P(PaintArtifactCompositorTest, CompositedLuminanceMaskTwoChildren) {
   ASSERT_EQ(1u, masking_group->filters.size());
   EXPECT_EQ(cc::FilterOperation::REFERENCE,
             masking_group->filters.at(0).type());
+  EXPECT_EQ(SkBlendMode::kDstIn, masking_group->blend_mode);
+
+  // The parent also has a render surface to define the scope of the backdrop
+  // of the kDstIn blend mode.
+  EXPECT_TRUE(
+      GetPropertyTrees().effect_tree.parent(masking_group)->HasRenderSurface());
+}
+
+TEST_P(PaintArtifactCompositorTest, CompositedMaskOneChild) {
+  auto masked = CreateOpacityEffect(
+      e0(), 1.0, CompositingReason::kIsolateCompositedDescendants);
+  EffectPaintPropertyNode::State masking_state;
+  masking_state.local_transform_space = &t0();
+  masking_state.output_clip = &c0();
+  masking_state.blend_mode = SkBlendMode::kDstIn;
+  masking_state.direct_compositing_reasons = CompositingReason::kLayerForMask;
+  auto masking =
+      EffectPaintPropertyNode::Create(*masked, std::move(masking_state));
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), c0(), *masked)
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
+  artifact.Chunk(t0(), c0(), *masking)
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
+  Update(artifact.Build());
+  ASSERT_EQ(2u, LayerCount());
+
+  const cc::Layer* masking_layer = LayerAt(1);
+  const cc::EffectNode* masking_group =
+      GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
+
+  // Render surface is not needed for one child.
+  EXPECT_FALSE(masking_group->HasRenderSurface());
+  EXPECT_EQ(SkBlendMode::kDstIn, masking_group->blend_mode);
+
+  // The parent also has a render surface to define the scope of the backdrop
+  // of the kDstIn blend mode.
+  EXPECT_TRUE(
+      GetPropertyTrees().effect_tree.parent(masking_group)->HasRenderSurface());
+}
+
+TEST_P(PaintArtifactCompositorTest, CompositedMaskTwoChildren) {
+  auto masked = CreateOpacityEffect(
+      e0(), 1.0, CompositingReason::kIsolateCompositedDescendants);
+  EffectPaintPropertyNode::State masking_state;
+  masking_state.local_transform_space = &t0();
+  masking_state.output_clip = &c0();
+  masking_state.blend_mode = SkBlendMode::kDstIn;
+  auto masking =
+      EffectPaintPropertyNode::Create(*masked, std::move(masking_state));
+
+  auto child_of_masked = CreateOpacityEffect(
+      *masking, 1.0, CompositingReason::kIsolateCompositedDescendants);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), c0(), *masked)
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
+  artifact.Chunk(t0(), c0(), *child_of_masked)
+      .RectDrawing(IntRect(100, 100, 200, 200), Color::kGray);
+  artifact.Chunk(t0(), c0(), *masking)
+      .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite);
+  Update(artifact.Build());
+  ASSERT_EQ(3u, LayerCount());
+
+  const cc::Layer* masking_layer = LayerAt(2);
+  const cc::EffectNode* masking_group =
+      GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
+
+  // There is a render surface because there are two children.
+  EXPECT_TRUE(masking_group->HasRenderSurface());
+  EXPECT_EQ(SkBlendMode::kDstIn, masking_group->blend_mode);
+
+  // The parent also has a render surface to define the scope of the backdrop
+  // of the kDstIn blend mode.
+  EXPECT_TRUE(
+      GetPropertyTrees().effect_tree.parent(masking_group)->HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest, NonCompositedSimpleExoticBlendMode) {
@@ -2145,6 +2410,9 @@ TEST_P(PaintArtifactCompositorTest, NonCompositedSimpleExoticBlendMode) {
   const cc::EffectNode* group =
       GetPropertyTrees().effect_tree.Node(layer->effect_tree_index());
   EXPECT_FALSE(group->HasRenderSurface());
+  EXPECT_EQ(SkBlendMode::kSrcOver, group->blend_mode);
+  // It's the last effect node. |masking| has been decomposited.
+  EXPECT_EQ(group, GetPropertyTrees().effect_tree.back());
 }
 
 TEST_P(PaintArtifactCompositorTest, ForcedCompositedExoticBlendMode) {
@@ -2172,8 +2440,12 @@ TEST_P(PaintArtifactCompositorTest, ForcedCompositedExoticBlendMode) {
       GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
   EXPECT_EQ(SkBlendMode::kXor, masking_group->blend_mode);
 
-  /// This requires a render surface.
+  // This requires a render surface.
   EXPECT_TRUE(masking_group->HasRenderSurface());
+  // The parent also requires a render surface to define the backdrop scope of
+  // the blend mode.
+  EXPECT_TRUE(
+      GetPropertyTrees().effect_tree.parent(masking_group)->HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest,
@@ -2206,8 +2478,12 @@ TEST_P(PaintArtifactCompositorTest,
       GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
   EXPECT_EQ(SkBlendMode::kXor, masking_group->blend_mode);
 
-  /// This requires a render surface.
+  // This requires a render surface.
   EXPECT_TRUE(masking_group->HasRenderSurface());
+  // The parent also requires a render surface to define the backdrop scope of
+  // the blend mode.
+  EXPECT_TRUE(
+      GetPropertyTrees().effect_tree.parent(masking_group)->HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest,
@@ -2242,8 +2518,12 @@ TEST_P(PaintArtifactCompositorTest,
       GetPropertyTrees().effect_tree.Node(masking_layer->effect_tree_index());
   EXPECT_EQ(SkBlendMode::kXor, masking_group->blend_mode);
 
-  /// This requires a render surface.
+  // This requires a render surface.
   EXPECT_TRUE(masking_group->HasRenderSurface());
+  // The parent also requires a render surface to define the backdrop scope of
+  // the blend mode.
+  EXPECT_TRUE(
+      GetPropertyTrees().effect_tree.parent(masking_group)->HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest, UpdateProducesNewSequenceNumber) {
@@ -2746,6 +3026,8 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRotatedNotSupported) {
       *GetPropertyTrees().effect_tree.Node(mask_effect_0_id);
   ASSERT_EQ(mask_isolation_0_id, mask_effect_0.parent_id);
   EXPECT_EQ(SkBlendMode::kDstIn, mask_effect_0.blend_mode);
+  // Render surface is not needed for DstIn controlling only one layer.
+  EXPECT_FALSE(mask_effect_0.HasRenderSurface());
 }
 
 TEST_P(PaintArtifactCompositorTest, SynthesizedClip90DegRotationSupported) {
@@ -3591,7 +3873,7 @@ TEST_P(PaintArtifactCompositorTest, ContentsOpaque) {
 TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedNonOpaque) {
   TestPaintArtifact artifact;
   artifact.Chunk()
-      .RectDrawing(IntRect(100, 100, 200, 200), Color::kBlack)
+      .RectDrawing(IntRect(100, 100, 210, 210), Color::kBlack)
       .KnownToBeOpaque()
       .Chunk()
       .RectDrawing(IntRect(200, 200, 200, 200), Color::kBlack)
@@ -3600,6 +3882,23 @@ TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedNonOpaque) {
   ASSERT_EQ(1u, LayerCount());
   EXPECT_EQ(gfx::Size(300, 300), LayerAt(0)->bounds());
   EXPECT_FALSE(LayerAt(0)->contents_opaque());
+}
+
+TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedClippedToOpaque) {
+  // Almost the same as ContentsOpaqueUnitedNonOpaque, but with a clip which
+  // removes the non-opaque part of the layer, making the layer opaque.
+  auto clip1 = CreateClip(c0(), t0(), FloatRoundedRect(175, 175, 100, 100));
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *clip1, e0())
+      .RectDrawing(IntRect(100, 100, 210, 210), Color::kBlack)
+      .KnownToBeOpaque()
+      .Chunk(t0(), *clip1, e0())
+      .RectDrawing(IntRect(200, 200, 200, 200), Color::kBlack)
+      .KnownToBeOpaque();
+  Update(artifact.Build());
+  ASSERT_EQ(1u, LayerCount());
+  EXPECT_EQ(gfx::Size(100, 100), LayerAt(0)->bounds());
+  EXPECT_TRUE(LayerAt(0)->contents_opaque());
 }
 
 TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedOpaque1) {
@@ -3616,6 +3915,26 @@ TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedOpaque1) {
   EXPECT_TRUE(LayerAt(0)->contents_opaque());
 }
 
+TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedWithRoundedClip) {
+  // Almost the same as ContentsOpaqueUnitedOpaque1, but the first layer has a
+  // rounded clip.
+  FloatSize corner(5, 5);
+  auto clip1 = CreateClip(c0(), t0(),
+                          FloatRoundedRect(FloatRect(175, 175, 100, 100),
+                                           corner, corner, corner, corner));
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *clip1, e0())
+      .RectDrawing(IntRect(100, 100, 210, 210), Color::kBlack)
+      .KnownToBeOpaque()
+      .Chunk(t0(), c0(), e0())
+      .RectDrawing(IntRect(200, 200, 100, 100), Color::kBlack)
+      .KnownToBeOpaque();
+  Update(artifact.Build());
+  ASSERT_EQ(1u, LayerCount());
+  EXPECT_EQ(gfx::Size(125, 125), LayerAt(0)->bounds());
+  EXPECT_FALSE(LayerAt(0)->contents_opaque());
+}
+
 TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedOpaque2) {
   TestPaintArtifact artifact;
   artifact.Chunk()
@@ -3627,9 +3946,7 @@ TEST_P(PaintArtifactCompositorTest, ContentsOpaqueUnitedOpaque2) {
   Update(artifact.Build());
   ASSERT_EQ(1u, LayerCount());
   EXPECT_EQ(gfx::Size(300, 300), LayerAt(0)->bounds());
-  // TODO(crbug.com/701991): Upgrade GeometryMapper to make this test pass with
-  // the following EXPECT_FALSE changed to EXPECT_TRUE.
-  EXPECT_FALSE(LayerAt(0)->contents_opaque());
+  EXPECT_TRUE(LayerAt(0)->contents_opaque());
 }
 
 TEST_P(PaintArtifactCompositorTest, DecompositeEffectWithNoOutputClip) {

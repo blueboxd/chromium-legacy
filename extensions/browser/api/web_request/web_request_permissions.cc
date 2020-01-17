@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/permission_helper.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
@@ -307,6 +308,15 @@ bool WebRequestPermissions::HideRequest(
 
     // In any case, we treat the requests as sensitive to ensure that the Web
     // Request API doesn't see them.
+    return true;
+  }
+
+  // Treat requests from chrome-untrusted:// as sensitive to ensure that the
+  // Web Request API doesn't see them. Note that Extensions are never allowed to
+  // request permission for chrome-untrusted:// URLs so this is check is here
+  // just in case.
+  if (request.initiator.has_value() &&
+      request.initiator->scheme() == content::kChromeUIUntrustedScheme) {
     return true;
   }
 

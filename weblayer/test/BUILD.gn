@@ -47,9 +47,7 @@ if (is_android) {
   android_assets("weblayer_test_assets") {
     testonly = true
     disable_compression = true
-    deps = [
-      "//third_party/icu:icu_assets",
-    ]
+    deps = [ "//third_party/icu:icu_assets" ]
     if (use_v8_context_snapshot) {
       deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
     } else {
@@ -83,6 +81,7 @@ test("weblayer_browsertests") {
     "//components/autofill/core/common",
     "//components/network_time",
     "//components/security_interstitials/content:security_interstitial_page",
+    "//components/strings",
     "//content/public/browser",
     "//content/test:test_support",
     "//net:test_support",
@@ -93,6 +92,7 @@ test("weblayer_browsertests") {
 
   sources = [
     "../browser/autofill_browsertest.cc",
+    "../browser/download_browsertest.cc",
     "../browser/errorpage_browsertest.cc",
     "../browser/navigation_browsertest.cc",
     "../browser/ssl_browsertest.cc",

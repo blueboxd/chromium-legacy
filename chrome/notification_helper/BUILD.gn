@@ -61,9 +61,7 @@ source_set("constants") {
 }
 
 process_version_rc_template("version_resources") {
-  sources = [
-    "notification_helper_exe.ver",
-  ]
+  sources = [ "notification_helper_exe.ver" ]
   output = "$target_gen_dir/notification_helper_exe.rc"
 }
 
@@ -85,9 +83,7 @@ test("notification_helper_unittests") {
     "//testing/gtest",
   ]
 
-  data_deps = [
-    ":notification_helper",
-  ]
+  data_deps = [ ":notification_helper" ]
 
   libs = [ "runtimeobject.lib" ]
 }

@@ -29,9 +29,7 @@ static_library("common") {
 }
 
 mojom("mojo_interfaces") {
-  sources = [
-    "print.mojom",
-  ]
+  sources = [ "print.mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",

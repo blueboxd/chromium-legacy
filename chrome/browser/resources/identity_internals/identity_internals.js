@@ -22,7 +22,7 @@ cr.define('identity_internals', function() {
     __proto__: HTMLDivElement.prototype,
 
     /** @override */
-    decorate: function() {
+    decorate() {
       this.textContent = '';
       this.id = this.data_.accessToken;
 
@@ -53,7 +53,7 @@ cr.define('identity_internals', function() {
      * @param {string} accessor Additional class to tag the field for testing.
      * @return {HTMLElement} An HTML element with the property name and value.
      */
-    createEntry_: function(label, value, accessor) {
+    createEntry_(label, value, accessor) {
       const row = this.ownerDocument.createElement('tr');
       const labelField = this.ownerDocument.createElement('td');
       labelField.classList.add('label');
@@ -71,7 +71,7 @@ cr.define('identity_internals', function() {
      * Creates an entry for a list of token scopes.
      * @return {!HTMLElement} An HTML element with scopes.
      */
-    createEntryForScopes_: function() {
+    createEntryForScopes_() {
       const row = this.ownerDocument.createElement('tr');
       const labelField = this.ownerDocument.createElement('td');
       labelField.classList.add('label');
@@ -93,7 +93,7 @@ cr.define('identity_internals', function() {
      * @return {HTMLElement} An HTML element with actionable buttons for the
      *     token.
      */
-    createButtons_: function() {
+    createButtons_() {
       const row = this.ownerDocument.createElement('tr');
       const buttonHolder = this.ownerDocument.createElement('td');
       buttonHolder.colSpan = 2;
@@ -109,7 +109,7 @@ cr.define('identity_internals', function() {
      * @return {!HTMLButtonElement} The created revoke button.
      * @private
      */
-    createRevokeButton_: function() {
+    createRevokeButton_() {
       const revokeButton = this.ownerDocument.createElement('button');
       revokeButton.classList.add('revoke-button');
       revokeButton.addEventListener('click', function() {
@@ -134,7 +134,7 @@ cr.define('identity_internals', function() {
     __proto__: HTMLDivElement.prototype,
 
     /** @override */
-    decorate: function() {
+    decorate() {
       this.textContent = '';
       this.showTokenNodes_();
     },
@@ -142,7 +142,7 @@ cr.define('identity_internals', function() {
     /**
      * Populates the list of tokens.
      */
-    showTokenNodes_: function() {
+    showTokenNodes_() {
       this.data_.forEach(function(tokenInfo) {
         this.appendChild(new TokenListItem(tokenInfo));
       }, this);
@@ -154,7 +154,7 @@ cr.define('identity_internals', function() {
      * @param {string} accessToken The id of the token to remove.
      * @private
      */
-    removeTokenNode_: function(accessToken) {
+    removeTokenNode_(accessToken) {
       let tokenIndex;
       for (let index = 0; index < this.data_.length; index++) {
         if (this.data_[index].accessToken == accessToken) {

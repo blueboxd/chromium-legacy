@@ -15,49 +15,33 @@ declare_args() {
 # separate static libraries in non-component build.
 group("client") {
   if (is_component_build) {
-    public_deps = [
-      "//gpu",
-    ]
+    public_deps = [ "//gpu" ]
   } else {
-    public_deps = [
-      ":client_sources",
-    ]
+    public_deps = [ ":client_sources" ]
   }
 }
 
 group("gles2_cmd_helper") {
   if (is_component_build) {
-    public_deps = [
-      "//gpu:gles2",
-    ]
+    public_deps = [ "//gpu:gles2" ]
   } else {
-    public_deps = [
-      ":gles2_cmd_helper_sources",
-    ]
+    public_deps = [ ":gles2_cmd_helper_sources" ]
   }
 }
 
 group("raster") {
   if (is_component_build) {
-    public_deps = [
-      "//gpu:raster",
-    ]
+    public_deps = [ "//gpu:raster" ]
   } else {
-    public_deps = [
-      ":raster_sources",
-    ]
+    public_deps = [ ":raster_sources" ]
   }
 }
 
 group("webgpu") {
   if (is_component_build) {
-    public_deps = [
-      "//gpu:webgpu",
-    ]
+    public_deps = [ "//gpu:webgpu" ]
   } else {
-    public_deps = [
-      ":webgpu_sources",
-    ]
+    public_deps = [ ":webgpu_sources" ]
   }
 }
 
@@ -171,13 +155,9 @@ gles2_implementation_source_files = [
 ]
 
 source_set("interface_base") {
-  sources = [
-    "interface_base.h",
-  ]
+  sources = [ "interface_base.h" ]
   public_configs = [ "//third_party/khronos:khronos_headers" ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 # Provides GLES2 interface, but does not cause any implementation to be linked
@@ -301,9 +281,7 @@ source_set("webgpu_sources") {
     ":webgpu_interface",
     "//gpu/command_buffer/common:webgpu",
   ]
-  public_deps = [
-    "//third_party/dawn/src/dawn:dawn_headers",
-  ]
+  public_deps = [ "//third_party/dawn/src/dawn:dawn_headers" ]
   sources = [
     "webgpu_cmd_helper.cc",
     "webgpu_cmd_helper.h",

@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutSlider INPUT",
-          "rect": [9, 9, 131, 23],
+          "rect": [9, 9, 131, 18],
           "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='thumb'",
-          "rect": [69, 10, 11, 21],
+          "rect": [66, 10, 17, 16],
           "reason": "subtree"
         }
       ]

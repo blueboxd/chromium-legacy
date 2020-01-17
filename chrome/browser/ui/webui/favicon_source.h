@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/favicon_service.h"
 #include "content/public/browser/url_data_source.h"
@@ -95,6 +96,8 @@ class FaviconSource : public content::URLDataSource {
   chrome::FaviconUrlFormat url_format_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
+
+  base::WeakPtrFactory<FaviconSource> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FaviconSource);
 };

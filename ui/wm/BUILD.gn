@@ -159,9 +159,7 @@ test("wm_unittests") {
     "//ui/wm/public",
   ]
 
-  data_deps = [
-    "//ui/resources:ui_test_pak_data",
-  ]
+  data_deps = [ "//ui/resources:ui_test_pak_data" ]
 
   if (is_chromeos) {
     sources += [ "core/ime_util_chromeos_unittest.cc" ]

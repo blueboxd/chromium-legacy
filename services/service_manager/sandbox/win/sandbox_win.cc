@@ -950,7 +950,7 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
 #if !defined(NACL_WIN64)
   if (process_type == service_manager::switches::kRendererProcess ||
       process_type == service_manager::switches::kPpapiPluginProcess ||
-      sandbox_type == SandboxType::kPdfCompositor) {
+      sandbox_type == SandboxType::kPrintCompositor) {
     AddDirectory(base::DIR_WINDOWS_FONTS, NULL, true,
                  sandbox::TargetPolicy::FILES_ALLOW_READONLY, policy.get());
   }

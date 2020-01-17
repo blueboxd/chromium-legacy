@@ -102,10 +102,3 @@ export class Filenamer {
     return imageName.replace(/\.[^/.]+$/, '.json');
   }
 }
-
-/** @const */
-cca.models.Filenamer = Filenamer;
-/** @const */
-cca.models.Filenamer.IMAGE_PREFIX = IMAGE_PREFIX;
-/** @const */
-cca.models.Filenamer.VIDEO_PREFIX = VIDEO_PREFIX;

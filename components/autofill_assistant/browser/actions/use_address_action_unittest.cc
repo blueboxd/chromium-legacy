@@ -201,7 +201,8 @@ TEST_F(UseAddressActionTest, ValidationSucceeds) {
 }
 
 TEST_F(UseAddressActionTest, FallbackFails) {
-  InSequence seq;
+  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action_proto = CreateUseAddressAction();
   AddRequiredField(&action_proto, UseAddressProto::RequiredField::FIRST_NAME,
@@ -238,7 +239,8 @@ TEST_F(UseAddressActionTest, FallbackFails) {
 }
 
 TEST_F(UseAddressActionTest, FallbackSucceeds) {
-  InSequence seq;
+  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action_proto = CreateUseAddressAction();
   AddRequiredField(&action_proto, UseAddressProto::RequiredField::FIRST_NAME,
@@ -254,29 +256,28 @@ TEST_F(UseAddressActionTest, FallbackSucceeds) {
                   NotNull(), Eq(Selector({kFakeSelector}).MustBeVisible()), _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
-  {
-    InSequence seq;
+  // Validation fails when getting FIRST_NAME.
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Eq(Selector({"#email"})), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Eq(Selector({"#first_name"})), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Eq(Selector({"#last_name"})), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
-    // Validation fails when getting FIRST_NAME.
-    EXPECT_CALL(mock_web_controller_,
-                OnGetFieldValue(Eq(Selector({"#email"})), _))
-        .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
-    EXPECT_CALL(mock_web_controller_,
-                OnGetFieldValue(Eq(Selector({"#first_name"})), _))
-        .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
-    EXPECT_CALL(mock_web_controller_,
-                OnGetFieldValue(Eq(Selector({"#last_name"})), _))
-        .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
+  // Fallback succeeds.
+  Expectation set_first_name =
+      EXPECT_CALL(mock_action_delegate_,
+                  OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
+          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
-    // Fallback succeeds.
-    EXPECT_CALL(mock_action_delegate_,
-                OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
-        .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  // Second validation succeeds.
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))
+      .After(set_first_name)
+      .WillRepeatedly(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
-    // Second validation succeeds.
-    EXPECT_CALL(mock_web_controller_, OnGetFieldValue(_, _))
-        .WillRepeatedly(RunOnceCallback<1>(OkClientStatus(), "not empty"));
-  }
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
             ProcessAction(action_proto));
 }
@@ -302,6 +303,9 @@ TEST_F(UseAddressActionTest, AutofillFailureWithoutRequiredFieldsIsFatal) {
 
 TEST_F(UseAddressActionTest,
        AutofillFailureWithRequiredFieldsLaunchesFallback) {
+  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
+
   ActionProto action_proto = CreateUseAddressAction();
   AddRequiredField(&action_proto, UseAddressProto::RequiredField::FIRST_NAME,
                    "#first_name");

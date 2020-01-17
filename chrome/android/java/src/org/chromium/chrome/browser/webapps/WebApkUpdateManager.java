@@ -17,8 +17,12 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -29,15 +33,20 @@ import org.chromium.webapk.lib.client.WebApkVersion;
 
 import java.util.Map;
 
+import javax.inject.Inject;
+
 /**
  * WebApkUpdateManager manages when to check for updates to the WebAPK's Web Manifest, and sends
  * an update request to the WebAPK Server when an update is needed.
  */
-public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
+@ActivityScope
+public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, Destroyable {
     private static final String TAG = "WebApkUpdateManager";
 
     // Maximum wait time for WebAPK update to be scheduled.
     private static final long UPDATE_TIMEOUT_MILLISECONDS = DateUtils.SECOND_IN_MILLIS * 30;
+
+    private final ChromeActivity mActivity;
 
     /** Whether updates are enabled. Some tests disable updates. */
     private static boolean sUpdatesEnabled = true;
@@ -46,7 +55,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     private WebApkInfo mInfo;
 
     /** The WebappDataStorage with cached data about prior update requests. */
-    private final WebappDataStorage mStorage;
+    private WebappDataStorage mStorage;
 
     private WebApkUpdateDataFetcher mFetcher;
 
@@ -59,20 +68,24 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         public void onResultFromNative(@WebApkInstallResult int result, boolean relaxUpdates);
     }
 
-    public WebApkUpdateManager(WebappDataStorage storage) {
-        mStorage = storage;
+    @Inject
+    public WebApkUpdateManager(
+            ChromeActivity activity, ActivityLifecycleDispatcher lifecycleDispatcher) {
+        mActivity = activity;
+        lifecycleDispatcher.register(this);
     }
 
     /**
      * Checks whether the WebAPK's Web Manifest has changed. Requests an updated WebAPK if the Web
      * Manifest has changed. Skips the check if the check was done recently.
-     * @param tab  The tab of the WebAPK.
-     * @param info The WebApkInfo of the WebAPK.
      */
-    public void updateIfNeeded(Tab tab, WebApkInfo info) {
+    public void updateIfNeeded(WebappDataStorage storage, WebApkInfo info) {
+        mStorage = storage;
         mInfo = info;
 
-        if (!shouldCheckIfWebManifestUpdated(mInfo)) return;
+        Tab tab = mActivity.getActivityTab();
+
+        if (tab == null || !shouldCheckIfWebManifestUpdated(mInfo)) return;
 
         mFetcher = buildFetcher();
         mFetcher.start(tab, mInfo, this);
@@ -85,6 +98,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         }, UPDATE_TIMEOUT_MILLISECONDS);
     }
 
+    @Override
     public void destroy() {
         destroyFetcher();
         if (mUpdateFailureHandler != null) {

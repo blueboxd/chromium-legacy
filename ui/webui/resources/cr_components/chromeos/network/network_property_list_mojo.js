@@ -71,13 +71,13 @@ Polymer({
     }
     const key = event.target.id;
     let curValue = this.getProperty_(key);
-    if (typeof curValue == 'object' && !Array.isArray(curValue)) {
+    if (typeof curValue === 'object' && !Array.isArray(curValue)) {
       // Extract the property from an ONC managed dictionary.
       curValue = OncMojo.getActiveValue(
           /** @type{OncMojo.ManagedProperty} */ (curValue));
     }
     const newValue = this.getValueFromEditField_(key, event.target.value);
-    if (newValue == curValue) {
+    if (newValue === curValue) {
       return;
     }
     this.fire('property-change', {field: key, value: newValue});
@@ -99,29 +99,29 @@ Polymer({
     const subKeys = key.split('.');
     subKeys.forEach(subKey => {
       // Check for exceptions to CamelCase vs camelCase naming conventions.
-      if (subKey == 'ipv4' || subKey == 'ipv6') {
+      if (subKey === 'ipv4' || subKey === 'ipv6') {
         result += subKey;
-      } else if (subKey == 'apn') {
+      } else if (subKey === 'apn') {
         result += 'APN';
-      } else if (subKey == 'ipAddress') {
+      } else if (subKey === 'ipAddress') {
         result += 'IPAddress';
-      } else if (subKey == 'ipSec') {
+      } else if (subKey === 'ipSec') {
         result += 'IPSec';
-      } else if (subKey == 'l2tp') {
+      } else if (subKey === 'l2tp') {
         result += 'L2TP';
-      } else if (subKey == 'modelId') {
+      } else if (subKey === 'modelId') {
         result += 'ModelID';
-      } else if (subKey == 'openVpn') {
+      } else if (subKey === 'openVpn') {
         result += 'OpenVPN';
-      } else if (subKey == 'otp') {
+      } else if (subKey === 'otp') {
         result += 'OTP';
-      } else if (subKey == 'ssid') {
+      } else if (subKey === 'ssid') {
         result += 'SSID';
-      } else if (subKey == 'serverCa') {
+      } else if (subKey === 'serverCa') {
         result += 'ServerCA';
-      } else if (subKey == 'vpn') {
+      } else if (subKey === 'vpn') {
         result += 'VPN';
-      } else if (subKey == 'wifi') {
+      } else if (subKey === 'wifi') {
         result += 'WiFi';
       } else {
         result += subKey.charAt(0).toUpperCase() + subKey.slice(1);
@@ -181,8 +181,8 @@ Polymer({
       // Unspecified properties in policy configurations are not user
       // modifiable. https://crbug.com/819837.
       const source = this.propertyDict.source;
-      return source != chromeos.networkConfig.mojom.OncSource.kUserPolicy &&
-          source != chromeos.networkConfig.mojom.OncSource.kDevicePolicy;
+      return source !== chromeos.networkConfig.mojom.OncSource.kUserPolicy &&
+          source !== chromeos.networkConfig.mojom.OncSource.kDevicePolicy;
     }
     return !this.isNetworkPolicyEnforced(property);
   },
@@ -194,8 +194,8 @@ Polymer({
    */
   isEditType_(key) {
     const editType = this.editFieldTypes[key];
-    return editType == 'String' || editType == 'StringArray' ||
-        editType == 'Password';
+    return editType === 'String' || editType === 'StringArray' ||
+        editType === 'Password';
   },
 
   /**
@@ -222,7 +222,7 @@ Polymer({
    * @private
    */
   getEditInputType_(key) {
-    return this.editFieldTypes[key] == 'Password' ? 'password' : 'text';
+    return this.editFieldTypes[key] === 'Password' ? 'password' : 'text';
   },
 
   /**
@@ -256,7 +256,7 @@ Polymer({
         this.propertyDict.source) {
       const policySource = OncMojo.getEnforcedPolicySourceFromOncSource(
           this.propertyDict.source);
-      if (policySource != chromeos.networkConfig.mojom.PolicySource.kNone) {
+      if (policySource !== chromeos.networkConfig.mojom.PolicySource.kNone) {
         // If the dictionary is policy controlled, provide an empty property
         // object with the network policy source. See https://crbug.com/819837
         // for more info.
@@ -280,7 +280,7 @@ Polymer({
     if (value === undefined || value === null) {
       return '';
     }
-    if (typeof value == 'object' && !Array.isArray(value)) {
+    if (typeof value === 'object' && !Array.isArray(value)) {
       // Extract the property from an ONC managed dictionary
       value = OncMojo.getActiveValue(
           /** @type {!OncMojo.ManagedProperty} */ (value));
@@ -293,28 +293,28 @@ Polymer({
     if (customValue) {
       return customValue;
     }
-    if (typeof value == 'boolean') {
+    if (typeof value === 'boolean') {
       return value.toString();
     }
 
     let valueStr;
-    if (typeof value == 'number') {
+    if (typeof value === 'number') {
       // Special case typed managed properties.
-      if (key == 'cellular.activationState') {
+      if (key === 'cellular.activationState') {
         valueStr = OncMojo.getActivationStateTypeString(
             /** @type{!chromeos.networkConfig.mojom.ActivationStateType}*/ (
                 value));
-      } else if (key == 'vpn.type') {
+      } else if (key === 'vpn.type') {
         valueStr = OncMojo.getVpnTypeString(
             /** @type{!chromeos.networkConfig.mojom.VpnType}*/ (value));
-      } else if (key == 'wifi.security') {
+      } else if (key === 'wifi.security') {
         valueStr = OncMojo.getSecurityTypeString(
             /** @type{!chromeos.networkConfig.mojom.SecurityType}*/ (value));
       } else {
         return value.toString();
       }
     } else {
-      assert(typeof value == 'string');
+      assert(typeof value === 'string');
       valueStr = /** @type {string} */ (value);
     }
     const oncKey = this.getOncKey_(key, this.prefix) + '_' + valueStr;
@@ -333,7 +333,7 @@ Polymer({
    */
   getValueFromEditField_(key, fieldValue) {
     const editType = this.editFieldTypes[key];
-    if (editType == 'StringArray') {
+    if (editType === 'StringArray') {
       return fieldValue.toString().split(/, */);
     }
     return fieldValue;
@@ -346,13 +346,13 @@ Polymer({
    *     does not correspond to a custom property, an empty string is returned.
    */
   getCustomPropertyValue_(key, value) {
-    if (key == 'tether.batteryPercentage') {
-      assert(typeof value == 'number');
+    if (key === 'tether.batteryPercentage') {
+      assert(typeof value === 'number');
       return this.i18n('OncTether-BatteryPercentage_Value', value.toString());
     }
 
-    if (key == 'tether.signalStrength') {
-      assert(typeof value == 'number');
+    if (key === 'tether.signalStrength') {
+      assert(typeof value === 'number');
       // Possible |signalStrength| values should be 0, 25, 50, 75, and 100. Add
       // <= checks for robustness.
       if (value <= 24) {
@@ -370,9 +370,9 @@ Polymer({
       return this.i18n('OncTether-SignalStrength_VeryStrong');
     }
 
-    if (key == 'tether.carrier') {
-      assert(typeof value == 'string');
-      return (!value || value == 'unknown-carrier') ?
+    if (key === 'tether.carrier') {
+      assert(typeof value === 'string');
+      return (!value || value === 'unknown-carrier') ?
           this.i18n('OncTether-Carrier_Unknown') :
           value;
     }

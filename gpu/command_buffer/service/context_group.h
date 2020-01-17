@@ -90,6 +90,10 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   MailboxManager* mailbox_manager() const { return mailbox_manager_; }
 
+  gpu::SharedImageManager* shared_image_manager() const {
+    return shared_image_manager_;
+  }
+
   MemoryTracker* memory_tracker() const { return memory_tracker_.get(); }
 
   ShaderTranslatorCache* shader_translator_cache() const {
@@ -335,6 +339,8 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
+
+  gpu::SharedImageManager* shared_image_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

@@ -26,7 +26,7 @@ var OobeDialogHostBehavior = {
    * and sets |fullScreenDialog| attribute on them.
    * @param {string=} selector CSS selector (optional).
    */
-  propagateFullScreenMode: function(selector) {
+  propagateFullScreenMode(selector) {
     if (!selector)
       selector = 'oobe-dialog';
 
@@ -42,7 +42,7 @@ var OobeDialogHostBehavior = {
   /**
    * Pass down fullScreenDialog attribute.
    */
-  onBeforeShow: function() {
+  onBeforeShow() {
     if (document.documentElement.hasAttribute('full-screen-dialog'))
       this.fullScreenDialog = true;
 
@@ -53,7 +53,7 @@ var OobeDialogHostBehavior = {
    * Triggers updateLocalizedContent() for elements matched by |selector|.
    * @param {string} selector CSS selector (optional).
    */
-  propagateUpdateLocalizedContent: function(selector) {
+  propagateUpdateLocalizedContent(selector) {
     var screens = Polymer.dom(this.root).querySelectorAll(selector);
     for (var i = 0; i < screens.length; ++i) {
       /** @type {{updateLocalizedContent: function()}}}*/ (screens[i])

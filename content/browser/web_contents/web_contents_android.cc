@@ -816,4 +816,10 @@ void WebContentsAndroid::NotifyRendererPreferenceUpdate(
   rvh->OnWebkitPreferencesChanged();
 }
 
+void WebContentsAndroid::NotifyBrowserControlsHeightChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  web_contents_->GetNativeView()->OnBrowserControlsHeightChanged();
+}
+
 }  // namespace content

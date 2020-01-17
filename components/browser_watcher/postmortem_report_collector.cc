@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/files/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
@@ -48,7 +49,9 @@ bool GetStartTimestamp(
   if (value.value_case() != TypedValue::kSignedValue)
     return false;
 
-  *time = base::Time::FromInternalValue(value.signed_value());
+  *time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(value.signed_value()));
+
   return true;
 }
 
@@ -145,7 +148,13 @@ CollectionStatus PostmortemReportCollector::CollectOneReport(
     StabilityReport* report) {
   DCHECK(report);
 
-  CollectionStatus status = Extract(file, report);
+  std::unique_ptr<base::debug::GlobalActivityAnalyzer> global_analyzer =
+      base::debug::GlobalActivityAnalyzer::CreateWithFile(file);
+
+  if (!global_analyzer)
+    return ANALYZER_CREATION_FAILED;
+
+  CollectionStatus status = Extract(std::move(global_analyzer), report);
   if (status != SUCCESS)
     return status;
 

@@ -21,6 +21,8 @@ namespace media_history {
 
 class MediaHistoryPlaybackTable : public MediaHistoryTableBase {
  public:
+  static const char kTableName[];
+
   struct MediaHistoryPlayback {
     MediaHistoryPlayback() = default;
 

@@ -82,11 +82,17 @@ ResourceRequest::ResourceRequest(const KURL& url)
           network::mojom::CorsPreflightPolicy::kConsiderPreflight),
       redirect_status_(RedirectStatus::kNoRedirect) {}
 
-ResourceRequest::ResourceRequest(const ResourceRequest&) = default;
-
 ResourceRequest::~ResourceRequest() = default;
 
 ResourceRequest& ResourceRequest::operator=(const ResourceRequest&) = default;
+
+ResourceRequest::ResourceRequest(ResourceRequest&&) = default;
+
+ResourceRequest& ResourceRequest::operator=(ResourceRequest&&) = default;
+
+void ResourceRequest::CopyFrom(const ResourceRequest& src) {
+  *this = src;
+}
 
 std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
     const KURL& new_url,

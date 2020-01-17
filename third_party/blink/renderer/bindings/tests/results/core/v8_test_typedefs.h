@@ -79,12 +79,6 @@ class V8TestTypedefs {
 };
 
 template <>
-struct NativeValueTraits<TestTypedefs> : public NativeValueTraitsBase<TestTypedefs> {
-  CORE_EXPORT static TestTypedefs* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestTypedefs* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestTypedefs> {
   typedef V8TestTypedefs Type;
 };

@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import androidx.browser.customtabs.CustomTabsCallback;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,7 +26,6 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.AppHooksModule;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
@@ -32,6 +33,7 @@ import org.chromium.chrome.browser.customtabs.dynamicmodule.CustomTabsDynamicMod
 import org.chromium.chrome.browser.customtabs.dynamicmodule.CustomTabsDynamicModuleTestUtils.FakeCCTActivityDelegate;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.CustomTabsDynamicModuleTestUtils.IntentBuilder;
 import org.chromium.chrome.browser.dependency_injection.ModuleOverridesRule;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -45,8 +47,6 @@ import org.chromium.ui.base.PageTransition;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-
-import androidx.browser.customtabs.CustomTabsCallback;
 
 /**
  * Instrumentation tests for the CustomTabsDynamicModuleNavigationObserver.

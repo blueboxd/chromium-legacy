@@ -369,9 +369,7 @@ executable("xz") {
     "xz/src/xz/util.c",
   ]
 
-  deps = [
-    ":lzma",
-  ]
+  deps = [ ":lzma" ]
 
   include_dirs = [
     "config/$host_os",
@@ -391,9 +389,7 @@ executable("xzdec") {
     "xz/src/xzdec/xzdec.c",
   ]
 
-  deps = [
-    ":lzma_decompress",
-  ]
+  deps = [ ":lzma_decompress" ]
 
   include_dirs = [
     "config/$host_os",

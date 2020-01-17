@@ -1,0 +1,22 @@
+<style>
+  :host {
+    --ntp-grid-gap: 0px;
+    display: block;
+  }
+
+  #grid {
+    display: grid;
+    grid-column-gap: var(--ntp-grid-gap);
+    grid-row-gap: var(--ntp-grid-gap);
+    grid-template-columns: repeat(var(--columns), auto);
+    width: fit-content;
+  }
+
+  ::slotted(*) {
+    align-self: center;
+    justify-self: center;
+  }
+</style>
+<div id="grid" on-keydown="onKeyDown_" style="--columns: [[columns]];">
+  <slot id="items"></slot>
+</div>

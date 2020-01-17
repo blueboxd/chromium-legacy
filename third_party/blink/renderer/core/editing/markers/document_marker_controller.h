@@ -67,10 +67,14 @@ class CORE_EXPORT DocumentMarkerController final
   void AddCompositionMarker(const EphemeralRange&,
                             Color underline_color,
                             ui::mojom::ImeTextSpanThickness,
+                            ui::mojom::ImeTextSpanUnderlineStyle,
+                            Color text_color,
                             Color background_color);
   void AddActiveSuggestionMarker(const EphemeralRange&,
                                  Color underline_color,
                                  ui::mojom::ImeTextSpanThickness,
+                                 ui::mojom::ImeTextSpanUnderlineStyle,
+                                 Color text_color,
                                  Color background_color);
   void AddSuggestionMarker(const EphemeralRange&,
                            const SuggestionMarkerProperties&);

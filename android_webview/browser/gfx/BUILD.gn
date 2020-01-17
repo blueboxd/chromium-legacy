@@ -7,6 +7,8 @@ import("//build/config/android/rules.gni")
 
 source_set("gfx") {
   sources = [
+    "aw_attaching_to_window_recorder.cc",
+    "aw_attaching_to_window_recorder.h",
     "aw_draw_fn_impl.cc",
     "aw_draw_fn_impl.h",
     "aw_gl_functor.cc",
@@ -19,6 +21,8 @@ source_set("gfx") {
     "aw_render_thread_context_provider.h",
     "aw_vulkan_context_provider.cc",
     "aw_vulkan_context_provider.h",
+    "begin_frame_source_webview.cc",
+    "begin_frame_source_webview.h",
     "browser_view_renderer.cc",
     "browser_view_renderer.h",
     "browser_view_renderer_client.h",

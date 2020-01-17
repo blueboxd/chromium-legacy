@@ -8,9 +8,7 @@ import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
 
 midl("elevation_service_idl") {
-  sources = [
-    "elevation_service_idl.idl",
-  ]
+  sources = [ "elevation_service_idl.idl" ]
 
   writes_tlb = true
 }
@@ -80,15 +78,11 @@ source_set("lib") {
     "//base",
   ]
 
-  deps = [
-    "//chrome/install_static:install_static_util",
-  ]
+  deps = [ "//chrome/install_static:install_static_util" ]
 }
 
 process_version_rc_template("version_resources") {
-  sources = [
-    "elevation_service_exe.ver",
-  ]
+  sources = [ "elevation_service_exe.ver" ]
   output = "$target_gen_dir/elevation_service_exe.rc"
 }
 
@@ -98,9 +92,7 @@ copy("elevation_service_unittests_files") {
     "//components/test/data/crx_file/valid_publisher.crx3",
     "//components/test/data/update_client/ChromeRecovery.crx3",
   ]
-  outputs = [
-    "$root_out_dir/elevated_recovery_unittest/{{source_file_part}}",
-  ]
+  outputs = [ "$root_out_dir/elevated_recovery_unittest/{{source_file_part}}" ]
 }
 
 test("elevation_service_unittests") {

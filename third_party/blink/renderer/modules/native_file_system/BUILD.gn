@@ -26,16 +26,12 @@ blink_modules_sources("native_file_system") {
     "window_native_file_system.h",
   ]
 
-  deps = [
-    "//third_party/blink/renderer/platform",
-  ]
+  deps = [ "//third_party/blink/renderer/platform" ]
 }
 
 jumbo_source_set("unit_tests") {
   testonly = true
-  sources = [
-    "window_native_file_system_test.cc",
-  ]
+  sources = [ "window_native_file_system_test.cc" ]
 
   configs += [
     "//third_party/blink/renderer:config",

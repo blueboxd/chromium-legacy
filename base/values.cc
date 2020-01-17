@@ -343,7 +343,7 @@ const Value::BlobStorage& Value::GetBlob() const {
   return binary_value_;
 }
 
-Value::ListStorage& Value::GetList() {
+Value::ListView Value::GetList() {
   CHECK(is_list());
   return list_;
 }
@@ -403,12 +403,6 @@ void Value::Append(Value&& value) {
   list_.emplace_back(std::move(value));
 }
 
-Value::ListStorage::iterator Value::Insert(ListStorage::const_iterator pos,
-                                           Value&& value) {
-  CHECK(is_list());
-  return list_.insert(pos, std::move(value));
-}
-
 CheckedContiguousIterator<Value> Value::Insert(
     CheckedContiguousConstIterator<Value> pos,
     Value&& value) {
@@ -418,18 +412,15 @@ CheckedContiguousIterator<Value> Value::Insert(
   return make_span(list_).begin() + offset;
 }
 
-bool Value::EraseListIter(ListStorage::const_iterator iter) {
+bool Value::EraseListIter(CheckedContiguousConstIterator<Value> iter) {
   CHECK(is_list());
-  if (iter == list_.end())
+  const auto offset = iter - make_span(list_).begin();
+  auto list_iter = list_.begin() + offset;
+  if (list_iter == list_.end())
     return false;
 
-  list_.erase(iter);
+  list_.erase(list_iter);
   return true;
-}
-
-bool Value::EraseListIter(CheckedContiguousConstIterator<Value> iter) {
-  const auto offset = iter - as_const(*this).GetList().begin();
-  return EraseListIter(list_.begin() + offset);
 }
 
 size_t Value::EraseListValue(const Value& val) {

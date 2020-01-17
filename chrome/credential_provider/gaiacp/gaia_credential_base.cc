@@ -1177,8 +1177,10 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
       if (hr == S_OK) {
         hr = manager->ChangeUserPassword(domain_, username_,
                                          current_windows_password_, password_);
+
         if (FAILED(hr)) {
           if (hr != HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED)) {
+            SetErrorMessageInPasswordField(hr);
             LOGFN(ERROR) << "ChangeUserPassword hr=" << putHR(hr);
             return hr;
           }
@@ -1244,6 +1246,36 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
   *cpgsr = CPGSR_RETURN_CREDENTIAL_FINISHED;
 
   return S_OK;
+}
+
+// Sets message ids corresponding to appropriate password change error response
+// codes.
+void CGaiaCredentialBase::SetErrorMessageInPasswordField(HRESULT hr) {
+  UINT password_message_id;
+  switch (hr) {
+    case HRESULT_FROM_WIN32(ERROR_INVALID_PASSWORD):
+      password_message_id = IDS_INVALID_PASSWORD_BASE;
+      break;
+    case HRESULT_FROM_WIN32(NERR_InvalidComputer):
+      // This condition should never be invoked.
+      password_message_id = IDS_INVALID_COMPUTER_NAME_ERROR_BASE;
+      break;
+    case HRESULT_FROM_WIN32(NERR_NotPrimary):
+      password_message_id = IDS_AD_PASSWORD_CHANGE_DENIED_BASE;
+      break;
+    case HRESULT_FROM_WIN32(NERR_UserNotFound):
+      // This condition should never be invoked.
+      password_message_id = IDS_USER_NOT_FOUND_PASSWORD_ERROR_BASE;
+      break;
+    case HRESULT_FROM_WIN32(NERR_PasswordTooShort):
+      password_message_id = IDS_PASSWORD_COMPLEXITY_ERROR_BASE;
+      break;
+    default:
+      // This condition should never be invoked.
+      password_message_id = IDS_UNKNOWN_PASSWORD_ERROR_BASE;
+      break;
+  }
+  DisplayPasswordField(password_message_id);
 }
 
 // static
@@ -2223,6 +2255,10 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
                  << "'. Maximum attempts reached.";
     *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return hr;
+  } else if (hr == HRESULT_FROM_WIN32(NERR_PasswordTooShort)) {
+    LOGFN(ERROR) << "Password being used is too short as per the group "
+                 << "policies set by your IT admin on this device.";
+    *error_text = AllocErrorString(IDS_CREATE_USER_PASSWORD_TOO_SHORT_BASE);
   } else if (FAILED(hr)) {
     LOGFN(ERROR) << "Failed to create user '" << found_domain << "\\"
                  << found_username << "'. hr=" << putHR(hr);

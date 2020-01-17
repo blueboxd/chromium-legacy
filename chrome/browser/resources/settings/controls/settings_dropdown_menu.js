@@ -76,7 +76,7 @@ Polymer({
    * Pass the selection change to the pref value.
    * @private
    */
-  onChange_: function() {
+  onChange_() {
     const selected = this.$.dropdownMenu.value;
 
     if (selected == this.notFoundValue_) {
@@ -103,7 +103,7 @@ Polymer({
    * Updates the selected item when the pref or menuOptions change.
    * @private
    */
-  updateSelected_: function() {
+  updateSelected_() {
     if (this.menuOptions === undefined || this.pref === undefined ||
         this.prefKey === undefined) {
       return;
@@ -131,7 +131,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  prefStringValue_: function() {
+  prefStringValue_() {
     if (this.prefKey) {
       // Dictionary pref, values are always strings.
       return this.pref.value[this.prefKey];
@@ -146,7 +146,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showNotFoundValue_: function(menuOptions, prefValue) {
+  showNotFoundValue_(menuOptions, prefValue) {
     if (menuOptions === undefined || prefValue === undefined) {
       return false;
     }
@@ -166,7 +166,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldDisableMenu_: function() {
+  shouldDisableMenu_() {
     return this.disabled || this.isPrefEnforced() ||
         this.menuOptions === undefined || this.menuOptions.length == 0;
   },

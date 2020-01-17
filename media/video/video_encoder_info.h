@@ -20,6 +20,7 @@ namespace media {
 struct MEDIA_EXPORT ScalingSettings {
   ScalingSettings();
   ScalingSettings(int min_qp, int max_qp);
+  ScalingSettings(const ScalingSettings&);
   ~ScalingSettings();
 
   int min_qp = 4;

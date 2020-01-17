@@ -20,16 +20,22 @@ namespace {
 
 using CommandType = MockPersistentReportingStore::Command::Type;
 
-const url::Origin kOrigin = url::Origin::Create(GURL("https://example.test/"));
-const char kGroupName[] = "groupname";
-const GURL kUrl = GURL("https://endpoint.test/reports");
-const ReportingEndpoint kEndpoint(kOrigin, kGroupName, {kUrl});
-const CachedReportingEndpointGroup kGroup(kOrigin,
-                                          kGroupName,
-                                          OriginSubdomains::DEFAULT,
-                                          base::Time::Now() +
-                                              base::TimeDelta::FromDays(1),
-                                          base::Time::Now());
+struct ReportingData {
+  ReportingEndpoint endpoint;
+  CachedReportingEndpointGroup group;
+};
+
+ReportingData GetReportingData() {
+  const url::Origin kOrigin =
+      url::Origin::Create(GURL("https://example.test/"));
+  const char kGroupName[] = "groupname";
+  const ReportingEndpoint kEndpoint(kOrigin, kGroupName,
+                                    {GURL("https://endpoint.test/reports")});
+  const CachedReportingEndpointGroup kGroup(
+      kOrigin, kGroupName, OriginSubdomains::DEFAULT,
+      base::Time::Now() + base::TimeDelta::FromDays(1), base::Time::Now());
+  return {kEndpoint, kGroup};
+}
 
 void RunClosureOnClientsLoaded(
     base::OnceClosure closure,
@@ -78,7 +84,8 @@ TEST(MockPersistentReportingStoreTest, PreStoredClients) {
   std::vector<ReportingEndpoint> loaded_endpoints;
   std::vector<CachedReportingEndpointGroup> loaded_groups;
 
-  store.SetPrestoredClients({kEndpoint}, {kGroup});
+  const auto reporting_data = GetReportingData();
+  store.SetPrestoredClients({reporting_data.endpoint}, {reporting_data.group});
   EXPECT_EQ(1, store.StoredEndpointsCount());
   EXPECT_EQ(1, store.StoredEndpointGroupsCount());
 
@@ -100,7 +107,8 @@ TEST(MockPersistentReportingStoreTest, FailedLoad) {
   std::vector<ReportingEndpoint> loaded_endpoints;
   std::vector<CachedReportingEndpointGroup> loaded_groups;
 
-  store.SetPrestoredClients({kEndpoint}, {kGroup});
+  const auto reporting_data = GetReportingData();
+  store.SetPrestoredClients({reporting_data.endpoint}, {reporting_data.group});
   EXPECT_EQ(1, store.StoredEndpointsCount());
   EXPECT_EQ(1, store.StoredEndpointGroupsCount());
 
@@ -132,14 +140,15 @@ TEST(MockPersistentReportingStoreTest, AddFlushDeleteFlush) {
   EXPECT_EQ(0, store.StoredEndpointsCount());
   EXPECT_EQ(0, store.StoredEndpointGroupsCount());
 
-  store.AddReportingEndpoint(kEndpoint);
+  const auto reporting_data = GetReportingData();
+  store.AddReportingEndpoint(reporting_data.endpoint);
   expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
-                                 kEndpoint);
+                                 reporting_data.endpoint);
   EXPECT_EQ(2u, store.GetAllCommands().size());
 
-  store.AddReportingEndpointGroup(kGroup);
+  store.AddReportingEndpointGroup(reporting_data.group);
   expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-                                 kGroup);
+                                 reporting_data.group);
   EXPECT_EQ(3u, store.GetAllCommands().size());
 
   store.Flush();
@@ -148,14 +157,14 @@ TEST(MockPersistentReportingStoreTest, AddFlushDeleteFlush) {
   EXPECT_EQ(1, store.StoredEndpointsCount());
   EXPECT_EQ(1, store.StoredEndpointGroupsCount());
 
-  store.DeleteReportingEndpoint(kEndpoint);
+  store.DeleteReportingEndpoint(reporting_data.endpoint);
   expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT,
-                                 kEndpoint);
+                                 reporting_data.endpoint);
   EXPECT_EQ(5u, store.GetAllCommands().size());
 
-  store.DeleteReportingEndpointGroup(kGroup);
+  store.DeleteReportingEndpointGroup(reporting_data.group);
   expected_commands.emplace_back(CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
-                                 kGroup);
+                                 reporting_data.group);
   EXPECT_EQ(6u, store.GetAllCommands().size());
 
   store.Flush();
@@ -180,12 +189,13 @@ TEST(MockPersistentReportingStoreTest, CountCommands) {
       &loaded_endpoints, &loaded_groups));
   store.FinishLoading(true /* load_success */);
 
-  store.AddReportingEndpoint(kEndpoint);
-  store.AddReportingEndpointGroup(kGroup);
+  const auto reporting_data = GetReportingData();
+  store.AddReportingEndpoint(reporting_data.endpoint);
+  store.AddReportingEndpointGroup(reporting_data.group);
   store.Flush();
 
-  store.DeleteReportingEndpoint(kEndpoint);
-  store.DeleteReportingEndpointGroup(kGroup);
+  store.DeleteReportingEndpoint(reporting_data.endpoint);
+  store.DeleteReportingEndpointGroup(reporting_data.group);
   store.Flush();
 
   EXPECT_EQ(1, store.CountCommands(CommandType::LOAD_REPORTING_CLIENTS));

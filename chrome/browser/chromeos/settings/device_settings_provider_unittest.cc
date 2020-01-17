@@ -93,6 +93,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_users(enable_reporting);
     proto->set_report_hardware_status(enable_reporting);
     proto->set_report_session_status(enable_reporting);
+    proto->set_report_graphics_status(enable_reporting);
     proto->set_report_os_update_status(enable_reporting);
     proto->set_report_running_kiosk_app(enable_reporting);
     proto->set_report_power_status(enable_reporting);
@@ -166,7 +167,8 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
         kReportDeviceNetworkInterfaces, kReportDeviceUsers,
         kReportDeviceHardwareStatus, kReportDevicePowerStatus,
         kReportDeviceStorageStatus, kReportDeviceSessionStatus,
-        kReportOsUpdateStatus, kReportRunningKioskApp};
+        kReportDeviceGraphicsStatus, kReportOsUpdateStatus,
+        kReportRunningKioskApp};
 
     const base::Value expected_enable_value(expected_enable_state);
     for (auto* setting : reporting_settings) {

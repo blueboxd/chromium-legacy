@@ -38,7 +38,7 @@ Polymer({
      */
     appChoices_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       }
     },
@@ -49,7 +49,7 @@ Polymer({
      */
     hasInternalStylus_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('hasInternalStylus');
       },
       readOnly: true,
@@ -79,7 +79,7 @@ Polymer({
    *     by the selected note-taking app.
    * @private
    */
-  supportsLockScreen_: function() {
+  supportsLockScreen_() {
     return !!this.selectedApp_ &&
         this.selectedApp_.lockScreenSupport !=
         settings.NoteAppLockScreenSupport.NOT_SUPPORTED;
@@ -90,7 +90,7 @@ Polymer({
    *     actions from lock screen as a result of a user policy.
    * @private
    */
-  disallowedOnLockScreenByPolicy_: function() {
+  disallowedOnLockScreenByPolicy_() {
     return !!this.selectedApp_ &&
         this.selectedApp_.lockScreenSupport ==
         settings.NoteAppLockScreenSupport.NOT_ALLOWED_BY_POLICY;
@@ -101,7 +101,7 @@ Polymer({
    *     handler on the lock screen.
    * @private
    */
-  lockScreenSupportEnabled_: function() {
+  lockScreenSupportEnabled_() {
     return !!this.selectedApp_ &&
         this.selectedApp_.lockScreenSupport ==
         settings.NoteAppLockScreenSupport.ENABLED;
@@ -111,12 +111,12 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.DevicePageBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_.setNoteTakingAppsUpdatedCallback(
         this.onNoteAppsUpdated_.bind(this));
     this.browserProxy_.requestNoteTakingApps();
@@ -128,7 +128,7 @@ Polymer({
    * @return {?settings.NoteAppInfo}
    * @private
    */
-  findApp_: function(id) {
+  findApp_(id) {
     return this.appChoices_.find(function(app) {
       return app.value == id;
     }) ||
@@ -140,7 +140,7 @@ Polymer({
    * the lock screen.
    * @private
    */
-  toggleLockScreenSupport_: function() {
+  toggleLockScreenSupport_() {
     assert(this.selectedApp_);
     if (this.selectedApp_.lockScreenSupport !=
             settings.NoteAppLockScreenSupport.ENABLED &&
@@ -155,7 +155,7 @@ Polymer({
   },
 
   /** @private */
-  onSelectedAppChanged_: function() {
+  onSelectedAppChanged_() {
     const app = this.findApp_(this.$.selectApp.value);
     this.selectedApp_ = app;
 
@@ -169,7 +169,7 @@ Polymer({
    * @param {boolean} waitingForAndroid
    * @private
    */
-  onNoteAppsUpdated_: function(apps, waitingForAndroid) {
+  onNoteAppsUpdated_(apps, waitingForAndroid) {
     this.waitingForAndroid_ = waitingForAndroid;
     this.appChoices_ = apps;
 
@@ -182,7 +182,7 @@ Polymer({
    * @param {boolean} waitingForAndroid
    * @private
    */
-  showNoApps_: function(apps, waitingForAndroid) {
+  showNoApps_(apps, waitingForAndroid) {
     return apps.length == 0 && !waitingForAndroid;
   },
 
@@ -191,12 +191,12 @@ Polymer({
    * @param {boolean} waitingForAndroid
    * @private
    */
-  showApps_: function(apps, waitingForAndroid) {
+  showApps_(apps, waitingForAndroid) {
     return apps.length > 0 && !waitingForAndroid;
   },
 
   /** @private */
-  onFindAppsTap_: function() {
+  onFindAppsTap_() {
     this.browserProxy_.showPlayStore(FIND_MORE_APPS_URL);
   },
 });

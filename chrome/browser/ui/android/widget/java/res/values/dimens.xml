@@ -12,25 +12,8 @@
     <dimen name="menu_drawable_padding">16dp</dimen>
     <dimen name="menu_padding_start">16dp</dimen>
 
-    <!-- RadioButton(WithDescription)Layout dimensions -->
-    <dimen name="default_vertical_margin_between_items">8dp</dimen>
-
-    <!-- RadioButtonWithDescription dimensions -->
-    <dimen name="radio_button_with_description_lateral_padding">16dp</dimen>
-    <dimen name="radio_button_with_description_vertical_padding">10dp</dimen>
-
     <!-- Drag-Reorderable List dimensions -->
     <dimen name="list_item_dragged_elevation">6dp</dimen>
-
-    <!-- Dialogs -->
-    <dimen name="dialog_max_width">600dp</dimen>
-    <dimen name="dialog_header_margin">14dp</dimen>
-    <dimen name="promo_dialog_illustration_margin">24dp</dimen>
-    <dimen name="promo_dialog_illustration_width">150dp</dimen>
-    <dimen name="promo_dialog_padding">16dp</dimen>
-    <dimen name="promo_dialog_stacked_margin">16dp</dimen>
-    <dimen name="promo_dialog_max_content_width">320dp</dimen>
-    <dimen name="promo_dialog_min_scrollable_height">100dp</dimen>
 
     <!-- TextBubble dimensions -->
     <dimen name="text_bubble_margin">4dp</dimen>

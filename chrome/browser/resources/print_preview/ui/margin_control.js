@@ -106,7 +106,7 @@ Polymer({
   },
 
   /** @return {!HTMLInputElement} The input element for InputBehavior. */
-  getInput: function() {
+  getInput() {
     return /** @type {!HTMLInputElement} */ (this.$.input);
   },
 
@@ -114,7 +114,7 @@ Polymer({
    * @param {number} valueInPts New value of the margin control's textbox in
    *     pts.
    */
-  setTextboxValue: function(valueInPts) {
+  setTextboxValue(valueInPts) {
     const textbox = this.$.input;
     const pts = textbox.value ? this.parseValueToPts_(textbox.value) : null;
     if (!!pts && valueInPts === Math.round(pts)) {
@@ -128,12 +128,12 @@ Polymer({
   },
 
   /** @return {number} The current position of the margin control. */
-  getPositionInPts: function() {
+  getPositionInPts() {
     return this.positionInPts_;
   },
 
   /** @param {number} position The new position for the margin control. */
-  setPositionInPts: function(position) {
+  setPositionInPts(position) {
     this.positionInPts_ = position;
   },
 
@@ -142,7 +142,7 @@ Polymer({
    *     aria-hidden.
    * @private
    */
-  getAriaHidden_: function() {
+  getAriaHidden_() {
     return this.invisible.toString();
   },
 
@@ -151,7 +151,7 @@ Polymer({
    * @param {number} pixels Pixel value to convert.
    * @return {number} Given value expressed in points.
    */
-  convertPixelsToPts: function(pixels) {
+  convertPixelsToPts(pixels) {
     let pts;
     const Orientation = CustomMarginsOrientation;
     if (this.side === Orientation.TOP) {
@@ -177,14 +177,14 @@ Polymer({
    * @param {!PointerEvent} event A pointerdown event triggered by this element.
    * @return {boolean} Whether the margin should start being dragged.
    */
-  shouldDrag: function(event) {
+  shouldDrag(event) {
     return !this.disabled && event.button === 0 &&
         (event.path[0] === this.$.lineContainer ||
          event.path[0] === this.$.line);
   },
 
   /** @private */
-  onDisabledChange_: function() {
+  onDisabledChange_() {
     if (this.disabled) {
       this.focused_ = false;
     }
@@ -195,7 +195,7 @@ Polymer({
    * @return {?number} Value in points represented by the input value.
    * @private
    */
-  parseValueToPts_: function(value) {
+  parseValueToPts_(value) {
     value = value.trim();
     if (value.length === 0) {
       return null;
@@ -223,7 +223,7 @@ Polymer({
    *     units.
    * @private
    */
-  serializeValueFromPts_: function(value) {
+  serializeValueFromPts_(value) {
     assert(this.measurementSystem);
     value = this.measurementSystem.convertFromPoints(value);
     value = this.measurementSystem.roundValue(value);
@@ -236,7 +236,7 @@ Polymer({
    * @param {!CustomEvent<string>} e Contains the new value of the input.
    * @private
    */
-  onInputChange_: function(e) {
+  onInputChange_(e) {
     if (!e.detail) {
       return;
     }
@@ -251,20 +251,20 @@ Polymer({
   },
 
   /** @private */
-  onBlur_: function() {
+  onBlur_() {
     this.focused_ = false;
     this.resetAndUpdate();
     this.fire('text-blur', this.invalid || !this.$.input.value);
   },
 
   /** @private */
-  onFocus_: function() {
+  onFocus_() {
     this.focused_ = true;
     this.fire('text-focus');
   },
 
   /** @private */
-  updatePosition_: function() {
+  updatePosition_() {
     if (!observerDepsDefined(Array.from(arguments))) {
       return;
     }
@@ -305,7 +305,7 @@ Polymer({
   },
 
   /** @private */
-  onClipSizeChange_: function() {
+  onClipSizeChange_() {
     if (!this.clipSize) {
       return;
     }

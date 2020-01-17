@@ -122,8 +122,9 @@ class FlexItem {
            LayoutUnit flex_base_content_size,
            MinMaxSize min_max_main_axis_sizes,
            // Ignored for legacy, required for NG:
-           base::Optional<MinMaxSize> min_max_cross_axis_sizes,
+           base::Optional<MinMaxSize> min_max_cross_sizes,
            LayoutUnit main_axis_border_padding,
+           LayoutUnit cross_axis_border_padding,
            NGPhysicalBoxStrut physical_margins);
 
   LayoutUnit HypotheticalMainAxisMarginBoxSize() const {
@@ -193,6 +194,7 @@ class FlexItem {
   const base::Optional<MinMaxSize> min_max_cross_sizes;
   const LayoutUnit hypothetical_main_content_size;
   const LayoutUnit main_axis_border_padding;
+  const LayoutUnit cross_axis_border_padding;
   NGPhysicalBoxStrut physical_margins;
 
   LayoutUnit flexed_content_size;

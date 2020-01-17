@@ -614,6 +614,52 @@ cancelable_task_tracker.PostTask(task_runner.get(), FROM_HERE,
 cancelable_task_tracker.TryCancelAll();
 ```
 
+## Posting a Job to run in parallel
+
+The [`base::PostJob`](https://cs.chromium.org/chromium/src/base/task/post_job.h)
+is a power user API to be able to schedule a single base::RepeatingCallback
+worker task and request that ThreadPool workers invoke it concurrently.
+This avoids degenerate cases:
+* Calling `PostTask()` for each work item, causing significant overhead.
+* Fixed number of `PostTask()` calls that split the work and might run for a
+  long time. This is problematic when many components post “num cores” tasks and
+  all expect to use all the cores. In these cases, the scheduler lacks context
+  to be fair to multiple same-priority requests and/or ability to request lower
+  priority work to yield when high priority work comes in.
+
+```cpp
+// A canonical implementation of |worker_task|.
+void WorkerTask(base::JobDelegate* job_delegate) {
+  while (!job_delegate->ShouldYield()) {
+    auto work_item = TakeWorkItem(); // Smallest unit of work.
+    if (!work_item)
+      return:
+    ProcessWork(work_item);
+  }
+}
+
+// Returns the latest thread-safe number of incomplete work items.
+void NumIncompleteWorkItems();
+
+base::PostJob(FROM_HERE,
+              {base::ThreadPool()},
+              base::BindRepeating(&WorkerTask),
+              base::BindRepeating(&NumIncompleteWorkItems));
+```
+
+By doing as much work as possible in a loop when invoked, the worker task avoids
+scheduling overhead. Meanwhile `base::JobDelegate::ShouldYield()` is
+periodically invoked to conditionally exit and let the scheduler prioritize
+other work. This yield-semantic allows, for example, a user-visible job to use
+all cores but get out of the way when a user-blocking task comes in.
+
+### Adding additional work to a running job.
+
+When new work items are added and the API user wants additional threads to
+invoke the worker task concurrently,
+`JobHandle/JobDelegate::NotifyConcurrencyIncrease()` *must* be invoked shortly
+after max concurrency increases.
+
 ## Testing
 
 For more details see [Testing Components Which Post

@@ -306,64 +306,6 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
-// Make sure the origin of rotated root layer is aligned with pixels
-// on 2.25 scale factor device so that HW overlay kicks in.
-// https://crbug.com/869090.
-TEST_F(RootWindowTransformersTest, OriginAlignmentWithFractionalScale) {
-  auto* host = Shell::GetPrimaryRootWindow()->GetHost();
-  auto* host_window = host->window();
-  EXPECT_EQ(Shell::GetPrimaryRootWindow(), host_window);
-
-  float device_scale_factor = 2.25f;
-  gfx::Transform scale_transform;
-  scale_transform.matrix().set3x3(device_scale_factor, 0, 0, 0,
-                                  device_scale_factor, 0, 0, 0, 1);
-  gfx::Transform invert_transform;
-  invert_transform.matrix().set3x3(1.0f / device_scale_factor, 0, 0, 0,
-                                   1.0f / device_scale_factor, 0, 0, 0, 1);
-
-  {
-    // Rotate 90 degree to right.
-    UpdateDisplay("3000x2000*2.25/r");
-
-    // The size of the scaled layer.
-    gfx::RectF tmp(1998, 2999);
-    // Creates a transform that can be applied to already scaled layer.
-    gfx::Transform transform(invert_transform);
-    transform.ConcatTransform(host->GetRootTransform() * invert_transform);
-    transform.ConcatTransform(scale_transform);
-    transform.TransformRect(&tmp);
-    EXPECT_EQ(gfx::SizeF(2999, 1998), tmp.size());
-    EXPECT_TRUE(gfx::IsNearestRectWithinDistance(tmp, 0.01f));
-  }
-
-  {
-    // Upside Down.
-    UpdateDisplay("3000x2000*2.25/u");
-
-    gfx::RectF tmp(2999, 1998);
-    gfx::Transform transform(invert_transform);
-    transform.ConcatTransform(host->GetRootTransform() * invert_transform);
-    transform.ConcatTransform(scale_transform);
-    transform.TransformRect(&tmp);
-    EXPECT_EQ(gfx::SizeF(2999, 1998), tmp.size());
-    EXPECT_TRUE(gfx::IsNearestRectWithinDistance(tmp, 0.01f));
-  }
-
-  {
-    // Rotate 90 degree to left.
-    UpdateDisplay("3000x2000*2.25/l");
-
-    gfx::RectF tmp(1998, 2999);
-    gfx::Transform transform(invert_transform);
-    transform.ConcatTransform(host->GetRootTransform() * invert_transform);
-    transform.ConcatTransform(scale_transform);
-    transform.TransformRect(&tmp);
-    EXPECT_EQ(gfx::SizeF(2999, 1998), tmp.size());
-    EXPECT_TRUE(gfx::IsNearestRectWithinDistance(tmp, 0.01f));
-  }
-}
-
 TEST_F(RootWindowTransformersTest, TouchScaleAndMagnify) {
   TestEventHandler event_handler;
   Shell::Get()->AddPreTargetHandler(&event_handler);

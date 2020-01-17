@@ -7,9 +7,28 @@ import("//ui/android/features.gni")
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/components/browser_ui/widget/AlwaysDismissedDialog.java",
     "java/src/org/chromium/components/browser_ui/widget/BoundedLinearLayout.java",
+    "java/src/org/chromium/components/browser_ui/widget/ClipDrawableProgressBar.java",
+    "java/src/org/chromium/components/browser_ui/widget/ContextMenuDialog.java",
     "java/src/org/chromium/components/browser_ui/widget/DualControlLayout.java",
     "java/src/org/chromium/components/browser_ui/widget/FadingEdgeScrollView.java",
+    "java/src/org/chromium/components/browser_ui/widget/FadingShadow.java",
+    "java/src/org/chromium/components/browser_ui/widget/FadingShadowView.java",
+    "java/src/org/chromium/components/browser_ui/widget/LoadingView.java",
+    "java/src/org/chromium/components/browser_ui/widget/MaterialProgressBar.java",
+    "java/src/org/chromium/components/browser_ui/widget/MoreProgressButton.java",
+    "java/src/org/chromium/components/browser_ui/widget/PaddedFrameLayout.java",
+    "java/src/org/chromium/components/browser_ui/widget/PromoDialog.java",
+    "java/src/org/chromium/components/browser_ui/widget/PromoDialogLayout.java",
+    "java/src/org/chromium/components/browser_ui/widget/RadioButtonLayout.java",
+    "java/src/org/chromium/components/browser_ui/widget/RadioButtonWithDescription.java",
+    "java/src/org/chromium/components/browser_ui/widget/RadioButtonWithDescriptionLayout.java",
+    "java/src/org/chromium/components/browser_ui/widget/RadioButtonWithEditText.java",
+    "java/src/org/chromium/components/browser_ui/widget/RoundedCornerImageView.java",
+    "java/src/org/chromium/components/browser_ui/widget/TintedDrawable.java",
+    "java/src/org/chromium/components/browser_ui/widget/ViewResourceFrameLayout.java",
+    "java/src/org/chromium/components/browser_ui/widget/WrappingLayout.java",
     "java/src/org/chromium/components/browser_ui/widget/animation/CancelAwareAnimatorListener.java",
     "java/src/org/chromium/components/browser_ui/widget/animation/FocusAnimator.java",
     "java/src/org/chromium/components/browser_ui/widget/animation/Interpolators.java",
@@ -41,6 +60,7 @@ android_resources("java_resources") {
   custom_package = "org.chromium.components.browser_ui.widget"
   resource_dirs = [ "java/res" ]
   deps = [
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
     "//ui/android:ui_java_resources",
   ]
@@ -51,6 +71,13 @@ android_library("javatests") {
 
   sources = [
     "java/src/org/chromium/components/browser_ui/widget/DualControlLayoutTest.java",
+    "java/src/org/chromium/components/browser_ui/widget/MoreProgressButtonTest.java",
+    "java/src/org/chromium/components/browser_ui/widget/PromoDialogTest.java",
+    "java/src/org/chromium/components/browser_ui/widget/RadioButtonLayoutTest.java",
+    "java/src/org/chromium/components/browser_ui/widget/RadioButtonRenderTest.java",
+    "java/src/org/chromium/components/browser_ui/widget/RadioButtonWithDescriptionLayoutTest.java",
+    "java/src/org/chromium/components/browser_ui/widget/RadioButtonWithEditTextTest.java",
+    "java/src/org/chromium/components/browser_ui/widget/WrappingLayoutTest.java",
     "java/src/org/chromium/components/browser_ui/widget/text/ChromeTextInputLayoutRenderTest.java",
   ]
   deps = [

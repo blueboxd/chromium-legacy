@@ -8,12 +8,14 @@
 #include "base/sequence_checker.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {
 
 class ClipboardPromise;
 class FileReaderLoader;
+class SystemClipboard;
 
 // Interface for writing async-clipboard-compatible types as a Blob to the
 // System Clipboard, asynchronously.
@@ -23,12 +25,13 @@ class FileReaderLoader;
 // (2) Decoding the blob's contents to avoid RCE in native applications that may
 //     take advantage of vulnerabilities in their decoders.
 // (3) Writing the blob's decoded contents to the system clipboard.
-class ClipboardWriter : public FileReaderLoaderClient {
+class ClipboardWriter : public GarbageCollected<ClipboardWriter>,
+                        public FileReaderLoaderClient {
  public:
-  static std::unique_ptr<ClipboardWriter> Create(
-      const String& mime_type,
-      bool allow_without_sanitization,
-      ClipboardPromise* promise);
+  static ClipboardWriter* Create(SystemClipboard* system_clipboard,
+                                 const String& mime_type,
+                                 bool allow_without_sanitization,
+                                 ClipboardPromise* promise);
   ~ClipboardWriter() override;
 
   static bool IsValidType(const String& type);
@@ -40,16 +43,20 @@ class ClipboardWriter : public FileReaderLoaderClient {
   void DidFinishLoading() override;
   void DidFail(FileErrorCode) override;
 
+  void Trace(Visitor*);
+
  protected:
-  explicit ClipboardWriter(ClipboardPromise* promise);
+  ClipboardWriter(SystemClipboard* system_clipboard, ClipboardPromise* promise);
 
   virtual void DecodeOnBackgroundThread(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       DOMArrayBuffer* raw_data) = 0;
   // This ClipboardPromise owns this.
-  Persistent<ClipboardPromise> promise_;
+  Member<ClipboardPromise> promise_;
   // Ensure that System Clipboard operations occur on the main thread.
   SEQUENCE_CHECKER(sequence_checker_);
+
+  SystemClipboard* system_clipboard() { return system_clipboard_; }
 
  private:
   // TaskRunner for interacting with the system clipboard.
@@ -58,6 +65,8 @@ class ClipboardWriter : public FileReaderLoaderClient {
   const scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
   // This FileReaderLoader will load the Blob.
   std::unique_ptr<FileReaderLoader> file_reader_;
+  // Access to the global system clipboard.
+  Member<SystemClipboard> system_clipboard_;
 };
 
 }  // namespace blink

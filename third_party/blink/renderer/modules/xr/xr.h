@@ -13,8 +13,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/focus_changed_observer.h"
+#include "third_party/blink/renderer/modules/xr/xr_dom_overlay_init.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_session_init.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -198,6 +200,11 @@ class XR final : public EventTargetWithInlineData,
     // Returns underlying resolver's script state.
     ScriptState* GetScriptState() const;
 
+    void SetDOMOverlayElement(Element* element) {
+      dom_overlay_element_ = element;
+    }
+    Element* DOMOverlayElement() { return dom_overlay_element_; }
+
     virtual void Trace(blink::Visitor*);
 
    private:
@@ -219,6 +226,7 @@ class XR final : public EventTargetWithInlineData,
 
     const int64_t ukm_source_id_;
 
+    Member<Element> dom_overlay_element_;
     DISALLOW_COPY_AND_ASSIGN(PendingRequestSessionQuery);
   };
 
@@ -277,6 +285,31 @@ class XR final : public EventTargetWithInlineData,
     DISALLOW_COPY_AND_ASSIGN(PendingSupportsSessionQuery);
   };
 
+  // Native event listener for fullscreen change / error events when starting an
+  // immersive-ar session that uses DOM Overlay mode. See
+  // OnRequestSessionReturned().
+  class OverlayFullscreenEventManager : public NativeEventListener {
+   public:
+    OverlayFullscreenEventManager(
+        XR* xr,
+        XR::PendingRequestSessionQuery*,
+        device::mojom::blink::RequestSessionResultPtr);
+    ~OverlayFullscreenEventManager() override;
+
+    // NativeEventListener
+    void Invoke(ExecutionContext*, Event*) override;
+
+    void RequestFullscreen();
+
+    void Trace(blink::Visitor*) override;
+
+   private:
+    Member<XR> xr_;
+    Member<PendingRequestSessionQuery> query_;
+    device::mojom::blink::RequestSessionResultPtr result_;
+    DISALLOW_COPY_AND_ASSIGN(OverlayFullscreenEventManager);
+  };
+
   ScriptPromise InternalIsSessionSupported(ScriptState*,
                                            const String&,
                                            ExceptionState& exception_state,
@@ -290,6 +323,7 @@ class XR final : public EventTargetWithInlineData,
       Document* doc,
       const HeapVector<ScriptValue>& features,
       const device::mojom::blink::XRSessionMode& session_mode,
+      XRSessionInit* session_init,
       mojom::ConsoleMessageLevel error_level);
 
   void RequestImmersiveSession(LocalFrame* frame,
@@ -301,11 +335,18 @@ class XR final : public EventTargetWithInlineData,
                             PendingRequestSessionQuery* query,
                             ExceptionState* exception_state);
 
+  void OnRequestSessionSetupForDomOverlay(
+      PendingRequestSessionQuery*,
+      device::mojom::blink::RequestSessionResultPtr result);
   void OnRequestSessionReturned(
       PendingRequestSessionQuery*,
       device::mojom::blink::RequestSessionResultPtr result);
   void OnSupportsSessionReturned(PendingSupportsSessionQuery*,
                                  bool supports_session);
+  void ResolveSessionRequest(
+      PendingRequestSessionQuery*,
+      device::mojom::blink::RequestSessionResultPtr result);
+  void RejectSessionRequest(PendingRequestSessionQuery*);
 
   void EnsureDevice();
   void ReportImmersiveSupported(bool supported);
@@ -363,6 +404,11 @@ class XR final : public EventTargetWithInlineData,
 
   FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
+
+  // In DOM overlay mode, use a fullscreen event listener to detect when
+  // transition to fullscreen mode completes or fails, and reject/resolve
+  // the pending request session promise accordingly.
+  Member<OverlayFullscreenEventManager> fullscreen_event_manager_;
 
   // In DOM overlay mode, save and restore the FrameView background color.
   Color original_base_background_color_;

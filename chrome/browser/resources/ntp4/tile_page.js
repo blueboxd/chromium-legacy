@@ -51,7 +51,7 @@ cr.define('ntp', function() {
   Tile.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    initialize: function(contents) {
+    initialize(contents) {
       // 'real' as opposed to doppleganger.
       this.className = 'tile real';
       this.appendChild(contents);
@@ -81,7 +81,7 @@ cr.define('ntp', function() {
      * @param {number} x The x coordinate, in pixels.
      * @param {number} y The y coordinate, in pixels.
      */
-    setGridPosition: function(x, y) {
+    setGridPosition(x, y) {
       this.gridX = x;
       this.gridY = y;
       this.moveTo(x, y);
@@ -92,7 +92,7 @@ cr.define('ntp', function() {
      * @param {number} x The x coordinate, in pixels.
      * @param {number} y The y coordinate, in pixels.
      */
-    moveTo: function(x, y) {
+    moveTo(x, y) {
       // left overrides right in LTR, and right takes precedence in RTL.
       this.style.left = toCssPx(x);
       this.style.right = toCssPx(x);
@@ -104,7 +104,7 @@ cr.define('ntp', function() {
      * @param {Event} e The event for the drag.
      * @private
      */
-    onDragStart_: function(e) {
+    onDragStart_(e) {
       // The user may start dragging again during a previous drag's finishing
       // animation.
       if (this.classList.contains('dragging')) {
@@ -145,7 +145,7 @@ cr.define('ntp', function() {
      * @param {Event} e The event for the drag.
      * @private
      */
-    onDragMove_: function(e) {
+    onDragMove_(e) {
       if (e.view != window || (e.x == 0 && e.y == 0)) {
         this.dragClone.hidden = true;
         return;
@@ -161,7 +161,7 @@ cr.define('ntp', function() {
      * @param {Event} e The event for the drag.
      * @private
      */
-    onDragEnd_: function(e) {
+    onDragEnd_(e) {
       this.dragClone.hidden = false;
       this.dragClone.classList.add('placing');
 
@@ -223,7 +223,7 @@ cr.define('ntp', function() {
      * @param {number} x x-axis offset, in pixels.
      * @param {number} y y-axis offset, in pixels.
      */
-    showDoppleganger: function(x, y) {
+    showDoppleganger(x, y) {
       // We always have to clear the previous doppleganger to make sure we get
       // style updates for the contents of this tile.
       this.clearDoppleganger();
@@ -250,7 +250,7 @@ cr.define('ntp', function() {
     /**
      * Destroys the current doppleganger.
      */
-    clearDoppleganger: function() {
+    clearDoppleganger() {
       if (this.doppleganger_) {
         this.removeChild(this.doppleganger_);
         this.doppleganger_ = null;
@@ -261,7 +261,7 @@ cr.define('ntp', function() {
      * Returns status of doppleganger.
      * @return {boolean} True if there is a doppleganger showing for |this|.
      */
-    hasDoppleganger: function() {
+    hasDoppleganger() {
       return !!this.doppleganger_;
     },
 
@@ -271,7 +271,7 @@ cr.define('ntp', function() {
      * the next drag starts (if the user starts a 2nd drag very quickly).
      * @private
      */
-    finalizeDrag_: function() {
+    finalizeDrag_() {
       assert(this.classList.contains('dragging'));
 
       const clone = this.dragClone;
@@ -290,7 +290,7 @@ cr.define('ntp', function() {
      * resting spot.
      * @param {Event} e The transition end event.
      */
-    onDragCloneTransitionEnd_: function(e) {
+    onDragCloneTransitionEnd_(e) {
       if (this.classList.contains('dragging') &&
           (e.propertyName == 'left' || e.propertyName == 'top' ||
            e.propertyName == 'transform')) {
@@ -302,7 +302,7 @@ cr.define('ntp', function() {
      * Called when an app is removed from Chrome. Animates its disappearance.
      * @param {boolean=} opt_animate Whether the animation should be animated.
      */
-    doRemove: function(opt_animate) {
+    doRemove(opt_animate) {
       if (opt_animate) {
         this.firstChild.classList.add('removing-tile-contents');
       } else {
@@ -314,7 +314,7 @@ cr.define('ntp', function() {
      * Callback for the animationend event on the tile's contents.
      * @param {Event} e The event object.
      */
-    onContentsAnimationEnd_: function(e) {
+    onContentsAnimationEnd_(e) {
       if (this.firstChild.classList.contains('new-tile-contents')) {
         this.firstChild.classList.remove('new-tile-contents');
       }
@@ -407,7 +407,7 @@ cr.define('ntp', function() {
   TilePage.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    initialize: function() {
+    initialize() {
       this.className = 'tile-page';
 
       // Div that acts as a custom scrollbar. The scrollbar has to live
@@ -523,7 +523,7 @@ cr.define('ntp', function() {
      *
      * TODO(dbeam): this method now conflicts with HTMLElement#remove(). Rename.
      */
-    remove: function() {
+    remove() {
       // This checks arguments.length as most remove functions have a boolean
       // |opt_animate| argument, but that's not necesarilly applicable to
       // removing a tilePage. Selecting a different card in an animated way and
@@ -540,7 +540,7 @@ cr.define('ntp', function() {
      * instance is removed from the DOM.
      * @private
      */
-    tearDown_: function() {
+    tearDown_() {
       this.eventTracker.removeAll();
     },
 
@@ -550,7 +550,7 @@ cr.define('ntp', function() {
      * @param {boolean} animate If true, the append will be animated.
      * @protected
      */
-    appendTile: function(tileElement, animate) {
+    appendTile(tileElement, animate) {
       this.addTileAt(tileElement, this.tileElements_.length, animate);
     },
 
@@ -562,7 +562,7 @@ cr.define('ntp', function() {
      *     animated (other tiles, if they must reposition, do not animate).
      * @protected
      */
-    addTileAt: function(tileElement, index, animate) {
+    addTileAt(tileElement, index, animate) {
       this.classList.remove('animating-tile-page');
       if (animate) {
         tileElement.classList.add('new-tile-contents');
@@ -595,7 +595,7 @@ cr.define('ntp', function() {
      * @param {number} index The index of the tile that was added.
      * @param {boolean} wasAnimated Whether the removal was animated.
      */
-    fireAddedEvent: function(tile, index, wasAnimated) {
+    fireAddedEvent(tile, index, wasAnimated) {
       const e = document.createEvent('Event');
       e.initEvent('tilePage:tile_added', true, true);
       e.addedIndex = index;
@@ -610,7 +610,7 @@ cr.define('ntp', function() {
      * @param {boolean=} opt_dontNotify Whether a page should be removed if the
      *     last tile is removed from it.
      */
-    removeTile: function(tile, opt_animate, opt_dontNotify) {
+    removeTile(tile, opt_animate, opt_dontNotify) {
       if (opt_animate) {
         this.classList.add('animating-tile-page');
       }
@@ -633,7 +633,7 @@ cr.define('ntp', function() {
      * @param {number} oldIndex Where the tile was positioned before removal.
      * @param {boolean} wasAnimated Whether the removal was animated.
      */
-    fireRemovedEvent: function(tile, oldIndex, wasAnimated) {
+    fireRemovedEvent(tile, oldIndex, wasAnimated) {
       const e = document.createEvent('Event');
       e.initEvent('tilePage:tile_removed', true, true);
       e.removedIndex = oldIndex;
@@ -645,7 +645,7 @@ cr.define('ntp', function() {
     /**
      * Removes all tiles from the page.
      */
-    removeAllTiles: function() {
+    removeAllTiles() {
       this.tileGrid_.innerHTML = '';
     },
 
@@ -654,7 +654,7 @@ cr.define('ntp', function() {
      * @param {Event} e A custom cardselected event.
      * @private
      */
-    handleCardSelection_: function(e) {
+    handleCardSelection_(e) {
       this.updateFocusableElement();
 
       // When we are selected, we re-calculate the layout values. (See comment
@@ -667,7 +667,7 @@ cr.define('ntp', function() {
      * @param {Event} e A custom carddeselected event.
      * @private
      */
-    handleCardDeselection_: function(e) {
+    handleCardDeselection_(e) {
       if (this.currentFocusElement_) {
         this.currentFocusElement_.tabIndex = -1;
       }
@@ -678,7 +678,7 @@ cr.define('ntp', function() {
      * @param {Event} e The focus event.
      * @private
      */
-    handleFocus_: function(e) {
+    handleFocus_(e) {
       if (this.focusableElements_.length == 0) {
         return;
       }
@@ -692,7 +692,7 @@ cr.define('ntp', function() {
      * @param {Event} e The focus event.
      * @private
      */
-    handleMouseDown_: function(e) {
+    handleMouseDown_(e) {
       const focusable =
           findAncestorByClass(/** @type {Element} */ (e.target), 'focusable');
       if (focusable) {
@@ -707,7 +707,7 @@ cr.define('ntp', function() {
      * @param {Event} e The focus event.
      * @private
      */
-    handleKeyDown_: function(e) {
+    handleKeyDown_(e) {
       // We only handle up, down, left, right without control keys.
       if (e.metaKey || e.shiftKey || e.altKey || e.ctrlKey) {
         return;
@@ -762,7 +762,7 @@ cr.define('ntp', function() {
      * for tab focus, and the previously-focused element not eligible.
      * @protected
      */
-    updateFocusableElement: function() {
+    updateFocusableElement() {
       if (this.focusableElements_.length == 0 || !this.selected) {
         this.focusElementIndex_ = -1;
         return;
@@ -786,7 +786,7 @@ cr.define('ntp', function() {
      * focus element, if any, no longer eligible for tab focus.
      * @private
      */
-    updateFocusElement_: function() {
+    updateFocusElement_() {
       this.updateFocusableElement();
       if (this.focusElementIndex_ >= 0) {
         this.focusableElements_[this.focusElementIndex_].focus();
@@ -809,7 +809,7 @@ cr.define('ntp', function() {
      * hidden, but call before being shown.
      * @private
      */
-    calculateLayoutValues_: function() {
+    calculateLayoutValues_() {
       const grid = this.gridValues_;
       const availableSpace = this.tileGrid_.clientWidth - 2 * MIN_WIDE_MARGIN;
       const wide = availableSpace >= grid.minWideWidth;
@@ -850,7 +850,7 @@ cr.define('ntp', function() {
      * Dispatches the custom pagelayout event.
      * @private
      */
-    firePageLayoutEvent_: function() {
+    firePageLayoutEvent_() {
       cr.dispatchSimpleEvent(this, 'pagelayout', true, true);
     },
 
@@ -858,7 +858,7 @@ cr.define('ntp', function() {
      * @return {number} The amount of margin that should be animated (in pixels)
      *     for the current grid layout.
      */
-    getAnimatedLeftMargin_: function() {
+    getAnimatedLeftMargin_() {
       if (this.layoutValues_.wide) {
         return 0;
       }
@@ -875,7 +875,7 @@ cr.define('ntp', function() {
      *     positioned in a non-default location.
      * @private
      */
-    positionTile_: function(index, opt_indexOffset) {
+    positionTile_(index, opt_indexOffset) {
       const grid = this.gridValues_;
       const layout = this.layoutValues_;
 
@@ -935,7 +935,7 @@ cr.define('ntp', function() {
      * @return {number}
      * @private
      */
-    getWouldBeIndexForPoint_: function(x, y) {
+    getWouldBeIndexForPoint_(x, y) {
       const grid = this.gridValues_;
       const layout = this.layoutValues_;
 
@@ -958,7 +958,7 @@ cr.define('ntp', function() {
      * Window resize event handler. Window resizes may trigger re-layouts.
      * @param {Object} e The resize event.
      */
-    onResize_: function(e) {
+    onResize_(e) {
       if (this.lastWidth_ == this.clientWidth &&
           this.lastHeight_ == this.clientHeight) {
         return;
@@ -980,7 +980,7 @@ cr.define('ntp', function() {
      * as they enter or exit the grid.
      * @private
      */
-    updateMask_: function() {
+    updateMask_() {
       if (!this.isCurrentDragTarget) {
         this.tileGrid_.style.WebkitMaskBoxImage = '';
         return;
@@ -1007,7 +1007,7 @@ cr.define('ntp', function() {
       this.tileGrid_.style.WebkitMaskBoxImage = gradient;
     },
 
-    updateTopMargin_: function() {
+    updateTopMargin_() {
       const layout = this.layoutValues_;
 
       // The top margin is set so that the vertical midpoint of the grid will
@@ -1051,7 +1051,7 @@ cr.define('ntp', function() {
      * the page.
      * @private
      */
-    onNodeInsertedIntoDocument_: function(e) {
+    onNodeInsertedIntoDocument_(e) {
       this.calculateLayoutValues_();
       this.heightChanged_();
     },
@@ -1061,7 +1061,7 @@ cr.define('ntp', function() {
      * tileGrid.
      * @private
      */
-    heightChanged_: function() {
+    heightChanged_() {
       // The tile grid will expand to the bottom footer, or enough to hold all
       // the tiles, whichever is greater. It would be nicer if tilePage were
       // a flex box, and the tile grid could be box-flex: 1, but this exposes a
@@ -1080,7 +1080,7 @@ cr.define('ntp', function() {
      * scroll delta.
      * @param {Event} e The mousewheel event.
      */
-    handleMouseWheel: function(e) {
+    handleMouseWheel(e) {
       // The ctrl-wheel should triggle the zoom in/out actions in Chromium for
       // all pages.
       if (e.wheelDeltaY == 0 || e.ctrlKey) {
@@ -1096,7 +1096,7 @@ cr.define('ntp', function() {
      * @param {Event} e The scroll event.
      * @private
      */
-    onScroll_: function(e) {
+    onScroll_(e) {
       this.queueUpdateScrollbars_();
     },
 
@@ -1113,7 +1113,7 @@ cr.define('ntp', function() {
      * like clientHeight.
      * @private
      */
-    queueUpdateScrollbars_: function() {
+    queueUpdateScrollbars_() {
       if (this.scrollbarUpdate_) {
         return;
       }
@@ -1127,7 +1127,7 @@ cr.define('ntp', function() {
      * scrollbar thumb (there is no track or buttons).
      * @private
      */
-    doUpdateScrollbars_: function() {
+    doUpdateScrollbars_() {
       this.scrollbarUpdate_ = 0;
 
       const content = this.content_;
@@ -1158,7 +1158,7 @@ cr.define('ntp', function() {
      * @param {number} width The pixel width of a tile.
      * @return {number} The height for |width|.
      */
-    heightForWidth: function(width) {
+    heightForWidth(width) {
       return width;
     },
 
@@ -1169,12 +1169,12 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    doDragLeave: function(e) {
+    doDragLeave(e) {
       this.cleanupDrag();
     },
 
     /** @override */
-    doDragEnter: function(e) {
+    doDragEnter(e) {
       // Applies the mask so doppleganger tiles disappear into the fog.
       this.updateMask_();
 
@@ -1194,7 +1194,7 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    doDragOver: function(e) {
+    doDragOver(e) {
       e.preventDefault();
 
       this.setDropEffect(e.dataTransfer);
@@ -1206,7 +1206,7 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    doDrop: function(e) {
+    doDrop(e) {
       e.stopPropagation();
       e.preventDefault();
 
@@ -1242,7 +1242,7 @@ cr.define('ntp', function() {
      * Appends the currently dragged tile to the end of the page. Called
      * from outside the page, e.g. when dropping on a nav dot.
      */
-    appendDraggingTile: function() {
+    appendDraggingTile() {
       const originalPage = currentlyDraggingTile.tilePage;
       if (originalPage == this) {
         return;
@@ -1257,7 +1257,7 @@ cr.define('ntp', function() {
     /**
      * Makes sure all the tiles are in the right place after a drag is over.
      */
-    cleanupDrag: function() {
+    cleanupDrag() {
       this.repositionTiles_(currentlyDraggingTile);
       // Remove the drag mask.
       this.updateMask_();
@@ -1268,7 +1268,7 @@ cr.define('ntp', function() {
      * @param {Node=} opt_ignoreNode An optional node to ignore.
      * @private
      */
-    repositionTiles_: function(opt_ignoreNode) {
+    repositionTiles_(opt_ignoreNode) {
       for (let i = 0; i < this.tileElements_.length; i++) {
         if (!opt_ignoreNode || opt_ignoreNode !== this.tileElements_[i]) {
           this.positionTile_(i);
@@ -1281,7 +1281,7 @@ cr.define('ntp', function() {
      * @param {number} newDragIndex
      * @private
      */
-    updateDropIndicator_: function(newDragIndex) {
+    updateDropIndicator_(newDragIndex) {
       const oldDragIndex = this.currentDropIndex_;
       if (newDragIndex == oldDragIndex) {
         return;
@@ -1309,7 +1309,7 @@ cr.define('ntp', function() {
      *     likely want to check |e.dataTransfer|.
      * @return {boolean} True if this page can handle the drag.
      */
-    shouldAcceptDrag: function(e) {
+    shouldAcceptDrag(e) {
       return false;
     },
 
@@ -1319,7 +1319,7 @@ cr.define('ntp', function() {
      *     data. This should only be used if currentlyDraggingTile is null.
      * @param {number} index The tile index at which the drop occurred.
      */
-    addDragData: function(dataTransfer, index) {
+    addDragData(dataTransfer, index) {
       assertNotReached();
     },
 
@@ -1329,14 +1329,14 @@ cr.define('ntp', function() {
      * @param {Node} draggedTile The tile that was dropped.
      * @param {number} prevIndex The previous index of the tile.
      */
-    tileMoved: function(draggedTile, prevIndex) {},
+    tileMoved(draggedTile, prevIndex) {},
 
     /**
      * Sets the drop effect on |dataTransfer| to the desired value (e.g.
      * 'copy').
      * @param {DataTransfer} dataTransfer The drag event dataTransfer object.
      */
-    setDropEffect: function(dataTransfer) {
+    setDropEffect(dataTransfer) {
       assertNotReached();
     },
   };

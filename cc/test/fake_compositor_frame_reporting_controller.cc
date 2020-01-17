@@ -10,21 +10,23 @@ FakeCompositorFrameReportingController::FakeCompositorFrameReportingController(
     bool is_single_threaded)
     : CompositorFrameReportingController(is_single_threaded) {}
 
-void FakeCompositorFrameReportingController::WillBeginMainFrame() {
+void FakeCompositorFrameReportingController::WillBeginMainFrame(
+    const viz::BeginFrameId& id) {
   if (!reporters_[PipelineStage::kBeginImplFrame])
-    CompositorFrameReportingController::WillBeginImplFrame();
-  CompositorFrameReportingController::WillBeginMainFrame();
+    CompositorFrameReportingController::WillBeginImplFrame(id);
+  CompositorFrameReportingController::WillBeginMainFrame(id);
 }
 
-void FakeCompositorFrameReportingController::BeginMainFrameAborted() {
+void FakeCompositorFrameReportingController::BeginMainFrameAborted(
+    const viz::BeginFrameId& id) {
   if (!reporters_[PipelineStage::kBeginMainFrame])
-    WillBeginMainFrame();
-  CompositorFrameReportingController::BeginMainFrameAborted();
+    WillBeginMainFrame(id);
+  CompositorFrameReportingController::BeginMainFrameAborted(id);
 }
 
 void FakeCompositorFrameReportingController::WillCommit() {
   if (!reporters_[PipelineStage::kBeginMainFrame])
-    WillBeginMainFrame();
+    WillBeginMainFrame(viz::BeginFrameId());
   CompositorFrameReportingController::WillCommit();
 }
 
@@ -47,8 +49,11 @@ void FakeCompositorFrameReportingController::DidActivate() {
 }
 
 void FakeCompositorFrameReportingController::DidSubmitCompositorFrame(
-    uint32_t frame_token) {
-  CompositorFrameReportingController::DidSubmitCompositorFrame(frame_token);
+    uint32_t frame_token,
+    const viz::BeginFrameId& current_frame_id,
+    const viz::BeginFrameId& last_activated_frame_id) {
+  CompositorFrameReportingController::DidSubmitCompositorFrame(
+      frame_token, current_frame_id, last_activated_frame_id);
 
   viz::FrameTimingDetails details;
   details.presentation_feedback.timestamp = base::TimeTicks::Now();

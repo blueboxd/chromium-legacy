@@ -78,16 +78,14 @@ class PLATFORM_EXPORT ScriptWrappable
         sizeof(T) && WTF::IsGarbageCollectedType<T>::value,
         "Classes implementing ScriptWrappable must be garbage collected.");
 
-// Check if T* is castable to ScriptWrappable*, which means T doesn't
-// have two or more ScriptWrappable as superclasses. If T has two
-// ScriptWrappable as superclasses, conversions from T* to
-// ScriptWrappable* are ambiguous.
-#if !defined(COMPILER_MSVC)
-    // MSVC 2013 doesn't support static_assert + constexpr well.
+    // Check if T* is castable to ScriptWrappable*, which means T doesn't
+    // have two or more ScriptWrappable as superclasses. If T has two
+    // ScriptWrappable as superclasses, conversions from T* to
+    // ScriptWrappable* are ambiguous.
     static_assert(!static_cast<ScriptWrappable*>(static_cast<T*>(nullptr)),
                   "Class T must not have two or more ScriptWrappable as its "
                   "superclasses.");
-#endif
+
     return static_cast<T*>(this);
   }
 
@@ -188,6 +186,9 @@ inline bool ScriptWrappable::UnsetMainWorldWrapperIfSet(
 #define DEFINE_WRAPPERTYPEINFO()                               \
  public:                                                       \
   const WrapperTypeInfo* GetWrapperTypeInfo() const override { \
+    return &wrapper_type_info_;                                \
+  }                                                            \
+  static const WrapperTypeInfo* GetStaticWrapperTypeInfo() {   \
     return &wrapper_type_info_;                                \
   }                                                            \
                                                                \

@@ -123,9 +123,6 @@ class ModelTypeWorker : public UpdateHandler,
   // called when a new encryption mechanism is ready.
   void EncryptionAcceptedMaybeApplyUpdates();
 
-  // Callback for when our contribution gets a response.
-  void OnCommitResponse(CommitResponseDataList* response_list);
-
   // If migration the directory encounters an error partway through, we need to
   // clear the update data that has been added so far.
   void AbortMigration();
@@ -209,6 +206,11 @@ class ModelTypeWorker : public UpdateHandler,
   // originator item ID (in practice used for bookmarks only). It discards all
   // of them except the last one.
   void DeduplicatePendingUpdatesBasedOnOriginatorClientItemId();
+
+  // Callback for when our contribution gets a response.
+  void OnCommitResponse(
+      const CommitResponseDataList& committed_response_list,
+      const FailedCommitResponseDataList& error_response_list);
 
   ModelType type_;
   DataTypeDebugInfoEmitter* debug_info_emitter_;

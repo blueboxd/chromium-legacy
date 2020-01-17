@@ -17,7 +17,8 @@
 
 namespace task_manager {
 
-BackgroundContentsTask* BackgroundContentsTag::CreateTask() const {
+BackgroundContentsTask* BackgroundContentsTag::CreateTask(
+    WebContentsTaskProvider*) const {
   // Try to lookup the application name from the parent extension (if any).
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());

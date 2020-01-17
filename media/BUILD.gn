@@ -158,13 +158,9 @@ test("media_unittests") {
     "//media/webrtc:unit_tests",
   ]
 
-  data = [
-    "test/data/",
-  ]
+  data = [ "test/data/" ]
 
-  data_deps = [
-    "//testing/buildbot/filters:media_unittests_filters",
-  ]
+  data_deps = [ "//testing/buildbot/filters:media_unittests_filters" ]
 
   if (media_use_ffmpeg) {
     deps += [ "//media/ffmpeg:unit_tests" ]
@@ -212,9 +208,7 @@ test("media_perftests") {
   # This target should not require the Chrome executable to run.
   assert_no_deps = [ "//chrome" ]
 
-  data = [
-    "test/data/",
-  ]
+  data = [ "test/data/" ]
 
   data_deps = [
     # Needed for isolate script to execute.
@@ -310,19 +304,13 @@ if (media_use_ffmpeg && !is_android) {
 
 if (proprietary_codecs) {
   fuzzer_test("media_cenc_utils_fuzzer") {
-    sources = [
-      "cdm/cenc_utils_fuzzertest.cc",
-    ]
-    deps = [
-      ":media",
-    ]
+    sources = [ "cdm/cenc_utils_fuzzertest.cc" ]
+    deps = [ ":media" ]
   }
 }
 
 fuzzer_test("media_vp9_parser_fuzzer") {
-  sources = [
-    "filters/vp9_parser_fuzzertest.cc",
-  ]
+  sources = [ "filters/vp9_parser_fuzzertest.cc" ]
   deps = [
     ":test_support",
     "//base",
@@ -331,9 +319,7 @@ fuzzer_test("media_vp9_parser_fuzzer") {
 }
 
 fuzzer_test("media_vp9_parser_encrypted_fuzzer") {
-  sources = [
-    "filters/vp9_parser_encrypted_fuzzertest.cc",
-  ]
+  sources = [ "filters/vp9_parser_encrypted_fuzzertest.cc" ]
   deps = [
     ":test_support",
     "//base",
@@ -343,9 +329,7 @@ fuzzer_test("media_vp9_parser_encrypted_fuzzer") {
 }
 
 fuzzer_test("media_vpx_video_decoder_fuzzer") {
-  sources = [
-    "filters/vpx_video_decoder_fuzzertest.cc",
-  ]
+  sources = [ "filters/vpx_video_decoder_fuzzertest.cc" ]
   deps = [
     ":media",
     "//base",
@@ -356,9 +340,7 @@ fuzzer_test("media_vpx_video_decoder_fuzzer") {
 }
 
 fuzzer_test("media_webm_muxer_fuzzer") {
-  sources = [
-    "muxers/webm_muxer_fuzzertest.cc",
-  ]
+  sources = [ "muxers/webm_muxer_fuzzertest.cc" ]
   deps = [
     ":media",
     "//base",
@@ -367,9 +349,7 @@ fuzzer_test("media_webm_muxer_fuzzer") {
 }
 
 fuzzer_test("cbcs_decryptor_fuzzer") {
-  sources = [
-    "cdm/cbcs_decryptor_fuzzer.cc",
-  ]
+  sources = [ "cdm/cbcs_decryptor_fuzzer.cc" ]
   deps = [
     ":media",
     "//base",
@@ -378,9 +358,7 @@ fuzzer_test("cbcs_decryptor_fuzzer") {
 }
 
 fuzzer_test("cenc_decryptor_fuzzer") {
-  sources = [
-    "cdm/cenc_decryptor_fuzzer.cc",
-  ]
+  sources = [ "cdm/cenc_decryptor_fuzzer.cc" ]
   deps = [
     ":media",
     "//base",
@@ -389,9 +367,7 @@ fuzzer_test("cenc_decryptor_fuzzer") {
 }
 
 fuzzer_test("json_web_key_fuzzer") {
-  sources = [
-    "cdm/json_web_key_fuzzer.cc",
-  ]
+  sources = [ "cdm/json_web_key_fuzzer.cc" ]
   deps = [
     ":media",
     "//base",
@@ -400,9 +376,7 @@ fuzzer_test("json_web_key_fuzzer") {
 
 if (proprietary_codecs) {
   fuzzer_test("media_mp4_avcc_parser_fuzzer") {
-    sources = [
-      "formats/mp4/mp4_avcc_parser_fuzzer.cc",
-    ]
+    sources = [ "formats/mp4/mp4_avcc_parser_fuzzer.cc" ]
     deps = [
       ":media",
       "//base",
@@ -410,9 +384,7 @@ if (proprietary_codecs) {
   }
 
   fuzzer_test("media_mp4_box_reader_fuzzer") {
-    sources = [
-      "formats/mp4/mp4_box_reader_fuzzer.cc",
-    ]
+    sources = [ "formats/mp4/mp4_box_reader_fuzzer.cc" ]
     deps = [
       ":media",
       "//base",
@@ -424,9 +396,7 @@ if (proprietary_codecs) {
 
 if (enable_mse_mpeg2ts_stream_parser) {
   fuzzer_test("media_es_parser_adts_fuzzer") {
-    sources = [
-      "formats/mp2t/es_parser_adts_fuzzer.cc",
-    ]
+    sources = [ "formats/mp2t/es_parser_adts_fuzzer.cc" ]
     deps = [
       ":media",
       "//base",
@@ -434,9 +404,7 @@ if (enable_mse_mpeg2ts_stream_parser) {
   }
 
   fuzzer_test("media_es_parser_h264_fuzzer") {
-    sources = [
-      "formats/mp2t/es_parser_h264_fuzzer.cc",
-    ]
+    sources = [ "formats/mp2t/es_parser_h264_fuzzer.cc" ]
     deps = [
       ":media",
       "//base",
@@ -444,9 +412,7 @@ if (enable_mse_mpeg2ts_stream_parser) {
   }
 
   fuzzer_test("media_es_parser_mpeg1audio_fuzzer") {
-    sources = [
-      "formats/mp2t/es_parser_mpeg1audio_fuzzer.cc",
-    ]
+    sources = [ "formats/mp2t/es_parser_mpeg1audio_fuzzer.cc" ]
     deps = [
       ":media",
       "//base",

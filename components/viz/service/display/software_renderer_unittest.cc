@@ -53,7 +53,7 @@ class SoftwareRendererTest : public testing::Test {
         DisplayResourceProvider::kSoftware, nullptr,
         shared_bitmap_manager_.get());
     renderer_ = std::make_unique<SoftwareRenderer>(
-        &settings_, output_surface_.get(), resource_provider());
+        &settings_, output_surface_.get(), resource_provider(), nullptr);
     renderer_->Initialize();
     renderer_->SetVisible(true);
 

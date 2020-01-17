@@ -38,7 +38,6 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/browser.h"
@@ -65,6 +64,7 @@
 #include "components/search/search.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
@@ -158,8 +158,9 @@ bool ChromeOmniboxClient::IsDefaultSearchProviderEnabled() const {
 }
 
 const SessionID& ChromeOmniboxClient::GetSessionID() const {
-  return SessionTabHelper::FromWebContents(
-      controller_->GetWebContents())->session_id();
+  return sessions::SessionTabHelper::FromWebContents(
+             controller_->GetWebContents())
+      ->session_id();
 }
 
 bookmarks::BookmarkModel* ChromeOmniboxClient::GetBookmarkModel() {

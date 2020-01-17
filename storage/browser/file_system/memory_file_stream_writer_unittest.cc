@@ -61,9 +61,8 @@ class MemoryFileStreamWriterTest : public testing::Test {
 
   std::unique_ptr<FileStreamWriter> CreateWriter(const base::FilePath& path,
                                                  int64_t offset) {
-    return FileStreamWriter::CreateForMemoryFile(
-        file_util_->GetWeakPtr(), path, offset,
-        FileStreamWriter::OPEN_EXISTING_FILE);
+    return FileStreamWriter::CreateForMemoryFile(file_util_->GetWeakPtr(), path,
+                                                 offset);
   }
 
  private:

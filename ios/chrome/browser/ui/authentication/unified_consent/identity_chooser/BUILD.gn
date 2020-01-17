@@ -67,7 +67,5 @@ source_set("identity_chooser_ui") {
     "//ios/third_party/material_components_ios",
     "//ui/base",
   ]
-  public_deps = [
-    "//ios/chrome/browser/ui/table_view",
-  ]
+  public_deps = [ "//ios/chrome/browser/ui/table_view" ]
 }

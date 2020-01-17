@@ -383,9 +383,7 @@ CommandStore.CMD_WHITELIST = {
     category: 'information'
   },
 
-  'undarkenScreen': {msgId: 'undarken_screen'},
-
-  'darkenScreen': {msgId: 'darken_screen'},
+  'toggleDarkScreen': {announce: false, msgId: 'toggle_dark_screen'},
 
   'toggleBrailleTable':
       {msgId: 'toggle_braille_table', category: 'help_commands'},

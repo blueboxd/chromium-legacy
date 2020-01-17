@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button_delegate.h"
 
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,7 +16,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/ui_features.h"
 
 namespace {
 
@@ -57,12 +55,11 @@ const gfx::Image& GetAvatarImage(Profile* profile,
                                  const gfx::Image& user_identity_image) {
   ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile);
   DCHECK(entry);
-  // TODO(crbug.com/1012179): If kPersistUPAInProfileInfoCache feature is on, it
-  // should suffice to call entry->GetAvatarIcon(). For this to work well, this
-  // class needs to observe ProfileAttributesStorage instead of (or on top of)
-  // IdentityManager. Only then we can rely on |entry| being up to date (as the
-  // storage also observes IdentityManager so there's no guarantee on the order
-  // of notifications).
+  // TODO(crbug.com/1012179): it should suffice to call entry->GetAvatarIcon().
+  // For this to work well, this class needs to observe ProfileAttributesStorage
+  // instead of (or on top of) IdentityManager. Only then we can rely on |entry|
+  // being up to date (as the storage also observes IdentityManager so there's
+  // no guarantee on the order of notifications).
   if (entry->IsUsingGAIAPicture() && entry->GetGAIAPicture())
     return *entry->GetGAIAPicture();
 
@@ -309,7 +306,7 @@ void AvatarToolbarButtonDelegate::OnUnconsentedPrimaryAccountChanged(
     const CoreAccountInfo& unconsented_primary_account_info) {
   if (unconsented_primary_account_info.IsEmpty())
     return;
-  OnUserIdentityChanged(features::kAnimatedAvatarButtonOnSignIn);
+  OnUserIdentityChanged();
 }
 
 void AvatarToolbarButtonDelegate::OnRefreshTokensLoaded() {
@@ -332,7 +329,7 @@ void AvatarToolbarButtonDelegate::OnRefreshTokensLoaded() {
                                 ->GetUnconsentedPrimaryAccountInfo();
   if (account.IsEmpty())
     return;
-  OnUserIdentityChanged(features::kAnimatedAvatarButtonOnOpeningWindow);
+  OnUserIdentityChanged();
 }
 
 void AvatarToolbarButtonDelegate::OnAccountsInCookieUpdated(
@@ -356,18 +353,8 @@ void AvatarToolbarButtonDelegate::OnAvatarErrorChanged() {
   avatar_toolbar_button_->UpdateText();
 }
 
-void AvatarToolbarButtonDelegate::OnUserIdentityChanged(
-    const base::Feature& triggering_feature) {
-  // Record the last time the animated identity was set. This is done even if
-  // the feature is disabled, to allow comparing metrics between experimental
-  // groups.
+void AvatarToolbarButtonDelegate::OnUserIdentityChanged() {
   signin_ui_util::RecordAnimatedIdentityTriggered(profile_);
-
-  if (!base::FeatureList::IsEnabled(triggering_feature) ||
-      !base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
-    return;
-  }
-
   identity_animation_state_ = IdentityAnimationState::kWaitingForImage;
   // If we already have a gaia image, the pill will be immediately displayed by
   // UpdateIcon().

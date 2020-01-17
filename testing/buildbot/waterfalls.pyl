@@ -459,6 +459,23 @@
           'gtest_tests': 'android_oreo_gtests',
         },
       },
+      'android-10-arm64-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'QP1A.190711.020',
+              'device_os_flavor': 'google',
+              'device_type': 'marlin',
+              'os': 'Android',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'android_10_rel_gtests',
+        },
+        'use_swarming': True,
+        'os_type': 'android',
+      },
       'android-arm64-proguard-rel': {
         'additional_compile_targets': [
           'all',
@@ -1314,6 +1331,20 @@
         },
       },
     }
+  },
+  {
+    'name': 'chromium.devtools-frontend',
+    'machines': {
+      'DevTools Linux (chromium)': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'layout_ng_gtests',
+          'isolated_scripts': 'devtools_webkit_isolated_scripts',
+        },
+      },
+    },
   },
   {
     'name': 'chromium.fuzz',

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.ssl;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
@@ -39,7 +41,8 @@ public class SecurityStateModel {
     private SecurityStateModel() {}
 
     @NativeMethods
-    interface Natives {
+    @VisibleForTesting
+    public interface Natives {
         int getSecurityLevelForWebContents(WebContents webContents);
         boolean shouldShowDangerTriangleForWarningLevel();
     }

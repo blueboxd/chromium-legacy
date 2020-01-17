@@ -3,18 +3,12 @@
 # found in the LICENSE file.
 
 source_set("infobar_banner") {
-  public = [
-    "infobar_banner_supported_overlay_coordinator_classes.h",
-  ]
-  sources = [
-    "infobar_banner_supported_overlay_coordinator_classes.mm",
-  ]
+  public = [ "infobar_banner_supported_overlay_coordinator_classes.h" ]
+  sources = [ "infobar_banner_supported_overlay_coordinator_classes.mm" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
-  deps = [
-    ":coordinators",
-  ]
+  deps = [ ":coordinators" ]
 }
 
 source_set("coordinators") {
@@ -32,6 +26,7 @@ source_set("coordinators") {
     "//ios/chrome/browser/overlays/public/common/infobars",
     "//ios/chrome/browser/ui/infobars/banners",
     "//ios/chrome/browser/ui/overlays:coordinators",
+    "//ios/chrome/browser/ui/overlays:util",
     "//ios/chrome/browser/ui/overlays/infobar_banner/passwords",
   ]
 }
@@ -58,9 +53,7 @@ source_set("mediators") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "infobar_banner_overlay_mediator_unittest.mm",
-  ]
+  sources = [ "infobar_banner_overlay_mediator_unittest.mm" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
@@ -72,6 +65,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/overlays/public/infobar_banner",
     "//ios/chrome/browser/overlays/test",
     "//ios/chrome/browser/ui/overlays/test",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base",

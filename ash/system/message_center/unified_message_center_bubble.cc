@@ -239,4 +239,11 @@ void UnifiedMessageCenterBubble::OnWidgetDestroying(views::Widget* widget) {
   tray_->CloseBubble();
 }
 
+void UnifiedMessageCenterBubble::OnWidgetActivationChanged(
+    views::Widget* widget,
+    bool active) {
+  if (active)
+    tray_->bubble()->OnMessageCenterActivated();
+}
+
 }  // namespace ash

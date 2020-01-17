@@ -172,7 +172,7 @@ Polymer({
    * @return {boolean}
    */
   canSubmit_() {
-    return this.initialPin_ == this.pinKeyboardValue_;
+    return this.initialPin_ === this.pinKeyboardValue_;
   },
 
   /**
@@ -215,8 +215,8 @@ Polymer({
         this.processPinRequirements_.bind(this, messageId));
     this.problemClass_ = problemClass;
     this.updateStyles();
-    this.enableSubmit =
-        problemClass != ProblemType.ERROR && messageId != MessageType.TOO_SHORT;
+    this.enableSubmit = problemClass !== ProblemType.ERROR &&
+        messageId !== MessageType.TOO_SHORT;
   },
 
   /** @private */
@@ -241,14 +241,14 @@ Polymer({
     }
 
     if (!message.errors.length ||
-        message.errors[0] !=
+        message.errors[0] !==
             chrome.quickUnlockPrivate.CredentialProblem.TOO_SHORT) {
       this.pinHasPassedMinimumLength_ = true;
     }
 
     if (message.warnings.length) {
       assert(
-          message.warnings[0] ==
+          message.warnings[0] ===
           chrome.quickUnlockPrivate.CredentialProblem.TOO_WEAK);
       this.showProblem_(MessageType.TOO_WEAK, ProblemType.WARNING);
     }
@@ -356,7 +356,7 @@ Polymer({
    * @return {boolean}
    */
   hasError_(problemMessageId, problemClass) {
-    return !!problemMessageId && problemClass == ProblemType.ERROR;
+    return !!problemMessageId && problemClass === ProblemType.ERROR;
   },
 
   /**

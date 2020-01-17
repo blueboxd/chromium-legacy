@@ -15,7 +15,7 @@ export const SettingsBehavior = {
    * @param {string} settingName Name of the setting to get.
    * @return {Setting} The setting object.
    */
-  getSetting: function(settingName) {
+  getSetting(settingName) {
     return getInstance().getSetting(settingName);
   },
 
@@ -23,7 +23,7 @@ export const SettingsBehavior = {
    * @param {string} settingName Name of the setting to get the value for.
    * @return {*} The value of the setting, accounting for availability.
    */
-  getSettingValue: function(settingName) {
+  getSettingValue(settingName) {
     return getInstance().getSettingValue(settingName);
   },
 
@@ -37,7 +37,7 @@ export const SettingsBehavior = {
    * @param {boolean=} noSticky Whether to avoid stickying the setting. Defaults
    *     to false.
    */
-  setSetting: function(settingName, value, noSticky) {
+  setSetting(settingName, value, noSticky) {
     getInstance().setSetting(settingName, value, noSticky);
   },
 
@@ -49,7 +49,7 @@ export const SettingsBehavior = {
    * @param {boolean=} noSticky Whether to avoid stickying the setting. Defaults
    *     to false.
    */
-  setSettingSplice: function(settingName, start, end, newValue, noSticky) {
+  setSettingSplice(settingName, start, end, newValue, noSticky) {
     getInstance().setSettingSplice(settingName, start, end, newValue, noSticky);
   },
 
@@ -59,7 +59,7 @@ export const SettingsBehavior = {
    * @param {string} settingName Name of the setting to set
    * @param {boolean} valid Whether the setting value is currently valid.
    */
-  setSettingValid: function(settingName, valid) {
+  setSettingValid(settingName, valid) {
     getInstance().setSettingValid(settingName, valid);
   },
 };

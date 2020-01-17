@@ -37,13 +37,13 @@ Polymer({
      */
     defaultUrl: {
       type: String,
-      value: function() {
+      value() {
         return this.urlTemplate_.replace('$', 'en_us');
       }
     },
   },
 
-  setUrlTemplateForTesting: function(url) {
+  setUrlTemplateForTesting(url) {
     this.urlTemplate_ = url;
   },
 
@@ -130,7 +130,7 @@ Polymer({
    *
    * @private
    */
-  onSkipTap_: function() {
+  onSkipTap_() {
     if (this.buttonsDisabled) {
       return;
     }
@@ -145,7 +145,7 @@ Polymer({
    *
    * @private
    */
-  onNextTap_: function() {
+  onNextTap_() {
     if (this.buttonsDisabled) {
       return;
     }
@@ -159,7 +159,7 @@ Polymer({
    * Sets learn more content text and shows it as overlay dialog.
    * @param {string} content HTML formatted text to show.
    */
-  showLearnMoreOverlay: function(title, additionalInfo) {
+  showLearnMoreOverlay(title, additionalInfo) {
     this.$['overlay-title-text'].innerHTML =
         this.sanitizer_.sanitizeHtml(title);
     this.$['overlay-additional-info-text'].innerHTML =
@@ -173,7 +173,7 @@ Polymer({
   /**
    * Hides overlay dialog.
    */
-  hideOverlay: function() {
+  hideOverlay() {
     this.$['learn-more-overlay'].close();
     if (this.lastFocusedElement) {
       this.lastFocusedElement.focus();
@@ -184,7 +184,7 @@ Polymer({
   /**
    * Reloads value prop webview.
    */
-  reloadPage: function() {
+  reloadPage() {
     this.fire('loading');
 
     if (this.initialized_) {
@@ -205,7 +205,7 @@ Polymer({
   /**
    * Handles event when value prop webview cannot be loaded.
    */
-  onWebViewErrorOccurred: function(details) {
+  onWebViewErrorOccurred(details) {
     this.fire('error');
     this.loadingError_ = true;
   },
@@ -213,7 +213,7 @@ Polymer({
   /**
    * Handles event when value prop webview is loaded.
    */
-  onWebViewContentLoad: function(details) {
+  onWebViewContentLoad(details) {
     if (details == null) {
       return;
     }
@@ -236,7 +236,7 @@ Polymer({
   /**
    * Handles event when webview request headers received.
    */
-  onWebViewHeadersReceived: function(details) {
+  onWebViewHeadersReceived(details) {
     if (details == null) {
       return;
     }
@@ -256,7 +256,7 @@ Polymer({
   /**
    * Reload the page with the given consent string text data.
    */
-  reloadContent: function(data) {
+  reloadContent(data) {
     this.$['value-prop-dialog'].setAttribute(
         'aria-label', data['valuePropTitle']);
     this.$['user-image'].src = data['valuePropUserImage'];
@@ -277,7 +277,7 @@ Polymer({
   /**
    * Add a setting zippy with the provided data.
    */
-  addSettingZippy: function(zippy_data) {
+  addSettingZippy(zippy_data) {
     if (this.settingZippyLoaded_) {
       if (this.webViewLoaded_ && this.consentStringLoaded_) {
         this.onPageLoaded();
@@ -330,7 +330,7 @@ Polymer({
   /**
    * Handles event when all the page content has been loaded.
    */
-  onPageLoaded: function() {
+  onPageLoaded() {
     this.fire('loaded');
 
     this.buttonsDisabled = false;
@@ -345,7 +345,7 @@ Polymer({
   /**
    * Signal from host to show the screen.
    */
-  onShow: function() {
+  onShow() {
     var requestFilter = {urls: ['<all_urls>'], types: ['main_frame']};
 
     this.$['overlay-close-button'].addEventListener(

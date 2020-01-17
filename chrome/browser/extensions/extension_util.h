@@ -19,11 +19,17 @@ namespace content {
 class BrowserContext;
 }
 
+namespace extensions {
+class PermissionSet;
+}
+
 namespace gfx {
 class ImageSkia;
 }
 
 class GURL;
+
+class Profile;
 
 namespace extensions {
 
@@ -100,6 +106,13 @@ const Extension* GetInstalledPwaForUrl(
     content::BrowserContext* context,
     const GURL& url,
     base::Optional<LaunchContainer> launch_container_filter = base::nullopt);
+
+// Returns a PermissionSet configured with the permissions that should be
+// displayed in an extension installation prompt for the specified |extension|.
+std::unique_ptr<const PermissionSet> GetInstallPromptPermissionSetForExtension(
+    const Extension* extension,
+    Profile* profile,
+    bool include_optional_permissions);
 
 }  // namespace util
 }  // namespace extensions

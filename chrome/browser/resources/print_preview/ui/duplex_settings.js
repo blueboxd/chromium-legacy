@@ -51,23 +51,23 @@ Polymer({
       Base.create('iron-meta', {type: 'iconset'})),
 
   /** @private */
-  onDuplexSettingChange_: function() {
+  onDuplexSettingChange_() {
     this.$.duplex.checked = this.getSettingValue('duplex');
   },
 
   /** @private */
-  onDuplexTypeChange_: function() {
+  onDuplexTypeChange_() {
     this.selectedValue = this.getSettingValue('duplexShortEdge') ?
         this.duplexValueEnum_.SHORT_EDGE.toString() :
         this.duplexValueEnum_.LONG_EDGE.toString();
   },
 
   /** @private */
-  onCheckboxChange_: function() {
+  onCheckboxChange_() {
     this.setSetting('duplex', this.$.duplex.checked);
   },
 
-  onProcessSelectChange: function(value) {
+  onProcessSelectChange(value) {
     this.setSetting(
         'duplexShortEdge',
         value === this.duplexValueEnum_.SHORT_EDGE.toString());
@@ -77,7 +77,7 @@ Polymer({
    * @return {boolean} Whether to expand the collapse for the dropdown.
    * @private
    */
-  getOpenCollapse_: function() {
+  getOpenCollapse_() {
     return this.getSetting('duplexShortEdge').available &&
         /** @type {boolean} */ (this.getSettingValue('duplex'));
   },
@@ -88,7 +88,7 @@ Polymer({
    * @return {boolean} Whether the controls should be disabled.
    * @private
    */
-  getDisabled_: function(managed, disabled) {
+  getDisabled_(managed, disabled) {
     return managed || disabled;
   },
 
@@ -97,7 +97,7 @@ Polymer({
    *     the dropdown arrow.
    * @private
    */
-  getBackgroundImages_: function() {
+  getBackgroundImages_() {
     const icon =
         this.getSettingValue('duplexShortEdge') ? 'short-edge' : 'long-edge';
     const iconset = /** @type {!IronIconsetSvgElement} */ (

@@ -94,6 +94,7 @@ class NativeCursorManagerAsh;
 class AshTouchTransformController;
 class AssistantController;
 class AutoclickController;
+class BackGestureEventHandler;
 class BacklightsForcedOffSetter;
 class BluetoothNotificationController;
 class BluetoothPowerController;
@@ -493,6 +494,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   WindowTreeHostManager* window_tree_host_manager() {
     return window_tree_host_manager_.get();
   }
+  BackGestureEventHandler* back_gesture_event_handler() {
+    return back_gesture_event_handler_.get();
+  }
   ToplevelWindowEventHandler* toplevel_window_event_handler() {
     return toplevel_window_event_handler_.get();
   }
@@ -697,6 +701,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   // An event filter that pre-handles key events while the partial
   // screenshot UI or the keyboard overlay is active.
   std::unique_ptr<OverlayEventFilter> overlay_filter_;
+
+  // An event filter which handles swiping back from left side of the window.
+  std::unique_ptr<BackGestureEventHandler> back_gesture_event_handler_;
 
   // An event filter which handles moving and resizing windows.
   std::unique_ptr<ToplevelWindowEventHandler> toplevel_window_event_handler_;

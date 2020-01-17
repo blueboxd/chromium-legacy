@@ -17,8 +17,7 @@ void DummyAuthService::AddObserver(AuthServiceObserver* observer) {
 void DummyAuthService::RemoveObserver(AuthServiceObserver* observer) {
 }
 
-void DummyAuthService::StartAuthentication(const AuthStatusCallback& callback) {
-}
+void DummyAuthService::StartAuthentication(AuthStatusCallback callback) {}
 
 bool DummyAuthService::HasAccessToken() const {
   return !access_token_.empty();

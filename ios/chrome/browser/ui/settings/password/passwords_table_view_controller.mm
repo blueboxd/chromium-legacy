@@ -225,8 +225,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
-  self = [super initWithTableViewStyle:style
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:style];
   if (self) {
     _browserState = browserState;
     _reauthenticationModule = [[ReauthenticationModule alloc]
@@ -333,6 +332,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     }
     [self setSearchBarEnabled:YES];
   }
+  [self updateUIForEditState];
 }
 
 #pragma mark - SettingsRootTableViewController

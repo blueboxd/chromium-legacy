@@ -6,21 +6,6 @@
 
 namespace features {
 
-// Enables an animated avatar button (also called identity pill). See
-// https://crbug.com/967317
-const base::Feature kAnimatedAvatarButton{"AnimatedAvatarButton",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-// Enables an animated avatar button on the sign-in trigger. This feature is
-// guarded by kAnimatedAvatarButton and serves as a kill-switch. See
-// https://crbug.com/967317
-const base::Feature kAnimatedAvatarButtonOnSignIn{
-    "AnimatedAvatarButtonOnSignIn", base::FEATURE_ENABLED_BY_DEFAULT};
-// Enables an animated avatar button on the open-window/startup trigger. This
-// feature is guarded by kAnimatedAvatarButton and serves as a kill-switch. See
-// https://crbug.com/967317
-const base::Feature kAnimatedAvatarButtonOnOpeningWindow{
-    "AnimatedAvatarButtonOnOpeningProfile", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables showing the EV certificate details in the Page Info bubble.
 const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
@@ -40,11 +25,6 @@ const base::Feature kMixBrowserTypeTabs{"MixBrowserTypeTabs",
 const base::Feature kNewTabstripAnimation{"NewTabstripAnimation",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the new version of the profile menu(aka user menu).
-// https://crbug.com/966388
-const base::Feature kProfileMenuRevamp{"ProfileMenuRevamp",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables a more prominent active tab title in dark mode to aid with
 // accessibility.
 const base::Feature kProminentDarkModeActiveTabTitle{
@@ -53,12 +33,6 @@ const base::Feature kProminentDarkModeActiveTabTitle{
 // Enables tabs to scroll in the tabstrip. https://crbug.com/951078
 const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables showing the user a message, if sync is paused because of his cookie
-// settings set to clear cookies on exit.
-const base::Feature kShowSyncPausedReasonCookiesClearedOnExit{
-    "ShowSyncPausedReasonCookiesClearedOnExit",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables grouping tabs together in the tab strip. https://crbug.com/905491
 const base::Feature kTabGroups{"TabGroups", base::FEATURE_DISABLED_BY_DEFAULT};

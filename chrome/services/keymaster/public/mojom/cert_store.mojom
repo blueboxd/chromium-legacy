@@ -30,8 +30,6 @@ enum SignatureResult {
   kOk,
   // Failed with error.
   kFailed,
-  // Inspect Chrome's logs for the exact net::Error.
-  kNetError,
   kUnsupportedAlgorithm,
 };
 

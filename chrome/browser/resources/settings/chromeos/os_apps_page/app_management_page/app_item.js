@@ -22,7 +22,7 @@ Polymer({
   /**
    * @private
    */
-  onClick_: function() {
+  onClick_() {
     app_management.util.openAppDetailPage(this.app.id);
     chrome.metricsPrivate.recordEnumerationValue(
         AppManagementEntryPointsHistogramName,
@@ -35,7 +35,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  iconUrlFromId_: function(app) {
+  iconUrlFromId_(app) {
     return app_management.util.getAppIcon(app);
   },
 
@@ -43,7 +43,7 @@ Polymer({
    * @param {AppType} appType
    * @return {AppManagementEntryPoint}
    */
-  getAppManagementEntryPoint_: function(appType) {
+  getAppManagementEntryPoint_(appType) {
     switch (appType) {
       case AppType.kArc:
         return AppManagementEntryPoint.MainViewArc;

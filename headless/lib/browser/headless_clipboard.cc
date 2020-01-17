@@ -102,7 +102,7 @@ void HeadlessClipboard::ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
 void HeadlessClipboard::ReadBookmark(base::string16* title,
                                      std::string* url) const {
   const DataStore& store = GetDefaultStore();
-  auto it = store.data.find(ui::ClipboardFormatType::GetUrlWType());
+  auto it = store.data.find(ui::ClipboardFormatType::GetUrlType());
   if (it != store.data.end())
     *url = it->second;
   *title = base::UTF8ToUTF16(store.url_title);
@@ -138,8 +138,6 @@ void HeadlessClipboard::WritePlatformRepresentations(
 void HeadlessClipboard::WriteText(const char* text_data, size_t text_len) {
   std::string text(text_data, text_len);
   GetDefaultStore().data[ui::ClipboardFormatType::GetPlainTextType()] = text;
-  // Create a dummy entry.
-  GetDefaultStore().data[ui::ClipboardFormatType::GetPlainTextType()];
   if (IsSupportedClipboardBuffer(ui::ClipboardBuffer::kSelection)) {
     GetStore(ui::ClipboardBuffer::kSelection)
         .data[ui::ClipboardFormatType::GetPlainTextType()] = text;
@@ -166,7 +164,7 @@ void HeadlessClipboard::WriteBookmark(const char* title_data,
                                       size_t title_len,
                                       const char* url_data,
                                       size_t url_len) {
-  GetDefaultStore().data[ui::ClipboardFormatType::GetUrlWType()] =
+  GetDefaultStore().data[ui::ClipboardFormatType::GetUrlType()] =
       std::string(url_data, url_len);
   GetDefaultStore().url_title = std::string(title_data, title_len);
 }

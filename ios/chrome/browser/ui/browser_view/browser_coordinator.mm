@@ -311,8 +311,8 @@
   [self.formInputAccessoryCoordinator start];
 
   self.snackbarCoordinator = [[SnackbarCoordinator alloc]
-      initWithBaseViewController:self.viewController];
-  self.snackbarCoordinator.dispatcher = self.dispatcher;
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
   [self.snackbarCoordinator start];
 
   self.translateInfobarCoordinator = [[LegacyTranslateInfobarCoordinator alloc]
@@ -320,18 +320,20 @@
                          browser:self.browser];
   [self.translateInfobarCoordinator start];
 
-  self.passKitCoordinator = [[PassKitCoordinator alloc]
-      initWithBaseViewController:self.viewController];
+  self.passKitCoordinator =
+      [[PassKitCoordinator alloc] initWithBaseViewController:self.viewController
+                                                     browser:self.browser];
 
   self.passwordBreachCoordinator = [[PasswordBreachCoordinator alloc]
-      initWithBaseViewController:self.viewController];
-  self.passwordBreachCoordinator.dispatcher = self.dispatcher;
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
 
   self.printController = [[PrintController alloc] init];
 
   self.qrScannerCoordinator = [[QRScannerLegacyCoordinator alloc]
-      initWithBaseViewController:self.viewController];
-  self.qrScannerCoordinator.dispatcher = self.dispatcher;
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  [self.qrScannerCoordinator start];
 
   /* ReadingListCoordinator is created and started by a BrowserCommand */
 

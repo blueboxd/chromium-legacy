@@ -159,6 +159,21 @@ void RequiredFieldsFallbackHandler::SetFallbackFieldValuesSequentially(
 
   // Set the next field to its fallback value.
   const RequiredField& required_field = required_fields_[required_fields_index];
+  DVLOG(3) << "Getting element tag for " << required_field.selector;
+  action_delegate_->GetElementTag(
+      required_field.selector,
+      base::BindOnce(&RequiredFieldsFallbackHandler::OnGetFallbackFieldTag,
+                     weak_ptr_factory_.GetWeakPtr(), required_fields_index,
+                     std::move(fallback_data)));
+}
+
+void RequiredFieldsFallbackHandler::OnGetFallbackFieldTag(
+    size_t required_fields_index,
+    std::unique_ptr<FallbackData> fallback_data,
+    const ClientStatus& element_tag_status,
+    const std::string& element_tag) {
+  // Set the next field to its fallback value.
+  const RequiredField& required_field = required_fields_[required_fields_index];
   auto fallback_value = fallback_data->GetValue(required_field.fallback_key);
   if (!fallback_value.has_value()) {
     DVLOG(3) << "No fallback for " << required_field.selector;
@@ -168,12 +183,21 @@ void RequiredFieldsFallbackHandler::SetFallbackFieldValuesSequentially(
   }
 
   DVLOG(3) << "Setting fallback value for " << required_field.selector;
-  action_delegate_->SetFieldValue(
-      required_field.selector, fallback_value.value(),
-      required_field.simulate_key_presses, required_field.delay_in_millisecond,
-      base::BindOnce(&RequiredFieldsFallbackHandler::OnSetFallbackFieldValue,
-                     weak_ptr_factory_.GetWeakPtr(), required_fields_index,
-                     std::move(fallback_data)));
+  if (element_tag == "SELECT") {
+    action_delegate_->SelectOption(
+        required_field.selector, fallback_value.value(),
+        base::BindOnce(&RequiredFieldsFallbackHandler::OnSetFallbackFieldValue,
+                       weak_ptr_factory_.GetWeakPtr(), required_fields_index,
+                       std::move(fallback_data)));
+  } else {
+    action_delegate_->SetFieldValue(
+        required_field.selector, fallback_value.value(),
+        required_field.simulate_key_presses,
+        required_field.delay_in_millisecond,
+        base::BindOnce(&RequiredFieldsFallbackHandler::OnSetFallbackFieldValue,
+                       weak_ptr_factory_.GetWeakPtr(), required_fields_index,
+                       std::move(fallback_data)));
+  }
 }
 
 void RequiredFieldsFallbackHandler::OnSetFallbackFieldValue(

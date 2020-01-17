@@ -34,7 +34,7 @@ bool UpdateStyleAndLayoutForRangeIfNeeded(const EphemeralRangeInFlatTree& range,
     return false;
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled(&range.GetDocument()) ||
       range.GetDocument().LockedDisplayLockCount() ==
-          range.GetDocument().ActivationBlockingDisplayLockCount())
+          range.GetDocument().DisplayLockBlockingAllActivationCount())
     return false;
   Vector<DisplayLockContext::ScopedForcedUpdate> scoped_forced_update_list_;
   for (Node& node : range.Nodes()) {
@@ -64,7 +64,7 @@ bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
   DCHECK(!range.IsNull());
   DCHECK(!range.IsCollapsed());
   if (range.GetDocument().LockedDisplayLockCount() ==
-      range.GetDocument().ActivationBlockingDisplayLockCount())
+      range.GetDocument().DisplayLockBlockingAllActivationCount())
     return false;
   // Find-in-page matches can't span multiple block-level elements (because the
   // text will be broken by newlines between blocks), so first we find the
@@ -86,7 +86,7 @@ bool DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
     return false;
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled(&range.GetDocument()) ||
       range.GetDocument().LockedDisplayLockCount() ==
-          range.GetDocument().ActivationBlockingDisplayLockCount())
+          range.GetDocument().DisplayLockBlockingAllActivationCount())
     return false;
   UpdateStyleAndLayoutForRangeIfNeeded(range,
                                        DisplayLockActivationReason::kSelection);
@@ -115,7 +115,7 @@ DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
           node.GetExecutionContext()) ||
       node.GetDocument().LockedDisplayLockCount() ==
-          node.GetDocument().ActivationBlockingDisplayLockCount())
+          node.GetDocument().DisplayLockBlockingAllActivationCount())
     return elements_to_activate;
 
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
@@ -300,7 +300,7 @@ bool DisplayLockUtilities::IsInNonActivatableLockedSubtree(const Node& node) {
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
           node.GetExecutionContext()) ||
       node.GetDocument().LockedDisplayLockCount() == 0 ||
-      node.GetDocument().ActivationBlockingDisplayLockCount() == 0 ||
+      node.GetDocument().DisplayLockBlockingAllActivationCount() == 0 ||
       !node.CanParticipateInFlatTree()) {
     return false;
   }

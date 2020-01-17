@@ -35,6 +35,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -79,6 +80,8 @@
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -96,6 +99,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -2919,3 +2923,74 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, WebAppsInPublicSession) {
 }
 
 }  // namespace policy
+
+class AmbientAuthenticationManagedGuestSessionTest
+    : public policy::DeviceLocalAccountTest,
+      public testing::WithParamInterface<net::AmbientAuthAllowedProfileTypes> {
+ public:
+  AmbientAuthenticationManagedGuestSessionTest() {
+    // Switching off the feature flags to test policies in isolation.
+    AmbientAuthenticationTestHelper::CookTheFeatureList(
+        scoped_feature_list_,
+        AmbientAuthenticationFeatureState::GUEST_OFF_INCOGNITO_OFF);
+  }
+
+  void SetAmbientAuthPolicy(net::AmbientAuthAllowedProfileTypes value) {
+    device_local_account_policy_.payload()
+        .mutable_ambientauthenticationinprivatemodesenabled()
+        ->set_value(static_cast<int>(value));
+    UploadDeviceLocalAccountPolicy();
+  }
+
+  void IsAmbientAuthAllowedForProfilesTest() {
+    int policy_value = device_local_account_policy_.payload()
+                           .ambientauthenticationinprivatemodesenabled()
+                           .value();
+    Profile* regular_profile = GetCurrentBrowser()->profile();
+    Profile* incognito_profile = regular_profile->GetOffTheRecordProfile();
+
+    EXPECT_TRUE(AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
+        regular_profile));
+    EXPECT_EQ(AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
+                  incognito_profile),
+              AmbientAuthenticationTestHelper::IsIncognitoAllowedInPolicy(
+                  policy_value));
+  }
+
+  Browser* GetCurrentBrowser() {
+    BrowserList* browser_list = BrowserList::GetInstance();
+    EXPECT_EQ(1U, browser_list->size());
+    Browser* browser = browser_list->get(0);
+    DCHECK(browser);
+    return browser;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(AmbientAuthenticationManagedGuestSessionTest,
+                       AmbientAuthenticationInPrivateModesEnabledPolicy) {
+  SetManagedSessionsEnabled(true);
+  SetAmbientAuthPolicy(GetParam());
+
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(policy::kAccountId1);
+  EnableAutoLogin();
+
+  WaitForPolicy();
+
+  WaitForSessionStart();
+
+  CheckPublicSessionPresent(account_id_1_);
+
+  IsAmbientAuthAllowedForProfilesTest();
+}
+
+INSTANTIATE_TEST_CASE_P(
+    AmbientAuthAllPolicyValuesTest,
+    AmbientAuthenticationManagedGuestSessionTest,
+    testing::Values(net::AmbientAuthAllowedProfileTypes::REGULAR_ONLY,
+                    net::AmbientAuthAllowedProfileTypes::INCOGNITO_AND_REGULAR,
+                    net::AmbientAuthAllowedProfileTypes::GUEST_AND_REGULAR,
+                    net::AmbientAuthAllowedProfileTypes::ALL));

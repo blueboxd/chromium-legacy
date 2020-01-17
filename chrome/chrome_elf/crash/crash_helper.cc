@@ -64,6 +64,9 @@ namespace elf_crash {
 // NOTE: This function will be called from DllMain during DLL_PROCESS_ATTACH
 // (while we have the loader lock), so do not misbehave.
 bool InitializeCrashReporting() {
+  if (g_crash_helper_enabled)
+    return true;
+
 #ifdef _DEBUG
   assert(g_crash_reports == nullptr);
   assert(g_set_unhandled_exception_filter == nullptr);

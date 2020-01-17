@@ -101,7 +101,7 @@ const CrScrollableBehavior = {
         // |scrollHeight| is updated to be greater than 1px, another resize is
         // needed to correctly calculate the number of physical iron-list items
         // to render.
-        if (scrollHeight != lastScrollHeight) {
+        if (scrollHeight !== lastScrollHeight) {
           const ironList = /** @type {!IronListElement} */ (node);
           ironList.notifyResize();
         }
@@ -112,7 +112,7 @@ const CrScrollableBehavior = {
           });
         }
       });
-      if (checkAgain.length == 0) {
+      if (checkAgain.length === 0) {
         window.clearInterval(this.intervalId_);
         this.intervalId_ = null;
       } else {
@@ -150,7 +150,7 @@ const CrScrollableBehavior = {
       const scrollTop = list.savedScrollTops.shift();
       // Ignore scrollTop of 0 in case it was intermittent (we do not need to
       // explicitly scroll to 0).
-      if (scrollTop != 0) {
+      if (scrollTop !== 0) {
         list.scroll(0, scrollTop);
       }
     });

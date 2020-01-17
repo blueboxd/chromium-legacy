@@ -59,7 +59,7 @@ Polymer({
    * @return {?{option: Array<!SelectOption>}}
    * @private
    */
-  computeCapabilityWithLabels_: function() {
+  computeCapabilityWithLabels_() {
     if (this.capability === undefined) {
       return null;
     }
@@ -84,7 +84,7 @@ Polymer({
   },
 
   /** @private */
-  onDpiSettingChange_: function() {
+  onDpiSettingChange_() {
     if (this.capabilityWithLabels_ === null ||
         this.capabilityWithLabels_ === undefined) {
       return;

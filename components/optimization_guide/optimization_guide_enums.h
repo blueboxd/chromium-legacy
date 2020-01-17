@@ -93,6 +93,29 @@ enum class NavigationHostCoveredStatus {
   kMaxValue = kFetchNotSuccessful,
 };
 
+// The statuses for racing a hints fetch with the current navigation based
+// on the availability of hints for both the current host and URL.
+//
+// Keep in sync with OptimizationGuideRaceNavigationFetchAttemptStatus in
+// enums.xml.
+enum class RaceNavigationFetchAttemptStatus {
+  kUnknown,
+  // The race was not attempted because hint information for the host and URL
+  // of the current navigation was already available.
+  kRaceNavigationFetchNotAttempted,
+  // The race was attempted for the host of the current navigation but not the
+  // URL.
+  kRaceNavigationFetchHost,
+  // The race was attempted for the URL of the current navigation but not the
+  // host.
+  kRaceNavigationFetchURL,
+  // The race was attempted for the host and URL of the current navigation.
+  kRaceNavigationFetchHostAndURL,
+
+  // Add new values above this line.
+  kMaxValue = kRaceNavigationFetchHostAndURL,
+};
+
 // The statuses for a prediction model in the prediction manager when requested
 // to be evaluated.
 //

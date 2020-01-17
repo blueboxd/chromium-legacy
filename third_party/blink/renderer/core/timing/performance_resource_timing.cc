@@ -388,19 +388,11 @@ void PerformanceResourceTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddNumber("encodedBodySize", encodedBodySize());
   builder.AddNumber("decodedBodySize", decodedBodySize());
 
-  HeapVector<ScriptValue> server_timing;
-  server_timing.ReserveCapacity(server_timing_.size());
-  for (const auto& timing : server_timing_) {
-    server_timing.push_back(timing->toJSONForBinding(builder.GetScriptState()));
-  }
-  builder.Add("serverTiming", server_timing);
-
-  HeapVector<ScriptValue> worker_timing;
-  worker_timing.ReserveCapacity(worker_timing_.size());
-  for (const auto& timing : worker_timing_) {
-    worker_timing.push_back(timing->toJSONForBinding(builder.GetScriptState()));
-  }
-  builder.Add("workerTiming", worker_timing);
+  ScriptState* script_state = builder.GetScriptState();
+  builder.Add("serverTiming", FreezeV8Object(ToV8(serverTiming(), script_state),
+                                             script_state->GetIsolate()));
+  builder.Add("workerTiming", FreezeV8Object(ToV8(workerTiming(), script_state),
+                                             script_state->GetIsolate()));
 }
 
 void PerformanceResourceTiming::AddPerformanceEntry(

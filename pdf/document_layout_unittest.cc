@@ -33,28 +33,81 @@ inline bool PpRectEq(const pp::Rect& lhs, const pp::Rect& rhs) {
 
 TEST_F(DocumentLayoutOptionsTest, DefaultConstructor) {
   EXPECT_EQ(options_.default_page_orientation(), PageOrientation::kOriginal);
+  EXPECT_FALSE(options_.two_up_view_enabled());
 }
 
 TEST_F(DocumentLayoutOptionsTest, CopyConstructor) {
   options_.RotatePagesClockwise();
+  options_.set_two_up_view_enabled(true);
 
   DocumentLayout::Options copy(options_);
   EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kClockwise90);
+  EXPECT_TRUE(copy.two_up_view_enabled());
 
   options_.RotatePagesClockwise();
+  options_.set_two_up_view_enabled(false);
   EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kClockwise90);
+  EXPECT_TRUE(copy.two_up_view_enabled());
 }
 
 TEST_F(DocumentLayoutOptionsTest, CopyAssignment) {
   options_.RotatePagesClockwise();
+  options_.set_two_up_view_enabled(true);
 
-  DocumentLayout::Options copy;
-  EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kOriginal);
-  copy = options_;
+  DocumentLayout::Options copy = options_;
   EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kClockwise90);
+  EXPECT_TRUE(copy.two_up_view_enabled());
 
   options_.RotatePagesClockwise();
+  options_.set_two_up_view_enabled(false);
   EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kClockwise90);
+  EXPECT_TRUE(copy.two_up_view_enabled());
+}
+
+TEST_F(DocumentLayoutOptionsTest, Equals) {
+  EXPECT_TRUE(options_ == options_);
+
+  DocumentLayout::Options copy;
+  EXPECT_TRUE(copy == options_);
+
+  options_.RotatePagesClockwise();
+  EXPECT_FALSE(copy == options_);
+
+  copy.RotatePagesClockwise();
+  EXPECT_TRUE(copy == options_);
+
+  options_.RotatePagesCounterclockwise();
+  EXPECT_FALSE(copy == options_);
+
+  copy.RotatePagesCounterclockwise();
+  EXPECT_TRUE(copy == options_);
+
+  options_.set_two_up_view_enabled(true);
+  EXPECT_FALSE(copy == options_);
+
+  copy.set_two_up_view_enabled(true);
+  EXPECT_TRUE(copy == options_);
+
+  options_.set_two_up_view_enabled(false);
+  EXPECT_FALSE(copy == options_);
+
+  copy.set_two_up_view_enabled(false);
+  EXPECT_TRUE(copy == options_);
+}
+
+TEST_F(DocumentLayoutOptionsTest, NotEquals) {
+  // Given that "!=" is defined as "!(==)", minimal tests should be sufficient
+  // here.
+  EXPECT_FALSE(options_ != options_);
+
+  DocumentLayout::Options copy;
+  EXPECT_FALSE(copy != options_);
+
+  options_.RotatePagesClockwise();
+  EXPECT_TRUE(copy != options_);
+
+  copy.RotatePagesClockwise();
+  EXPECT_FALSE(copy != options_);
 }
 
 TEST_F(DocumentLayoutOptionsTest, RotatePagesClockwise) {
@@ -92,6 +145,7 @@ TEST_F(DocumentLayoutOptionsTest, RotatePagesCounterclockwise) {
 TEST_F(DocumentLayoutTest, DefaultConstructor) {
   EXPECT_EQ(layout_.options().default_page_orientation(),
             PageOrientation::kOriginal);
+  EXPECT_FALSE(layout_.options().two_up_view_enabled());
   EXPECT_FALSE(layout_.dirty());
   EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(0, 0));
   EXPECT_EQ(layout_.page_count(), 0u);
@@ -109,7 +163,7 @@ TEST_F(DocumentLayoutTest, SetOptionsDoesNotRecomputeLayout) {
   EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(100, 200));
 }
 
-TEST_F(DocumentLayoutTest, DirtySetOnOrientationChange) {
+TEST_F(DocumentLayoutTest, DirtySetOnOptionsChange) {
   DocumentLayout::Options options;
   layout_.SetOptions(options);
   EXPECT_FALSE(layout_.dirty());
@@ -117,6 +171,25 @@ TEST_F(DocumentLayoutTest, DirtySetOnOrientationChange) {
   options.RotatePagesClockwise();
   layout_.SetOptions(options);
   EXPECT_TRUE(layout_.dirty());
+
+  layout_.clear_dirty();
+
+  options.set_two_up_view_enabled(true);
+  layout_.SetOptions(options);
+  EXPECT_TRUE(layout_.dirty());
+}
+
+TEST_F(DocumentLayoutTest, DirtyNotSetOnSameOptions) {
+  DocumentLayout::Options options;
+  options.set_two_up_view_enabled(true);
+  layout_.SetOptions(options);
+  EXPECT_TRUE(layout_.dirty());
+
+  layout_.clear_dirty();
+
+  options.set_two_up_view_enabled(true);
+  layout_.SetOptions(options);
+  EXPECT_FALSE(layout_.dirty());
 }
 
 TEST_F(DocumentLayoutTest, ComputeSingleViewLayout) {

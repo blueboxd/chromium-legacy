@@ -12,10 +12,10 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WebContentsFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -132,6 +132,9 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
                     "Startup.Android.StartupTabPreloader.TabLoaded", shouldLoad);
         }
     }
+
+    @Override
+    public void onProfileDestroyed(Profile profile) {}
 
     /**
      * @returns True if based on the intent we should load the tab, returns false otherwise.

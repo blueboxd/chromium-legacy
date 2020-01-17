@@ -74,7 +74,7 @@ Polymer({
   ],
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener('incorrect-old-password', () => {
       this.onIncorrectOldPassword_();
     });
@@ -93,7 +93,7 @@ Polymer({
 
 
   /** @private */
-  onShowSpinnerChanged_: function() {
+  onShowSpinnerChanged_() {
     // Dialog is on top, spinner is underneath, so showing dialog hides spinner.
     if (this.showSpinner_)
       this.$.dialog.close();
@@ -102,7 +102,7 @@ Polymer({
   },
 
   /** @private */
-  onShowPromptChanged_: function() {
+  onShowPromptChanged_() {
     const suffix = (this.showOldPasswordPrompt_ ? 'Old' : '') +
         (this.showNewPasswordPrompt_ ? 'New' : '');
     const width = loadTimeData.getInteger('width' + suffix);
@@ -112,14 +112,14 @@ Polymer({
   },
 
   /** @private */
-  onErrorChanged_: function() {
+  onErrorChanged_() {
     if (this.currentValidationError_ != ValidationErrorType.NO_ERROR) {
       this.showSpinner_ = false;
     }
   },
 
   /** @private */
-  onSaveTap_: function() {
+  onSaveTap_() {
     this.currentValidationError_ = this.findFirstError_();
     if (this.currentValidationError_ == ValidationErrorType.NO_ERROR) {
       chrome.send('changePassword', [this.oldPassword_, this.newPassword_]);
@@ -128,7 +128,7 @@ Polymer({
   },
 
   /** @private */
-  onIncorrectOldPassword_: function() {
+  onIncorrectOldPassword_() {
     if (this.showOldPasswordPrompt_) {
       // User manually typed in the incorrect old password. Show the user an
       // incorrect password error and hide the spinner so they can try again.
@@ -146,7 +146,7 @@ Polymer({
    * @return {!ValidationErrorType}
    * @private
    */
-  findFirstError_: function() {
+  findFirstError_() {
     if (this.showOldPasswordPrompt_) {
       if (!this.oldPassword_) {
         return ValidationErrorType.MISSING_OLD_PASSWORD;
@@ -170,7 +170,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  invalidOldPassword_: function() {
+  invalidOldPassword_() {
     const err = this.currentValidationError_;
     return err == ValidationErrorType.MISSING_OLD_PASSWORD ||
         err == ValidationErrorType.INCORRECT_OLD_PASSWORD;
@@ -180,7 +180,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  invalidNewPassword_: function() {
+  invalidNewPassword_() {
     return this.currentValidationError_ ==
         ValidationErrorType.MISSING_NEW_PASSWORD;
   },
@@ -189,7 +189,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  invalidConfirmNewPassword_: function() {
+  invalidConfirmNewPassword_() {
     const err = this.currentValidationError_;
     return err == ValidationErrorType.MISSING_CONFIRM_NEW_PASSWORD ||
         err == ValidationErrorType.PASSWORDS_DO_NOT_MATCH;
@@ -199,7 +199,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getPromptString_: function() {
+  getPromptString_() {
     if (this.showOldPasswordPrompt_ && this.showNewPasswordPrompt_) {
       return this.i18n('bothPasswordsPrompt');
     }
@@ -216,7 +216,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getErrorString_: function() {
+  getErrorString_() {
     switch (this.currentValidationError_) {
       case ValidationErrorType.INCORRECT_OLD_PASSWORD:
         return this.i18n('incorrectPassword');

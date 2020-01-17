@@ -120,7 +120,7 @@ void ExtensionsMenuTestUtil::Press(int index) {
 std::string ExtensionsMenuTestUtil::GetExtensionId(int index) {
   ExtensionsMenuItemView* view = GetMenuItemViewAtIndex(index);
   DCHECK(view);
-  return view->view_controller_for_testing()->GetId();
+  return view->view_controller()->GetId();
 }
 
 std::string ExtensionsMenuTestUtil::GetTooltip(int index) {

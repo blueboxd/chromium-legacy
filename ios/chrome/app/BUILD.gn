@@ -30,7 +30,6 @@ source_set("app") {
   deps = [
     "//base",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/payments:constants",
     "//net",
     "//url",
   ]
@@ -42,7 +41,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "app_startup_parameters_unittest.mm",
     "chrome_overlay_window_testing.h",
     "deferred_initialization_runner_unittest.mm",
     "firebase_utils_unittest.mm",
@@ -61,6 +59,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui/main:scene",
     "//ios/chrome/common/app_group",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser:browser",
@@ -77,21 +76,15 @@ source_set("unit_tests") {
 
 source_set("tests_hook") {
   # This target is intentionally not test-only, as the main app depends on it.
-  sources = [
-    "tests_hook.h",
-  ]
+  sources = [ "tests_hook.h" ]
 }
 
 source_set("tests_fake_hook") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   # This target is intentionally not test-only, as the main app depends on it.
-  sources = [
-    "tests_fake_hook.mm",
-  ]
-  deps = [
-    ":tests_hook",
-  ]
+  sources = [ "tests_fake_hook.mm" ]
+  deps = [ ":tests_hook" ]
 }
 
 tweak_info_plist("info_plist") {
@@ -169,7 +162,6 @@ source_set("app_internal") {
     "//components/metrics",
     "//components/ntp_snippets",
     "//components/password_manager/core/common",
-    "//components/payments/core",
     "//components/prefs",
     "//components/prefs/ios",
     "//components/proxy_config",
@@ -212,8 +204,6 @@ source_set("app_internal") {
     "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/omaha",
     "//ios/chrome/browser/passwords",
-    "//ios/chrome/browser/payments",
-    "//ios/chrome/browser/payments:constants",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/search_engines:extension_search_engine_data_updater",
@@ -233,6 +223,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/browser/ui/main:scene",
+    "//ios/chrome/browser/ui/main:scene_guts",
     "//ios/chrome/browser/ui/promos",
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/settings:settings_root",
@@ -289,20 +280,14 @@ source_set("app_internal") {
 
 source_set("mode") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "application_mode.h",
-  ]
+  sources = [ "application_mode.h" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("main") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "chrome_exe_main.mm",
-  ]
+  sources = [ "chrome_exe_main.mm" ]
 
   deps = [
     ":app_internal",
@@ -408,43 +393,25 @@ ios_app_bundle("chrome") {
 if (current_toolchain == default_toolchain) {
   if (ios_enable_content_widget_extension) {
     bundle_data("content_widget_extension_bundle") {
-      public_deps = [
-        "//ios/chrome/content_widget_extension",
-      ]
-      sources = [
-        "$root_out_dir/content_widget_extension.appex",
-      ]
-      outputs = [
-        "{{bundle_contents_dir}}/PlugIns/{{source_file_part}}",
-      ]
+      public_deps = [ "//ios/chrome/content_widget_extension" ]
+      sources = [ "$root_out_dir/content_widget_extension.appex" ]
+      outputs = [ "{{bundle_contents_dir}}/PlugIns/{{source_file_part}}" ]
     }
   }
 
   if (ios_enable_search_widget_extension) {
     bundle_data("search_widget_extension_bundle") {
-      public_deps = [
-        "//ios/chrome/search_widget_extension",
-      ]
-      sources = [
-        "$root_out_dir/search_widget_extension.appex",
-      ]
-      outputs = [
-        "{{bundle_contents_dir}}/PlugIns/{{source_file_part}}",
-      ]
+      public_deps = [ "//ios/chrome/search_widget_extension" ]
+      sources = [ "$root_out_dir/search_widget_extension.appex" ]
+      outputs = [ "{{bundle_contents_dir}}/PlugIns/{{source_file_part}}" ]
     }
   }
 
   if (ios_enable_share_extension) {
     bundle_data("share_extension_bundle") {
-      public_deps = [
-        "//ios/chrome/share_extension",
-      ]
-      sources = [
-        "$root_out_dir/share_extension.appex",
-      ]
-      outputs = [
-        "{{bundle_contents_dir}}/PlugIns/{{source_file_part}}",
-      ]
+      public_deps = [ "//ios/chrome/share_extension" ]
+      sources = [ "$root_out_dir/share_extension.appex" ]
+      outputs = [ "{{bundle_contents_dir}}/PlugIns/{{source_file_part}}" ]
     }
   }
 }

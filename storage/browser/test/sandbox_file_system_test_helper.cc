@@ -86,8 +86,8 @@ base::FilePath SandboxFileSystemTestHelper::GetLocalPathFromASCII(
 }
 
 base::FilePath SandboxFileSystemTestHelper::GetUsageCachePath() const {
-  return file_system_context_->sandbox_delegate()->
-      GetUsageCachePathForOriginAndType(origin_, type_);
+  return file_system_context_->sandbox_delegate()
+      ->GetUsageCachePathForOriginAndType(url::Origin::Create(origin_), type_);
 }
 
 FileSystemURL SandboxFileSystemTestHelper::CreateURL(

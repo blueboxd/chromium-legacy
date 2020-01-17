@@ -5,9 +5,7 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":apps_page",
-  ]
+  deps = [ ":apps_page" ]
 }
 
 js_library("apps_page") {

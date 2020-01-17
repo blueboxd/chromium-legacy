@@ -39,7 +39,7 @@ ChromeVoxUnitTestBase.prototype = {
    * whatever was there previously.
    * @param {string} html The html to load as a string.
    */
-  loadHtml: function(html) {
+  loadHtml(html) {
     while (document.head.firstChild) {
       document.head.removeChild(document.head.firstChild);
     }
@@ -65,7 +65,7 @@ ChromeVoxUnitTestBase.prototype = {
    * @param {Function} commentEncodedHtml The html to load, embedded as a
    *     comment inside an anonymous function - see example, above.
    */
-  loadDoc: function(commentEncodedHtml) {
+  loadDoc(commentEncodedHtml) {
     var html =
         TestUtils.extractHtmlFromCommentEncodedString(commentEncodedHtml);
     this.loadHtml(html);
@@ -83,7 +83,7 @@ ChromeVoxUnitTestBase.prototype = {
    * @param {Function} commentEncodedHtml The html to load, embedded as a
    *     comment inside an anonymous function - see example, above.
    */
-  appendDoc: function(commentEncodedHtml) {
+  appendDoc(commentEncodedHtml) {
     var html =
         TestUtils.extractHtmlFromCommentEncodedString(commentEncodedHtml);
     this.appendHtml(html);
@@ -94,7 +94,7 @@ ChromeVoxUnitTestBase.prototype = {
    * the body element.
    * @param {string} html The html to load as a string.
    */
-  appendHtml: function(html) {
+  appendHtml(html) {
     var div = document.createElement('div');
     div.innerHTML = html;
     var fragment = document.createDocumentFragment();
@@ -118,7 +118,7 @@ ChromeVoxUnitTestBase.prototype = {
    *        reference bound to the test fixture.
    * @return {Function}
    */
-  newCallback: function(opt_callback) {
+  newCallback(opt_callback) {
     assertNotEquals(null, this.callbackHelper_);
     return this.callbackHelper_.wrap(opt_callback);
   }

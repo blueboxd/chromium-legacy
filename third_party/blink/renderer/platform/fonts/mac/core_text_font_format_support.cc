@@ -13,6 +13,7 @@ namespace blink {
 // standard Chrome build configuration.
 static const uint32_t kBlinkLocalCTVersionNumber10_12 = 0x00090000;
 static const uint32_t kBlinkLocalCTVersionNumber10_13 = 0x000A0000;
+static const uint32_t kBlinkLocalCTVersionNumber10_15 = 0x000C0000;
 
 bool CoreTextVersionSupportsVariations() {
   return &CTGetCoreTextVersion &&
@@ -24,6 +25,11 @@ bool CoreTextVersionSupportsVariations() {
 bool CoreTextVersionSupportsColrCpal() {
   return &CTGetCoreTextVersion &&
          CTGetCoreTextVersion() >= kBlinkLocalCTVersionNumber10_13;
+}
+
+bool CoreTextVersionSupportsSystemFontMakeClone() {
+  return &CTGetCoreTextVersion &&
+         CTGetCoreTextVersion() >= kBlinkLocalCTVersionNumber10_15;
 }
 
 }  // namespace blink

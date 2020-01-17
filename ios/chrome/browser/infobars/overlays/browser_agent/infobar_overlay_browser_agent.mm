@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/infobars/overlays/browser_agent/infobar_overlay_browser_agent.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/infobars/overlays/browser_agent/infobar_banner_overlay_request_callback_installer.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/infobar_interaction_handler.h"
 #include "ios/chrome/browser/infobars/overlays/overlay_request_infobar_util.h"
 
@@ -19,34 +18,33 @@ BROWSER_USER_DATA_KEY_IMPL(InfobarOverlayBrowserAgent)
 
 InfobarOverlayBrowserAgent::InfobarOverlayBrowserAgent(Browser* browser)
     : OverlayBrowserAgentBase(browser),
-      banner_visibility_observer_(browser, this) {}
+      overlay_visibility_observer_(browser, this) {}
 
 InfobarOverlayBrowserAgent::~InfobarOverlayBrowserAgent() = default;
 
 #pragma mark Public
 
-void InfobarOverlayBrowserAgent::SetInfobarInteractionHandler(
-    InfobarType type,
+void InfobarOverlayBrowserAgent::AddInfobarInteractionHandler(
     std::unique_ptr<InfobarInteractionHandler> interaction_handler) {
-  // Only one installer should be set for a single request type.  Otherwise, the
-  // previously-set handler will be destroyed and callbacks forwarded to it will
-  // crash.
+  // Only one installer should be set for a single request type.
+  InfobarType type = interaction_handler->infobar_type();
   DCHECK(!interaction_handlers_[type]);
-  // Create callback installers for each supported handler.
-  const OverlayRequestSupport* support = interaction_handler->request_support();
-  AddInstaller(std::make_unique<InfobarBannerOverlayRequestCallbackInstaller>(
-                   support, interaction_handler->banner_handler()),
+  // Add the banner installer.  Every InfobarType supports banners, so the added
+  // installer is gauranteed to be non-null.
+  AddInstaller(interaction_handler->CreateBannerCallbackInstaller(),
                OverlayModality::kInfobarBanner);
-  InfobarDetailSheetInteractionHandler* sheet_handler =
-      interaction_handler->sheet_handler();
-  if (sheet_handler) {
-    // TODO(crbug.com/1030357): Install callbacks for detail sheet when
-    // implemented.
+  // Add the detail sheet and modal installers.  Not all InfobarTypes support
+  // sheet and modal UI, so the installers must be checked before being added.
+  std::unique_ptr<OverlayRequestCallbackInstaller> detail_sheet_installer =
+      interaction_handler->CreateDetailSheetCallbackInstaller();
+  if (detail_sheet_installer) {
+    AddInstaller(std::move(detail_sheet_installer),
+                 OverlayModality::kInfobarModal);
   }
-  InfobarModalInteractionHandler* modal_handler =
-      interaction_handler->modal_handler();
-  if (modal_handler) {
-    // TODO(crbug.com/1030357): Install callbacks for modal when implemented.
+  std::unique_ptr<OverlayRequestCallbackInstaller> modal_installer =
+      interaction_handler->CreateModalCallbackInstaller();
+  if (modal_installer) {
+    AddInstaller(std::move(modal_installer), OverlayModality::kInfobarModal);
   }
   // Add the interaction handler to the list.
   interaction_handlers_[type] = std::move(interaction_handler);
@@ -56,53 +54,53 @@ void InfobarOverlayBrowserAgent::SetInfobarInteractionHandler(
 
 InfobarInteractionHandler* InfobarOverlayBrowserAgent::GetInteractionHandler(
     OverlayRequest* request) {
-  auto& interaction_handler =
-      interaction_handlers_[GetOverlayRequestInfobarType(request)];
-  DCHECK(interaction_handler);
-  DCHECK(interaction_handler->request_support()->IsRequestSupported(request));
-  return interaction_handler.get();
+  if (!request)
+    return nullptr;
+  return interaction_handlers_[GetOverlayRequestInfobarType(request)].get();
 }
 
-#pragma mark - InfobarOverlayBrowserAgent::BannerVisibilityObserver
+#pragma mark - InfobarOverlayBrowserAgent::OverlayVisibilityObserver
 
-InfobarOverlayBrowserAgent::BannerVisibilityObserver::BannerVisibilityObserver(
-    Browser* browser,
-    InfobarOverlayBrowserAgent* browser_agent)
+InfobarOverlayBrowserAgent::OverlayVisibilityObserver::
+    OverlayVisibilityObserver(Browser* browser,
+                              InfobarOverlayBrowserAgent* browser_agent)
     : browser_agent_(browser_agent), scoped_observer_(this) {
   DCHECK(browser_agent_);
   scoped_observer_.Add(
       OverlayPresenter::FromBrowser(browser, OverlayModality::kInfobarBanner));
+  scoped_observer_.Add(
+      OverlayPresenter::FromBrowser(browser, OverlayModality::kInfobarModal));
 }
 
-InfobarOverlayBrowserAgent::BannerVisibilityObserver::
-    ~BannerVisibilityObserver() = default;
+InfobarOverlayBrowserAgent::OverlayVisibilityObserver::
+    ~OverlayVisibilityObserver() = default;
 
-void InfobarOverlayBrowserAgent::BannerVisibilityObserver::
-    BannerVisibilityChanged(OverlayRequest* request, bool visible) {
-  browser_agent_->GetInteractionHandler(request)
-      ->banner_handler()
-      ->BannerVisibilityChanged(GetOverlayRequestInfobar(request), visible);
+void InfobarOverlayBrowserAgent::OverlayVisibilityObserver::
+    OverlayVisibilityChanged(OverlayRequest* request, bool visible) {
+  browser_agent_->GetInteractionHandler(request)->InfobarVisibilityChanged(
+      GetOverlayRequestInfobar(request),
+      GetOverlayRequestInfobarOverlayType(request), visible);
 }
 
 const OverlayRequestSupport*
-InfobarOverlayBrowserAgent::BannerVisibilityObserver::GetRequestSupport(
+InfobarOverlayBrowserAgent::OverlayVisibilityObserver::GetRequestSupport(
     OverlayPresenter* presenter) const {
   return browser_agent_->GetRequestSupport(presenter->GetModality());
 }
 
-void InfobarOverlayBrowserAgent::BannerVisibilityObserver::DidShowOverlay(
+void InfobarOverlayBrowserAgent::OverlayVisibilityObserver::DidShowOverlay(
     OverlayPresenter* presenter,
     OverlayRequest* request) {
-  BannerVisibilityChanged(request, /*visible=*/true);
+  OverlayVisibilityChanged(request, /*visible=*/true);
 }
 
-void InfobarOverlayBrowserAgent::BannerVisibilityObserver::DidHideOverlay(
+void InfobarOverlayBrowserAgent::OverlayVisibilityObserver::DidHideOverlay(
     OverlayPresenter* presenter,
     OverlayRequest* request) {
-  BannerVisibilityChanged(request, /*visible=*/false);
+  OverlayVisibilityChanged(request, /*visible=*/false);
 }
 
-void InfobarOverlayBrowserAgent::BannerVisibilityObserver::
+void InfobarOverlayBrowserAgent::OverlayVisibilityObserver::
     OverlayPresenterDestroyed(OverlayPresenter* presenter) {
   scoped_observer_.Remove(presenter);
 }

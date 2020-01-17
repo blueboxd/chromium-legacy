@@ -179,6 +179,7 @@ public class TabGroupPopupUiMediator {
                 (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                         .getCurrentTabModelFilter();
         Tab currentTab = mTabModelSelector.getCurrentTab();
+        if (currentTab == null) return false;
         List<Tab> tabgroup = filter.getRelatedTabList(currentTab.getId());
         return tabgroup.size() > 1;
     }

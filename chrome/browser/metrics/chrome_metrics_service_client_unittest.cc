@@ -150,7 +150,7 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
   size_t expected_providers = 3;
 
   // This is the number of metrics providers that are outside any #if macros.
-  expected_providers += 19;
+  expected_providers += 20;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   expected_providers++;  // ExtensionsMetricsProvider.

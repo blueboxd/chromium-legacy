@@ -62,7 +62,7 @@ cr.define('cr.toastManager', () => {
       const content = this.$.content;
       content.textContent = '';
       pieces.forEach(function(p) {
-        if (p.value.length == 0) {
+        if (p.value.length === 0) {
           return;
         }
 

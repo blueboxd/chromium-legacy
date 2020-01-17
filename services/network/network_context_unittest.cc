@@ -147,10 +147,6 @@ namespace network {
 
 namespace {
 
-const GURL kURL("http://foo.com");
-const GURL kOtherURL("http://other.com");
-const url::Origin kOrigin = url::Origin::Create(kURL);
-const url::Origin kOtherOrigin = url::Origin::Create(kOtherURL);
 constexpr char kMockHost[] = "mock.host";
 constexpr char kCustomProxyResponse[] = "CustomProxyResponse";
 constexpr int kProcessId = 11;
@@ -3495,17 +3491,22 @@ TEST_F(NetworkContextTest, ActivateDohProbes_NotPrimaryContext) {
 }
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledByDefault) {
+  const GURL kOtherURL("http://other.com");
+
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
   EXPECT_FALSE(network_context->url_request_context()
                    ->network_delegate()
-                   ->ForcePrivacyMode(kURL,
+                   ->ForcePrivacyMode(GURL("http://foo.com"),
                                       net::SiteForCookies::FromUrl(kOtherURL),
-                                      kOtherOrigin));
+                                      url::Origin::Create(kOtherURL)));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeEnabledIfCookiesBlocked) {
+  const GURL kURL("http://foo.com");
+  const GURL kOtherURL("http://other.com");
+
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
@@ -3515,14 +3516,18 @@ TEST_F(NetworkContextTest, PrivacyModeEnabledIfCookiesBlocked) {
                   ->network_delegate()
                   ->ForcePrivacyMode(kURL,
                                      net::SiteForCookies::FromUrl(kOtherURL),
-                                     kOtherOrigin));
+                                     url::Origin::Create(kOtherURL)));
   EXPECT_FALSE(network_context->url_request_context()
                    ->network_delegate()
-                   ->ForcePrivacyMode(
-                       kOtherURL, net::SiteForCookies::FromUrl(kURL), kOrigin));
+                   ->ForcePrivacyMode(kOtherURL,
+                                      net::SiteForCookies::FromUrl(kURL),
+                                      url::Origin::Create(kURL)));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesAllowed) {
+  const GURL kURL("http://foo.com");
+  const GURL kOtherURL("http://other.com");
+
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
@@ -3532,10 +3537,13 @@ TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesAllowed) {
                    ->network_delegate()
                    ->ForcePrivacyMode(kURL,
                                       net::SiteForCookies::FromUrl(kOtherURL),
-                                      kOtherOrigin));
+                                      url::Origin::Create(kOtherURL)));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesSettingForOtherURL) {
+  const GURL kURL("http://foo.com");
+  const GURL kOtherURL("http://other.com");
+
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
@@ -3546,10 +3554,15 @@ TEST_F(NetworkContextTest, PrivacyModeDisabledIfCookiesSettingForOtherURL) {
                    ->network_delegate()
                    ->ForcePrivacyMode(kURL,
                                       net::SiteForCookies::FromUrl(kOtherURL),
-                                      kOtherOrigin));
+                                      url::Origin::Create(kOtherURL)));
 }
 
 TEST_F(NetworkContextTest, PrivacyModeEnabledIfThirdPartyCookiesBlocked) {
+  const GURL kURL("http://foo.com");
+  const url::Origin kOrigin = url::Origin::Create(kURL);
+  const GURL kOtherURL("http://other.com");
+  const url::Origin kOtherOrigin = url::Origin::Create(kOtherURL);
+
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
   net::NetworkDelegate* delegate =
@@ -3572,8 +3585,9 @@ TEST_F(NetworkContextTest, CanSetCookieFalseIfCookiesBlocked) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
   net::URLRequestContext context;
-  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
-      kURL, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
+  std::unique_ptr<net::URLRequest> request =
+      context.CreateRequest(GURL("http://foo.com"), net::DEFAULT_PRIORITY,
+                            nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
   net::CanonicalCookie cookie("TestCookie", "1", "www.test.com", "/",
                               base::Time(), base::Time(), base::Time(), false,
                               false, net::CookieSameSite::LAX_MODE,
@@ -3592,8 +3606,9 @@ TEST_F(NetworkContextTest, CanSetCookieTrueIfCookiesAllowed) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
   net::URLRequestContext context;
-  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
-      kURL, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
+  std::unique_ptr<net::URLRequest> request =
+      context.CreateRequest(GURL("http://foo.com"), net::DEFAULT_PRIORITY,
+                            nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
   net::CanonicalCookie cookie("TestCookie", "1", "www.test.com", "/",
                               base::Time(), base::Time(), base::Time(), false,
                               false, net::CookieSameSite::LAX_MODE,
@@ -3609,8 +3624,9 @@ TEST_F(NetworkContextTest, CanGetCookiesFalseIfCookiesBlocked) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
   net::URLRequestContext context;
-  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
-      kURL, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
+  std::unique_ptr<net::URLRequest> request =
+      context.CreateRequest(GURL("http://foo.com"), net::DEFAULT_PRIORITY,
+                            nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_TRUE(
       network_context->url_request_context()->network_delegate()->CanGetCookies(
@@ -3625,8 +3641,9 @@ TEST_F(NetworkContextTest, CanGetCookiesTrueIfCookiesAllowed) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
   net::URLRequestContext context;
-  std::unique_ptr<net::URLRequest> request = context.CreateRequest(
-      kURL, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
+  std::unique_ptr<net::URLRequest> request =
+      context.CreateRequest(GURL("http://foo.com"), net::DEFAULT_PRIORITY,
+                            nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   SetDefaultContentSetting(CONTENT_SETTING_ALLOW, network_context.get());
   EXPECT_TRUE(
@@ -6310,12 +6327,14 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntryWithNetworkIsolationKey) {
 }
 
 TEST_F(NetworkContextTest, CopyHttpAuthCacheProxyEntries) {
+  const GURL kURL("http://foo.com");
+
   std::unique_ptr<NetworkContext> network_context1 =
       CreateContextWithParams(CreateContextParams());
 
   net::AuthChallengeInfo challenge;
   challenge.is_proxy = true;
-  challenge.challenger = kOrigin;
+  challenge.challenger = url::Origin::Create(kURL);
   challenge.scheme = "basic";
   challenge.realm = "testrealm";
   const char kProxyUsername[] = "proxy_user";
@@ -6383,6 +6402,8 @@ TEST_F(NetworkContextTest, CopyHttpAuthCacheProxyEntries) {
 }
 
 TEST_F(NetworkContextTest, SplitAuthCacheByNetworkIsolationKey) {
+  const GURL kURL("http://foo.com");
+
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
   net::HttpAuthCache* cache = network_context->url_request_context()
@@ -6395,7 +6416,7 @@ TEST_F(NetworkContextTest, SplitAuthCacheByNetworkIsolationKey) {
   // Add proxy credentials, which should never be deleted.
   net::AuthChallengeInfo challenge;
   challenge.is_proxy = true;
-  challenge.challenger = kOrigin;
+  challenge.challenger = url::Origin::Create(kURL);
   challenge.scheme = "basic";
   challenge.realm = "testrealm";
   const char kProxyUsername[] = "proxy_user";

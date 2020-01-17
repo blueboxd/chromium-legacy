@@ -61,7 +61,8 @@ gfx::Insets GetTrayBubbleInsets() {
   int height_compensation = kTrayBubbleInsetHotseatCompensation;
   switch (shelf->GetBackgroundType()) {
     case ShelfBackgroundType::kInApp:
-      // In-app mode does not require a height compensation.
+    case ShelfBackgroundType::kOverview:
+      // Certain modes do not require a height compensation.
       height_compensation = 0;
       break;
     case ShelfBackgroundType::kLogin:

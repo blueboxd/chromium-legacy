@@ -170,9 +170,13 @@ bool ComputedHashes::GetHashes(const base::FilePath& relative_path,
                                int* block_size,
                                std::vector<std::string>* hashes) const {
   base::FilePath path = relative_path.NormalizePathSeparatorsTo('/');
+  // TODO(lazyboy): Align treatment of |data_| with that of
+  // VerifiedContents::root_hashes_, so that we don't have to perform the linear
+  // lookup below.
   auto find_data = [&](const base::FilePath& normalized_path) {
     auto i = data_.find(normalized_path);
-    if (i == data_.end()) {
+    if (i == data_.end() &&
+        !content_verifier_utils::IsFileAccessCaseSensitive()) {
       // If we didn't find the entry using exact match, it's possible the
       // developer is using a path with some letters in the incorrect case,
       // which happens to work on windows/osx. So try doing a linear scan to
@@ -192,8 +196,8 @@ bool ComputedHashes::GetHashes(const base::FilePath& relative_path,
     return i;
   };
   auto i = find_data(path);
-#if defined(OS_WIN)
-  if (i == data_.end()) {
+  if (i == data_.end() &&
+      content_verifier_utils::IsDotSpaceFilenameSuffixIgnored()) {
     base::FilePath::StringType trimmed_path_value;
     // Also search for path with (.| )+ suffix trimmed as they are ignored in
     // windows. This matches the canonicalization behavior of
@@ -203,7 +207,6 @@ bool ComputedHashes::GetHashes(const base::FilePath& relative_path,
       i = find_data(base::FilePath(trimmed_path_value));
     }
   }
-#endif  // defined(OS_WIN)
   if (i == data_.end())
     return false;
 
@@ -224,12 +227,12 @@ bool ComputedHashes::WriteToFile(const base::FilePath& path) const {
     int block_size = resource_info.second.first;
     const std::vector<std::string>& hashes = resource_info.second.second;
 
-    base::Value block_hashes(base::Value::Type::LIST);
-    block_hashes.GetList().reserve(hashes.size());
+    base::Value::ListStorage block_hashes;
+    block_hashes.reserve(hashes.size());
     for (const auto& hash : hashes) {
       std::string encoded;
       base::Base64Encode(hash, &encoded);
-      block_hashes.Append(std::move(encoded));
+      block_hashes.push_back(base::Value(std::move(encoded)));
     }
 
     base::Value dict(base::Value::Type::DICTIONARY);
@@ -237,7 +240,8 @@ bool ComputedHashes::WriteToFile(const base::FilePath& path) const {
         computed_hashes::kPathKey,
         relative_path.NormalizePathSeparatorsTo('/').AsUTF8Unsafe());
     dict.SetIntKey(computed_hashes::kBlockSizeKey, block_size);
-    dict.SetKey(computed_hashes::kBlockHashesKey, std::move(block_hashes));
+    dict.SetKey(computed_hashes::kBlockHashesKey,
+                base::Value(std::move(block_hashes)));
 
     file_list.Append(std::move(dict));
   }

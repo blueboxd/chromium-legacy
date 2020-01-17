@@ -53,12 +53,10 @@ id<GREYMatcher> AddLanguageTableView() {
   return grey_accessibilityID(kAddLanguageTableViewAccessibilityIdentifier);
 }
 
-#ifndef CHROME_EARL_GREY_2
 // Matcher for the Language Settings's Language Details page table view.
 id<GREYMatcher> LanguageDetailsTableView() {
   return grey_accessibilityID(kLanguageDetailsTableViewAccessibilityIdentifier);
 }
-#endif
 
 // Matcher for the Language Settings's general Settings menu entry.
 id<GREYMatcher> LanguageSettingsButton() {
@@ -180,9 +178,6 @@ id<GREYMatcher> NavigationBarEditButton() {
       assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
-// TODO(crbug.com/1036578): Enable the second part of the test when back button
-// matcher is fixed in EG2.
-#ifndef CHROME_EARL_GREY_2
   // Navigate back.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
@@ -196,7 +191,6 @@ id<GREYMatcher> NavigationBarEditButton() {
   [[EarlGrey selectElementWithMatcher:LanguageDetailsTableView()]
       assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
-#endif
 }
 
 // Tests that the Translate Switch enables/disables Translate and the UI gets

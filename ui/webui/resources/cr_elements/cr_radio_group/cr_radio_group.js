@@ -10,7 +10,7 @@
    */
   function isEnabled(radio) {
     return radio.matches(':not([disabled]):not([hidden])') &&
-        radio.style.display != 'none' && radio.style.visibility != 'hidden';
+        radio.style.display !== 'none' && radio.style.visibility !== 'hidden';
   }
 
   Polymer({
@@ -142,22 +142,22 @@
         return;
       }
 
-      if (event.key == ' ' || event.key == 'Enter') {
+      if (event.key === ' ' || event.key === 'Enter') {
         event.preventDefault();
         this.select_(/** @type {!CrRadioButtonElement} */ (event.target));
         return;
       }
 
       const enabledRadios = this.buttons_.filter(isEnabled);
-      if (enabledRadios.length == 0) {
+      if (enabledRadios.length === 0) {
         return;
       }
 
       let selectedIndex;
       const max = enabledRadios.length - 1;
-      if (event.key == 'Home') {
+      if (event.key === 'Home') {
         selectedIndex = 0;
-      } else if (event.key == 'End') {
+      } else if (event.key === 'End') {
         selectedIndex = max;
       } else if (this.deltaKeyMap_.has(event.key)) {
         const delta = this.deltaKeyMap_.get(event.key);
@@ -176,7 +176,7 @@
 
       const radio = enabledRadios[selectedIndex];
       const name = `${radio.name}`;
-      if (this.selected != name) {
+      if (this.selected !== name) {
         event.preventDefault();
         this.selected = name;
         radio.focus();
@@ -237,7 +237,7 @@
       }
 
       const name = `${button.name}`;
-      if (this.selected != name) {
+      if (this.selected !== name) {
         this.selected = name;
       }
     },
@@ -258,8 +258,8 @@
       }
       let noneMadeFocusable = true;
       this.buttons_.forEach(radio => {
-        radio.checked = this.selected != undefined &&
-            radio.name == this.selected;
+        radio.checked =
+            this.selected !== undefined && radio.name === this.selected;
         const disabled = this.disabled || !isEnabled(radio);
         const canBeFocused = radio.checked && !disabled;
         if (canBeFocused) {

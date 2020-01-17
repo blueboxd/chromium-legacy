@@ -524,6 +524,7 @@ bool DownloadManagerImpl::InterceptDownload(
                        info.url(), user_agent, info.content_disposition,
                        info.mime_type, info.request_origin, info.total_bytes,
                        info.transient, web_contents)) {
+    DropDownload();
     return true;
   }
   content::devtools_instrumentation::WillBeginDownload(

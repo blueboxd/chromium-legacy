@@ -81,9 +81,7 @@
                                : UITableViewStyleGrouped;
 
   GoogleServicesSettingsViewController* viewController =
-      [[GoogleServicesSettingsViewController alloc]
-          initWithTableViewStyle:style
-                     appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+      [[GoogleServicesSettingsViewController alloc] initWithStyle:style];
   viewController.presentationDelegate = self;
   self.viewController = viewController;
   SyncSetupService* syncSetupService =

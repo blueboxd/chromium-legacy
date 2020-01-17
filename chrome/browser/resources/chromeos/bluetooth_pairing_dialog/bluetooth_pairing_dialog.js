@@ -26,7 +26,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     let dialogArgs = chrome.getVariableValue('dialogArguments');
     if (!dialogArgs) {
       // This situation currently only occurs if the user navigates to the debug
@@ -44,7 +44,7 @@ Polymer({
    * @param {!string} address The address of the pairing device.
    * @private
    */
-  connect_: function(address) {
+  connect_(address) {
     this.$.deviceDialog.open();
 
     chrome.bluetooth.getDevice(address, device => {
@@ -59,7 +59,7 @@ Polymer({
   },
 
   /** @private */
-  onDialogClose_: function() {
+  onDialogClose_() {
     chrome.send('dialogClose');
   },
 });

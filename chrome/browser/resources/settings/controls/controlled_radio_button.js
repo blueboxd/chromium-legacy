@@ -15,7 +15,7 @@ Polymer({
   ],
 
   /** @private */
-  updateDisabled_: function() {
+  updateDisabled_() {
     this.disabled =
         this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
@@ -24,7 +24,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showIndicator_: function() {
+  showIndicator_() {
     return this.disabled &&
         this.name == Settings.PrefUtil.prefToString(assert(this.pref));
   },
@@ -33,7 +33,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onIndicatorTap_: function(e) {
+  onIndicatorTap_(e) {
     // Disallow <controlled-radio-button on-click="..."> when disabled.
     e.preventDefault();
     e.stopPropagation();

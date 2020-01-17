@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/javascript_dialog_manager.h"
-#include "components/app_modal/javascript_native_dialog_factory.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "ui/gfx/text_elider.h"
 
@@ -98,9 +97,9 @@ JavaScriptAppModalDialog::~JavaScriptAppModalDialog() {
 }
 
 void JavaScriptAppModalDialog::ShowModalDialog() {
-  native_dialog_ = JavaScriptDialogManager::GetInstance()
-                       ->native_dialog_factory()
-                       ->CreateNativeJavaScriptDialog(this);
+  native_dialog_ =
+      JavaScriptDialogManager::GetInstance()->native_dialog_factory()->Run(
+          this);
   native_dialog_->ShowAppModalDialog();
   if (app_modal_dialog_observer)
     app_modal_dialog_observer->Notify(this);

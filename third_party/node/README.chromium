@@ -1,7 +1,7 @@
 Name: Node JS
 Short Name: node
 URL: https://github.com/nodejs/node
-Version: 10.15.3
+Version: 12.14.1
 Revision: f098f8295c407e5a5126b501ed5f1aa80bd86106
 Date: Tue Dec 06 2016 18:07:35 GMT-0800 (PST)
 License: NodeJS

@@ -22,7 +22,6 @@
 <translation id="1587325591171447154">‏<ph name="FILE_NAME" /> خطرناک ہے، اس لیے Chrome نے اسے مسدود کر دیا ہے۔</translation>
 <translation id="1619887657840448962">‏Chrome کو محفوظ تر بنانے کیلئے، ہم نے مندرجہ ذیل ایکسٹینشن کو غیر فعال کر دیا ہے جو <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> میں مندرج نہیں ہے اور ممکن ہے کہ اسے آپ کے علم کے بغیر شامل کر دیا گیا ہو۔</translation>
 <translation id="1628000112320670027">‏Chrome کے بارے میں مدد حاصل کریں</translation>
-<translation id="1635734105302489219">‏Chrome چھوڑنے پر آپ کوکیز صاف کرتے ہیں۔ مطابقت پذیری جاری رکھنے کے لئے، یہ<ph name="COOKIE_SETTINGS_LINK" /> تبدیل کریں۔</translation>
 <translation id="1662639173275167396">‏Chrome OS کو اضافی <ph name="BEGIN_LINK_CROS_OSS" />اوپن سورس سافٹ ویئر<ph name="END_LINK_CROS_OSS" /> کے ذریعے ممکن بنایا جاتا ہے، جیسے کہ <ph name="BEGIN_LINK_LINUX_OSS" />Linux(بی ٹا)<ph name="END_LINK_LINUX_OSS" />۔</translation>
 <translation id="1666409074978194368">‏تقریباً اپ ٹو ڈیٹ! اپ ڈیٹ کا عمل مکمل کرنے کیلئے، Google Chrome کو بند کر کے دوبارہ چلائیں۔ پوشیدگی ونڈوز دوبارہ نہیں کھلیں گی۔</translation>
 <translation id="1674870198290878346">‏لنک کو Chrome &amp;پوشیدگی ونڈو میں کھولیں</translation>
@@ -77,7 +76,6 @@
 <translation id="3089968997497233615">‏Google Chrome کا ایک نیا، محفوظ تر ورژن دستیاب ہے۔</translation>
 <translation id="3149510190863420837">‏Chrome ایپس</translation>
 <translation id="3282568296779691940">‏Chrome میں سائن ان کریں</translation>
-<translation id="3340978935015468852">ترتیبات</translation>
 <translation id="3360895254066713204">‏Chrome مدد کنندہ</translation>
 <translation id="3379938682270551431">{0,plural, =0{‏ابھی Chrome دوبارہ لانچ ہوگا}=1{‏1 سیکنڈ میں Chrome دوبارہ لانچ ہوگا}other{‏# سیکنڈ میں Chrome دوبارہ لانچ ہوگا}}</translation>
 <translation id="3395323229510056640">‏Chromium OS کے بارے میں مدد حاصل کریں</translation>

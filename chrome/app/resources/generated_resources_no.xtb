@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">Denne brukerkontoen tilhører ikke domenet som enheten er registrert for. Hvis du vil registrere deg for et annet domene, må du først gå gjennom enhetsgjenoppretting.</translation>
 <translation id="1274977772557788323">Lagringsinnstillinger for Adobe Flash Player</translation>
 <translation id="1274997165432133392">Informasjonskapsler og andre nettstedsdata</translation>
-<translation id="127668050356036882">Lukk alle vinduene dine</translation>
 <translation id="1280820357415527819">Søker etter mobilnettverk</translation>
 <translation id="1282420830958964167">Du har nådd grensen som foreldrene dine har angitt for «<ph name="APP_NAME" />». Du kan bruke appen i <ph name="TIME_LIMIT" /> i morgen.</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
@@ -515,7 +514,6 @@
 <translation id="1712552549805331520"><ph name="URL" /> ber om å lagre data permanent på datamaskinen din</translation>
 <translation id="1714644264617423774">Aktivér tilgjengelighetsfunksjoner for å gjøre enheten din enklere å bruke. <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Bevegelsessensorer</translation>
-<translation id="171824261579749339">Australsk <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">Siste time</translation>
 <translation id="1719312230114180055">Merk: Det kan være mindre sikkert å bruke fingeravtrykk enn et sterkt passord eller en sterk PIN-kode.</translation>
 <translation id="1720318856472900922">Autentisering av tjeneren TLS WWW</translation>
@@ -726,7 +724,6 @@
 <translation id="2006638907958895361">Åpne linken i <ph name="APP" /></translation>
 <translation id="2007404777272201486">Rapportér et problem</translation>
 <translation id="2010501376126504057">Kompatible enheter</translation>
-<translation id="2016430552235416146">Tradisjonell</translation>
 <translation id="2017334798163366053">Deaktiver innsamling av ytelsesdata</translation>
 <translation id="2017836877785168846">Tømmer loggen og fjerner automatiske fullføringer fra adressefeltet.</translation>
 <translation id="2018352199541442911">Beklager, men den eksterne lagringsenheten din støttes foreløpig ikke.</translation>
@@ -767,7 +764,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2076672359661571384">Middels (anbefalt)</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="2078019350989722914">Advar før avslutning (<ph name="KEY_EQUIVALENT" />)</translation>
-<translation id="2078494137444990774">Av</translation>
 <translation id="2079053412993822885">Hvis du sletter et av dine egne sertifikater, kan du ikke lenger bruke det til å identifisere deg.</translation>
 <translation id="2079545284768500474">Angre</translation>
 <translation id="2080070583977670716">Flere innstillinger</translation>
@@ -1206,7 +1202,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2665647207431876759">Utløpt</translation>
 <translation id="2665717534925640469">Denne siden vises nå i fullskjermsvisning, og har deaktivert markøren din.</translation>
 <translation id="2665919335226618153">Æsj! Det oppsto en feil under formateringen.</translation>
-<translation id="2666990579225592931">Åpne et gjestevindu</translation>
 <translation id="2667463864537187133">Administrer stavekontroll</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> deler en Chrome-fane.</translation>
 <translation id="2670429602441959756">Denne siden inneholder funksjoner som ikke støttes i VR ennå. Avslutter …</translation>
@@ -2002,7 +1997,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3780211714699334884"><ph name="ORIGIN" /> kan redigere filer i <ph name="FOLDERNAME" /> til du lukker denne fanen</translation>
 <translation id="3780827508782506612">Siden er oversatt</translation>
 <translation id="378312418865624974">lese en unik identifikator for denne datamaskinen</translation>
-<translation id="3784472333786002075">Informasjonskapsler er filer som opprettes av nettsteder. Det finnes to typer informasjonskapsler: Informasjonskapsler fra førstetilbyder opprettes av nettstedet du besøker. Nettstedet vises i adressefeltet. Informasjonskapsler fra tredjeparter opprettes av andre nettsteder. Disse nettstedene eier noe av innholdet, for eksempel annonser eller bilder, som du ser på nettstedet du besøker.</translation>
+<translation id="3784472333786002075">Informasjonskapsler er filer som opprettes av nettsteder. Det finnes to typer informasjonskapsler: Informasjonskapsler fra førstepart opprettes av nettstedet du besøker. Nettstedet vises i adressefeltet. Informasjonskapsler fra tredjeparter opprettes av andre nettsteder. Disse nettstedene eier noe av innholdet, for eksempel annonser eller bilder, som du ser på nettstedet du besøker.</translation>
 <translation id="3785308913036335955">Vis appsnarveien</translation>
 <translation id="3785727820640310185">Lagrede passord for dette nettstedet</translation>
 <translation id="3788401245189148511">Den får følgende tilgang:</translation>
@@ -2401,7 +2396,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deler et vindu.</translation>
 <translation id="4364830672918311045">Vis varsler</translation>
-<translation id="436499142539576997">Kunne ikke hente appdata – prøver fremdeles å kjøre appen …</translation>
 <translation id="4370975561335139969">E-posten og passordet du skrev inn, stemmer ikke overens.</translation>
 <translation id="437184764829821926">Avanserte innstillinger for skrifttype</translation>
 <translation id="4374831787438678295">Linux-installasjonsprogram</translation>
@@ -3428,7 +3422,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5867841422488265304">Skriv inn søkeord eller en nettadresse</translation>
 <translation id="5869029295770560994">Greit</translation>
 <translation id="5869522115854928033">Lagrede passord</translation>
-<translation id="5869948122057593679">Lukk alle vinduene dine</translation>
 <translation id="5870086504539785141">Lukk tilgjengelighetsmenyen</translation>
 <translation id="5870155679953074650">Harde feil</translation>
 <translation id="5876851302954717356">Ny fane til høyre</translation>
@@ -4477,7 +4470,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7385854874724088939">Det oppstod en feil under forsøket på å skrive ut. Kontroller skriveren og prøv igjen.</translation>
 <translation id="7385896526023870365">Denne utvidelsen har ingen ytterligere nettstedstilgang.</translation>
 <translation id="7388044238629873883">Du er nesten ferdig!</translation>
-<translation id="7388222713940428051">Åpne et gjestevindu</translation>
 <translation id="7392118418926456391">Virusskanningen mislyktes</translation>
 <translation id="7392915005464253525">Gj&amp;enåpne det lukkede vinduet</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> starter ved systemoppstart, og fortsetter å kjøre i bakgrunnen selv når du har lukket alle andre vinduer for <ph name="PRODUCT_NAME" />.</translation>
@@ -4742,7 +4734,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7784067724422331729">Sikkerhetsinnstillingene på datamaskinen din blokkerte denne filen.</translation>
 <translation id="7784796923038949829">Kan ikke lese eller endre data på nettstedet</translation>
 <translation id="778480864305029524">For å bruke umiddelbar internettdeling, slå på varsler for Google Play Tjenester.</translation>
-<translation id="7786207843293321886">Avslutt gjesteøkten</translation>
 <translation id="7786889348652477777">&amp;Last inn appen på nytt</translation>
 <translation id="7787308148023287649">Vis på en annen skjerm</translation>
 <translation id="7788298548579301890">Et annet program på datamaskinen har lagt til en app som kan endre måten Chrome fungerer på.
@@ -4856,7 +4847,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7908378463497120834">Beklager, men minst én partisjon på den eksterne lagringsenheten din kunne ikke tilkobles.</translation>
 <translation id="7909969815743704077">Lastet ned i inkognitomodus</translation>
 <translation id="7910768399700579500">&amp;Ny mappe</translation>
-<translation id="7910831464510799808">På</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Passordet ditt er endret på tjeneren. Logg av og på igjen.</translation>
 <translation id="7915457674565721553">Koble til internett for å sette opp foreldrekontroll</translation>

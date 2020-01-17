@@ -165,7 +165,8 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
           "Signin_Signin_ConfirmCancelAdvancedSyncSettings"));
       syncSetupService->CommitSyncChanges();
       AuthenticationServiceFactory::GetForBrowserState(self.browserState)
-          ->SignOut(signin_metrics::ABORT_SIGNIN, nil);
+          ->SignOut(signin_metrics::ABORT_SIGNIN,
+                    /*force_clear_browsing_data=*/false, nil);
       break;
     case AdvancedSigninSettingsCoordinatorResultInterrupted:
       base::RecordAction(

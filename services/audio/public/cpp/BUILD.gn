@@ -43,9 +43,7 @@ source_set("test_support") {
     "fake_system_info.h",
   ]
 
-  deps = [
-    "//testing/gmock",
-  ]
+  deps = [ "//testing/gmock" ]
 
   public_deps = [
     "//base",

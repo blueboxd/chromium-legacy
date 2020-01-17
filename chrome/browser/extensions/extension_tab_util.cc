@@ -23,7 +23,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -36,6 +35,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/url_constants.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
@@ -105,7 +105,7 @@ int GetTabIdForExtensions(const WebContents* web_contents) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser && !ExtensionTabUtil::BrowserSupportsTabs(browser))
     return -1;
-  return SessionTabHelper::IdForTab(web_contents).id();
+  return sessions::SessionTabHelper::IdForTab(web_contents).id();
 }
 
 std::unique_ptr<ExtensionTabUtil::Delegate>&
@@ -369,7 +369,7 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
 }
 
 int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
-  return SessionTabHelper::IdForTab(web_contents).id();
+  return sessions::SessionTabHelper::IdForTab(web_contents).id();
 }
 
 std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
@@ -378,7 +378,8 @@ std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
 }
 
 int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
-  return SessionTabHelper::IdForWindowContainingTab(web_contents).id();
+  return sessions::SessionTabHelper::IdForWindowContainingTab(web_contents)
+      .id();
 }
 
 // static
@@ -690,7 +691,8 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
       TabStripModel* target_tab_strip = target_browser->tab_strip_model();
       for (int i = 0; i < target_tab_strip->count(); ++i) {
         WebContents* target_contents = target_tab_strip->GetWebContentsAt(i);
-        if (SessionTabHelper::IdForTab(target_contents).id() == tab_id) {
+        if (sessions::SessionTabHelper::IdForTab(target_contents).id() ==
+            tab_id) {
           if (browser)
             *browser = target_browser;
           if (tab_strip)

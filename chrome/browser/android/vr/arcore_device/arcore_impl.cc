@@ -118,6 +118,180 @@ base::Optional<gfx::Transform> GetMojoFromInputSource(
   return mojo_from_viewer * viewer_from_pointer;
 }
 
+void ReleaseArCoreCubemap(ArImageCubemap* cube_map) {
+  for (auto* image : *cube_map) {
+    ArImage_release(image);
+  }
+
+  memset(cube_map, 0, sizeof(*cube_map));
+}
+
+void CopyArCoreImage_RGBA16F(const ArSession* session,
+                             const ArImage* image,
+                             int32_t plane_index,
+                             std::vector<device::RgbaTupleF16>* out_pixels,
+                             uint32_t* out_width,
+                             uint32_t* out_height) {
+  // Get source image information
+  int32_t width = 0, height = 0, src_row_stride = 0, src_pixel_stride = 0;
+  ArImage_getWidth(session, image, &width);
+  ArImage_getHeight(session, image, &height);
+  ArImage_getPlaneRowStride(session, image, plane_index, &src_row_stride);
+  ArImage_getPlanePixelStride(session, image, plane_index, &src_pixel_stride);
+
+  uint8_t const* src_buffer = nullptr;
+  int32_t src_buffer_length = 0;
+  ArImage_getPlaneData(session, image, plane_index, &src_buffer,
+                       &src_buffer_length);
+
+  // Create destination
+  *out_width = width;
+  *out_height = height;
+  out_pixels->resize(width * height);
+
+  // Fast path: Source and destination have the same layout
+  bool const fast_path = static_cast<size_t>(src_row_stride) ==
+                         width * sizeof(device::RgbaTupleF16);
+  TRACE_EVENT1("xr", "CopyArCoreImage_RGBA16F: memcpy", "fastPath", fast_path);
+
+  // If they have the same layout, we can copy the entire buffer at once
+  if (fast_path) {
+    DCHECK_EQ(out_pixels->size() * sizeof(device::RgbaTupleF16),
+              static_cast<size_t>(src_buffer_length));
+    memcpy(out_pixels->data(), src_buffer, src_buffer_length);
+    return;
+  }
+
+  // Slow path: copy pixel by pixel, row by row
+  for (int32_t row = 0; row < height; ++row) {
+    auto* src = src_buffer + src_row_stride * row;
+    auto* dest = out_pixels->data() + width * row;
+
+    // For each pixel
+    for (int32_t x = 0; x < width; ++x) {
+      memcpy(dest, src, sizeof(device::RgbaTupleF16));
+
+      src += src_pixel_stride;
+      dest += 1;
+    }
+  }
+}
+
+device::mojom::XRLightProbePtr GetLightProbe(
+    ArSession* arcore_session,
+    ArLightEstimate* arcore_light_estimate) {
+  // ArCore hands out 9 sets of RGB spherical harmonics coefficients
+  // https://developers.google.com/ar/reference/c/group/light#arlightestimate_getenvironmentalhdrambientsphericalharmonics
+  constexpr size_t kNumShCoefficients = 9;
+
+  auto light_probe = device::mojom::XRLightProbe::New();
+
+  light_probe->spherical_harmonics = device::mojom::XRSphericalHarmonics::New();
+  light_probe->spherical_harmonics->coefficients =
+      std::vector<device::RgbTupleF32>(kNumShCoefficients,
+                                       device::RgbTupleF32{});
+
+  ArLightEstimate_getEnvironmentalHdrAmbientSphericalHarmonics(
+      arcore_session, arcore_light_estimate,
+      light_probe->spherical_harmonics->coefficients.data()->components);
+
+  float main_light_direction[3] = {0};
+  ArLightEstimate_getEnvironmentalHdrMainLightDirection(
+      arcore_session, arcore_light_estimate, main_light_direction);
+  light_probe->main_light_direction.set_x(main_light_direction[0]);
+  light_probe->main_light_direction.set_y(main_light_direction[1]);
+  light_probe->main_light_direction.set_z(main_light_direction[2]);
+
+  ArLightEstimate_getEnvironmentalHdrMainLightIntensity(
+      arcore_session, arcore_light_estimate,
+      light_probe->main_light_intensity.components);
+
+  return light_probe;
+}
+
+device::mojom::XRReflectionProbePtr GetReflectionProbe(
+    ArSession* arcore_session,
+    ArLightEstimate* arcore_light_estimate) {
+  ArImageCubemap arcore_cube_map = {nullptr};
+  ArLightEstimate_acquireEnvironmentalHdrCubemap(
+      arcore_session, arcore_light_estimate, arcore_cube_map);
+
+  auto cube_map = device::mojom::XRCubeMap::New();
+  std::vector<device::RgbaTupleF16>* const cube_map_faces[] = {
+      &cube_map->positive_x, &cube_map->negative_x, &cube_map->positive_y,
+      &cube_map->negative_y, &cube_map->positive_z, &cube_map->negative_z};
+
+  static_assert(
+      base::size(cube_map_faces) == base::size(arcore_cube_map),
+      "`ArImageCubemap` and `device::mojom::XRCubeMap` are expected to "
+      "have the same number of faces (6).");
+
+  static_assert(device::mojom::XRCubeMap::kNumComponentsPerPixel == 4,
+                "`device::mojom::XRCubeMap::kNumComponentsPerPixel` is "
+                "expected to be 4 (RGBA)`, as that's the format ArCore uses.");
+
+  for (size_t i = 0; i < base::size(arcore_cube_map); ++i) {
+    auto* arcore_cube_map_face = arcore_cube_map[i];
+    if (!arcore_cube_map_face) {
+      DVLOG(1) << "`ArLightEstimate_acquireEnvironmentalHdrCubemap` failed to "
+                  "return all faces";
+      ReleaseArCoreCubemap(&arcore_cube_map);
+      return nullptr;
+    }
+
+    auto* cube_map_face = cube_map_faces[i];
+
+    // Make sure we only have a single image plane
+    int32_t num_planes = 0;
+    ArImage_getNumberOfPlanes(arcore_session, arcore_cube_map_face,
+                              &num_planes);
+    if (num_planes != 1) {
+      DVLOG(1) << "ArCore cube map face " << i
+               << " does not have exactly 1 plane.";
+      ReleaseArCoreCubemap(&arcore_cube_map);
+      return nullptr;
+    }
+
+    // Make sure the format for the image is in RGBA16F
+    ArImageFormat format = AR_IMAGE_FORMAT_INVALID;
+    ArImage_getFormat(arcore_session, arcore_cube_map_face, &format);
+    if (format != AR_IMAGE_FORMAT_RGBA_FP16) {
+      DVLOG(1) << "ArCore cube map face " << i
+               << " not in expected image format.";
+      ReleaseArCoreCubemap(&arcore_cube_map);
+      return nullptr;
+    }
+
+    // Copy the cubemap
+    uint32_t face_width = 0, face_height = 0;
+    CopyArCoreImage_RGBA16F(arcore_session, arcore_cube_map_face, 0,
+                            cube_map_face, &face_width, &face_height);
+
+    // Make sure the cube map is square
+    if (face_width != face_height) {
+      DVLOG(1) << "ArCore cube map contains non-square image.";
+      ReleaseArCoreCubemap(&arcore_cube_map);
+      return nullptr;
+    }
+
+    // Make sure all faces have the same dimensions
+    if (i == 0) {
+      cube_map->width_and_height = face_width;
+    } else if (face_width != cube_map->width_and_height ||
+               face_height != cube_map->width_and_height) {
+      DVLOG(1) << "ArCore cube map faces not all of the same dimensions.";
+      ReleaseArCoreCubemap(&arcore_cube_map);
+      return nullptr;
+    }
+  }
+
+  ReleaseArCoreCubemap(&arcore_cube_map);
+
+  auto reflection_probe = device::mojom::XRReflectionProbe::New();
+  reflection_probe->cube_map = std::move(cube_map);
+  return reflection_probe;
+}
+
 constexpr float kDefaultFloorHeightEstimation = 1.2;
 
 }  // namespace
@@ -194,6 +368,10 @@ bool ArCoreImpl::Initialize(
     return false;
   }
 
+  // Enable lighting estimation with spherical harmonics
+  ArConfig_setLightEstimationMode(session.get(), arcore_config.get(),
+                                  AR_LIGHT_ESTIMATION_MODE_ENVIRONMENTAL_HDR);
+
   status = ArSession_configure(session.get(), arcore_config.get());
   if (status != AR_SUCCESS) {
     DLOG(ERROR) << "ArSession_configure failed: " << status;
@@ -208,9 +386,20 @@ bool ArCoreImpl::Initialize(
     return false;
   }
 
+  internal::ScopedArCoreObject<ArLightEstimate*> light_estimate;
+  ArLightEstimate_create(
+      session.get(),
+      internal::ScopedArCoreObject<ArLightEstimate*>::Receiver(light_estimate)
+          .get());
+  if (!light_estimate.is_valid()) {
+    DVLOG(1) << "ArLightEstimate_create failed";
+    return false;
+  }
+
   // Success, we now have a valid session and a valid frame.
   arcore_frame_ = std::move(frame);
   arcore_session_ = std::move(session);
+  arcore_light_estimate_ = std::move(light_estimate);
   return true;
 }
 
@@ -561,6 +750,39 @@ mojom::XRAnchorsDataPtr ArCoreImpl::GetAnchorsData() {
   auto all_anchor_ids = GetAllAnchorIds();
 
   return mojom::XRAnchorsData::New(all_anchor_ids, std::move(updated_anchors));
+}
+
+mojom::XRLightEstimationDataPtr ArCoreImpl::GetLightEstimationData() {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+
+  ArFrame_getLightEstimate(arcore_session_.get(), arcore_frame_.get(),
+                           arcore_light_estimate_.get());
+
+  ArLightEstimateState light_estimate_state = AR_LIGHT_ESTIMATE_STATE_NOT_VALID;
+  ArLightEstimate_getState(arcore_session_.get(), arcore_light_estimate_.get(),
+                           &light_estimate_state);
+
+  // The light estimate state is not guaranteed to be valid initially
+  if (light_estimate_state != AR_LIGHT_ESTIMATE_STATE_VALID) {
+    DVLOG(2) << "ArCore light estimation state invalid.";
+    return nullptr;
+  }
+
+  auto light_estimation_data = mojom::XRLightEstimationData::New();
+  light_estimation_data->light_probe =
+      GetLightProbe(arcore_session_.get(), arcore_light_estimate_.get());
+  if (!light_estimation_data->light_probe) {
+    DVLOG(1) << "Failed to generate light probe.";
+    return nullptr;
+  }
+  light_estimation_data->reflection_probe =
+      GetReflectionProbe(arcore_session_.get(), arcore_light_estimate_.get());
+  if (!light_estimation_data->reflection_probe) {
+    DVLOG(1) << "Failed to generate reflection probe.";
+    return nullptr;
+  }
+
+  return light_estimation_data;
 }
 
 std::pair<PlaneId, bool> ArCoreImpl::CreateOrGetPlaneId(void* plane_address) {

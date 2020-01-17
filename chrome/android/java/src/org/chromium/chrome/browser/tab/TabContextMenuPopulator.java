@@ -60,4 +60,7 @@ public class TabContextMenuPopulator implements ContextMenuPopulator {
     public boolean onItemSelected(ContextMenuHelper helper, ContextMenuParams params, int itemId) {
         return mPopulator.onItemSelected(helper, params, itemId);
     }
+
+    @Override
+    public void onMenuClosed() {}
 }

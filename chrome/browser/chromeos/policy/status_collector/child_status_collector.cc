@@ -31,7 +31,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/status_collector/child_activity_storage.h"
-#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/status_collector/status_collector_state.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -102,8 +101,8 @@ class ChildStatusCollectorState : public StatusCollectorState {
       const StatusCollectorCallback& response)
       : StatusCollectorState(task_runner, response) {}
 
-  bool FetchAndroidStatus(const DeviceStatusCollector::AndroidStatusFetcher&
-                              android_status_fetcher) {
+  bool FetchAndroidStatus(
+      const StatusCollector::AndroidStatusFetcher& android_status_fetcher) {
     return android_status_fetcher.Run(base::BindRepeating(
         &ChildStatusCollectorState::OnAndroidInfoReceived, this));
   }
@@ -113,13 +112,6 @@ class ChildStatusCollectorState : public StatusCollectorState {
 
   void OnAndroidInfoReceived(const std::string& status,
                              const std::string& droid_guard_info) {
-    // TODO(crbug.com/827386): remove after migration.
-    em::AndroidStatus* const session_android_status =
-        response_params_.session_status->mutable_android_status();
-    session_android_status->set_status_payload(status);
-    session_android_status->set_droid_guard_info(droid_guard_info);
-    // END.
-
     em::AndroidStatus* const child_android_status =
         response_params_.child_status->mutable_android_status();
     child_android_status->set_status_payload(status);
@@ -201,9 +193,6 @@ void ChildStatusCollector::UpdateReportingSettings() {
     return;
   }
 
-  // Activity times.
-  report_activity_times_ = true;
-
   // Settings related.
   report_version_info_ = true;
   cros_settings_->GetBoolean(chromeos::kReportDeviceVersionInfo,
@@ -222,10 +211,6 @@ void ChildStatusCollector::OnUsageTimeStateChange(
 }
 
 void ChildStatusCollector::UpdateChildUsageTime() {
-  if (!report_activity_times_) {
-    return;
-  }
-
   Time now = GetCurrentTime();
   Time reset_time = activity_storage_->GetBeginningOfDay(now);
   if (reset_time > now)
@@ -255,38 +240,6 @@ void ChildStatusCollector::UpdateChildUsageTime() {
         max_stored_future_activity_interval_);
   }
   last_active_check_ = now;
-}
-
-bool ChildStatusCollector::GetActivityTimes(
-    em::DeviceStatusReportRequest* status) {
-  UpdateChildUsageTime();
-
-  // Signed-in user is reported in child reporting.
-  std::vector<ActivityStorage::ActivityPeriod> activity_times =
-      activity_storage_->GetStoredActivityPeriods();
-
-  bool anything_reported = false;
-  for (const auto& activity_period : activity_times) {
-    // This is correct even when there are leap seconds, because when a leap
-    // second occurs, two consecutive seconds have the same timestamp.
-    int64_t end_timestamp =
-        activity_period.start_timestamp + Time::kMillisecondsPerDay;
-
-    em::ActiveTimePeriod* active_period = status->add_active_periods();
-    em::TimePeriod* period = active_period->mutable_time_period();
-    period->set_start_timestamp(activity_period.start_timestamp);
-    period->set_end_timestamp(end_timestamp);
-    active_period->set_active_duration(activity_period.activity_milliseconds);
-    // Report user email only if users reporting is turned on.
-    if (!activity_period.user_email.empty())
-      active_period->set_user_email(activity_period.user_email);
-    if (activity_period.start_timestamp >= last_reported_day_) {
-      last_reported_day_ = activity_period.start_timestamp;
-      duration_for_last_reported_day_ = activity_period.activity_milliseconds;
-    }
-    anything_reported = true;
-  }
-  return anything_reported;
 }
 
 bool ChildStatusCollector::GetActivityTimes(
@@ -320,12 +273,6 @@ bool ChildStatusCollector::GetActivityTimes(
 }
 
 bool ChildStatusCollector::GetVersionInfo(
-    em::DeviceStatusReportRequest* status) {
-  status->set_os_version(os_version_);
-  return true;
-}
-
-bool ChildStatusCollector::GetVersionInfo(
     em::ChildStatusReportRequest* status) {
   status->set_os_version(os_version_);
   return true;
@@ -342,71 +289,13 @@ void ChildStatusCollector::GetStatusAsync(
   scoped_refptr<ChildStatusCollectorState> state(
       new ChildStatusCollectorState(task_runner_, response));
 
-  // Gather status data. The following calls might queue some async queries.
-  GetDeviceStatus(state);
-  GetSessionStatus(state);
+  // Gather status data might queue some async queries.
   FillChildStatusReportRequest(state);
 
   // If there are no outstanding async queries, the destructor of |state| calls
   // |response|. If there are async queries, the queries hold references to
   // |state|, so that |state| is only destroyed when the last async query has
   // finished.
-}
-
-void ChildStatusCollector::GetDeviceStatus(
-    scoped_refptr<ChildStatusCollectorState> state) {
-  em::DeviceStatusReportRequest* status =
-      state->response_params().device_status.get();
-  bool anything_reported = false;
-
-  if (report_version_info_)
-    anything_reported |= GetVersionInfo(status);
-
-  if (report_activity_times_)
-    anything_reported |= GetActivityTimes(status);
-
-  if (report_boot_mode_) {
-    base::Optional<std::string> boot_mode =
-        StatusCollector::GetBootMode(statistics_provider_);
-    if (boot_mode) {
-      status->set_boot_mode(*boot_mode);
-      anything_reported = true;
-    }
-  }
-
-  // Wipe pointer if we didn't actually add any data.
-  if (!anything_reported)
-    state->response_params().device_status.reset();
-}
-
-bool ChildStatusCollector::GetSessionStatusForUser(
-    scoped_refptr<ChildStatusCollectorState> state,
-    em::SessionStatusReportRequest* status,
-    const user_manager::User* user) {
-  // Child accounts are not local accounts.
-  DCHECK(!user->IsDeviceLocalAccount());
-
-  Profile* const profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
-  if (!profile)
-    return false;
-
-  // Time zone.
-  const std::string current_timezone =
-      base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
-                            ->GetCurrentTimezoneID());
-  status->set_time_zone(current_timezone);
-
-  // Android status.
-  const bool report_android_status =
-      profile->GetPrefs()->GetBoolean(prefs::kReportArcStatusEnabled);
-  if (report_android_status)
-    GetAndroidStatus(state);
-
-  status->set_user_dm_token(GetDMTokenForProfile(profile));
-
-  // At least time zone is always reported.
-  return true;
 }
 
 bool ChildStatusCollector::FillUserSpecificFields(
@@ -437,23 +326,6 @@ bool ChildStatusCollector::FillUserSpecificFields(
   return true;
 }
 
-void ChildStatusCollector::GetSessionStatus(
-    scoped_refptr<ChildStatusCollectorState> state) {
-  em::SessionStatusReportRequest* status =
-      state->response_params().session_status.get();
-  bool anything_reported = false;
-
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  const user_manager::User* const primary_user = user_manager->GetPrimaryUser();
-  DCHECK(primary_user != nullptr);
-
-  anything_reported |= GetSessionStatusForUser(state, status, primary_user);
-
-  // Wipe pointer if we didn't actually add any data.
-  if (!anything_reported)
-    state->response_params().session_status.reset();
-}
-
 bool ChildStatusCollector::GetAndroidStatus(
     const scoped_refptr<ChildStatusCollectorState>& state) {
   return state->FetchAndroidStatus(android_status_fetcher_);
@@ -474,8 +346,7 @@ void ChildStatusCollector::FillChildStatusReportRequest(
   if (report_version_info_)
     anything_reported |= GetVersionInfo(status);
 
-  if (report_activity_times_)
-    anything_reported |= GetActivityTimes(status);
+  anything_reported |= GetActivityTimes(status);
 
   if (report_boot_mode_) {
     base::Optional<std::string> boot_mode =
@@ -498,7 +369,7 @@ void ChildStatusCollector::OnSubmittedSuccessfully() {
 }
 
 bool ChildStatusCollector::ShouldReportActivityTimes() const {
-  return report_activity_times_;
+  return true;
 }
 
 bool ChildStatusCollector::ShouldReportNetworkInterfaces() const {

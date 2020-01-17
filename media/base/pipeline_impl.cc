@@ -1113,6 +1113,10 @@ void PipelineImpl::RendererWrapper::ReportMetadata(StartType start_type) {
 }
 
 bool PipelineImpl::RendererWrapper::HasEncryptedStream() {
+  // Encrypted streams are only handled explicitly for STREAM type.
+  if (demuxer_->GetType() != MediaResource::Type::STREAM)
+    return false;
+
   auto streams = demuxer_->GetAllStreams();
 
   for (auto* stream : streams) {

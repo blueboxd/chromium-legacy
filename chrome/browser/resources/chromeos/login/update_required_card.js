@@ -32,35 +32,35 @@ Polymer({
   },
 
   /** Called after resources are updated. */
-  updateLocalizedContent: function() {
+  updateLocalizedContent() {
     this.i18nUpdateLocale();
   },
 
   /**
    * @private
    */
-  onSelectNetworkClicked_: function() {
+  onSelectNetworkClicked_() {
     chrome.send('login.UpdateRequiredScreen.userActed', ['select-network']);
   },
 
   /**
    * @private
    */
-  onUpdateClicked_: function() {
+  onUpdateClicked_() {
     chrome.send('login.UpdateRequiredScreen.userActed', ['update']);
   },
 
   /**
    * @private
    */
-  onFinishClicked_: function() {
+  onFinishClicked_() {
     chrome.send('login.UpdateRequiredScreen.userActed', ['finish']);
   },
 
   /**
    * @private
    */
-  onCellularPermissionRejected_: function() {
+  onCellularPermissionRejected_() {
     chrome.send(
         'login.UpdateRequiredScreen.userActed', ['update-reject-cellular']);
   },
@@ -68,7 +68,7 @@ Polymer({
   /**
    * @private
    */
-  onCellularPermissionAccepted_: function() {
+  onCellularPermissionAccepted_() {
     chrome.send(
         'login.UpdateRequiredScreen.userActed', ['update-accept-cellular']);
   },
@@ -76,7 +76,7 @@ Polymer({
   /**
    * @private
    */
-  showOn_: function(ui_state) {
+  showOn_(ui_state) {
     // Negate the value as it used as |hidden| attribute's value.
     return !(Array.prototype.slice.call(arguments, 1).includes(ui_state));
   },

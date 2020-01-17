@@ -15,7 +15,7 @@
 
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/service/xr_consent_prompt_level.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
@@ -38,8 +38,8 @@ class BrowserXRRuntime;
 
 // Browser process implementation of the VRService mojo interface. Instantiated
 // through Mojo once the user loads a page containing WebXR.
-class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
-                                content::WebContentsObserver {
+class VRServiceImpl : public device::mojom::VRService,
+                      content::WebContentsObserver {
  public:
   static bool IsXrDeviceConsentPromptDisabledForTesting();
 
@@ -139,6 +139,13 @@ class VR_EXPORT VRServiceImpl : public device::mojom::VRService,
       std::set<device::mojom::XRSessionFeature> enabled_features,
       XrConsentPromptLevel consent_level,
       bool is_consent_granted);
+  void OnPermissionResult(
+      device::mojom::XRSessionOptionsPtr options,
+      device::mojom::VRService::RequestSessionCallback callback,
+      device::mojom::XRDeviceId expected_runtime_id,
+      std::set<device::mojom::XRSessionFeature> enabled_features,
+      XrConsentPromptLevel consent_level,
+      ContentSetting setting_value);
 
   bool IsConsentGrantedForDevice(device::mojom::XRDeviceId device_id,
                                  XrConsentPromptLevel consent_level);

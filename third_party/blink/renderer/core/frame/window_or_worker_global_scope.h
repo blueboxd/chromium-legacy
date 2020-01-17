@@ -101,7 +101,8 @@ class WindowOrWorkerGlobalScope {
   static ScriptPromise createImageBitmap(ScriptState*,
                                          EventTarget&,
                                          const ImageBitmapSourceUnion&,
-                                         const ImageBitmapOptions*);
+                                         const ImageBitmapOptions*,
+                                         ExceptionState&);
   static ScriptPromise createImageBitmap(ScriptState*,
                                          EventTarget&,
                                          const ImageBitmapSourceUnion&,
@@ -109,7 +110,8 @@ class WindowOrWorkerGlobalScope {
                                          int sy,
                                          int sw,
                                          int sh,
-                                         const ImageBitmapOptions*);
+                                         const ImageBitmapOptions*,
+                                         ExceptionState&);
 };
 
 }  // namespace blink

@@ -38,14 +38,14 @@ Polymer({
   ],
 
   /** @protected settings.RouteObserverBehavior */
-  currentRouteChanged: function(newRoute) {
+  currentRouteChanged(newRoute) {
     if (newRoute == settings.routes.NETWORK_DETAIL) {
       /** @type {NetworkProxyElement} */ (this.$$('network-proxy')).reset();
     }
   },
 
   /** @private */
-  useSharedProxiesChanged_: function() {
+  useSharedProxiesChanged_() {
     const pref = this.getPref('settings.use_shared_proxies');
     this.useSharedProxies_ = !!pref && !!pref.value;
   },
@@ -54,7 +54,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isShared_: function() {
+  isShared_() {
     return this.managedProperties.source == mojom.OncSource.kDevice ||
         this.managedProperties.source == mojom.OncSource.kDevicePolicy;
   },
@@ -63,7 +63,7 @@ Polymer({
    * @return {!mojom.ManagedString|undefined}
    * @private
    */
-  getProxySettingsTypeProperty_: function() {
+  getProxySettingsTypeProperty_() {
     const proxySettings = this.managedProperties.proxySettings;
     return proxySettings ? proxySettings.type : undefined;
   },
@@ -75,7 +75,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getAllowSharedDialogTitle_: function(allowShared, enableStr, disableStr) {
+  getAllowSharedDialogTitle_(allowShared, enableStr, disableStr) {
     return allowShared ? disableStr : enableStr;
   },
 
@@ -83,7 +83,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowNetworkPolicyIndicator_: function() {
+  shouldShowNetworkPolicyIndicator_() {
     const property = this.getProxySettingsTypeProperty_();
     return !!property && !this.isExtensionControlled(property) &&
         this.isNetworkPolicyEnforced(property);
@@ -93,7 +93,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowExtensionIndicator_: function() {
+  shouldShowExtensionIndicator_() {
     const property = this.getProxySettingsTypeProperty_();
     return !!property && this.isExtensionControlled(property);
   },
@@ -103,7 +103,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowAllowShared_: function(property) {
+  shouldShowAllowShared_(property) {
     if (!this.isShared_()) {
       return false;
     }
@@ -119,7 +119,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onAllowSharedProxiesChange_: function(event) {
+  onAllowSharedProxiesChange_(event) {
     this.$.confirmAllowSharedDialog.showModal();
   },
 
@@ -127,7 +127,7 @@ Polymer({
    * Handles the shared proxy confirmation dialog 'Confirm' button.
    * @private
    */
-  onAllowSharedDialogConfirm_: function() {
+  onAllowSharedDialogConfirm_() {
     /** @type {!SettingsToggleButtonElement} */ (this.$.allowShared)
         .sendPrefChange();
     this.$.confirmAllowSharedDialog.close();
@@ -138,14 +138,14 @@ Polymer({
    * event.
    * @private
    */
-  onAllowSharedDialogCancel_: function() {
+  onAllowSharedDialogCancel_() {
     /** @type {!SettingsToggleButtonElement} */ (this.$.allowShared)
         .resetToPrefValue();
     this.$.confirmAllowSharedDialog.close();
   },
 
   /** @private */
-  onAllowSharedDialogClose_: function() {
+  onAllowSharedDialogClose_() {
     this.$.allowShared.focus();
   },
 });

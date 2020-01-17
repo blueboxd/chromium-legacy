@@ -57,13 +57,13 @@ TEST(PlatformThreadWinTest, SetBackgroundThreadModeFailsInIdlePriorityProcess) {
   //
   // Note: this documents the aforementioned kernel bug. Ideally this would
   // *not* be the case.
-  const float priority_after_thread_mode_background_begin =
+  const int priority_after_thread_mode_background_begin =
       ::GetThreadPriority(thread_handle);
   if (win::GetVersion() == win::Version::WIN7) {
-    if (priority_after_thread_mode_background_begin != THREAD_PRIORITY_NORMAL) {
-      EXPECT_EQ(ThreadPriority::BACKGROUND,
-                base::PlatformThread::GetCurrentThreadPriority());
-    }
+    const ThreadPriority priority =
+        base::PlatformThread::GetCurrentThreadPriority();
+    EXPECT_TRUE(priority == ThreadPriority::NORMAL ||
+                priority == ThreadPriority::BACKGROUND);
   } else {
     EXPECT_EQ(priority_after_thread_mode_background_begin,
               THREAD_PRIORITY_NORMAL);

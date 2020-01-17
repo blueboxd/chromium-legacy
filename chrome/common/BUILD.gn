@@ -67,9 +67,7 @@ source_set("channel_info") {
     sources += [ "channel_info_posix.cc" ]
   }
 
-  deps = [
-    "//build:branding_buildflags",
-  ]
+  deps = [ "//build:branding_buildflags" ]
 
   public_deps = [
     "//base",
@@ -89,9 +87,7 @@ source_set("ini_parser") {
     "ini_parser.cc",
     "ini_parser.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 # Use a static library here because many test binaries depend on this but don't
@@ -578,9 +574,7 @@ component("chrome_features") {
     "//rlz/buildflags",
   ]
 
-  public_deps = [
-    "//ui/base:buildflags",
-  ]
+  public_deps = [ "//ui/base:buildflags" ]
 }
 
 static_library("constants") {
@@ -782,9 +776,7 @@ mojom("mojo_bindings") {
 }
 
 mojom("search_mojom") {
-  sources = [
-    "search.mojom",
-  ]
+  sources = [ "search.mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",
@@ -798,32 +790,20 @@ if (enable_print_preview && !is_chromeos) {
       "cloud_print.mojom",
       "service_process.mojom",
     ]
-    public_deps = [
-      "//mojo/public/mojom/base",
-    ]
+    public_deps = [ "//mojo/public/mojom/base" ]
   }
 }
 
 mojom("supervised_user_commands_mojom") {
-  sources = [
-    "supervised_user_commands.mojom",
-  ]
+  sources = [ "supervised_user_commands.mojom" ]
 }
 
 mojom("available_offline_content_mojom") {
-  sources = [
-    "available_offline_content.mojom",
-  ]
-  public_deps = [
-    "//url/mojom:url_mojom_gurl",
-  ]
+  sources = [ "available_offline_content.mojom" ]
+  public_deps = [ "//url/mojom:url_mojom_gurl" ]
 }
 
 mojom("offline_page_auto_fetcher_mojom") {
-  sources = [
-    "offline_page_auto_fetcher.mojom",
-  ]
-  public_deps = [
-    "//url/mojom:url_mojom_gurl",
-  ]
+  sources = [ "offline_page_auto_fetcher.mojom" ]
+  public_deps = [ "//url/mojom:url_mojom_gurl" ]
 }

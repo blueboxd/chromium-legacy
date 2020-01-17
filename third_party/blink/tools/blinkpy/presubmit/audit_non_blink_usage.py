@@ -169,6 +169,9 @@ _CONFIG = [
             'base::ClampSub',
             'base::MakeClampedNum',
 
+            # //base/template_util.h.
+            'base::void_t',
+
             # Debugging helpers from //base/debug are allowed everywhere.
             'base::debug::.+',
 

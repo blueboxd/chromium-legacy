@@ -90,7 +90,7 @@ bool BlockLengthUnresolvable(
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max) {
   if (length.IsAuto() || length.IsMinContent() || length.IsMaxContent() ||
-      length.IsFitContent() || length.IsMaxSizeNone())
+      length.IsFitContent() || length.IsNone())
     return true;
   if (length.IsPercentOrCalc()) {
     if (phase == LengthResolvePhase::kIntrinsic)
@@ -168,7 +168,7 @@ LayoutUnit ResolveInlineLengthInternal(
     case Length::kExtendToZoom:
       NOTREACHED() << "These should only be used for viewport definitions";
       FALLTHROUGH;
-    case Length::kMaxSizeNone:
+    case Length::kNone:
     default:
       NOTREACHED();
       return border_padding.InlineSum();
@@ -235,7 +235,7 @@ LayoutUnit ResolveBlockLengthInternal(
     case Length::kExtendToZoom:
       NOTREACHED() << "These should only be used for viewport definitions";
       FALLTHROUGH;
-    case Length::kMaxSizeNone:
+    case Length::kNone:
     default:
       NOTREACHED();
       return border_padding.BlockSum();

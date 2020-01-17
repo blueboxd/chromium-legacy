@@ -4,6 +4,7 @@
   }
 
   div[slot=body] {
+    color: var(--cr-primary-text-color);
     display: flex;
     flex-direction: row;
     min-height: 423px;
@@ -19,7 +20,6 @@
   .menu-item {
     align-items: center;
     border-radius: 0 16px 16px 0;
-    box-sizing: border-box;
     cursor: pointer;
     display: flex;
     flex-direction: row;
@@ -44,13 +44,7 @@
   }
 
   :host-context(.focus-outline-visible) .menu-item:focus {
-    border-color: rgba(var(--google-blue-600-rgb), .4);
-    border-style: solid solid solid none;
-    border-width: 2px;
-  }
-
-  :host-context(.focus-outline-visible[dir=rtl]) .menu-item:focus {
-    border-style: solid none solid solid;
+    background-color: rgba(var(--google-grey-900-rgb), .16);
   }
 
   .menu-item-icon {
@@ -112,9 +106,7 @@
       <!-- TODO(crbug.com/1032328): Add support for selecting background
            image. -->
       <div page-name="backgrounds">backgrounds</div>
-      <!-- TODO(crbug.com/1032333): Add support for selecting shortcuts vs most
-           visited. -->
-      <div page-name="shortcuts">shortcuts</div>
+      <ntp-customize-shortcuts page-name="shortcuts"></ntp-customize-shortcuts>
       <ntp-customize-themes page-name="themes" theme="[[theme]]">
       </ntp-customize-themes>
     </iron-pages>

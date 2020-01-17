@@ -321,8 +321,8 @@ TEST_F(PrintBackendCupsIppUtilTest, AdvancedCaps) {
   printer_->SetSupportedOptions(
       "job-creation-attributes",
       MakeStringCollection(
-          ipp_, {"copies", "ipp-attribute-fidelity", "finishings", "job-name",
-                 "output-bin", "print-quality"}));
+          ipp_, {"copies", "confirmation-sheet-print", "finishings",
+                 "job-message-to-operator", "output-bin", "print-quality"}));
   printer_->SetSupportedOptions("finishings",
                                 MakeIntCollection(ipp_, {3, 7, 10}));
   printer_->SetSupportedOptions(
@@ -334,13 +334,13 @@ TEST_F(PrintBackendCupsIppUtilTest, AdvancedCaps) {
   CapsAndDefaultsFromPrinter(*printer_, &caps);
 
   EXPECT_EQ(6u, caps.advanced_capabilities.size());
-  EXPECT_EQ("ipp-attribute-fidelity", caps.advanced_capabilities[0].name);
+  EXPECT_EQ("confirmation-sheet-print", caps.advanced_capabilities[0].name);
   EXPECT_EQ(base::Value::Type::BOOLEAN, caps.advanced_capabilities[0].type);
   EXPECT_EQ("finishings/7", caps.advanced_capabilities[1].name);
   EXPECT_EQ(base::Value::Type::BOOLEAN, caps.advanced_capabilities[1].type);
   EXPECT_EQ("finishings/10", caps.advanced_capabilities[2].name);
   EXPECT_EQ(base::Value::Type::BOOLEAN, caps.advanced_capabilities[2].type);
-  EXPECT_EQ("job-name", caps.advanced_capabilities[3].name);
+  EXPECT_EQ("job-message-to-operator", caps.advanced_capabilities[3].name);
   EXPECT_EQ(base::Value::Type::STRING, caps.advanced_capabilities[3].type);
   EXPECT_EQ("output-bin", caps.advanced_capabilities[4].name);
   EXPECT_EQ(2u, caps.advanced_capabilities[4].values.size());

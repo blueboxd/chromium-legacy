@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Media History</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
+  <script src="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js"></script>
+  <script src="chrome://resources/js/promise_resolver.js"></script>
+  <script src="chrome://resources/js/util.js"></script>
+
+  <script src="chrome/browser/media/history/media_history_store.mojom-lite.js">
+  </script>
+
+  <script src="chrome://media-history/media-history.js"></script>
+  <style>
+    body {
+      font-family: 'Roboto', 'Noto', sans-serif;
+      font-size: 14px;
+    }
+
+    button {
+      margin-bottom: 20px;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    table td,
+    table th {
+      border: 1px solid #777;
+      padding-inline-end: 4px;
+      padding-inline-start: 4px;
+    }
+
+    table th {
+      background: rgb(224, 236, 255);
+      cursor: pointer;
+      padding-bottom: 4px;
+      padding-inline-end: 4px;
+      padding-top: 4px;
+      white-space: nowrap;
+    }
+
+    .name-cell {
+      background-color: rgba(230, 230, 230, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <h1>Media History</h1>
+  <button id="copy-all-to-clipboard">Copy all to clipboard</button>
+  <table>
+    <thead>
+      <tr id="stats-table-header">
+        <th>
+          Table Name
+        </th>
+        <th>
+          Row Count
+        </th>
+      </tr>
+    </thead>
+    <tbody id="stats-table-body">
+    </tbody>
+  </table>
+
+  <template id="stats-row">
+    <tr>
+      <td class="name-cell"></td>
+      <td></td>
+    </tr>
+  </template>
+</body>
+</html>

@@ -140,7 +140,7 @@ Polymer({
   keyEventCallback_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.nativeLayer_ = NativeLayer.getInstance();
     this.addWebUIListener(
         'page-preview-ready', this.onPagePreviewReady_.bind(this));
@@ -153,7 +153,7 @@ Polymer({
   },
 
   /** @override */
-  created: function() {
+  created() {
     this.pluginProxy_ = PluginProxy.getInstance();
   },
 
@@ -161,12 +161,12 @@ Polymer({
    * @return {boolean} Whether the preview is loaded.
    * @private
    */
-  computePreviewLoaded_: function() {
+  computePreviewLoaded_() {
     return this.documentReady_ && this.pluginLoaded_;
   },
 
   /** @return {boolean} Whether the preview is loaded. */
-  previewLoaded: function() {
+  previewLoaded() {
     return this.previewLoaded_;
   },
 
@@ -176,7 +176,7 @@ Polymer({
    * @param {!Event} event Contains element pointer moved from.
    * @private
    */
-  onPointerOver_: function(event) {
+  onPointerOver_(event) {
     const marginControlContainer = this.$.marginControlContainer;
     let fromElement = event.fromElement;
     while (fromElement !== null) {
@@ -195,7 +195,7 @@ Polymer({
    * @param {!Event} event Contains element pointer moved to.
    * @private
    */
-  onPointerOut_: function(event) {
+  onPointerOut_(event) {
     const marginControlContainer = this.$.marginControlContainer;
     let toElement = event.toElement;
     while (toElement !== null) {
@@ -209,7 +209,7 @@ Polymer({
   },
 
   /** @private */
-  pluginOrDocumentStatusChanged_: function() {
+  pluginOrDocumentStatusChanged_() {
     if (!this.pluginLoaded_ || !this.documentReady_ ||
         this.previewState === PreviewAreaState.ERROR) {
       return;
@@ -225,7 +225,7 @@ Polymer({
    * @return {string} 'invisible' if overlay is invisible, '' otherwise.
    * @private
    */
-  getInvisible_: function() {
+  getInvisible_() {
     return this.isInDisplayPreviewState_() ? 'invisible' : '';
   },
 
@@ -233,7 +233,7 @@ Polymer({
    * @return {string} 'true' if overlay is aria-hidden, 'false' otherwise.
    * @private
    */
-  getAriaHidden_: function() {
+  getAriaHidden_() {
     return this.isInDisplayPreviewState_().toString();
   },
 
@@ -241,7 +241,7 @@ Polymer({
    * @return {boolean} Whether the preview area is in DISPLAY_PREVIEW state.
    * @private
    */
-  isInDisplayPreviewState_: function() {
+  isInDisplayPreviewState_() {
     return this.previewState === PreviewAreaState.DISPLAY_PREVIEW;
   },
 
@@ -249,7 +249,7 @@ Polymer({
    * @return {boolean} Whether the preview is currently loading.
    * @private
    */
-  isPreviewLoading_: function() {
+  isPreviewLoading_() {
     return this.previewState === PreviewAreaState.LOADING;
   },
 
@@ -257,7 +257,7 @@ Polymer({
    * @return {string} 'jumping-dots' to enable animation, '' otherwise.
    * @private
    */
-  getJumpingDots_: function() {
+  getJumpingDots_() {
     return this.isPreviewLoading_() ? 'jumping-dots' : '';
   },
 
@@ -266,7 +266,7 @@ Polymer({
    *     page should be shown.
    * @private
    */
-  shouldShowLearnMoreLink_: function() {
+  shouldShowLearnMoreLink_() {
     return this.error === Error.UNSUPPORTED_PRINTER;
   },
 
@@ -274,7 +274,7 @@ Polymer({
    * @return {string} The current preview area message to display.
    * @private
    */
-  currentMessage_: function() {
+  currentMessage_() {
     switch (this.previewState) {
       case PreviewAreaState.LOADING:
         return this.i18n('loading');
@@ -298,7 +298,7 @@ Polymer({
    * @param {boolean} forceUpdate Whether to force the preview area to update
    *     regardless of whether the print ticket has changed.
    */
-  startPreview: function(forceUpdate) {
+  startPreview(forceUpdate) {
     if (!this.hasTicketChanged_() && !forceUpdate &&
         this.previewState !== PreviewAreaState.ERROR) {
       return;
@@ -325,7 +325,7 @@ Polymer({
 
   // <if expr="is_macosx">
   /** Set the preview state to display the "opening in preview" message. */
-  setOpeningPdfInPreview: function() {
+  setOpeningPdfInPreview() {
     assert(isMac);
     this.previewState = this.previewState === PreviewAreaState.LOADING ?
         PreviewAreaState.OPEN_IN_PREVIEW_LOADING :
@@ -338,7 +338,7 @@ Polymer({
    * @param {number} index The index of the page to preview.
    * @private
    */
-  onPreviewStart_: function(previewUid, index) {
+  onPreviewStart_(previewUid, index) {
     if (!this.pluginProxy_.pluginReady()) {
       const plugin = this.pluginProxy_.createPlugin(previewUid, index);
       this.pluginProxy_.setKeyEventCallback(this.keyEventCallback_);
@@ -367,7 +367,7 @@ Polymer({
    * @param {boolean} success Whether the plugin load succeeded or not.
    * @private
    */
-  onPluginLoad_: function(success) {
+  onPluginLoad_(success) {
     if (success) {
       this.pluginLoaded_ = true;
     } else {
@@ -387,7 +387,7 @@ Polymer({
    * @param {number} viewportHeight The viewport height in pixels.
    * @private
    */
-  onPreviewVisualStateChange_: function(
+  onPreviewVisualStateChange_(
       pageX, pageY, pageWidth, viewportWidth, viewportHeight) {
     // Ensure the PDF viewer isn't tabbable if the window is small enough that
     // the zoom toolbar isn't displayed.
@@ -409,7 +409,7 @@ Polymer({
    *     preview is a response to.
    * @private
    */
-  onPagePreviewReady_: function(pageIndex, previewUid, previewResponseId) {
+  onPagePreviewReady_(pageIndex, previewUid, previewResponseId) {
     if (this.inFlightRequestId_ !== previewResponseId) {
       return;
     }
@@ -431,7 +431,7 @@ Polymer({
   },
 
   /** @private */
-  onDarkModeChanged_: function() {
+  onDarkModeChanged_() {
     if (this.pluginProxy_.pluginReady()) {
       this.pluginProxy_.darkModeChanged(this.inDarkMode);
     }
@@ -446,7 +446,7 @@ Polymer({
    * the preview plugin.
    * @param {!KeyboardEvent} e Keyboard event to process.
    */
-  handleDirectionalKeyEvent: function(e) {
+  handleDirectionalKeyEvent(e) {
     // Make sure the PDF plugin is there.
     // We only care about: PageUp, PageDown, Left, Up, Right, Down.
     // If the user is holding a modifier key, ignore.
@@ -487,7 +487,7 @@ Polymer({
   /**
    * Sends a message to the plugin to hide the toolbars after a delay.
    */
-  hideToolbars: function() {
+  hideToolbars() {
     if (!this.pluginProxy_.pluginReady()) {
       return;
     }
@@ -501,14 +501,14 @@ Polymer({
    * @param {function(KeyboardEvent)} callback The callback to be called with
    *     a key event.
    */
-  setPluginKeyEventCallback: function(callback) {
+  setPluginKeyEventCallback(callback) {
     this.keyEventCallback_ = callback;
   },
 
   /**
    * Called when dragging margins starts or stops.
    */
-  onMarginDragChanged_: function(e) {
+  onMarginDragChanged_(e) {
     if (!this.pluginProxy_.pluginReady()) {
       return;
     }
@@ -525,7 +525,7 @@ Polymer({
    *     where the plugin should scroll to.
    * @private
    */
-  onTextFocusPosition_: function(e) {
+  onTextFocusPosition_(e) {
     // TODO(tkent): This is a workaround of a preview-area scrolling
     // issue. Blink scrolls preview-area on focus, but we don't want it.  We
     // should adjust scroll position of PDF preview and positions of
@@ -547,7 +547,7 @@ Polymer({
    * @return {boolean} Whether margin settings are valid for the print ticket.
    * @private
    */
-  marginsValid_: function() {
+  marginsValid_() {
     const type = this.getSettingValue('margins');
     if (!Object.values(MarginsType).includes(type)) {
       // Unrecognized margins type.
@@ -569,7 +569,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasTicketChanged_: function() {
+  hasTicketChanged_() {
     if (!this.marginsValid_()) {
       // Log so that we can try to debug how this occurs. See
       // https://crbug.com/942211
@@ -668,13 +668,13 @@ Polymer({
   },
 
   /** @return {number} Native color model of the destination. */
-  getColorForTicket_: function() {
+  getColorForTicket_() {
     return this.destination.getNativeColorModel(
         /** @type {boolean} */ (this.getSettingValue('color')));
   },
 
   /** @return {number} Scale factor for print ticket. */
-  getScaleFactorForTicket_: function() {
+  getScaleFactorForTicket_() {
     return this.getSettingValue(this.getScalingSettingKey_()) ===
             ScalingType.CUSTOM ?
         parseInt(this.getSettingValue('scaling'), 10) :
@@ -682,7 +682,7 @@ Polymer({
   },
 
   /** @return {string} Appropriate key for the scaling type setting. */
-  getScalingSettingKey_: function() {
+  getScalingSettingKey_() {
     return this.getSetting('scalingTypePdf').available ? 'scalingTypePdf' :
                                                          'scalingType';
   },
@@ -692,7 +692,7 @@ Polymer({
    * @return {boolean} Whether new scaling settings update the previewed
    *     document.
    */
-  isScalingChanged_: function(lastTicket) {
+  isScalingChanged_(lastTicket) {
     // Preview always updates if the scale factor is changed.
     if (this.getScaleFactorForTicket_() !== lastTicket.scaleFactor) {
       return true;
@@ -719,7 +719,7 @@ Polymer({
    * @param {string} dpiField The field in dpi to retrieve.
    * @return {number} Field value.
    */
-  getDpiForTicket_: function(dpiField) {
+  getDpiForTicket_(dpiField) {
     const dpi =
         /**
            @type {{horizontal_dpi: (number | undefined),
@@ -736,7 +736,7 @@ Polymer({
    * @return {!Promise} Promise that resolves when the preview has been
    *     generated.
    */
-  getPreview_: function() {
+  getPreview_() {
     this.inFlightRequestId_++;
     const ticket = {
       pageRange: this.getSettingValue('ranges'),
@@ -782,7 +782,7 @@ Polymer({
   },
 
   /** @private */
-  onStateOrErrorChange_: function() {
+  onStateOrErrorChange_() {
     if ((this.state === State.ERROR || this.state === State.FATAL_ERROR) &&
         this.getErrorMessage_() !== '') {
       this.previewState = PreviewAreaState.ERROR;
@@ -790,7 +790,7 @@ Polymer({
   },
 
   /** @return {string} The error message to display in the preview area. */
-  getErrorMessage_: function() {
+  getErrorMessage_() {
     switch (this.error) {
       case Error.INVALID_PRINTER:
         return this.i18nAdvanced('invalidPrinterSettings', {

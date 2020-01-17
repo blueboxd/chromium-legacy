@@ -39,10 +39,11 @@ void MockModelTypeProcessor::GetLocalChanges(size_t max_entries,
 
 void MockModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
-    const CommitResponseDataList& response_list) {
-  pending_tasks_.push_back(
-      base::BindOnce(&MockModelTypeProcessor::OnCommitCompletedImpl,
-                     base::Unretained(this), type_state, response_list));
+    const CommitResponseDataList& committed_response_list,
+    const FailedCommitResponseDataList& error_response_list) {
+  pending_tasks_.push_back(base::BindOnce(
+      &MockModelTypeProcessor::OnCommitCompletedImpl, base::Unretained(this),
+      type_state, committed_response_list, error_response_list));
   if (is_synchronous_)
     RunQueuedTasks();
 }
@@ -207,10 +208,12 @@ int MockModelTypeProcessor::GetLocalChangesCallCount() const {
 
 void MockModelTypeProcessor::OnCommitCompletedImpl(
     const sync_pb::ModelTypeState& type_state,
-    const CommitResponseDataList& response_list) {
-  received_commit_responses_.push_back(response_list);
+    const CommitResponseDataList& committed_response_list,
+    const FailedCommitResponseDataList& error_response_list) {
+  received_commit_responses_.push_back(committed_response_list);
   type_states_received_on_commit_.push_back(type_state);
-  for (auto it = response_list.begin(); it != response_list.end(); ++it) {
+  for (auto it = committed_response_list.begin();
+       it != committed_response_list.end(); ++it) {
     const ClientTagHash& tag_hash = it->client_tag_hash;
     commit_response_items_.insert(std::make_pair(tag_hash, *it));
 

@@ -314,7 +314,7 @@ suite('SiteList', function() {
     closeActionMenu();
     // The code being tested changes the Route. Reset so that state is not
     // leaked across tests.
-    settings.resetRouteForTesting();
+    settings.Router.getInstance().resetRouteForTesting();
 
     if (cr.isChromeOS) {
       // Reset multidevice enabled flag.
@@ -829,7 +829,7 @@ suite('SiteList', function() {
           clickable.click();
           assertEquals(
               prefsGeolocation.exceptions[contentType][0].origin,
-              settings.getQueryParameters().get('site'));
+              settings.Router.getInstance().getQueryParameters().get('site'));
         });
   });
 

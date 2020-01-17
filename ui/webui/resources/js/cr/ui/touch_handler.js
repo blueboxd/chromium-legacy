@@ -398,7 +398,7 @@ cr.define('cr.ui', function() {
         e.touches = [];
         e.targetTouches = [];
         e.changedTouches = [touch];
-        if (e.type != 'mouseup') {
+        if (e.type !== 'mouseup') {
           e.touches[0] = touch;
           e.targetTouches[0] = touch;
         }
@@ -494,7 +494,7 @@ cr.define('cr.ui', function() {
       // Sign up for end/cancel notifications for this touch.
       // Note that we do this on the document so that even if the user drags
       // their finger off the element, we'll still know what they're doing.
-      if (e.type == 'mousedown') {
+      if (e.type === 'mousedown') {
         this.events_.add(
             document, 'mouseup',
             this.mouseToTouchCallback_(this.onEnd_.bind(this)), false);
@@ -515,7 +515,7 @@ cr.define('cr.ui', function() {
           !!this.dispatchEvent_(TouchHandler.EventType.TOUCH_START, touch);
 
       // We want dragging notifications
-      if (e.type == 'mousedown') {
+      if (e.type === 'mousedown') {
         this.events_.add(
             document, 'mousemove',
             this.mouseToTouchCallback_(this.onMove_.bind(this)), false);
@@ -548,7 +548,7 @@ cr.define('cr.ui', function() {
       // A TouchList isn't actually an array, so we shouldn't use
       // Array.prototype.filter/some, etc.
       for (let i = 0; i < touches.length; i++) {
-        if (touches[i].identifier == this.activeTouch_) {
+        if (touches[i].identifier === this.activeTouch_) {
           return touches[i];
         }
       }
@@ -791,8 +791,8 @@ cr.define('cr.ui', function() {
       this.disableTap_ = true;
 
       // Dispatch to the LONG_PRESS
-      assert(typeof this.startTouchX_ == 'number');
-      assert(typeof this.startTouchY_ == 'number');
+      assert(typeof this.startTouchX_ === 'number');
+      assert(typeof this.startTouchY_ === 'number');
       this.dispatchEventXY_(
           TouchHandler.EventType.LONG_PRESS, this.element_,
           /** @type {number} */ (this.startTouchX_),
@@ -829,7 +829,7 @@ cr.define('cr.ui', function() {
       // we'll treat both cases the same and not depend on the target.
       /** @type {Element} */
       let touchedElement;
-      if (eventType == TouchHandler.EventType.TOUCH_START) {
+      if (eventType === TouchHandler.EventType.TOUCH_START) {
         touchedElement = assertInstanceof(touch.target, Element);
       } else {
         touchedElement = assert(this.element_.ownerDocument.elementFromPoint(
@@ -852,9 +852,9 @@ cr.define('cr.ui', function() {
      */
     dispatchEventXY_(eventType, touchedElement, clientX, clientY) {
       const isDrag =
-          (eventType == TouchHandler.EventType.DRAG_START ||
-           eventType == TouchHandler.EventType.DRAG_MOVE ||
-           eventType == TouchHandler.EventType.DRAG_END);
+          (eventType === TouchHandler.EventType.DRAG_START ||
+           eventType === TouchHandler.EventType.DRAG_MOVE ||
+           eventType === TouchHandler.EventType.DRAG_END);
 
       // Drag events don't bubble - we're really just dragging the element,
       // not affecting its parent at all.
@@ -864,9 +864,9 @@ cr.define('cr.ui', function() {
           eventType, bubbles, clientX, clientY, touchedElement);
 
       // Set enableDrag when it can be overridden
-      if (eventType == TouchHandler.EventType.TOUCH_START) {
+      if (eventType === TouchHandler.EventType.TOUCH_START) {
         event.enableDrag = false;
-      } else if (eventType == TouchHandler.EventType.DRAG_START) {
+      } else if (eventType === TouchHandler.EventType.DRAG_START) {
         event.enableDrag = true;
       }
 

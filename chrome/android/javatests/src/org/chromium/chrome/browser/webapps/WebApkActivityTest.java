@@ -19,13 +19,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.tab.TabTestUtils;
@@ -37,8 +35,6 @@ import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
-import org.chromium.content_public.browser.test.util.Criteria;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -136,62 +132,6 @@ public final class WebApkActivityTest {
                 customTabActivity.getActivityTab().getWebContents(),
                 String.format("window.location.href='%s'", inScopeUrl));
         ChromeTabUtils.waitForTabPageLoaded(customTabActivity.getActivityTab(), inScopeUrl);
-    }
-
-    /**
-     * Test that on first launch:
-     * - the "WebApk.LaunchInterval" histogram is not recorded (because there is no previous launch
-     *   to compute the interval from).
-     * - the "last used" time is updated (to compute future "launch intervals").
-     */
-    @Test
-    @LargeTest
-    @Feature({"WebApk"})
-    public void testLaunchIntervalHistogramNotRecordedOnFirstLaunch() {
-        final String histogramName = "WebApk.LaunchInterval";
-        WebApkActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
-                getTestServerUrl("manifest_test_page.html"), getTestServerUrl("/")));
-
-        CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
-            @Override
-            public boolean isSatisfied() {
-                return DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp()
-                        && WebappRegistry.getInstance().getWebappDataStorage(TEST_WEBAPK_ID)
-                        != null;
-            }
-        });
-        Assert.assertEquals(0, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
-        WebappDataStorage storage =
-                WebappRegistry.getInstance().getWebappDataStorage(TEST_WEBAPK_ID);
-        Assert.assertNotEquals(WebappDataStorage.TIMESTAMP_INVALID, storage.getLastUsedTimeMs());
-    }
-
-    /** Test that the "WebApk.LaunchInterval" histogram is recorded on susbequent launches. */
-    @Test
-    @LargeTest
-    @Feature({"WebApk"})
-    public void testLaunchIntervalHistogramRecordedOnSecondLaunch() throws Exception {
-        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
-
-        final String histogramName = "WebApk.LaunchInterval2";
-        final String packageName = "org.chromium.webapk.test";
-
-        WebappDataStorage storage = registerWithStorage(TEST_WEBAPK_ID);
-        storage.setHasBeenLaunched();
-        storage.updateLastUsedTime();
-        Assert.assertEquals(0, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
-
-        WebApkActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
-                getTestServerUrl("manifest_test_page.html"), getTestServerUrl("/")));
-
-        CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
-            @Override
-            public boolean isSatisfied() {
-                return DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp();
-            }
-        });
-
-        Assert.assertEquals(1, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
     }
 
     /**

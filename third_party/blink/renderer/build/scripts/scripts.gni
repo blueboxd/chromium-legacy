@@ -93,9 +93,7 @@ make_core_generated_deps = [
 template("blink_python_runner") {
   action(target_name) {
     script = "$_scripts_dir/run_with_pythonpath.py"
-    sources = [
-      invoker.script,
-    ]
+    sources = [ invoker.script ]
     if (defined(invoker.sources)) {
       sources += invoker.sources
     }

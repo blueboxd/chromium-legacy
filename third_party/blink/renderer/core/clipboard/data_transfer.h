@@ -72,9 +72,7 @@ class CORE_EXPORT DataTransfer final : public ScriptWrappable,
                               DataTransferAccessPolicy,
                               DataObject*);
 
-  explicit DataTransfer(DataTransferType,
-                        DataTransferAccessPolicy,
-                        DataObject*);
+  DataTransfer(DataTransferType, DataTransferAccessPolicy, DataObject*);
   ~DataTransfer() override;
 
   bool IsForCopyAndPaste() const { return transfer_type_ == kCopyAndPaste; }

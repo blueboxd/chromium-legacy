@@ -33,9 +33,7 @@ static_library("grpc_support") {
 }
 
 cc_grpc_library("unit_tests_grpc_library") {
-  sources = [
-    "grpc_support_test_services.proto",
-  ]
+  sources = [ "grpc_support_test_services.proto" ]
 }
 
 source_set("unit_tests") {

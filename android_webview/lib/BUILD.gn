@@ -59,9 +59,7 @@ source_set("webview_entry_point") {
     ":lib",
     "//base",
   ]
-  sources = [
-    "webview_entry_point.cc",
-  ]
+  sources = [ "webview_entry_point.cc" ]
 
   if (webview_includes_weblayer) {
     defines = [ "WEBVIEW_INCLUDES_WEBLAYER" ]

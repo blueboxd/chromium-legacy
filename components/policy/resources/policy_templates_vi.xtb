@@ -375,12 +375,6 @@
       Chính sách này sẽ bị loại bỏ trong Chrome 88.
 
       Vui lòng xem tại https://www.chromestatus.com/feature/5989473649164288.</translation>
-<translation id="1559980755219453326">Chính sách này kiểm soát việc có nên báo cáo thông tin về tiện ích và plugin hay không.
-
-      Khi bạn không đặt hoặc đặt chính sách này thành True, thì dữ liệu về tiện ích và plugin sẽ được thu thập.
-      Khi bạn đặt chính sách này thành False, thì dữ liệu về tiện ích và plugin sẽ không được thu thập.
-
-      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1560205870554624777">Kiểm soát việc có bật chức năng Kerberos hay không. Kerberos là một giao thức xác thực có thể dùng để xác thực cho các ứng dụng web và các mục chia sẻ tệp.
 
           Nếu bạn bật chính sách này thì chức năng Kerberos sẽ bật. Người dùng có thể thêm các tài khoản Kerberos thông qua chính sách 'Định cấu hình các tài khoản Kerberos' hoặc thông qua phần cài đặt của Tài khoản Kerberos trên trang cài đặt Mọi người.
@@ -733,12 +727,6 @@
 
       Nếu bạn không đặt chính sách này, thì tùy chọn này tương đương với tùy chọn cài đặt đang bật, hãy xem mô tả ở trên.</translation>
 <translation id="2113068765175018713">Giới hạn thời gian hoạt động của thiết bị bằng cách tự động khởi động lại</translation>
-<translation id="2116790137063002724">Chính sách này kiểm soát xem có báo cáo thông tin dùng để nhận dạng người dùng, chẳng hạn như thông tin đăng nhập trên hệ điều hành, thông tin đăng nhập hồ sơ trên <ph name="PRODUCT_NAME" />, tên hồ sơ trên <ph name="PRODUCT_NAME" />, đường dẫn hồ sơ trên <ph name="PRODUCT_NAME" /> và đường dẫn thực thi trên <ph name="PRODUCT_NAME" /> hay không.
-
-      Khi không đặt hoặc đặt chính sách này thành True, thông tin có thể dùng để nhận dạng người dùng sẽ được thu thập.
-      Khi đặt chính sách này thành False, thông tin có thể dùng để nhận dạng người dùng sẽ không được thu thập.
-
-      Chính sách này chỉ có hiệu lực khi <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ở trạng thái bật và bạn đã đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Cho phép thông báo trên các trang web này</translation>
 <translation id="2131902621292742709">Độ trễ mờ màn hình khi chạy trên nguồn pin</translation>
 <translation id="2134437727173969994">Cho phép khóa màn hình</translation>
@@ -3073,9 +3061,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
         Nếu bạn đặt chính sách này thành false, thì người dùng không thể gửi ý kiến phản hồi cho Google.
 
         Nếu bạn không đặt chính sách này hoặc đặt chính sách thành true, thì người dùng có thể gửi ý kiến phản hồi cho Google qua Menu-&gt;Trợ giúp-&gt;Báo cáo vấn đề hoặc tổ hợp phím.</translation>
-<translation id="5581292529942108810">Định cấu hình các chính sách liên quan đến Tiện ích báo cáo của Chrome.
-
-      Chính sách này chỉ có hiệu lực khi <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ở trạng thái bật và bạn đã đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5583806683960333345">Nếu bạn bật tùy chọn cài đặt này, người dùng sẽ được phép sử dụng tính năng Chia sẻ kết nối tức thì, điều này cho phép họ chia sẻ dữ liệu di động từ điện thoại Google với thiết bị của họ.
 
       Nếu bạn tắt tùy chọn cài đặt này, người dùng sẽ không được phép sử dụng tính năng Chia sẻ kết nối tức thì.
@@ -3726,12 +3711,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Chỉ định cờ sẽ được áp dụng cho <ph name="PRODUCT_NAME" /> khi khởi động. Cờ được chỉ định sẽ chỉ được áp dụng trên màn hình đăng nhập. Các cờ được đặt qua chính sách này không phản ánh trong các phiên của người dùng.</translation>
 <translation id="685769593149966548">Buộc sử dụng Chế độ hạn chế nghiêm ngặt cho YouTube</translation>
-<translation id="6857824281777105940">Chính sách này kiểm soát việc có nên báo cáo thông tin Duyệt web an toàn, bao gồm cả số lần cảnh báo Duyệt web an toàn và số lần nhấp qua cảnh báo duyệt web an toàn, hay không.
-
-      Khi bạn không đặt chính sách này hoặc đặt thành True, thì dữ liệu Duyệt web an toàn sẽ được thu thập.
-      Khi bạn đặt chính sách này thành False thì dữ liệu Duyệt web an toàn sẽ không được thu thập.
-
-      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="686079137349561371">Microsoft Windows 7 trở lên</translation>
 <translation id="6864244339257535116">Cho phép tải lên và tải xuống các tệp được bảo vệ bằng mật khẩu</translation>
 <translation id="687046793986382807">Chính sách này sẽ được xóa bỏ kể từ phiên bản 35 của <ph name="PRODUCT_NAME" />.
@@ -4086,12 +4065,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7311458740754205918">Nếu giá trị này được đặt thành true hoặc không được đặt, trang Tab mới có thể hiển thị đề xuất nội dung dựa trên lịch sử duyệt web, sở thích hoặc vị trí của người dùng.
 
       Nếu giá trị này được đặt thành false, các đề xuất nội dung được tạo tự động sẽ không hiển thị trên trang Tab mới.</translation>
-<translation id="7313793931637495417">Chính sách này kiểm soát xem có báo cáo thông tin phiên bản, chẳng hạn như phiên bản hệ điều hành, nền tảng hệ điều hành, cấu trúc hệ điều hành, phiên bản <ph name="PRODUCT_NAME" /> và kênh <ph name="PRODUCT_NAME" /> hay không.
-
-      Khi không đặt chính sách này hoặc đặt thành True, thông tin phiên bản sẽ được thu thập.
-      Khi đặt chính sách này thành False, thông tin phiên bản sẽ không được thu thập.
-
-      Chính sách này chỉ có hiệu lực khi <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ở trạng thái bật và bạn đã đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Tham số dòng lệnh bổ sung cho <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Tương tự như Wipe (giá trị 2) nhưng cố gắng giữ lại mã đăng nhập để người dùng không phải đăng nhập lại.</translation>
 <translation id="7329968046053403405">Chỉ định loại tài khoản của các tài khoản được ứng dụng xác thực Android có hỗ trợ xác thực <ph name="HTTP_NEGOTIATE" /> (ví dụ: xác thực Kerberos) cung cấp. Thông tin này có sẵn từ nhà cung cấp ứng dụng xác thực. Để biết thêm chi tiết, hãy xem https://goo.gl/hajyfN.
@@ -4114,12 +4087,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7339315111520512972">Buộc mã nối mạng chạy trong quá trình chạy trình duyệt</translation>
 <translation id="7340034977315324840">Báo cáo thời gian hoạt động của thiết bị</translation>
 <translation id="7343497214039883642">Tệp cấu hình máy dành cho in doanh nghiệp cho các thiết bị</translation>
-<translation id="735902178936442460">Chính sách này kiểm soát xem có báo cáo thông tin dùng để nhận dạng máy, chẳng hạn như tên máy và địa chỉ mạng hay không.
-
-      Khi không đặt chính sách này hoặc đặt thành True, thông tin dùng để nhận dạng máy sẽ được thu thập.
-      Khi đặt chính sách này thành False, thông tin dùng để nhận dạng máy sẽ không được thu thập.
-
-      Chính sách này chỉ có hiệu lực khi <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ở trạng thái bật và bạn đã đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7359307926583593395">
       Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem cả chính sách <ph name="SITE_PER_PROCESS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách về cùng một giá trị. Nếu các giá trị không khớp nhau, thì có thể xảy ra tình trạng chậm trễ khi vào một phiên người dùng mặc dù đang áp dụng giá trị do chính sách người dùng chỉ định.
       </translation>
@@ -4527,12 +4494,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu bạn bật hoặc không đặt tùy chọn cài đặt này, thì các trang web sẽ được phép kiểm tra xem người dùng đã lưu phương thức thanh toán hay chưa.</translation>
 <translation id="8118665053362250806">Đặt kích thước bộ nhớ đệm của đĩa phương tiện</translation>
 <translation id="8124468781472887384">Chính sách truy cập vào cấu hình máy in kết nối với thiết bị.</translation>
-<translation id="8138009212169037227">Chính sách này kiểm soát xem có báo cáo dữ liệu chính sách và thời gian tìm nạp chính sách hay không.
-
-      Khi không đặt chính sách này hoặc đặt thành True, dữ liệu chính sách và thời gian tìm nạp chính sách sẽ được thu thập.
-      Khi đặt chính sách này thành False, dữ liệu chính sách và thời gian tìm nạp chính sách sẽ không được thu thập.
-
-      Chính sách này chỉ có hiệu lực khi <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ở trạng thái bật và bạn đã đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Danh sách báo cáo giao diện mạng chứa thông tin về loại và địa chỉ phần cứng đến máy chủ.
 
       Nếu chính sách được đặt giá trị thành sai, danh sách giao diện sẽ không được báo cáo.</translation>

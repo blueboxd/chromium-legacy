@@ -24,7 +24,7 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = settings.LocalDataBrowserProxyImpl.getInstance();
   },
 
@@ -33,7 +33,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onRemove_: function(e) {
+  onRemove_(e) {
     e.stopPropagation();
     this.browserProxy_.removeItem(this.model.site);
   },

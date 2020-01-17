@@ -434,6 +434,49 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
   EXPECT_TRUE(GetSyncService(/*index=*/0)->GetExperimentalAuthenticationKey());
 }
 
+// Tests that client can decrypt |pending_keys| with implicit passphrase in
+// backward-compatible keystore mode, when |keystore_decryptor_token| is
+// non-decryptable (corrupted). Additionally verifies that there is no
+// regression causing crbug.com/1042203.
+IN_PROC_BROWSER_TEST_P(
+    SingleClientNigoriSyncTestWithUssTests,
+    ShouldDecryptWithImplicitPassphraseInBackwardCompatibleKeystoreMode) {
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
+      GetFakeServer()->GetKeystoreKeys();
+  ASSERT_THAT(keystore_keys, SizeIs(1));
+
+  // Emulates mismatch between keystore key returned by the server and keystore
+  // key used in NigoriSpecifics.
+  std::vector<uint8_t> corrupted_keystore_key = keystore_keys[0];
+  corrupted_keystore_key.push_back(42u);
+  const KeyParams kKeystoreKeyParams =
+      KeystoreKeyParams(corrupted_keystore_key);
+  const KeyParams kDefaultKeyParams = {
+      syncer::KeyDerivationParams::CreateForPbkdf2(), "password"};
+  SetNigoriInFakeServer(
+      GetFakeServer(),
+      BuildKeystoreNigoriSpecifics(
+          /*keybag_keys_params=*/{kDefaultKeyParams, kKeystoreKeyParams},
+          /*keystore_decryptor_params*/ {kDefaultKeyParams},
+          /*keystore_key_params=*/kKeystoreKeyParams));
+
+  const autofill::PasswordForm password_form =
+      passwords_helper::CreateTestPasswordForm(0);
+  passwords_helper::InjectEncryptedServerPassword(
+      password_form, kDefaultKeyParams.password,
+      kDefaultKeyParams.derivation_params, GetFakeServer());
+  SetupSyncNoWaitingForCompletion();
+
+  EXPECT_TRUE(
+      PassphraseRequiredStateChecker(GetSyncService(0), /*desired_state=*/true)
+          .Wait());
+  EXPECT_TRUE(GetSyncService(0)->GetUserSettings()->SetDecryptionPassphrase(
+      "password"));
+  EXPECT_TRUE(WaitForPasswordForms({password_form}));
+  // TODO(crbug.com/1042251): verify that client fixes NigoriSpecifics once
+  // such behavior is supported.
+}
+
 INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientNigoriSyncTestWithUssTests,
                          ::testing::Values(false, true));

@@ -12,11 +12,10 @@
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/caption_bar.h"
+#include "ash/public/cpp/assistant/assistant_web_view_2.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "services/content/public/cpp/navigable_contents.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -28,12 +27,11 @@ class AssistantWebViewDelegate;
 // standalone Assistant UI.
 // AssistantWebView is a child of AssistantContainerView which allows Assistant
 // UI to render remotely hosted content within its bubble. It provides a
-// CaptionBar for window level controls and embeds web contents with help from
-// the Content Service.
+// CaptionBar for window level controls and embeds WebContents.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
     : public views::View,
       public CaptionBarDelegate,
-      public content::NavigableContentsObserver,
+      public AssistantWebView2::Observer,
       public AssistantUiModelObserver {
  public:
   AssistantWebView(AssistantViewDelegate* assistant_view_delegate,
@@ -45,18 +43,16 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  void OnFocus() override;
-  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
 
   // CaptionBarDelegate:
   bool OnCaptionButtonPressed(AssistantButtonId id) override;
 
-  // content::NavigableContentsObserver:
+  // AssistantWebView2::Observer:
   void DidStopLoading() override;
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
                              bool from_user_gesture) override;
-  void UpdateCanGoBack(bool can_go_back) override;
+  void DidChangeCanGoBack(bool can_go_back) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(
@@ -86,13 +82,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
   AssistantWebViewDelegate* const web_container_view_delegate_;
 
   CaptionBar* caption_bar_ = nullptr;  // Owned by view hierarchy.
-
-  mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;
-  std::unique_ptr<content::NavigableContents> contents_;
+  std::unique_ptr<AssistantWebView2> contents_view_;
 
   bool contents_view_initialized_ = false;
-
-  base::WeakPtrFactory<AssistantWebView> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantWebView);
 };

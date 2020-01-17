@@ -6,9 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/polymer.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":cr_input",
-  ]
+  deps = [ ":cr_input" ]
 }
 
 js_library("cr_input") {
@@ -33,15 +31,12 @@ polymer_modulizer("cr_input_style_css") {
 
 js_type_check("closure_compile_module") {
   is_polymer3 = true
-  deps = [
-    ":cr_input.m",
-  ]
+  deps = [ ":cr_input.m" ]
 }
 
 js_library("cr_input.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_input/cr_input.m.js",
-  ]
+  sources =
+      [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_input/cr_input.m.js" ]
   deps = [
     "../../js:assert.m",
     "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer",

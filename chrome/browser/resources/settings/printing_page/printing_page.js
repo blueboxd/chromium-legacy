@@ -19,7 +19,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.CLOUD_PRINTERS) {
           map.set(settings.routes.CLOUD_PRINTERS.path, '#cloudPrinters');
@@ -30,13 +30,13 @@ Polymer({
   },
 
   // <if expr="not chromeos">
-  onTapLocalPrinters_: function() {
+  onTapLocalPrinters_() {
     settings.PrintingBrowserProxyImpl.getInstance().openSystemPrintDialog();
   },
   // </if>
 
   /** @private */
-  onTapCloudPrinters_: function() {
-    settings.navigateTo(settings.routes.CLOUD_PRINTERS);
+  onTapCloudPrinters_() {
+    settings.Router.getInstance().navigateTo(settings.routes.CLOUD_PRINTERS);
   },
 });

@@ -144,15 +144,28 @@ ShelfModel::RemoveItemAndTakeShelfItemDelegate(const ShelfID& shelf_id) {
   return item;
 }
 
-bool ShelfModel::Swap(int index, bool with_next) {
+bool ShelfModel::CanSwap(int index, bool with_next) const {
   const int target_index = with_next ? index + 1 : index - 1;
 
+  // Out of bounds issues, or trying to swap the first item with the previous
+  // one, or the last item with the next one.
   if (index < 0 || target_index >= item_count() || target_index < 0)
     return false;
 
-  // Only allow swapping two pinned apps or two unpinned apps.
-  if (!SamePinState(items()[index].type, items()[target_index].type))
+  const ShelfItem source_item = items()[index];
+  const ShelfItem target_item = items()[target_index];
+  // Trying to swap two items of different pin states.
+  if (!SamePinState(source_item.type, target_item.type))
     return false;
+
+  return true;
+}
+
+bool ShelfModel::Swap(int index, bool with_next) {
+  if (!CanSwap(index, with_next))
+    return false;
+
+  const int target_index = with_next ? index + 1 : index - 1;
   Move(index, target_index);
   return true;
 }

@@ -47,10 +47,20 @@ std::unique_ptr<PasswordForm> CreateSimplifiedPasswordFormFromWebForm(
     const FieldDataManager* field_data_manager,
     UsernameDetectorCache* username_detector_cache);
 
+std::unique_ptr<FormData> CreateSimplifiedFormDataFromWebForm(
+    const blink::WebFormElement& web_form,
+    const FieldDataManager* field_data_manager,
+    UsernameDetectorCache* username_detector_cache);
+
 // Same as CreateSimlePasswordFormFromWebForm() but for input elements that are
 // not enclosed in <form> element.
 std::unique_ptr<PasswordForm>
 CreateSimplifiedPasswordFormFromUnownedInputElements(
+    const blink::WebLocalFrame& frame,
+    const FieldDataManager* field_data_manager,
+    UsernameDetectorCache* username_detector_cache);
+
+std::unique_ptr<FormData> CreateSimplifiedFormDataFromUnownedInputElements(
     const blink::WebLocalFrame& frame,
     const FieldDataManager* field_data_manager,
     UsernameDetectorCache* username_detector_cache);

@@ -91,7 +91,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldDisableDevMode_: function() {
+  shouldDisableDevMode_() {
     return this.devModeControlledByPolicy || this.isSupervised;
   },
 
@@ -99,7 +99,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTooltipText_: function() {
+  getTooltipText_() {
     return this.i18n(
         this.isSupervised ? 'controlledSettingChildRestriction' :
                             'controlledSettingPolicy');
@@ -109,7 +109,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getIcon_: function() {
+  getIcon_() {
     return this.isSupervised ? 'cr20:kite' : 'cr20:domain';
   },
 
@@ -117,7 +117,7 @@ Polymer({
    * @param {!CustomEvent<boolean>} e
    * @private
    */
-  onDevModeToggleChange_: function(e) {
+  onDevModeToggleChange_(e) {
     this.delegate.setProfileInDevMode(e.detail);
     chrome.metricsPrivate.recordUserAction(
         'Options_ToggleDeveloperMode_' + (e.detail ? 'Enabled' : 'Disabled'));
@@ -128,7 +128,7 @@ Polymer({
    * @param {boolean} previous
    * @private
    */
-  onInDevModeChanged_: function(current, previous) {
+  onInDevModeChanged_(current, previous) {
     const drawer = this.$.devDrawer;
     if (this.inDevMode) {
       if (drawer.hidden) {
@@ -153,7 +153,7 @@ Polymer({
   },
 
   /** @private */
-  onLoadUnpackedTap_: function() {
+  onLoadUnpackedTap_() {
     this.delegate.loadUnpacked().catch(loadError => {
       this.fire('load-error', loadError);
     });
@@ -161,26 +161,26 @@ Polymer({
   },
 
   /** @private */
-  onPackTap_: function() {
+  onPackTap_() {
     chrome.metricsPrivate.recordUserAction('Options_PackExtension');
     this.showPackDialog_ = true;
   },
 
   /** @private */
-  onPackDialogClose_: function() {
+  onPackDialogClose_() {
     this.showPackDialog_ = false;
     this.$.packExtensions.focus();
   },
 
   // <if expr="chromeos">
   /** @private */
-  onKioskTap_: function() {
+  onKioskTap_() {
     this.fire('kiosk-tap');
   },
   // </if>
 
   /** @private */
-  onUpdateNowTap_: function() {
+  onUpdateNowTap_() {
     // If already updating, do not initiate another update.
     if (this.isUpdating_) {
       return;

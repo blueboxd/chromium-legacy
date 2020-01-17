@@ -6,7 +6,5 @@ import("//build/config/jumbo.gni")
 import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("media") {
-  sources = [
-    "webmediaplayer_util.cc",
-  ]
+  sources = [ "webmediaplayer_util.cc" ]
 }

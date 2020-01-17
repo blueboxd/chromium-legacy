@@ -419,4 +419,8 @@ void RangeInputType::ValueAttributeChanged() {
   UpdateView();
 }
 
+bool RangeInputType::IsDraggedSlider() const {
+  return GetSliderThumbElement()->IsActive();
+}
+
 }  // namespace blink

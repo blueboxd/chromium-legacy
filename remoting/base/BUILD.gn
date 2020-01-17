@@ -114,9 +114,7 @@ source_set("authorization") {
     "//net",
   ]
 
-  deps = [
-    "//remoting/proto/remoting/v1:directory_grpc_library",
-  ]
+  deps = [ "//remoting/proto/remoting/v1:directory_grpc_library" ]
 }
 
 source_set("breakpad") {
@@ -129,9 +127,7 @@ source_set("breakpad") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   if (is_mac) {
     deps += [ "//third_party/breakpad" ]
@@ -151,9 +147,7 @@ static_library("test_support") {
     "test_rsa_key_pair.h",
   ]
 
-  deps = [
-    "//remoting/proto",
-  ]
+  deps = [ "//remoting/proto" ]
   public_deps = [
     ":authorization",
     ":base",

@@ -40,9 +40,7 @@ buildflag_header("crash_buildflags") {
 }
 
 group("crash_key") {
-  public_deps = [
-    ":crash_key_lib",
-  ]
+  public_deps = [ ":crash_key_lib" ]
 
   if (use_combined_annotations) {
     public_deps += [ "//third_party/crashpad/crashpad/client" ]
@@ -83,13 +81,9 @@ target(crash_key_target_type, "crash_key_lib") {
     ]
   }
 
-  public_deps = [
-    ":crash_buildflags",
-  ]
+  public_deps = [ ":crash_buildflags" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   if (use_crash_key_stubs) {
     sources += [ "crash_key_stubs.cc" ]

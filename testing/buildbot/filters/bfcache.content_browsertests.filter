@@ -30,7 +30,7 @@
 -RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation
 -RenderProcessHostTest.KeepAliveRendererProcess
 -SitePerProcessBrowserTest.SubframePendingAndBackToSameSiteInstance
--SitePerProcessBrowserTest.SwapOutACKArrivesPriorToProcessShutdownRequest
+-SitePerProcessBrowserTest.UnloadACKArrivesPriorToProcessShutdownRequest
 
 # Expect the swapped out RenderFrameHost to have a replacement proxy. This won't
 # happen when the BackForwardCache is used to store the old document.

@@ -114,7 +114,7 @@ class CC_PAINT_EXPORT PaintOpReader {
   template <typename T>
   void ReadFlattenable(sk_sp<T>* val);
 
-  void SetInvalid();
+  void SetInvalid(bool skip_crash_dump = false);
 
   // The main entry point is Read(sk_sp<PaintFilter>* filter) which calls one of
   // the following functions depending on read type.

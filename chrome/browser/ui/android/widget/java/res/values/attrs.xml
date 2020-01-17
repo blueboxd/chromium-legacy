@@ -10,44 +10,4 @@
         <attr name="menuHorizontalOverlapAnchor" format="boolean" />
         <attr name="menuBackground" format="reference" />
     </declare-styleable>
-
-    <declare-styleable name="MaterialProgressBar">
-        <attr name="colorBackground" format="reference|color" />
-        <attr name="colorProgress" format="reference|color" />
-        <attr name="colorSecondaryProgress" format="reference|color" />
-    </declare-styleable>
-
-    <declare-styleable name="PaddedFrameLayout">
-        <attr name="maxChildWidth" format="dimension" />
-        <attr name="maxChildHeight" format="dimension" />
-    </declare-styleable>
-
-    <declare-styleable name="RadioButtonWithDescription">
-        <attr name="primaryText" format="string" />
-        <attr name="descriptionText" format="string" />
-    </declare-styleable>
-
-    <declare-styleable name="RadioButtonWithEditText">
-        <attr name="android:hint"/>
-        <attr name="android:inputType" />
-    </declare-styleable>
-
-    <declare-styleable name="RoundedCornerImageView">
-        <attr name="cornerRadiusTopStart" format="dimension" />
-        <attr name="cornerRadiusTopEnd" format="dimension" />
-        <attr name="cornerRadiusBottomStart" format="dimension" />
-        <attr name="cornerRadiusBottomEnd" format="dimension" />
-        <attr name="roundedfillColor" format="reference|color" />
-    </declare-styleable>
-
-    <declare-styleable name="WrappingLayout">
-        <attr name="horizontalSpacing" format="dimension" />
-        <attr name="verticalSpacing" format="dimension" />
-    </declare-styleable>
-
-    <declare-styleable name="ChromeTextInputLayout">
-        <attr name="hintTextAppearance" format="reference" />
-        <attr name="hint" format="reference|string" />
-        <attr name="errorTextAppearance" format="reference" />
-    </declare-styleable>
 </resources>

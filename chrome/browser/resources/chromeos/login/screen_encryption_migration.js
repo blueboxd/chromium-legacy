@@ -30,12 +30,12 @@ login.createScreen(
         /*
          * Executed on language change.
          */
-        updateLocalizedContent: function() {
+        updateLocalizedContent() {
           $('encryption-migration-element').i18nUpdateLocale();
         },
 
         /** @override */
-        decorate: function() {
+        decorate() {
           var encryptionMigration = $('encryption-migration-element');
           encryptionMigration.addEventListener('upgrade', function() {
             chrome.send('startMigration');
@@ -60,7 +60,7 @@ login.createScreen(
         /**
          * Event handler that is invoked just before the screen in shown.
          */
-        onBeforeShow: function() {
+        onBeforeShow() {
           Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
         },
 
@@ -70,7 +70,7 @@ login.createScreen(
          * @param {EncryptionMigrationUIState} state The UI state to identify a
          *     sub step in migration.
          */
-        setUIState: function(state) {
+        setUIState(state) {
           $('encryption-migration-element').uiState = state;
         },
 
@@ -78,7 +78,7 @@ login.createScreen(
          * Updates the migration progress.
          * @param {number} progress The progress of migration in range [0, 1].
          */
-        setMigrationProgress: function(progress) {
+        setMigrationProgress(progress) {
           $('encryption-migration-element').progress = progress;
         },
 
@@ -87,7 +87,7 @@ login.createScreen(
          * is resuming the previous one.
          * @param {boolean} isResuming
          */
-        setIsResuming: function(isResuming) {
+        setIsResuming(isResuming) {
           $('encryption-migration-element').isResuming = isResuming;
         },
 
@@ -97,7 +97,7 @@ login.createScreen(
          * @param {boolean} isEnoughBattery True if the battery is enough.
          * @param {boolena} isCharging True if the device is connected to power.
          */
-        setBatteryState: function(batteryPercent, isEnoughBattery, isCharging) {
+        setBatteryState(batteryPercent, isEnoughBattery, isCharging) {
           var element = $('encryption-migration-element');
           element.batteryPercent = Math.floor(batteryPercent);
           element.isEnoughBattery = isEnoughBattery;
@@ -108,7 +108,7 @@ login.createScreen(
          * Update the necessary battery percent to start migration in the UI.
          * @param {number} necessaryBatteryPercent Necessary battery level.
          */
-        setNecessaryBatteryPercent: function(necessaryBatteryPercent) {
+        setNecessaryBatteryPercent(necessaryBatteryPercent) {
           $('encryption-migration-element').necessaryBatteryPercent =
               necessaryBatteryPercent;
         },
@@ -117,7 +117,7 @@ login.createScreen(
          * Updates the string representation of available space size.
          * @param {string} space
          */
-        setAvailableSpaceInString: function(space) {
+        setAvailableSpaceInString(space) {
           $('encryption-migration-element').availableSpaceInString = space;
         },
 
@@ -125,7 +125,7 @@ login.createScreen(
          * Updates the string representation of necessary space size.
          * @param {string} space
          */
-        setNecessarySpaceInString: function(space) {
+        setNecessarySpaceInString(space) {
           $('encryption-migration-element').necessarySpaceInString = space;
         },
       };

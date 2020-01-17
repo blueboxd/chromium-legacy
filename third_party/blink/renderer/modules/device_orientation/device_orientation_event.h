@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -75,13 +76,13 @@ class DeviceOrientationEvent final : public Event {
   Member<DeviceOrientationData> orientation_;
 };
 
-DEFINE_TYPE_CASTS(DeviceOrientationEvent,
-                  Event,
-                  event,
-                  event->InterfaceName() ==
-                      event_interface_names::kDeviceOrientationEvent,
-                  event.InterfaceName() ==
-                      event_interface_names::kDeviceOrientationEvent);
+template <>
+struct DowncastTraits<DeviceOrientationEvent> {
+  static bool AllowFrom(const Event& event) {
+    return event.InterfaceName() ==
+           event_interface_names::kDeviceOrientationEvent;
+  }
+};
 
 }  // namespace blink
 

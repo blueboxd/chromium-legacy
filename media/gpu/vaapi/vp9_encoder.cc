@@ -34,8 +34,7 @@ VP9Encoder::EncodeParams::EncodeParams()
       cpb_window_size_ms(kCPBWindowSizeMs),
       cpb_size_bits(0),
       initial_qp(kDefaultQP),
-      min_qp(kMinQP),
-      max_qp(kMaxQP),
+      scaling_settings(kMinQP, kMaxQP),
       error_resilient_mode(false) {}
 
 void VP9Encoder::Reset() {
@@ -96,6 +95,12 @@ size_t VP9Encoder::GetMaxNumOfRefFrames() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   return kVp9NumRefFrames;
+}
+
+ScalingSettings VP9Encoder::GetScalingSettings() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return current_params_.scaling_settings;
 }
 
 bool VP9Encoder::PrepareEncodeJob(EncodeJob* encode_job) {

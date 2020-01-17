@@ -20,6 +20,7 @@ class WebContents;
 
 namespace views {
 class ImageView;
+class Throbber;
 class Widget;
 }  // namespace views
 
@@ -37,11 +38,7 @@ class DeepScanningDialogViews : public views::DialogDelegate {
   base::string16 GetWindowTitle() const override;
   bool Cancel() override;
   bool ShouldShowCloseButton() const override;
-
-  // views::WidgetDelegate:
   views::View* GetContentsView() override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
   void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
 
@@ -52,20 +49,29 @@ class DeepScanningDialogViews : public views::DialogDelegate {
  private:
   ~DeepScanningDialogViews() override;
 
+  // views::DialogDelegate:
+  const views::Widget* GetWidgetImpl() const override;
+
   // Update the UI depending on |scan_success_|.
   void UpdateDialog();
 
   // Resizes the already shown dialog to accommodate changes in its content.
-  void Resize(int lines_delta);
+  void Resize(int height_to_add);
 
   // Setup the appropriate buttons depending on |scan_success_|.
   void SetupButtons();
+
+  // Returns a newly created side icon.
+  std::unique_ptr<views::View> CreateSideIcon();
 
   // Returns the appropriate dialog message depending on |scan_success_|.
   base::string16 GetDialogMessage() const;
 
   // Returns the image's color depending on |scan_success_|.
   SkColor GetImageColor() const;
+
+  // Returns the side image's background circle color.
+  SkColor GetSideImageBackgroundColor() const;
 
   // Returns the appropriate dialog message depending on |scan_success_|.
   base::string16 GetCancelButtonText() const;
@@ -77,9 +83,11 @@ class DeepScanningDialogViews : public views::DialogDelegate {
 
   content::WebContents* web_contents_;
 
-  // Views above the buttons. |contents_view_| owns |image_| and |message_|.
+  // Views above the buttons. |contents_view_| owns every other view.
   std::unique_ptr<views::View> contents_view_;
   views::ImageView* image_;
+  views::ImageView* side_icon_image_;
+  views::Throbber* side_icon_spinner_;
   views::Label* message_;
 
   views::Widget* widget_;

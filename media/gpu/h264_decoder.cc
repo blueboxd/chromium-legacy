@@ -1127,7 +1127,12 @@ bool H264Decoder::HandleFrameNumGap(int frame_num) {
 
   if (!sps->gaps_in_frame_num_value_allowed_flag) {
     DVLOG(1) << "Invalid frame_num: " << frame_num;
-    return false;
+    // TODO(b:129119729, b:146914440): Youtube android app sometimes sends an
+    // invalid frame number after a seek. The sequence goes like:
+    // Seek, SPS, PPS, IDR-frame, non-IDR, ... non-IDR with invalid number.
+    // The only way to work around this reliably is to ignore this error.
+    // Video playback is not affected, no artefacts are visible.
+    // return false;
   }
 
   DVLOG(2) << "Handling frame_num gap: " << prev_ref_frame_num_ << "->"

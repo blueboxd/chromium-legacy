@@ -192,7 +192,7 @@ Polymer({
     // keyboard, the selection will shift. But once the user moves the mouse,
     // selection should be updated based on the location of the mouse cursor.
     const selectedItem = this.findSelectedItem_();
-    if (item == selectedItem) {
+    if (item === selectedItem) {
       return;
     }
 
@@ -246,7 +246,7 @@ Polymer({
       if (this.readonly) {
         return;
       }
-      if (event.code == 'Enter') {
+      if (event.code === 'Enter') {
         this.openDropdown_();
         // Stop the default submit action.
         event.preventDefault();
@@ -265,10 +265,10 @@ Polymer({
       case 'ArrowDown': {
         const selected = this.findSelectedItemIndex_();
         const items = dropdown.getElementsByClassName('list-item');
-        if (items.length == 0) {
+        if (items.length === 0) {
           break;
         }
-        this.updateSelected_(items, selected, event.code == 'ArrowDown');
+        this.updateSelected_(items, selected, event.code === 'ArrowDown');
         break;
       }
       case 'Enter': {
@@ -322,7 +322,7 @@ Polymer({
   updateSelected_(items, currentIndex, moveDown) {
     const numItems = items.length;
     let nextIndex = 0;
-    if (currentIndex == -1) {
+    if (currentIndex === -1) {
       nextIndex = moveDown ? 0 : numItems - 1;
     } else {
       const delta = moveDown ? 1 : -1;

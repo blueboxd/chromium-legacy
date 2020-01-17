@@ -13,15 +13,14 @@ js_type_check("closure_compile") {
 }
 
 js_library("android_apps_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("android_apps_subpage") {
   deps = [
     ":android_apps_browser_proxy",
     "../..:route",
+    "../..:router",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
@@ -34,6 +33,7 @@ js_library("os_apps_page") {
     ":android_apps_browser_proxy",
     ":android_apps_subpage",
     "../../:route",
+    "../../:router",
     "../../prefs:prefs_behavior",
     "../../settings_page:settings_animated_pages",
     "../localized_link:localized_link",

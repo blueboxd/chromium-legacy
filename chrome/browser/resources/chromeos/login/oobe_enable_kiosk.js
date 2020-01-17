@@ -38,19 +38,19 @@ Polymer({
   ],
 
   /** @override */
-  ready: function() {
+  ready() {
     this.initializeLoginScreen('KioskEnableScreen', {
       resetAllowed: true,
     });
   },
 
   /** Called after resources are updated. */
-  updateLocalizedContent: function() {
+  updateLocalizedContent() {
     this.i18nUpdateLocale();
   },
 
   /** Called when dialog is shown */
-  onBeforeShow: function() {
+  onBeforeShow() {
     this.state_ = EnableKioskMode.CONFIRM;
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
@@ -62,7 +62,7 @@ Polymer({
    * "Enable" button handler
    * @private
    */
-  onEnableButton_: function(event) {
+  onEnableButton_(event) {
     chrome.send('kioskOnEnable');
   },
 
@@ -70,11 +70,11 @@ Polymer({
    * "Cancel" / "Ok" button handler
    * @private
    */
-  closeDialog_: function(event) {
+  closeDialog_(event) {
     chrome.send('kioskOnClose');
   },
 
-  onCompleted: function(success) {
+  onCompleted(success) {
     this.state_ = success ? EnableKioskMode.SUCCESS : EnableKioskMode.ERROR;
   },
 
@@ -82,7 +82,7 @@ Polymer({
    * Simple equality comparison function.
    * @private
    */
-  eq_: function(one, another) {
+  eq_(one, another) {
     return one === another;
   },
 

@@ -10,7 +10,7 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_HELP_APP_BOOTSTRAP_JS" file="bootstrap.js" type="BINDATA" />
+      <include name="IDR_HELP_APP_APP_BIN_JS" file="app_bin.js" type="BINDATA" />
     </includes>
   </release>
 </grit>

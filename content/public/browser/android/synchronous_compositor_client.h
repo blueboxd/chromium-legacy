@@ -65,6 +65,8 @@ class SynchronousCompositorClient {
       SynchronousCompositor* compositor,
       std::unique_ptr<viz::CopyOutputRequest> copy_request) = 0;
 
+  virtual void AddBeginFrameCompletionCallback(base::OnceClosure callback) = 0;
+
  protected:
   SynchronousCompositorClient() {}
   virtual ~SynchronousCompositorClient() {}

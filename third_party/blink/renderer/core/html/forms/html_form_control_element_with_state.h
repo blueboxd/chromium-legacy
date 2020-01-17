@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -61,18 +62,19 @@ class CORE_EXPORT HTMLFormControlElementWithState
   bool IsFormControlElementWithState() const final;
 
  private:
-  bool TypeShouldForceLegacyLayout() const final { return true; }
+  bool TypeShouldForceLegacyLayout() const override { return true; }
   int DefaultTabIndex() const override;
 
   // https://html.spec.whatwg.org/C/#autofill-anchor-mantle
   bool IsWearingAutofillAnchorMantle() const;
 };
 
-DEFINE_TYPE_CASTS(HTMLFormControlElementWithState,
-                  ListedElement,
-                  control,
-                  control->IsFormControlElementWithState(),
-                  control.IsFormControlElementWithState());
+template <>
+struct DowncastTraits<HTMLFormControlElementWithState> {
+  static bool AllowFrom(const ListedElement& control) {
+    return control.IsFormControlElementWithState();
+  }
+};
 
 }  // namespace blink
 

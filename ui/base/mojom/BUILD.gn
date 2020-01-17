@@ -22,9 +22,7 @@ mojom("mojom") {
 
 source_set("unittests") {
   testonly = true
-  sources = [
-    "cursor_mojom_traits_unittest.cc",
-  ]
+  sources = [ "cursor_mojom_traits_unittest.cc" ]
   deps = [
     ":mojom",
     "//skia/public/mojom",

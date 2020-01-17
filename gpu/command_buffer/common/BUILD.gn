@@ -12,44 +12,30 @@ import("//ui/gl/features.gni")
 
 group("common") {
   if (is_component_build) {
-    public_deps = [
-      "//gpu",
-    ]
+    public_deps = [ "//gpu" ]
   } else {
-    public_deps = [
-      ":common_sources",
-    ]
+    public_deps = [ ":common_sources" ]
   }
 }
 
 group("gles2") {
   if (is_component_build) {
-    public_deps = [
-      "//gpu:gles2",
-    ]
+    public_deps = [ "//gpu:gles2" ]
   } else {
-    public_deps = [
-      ":gles2_sources",
-    ]
+    public_deps = [ ":gles2_sources" ]
   }
 }
 
 group("raster") {
   if (is_component_build) {
-    public_deps = [
-      "//gpu:gles2",
-    ]
+    public_deps = [ "//gpu:gles2" ]
   } else {
-    public_deps = [
-      ":raster_sources",
-    ]
+    public_deps = [ ":raster_sources" ]
   }
 }
 
 group("webgpu") {
-  public_deps = [
-    ":webgpu_sources",
-  ]
+  public_deps = [ ":webgpu_sources" ]
 }
 
 jumbo_source_set("common_sources") {
@@ -112,9 +98,7 @@ jumbo_source_set("common_sources") {
     "//ui/gfx/geometry",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   # TODO(piman): needed for gpu_memory_buffer_support.cc. Split common vs gles2
   # specifics.
@@ -141,9 +125,7 @@ source_set("gles2_sources") {
     ":gles2_utils",
     "//base",
   ]
-  public_deps = [
-    ":common",
-  ]
+  public_deps = [ ":common" ]
 }
 
 source_set("raster_sources") {
@@ -215,9 +197,7 @@ component("gles2_utils") {
 
   defines = [ "GLES2_UTILS_IMPLEMENTATION" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
 }

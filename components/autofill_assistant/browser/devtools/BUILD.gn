@@ -53,9 +53,7 @@ foreach(domain, devtools_domains) {
 
 action("gen_devtools_client_api") {
   script = "devtools_api/client_api_generator.py"
-  deps = [
-    "//third_party/blink/public/devtools_protocol:protocol_version",
-  ]
+  deps = [ "//third_party/blink/public/devtools_protocol:protocol_version" ]
   inputs = [
     "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
   ]

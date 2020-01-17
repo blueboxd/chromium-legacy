@@ -25,6 +25,8 @@ enum class RenderSurfaceReason : uint8_t {
   kNone,
   kRoot,
   k3dTransformFlattening,
+  // Defines the scope of the backdrop for child blend mode or backdrop filter.
+  kBackdropScope,
   kBlendMode,
   kBlendModeDstIn,
   kOpacity,

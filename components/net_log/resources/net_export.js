@@ -56,7 +56,7 @@ const NetExportView = (function() {
     /**
      * Starts saving NetLog data to a file.
      */
-    onStartLogging_: function() {
+    onStartLogging_() {
       // Determine the capture mode to use.
       const logMode =
           document.querySelector('input[name="log-mode"]:checked').value;
@@ -77,14 +77,14 @@ const NetExportView = (function() {
     /**
      * Stops saving NetLog data to a file.
      */
-    onStopLogging_: function() {
+    onStopLogging_() {
       chrome.send('stopNetLog');
     },
 
     /**
      * Sends NetLog data via email from browser (mobile only).
      */
-    onSendEmail_: function() {
+    onSendEmail_() {
       chrome.send('sendNetLog');
     },
 
@@ -92,14 +92,14 @@ const NetExportView = (function() {
      * Reveals the log file in the shell (i.e. selects it in the Finder on
      * Mac).
      */
-    onShowFile_: function() {
+    onShowFile_() {
       chrome.send('showFile');
     },
 
     /**
      * Transitions back to the "Start logging to disk" state.
      */
-    onStartOver_: function() {
+    onStartOver_() {
       this.infoForLoggedFile_ = null;
       this.renderInitial_();
     },
@@ -140,7 +140,7 @@ const NetExportView = (function() {
      *        finalized. Once the state transitions to NOT_LOGGING then the log
      *        is complete, and can safely be copied/emailed.
      */
-    onExportNetLogInfoChanged: function(info) {
+    onExportNetLogInfoChanged(info) {
       switch (info.state) {
         case 'UNINITIALIZED':
         case 'INITIALIZING':
@@ -190,7 +190,7 @@ const NetExportView = (function() {
      * visible for a short period of time, or longer if initialization failed
      * (and didn't transition to a different state).
      */
-    renderUninitialized_: function() {
+    renderUninitialized_() {
       this.showStateDiv_(kIdStateDivUninitialized);
     },
 
@@ -199,7 +199,7 @@ const NetExportView = (function() {
      * logging has not been started yet, and there are controls to start
      * logging.
      */
-    renderInitial_: function() {
+    renderInitial_() {
       this.showStateDiv_(kIdStateDivInitial);
       $(kIdStartLoggingButton).onclick = this.onStartLogging_.bind(this);
     },
@@ -208,7 +208,7 @@ const NetExportView = (function() {
      * Updates the UI to display the "logging" state. This is the state while
      * capturing is in progress and being written to disk.
      */
-    renderLogging_: function(info) {
+    renderLogging_(info) {
       this.showStateDiv_(kIdStateDivLogging);
 
       $(kIdStopLoggingButton).onclick = this.onStopLogging_.bind(this);
@@ -219,7 +219,7 @@ const NetExportView = (function() {
     /*
      * Updates the UI to display the state when logging has stopped.
      */
-    renderStoppedLogging_: function(info) {
+    renderStoppedLogging_(info) {
       this.showStateDiv_(kIdStateDivStopped);
 
       // The email button is only available in the mobile UI.
@@ -250,7 +250,7 @@ const NetExportView = (function() {
     /**
      * Gets the textual label for a capture mode from the HTML.
      */
-    getCaptureModeText_: function(info) {
+    getCaptureModeText_(info) {
       // TODO(eroman): Should not hardcode "Unknown" (will not work properly if
       //               the HTML is internationalized).
       if (!info.logCaptureModeKnown) {
@@ -265,17 +265,17 @@ const NetExportView = (function() {
       return radioButton.parentElement.textContent;
     },
 
-    showPrivacyReadMore_: function(show) {
+    showPrivacyReadMore_(show) {
       $(kIdPrivacyReadMoreDiv).hidden = !show;
       $(kIdPrivacyReadMoreLink).hidden = show;
     },
 
-    showTooBigReadMore_: function(show) {
+    showTooBigReadMore_(show) {
       $(kIdTooBigReadMoreDiv).hidden = !show;
       $(kIdTooBigReadMoreLink).hidden = show;
     },
 
-    showStateDiv_: function(divId) {
+    showStateDiv_(divId) {
       const kAllDivIds = [
         kIdStateDivUninitialized,
         kIdStateDivInitial,
@@ -284,7 +284,7 @@ const NetExportView = (function() {
       ];
 
       for (const curDivId of kAllDivIds) {
-        $(curDivId).hidden = divId != curDivId;
+        $(curDivId).hidden = divId !== curDivId;
       }
     },
   };

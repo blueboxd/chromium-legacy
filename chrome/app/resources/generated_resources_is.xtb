@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">Þessi notandareikningur heyrir ekki undir lénið sem tækið er skráð á. Ef þú vilt skrá þig á annað lén þarftu fyrst að fara í gegnum endurheimtarferli tækis.</translation>
 <translation id="1274977772557788323">Geymslustillingar Adobe Flash Player</translation>
 <translation id="1274997165432133392">Fótspor og önnur gögn vefsvæðis</translation>
-<translation id="127668050356036882">Loka öllum gluggum</translation>
 <translation id="1280820357415527819">Leitar að farsímakerfum</translation>
 <translation id="1282420830958964167">Þú hefur náð hámarkinu sem foreldri þitt valdi fyrir „<ph name="APP_NAME" />“. Þú getur notað það í <ph name="TIME_LIMIT" /> á morgun.</translation>
 <translation id="1285320974508926690">Aldrei þýða þetta vefsvæði</translation>
@@ -518,7 +517,6 @@
 <translation id="1712552549805331520"><ph name="URL" /> vill fá að geyma gögn varanlega í tölvunni þinni</translation>
 <translation id="1714644264617423774">Gera aðgengiseiginleika virka til að auðvelda notkun tækisins. <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Hreyfiskynjarar</translation>
-<translation id="171824261579749339">Ástralska <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">Undanfarna klukkustund</translation>
 <translation id="1719312230114180055">Athugaðu: Fingrafar kann að vera ótraustari aðferð en sterkt aðgangsorð eða PIN-númer.</translation>
 <translation id="1720318856472900922">Auðkenning TLS WWW-þjóns</translation>
@@ -729,7 +727,6 @@
 <translation id="2006638907958895361">Opna tengil í <ph name="APP" /></translation>
 <translation id="2007404777272201486">Tilkynna um vandamál...</translation>
 <translation id="2010501376126504057">Samhæf tæki</translation>
-<translation id="2016430552235416146">Hefðbundið</translation>
 <translation id="2017334798163366053">Slökkva á söfnun afkastagagna</translation>
 <translation id="2017836877785168846">Hreinsar ferilinn og sjálfvirka útfyllingu í veffangastiku.</translation>
 <translation id="2018352199541442911">Því miður er ytri gagnageymslan ekki studd á þessari stundu.</translation>
@@ -770,7 +767,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2076672359661571384">Miðlungs (ráðlagt)</translation>
 <translation id="2077129598763517140">Nota vélbúnaðarhröðun þegar hún er í boði</translation>
 <translation id="2078019350989722914">Viðvörun fyrir lokun (<ph name="KEY_EQUIVALENT" />)</translation>
-<translation id="2078494137444990774">Slökkt</translation>
 <translation id="2079053412993822885">Ef þú eyðir einu af þínu eigin vottorðum geturðu ekki notað það lengur til auðkenningar.</translation>
 <translation id="2079545284768500474">Afturkalla</translation>
 <translation id="2080070583977670716">Fleiri stillingar</translation>
@@ -1209,7 +1205,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2665647207431876759">Útrunnið</translation>
 <translation id="2665717534925640469">Þessi síða er nú birt á öllum skjánum og hefur gert músarbendilinn óvirkan.</translation>
 <translation id="2665919335226618153">Obbosí! Villa kom upp við að sníða.</translation>
-<translation id="2666990579225592931">Opna gestaglugga</translation>
 <translation id="2667463864537187133">Stjórna ritvilluleit</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> deilir flipa í Chrome.</translation>
 <translation id="2670429602441959756">Þessi síða inniheldur eiginleika sem ekki eru enn studdir í VR. Hættir...</translation>
@@ -2406,7 +2401,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4364327530094270451">Melóna</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deilir glugga.</translation>
 <translation id="4364830672918311045">Birta tilkynningar</translation>
-<translation id="436499142539576997">Ekki tókst að sækja forritsgögn, reynir enn að keyra forritið...</translation>
 <translation id="4370975561335139969">Netfangið og aðgangsorðið sem þú slóst inn passa ekki saman</translation>
 <translation id="437184764829821926">Ítarlegar leturstillingar</translation>
 <translation id="4374831787438678295">Linux-uppsetningarforrit</translation>
@@ -3433,7 +3427,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5867841422488265304">Leitaðu eða sláðu inn veffang</translation>
 <translation id="5869029295770560994">Ég skil</translation>
 <translation id="5869522115854928033">Vistuð aðgangsorð</translation>
-<translation id="5869948122057593679">Loka öllum gluggum</translation>
 <translation id="5870086504539785141">Loka aðgengisvalmynd</translation>
 <translation id="5870155679953074650">Sótt úr sýndarminni</translation>
 <translation id="5876851302954717356">Nýr flipi hægra megin</translation>
@@ -4482,7 +4475,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7385854874724088939">Eitthvað fór úrskeiðis við að reyna að prenta. Kannaðu prentarann og reyndu aftur.</translation>
 <translation id="7385896526023870365">Þessi viðbót hefur engan viðbótaraðgang að vefsvæðum.</translation>
 <translation id="7388044238629873883">Þetta er alveg að klárast!</translation>
-<translation id="7388222713940428051">Opna gestaglugga</translation>
 <translation id="7392118418926456391">Vírusleit mistókst</translation>
 <translation id="7392915005464253525">Opna lokaðan glugga aftur</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> verður opnað þegar kerfið er ræst og heldur áfram að keyra í bakgrunni, jafnvel þegar þú hefur lokað öllum öðrum <ph name="PRODUCT_NAME" /> gluggum.</translation>
@@ -4747,7 +4739,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7784067724422331729">Öryggisstillingar tölvunnar þinnar útilokuðu þessa skrá.</translation>
 <translation id="7784796923038949829">Ekki er hægt að lesa eða breyta gögnum vefsvæðis</translation>
 <translation id="778480864305029524">Til að nota skynditjóðrun þarftu að kveikja á tilkynningum fyrir þjónustu Google Play.</translation>
-<translation id="7786207843293321886">Loka gestastillingu</translation>
 <translation id="7786889348652477777">Endu&amp;rhlaða forrit</translation>
 <translation id="7787308148023287649">Sýna á öðrum skjá</translation>
 <translation id="7788298548579301890">Annað forrit í tölvunni þinni bætti við forriti sem gæti breytt því hvernig Chrome virkar.
@@ -4861,7 +4852,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7908378463497120834">Því miður tókst ekki að setja upp að minnsta kosti eina disksneið á ytra geymslutækinu.</translation>
 <translation id="7909969815743704077">Sótt í huliðsstillingu</translation>
 <translation id="7910768399700579500">&amp;Ný mappa</translation>
-<translation id="7910831464510799808">Kveikt</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Aðgangsorðinu þínu hefur verið breytt á netþjóni. Skráðu þig út og aftur inn.</translation>
 <translation id="7915457674565721553">Tengstu við internetið til að setja upp barnalæsingu</translation>

@@ -147,7 +147,9 @@ public class TabGroupUiMediator {
             @Override
             public void restoreCompleted() {
                 Tab currentTab = mTabModelSelector.getCurrentTab();
-                if (currentTab == null) return;
+                // Do not try to show tab strip when there is no current tab or we are not in tab
+                // page when restore completed.
+                if (currentTab == null || overviewModeBehavior.overviewVisible()) return;
                 resetTabStripWithRelatedTabsForId(currentTab.getId());
             }
 

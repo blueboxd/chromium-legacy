@@ -80,7 +80,7 @@ void AssistantHeaderView::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Molecule icon.
-  molecule_icon_ = LogoView::Create();
+  molecule_icon_ = AddChildView(LogoView::Create());
   molecule_icon_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
   molecule_icon_->SetState(LogoView::State::kMoleculeWavy,
                            /*animate=*/false);
@@ -88,8 +88,6 @@ void AssistantHeaderView::InitLayout() {
   // The molecule icon will be animated on its own layer.
   molecule_icon_->SetPaintToLayer();
   molecule_icon_->layer()->SetFillsBoundsOpaquely(false);
-
-  AddChildView(molecule_icon_);
 }
 
 void AssistantHeaderView::OnResponseChanged(

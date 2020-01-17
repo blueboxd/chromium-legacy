@@ -820,8 +820,7 @@ void PaintOpWriter::Write(const PaintRecord* record,
       memory_, remaining_bytes_, options_.image_provider,
       options_.transfer_cache, options_.paint_cache, options_.strike_server,
       options_.color_space, can_use_lcd_text,
-      options_.context_supports_distance_field_text, options_.max_texture_size,
-      options_.max_texture_bytes);
+      options_.context_supports_distance_field_text, options_.max_texture_size);
   serializer.Serialize(record, playback_rect, post_scale,
                        post_matrix_for_analysis);
 

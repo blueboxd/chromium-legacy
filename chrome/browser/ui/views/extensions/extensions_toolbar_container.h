@@ -19,7 +19,6 @@
 class Browser;
 class ExtensionsToolbarButton;
 class ToolbarActionViewController;
-class ToolbarActionsBarBubbleViews;
 
 // Container for extensions shown in the toolbar. These include pinned
 // extensions and extensions that are 'popped out' transitively to show dialogs
@@ -45,9 +44,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   ExtensionsToolbarButton* extensions_button() const {
     return extensions_button_;
   }
-  ToolbarActionsBarBubbleViews* action_bubble_public_for_testing() {
-    return active_bubble_;
-  }
   const ToolbarIconMap& icons_for_testing() const { return icons_; }
   ToolbarActionViewController* popup_owner_for_testing() {
     return popup_owner_;
@@ -61,6 +57,11 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // action will be posted immediately (not run synchronously).
   void ShowWidgetForExtension(views::Widget* widget,
                               const std::string& extension_id);
+
+  // Gets the widget that anchors to the extension (or is about to anchor to the
+  // extension, pending pop-out).
+  views::Widget* GetAnchoredWidgetForExtensionForTesting(
+      const std::string& extension_id);
 
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;
@@ -128,11 +129,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // Posted from |ShowWidgetForExtension|.
   void AnchorAndShowWidgetImmediately(views::Widget* widget);
 
-  void ShowActiveBubble(
-      views::View* anchor_view,
-      std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller);
-
-
   // Creates toolbar actions and icons corresponding to the model. This is only
   // called in the constructor or when the model initializes and should not be
   // called for subsequent changes to the model.
@@ -144,9 +140,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // Sorts child views to display them in the correct order (pinned actions,
   // popped out actions, extensions button).
   void ReorderViews();
-
-  // Clears the |active_bubble_|, and unregisters the container as an observer.
-  void ClearActiveBubble(views::Widget* widget);
 
   // Utility function for going from width to icon counts.
   size_t WidthToIconCount(int x_offset);
@@ -199,9 +192,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   ToolbarActionViewController* popped_out_action_ = nullptr;
   // The action that triggered the current popup, if any.
   ToolbarActionViewController* popup_owner_ = nullptr;
-
-  // The extension bubble that is actively showing, if any.
-  ToolbarActionsBarBubbleViews* active_bubble_ = nullptr;
 
   // The widgets currently popped out and, for each, the extension it is
   // associated with. See AnchoredWidget.

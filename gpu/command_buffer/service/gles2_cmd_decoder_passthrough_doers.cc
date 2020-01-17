@@ -5645,5 +5645,19 @@ error::Error GLES2DecoderPassthroughImpl::DoEndSharedImageAccessDirectCHROMIUM(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::DoBeginBatchReadAccessSharedImageCHROMIUM() {
+  DCHECK(group_->shared_image_manager());
+  group_->shared_image_manager()->BeginBatchReadAccess();
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::DoEndBatchReadAccessSharedImageCHROMIUM() {
+  DCHECK(group_->shared_image_manager());
+  group_->shared_image_manager()->EndBatchReadAccess();
+  return error::kNoError;
+}
+
 }  // namespace gles2
 }  // namespace gpu

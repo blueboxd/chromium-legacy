@@ -94,15 +94,11 @@ js_library("video_player") {
 }
 
 js_library("video_player_metrics") {
-  deps = [
-    "//ui/file_manager/file_manager/common/js:metrics_base",
-  ]
+  deps = [ "//ui/file_manager/file_manager/common/js:metrics_base" ]
 }
 
 js_test_gen_html("js_test_gen_html") {
-  deps = [
-    ":video_player_native_controls_unittest",
-  ]
+  deps = [ ":video_player_native_controls_unittest" ]
 }
 
 group("closure_compile") {

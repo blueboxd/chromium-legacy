@@ -48,7 +48,7 @@ Polymer({
   },
 
   /** Called when dialog is shown. */
-  onBeforeShow: function() {
+  onBeforeShow() {
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
@@ -57,7 +57,7 @@ Polymer({
   },
 
   /** Called when dialog is hidden. */
-  onBeforeHide: function() {
+  onBeforeHide() {
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeHide)
         behavior.onBeforeHide.call(this);
@@ -66,21 +66,21 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.updateLocalizedContent();
   },
 
   /** Shows the dialog. */
-  show: function() {
+  show() {
     this.$.networkDialog.show();
   },
 
-  focus: function() {
+  focus() {
     this.$.networkDialog.focus();
   },
 
   /** Updates localized elements of the UI. */
-  updateLocalizedContent: function() {
+  updateLocalizedContent() {
     this.i18nUpdateLocale();
   },
 
@@ -90,7 +90,7 @@ Polymer({
    * @param {string} query
    * @return {NetworkList.NetworkListItemType}
    */
-  getNetworkListItemWithQueryForTest: function(query) {
+  getNetworkListItemWithQueryForTest(query) {
     let networkList =
         this.$.networkSelectLogin.$$('#networkSelect').getNetworkListForTest();
     assert(networkList);
@@ -103,7 +103,7 @@ Polymer({
    * @param {string} name
    * @return {?NetworkList.NetworkListItemType}
    */
-  getNetworkListItemByNameForTest: function(name) {
+  getNetworkListItemByNameForTest(name) {
     return this.$.networkSelectLogin.$$('#networkSelect')
         .getNetworkListItemByNameForTest(name);
   },
@@ -112,7 +112,7 @@ Polymer({
    * Called after dialog is shown. Refreshes the list of the networks.
    * @private
    */
-  onShown_: function() {
+  onShown_() {
     this.async(function() {
       this.$.networkSelectLogin.refresh();
       if (this.isConnected_)
@@ -128,7 +128,7 @@ Polymer({
    * Next button click handler.
    * @private
    */
-  onNextClicked_: function() {
+  onNextClicked_() {
     chrome.send('login.NetworkScreen.userActed', ['continue']);
   },
 
@@ -136,7 +136,7 @@ Polymer({
    * Back button click handler.
    * @private
    */
-  onBackClicked_: function() {
+  onBackClicked_() {
     chrome.send('login.NetworkScreen.userActed', ['back']);
   },
 
@@ -145,7 +145,7 @@ Polymer({
    * changed.
    * @private
    */
-  onDemoModeSetupChanged_: function() {
+  onDemoModeSetupChanged_() {
     this.$.networkSelectLogin.isOfflineDemoModeSetup =
         this.isDemoModeSetup && this.offlineDemoModeEnabled;
   },
@@ -154,7 +154,7 @@ Polymer({
    * This is called when network setup is done.
    * @private
    */
-  onNetworkConnected_: function() {
+  onNetworkConnected_() {
     chrome.send('login.NetworkScreen.userActed', ['continue']);
   },
 });

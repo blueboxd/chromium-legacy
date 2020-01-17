@@ -24,7 +24,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.CROSTINI_DETAILS) {
           map.set(
@@ -59,7 +59,7 @@ Polymer({
     },
   },
 
-  attached: function() {
+  attached() {
     if (!loadTimeData.getBoolean('allowCrostini')) {
       this.disableCrostiniInstall_ = true;
       return;
@@ -76,14 +76,14 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onEnableTap_: function(event) {
+  onEnableTap_(event) {
     settings.CrostiniBrowserProxyImpl.getInstance()
         .requestCrostiniInstallerView();
     event.stopPropagation();
   },
 
   /** @private */
-  onSubpageTap_: function(event) {
+  onSubpageTap_(event) {
     // We do not open the subpage if the click was on a link.
     if (event.target && event.target.tagName == 'A') {
       event.stopPropagation();
@@ -91,7 +91,8 @@ Polymer({
     }
 
     if (this.getPref('crostini.enabled.value')) {
-      settings.navigateTo(settings.routes.CROSTINI_DETAILS);
+      settings.Router.getInstance().navigateTo(
+          settings.routes.CROSTINI_DETAILS);
     }
   },
 });

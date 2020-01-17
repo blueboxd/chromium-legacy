@@ -26,10 +26,10 @@ import org.chromium.base.Log;
 import org.chromium.device.mojom.NdefError;
 import org.chromium.device.mojom.NdefErrorType;
 import org.chromium.device.mojom.NdefMessage;
-import org.chromium.device.mojom.NdefPushOptions;
 import org.chromium.device.mojom.NdefRecord;
 import org.chromium.device.mojom.NdefRecordTypeCategory;
 import org.chromium.device.mojom.NdefScanOptions;
+import org.chromium.device.mojom.NdefWriteOptions;
 import org.chromium.device.mojom.Nfc;
 import org.chromium.device.mojom.NfcClient;
 import org.chromium.mojo.bindings.Callbacks;
@@ -78,7 +78,7 @@ public class NfcImpl implements Nfc {
 
     /**
      * Object that contains data that was passed to method
-     * #push(NdefMessage message, NdefPushOptions options, PushResponse callback)
+     * #push(NdefMessage message, NdefWriteOptions options, PushResponse callback)
      * @see PendingPushOperation
      */
     private PendingPushOperation mPendingPushOperation;
@@ -177,7 +177,7 @@ public class NfcImpl implements Nfc {
      * @param callback that is used to notify when push operation is completed.
      */
     @Override
-    public void push(NdefMessage message, NdefPushOptions options, PushResponse callback) {
+    public void push(NdefMessage message, NdefWriteOptions options, PushResponse callback) {
         if (!checkIfReady(callback)) return;
 
         if (!NdefMessageValidator.isValid(message)) {
@@ -315,13 +315,13 @@ public class NfcImpl implements Nfc {
      */
     private static class PendingPushOperation {
         public final NdefMessage ndefMessage;
-        public final NdefPushOptions ndefPushOptions;
+        public final NdefWriteOptions ndefWriteOptions;
         private final PushResponse mPushResponseCallback;
 
         public PendingPushOperation(
-                NdefMessage message, NdefPushOptions options, PushResponse callback) {
+                NdefMessage message, NdefWriteOptions options, PushResponse callback) {
             ndefMessage = message;
-            ndefPushOptions = options;
+            ndefWriteOptions = options;
             mPushResponseCallback = callback;
         }
 
@@ -514,7 +514,7 @@ public class NfcImpl implements Nfc {
         if (mTagHandler == null || mClient == null || mWatchers.size() == 0) return;
 
         // Skip reading if there is a pending push operation and ignoreRead flag is set.
-        if (mPendingPushOperation != null && mPendingPushOperation.ndefPushOptions.ignoreRead) {
+        if (mPendingPushOperation != null && mPendingPushOperation.ndefWriteOptions.ignoreRead) {
             return;
         }
 

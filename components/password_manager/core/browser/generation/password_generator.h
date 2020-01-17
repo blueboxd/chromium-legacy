@@ -11,6 +11,11 @@ namespace autofill {
 
 class PasswordRequirementsSpec;
 
+// If neither lower nor upper case letters are included in the password
+// generation alphabet, add the '0' and '1' digit to the numeric alphabet
+// to increase the entropy of numeric-only passwords.
+void ConditionallyAddNumericDigitsToAlphabet(PasswordRequirementsSpec* spec);
+
 extern const uint32_t kDefaultPasswordLength;
 
 // Returns a password that follows the |spec| as well as possible. If this is

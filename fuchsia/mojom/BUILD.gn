@@ -9,15 +9,11 @@ import("//testing/test.gni")
 
 mojom("example_interfaces") {
   testonly = true
-  sources = [
-    "example.mojom",
-  ]
+  sources = [ "example.mojom" ]
 }
 
 source_set("traits") {
-  sources = [
-    "fidl_interface_request_mojom_traits.h",
-  ]
+  sources = [ "fidl_interface_request_mojom_traits.h" ]
 
   public_deps = [
     "//mojo/public/cpp/platform",

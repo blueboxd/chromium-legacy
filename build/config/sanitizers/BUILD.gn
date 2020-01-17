@@ -25,9 +25,7 @@ group("deps") {
       # to add the ldflags here as well as in default_sanitizer_flags.
       ":default_sanitizer_ldflags",
     ]
-    deps = [
-      ":options_sources",
-    ]
+    deps = [ ":options_sources" ]
     if (is_win) {
       exe = ".exe"
     } else {
@@ -47,14 +45,10 @@ group("deps") {
     # used (Chromium version of clang versus Xcode version of clang). Only copy
     # the ASAN runtime on iOS if building with Chromium clang.
     if (is_win || is_mac || (is_ios && !use_xcode_clang)) {
-      data_deps = [
-        ":copy_asan_runtime",
-      ]
+      data_deps = [ ":copy_asan_runtime" ]
     }
     if (is_mac || (is_ios && !use_xcode_clang)) {
-      public_deps = [
-        ":asan_runtime_bundle_data",
-      ]
+      public_deps = [ ":asan_runtime_bundle_data" ]
     }
   }
 }
@@ -76,24 +70,16 @@ if ((is_mac || is_win || (is_ios && !use_xcode_clang)) && is_asan) {
 
   if (!is_ios) {
     copy("copy_asan_runtime") {
-      sources = [
-        _clang_rt_dso_full_path,
-      ]
-      outputs = [
-        "$root_out_dir/{{source_file_part}}",
-      ]
+      sources = [ _clang_rt_dso_full_path ]
+      outputs = [ "$root_out_dir/{{source_file_part}}" ]
     }
   } else {
     # On iOS, the runtime library need to be code signed (adhoc signature)
     # starting with Xcode 8, so use an action instead of a copy on iOS.
     action("copy_asan_runtime") {
       script = "//build/config/ios/codesign.py"
-      sources = [
-        _clang_rt_dso_full_path,
-      ]
-      outputs = [
-        "$root_out_dir/" + get_path_info(sources[0], "file"),
-      ]
+      sources = [ _clang_rt_dso_full_path ]
+      outputs = [ "$root_out_dir/" + get_path_info(sources[0], "file") ]
       args = [
         "code-sign-file",
         "--identity=" + ios_code_signing_identity,
@@ -106,12 +92,8 @@ if ((is_mac || is_win || (is_ios && !use_xcode_clang)) && is_asan) {
   if (is_mac || is_ios) {
     bundle_data("asan_runtime_bundle_data") {
       sources = get_target_outputs(":copy_asan_runtime")
-      outputs = [
-        "{{bundle_executable_dir}}/{{source_file_part}}",
-      ]
-      public_deps = [
-        ":copy_asan_runtime",
-      ]
+      outputs = [ "{{bundle_executable_dir}}/{{source_file_part}}" ]
+      public_deps = [ ":copy_asan_runtime" ]
     }
   }
 }
@@ -131,9 +113,7 @@ static_library("options_sources") {
     ":deps",
     "//:gn_visibility",
   ]
-  sources = [
-    "//build/sanitizers/sanitizer_options.cc",
-  ]
+  sources = [ "//build/sanitizers/sanitizer_options.cc" ]
 
   # Don't compile this target with any sanitizer code. It can be called from
   # the sanitizer runtimes, so instrumenting these functions could cause
@@ -273,7 +253,11 @@ config("common_sanitizer_flags") {
 
   if (using_sanitizer) {
     assert(is_clang, "sanitizers only supported with clang")
-    assert(!is_official_build, "sanitizers not supported in official builds")
+
+    # Allow non-default toolchains to enable sanitizers in toolchain_args even
+    # in official builds.
+    assert(current_toolchain != default_toolchain || !is_official_build,
+           "sanitizers not supported in official builds")
 
     cflags += [
       # Column info in debug data confuses Visual Studio's debugger, so don't

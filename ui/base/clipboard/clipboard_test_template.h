@@ -113,9 +113,11 @@ TYPED_TEST(ClipboardTest, ClearTest) {
 
   EXPECT_TRUE(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste).empty());
   EXPECT_FALSE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextWType(), ClipboardBuffer::kCopyPaste));
-  EXPECT_FALSE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+#if defined(OS_WIN)
+  EXPECT_FALSE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+#endif
 }
 
 TYPED_TEST(ClipboardTest, TextTest) {
@@ -130,9 +132,12 @@ TYPED_TEST(ClipboardTest, TextTest) {
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextWType(), ClipboardBuffer::kCopyPaste));
-  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+#if defined(OS_WIN)
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+#endif
+
   this->clipboard().ReadText(ClipboardBuffer::kCopyPaste, &text_result);
 
   EXPECT_EQ(text, text_result);
@@ -306,7 +311,7 @@ TYPED_TEST(ClipboardTest, BookmarkTest) {
   }
 
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetUrlWType(), ClipboardBuffer::kCopyPaste));
+      ClipboardFormatType::GetUrlType(), ClipboardBuffer::kCopyPaste));
   this->clipboard().ReadBookmark(&title_result, &url_result);
   EXPECT_EQ(title, title_result);
   EXPECT_EQ(url, url_result);
@@ -332,9 +337,11 @@ TYPED_TEST(ClipboardTest, MultiFormatTest) {
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetHtmlType(), ClipboardBuffer::kCopyPaste));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextWType(), ClipboardBuffer::kCopyPaste));
-  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+#if defined(OS_WIN)
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+#endif
   uint32_t fragment_start;
   uint32_t fragment_end;
   this->clipboard().ReadHTML(ClipboardBuffer::kCopyPaste, &markup_result,
@@ -364,9 +371,11 @@ TYPED_TEST(ClipboardTest, URLTest) {
   EXPECT_THAT(this->GetAvailableTypes(ClipboardBuffer::kCopyPaste),
               Contains(ASCIIToUTF16(kMimeTypeText)));
   EXPECT_TRUE(this->clipboard().IsFormatAvailable(
-      ClipboardFormatType::GetPlainTextWType(), ClipboardBuffer::kCopyPaste));
-  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
       ClipboardFormatType::GetPlainTextType(), ClipboardBuffer::kCopyPaste));
+#if defined(OS_WIN)
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::GetPlainTextAType(), ClipboardBuffer::kCopyPaste));
+#endif
   base::string16 text_result;
   this->clipboard().ReadText(ClipboardBuffer::kCopyPaste, &text_result);
 

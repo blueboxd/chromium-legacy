@@ -10,7 +10,7 @@ suite('SiteDataTest', function() {
   let testBrowserProxy;
 
   setup(function() {
-    settings.navigateTo(settings.routes.SITE_SETTINGS);
+    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
     testBrowserProxy = new TestLocalDataBrowserProxy();
     settings.LocalDataBrowserProxyImpl.instance_ = testBrowserProxy;
     siteData = document.createElement('site-data');
@@ -41,7 +41,8 @@ suite('SiteDataTest', function() {
     ];
     testBrowserProxy.setCookieList(sites);
     document.body.appendChild(siteData);
-    settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DATA);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.SITE_SETTINGS_SITE_DATA);
     return promise;
   });
 
@@ -64,22 +65,27 @@ suite('SiteDataTest', function() {
     ];
     testBrowserProxy.setCookieList(sites);
     document.body.appendChild(siteData);
-    settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DATA);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.SITE_SETTINGS_SITE_DATA);
     return promise;
   });
 
   test('calls reloadCookies() when created', function() {
-    settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DATA);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.SITE_SETTINGS_SITE_DATA);
     document.body.appendChild(siteData);
-    settings.navigateTo(settings.routes.SITE_SETTINGS_COOKIES);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.SITE_SETTINGS_COOKIES);
     return testBrowserProxy.whenCalled('reloadCookies');
   });
 
   test('calls reloadCookies() when visited again', function() {
     document.body.appendChild(siteData);
-    settings.navigateTo(settings.routes.SITE_SETTINGS_COOKIES);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.SITE_SETTINGS_COOKIES);
     testBrowserProxy.reset();
-    settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DATA);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.SITE_SETTINGS_SITE_DATA);
     return testBrowserProxy.whenCalled('reloadCookies');
   });
 });

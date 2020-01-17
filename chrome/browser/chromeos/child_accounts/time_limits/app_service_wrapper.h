@@ -84,6 +84,11 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
   // Might return empty string.
   std::string GetAppName(const AppId& app_id) const;
 
+  // Returns app service id for the app identified by |app_id|.
+  // App service id will be only different from app_id.app_id() for ARC++ apps.
+  // It does not make sense to call it for other apps.
+  std::string GetAppServiceId(const AppId& app_id) const;
+
   void AddObserver(EventListener* observer);
   void RemoveObserver(EventListener* observer);
 

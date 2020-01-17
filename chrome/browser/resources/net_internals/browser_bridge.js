@@ -35,7 +35,7 @@ const BrowserBridge = (function() {
      * Wraps |chrome.send|.
      * TODO(mattm): remove this and switch things to use chrome.send directly.
      */
-    send: function(value1, value2) {
+    send(value1, value2) {
       if (arguments.length == 1) {
         chrome.send(value1);
       } else if (arguments.length == 2) {
@@ -45,63 +45,63 @@ const BrowserBridge = (function() {
       }
     },
 
-    sendReloadProxySettings: function() {
+    sendReloadProxySettings() {
       this.send('reloadProxySettings');
     },
 
-    sendClearBadProxies: function() {
+    sendClearBadProxies() {
       this.send('clearBadProxies');
     },
 
-    sendClearHostResolverCache: function() {
+    sendClearHostResolverCache() {
       this.send('clearHostResolverCache');
     },
 
-    sendHSTSQuery: function(domain) {
+    sendHSTSQuery(domain) {
       this.send('hstsQuery', [domain]);
     },
 
-    sendHSTSAdd: function(domain, sts_include_subdomains) {
+    sendHSTSAdd(domain, sts_include_subdomains) {
       this.send('hstsAdd', [domain, sts_include_subdomains]);
     },
 
-    sendDomainSecurityPolicyDelete: function(domain) {
+    sendDomainSecurityPolicyDelete(domain) {
       this.send('domainSecurityPolicyDelete', [domain]);
     },
 
-    sendExpectCTQuery: function(domain) {
+    sendExpectCTQuery(domain) {
       this.send('expectCTQuery', [domain]);
     },
 
-    sendExpectCTAdd: function(domain, report_uri, enforce) {
+    sendExpectCTAdd(domain, report_uri, enforce) {
       this.send('expectCTAdd', [domain, report_uri, enforce]);
     },
 
-    sendExpectCTTestReport: function(report_uri) {
+    sendExpectCTTestReport(report_uri) {
       this.send('expectCTTestReport', [report_uri]);
     },
 
-    sendCloseIdleSockets: function() {
+    sendCloseIdleSockets() {
       this.send('closeIdleSockets');
     },
 
-    sendFlushSocketPools: function() {
+    sendFlushSocketPools() {
       this.send('flushSocketPools');
     },
 
-    importONCFile: function(fileContent, passcode) {
+    importONCFile(fileContent, passcode) {
       this.send('importONCFile', [fileContent, passcode]);
     },
 
-    storeDebugLogs: function() {
+    storeDebugLogs() {
       this.send('storeDebugLogs');
     },
 
-    storeCombinedDebugLogs: function() {
+    storeCombinedDebugLogs() {
       this.send('storeCombinedDebugLogs');
     },
 
-    setNetworkDebugMode: function(subsystem) {
+    setNetworkDebugMode(subsystem) {
       this.send('setNetworkDebugMode', [subsystem]);
     },
 
@@ -109,47 +109,47 @@ const BrowserBridge = (function() {
     // Messages received from the browser.
     //--------------------------------------------------------------------------
 
-    receive: function(command, params) {
+    receive(command, params) {
       this[command](params);
     },
 
-    receivedHSTSResult: function(info) {
+    receivedHSTSResult(info) {
       for (let i = 0; i < this.hstsObservers_.length; i++) {
         this.hstsObservers_[i].onHSTSQueryResult(info);
       }
     },
 
-    receivedExpectCTResult: function(info) {
+    receivedExpectCTResult(info) {
       for (let i = 0; i < this.expectCTObservers_.length; i++) {
         this.expectCTObservers_[i].onExpectCTQueryResult(info);
       }
     },
 
-    receivedExpectCTTestReportResult: function(result) {
+    receivedExpectCTTestReportResult(result) {
       for (let i = 0; i < this.expectCTObservers_.length; i++) {
         this.expectCTObservers_[i].onExpectCTTestReportResult(result);
       }
     },
 
-    receivedONCFileParse: function(error) {
+    receivedONCFileParse(error) {
       for (let i = 0; i < this.crosONCFileParseObservers_.length; i++) {
         this.crosONCFileParseObservers_[i].onONCFileParse(error);
       }
     },
 
-    receivedStoreDebugLogs: function(status) {
+    receivedStoreDebugLogs(status) {
       for (let i = 0; i < this.storeDebugLogsObservers_.length; i++) {
         this.storeDebugLogsObservers_[i].onStoreDebugLogs(status);
       }
     },
 
-    receivedStoreCombinedDebugLogs: function(status) {
+    receivedStoreCombinedDebugLogs(status) {
       for (let i = 0; i < this.storeDebugLogsObservers_.length; i++) {
         this.storeDebugLogsObservers_[i].onStoreCombinedDebugLogs(status);
       }
     },
 
-    receivedSetNetworkDebugMode: function(status) {
+    receivedSetNetworkDebugMode(status) {
       for (let i = 0; i < this.setNetworkDebugModeObservers_.length; i++) {
         this.setNetworkDebugModeObservers_[i].onSetNetworkDebugMode(status);
       }
@@ -163,7 +163,7 @@ const BrowserBridge = (function() {
      *
      *   observer.onHSTSQueryResult(result);
      */
-    addHSTSObserver: function(observer) {
+    addHSTSObserver(observer) {
       this.hstsObservers_.push(observer);
     },
 
@@ -173,7 +173,7 @@ const BrowserBridge = (function() {
      *
      *   observer.onExpectCTQueryResult(result);
      */
-    addExpectCTObserver: function(observer) {
+    addExpectCTObserver(observer) {
       this.expectCTObservers_.push(observer);
     },
 
@@ -183,7 +183,7 @@ const BrowserBridge = (function() {
      *
      *   observer.onONCFileParse(error);
      */
-    addCrosONCFileParseObserver: function(observer) {
+    addCrosONCFileParseObserver(observer) {
       this.crosONCFileParseObservers_.push(observer);
     },
 
@@ -194,7 +194,7 @@ const BrowserBridge = (function() {
      *   observer.onStoreDebugLogs(status);
      *   observer.onStoreCombinedDebugLogs(status);
      */
-    addStoreDebugLogsObserver: function(observer) {
+    addStoreDebugLogsObserver(observer) {
       this.storeDebugLogsObservers_.push(observer);
     },
 
@@ -204,7 +204,7 @@ const BrowserBridge = (function() {
      *
      *   observer.onSetNetworkDebugMode(status);
      */
-    addSetNetworkDebugModeObserver: function(observer) {
+    addSetNetworkDebugModeObserver(observer) {
       this.setNetworkDebugModeObservers_.push(observer);
     },
   };

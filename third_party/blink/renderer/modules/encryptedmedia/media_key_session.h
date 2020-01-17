@@ -157,9 +157,7 @@ class MediaKeySession final
   bool is_closing_or_closed_;
 
   // Keep track of the closed promise.
-  typedef ScriptPromiseProperty<Member<MediaKeySession>,
-                                ToV8UndefinedGenerator,
-                                Member<DOMException>>
+  typedef ScriptPromiseProperty<ToV8UndefinedGenerator, Member<DOMException>>
       ClosedPromise;
   Member<ClosedPromise> closed_promise_;
 

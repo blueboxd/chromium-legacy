@@ -206,10 +206,6 @@ constexpr OpenXrButtonPathMap kValveIndexControllerButtonPathMaps[] = {
      {{OpenXrButtonActionType::kPress, "/input/a/click"},
       {OpenXrButtonActionType::kTouch, "/input/a/touch"}},
      2},
-    {OpenXrButtonType::kButton2,
-     {{OpenXrButtonActionType::kPress, "/input/b/click"},
-      {OpenXrButtonActionType::kTouch, "/input/b/touch"}},
-     2},
 };  // namespace device
 
 constexpr OpenXrButtonPathMap kHTCViveControllerButtonPathMaps[] = {

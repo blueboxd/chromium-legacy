@@ -8061,6 +8061,9 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDiscardAckAfterRelease);
 
 class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
  public:
+  explicit LayerTreeHostTestImageAnimation(RendererType type = RENDERER_GL)
+      : LayerTreeHostTest(type) {}
+
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   virtual void AddImageOp(const PaintImage& image) = 0;
@@ -8137,6 +8140,12 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
 
 class LayerTreeHostTestImageAnimationDrawImage
     : public LayerTreeHostTestImageAnimation {
+ public:
+  explicit LayerTreeHostTestImageAnimationDrawImage(
+      RendererType type = RENDERER_GL)
+      : LayerTreeHostTestImageAnimation(type) {}
+
+ private:
   void AddImageOp(const PaintImage& image) override {
     content_layer_client_.add_draw_image(image, gfx::Point(0, 0), PaintFlags());
   }
@@ -8188,6 +8197,10 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimationPaintFilter);
 class LayerTreeHostTestImageAnimationSynchronousScheduling
     : public LayerTreeHostTestImageAnimationDrawImage {
  public:
+  explicit LayerTreeHostTestImageAnimationSynchronousScheduling(
+      RendererType type = RENDERER_GL)
+      : LayerTreeHostTestImageAnimationDrawImage(type) {}
+
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreeHostTestImageAnimation::InitializeSettings(settings);
     settings->using_synchronous_renderer_compositor = true;
@@ -8199,11 +8212,9 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimationSynchronousScheduling);
 class LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw
     : public LayerTreeHostTestImageAnimationSynchronousScheduling {
  public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    LayerTreeHostTestImageAnimationSynchronousScheduling::InitializeSettings(
-        settings);
-    renderer_type_ = RENDERER_SOFTWARE;
-  }
+  LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw()
+      : LayerTreeHostTestImageAnimationSynchronousScheduling(
+            RENDERER_SOFTWARE) {}
 
   void AfterTest() override {
     LayerTreeHostTestImageAnimationSynchronousScheduling::AfterTest();

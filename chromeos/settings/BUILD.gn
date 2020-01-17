@@ -40,7 +40,5 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/icu",
   ]
-  sources = [
-    "timezone_settings_unittest.cc",
-  ]
+  sources = [ "timezone_settings_unittest.cc" ]
 }

@@ -16,10 +16,7 @@
 
 - (instancetype)initWithModalDelegate:
     (id<InfobarSaveCardModalDelegate>)modalDelegate NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-    NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 // Cardholder name to be displayed.
 @property(nonatomic, copy) NSString* cardholderName;

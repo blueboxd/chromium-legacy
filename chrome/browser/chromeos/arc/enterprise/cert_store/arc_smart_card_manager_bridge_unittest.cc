@@ -108,7 +108,7 @@ class MockArcCertInstaller : public ArcCertInstaller {
                        std::unique_ptr<policy::RemoteCommandsQueue> queue)
       : ArcCertInstaller(profile, std::move(queue)) {}
   MOCK_METHOD2(InstallArcCerts,
-               std::set<std::string>(
+               std::map<std::string, std::string>(
                    const std::vector<net::ScopedCERTCertificate>& certs,
                    InstallArcCertsCallback callback));
 };
@@ -188,7 +188,7 @@ TEST_F(ArcSmartCardManagerBridgeTest, NoSmartCardTest) {
       .WillOnce(
           WithArg<1>(Invoke([](base::OnceCallback<void(bool result)> callback) {
             std::move(callback).Run(true);
-            return std::set<std::string>();
+            return std::map<std::string, std::string>();
           })));
   bridge()->Refresh(base::BindOnce([](bool result) { EXPECT_TRUE(result); }));
 }
@@ -204,7 +204,12 @@ TEST_F(ArcSmartCardManagerBridgeTest, BasicSmartCardTest) {
       .WillOnce(WithArg<1>(
           Invoke([&cert_names](base::OnceCallback<void(bool result)> callback) {
             std::move(callback).Run(true);
-            return std::set<std::string>(cert_names.begin(), cert_names.end());
+            std::map<std::string, std::string> cert_names_map;
+            std::transform(
+                cert_names.begin(), cert_names.end(),
+                std::inserter(cert_names_map, cert_names_map.end()),
+                [](const std::string& s) { return std::make_pair(s, ""); });
+            return cert_names_map;
           })));
   EXPECT_CALL(*policy_bridge(), OnPolicyUpdated(_, _, _));
   bridge()->Refresh(base::BindOnce([](bool result) { EXPECT_TRUE(result); }));

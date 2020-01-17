@@ -51,12 +51,12 @@ Polymer({
   meta_: /** @type {!IronMetaElement} */ (
       Base.create('iron-meta', {type: 'iconset'})),
 
-  focus: function() {
+  focus() {
     this.$$('.md-select').focus();
   },
 
   /** Sets the select to the current value of |destination|. */
-  updateDestination: function() {
+  updateDestination() {
     this.selectedValue = this.destination.key;
   },
 
@@ -64,7 +64,7 @@ Polymer({
    * @return {string} Unique identifier for the Save as PDF destination
    * @private
    */
-  getPdfDestinationKey_: function() {
+  getPdfDestinationKey_() {
     return createDestinationKey(
         Destination.GooglePromotedId.SAVE_AS_PDF, DestinationOrigin.LOCAL, '');
   },
@@ -73,7 +73,7 @@ Polymer({
    * @return {string} Unique identifier for the Save to Google Drive destination
    * @private
    */
-  getGoogleDriveDestinationKey_: function() {
+  getGoogleDriveDestinationKey_() {
     return createDestinationKey(
         Destination.GooglePromotedId.DOCS, DestinationOrigin.COOKIES,
         this.activeUser);
@@ -86,7 +86,7 @@ Polymer({
    * @return {string} The iconset and icon for the current selection.
    * @private
    */
-  getDestinationIcon_: function() {
+  getDestinationIcon_() {
     if (!this.selectedValue) {
       return '';
     }
@@ -125,7 +125,7 @@ Polymer({
    *     destination and the image for the dropdown arrow.
    * @private
    */
-  getBackgroundImages_: function() {
+  getBackgroundImages_() {
     const icon = this.getDestinationIcon_();
     if (!icon) {
       return '';
@@ -141,7 +141,7 @@ Polymer({
     return getSelectDropdownBackground(iconset, iconSetAndIcon[1], this);
   },
 
-  onProcessSelectChange: function(value) {
+  onProcessSelectChange(value) {
     this.fire('selected-option-change', value);
   },
 });

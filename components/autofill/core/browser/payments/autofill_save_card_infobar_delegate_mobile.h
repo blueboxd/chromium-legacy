@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
@@ -78,11 +79,25 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
 
+#if defined(OS_IOS)
+  // Updates and then saves the card using |cardholder_name|,
+  // |expiration_date_month| and |expiration_date_year|, which were provided
+  // as part of the iOS save card Infobar dialog.
+  bool UpdateAndAccept(base::string16 cardholder_name,
+                       base::string16 expiration_date_month,
+                       base::string16 expiration_date_year);
+#endif  // defined(OS_IOS)
+
  private:
   // Runs the appropriate local or upload save callback with the given
-  // |user_decision|.
-  void RunSaveCardPromptCallbackWithUserDecision(
-      AutofillClient::SaveCardOfferUserDecision user_decision);
+  // |user_decision|, using the |user_provided_details|. If
+  // |user_provided_details| is empty then the current Card values will be used.
+  // The  cardholder name and expiration date portions of
+  // |user_provided_details| are handled separately, so if either of them are
+  // empty the current Card values will be used.
+  void RunSaveCardPromptCallback(
+      AutofillClient::SaveCardOfferUserDecision user_decision,
+      AutofillClient::UserProvidedCardDetails user_provided_details);
 
   void LogUserAction(AutofillMetrics::InfoBarMetric user_action);
 

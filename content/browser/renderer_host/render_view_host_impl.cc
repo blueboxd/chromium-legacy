@@ -396,11 +396,8 @@ bool RenderViewHostImpl::CreateRenderView(
 }
 
 void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
-  bool was_active = is_active();
   main_frame_routing_id_ = routing_id;
   GetWidget()->UpdatePriority();
-  if (was_active && !is_active())
-    GetWidget()->DidDestroyRenderWidget();
 }
 
 void RenderViewHostImpl::EnterBackForwardCache() {

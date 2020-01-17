@@ -268,46 +268,4 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
 }
 
-TEST_F(BrowserTaskExecutorTest, CurrentThread) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI}, base::BindOnce([]() {
-        base::PostTask(
-            FROM_HERE, {base::CurrentThread()}, base::BindOnce([]() {
-              EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-            }));
-      }));
-  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
-
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO}, base::BindOnce([]() {
-        base::PostTask(
-            FROM_HERE, {base::CurrentThread()}, base::BindOnce([]() {
-              EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-            }));
-      }));
-
-  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
-}
-
-TEST_F(BrowserTaskExecutorTest, CurrentThreadAndOtherTraits) {
-  EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  auto ui_task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
-  auto ui_best_effort_runner = base::CreateSingleThreadTaskRunner(
-      {BrowserThread::UI, base::TaskPriority::BEST_EFFORT});
-  auto ui_best_navigation_runner = base::CreateSingleThreadTaskRunner(
-      {BrowserThread::UI, BrowserTaskType::kNavigation});
-
-  EXPECT_EQ(ui_task_runner,
-            base::CreateSingleThreadTaskRunner({base::CurrentThread()}));
-
-  EXPECT_EQ(ui_best_effort_runner,
-            base::CreateSingleThreadTaskRunner(
-                {base::CurrentThread(), base::TaskPriority::BEST_EFFORT}));
-
-  EXPECT_EQ(ui_best_navigation_runner,
-            base::CreateSingleThreadTaskRunner(
-                {base::CurrentThread(), BrowserTaskType::kNavigation}));
-}
-
 }  // namespace content

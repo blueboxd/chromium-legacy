@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
-#include "third_party/blink/renderer/core/layout/layout_slider.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_div_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
@@ -41,12 +40,14 @@ bool MediaControlElementsHelper::IsUserInteractionEventForSlider(
     return true;
 
   // Some events are only captured during a slider drag.
-  const LayoutSlider* slider = ToLayoutSlider(layout_object);
-  // TODO(crbug.com/695459#c1): LayoutSliderItem::inDragMode is incorrectly
+  const HTMLInputElement* slider = nullptr;
+  if (layout_object)
+    slider = DynamicTo<HTMLInputElement>(layout_object->GetNode());
+  // TODO(crbug.com/695459#c1): HTMLInputElement::IsDraggedSlider is incorrectly
   // false for drags that start from the track instead of the thumb.
-  // Use SliderThumbElement::m_inDragMode and
-  // SliderContainerElement::m_touchStarted instead.
-  if (slider && !slider->InDragMode())
+  // Use SliderThumbElement::in_drag_mode_ and
+  // SliderContainerElement::touch_started_ instead.
+  if (slider && !slider->IsDraggedSlider())
     return false;
 
   const AtomicString& type = event.type();

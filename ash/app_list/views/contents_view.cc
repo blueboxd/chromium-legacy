@@ -794,6 +794,15 @@ void ContentsView::UpdateYPositionAndOpacity() {
                                    search_box_bounds);
   }
 
+  // If in drag, reset the transforms that might have been set in
+  // AnimateToViewState().
+  if (app_list_view_->is_in_drag()) {
+    search_box->layer()->SetTransform(gfx::Transform());
+    expand_arrow_view_->layer()->SetTransform(gfx::Transform());
+    for (AppListPage* page : app_list_pages_)
+      page->layer()->SetTransform(gfx::Transform());
+  }
+
   if (app_list_features::IsScalableAppListEnabled() ||
       current_state == AppListState::kStateApps) {
     // Layout the apps container at the position where it would be with apps
@@ -849,7 +858,7 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
   // |layer| - The layer to transform.
   // |y_offset| - The initial vertical offset - the layer's vertical offset will
   //              be animated to 0.
-  auto animate_transform = [](base::TimeDelta duration, int y_offset,
+  auto animate_transform = [](base::TimeDelta duration, float y_offset,
                               views::View* view) {
     ui::Layer* layer = view->layer();
     gfx::Transform transform;
@@ -941,6 +950,10 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
   // Schedule expand arrow repaint to ensure the view picks up the new target
   // state.
   expand_arrow_view()->SchedulePaint();
+  animate_transform(
+      duration,
+      expand_arrow_view()->CalculateOffsetFromCurrentAppListProgress(progress),
+      expand_arrow_view());
 }
 
 void ContentsView::SetExpandArrowViewVisibility(bool show) {

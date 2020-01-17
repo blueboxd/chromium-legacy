@@ -78,7 +78,11 @@ void SyntheticMouseDriver::Release(int index,
       mouse_event_.pointer_type);
   mouse_event_.button =
       SyntheticPointerActionParams::GetWebMouseEventButton(button);
-  mouse_event_.click_count = click_count_;
+
+  // Set click count to 1 to allow pointer release without pointer down. This
+  // prevents MouseEvent::SetClickCount from throwing DCHECK error
+  click_count_ == 0 ? mouse_event_.click_count = 1
+                    : mouse_event_.click_count = click_count_;
   last_modifiers_ =
       last_modifiers_ &
       (~SyntheticPointerActionParams::GetWebMouseEventModifier(button));
@@ -113,7 +117,7 @@ bool SyntheticMouseDriver::UserInputCheck(
       SyntheticPointerActionParams::PointerActionType::RELEASE) {
     int modifiers =
         SyntheticPointerActionParams::GetWebMouseEventModifier(params.button());
-    if (!(last_modifiers_ & modifiers))
+    if (!modifiers)
       return false;
   }
 

@@ -14,33 +14,23 @@ js_type_check("closure_compile") {
 
 js_type_check("closure_compile_modules") {
   uses_js_modules = true
-  deps = [
-    ":event_target.m",
-  ]
+  deps = [ ":event_target.m" ]
 }
 
 js_library("event_target") {
-  deps = [
-    "..:cr",
-  ]
+  deps = [ "..:cr" ]
 }
 
 js_library("ui") {
-  deps = [
-    "..:cr",
-  ]
+  deps = [ "..:cr" ]
 }
 
 js_library("event_target.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/cr/event_target.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/cr/event_target.m.js" ]
   extra_deps = [ ":modulize" ]
 }
 
 js_modulizer("modulize") {
   input_files = [ "event_target.js" ]
-  deps = [
-    "ui:modulize",
-  ]
+  deps = [ "ui:modulize" ]
 }

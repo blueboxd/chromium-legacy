@@ -29,7 +29,5 @@ mojom_component("constants") {
   generate_java = true
   output_prefix = "service_manager_mojom_constants"
   macro_prefix = "SERVICE_MANAGER_MOJOM_CONSTANTS"
-  sources = [
-    "constants.mojom",
-  ]
+  sources = [ "constants.mojom" ]
 }

@@ -21,6 +21,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
+import org.chromium.base.MathUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -31,6 +32,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.native_page.NativePage;
@@ -44,7 +46,9 @@ import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The TabContentManager is responsible for serving tab contents to the UI components. Contents
@@ -61,10 +65,15 @@ public class TabContentManager {
         int GOT_JPEG = 0;
         int GOT_ETC1 = 1;
         int GOT_NOTHING = 2;
-        int NUM_ENTRIES = 3;
+        int GOT_DIFFERENT_ASPECT_RATIO_JPEG = 3;
+        int NUM_ENTRIES = 4;
     }
-    private static final String UMA_THUMBNAIL_FETCHING_RESULT =
+    public static final double ASPECT_RATIO_PRECISION = 0.01;
+
+    @VisibleForTesting
+    public static final String UMA_THUMBNAIL_FETCHING_RESULT =
             "GridTabSwitcher.ThumbnailFetchingResult";
+    private Set<Integer> mRefectchedTabIds;
 
     private final float mThumbnailScale;
     private final int mFullResThumbnailsMaxSize;
@@ -87,6 +96,7 @@ public class TabContentManager {
     private int mOnTheFlyRequests;
     private int mRequests;
     private int mNumOfThumbnailsForLastThumbnail;
+    private float mExpectedThumbnailAspectRatio;
 
     /**
      * The Java interface for listening to thumbnail changes.
@@ -173,6 +183,17 @@ public class TabContentManager {
 
         mPriorityTabIds = new int[mFullResThumbnailsMaxSize];
 
+        if (FeatureUtilities.isTabThumbnailAspectRatioNotOne()
+                || FeatureUtilities.isAllowToRefetchTabThumbnail()) {
+            mRefectchedTabIds = new HashSet<>();
+            mExpectedThumbnailAspectRatio =
+                    (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
+                            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio",
+                            1.0);
+            mExpectedThumbnailAspectRatio =
+                    MathUtils.clamp(mExpectedThumbnailAspectRatio, 0.5f, 2.0f);
+        }
+
         mNativeTabContentManager = TabContentManagerJni.get().init(TabContentManager.this,
                 defaultCacheSize, approximationCacheSize, compressionQueueMaxSize,
                 writeQueueMaxSize, useApproximationThumbnails, saveJpegThumbnails);
@@ -182,6 +203,7 @@ public class TabContentManager {
      * Destroy the native component.
      */
     public void destroy() {
+        if (mRefectchedTabIds != null) mRefectchedTabIds.clear();
         if (mNativeTabContentManager != 0) {
             TabContentManagerJni.get().destroy(mNativeTabContentManager);
             mNativeTabContentManager = 0;
@@ -379,6 +401,13 @@ public class TabContentManager {
         }
     }
 
+    @VisibleForTesting
+    public static Bitmap getJpegForTab(Tab tab) {
+        File file = getTabThumbnailFileJpeg(tab);
+        if (!file.isFile()) return null;
+        return BitmapFactory.decodeFile(file.getPath());
+    }
+
     private void getTabThumbnailFromDisk(@NonNull Tab tab, @NonNull Callback<Bitmap> callback) {
         mOnTheFlyRequests++;
         mRequests++;
@@ -388,9 +417,7 @@ public class TabContentManager {
         new AsyncTask<Bitmap>() {
             @Override
             public Bitmap doInBackground() {
-                File file = getTabThumbnailFileJpeg(tab);
-                if (!file.isFile()) return null;
-                return BitmapFactory.decodeFile(file.getPath());
+                return getJpegForTab(tab);
             }
 
             @Override
@@ -403,8 +430,29 @@ public class TabContentManager {
                     notifyOnLastThumbnail();
                 }
                 if (jpeg != null) {
+                    if (FeatureUtilities.isAllowToRefetchTabThumbnail()) {
+                        double jpegAspectRatio = jpeg.getHeight() == 0
+                                ? 0
+                                : 1.0 * jpeg.getWidth() / jpeg.getHeight();
+                        // Retry fetching thumbnail once for all tabs that are:
+                        //  * Thumbnail's aspect ratio is different from the expected ratio.
+                        if (!mRefectchedTabIds.contains(tab.getId())
+                                && Math.abs(jpegAspectRatio - mExpectedThumbnailAspectRatio)
+                                        >= ASPECT_RATIO_PRECISION) {
+                            RecordHistogram.recordEnumeratedHistogram(UMA_THUMBNAIL_FETCHING_RESULT,
+                                    ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG,
+                                    ThumbnailFetchingResult.NUM_ENTRIES);
+                            mRefectchedTabIds.add(tab.getId());
+                            if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
+                            TabContentManagerJni.get().getEtc1TabThumbnail(mNativeTabContentManager,
+                                    TabContentManager.this, tab.getId(),
+                                    (etc1) -> callback.onResult(etc1));
+                            return;
+                        }
+                    }
                     RecordHistogram.recordEnumeratedHistogram(UMA_THUMBNAIL_FETCHING_RESULT,
                             ThumbnailFetchingResult.GOT_JPEG, ThumbnailFetchingResult.NUM_ENTRIES);
+
                     callback.onResult(jpeg);
                     return;
                 }
@@ -480,7 +528,11 @@ public class TabContentManager {
             Matrix matrix = new Matrix();
             matrix.setScale(downsamplingScale, downsamplingScale);
             Bitmap resized = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                    min(bitmap.getWidth(), bitmap.getHeight()), matrix, true);
+                    FeatureUtilities.isTabThumbnailAspectRatioNotOne()
+                            ? Math.min(bitmap.getHeight(),
+                                    (int) (bitmap.getWidth() * 1.0 / mExpectedThumbnailAspectRatio))
+                            : min(bitmap.getWidth(), bitmap.getHeight()),
+                    matrix, true);
             callback.onResult(resized);
         } else {
             if (tab.getWebContents() == null) return;

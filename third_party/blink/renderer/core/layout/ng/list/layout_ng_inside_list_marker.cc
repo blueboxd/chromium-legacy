@@ -5,19 +5,11 @@
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 
 #include "third_party/blink/renderer/core/layout/layout_text.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 
 namespace blink {
 
 LayoutNGInsideListMarker::LayoutNGInsideListMarker(Element* element)
     : LayoutInline(element) {}
-
-LayoutNGInsideListMarker* LayoutNGInsideListMarker::CreateAnonymous(
-    Document* document) {
-  LayoutNGInsideListMarker* object = new LayoutNGInsideListMarker(nullptr);
-  object->SetDocumentForAnonymous(document);
-  return object;
-}
 
 bool LayoutNGInsideListMarker::IsOfType(LayoutObjectType type) const {
   return type == kLayoutObjectNGInsideListMarker ||

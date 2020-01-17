@@ -13,9 +13,7 @@ if (use_pulseaudio && !link_pulseaudio) {
     extra_header = "pulse/pulse_stub_header.fragment"
     sigs = [ "pulse/pulse.sigs" ]
     output_name = "pulse/pulse_stubs"
-    deps = [
-      "//base",
-    ]
+    deps = [ "//base" ]
   }
 }
 
@@ -24,9 +22,7 @@ if (is_android) {
     extra_header = "android/aaudio_stub_header.fragment"
     sigs = [ "android/aaudio.sigs" ]
     output_name = "android/aaudio_stubs"
-    deps = [
-      "//base",
-    ]
+    deps = [ "//base" ]
   }
 }
 

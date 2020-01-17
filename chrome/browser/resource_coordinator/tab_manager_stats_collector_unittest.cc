@@ -641,8 +641,8 @@ TEST_F(TabManagerStatsCollectorTest, PeriodicSamplingWorks) {
 
   tab_manager_stats_collector()->PerformPeriodicSample();
 
-  // Expect two entries per tab (freezing and discard decisions).
-  EXPECT_EQ(6u,
+  // Expect one entry per tab (freezing decision).
+  EXPECT_EQ(3u,
             test_ukm_recorder_.GetEntriesByName(UkmEntry::kEntryName).size());
 
   tab_strip->CloseAllTabs();

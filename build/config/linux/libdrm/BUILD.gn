@@ -23,9 +23,7 @@ if (use_system_libdrm) {
   }
 } else {
   group("libdrm") {
-    public_deps = [
-      "//third_party/libdrm",
-    ]
+    public_deps = [ "//third_party/libdrm" ]
   }
   config("libdrm_exynos_include_config") {
     include_dirs = [ "//third_party/libdrm/src/exynos" ]

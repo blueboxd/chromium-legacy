@@ -25,18 +25,14 @@ source_set("promos") {
     "//ios/public/provider/chrome/browser/signin",
     "//net",
   ]
-  public_deps = [
-    "//ios/chrome/browser/ui/authentication",
-  ]
+  public_deps = [ "//ios/chrome/browser/ui/authentication" ]
   libs = [ "UIKit.framework" ]
 }
 
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "signin_promo_view_controller_unittest.mm",
-  ]
+  sources = [ "signin_promo_view_controller_unittest.mm" ]
   deps = [
     ":promos",
     "//base",

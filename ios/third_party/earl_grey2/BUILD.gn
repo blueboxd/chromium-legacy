@@ -196,13 +196,9 @@ source_set("ui_lib") {
     "src/UILib/VisibilityChecker/GREYVisibilityChecker.m",
   ]
 
-  deps = [
-    ":common_lib",
-  ]
+  deps = [ ":common_lib" ]
 
-  public_deps = [
-    ":ui_lib_shared_headers",
-  ]
+  public_deps = [ ":ui_lib_shared_headers" ]
 
   public_configs = [ ":config" ]
 
@@ -391,9 +387,7 @@ ios_framework_bundle("app_framework") {
     "//ios/third_party/webkit",
   ]
 
-  public_deps = [
-    ":app_framework_shared_headers",
-  ]
+  public_deps = [ ":app_framework_shared_headers" ]
 
   public_headers = [ "src/AppFramework/EarlGreyApp/EarlGreyApp.h" ]
 

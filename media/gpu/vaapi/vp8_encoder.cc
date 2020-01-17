@@ -30,8 +30,7 @@ VP8Encoder::EncodeParams::EncodeParams()
       cpb_window_size_ms(kCPBWindowSizeMs),
       cpb_size_bits(0),
       initial_qp(kDefaultQP),
-      min_qp(kMinQP),
-      max_qp(kMaxQP),
+      scaling_settings(kMinQP, kMaxQP),
       error_resilient_mode(false) {}
 
 void VP8Encoder::Reset() {
@@ -86,6 +85,12 @@ size_t VP8Encoder::GetMaxNumOfRefFrames() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   return kNumVp8ReferenceBuffers;
+}
+
+ScalingSettings VP8Encoder::GetScalingSettings() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return current_params_.scaling_settings;
 }
 
 bool VP8Encoder::PrepareEncodeJob(EncodeJob* encode_job) {

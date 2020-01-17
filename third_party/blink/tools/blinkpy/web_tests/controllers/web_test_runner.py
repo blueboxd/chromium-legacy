@@ -105,6 +105,7 @@ class WebTestRunner(object):
             test_inputs,
             int(self._options.child_processes),
             self._options.fully_parallel,
+            self._options.virtual_parallel,
             batch_size == 1)
 
         self._reorder_tests_by_args(locked_shards)
@@ -376,7 +377,7 @@ class Sharder(object):
         self._split = test_split_fn
         self._max_locked_shards = max_locked_shards
 
-    def shard_tests(self, test_inputs, num_workers, fully_parallel, run_singly):
+    def shard_tests(self, test_inputs, num_workers, fully_parallel, parallel_includes_virtual, run_singly):
         """Groups tests into batches.
         This helps ensure that tests that depend on each other (aka bad tests!)
         continue to run together as most cross-tests dependencies tend to
@@ -392,7 +393,7 @@ class Sharder(object):
         if num_workers == 1:
             return self._shard_in_two(test_inputs)
         elif fully_parallel:
-            return self._shard_every_file(test_inputs, run_singly)
+            return self._shard_every_file(test_inputs, run_singly, parallel_includes_virtual)
         return self._shard_by_directory(test_inputs)
 
     def _shard_in_two(self, test_inputs):
@@ -417,7 +418,7 @@ class Sharder(object):
 
         return locked_shards, unlocked_shards
 
-    def _shard_every_file(self, test_inputs, run_singly):
+    def _shard_every_file(self, test_inputs, run_singly, virtual_is_unlocked):
         """Returns two lists of shards, each shard containing a single test file.
 
         This mode gets maximal parallelism at the cost of much higher flakiness.
@@ -432,7 +433,7 @@ class Sharder(object):
             # which would be really redundant.
             if test_input.requires_lock:
                 locked_shards.append(TestShard('.', [test_input]))
-            elif test_input.test_name.startswith('virtual') and not run_singly:
+            elif test_input.test_name.startswith('virtual') and not run_singly and not virtual_is_unlocked:
                 # This violates the spirit of sharding every file, but in practice, since the
                 # virtual test suites require a different commandline flag and thus a restart
                 # of content_shell, it's too slow to shard them fully.

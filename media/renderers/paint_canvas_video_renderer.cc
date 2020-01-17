@@ -470,7 +470,7 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
   int height = video_frame->visible_rect().height();
 
   base::CheckedNumeric<size_t> chunks = height / rows_per_chunk;
-  DCHECK_EQ(height % rows_per_chunk, 0UL);
+  DCHECK_LE(height % rows_per_chunk, 1UL);
   size_t chunk_start = (chunks * task_index / n_tasks).ValueOrDie();
   size_t chunk_end = (chunks * (task_index + 1) / n_tasks).ValueOrDie();
 

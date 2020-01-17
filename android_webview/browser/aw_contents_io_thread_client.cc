@@ -344,7 +344,7 @@ namespace {
 // Used to specify what kind of url was intercepted by the embedded
 // using shouldIntercepterRequest callback.
 // Note: these values are persisted in UMA logs, so they should never be
-// renumbered nor reused.
+// renumbered or reused.
 enum class InterceptionType {
   kNoIntercept,
   kOther,

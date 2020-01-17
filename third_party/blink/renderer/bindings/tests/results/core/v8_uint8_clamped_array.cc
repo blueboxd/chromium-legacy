@@ -93,14 +93,4 @@ TestUint8ClampedArray* V8Uint8ClampedArray::ToImplWithTypeCheck(
   return value->IsUint8ClampedArray() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestUint8ClampedArray* NativeValueTraits<TestUint8ClampedArray>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestUint8ClampedArray* native_value = V8Uint8ClampedArray::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "Uint8ClampedArray"));
-  }
-  return native_value;
-}
-
 }  // namespace blink

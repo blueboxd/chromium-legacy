@@ -40,7 +40,7 @@ Polymer({
      */
     availableIcons: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -61,12 +61,12 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.ManageProfileBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     const setIcons = icons => {
       this.availableIcons = icons;
     };
@@ -76,8 +76,9 @@ Polymer({
   },
 
   /** @protected */
-  currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.routes.MANAGE_PROFILE) {
+  currentRouteChanged() {
+    if (settings.Router.getInstance().getCurrentRoute() ==
+        settings.routes.MANAGE_PROFILE) {
       if (this.profileName) {
         this.$.name.value = this.profileName;
       }
@@ -101,7 +102,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onProfileNameChanged_: function(event) {
+  onProfileNameChanged_(event) {
     if (event.target.invalid) {
       return;
     }
@@ -114,7 +115,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onProfileNameKeydown_: function(event) {
+  onProfileNameKeydown_(event) {
     if (event.key == 'Escape') {
       event.target.value = this.profileName;
       event.target.blur();
@@ -125,7 +126,7 @@ Polymer({
    * Handler for when the profile avatar is changed by the user.
    * @private
    */
-  profileAvatarChanged_: function() {
+  profileAvatarChanged_() {
     if (this.profileAvatar_.isGaiaAvatar) {
       this.browserProxy_.setProfileIconToGaiaAvatar();
     } else {
@@ -138,7 +139,7 @@ Polymer({
    * @return {boolean} Whether the profile name field is disabled.
    * @private
    */
-  isProfileNameDisabled_: function(syncStatus) {
+  isProfileNameDisabled_(syncStatus) {
     return !!syncStatus.supervisedUser && !syncStatus.childUser;
   },
 
@@ -147,7 +148,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onHasProfileShortcutChange_: function(event) {
+  onHasProfileShortcutChange_(event) {
     if (this.hasProfileShortcut_) {
       this.browserProxy_.addProfileShortcut();
     } else {

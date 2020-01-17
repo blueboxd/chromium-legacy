@@ -92,7 +92,7 @@ AppLimit::~AppLimit() = default;
 
 AppActivity::ActiveTime::ActiveTime(base::Time start, base::Time end)
     : active_from_(start), active_to_(end) {
-  DCHECK_GT(end, start);
+  DCHECK_GT(active_to_, active_from_);
 }
 
 AppActivity::ActiveTime::ActiveTime(const AppActivity::ActiveTime& rhs) =
@@ -100,6 +100,36 @@ AppActivity::ActiveTime::ActiveTime(const AppActivity::ActiveTime& rhs) =
 
 AppActivity::ActiveTime& AppActivity::ActiveTime::operator=(
     const AppActivity::ActiveTime& rhs) = default;
+
+bool AppActivity::ActiveTime::operator==(const ActiveTime& rhs) const {
+  return active_from_ == rhs.active_from() && active_to_ == rhs.active_to();
+}
+
+bool AppActivity::ActiveTime::operator!=(const ActiveTime& rhs) const {
+  return !(*this == rhs);
+}
+
+bool AppActivity::ActiveTime::Contains(base::Time timestamp) const {
+  return active_from_ < timestamp && active_to_ > timestamp;
+}
+
+bool AppActivity::ActiveTime::IsEarlierThan(base::Time timestamp) const {
+  return active_to_ <= timestamp;
+}
+
+bool AppActivity::ActiveTime::IsLaterThan(base::Time timestamp) const {
+  return active_from_ >= timestamp;
+}
+
+void AppActivity::ActiveTime::set_active_from(base::Time active_from) {
+  DCHECK_GT(active_to_, active_from);
+  active_from_ = active_from;
+}
+
+void AppActivity::ActiveTime::set_active_to(base::Time active_to) {
+  DCHECK_GT(active_to, active_from_);
+  active_to_ = active_to;
+}
 
 AppActivity::AppActivity(AppState app_state)
     : app_state_(app_state),
@@ -145,6 +175,23 @@ base::TimeDelta AppActivity::RunningActiveTime() const {
 
   return running_active_time_ +
          (base::TimeTicks::Now() - last_updated_time_ticks_);
+}
+
+void AppActivity::RemoveActiveTimeEarlierThan(base::Time timestamp) {
+  for (auto active_time = active_times_.begin();
+       active_time != active_times_.end();) {
+    if (active_time->IsEarlierThan(timestamp)) {
+      active_time = active_times_.erase(active_time);
+      continue;
+    }
+    if (active_time->IsLaterThan(timestamp)) {
+      ++active_time;
+      continue;
+    }
+    DCHECK(active_time->Contains(timestamp));
+    active_time->set_active_from(timestamp);
+    ++active_time;
+  }
 }
 
 }  // namespace app_time

@@ -5,12 +5,12 @@
 package org.chromium.chrome.browser.tab;
 
 import org.chromium.chrome.browser.ChromeActionModeCallback;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.complex_tasks.TaskTabHelper;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.dom_distiller.TabDistillabilityProvider;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;

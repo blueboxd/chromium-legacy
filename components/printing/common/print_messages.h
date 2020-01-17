@@ -341,12 +341,6 @@ IPC_STRUCT_BEGIN(PrintHostMsg_ScriptedPrint_Params)
 IPC_STRUCT_END()
 
 
-// Messages sent from the browser to the renderer.
-
-// Tells the RenderFrame to initiate printing or print preview for a particular
-// node, depending on which mode the RenderFrame is in.
-IPC_MESSAGE_ROUTED0(PrintMsg_PrintNodeUnderContextMenu)
-
 // Messages sent from the renderer to the browser.
 
 // Tells the browser that the renderer is done calculating the number of

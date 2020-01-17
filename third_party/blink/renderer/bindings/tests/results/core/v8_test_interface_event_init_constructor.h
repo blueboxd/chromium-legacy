@@ -56,12 +56,6 @@ class V8TestInterfaceEventInitConstructor {
 };
 
 template <>
-struct NativeValueTraits<TestInterfaceEventInitConstructor> : public NativeValueTraitsBase<TestInterfaceEventInitConstructor> {
-  CORE_EXPORT static TestInterfaceEventInitConstructor* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestInterfaceEventInitConstructor* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestInterfaceEventInitConstructor> {
   typedef V8TestInterfaceEventInitConstructor Type;
 };

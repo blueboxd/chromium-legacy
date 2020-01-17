@@ -239,9 +239,7 @@ config("runtime_library") {
     } else {
       defines += [ "WINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP" ]
     }
-    cflags_cc += [
-      "/EHsc",
-    ]
+    cflags_cc += [ "/EHsc" ]
 
     # This warning is given because the linker cannot tell the difference
     # between consuming WinRT APIs versus authoring WinRT within static

@@ -354,6 +354,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity) {
 
 void AuthenticationService::SignOut(
     signin_metrics::ProfileSignout signout_source,
+    bool force_clear_browsing_data,
     ProceduralBlock completion) {
   if (!IsAuthenticated()) {
     if (completion)
@@ -374,7 +375,7 @@ void AuthenticationService::SignOut(
       signout_source, signin_metrics::SignoutDelete::IGNORE_METRIC);
   breakpad_helper::SetCurrentlySignedIn(false);
   cached_mdm_infos_.clear();
-  if (is_managed) {
+  if (force_clear_browsing_data || is_managed) {
     delegate_->ClearBrowsingData(completion);
   } else if (completion) {
     completion();
@@ -466,7 +467,8 @@ bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
       // If the identiy is blocked, sign out of the account. As only managed
       // account can be blocked, this will clear the associated browsing data.
       if (identity == weak_ptr->GetAuthenticatedIdentity()) {
-        weak_ptr->SignOut(signin_metrics::ABORT_SIGNIN, nil);
+        weak_ptr->SignOut(signin_metrics::ABORT_SIGNIN,
+                          /*force_clear_browsing_data=*/false, nil);
       }
     }
   };
@@ -536,7 +538,8 @@ void AuthenticationService::HandleForgottenIdentity(
   }
 
   // Sign the user out.
-  SignOut(signin_metrics::ABORT_SIGNIN, nil);
+  SignOut(signin_metrics::ABORT_SIGNIN, /*force_clear_browsing_data=*/false,
+          nil);
   if (should_prompt)
     SetPromptForSignIn();
 }

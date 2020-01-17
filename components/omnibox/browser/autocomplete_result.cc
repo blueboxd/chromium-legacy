@@ -145,8 +145,7 @@ void AutocompleteResult::TransferOldMatches(
   old_matches->BuildProviderToMatchesMove(&old_matches_per_provider);
   for (ProviderToMatches::iterator i = old_matches_per_provider.begin();
        i != old_matches_per_provider.end(); ++i) {
-    MergeMatchesByProvider(input.current_page_classification(), &i->second,
-                           matches_per_provider[i->first]);
+    MergeMatchesByProvider(&i->second, matches_per_provider[i->first]);
   }
 
   SortAndCull(input, template_url_service);
@@ -205,7 +204,7 @@ void AutocompleteResult::SortAndCull(
   MaybeCullTailSuggestions(&matches_, comparing_object);
 #endif
 
-  DeduplicateMatches(input.current_page_classification(), &matches_);
+  DeduplicateMatches(&matches_);
 
   // Sort and trim to the most relevant GetMaxMatches() matches.
   std::sort(matches_.begin(), matches_.end(), comparing_object);
@@ -609,9 +608,7 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
              : GURL();
 }
 
-void AutocompleteResult::DeduplicateMatches(
-    metrics::OmniboxEventProto::PageClassification page_classification,
-    ACMatches* matches) {
+void AutocompleteResult::DeduplicateMatches(ACMatches* matches) {
   // Group matches by stripped URL and whether it's a calculator suggestion.
   std::unordered_map<std::pair<GURL, bool>, std::vector<ACMatches::iterator>,
                      MatchGURLHash>
@@ -820,10 +817,8 @@ void AutocompleteResult::BuildProviderToMatchesMove(
     (*provider_to_matches)[match.provider].push_back(std::move(match));
 }
 
-void AutocompleteResult::MergeMatchesByProvider(
-    metrics::OmniboxEventProto::PageClassification page_classification,
-    ACMatches* old_matches,
-    const ACMatches& new_matches) {
+void AutocompleteResult::MergeMatchesByProvider(ACMatches* old_matches,
+                                                const ACMatches& new_matches) {
   if (new_matches.size() >= old_matches->size())
     return;
 

@@ -145,7 +145,9 @@ void Scheduler::SetNeedsPrepareTiles() {
 }
 
 void Scheduler::DidSubmitCompositorFrame(uint32_t frame_token) {
-  compositor_timing_history_->DidSubmitCompositorFrame(frame_token);
+  compositor_timing_history_->DidSubmitCompositorFrame(
+      frame_token, begin_main_frame_args_.frame_id,
+      last_activate_origin_frame_args_.frame_id);
   state_machine_.DidSubmitCompositorFrame();
 
   // There is no need to call ProcessScheduledActions here because
@@ -186,7 +188,8 @@ void Scheduler::DidCommit() {
 void Scheduler::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   TRACE_EVENT1("cc", "Scheduler::BeginMainFrameAborted", "reason",
                CommitEarlyOutReasonToString(reason));
-  compositor_timing_history_->BeginMainFrameAborted();
+  compositor_timing_history_->BeginMainFrameAborted(
+      last_dispatched_begin_main_frame_args_.frame_id);
   state_machine_.BeginMainFrameAborted(reason);
   ProcessScheduledActions();
 }
@@ -564,8 +567,8 @@ void Scheduler::BeginImplFrameSynchronous(const viz::BeginFrameArgs& args) {
   begin_main_frame_args_.on_critical_path = !ImplLatencyTakesPriority();
 
   BeginImplFrame(args, Now());
-  compositor_timing_history_->WillFinishImplFrame(
-      state_machine_.needs_redraw());
+  compositor_timing_history_->WillFinishImplFrame(state_machine_.needs_redraw(),
+                                                  args.frame_id);
   FinishImplFrame();
 }
 
@@ -720,7 +723,7 @@ void Scheduler::OnBeginImplFrameDeadline() {
   // * Creating a new OuputSurface will not occur during the deadline in
   //     order to allow the state machine to "settle" first.
   compositor_timing_history_->WillFinishImplFrame(
-      state_machine_.needs_redraw());
+      state_machine_.needs_redraw(), begin_main_frame_args_.frame_id);
   state_machine_.OnBeginImplFrameDeadline();
   ProcessScheduledActions();
   FinishImplFrame();
@@ -801,9 +804,7 @@ void Scheduler::ProcessScheduledActions() {
       case SchedulerStateMachine::Action::NONE:
         break;
       case SchedulerStateMachine::Action::SEND_BEGIN_MAIN_FRAME:
-        compositor_timing_history_->WillBeginMainFrame(
-            begin_main_frame_args_.on_critical_path,
-            begin_main_frame_args_.frame_time);
+        compositor_timing_history_->WillBeginMainFrame(begin_main_frame_args_);
         state_machine_.WillSendBeginMainFrame();
         client_->ScheduledActionSendBeginMainFrame(begin_main_frame_args_);
         last_dispatched_begin_main_frame_args_ = begin_main_frame_args_;

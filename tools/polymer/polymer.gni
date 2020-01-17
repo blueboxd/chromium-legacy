@@ -24,9 +24,7 @@ template("polymer_modulizer") {
   action(target_name + "_module") {
     script = "//tools/polymer/polymer.py"
 
-    inputs = [
-      invoker.html_file,
-    ]
+    inputs = [ invoker.html_file ]
 
     if (invoker.html_type == "dom-module" || invoker.html_type == "v3-ready") {
       inputs += [ invoker.js_file ]
@@ -36,9 +34,7 @@ template("polymer_modulizer") {
     if (invoker.html_type == "dom-module") {
       output_js_file = get_path_info(invoker.js_file, "name") + ".m.js"
     }
-    outputs = [
-      "$target_gen_dir/" + output_js_file,
-    ]
+    outputs = [ "$target_gen_dir/" + output_js_file ]
 
     args = [
       "--js_file",

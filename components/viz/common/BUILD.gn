@@ -8,9 +8,7 @@ import("//skia/features.gni")
 import("//testing/test.gni")
 
 source_set("resource_format") {
-  sources = [
-    "resources/resource_format.h",
-  ]
+  sources = [ "resources/resource_format.h" ]
 }
 
 viz_component("resource_format_utils") {
@@ -27,9 +25,7 @@ viz_component("resource_format_utils") {
 
   configs = [ "//third_party/khronos:khronos_headers" ]
 
-  public_deps = [
-    ":resource_format",
-  ]
+  public_deps = [ ":resource_format" ]
 
   deps = [
     "//base",
@@ -58,9 +54,7 @@ if (is_mac) {
       "viz_metal_context_provider_export.h",
     ]
 
-    public_deps = [
-      "//skia",
-    ]
+    public_deps = [ "//skia" ]
 
     deps = [
       "//base",
@@ -98,9 +92,7 @@ if (enable_vulkan) {
     ]
     configs = [ "//third_party/vulkan:vulkan_config" ]
 
-    public_deps = [
-      "//skia",
-    ]
+    public_deps = [ "//skia" ]
 
     deps = [
       "//base",
@@ -391,9 +383,7 @@ viz_source_set("unit_tests") {
 # Microbenchmark to measure performance of GLHelper code, for use in
 # debugging, profiling, and optimizing.
 viz_test("viz_benchmark") {
-  sources = [
-    "gl_helper_benchmark.cc",
-  ]
+  sources = [ "gl_helper_benchmark.cc" ]
 
   configs = [
     "//build/config/compiler:no_size_t_to_int_warning",
@@ -415,16 +405,12 @@ viz_test("viz_benchmark") {
     "//ui/gfx",
   ]
 
-  data_deps = [
-    "//third_party/mesa_headers",
-  ]
+  data_deps = [ "//third_party/mesa_headers" ]
 }
 
 viz_source_set("perf_tests") {
   testonly = true
-  sources = [
-    "quads/draw_quad_perftest.cc",
-  ]
+  sources = [ "quads/draw_quad_perftest.cc" ]
 
   deps = [
     ":common",
@@ -438,9 +424,7 @@ viz_source_set("perf_tests") {
 
 if (is_android) {
   android_library("common_java") {
-    deps = [
-      "//base:base_java",
-    ]
+    deps = [ "//base:base_java" ]
     sources = [
       "java/src/org/chromium/components/viz/common/VizSwitches.java",
       "java/src/org/chromium/components/viz/common/display/DeJellyUtils.java",

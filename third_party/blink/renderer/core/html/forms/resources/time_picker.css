@@ -12,7 +12,7 @@ body {
   border: 1px solid transparent;
   display: flex;
   flex-direction: column;
-  height: 298px;
+  height: 260px;
 }
 
 .time-columns {
@@ -65,41 +65,6 @@ body {
   border-color: #101010;
 }
 
-.submission-controls {
-  align-items: center;
-  border-top: 1px solid #CECECE;
-  bottom: 0px;
-  display: flex;
-  flex-direction: row;
-  height: 40px;
-  position: absolute;
-  width: 100%;
-}
-
-#submission-controls-padding {
-  height: 100%;
-  width: 84%;
-}
-
-.submission-button {
-  background-color: #FFFFFF;
-  border: 2px solid transparent;
-  border-radius: 2px;
-  height: 32px;
-  margin: 4px;
-  padding: 8px;
-  width: 32px;
-}
-
-.submission-button:hover {
-  background-color: rgba(0, 117, 255, 0.3);
-}
-
-.submission-button:focus {
-  border-color: #101010;
-  outline: none;
-}
-
 @media (forced-colors: active) {
   .time-cell {
     background-color: Window;
@@ -119,23 +84,5 @@ body {
 
   .time-column:focus .time-cell.selected {
     border-color: WindowText;
-  }
-
-  .submission-button {
-    background-color: Window;
-    forced-color-adjust: none;
-  }
-
-  .submission-button:hover {
-    background-color: Window;
-    border-color: Highlight;
-  }
-
-  .submission-button:focus {
-    border-color: WindowText;
-  }
-
-  .submission-button path {
-    fill: WindowText;
   }
 }

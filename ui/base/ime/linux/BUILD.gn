@@ -27,9 +27,7 @@ jumbo_component("linux") {
 
   defines = [ "IS_UI_BASE_IME_LINUX_IMPL" ]
 
-  public_deps = [
-    "//ui/base/ime",
-  ]
+  public_deps = [ "//ui/base/ime" ]
 
   if (use_pangocairo) {
     configs += [ "//build/config/linux/pangocairo" ]

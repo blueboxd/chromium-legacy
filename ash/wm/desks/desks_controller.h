@@ -71,6 +71,10 @@ class ASH_EXPORT DesksController : public DesksHelper,
 
   const Desk* active_desk() const { return active_desk_; }
 
+  // Returns the current |active_desk()| or the soon-to-be active desk if a desk
+  // switch animation is in progress.
+  const Desk* GetTargetActiveDesk() const;
+
   // Destroys any pending animations in preparation for shutdown.
   void Shutdown();
 

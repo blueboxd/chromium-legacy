@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//extensions/buildflags/buildflags.gni")
+
 if (is_android) {
   import("//build/config/android/config.gni")
 }
@@ -26,6 +28,9 @@ if (!is_ios) {
       "content/extended_info_handler.h",
       "content/navigation_task_id.cc",
       "content/navigation_task_id.h",
+      "content/session_tab_helper.cc",
+      "content/session_tab_helper.h",
+      "content/session_tab_helper_delegate.h",
     ]
 
     configs += [ ":implementation" ]
@@ -39,9 +44,14 @@ if (!is_ios) {
       "//base",
       "//base/third_party/dynamic_annotations",
       "//content/public/common",
+      "//extensions/buildflags",
       "//ui/base",
       "//url",
     ]
+
+    if (enable_extensions) {
+      deps += [ "//extensions/common" ]
+    }
   }
 } else {
   source_set("sessions") {
@@ -138,9 +148,7 @@ static_library("test_support") {
     "core/serialized_navigation_entry_test_helper.h",
   ]
 
-  public_deps = [
-    ":sessions",
-  ]
+  public_deps = [ ":sessions" ]
   deps = [
     "//base",
     "//skia",
@@ -189,9 +197,7 @@ source_set("unit_tests") {
     ]
   }
 
-  public_deps = [
-    ":sessions",
-  ]
+  public_deps = [ ":sessions" ]
 
   deps = [
     ":test_support",

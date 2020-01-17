@@ -48,7 +48,10 @@ class SelectorChecker {
   STACK_ALLOCATED();
 
  public:
-  enum VisitedMatchType { kVisitedMatchDisabled, kVisitedMatchEnabled };
+  enum VisitedMatchType : uint8_t {
+    kVisitedMatchDisabled,
+    kVisitedMatchEnabled
+  };
 
   enum Mode {
     // Used when matching selectors inside style recalc. This mode will set
@@ -89,12 +92,15 @@ class SelectorChecker {
   };
 
   explicit SelectorChecker(const Init& init)
-      : mode_(init.mode),
-        is_ua_rule_(init.is_ua_rule),
-        element_style_(init.element_style),
+      : element_style_(init.element_style),
         scrollbar_(init.scrollbar),
+        part_names_(init.part_names),
         scrollbar_part_(init.scrollbar_part),
-        part_names_(init.part_names) {}
+        mode_(init.mode) {
+#if DCHECK_IS_ON()
+    is_ua_rule_ = init.is_ua_rule;
+#endif
+  }
 
   // Wraps the current element and a CSSSelector and stores some other state of
   // the selector matching process.
@@ -105,31 +111,20 @@ class SelectorChecker {
     // Initial selector constructor
     SelectorCheckingContext(Element* element,
                             VisitedMatchType visited_match_type)
-        : selector(nullptr),
-          element(element),
-          previous_element(nullptr),
-          scope(nullptr),
-          visited_match_type(visited_match_type),
-          pseudo_id(kPseudoIdNone),
-          is_sub_selector(false),
-          in_rightmost_compound(true),
-          has_scrollbar_pseudo(false),
-          has_selection_pseudo(false),
-          treat_shadow_host_as_normal_scope(false),
-          is_from_vtt(false) {}
+        : element(element), visited_match_type(visited_match_type) {}
 
-    const CSSSelector* selector;
-    Member<Element> element;
-    Member<Element> previous_element;
-    Member<const ContainerNode> scope;
+    const CSSSelector* selector = nullptr;
+    Member<Element> element = nullptr;
+    Member<Element> previous_element = nullptr;
+    Member<const ContainerNode> scope = nullptr;
     VisitedMatchType visited_match_type;
-    PseudoId pseudo_id;
-    bool is_sub_selector;
-    bool in_rightmost_compound;
-    bool has_scrollbar_pseudo;
-    bool has_selection_pseudo;
-    bool treat_shadow_host_as_normal_scope;
-    bool is_from_vtt;
+    PseudoId pseudo_id = kPseudoIdNone;
+    bool is_sub_selector = false;
+    bool in_rightmost_compound = true;
+    bool has_scrollbar_pseudo = false;
+    bool has_selection_pseudo = false;
+    bool treat_shadow_host_as_normal_scope = false;
+    bool is_from_vtt = false;
   };
 
   struct MatchResult {
@@ -215,12 +210,16 @@ class SelectorChecker {
   bool CheckPseudoNot(const SelectorCheckingContext&, MatchResult&) const;
   bool CheckPseudoNotForVTT(const SelectorCheckingContext&, MatchResult&) const;
 
-  Mode mode_;
-  bool is_ua_rule_;
   ComputedStyle* element_style_;
   Member<CustomScrollbar> scrollbar_;
-  ScrollbarPart scrollbar_part_;
   PartNames* part_names_;
+  ScrollbarPart scrollbar_part_;
+  Mode mode_;
+#if DCHECK_IS_ON()
+  bool is_ua_rule_;
+#else
+  static constexpr bool is_ua_rule_ = true;
+#endif
   DISALLOW_COPY_AND_ASSIGN(SelectorChecker);
 };
 

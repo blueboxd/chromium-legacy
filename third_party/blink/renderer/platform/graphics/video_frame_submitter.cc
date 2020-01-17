@@ -278,6 +278,8 @@ void VideoFrameSubmitter::OnReceivedContextProvider(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!use_gpu_compositing) {
     resource_provider_->Initialize(nullptr, this);
+    if (frame_sink_id_.is_valid())
+      StartSubmitting();
     return;
   }
 

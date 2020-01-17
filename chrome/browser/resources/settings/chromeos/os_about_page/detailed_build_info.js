@@ -35,7 +35,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     const browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
     browserProxy.pageReady();
 
@@ -47,7 +47,7 @@ Polymer({
   },
 
   /** @private */
-  updateChannelInfo_: function() {
+  updateChannelInfo_() {
     const browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
     browserProxy.getChannelInfo().then(info => {
       this.channelInfo_ = info;
@@ -64,7 +64,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getChangeChannelIndicatorSourceName_: function(canChangeChannel) {
+  getChangeChannelIndicatorSourceName_(canChangeChannel) {
     return loadTimeData.getBoolean('aboutEnterpriseManaged') ?
         '' :
         loadTimeData.getString('ownerEmail');
@@ -75,7 +75,7 @@ Polymer({
    * @return {CrPolicyIndicatorType}
    * @private
    */
-  getChangeChannelIndicatorType_: function(canChangeChannel) {
+  getChangeChannelIndicatorType_(canChangeChannel) {
     if (canChangeChannel) {
       return CrPolicyIndicatorType.NONE;
     }
@@ -88,7 +88,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onChangeChannelTap_: function(e) {
+  onChangeChannelTap_(e) {
     e.preventDefault();
     this.showChannelSwitcherDialog_ = true;
   },
@@ -128,13 +128,13 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onVisitBuildDetailsPageTap_: function(e) {
+  onVisitBuildDetailsPageTap_(e) {
     e.preventDefault();
     window.open('chrome://version');
   },
 
   /** @private */
-  onChannelSwitcherDialogClosed_: function() {
+  onChannelSwitcherDialogClosed_() {
     this.showChannelSwitcherDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$$('cr-button')));
     this.updateChannelInfo_();

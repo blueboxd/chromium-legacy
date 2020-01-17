@@ -15,9 +15,7 @@ buildflag_header("ios_net_buildflags") {
 
 group("all_tests") {
   testonly = true
-  deps = [
-    ":ios_net_unittests",
-  ]
+  deps = [ ":ios_net_unittests" ]
 }
 
 source_set("net") {

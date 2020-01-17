@@ -612,32 +612,39 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void UpdateNumberOfUserAllocatedMultisampledRenderbuffers(int delta);
 
  protected:
+  // WebGL object types.
+  friend class WebGLContextObject;
+  friend class WebGLObject;
+  friend class WebGLQuery;
+  friend class WebGLTimerQueryEXT;
+  friend class WebGLVertexArrayObjectBase;
+
+  // Implementation helpers.
+  friend class ScopedDrawingBufferBinder;
+  friend class ScopedFramebufferRestorer;
+  friend class ScopedTexture2DRestorer;
+  friend class ScopedUnpackParametersResetRestore;
+  friend class WebGLRenderingContextErrorMessageCallback;
+
+  // WebGL extensions.
   friend class EXTDisjointTimerQuery;
   friend class EXTDisjointTimerQueryWebGL2;
-  friend class WebGLDrawBuffers;
-  friend class WebGLFramebuffer;
-  friend class WebGLObject;
-  friend class WebGLContextObject;
   friend class OESVertexArrayObject;
   friend class OVRMultiview2;
-  friend class WebGLDebugShaders;
   friend class WebGLCompressedTextureASTC;
   friend class WebGLCompressedTextureETC;
   friend class WebGLCompressedTextureETC1;
   friend class WebGLCompressedTexturePVRTC;
   friend class WebGLCompressedTextureS3TC;
   friend class WebGLCompressedTextureS3TCsRGB;
+  friend class WebGLDebugShaders;
+  friend class WebGLDrawBuffers;
+  friend class WebGLDrawInstancedBaseVertexBaseInstance;
+  friend class WebGLFramebuffer;
   friend class WebGLMultiDraw;
   friend class WebGLMultiDrawCommon;
-  friend class WebGLDrawInstancedBaseVertexBaseInstance;
   friend class WebGLMultiDrawInstancedBaseVertexBaseInstance;
-  friend class WebGLRenderingContextErrorMessageCallback;
-  friend class WebGLVertexArrayObjectBase;
   friend class WebGLVideoTexture;
-  friend class ScopedDrawingBufferBinder;
-  friend class ScopedTexture2DRestorer;
-  friend class ScopedFramebufferRestorer;
-  friend class ScopedUnpackParametersResetRestore;
 
   WebGLRenderingContextBase(CanvasRenderingContextHost*,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
@@ -682,6 +689,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void MarkContextChanged(ContentChangeType);
 
   void OnErrorMessage(const char*, int32_t id);
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetContextTaskRunner();
 
   // Query if depth_stencil buffer is supported.
   bool IsDepthStencilSupported() { return is_depth_stencil_supported_; }

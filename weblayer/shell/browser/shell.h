@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
+#include "weblayer/public/download_delegate.h"
 #include "weblayer/public/navigation_observer.h"
 #include "weblayer/public/tab_observer.h"
 
@@ -39,7 +40,9 @@ class Tab;
 
 // This represents one window of the Web Shell, i.e. all the UI including
 // buttons and url bar, as well as the web content area.
-class Shell : public TabObserver, public NavigationObserver {
+class Shell : public TabObserver,
+              public NavigationObserver,
+              public DownloadDelegate {
  public:
   ~Shell() override;
 
@@ -85,6 +88,17 @@ class Shell : public TabObserver, public NavigationObserver {
   // NavigationObserver implementation:
   void LoadStateChanged(bool is_loading, bool to_different_document) override;
   void LoadProgressChanged(double progress) override;
+
+  // DownloadDelegate implementation:
+  bool InterceptDownload(const GURL& url,
+                         const std::string& user_agent,
+                         const std::string& content_disposition,
+                         const std::string& mime_type,
+                         int64_t content_length) override;
+  void AllowDownload(const GURL& url,
+                     const std::string& request_method,
+                     base::Optional<url::Origin> request_initiator,
+                     AllowDownloadCallback callback) override;
 
   // Helper to create a new Shell.
   static Shell* CreateShell(std::unique_ptr<Tab> tab,

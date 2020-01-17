@@ -8,9 +8,7 @@ import("//remoting/host/installer/win/generate_clsids.gni")
 action("remoting_me2me_host_archive") {
   script = "//remoting/host/installer/build-installer-archive.py"
 
-  sources = [
-    "//build/android/gyp/util/build_utils.py",
-  ]
+  sources = [ "//build/android/gyp/util/build_utils.py" ]
 
   deps = [
     "//remoting/host:remoting_native_messaging_manifests",
@@ -25,9 +23,7 @@ action("remoting_me2me_host_archive") {
     "//third_party/icu:icudata",
   ]
 
-  public_deps = [
-    "//remoting/host/security_key:remote_security_key",
-  ]
+  public_deps = [ "//remoting/host/security_key:remote_security_key" ]
 
   if (target_cpu == "x86") {
     _output = "$root_out_dir/remoting-me2me-host-$target_os.zip"
@@ -35,9 +31,7 @@ action("remoting_me2me_host_archive") {
     _output = "$root_out_dir/remoting-me2me-host-$target_os-unsupported.zip"
   }
 
-  outputs = [
-    _output,
-  ]
+  outputs = [ _output ]
   if (is_chrome_branded) {
     _branding = "Chrome"
   } else {
@@ -137,13 +131,9 @@ if (is_chrome_branded && !is_component_build && target_cpu == "x86") {
   msi_script_arch = "ia32"
 
   action("remoting_host_installation") {
-    deps = [
-      "//remoting/host:remoting_me2me_host_archive",
-    ]
+    deps = [ "//remoting/host:remoting_me2me_host_archive" ]
     script = "//remoting/tools/zip2msi.py"
-    outputs = [
-      "$root_out_dir/chromoting.msi",
-    ]
+    outputs = [ "$root_out_dir/chromoting.msi" ]
     args = [
       "--wix_path",
       rebase_path("//third_party/wix", root_build_dir),
@@ -159,8 +149,6 @@ if (is_chrome_branded && !is_component_build && target_cpu == "x86") {
 } else {
   group("remoting_host_installation") {
     # We still want to build host archive under other configurations.
-    deps = [
-      "//remoting/host:remoting_me2me_host_archive",
-    ]
+    deps = [ "//remoting/host:remoting_me2me_host_archive" ]
   }
 }

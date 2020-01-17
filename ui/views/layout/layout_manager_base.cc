@@ -109,6 +109,18 @@ bool LayoutManagerBase::IsChildIncludedInLayout(const View* child,
   return !it->second.ignored && (include_hidden || it->second.can_be_visible);
 }
 
+bool LayoutManagerBase::CanBeVisible(const View* child) const {
+  const auto it = child_infos_.find(child);
+
+  // During callbacks when a child is removed we can get in a state where a view
+  // in the child list of the host view is not in |child_infos_|. In that case,
+  // the view is being removed and is not part of the layout.
+  if (it == child_infos_.end())
+    return false;
+
+  return it->second.can_be_visible;
+}
+
 void LayoutManagerBase::LayoutImpl() {
   ApplyLayout(GetProposedLayout(host_view_->size()));
 }

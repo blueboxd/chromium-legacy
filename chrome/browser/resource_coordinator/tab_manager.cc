@@ -105,18 +105,6 @@ std::unique_ptr<base::trace_event::ConvertableToTraceFormat> DataAsTraceValue(
   return std::move(data);
 }
 
-int GetNumLoadedLifecycleUnits(LifecycleUnitSet lifecycle_unit_set) {
-  int num_loaded_lifecycle_units = 0;
-  for (auto* lifecycle_unit : lifecycle_unit_set) {
-    LifecycleUnitState state = lifecycle_unit->GetState();
-    if (state != LifecycleUnitState::DISCARDED &&
-        state != LifecycleUnitState::PENDING_DISCARD) {
-      num_loaded_lifecycle_units++;
-    }
-  }
-  return num_loaded_lifecycle_units;
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -166,9 +154,9 @@ TabManager::TabManager(TabLoadTracker* tab_load_tracker)
   session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
 
   stats_collector_.reset(new TabManagerStatsCollector());
-  proactive_freeze_discard_params_ =
-      GetStaticProactiveTabFreezeAndDiscardParams();
+  freeze_params_ = GetTabFreezeParams();
   tab_load_tracker_->AddObserver(this);
+  intervention_policy_database_.reset(new InterventionPolicyDatabase());
 
   // TabManager works in the absence of DesktopSessionDurationTracker for tests.
   if (metrics::DesktopSessionDurationTracker::IsInitialized())
@@ -260,8 +248,10 @@ WebContents* TabManager::DiscardTabByExtension(content::WebContents* contents) {
     TabLifecycleUnitExternal* tab_lifecycle_unit_external =
         TabLifecycleUnitExternal::FromWebContents(contents);
     DCHECK(tab_lifecycle_unit_external);
-    if (tab_lifecycle_unit_external->DiscardTab())
+    if (tab_lifecycle_unit_external->DiscardTab(
+            LifecycleUnitDiscardReason::EXTERNAL)) {
       return tab_lifecycle_unit_external->GetWebContents();
+    }
     return nullptr;
   }
 
@@ -479,8 +469,8 @@ void TabManager::OnStopTracking(content::WebContents* web_contents,
 }
 
 void TabManager::OnSessionStarted(base::TimeTicks session_start) {
-  // LifecycleUnits might become eligible for proactive discarding when Chrome
-  // starts being used.
+  // LifecycleUnits might become eligible for freezing when Chrome starts being
+  // used.
   SchedulePerformStateTransitions(base::TimeDelta());
 }
 
@@ -750,29 +740,6 @@ bool TabManager::IsForceLoadTimerRunning() const {
   return force_load_timer_ && force_load_timer_->IsRunning();
 }
 
-base::TimeDelta TabManager::GetTimeInBackgroundBeforeProactiveDiscard() const {
-  // Exceed high threshold - in excessive state.
-  if (num_loaded_lifecycle_units_ >=
-      proactive_freeze_discard_params_.high_loaded_tab_count) {
-    return base::TimeDelta();
-  }
-
-  // Exceed moderate threshold - in high state.
-  if (num_loaded_lifecycle_units_ >=
-      proactive_freeze_discard_params_.moderate_loaded_tab_count) {
-    return proactive_freeze_discard_params_.high_occluded_timeout;
-  }
-
-  // Exceed low threshold - in moderate state.
-  if (num_loaded_lifecycle_units_ >=
-      proactive_freeze_discard_params_.low_loaded_tab_count) {
-    return proactive_freeze_discard_params_.moderate_occluded_timeout;
-  }
-
-  // Didn't meet any thresholds - in low state.
-  return proactive_freeze_discard_params_.low_occluded_timeout;
-}
-
 void TabManager::SchedulePerformStateTransitions(base::TimeDelta delay) {
   if (!state_transitions_timer_) {
     state_transitions_timer_ =
@@ -784,7 +751,7 @@ void TabManager::SchedulePerformStateTransitions(base::TimeDelta delay) {
 }
 
 void TabManager::PerformStateTransitions() {
-  if (!base::FeatureList::IsEnabled(features::kProactiveTabFreezeAndDiscard))
+  if (!base::FeatureList::IsEnabled(features::kTabFreeze))
     return;
 
   if (base::FeatureList::IsEnabled(
@@ -794,7 +761,6 @@ void TabManager::PerformStateTransitions() {
 
   base::TimeTicks next_state_transition_time = base::TimeTicks::Max();
   const base::TimeTicks now = NowTicks();
-  LifecycleUnit* oldest_discardable_lifecycle_unit = nullptr;
   LifecycleUnit* oldest_frozen_lifecycle_unit = nullptr;
 
   for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
@@ -802,19 +768,6 @@ void TabManager::PerformStateTransitions() {
     next_state_transition_time =
         std::min(MaybeFreezeLifecycleUnit(lifecycle_unit, now),
                  next_state_transition_time);
-
-    // Keep track of the discardable LifecycleUnit that has been hidden for the
-    // longest time. It might be discarded below.
-    DecisionDetails discard_details;
-    if (lifecycle_unit->CanDiscard(LifecycleUnitDiscardReason::PROACTIVE,
-                                   &discard_details)) {
-      if (!oldest_discardable_lifecycle_unit ||
-          lifecycle_unit->GetChromeUsageTimeWhenHidden() <
-              oldest_discardable_lifecycle_unit
-                  ->GetChromeUsageTimeWhenHidden()) {
-        oldest_discardable_lifecycle_unit = lifecycle_unit;
-      }
-    }
 
     // Keep track of the LifecycleUnit that has been frozen for the longest
     // time. It might be unfrozen below.
@@ -829,28 +782,11 @@ void TabManager::PerformStateTransitions() {
   // Unfreeze the LifecycleUnit that has been frozen for the longest time if it
   // has been frozen long enough and a sufficient amount of time elapsed since
   // the last unfreeze.
-  if (proactive_freeze_discard_params_.should_periodically_unfreeze &&
+  if (freeze_params_.should_periodically_unfreeze &&
       oldest_frozen_lifecycle_unit) {
     next_state_transition_time =
         std::min(MaybeUnfreezeLifecycleUnit(oldest_frozen_lifecycle_unit, now),
                  next_state_transition_time);
-  }
-
-  // Proactively discard the LifecycleUnit that has been hidden for the longest
-  // time if it at least GetTimeInBackgroundBeforeProactiveDiscard() of Chrome
-  // usage time has elapsed since it was hidden.
-  //
-  // Note: Discarding a LifecycleUnit might change the value returned by
-  // GetTimeInBackgroundBeforeProactiveDiscard(). Therefore, discard only the
-  // oldest LifecycleUnit, rather than discarding all LifecycleUnits that have
-  // been non-visible long enough. If a discard happens,
-  // MaybeDiscardLifecycleUnit() returns a zero TimeTicks and another call to
-  // PerformStateTransitions() is scheduled immediately to check if another
-  // discard should happen.
-  if (oldest_discardable_lifecycle_unit && ShouldProactivelyDiscardTabs()) {
-    next_state_transition_time = std::min(
-        MaybeDiscardLifecycleUnit(oldest_discardable_lifecycle_unit, now),
-        next_state_transition_time);
   }
 
   // Schedule the next call to PerformStateTransitions().
@@ -866,12 +802,10 @@ base::TimeTicks TabManager::MaybeFreezeLifecycleUnit(
   if (!lifecycle_unit->CanFreeze(&freeze_details))
     return base::TimeTicks::Max();
 
-  const base::TimeTicks freeze_time =
-      std::max(lifecycle_unit->GetWallTimeWhenHidden() +
-                   proactive_freeze_discard_params_.freeze_timeout,
-               // Do not refreeze a tab before the refreeze timeout has expired.
-               lifecycle_unit->GetStateChangeTime() +
-                   proactive_freeze_discard_params_.refreeze_timeout);
+  const base::TimeTicks freeze_time = std::max(
+      lifecycle_unit->GetWallTimeWhenHidden() + freeze_params_.freeze_timeout,
+      // Do not refreeze a tab before the refreeze timeout has expired.
+      lifecycle_unit->GetStateChangeTime() + freeze_params_.refreeze_timeout);
 
   if (now >= freeze_time) {
     lifecycle_unit->Freeze();
@@ -887,63 +821,16 @@ base::TimeTicks TabManager::MaybeUnfreezeLifecycleUnit(
   DCHECK_EQ(lifecycle_unit->GetState(), LifecycleUnitState::FROZEN);
 
   const base::TimeTicks unfreeze_time = std::max(
-      lifecycle_unit->GetStateChangeTime() +
-          proactive_freeze_discard_params_.unfreeze_timeout,
-      last_unfreeze_time_ + proactive_freeze_discard_params_.refreeze_timeout);
+      lifecycle_unit->GetStateChangeTime() + freeze_params_.unfreeze_timeout,
+      last_unfreeze_time_ + freeze_params_.refreeze_timeout);
 
   if (now >= unfreeze_time) {
     last_unfreeze_time_ = now;
     lifecycle_unit->Unfreeze();
-    return now + proactive_freeze_discard_params_.refreeze_timeout;
+    return now + freeze_params_.refreeze_timeout;
   }
 
   return unfreeze_time;
-}
-
-base::TimeTicks TabManager::MaybeDiscardLifecycleUnit(
-    LifecycleUnit* lifecycle_unit,
-    base::TimeTicks now) {
-  const base::TimeDelta usage_time_not_visible =
-      usage_clock_.GetTotalUsageTime() -
-      lifecycle_unit->GetChromeUsageTimeWhenHidden();
-  const base::TimeDelta time_until_discard =
-      GetTimeInBackgroundBeforeProactiveDiscard() - usage_time_not_visible;
-
-  if (time_until_discard <= base::TimeDelta()) {
-    lifecycle_unit->Discard(LifecycleUnitDiscardReason::PROACTIVE);
-    // Request another call to check if another discard should happen.
-    return base::TimeTicks();
-  }
-
-  if (usage_clock_.IsInUse())
-    return now + time_until_discard;
-
-  return base::TimeTicks::Max();
-}
-
-void TabManager::OnLifecycleUnitStateChanged(
-    LifecycleUnit* lifecycle_unit,
-    LifecycleUnitState last_state,
-    LifecycleUnitStateChangeReason reason) {
-  LifecycleUnitState state = lifecycle_unit->GetState();
-  bool was_discarded = (last_state == LifecycleUnitState::PENDING_DISCARD ||
-                        last_state == LifecycleUnitState::DISCARDED);
-  bool is_discarded = (state == LifecycleUnitState::PENDING_DISCARD ||
-                       state == LifecycleUnitState::DISCARDED);
-
-  if (is_discarded && !was_discarded) {
-    num_loaded_lifecycle_units_--;
-  } else if (was_discarded && !is_discarded) {
-    num_loaded_lifecycle_units_++;
-    // Incrementing the number of loaded tabs might change the return value of
-    // GetTimeInBackgroundBeforeProactiveDiscard(). Schedule a call to
-    // PerformStateTransitions() to determine if a tab should be discarded in
-    // response to that change.
-    SchedulePerformStateTransitions(base::TimeDelta());
-  }
-
-  DCHECK_EQ(num_loaded_lifecycle_units_,
-            GetNumLoadedLifecycleUnits(lifecycle_units_));
 }
 
 void TabManager::OnLifecycleUnitVisibilityChanged(
@@ -953,41 +840,18 @@ void TabManager::OnLifecycleUnitVisibilityChanged(
 }
 
 void TabManager::OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) {
-  if (lifecycle_unit->GetState() != LifecycleUnitState::DISCARDED &&
-      lifecycle_unit->GetState() != LifecycleUnitState::PENDING_DISCARD) {
-    num_loaded_lifecycle_units_--;
-  }
   lifecycle_units_.erase(lifecycle_unit);
-
-  DCHECK_EQ(num_loaded_lifecycle_units_,
-            GetNumLoadedLifecycleUnits(lifecycle_units_));
 
   SchedulePerformStateTransitions(base::TimeDelta());
 }
 
 void TabManager::OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) {
   lifecycle_units_.insert(lifecycle_unit);
-  if (lifecycle_unit->GetState() != LifecycleUnitState::DISCARDED)
-    num_loaded_lifecycle_units_++;
 
   // Add an observer to be notified of destruction.
   lifecycle_unit->AddObserver(this);
 
-  DCHECK_EQ(num_loaded_lifecycle_units_,
-            GetNumLoadedLifecycleUnits(lifecycle_units_));
-
   SchedulePerformStateTransitions(base::TimeDelta());
-}
-
-bool TabManager::ShouldProactivelyDiscardTabs() {
-  if (!proactive_freeze_discard_params_.should_proactively_discard)
-    return false;
-
-  // Don't proactively discard tabs while offline.
-  if (net::NetworkChangeNotifier::IsOffline())
-    return false;
-
-  return true;
 }
 
 }  // namespace resource_coordinator

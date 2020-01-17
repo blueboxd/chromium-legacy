@@ -78,7 +78,7 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
                                     paint_info_before_filtering);
     bool continue_rendering = true;
     if (paint_state.GetPaintInfo().phase == PaintPhase::kForeground)
-      continue_rendering = paint_state.ApplyClipMaskAndFilterIfNecessary();
+      continue_rendering = paint_state.ApplyEffects();
 
     if (continue_rendering) {
       for (LayoutObject* child = layout_svg_container_.FirstChild(); child;

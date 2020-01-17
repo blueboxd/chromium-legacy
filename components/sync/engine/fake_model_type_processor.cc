@@ -24,7 +24,8 @@ void FakeModelTypeProcessor::GetLocalChanges(size_t max_entries,
 }
 void FakeModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
-    const CommitResponseDataList& response_list) {}
+    const CommitResponseDataList& committed_response_list,
+    const FailedCommitResponseDataList& error_response_list) {}
 
 void FakeModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& type_state,

@@ -35,6 +35,8 @@ const char JSONReader::kUnquotedDictionaryKey[] =
     "Dictionary keys must be quoted.";
 const char JSONReader::kInputTooLarge[] =
     "Input string is too large (>2GB).";
+const char JSONReader::kUnrepresentableNumber[] =
+    "Number cannot be represented.";
 
 JSONReader::ValueWithError::ValueWithError() = default;
 
@@ -127,6 +129,8 @@ std::string JSONReader::ErrorCodeToString(JsonParseError error_code) {
       return kUnquotedDictionaryKey;
     case JSON_TOO_LARGE:
       return kInputTooLarge;
+    case JSON_UNREPRESENTABLE_NUMBER:
+      return kUnrepresentableNumber;
     case JSON_PARSE_ERROR_COUNT:
       break;
   }

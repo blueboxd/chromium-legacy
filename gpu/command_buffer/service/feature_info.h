@@ -39,7 +39,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     GpuMemoryBufferFormatSet gpu_memory_buffer_formats = {
         gfx::BufferFormat::BGR_565,   gfx::BufferFormat::RGBA_4444,
         gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::RGBX_8888,
-        gfx::BufferFormat::YVU_420,
+        gfx::BufferFormat::YVU_420,   gfx::BufferFormat::RGBA_1010102,
     };
     // Use glBlitFramebuffer() and glRenderbufferStorageMultisample() with
     // GL_EXT_framebuffer_multisample-style semantics (as opposed to

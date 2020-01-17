@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/trusted_vault_client.h"
 #include "components/sync/engine/mock_sync_engine.h"
@@ -91,13 +92,13 @@ class TestTrustedVaultClient : public TrustedVaultClient {
   }
 
   void FetchKeys(
-      const std::string& gaia_id,
+      const CoreAccountInfo& account_info,
       base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb)
       override {
     ++fetch_count_;
     keys_marked_as_stale_ = false;
     pending_responses_.push_back(
-        base::BindOnce(std::move(cb), gaia_id_to_keys_[gaia_id]));
+        base::BindOnce(std::move(cb), gaia_id_to_keys_[account_info.gaia]));
   }
 
   void StoreKeys(const std::string& gaia_id,
@@ -107,7 +108,7 @@ class TestTrustedVaultClient : public TrustedVaultClient {
     observer_list_.Notify();
   }
 
-  void MarkKeysAsStale(const std::string& gaia_id,
+  void MarkKeysAsStale(const CoreAccountInfo& account_info,
                        base::OnceCallback<void(bool)> cb) override {
     keys_marked_as_stale_ = true;
     std::move(cb).Run(false);

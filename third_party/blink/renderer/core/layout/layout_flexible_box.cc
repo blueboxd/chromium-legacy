@@ -1196,22 +1196,25 @@ void LayoutFlexibleBox::ConstructAndAppendFlexItem(
     }
   }
 
-  LayoutUnit border_and_padding = IsHorizontalFlow()
-                                      ? child.BorderAndPaddingWidth()
-                                      : child.BorderAndPaddingHeight();
+  LayoutUnit main_axis_border_padding = IsHorizontalFlow()
+                                            ? child.BorderAndPaddingWidth()
+                                            : child.BorderAndPaddingHeight();
+  LayoutUnit cross_axis_border_padding = IsHorizontalFlow()
+                                             ? child.BorderAndPaddingHeight()
+                                             : child.BorderAndPaddingWidth();
 
-  LayoutUnit child_inner_flex_base_size =
-      ComputeInnerFlexBaseSizeForChild(child, border_and_padding, layout_type);
+  LayoutUnit child_inner_flex_base_size = ComputeInnerFlexBaseSizeForChild(
+      child, main_axis_border_padding, layout_type);
 
-  MinMaxSize sizes =
-      ComputeMinAndMaxSizesForChild(*algorithm, child, border_and_padding);
+  MinMaxSize sizes = ComputeMinAndMaxSizesForChild(*algorithm, child,
+                                                   main_axis_border_padding);
 
   NGPhysicalBoxStrut physical_margins(child.MarginTop(), child.MarginRight(),
                                       child.MarginBottom(), child.MarginLeft());
-  algorithm->emplace_back(&child, child.StyleRef(), child_inner_flex_base_size,
-                          sizes,
-                          /* cross axis min max sizes */ base::nullopt,
-                          border_and_padding, physical_margins);
+  algorithm->emplace_back(
+      &child, child.StyleRef(), child_inner_flex_base_size, sizes,
+      /* min_max_cross_sizes */ base::nullopt, main_axis_border_padding,
+      cross_axis_border_padding, physical_margins);
 }
 
 void LayoutFlexibleBox::SetOverrideMainAxisContentSizeForChild(FlexItem& item) {

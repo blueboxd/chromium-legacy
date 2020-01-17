@@ -275,7 +275,7 @@ Polymer({
     });
 
     /** No need for further processing if single frame. */
-    if (encodedImages.length == 1) {
+    if (encodedImages.length === 1) {
       return encodedImages[0];
     }
 

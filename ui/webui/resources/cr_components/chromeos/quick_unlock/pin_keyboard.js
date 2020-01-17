@@ -303,7 +303,7 @@ Polymer({
     // character in front of the caret.
     let selectionStart = this.selectionStart_;
     const selectionEnd = this.selectionEnd_;
-    if (selectionStart == selectionEnd && selectionStart) {
+    if (selectionStart === selectionEnd && selectionStart) {
       selectionStart--;
     }
 
@@ -409,7 +409,7 @@ Polymer({
 
     // Valid if the key is CTRL+A to allow users to quickly select the entire
     // PIN.
-    if (event.keyCode == 65 && event.ctrlKey) {
+    if (event.keyCode === 65 && event.ctrlKey) {
       return true;
     }
 
@@ -442,13 +442,13 @@ Polymer({
   onInputKeyDown_(event) {
     // Up/down pressed, swallow the event to prevent the input value from
     // being incremented or decremented.
-    if (event.keyCode == 38 || event.keyCode == 40) {
+    if (event.keyCode === 38 || event.keyCode === 40) {
       event.preventDefault();
       return;
     }
 
     // Enter pressed.
-    if (event.keyCode == 13) {
+    if (event.keyCode === 13) {
       this.firePinSubmitEvent_();
       event.preventDefault();
       return;
@@ -509,7 +509,7 @@ Polymer({
     // Since we still support users entering their passwords through the PIN
     // keyboard, we swap the input box to rtl when we think it is a password
     // (just numbers), if the document direction is rtl.
-    return (document.dir == 'rtl') && !Number.isInteger(+password);
+    return (document.dir === 'rtl') && !Number.isInteger(+password);
   },
 
   /**

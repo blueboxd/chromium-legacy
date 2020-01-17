@@ -16,6 +16,7 @@ js_library("bluetooth_page") {
   deps = [
     ":bluetooth_system_on_extensions",
     "../..:route",
+    "../..:router",
     "../../prefs:prefs_behavior",
     "../../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:assert",
@@ -35,6 +36,7 @@ js_library("bluetooth_subpage") {
   deps = [
     ":bluetooth_system_on_extensions",
     "../..:route",
+    "../..:router",
     "//ui/webui/resources/cr_components/chromeos:bluetooth_dialog",
     "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
     "//ui/webui/resources/js:assert",
@@ -63,7 +65,5 @@ js_library("bluetooth_device_list_item") {
 
 js_library("bluetooth_system_on_extensions") {
   sources = []
-  deps = [
-    "//services/device/public/mojom:mojom_js_library_for_compile",
-  ]
+  deps = [ "//services/device/public/mojom:mojom_js_library_for_compile" ]
 }

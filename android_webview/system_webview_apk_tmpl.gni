@@ -232,11 +232,3 @@ template("system_webview_apk_or_module_tmpl") {
     }
   }
 }
-
-# TODO(cduvall): Remove this once src/clank uses
-# system_webview_apk_or_module_tmpl.
-template("system_webview_apk_tmpl") {
-  system_webview_apk_or_module_tmpl(target_name) {
-    forward_variables_from(invoker, "*")
-  }
-}

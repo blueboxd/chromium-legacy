@@ -56,11 +56,6 @@ const ClipboardFormatType& ClipboardFormatType::GetUrlType() {
 }
 
 // static
-const ClipboardFormatType& ClipboardFormatType::GetUrlWType() {
-  return ClipboardFormatType::GetUrlType();
-}
-
-// static
 const ClipboardFormatType& ClipboardFormatType::GetMozUrlType() {
   static base::NoDestructor<ClipboardFormatType> type(kMimeTypeMozillaURL);
   return *type;
@@ -73,19 +68,9 @@ const ClipboardFormatType& ClipboardFormatType::GetPlainTextType() {
 }
 
 // static
-const ClipboardFormatType& ClipboardFormatType::GetPlainTextWType() {
-  return ClipboardFormatType::GetPlainTextType();
-}
-
-// static
 const ClipboardFormatType& ClipboardFormatType::GetFilenameType() {
   static base::NoDestructor<ClipboardFormatType> type(kMimeTypeFilename);
   return *type;
-}
-
-// static
-const ClipboardFormatType& ClipboardFormatType::GetFilenameWType() {
-  return ClipboardFormatType::GetFilenameType();
 }
 
 // static

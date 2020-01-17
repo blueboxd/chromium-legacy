@@ -448,7 +448,7 @@ void SurfaceManager::ExpireOldTemporaryReferences() {
     RemoveTemporaryReferenceImpl(surface_id, RemovedReason::EXPIRED);
 }
 
-Surface* SurfaceManager::GetSurfaceForId(const SurfaceId& surface_id) {
+Surface* SurfaceManager::GetSurfaceForId(const SurfaceId& surface_id) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = surface_map_.find(surface_id);
   if (it == surface_map_.end())

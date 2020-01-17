@@ -102,7 +102,6 @@ void ExpectCanDiscardTrue(const LifecycleUnit* lifecycle_unit,
 
 void ExpectCanDiscardTrueAllReasons(const LifecycleUnit* lifecycle_unit) {
   ExpectCanDiscardTrue(lifecycle_unit, LifecycleUnitDiscardReason::EXTERNAL);
-  ExpectCanDiscardTrue(lifecycle_unit, LifecycleUnitDiscardReason::PROACTIVE);
   ExpectCanDiscardTrue(lifecycle_unit, LifecycleUnitDiscardReason::URGENT);
 }
 
@@ -120,8 +119,6 @@ void ExpectCanDiscardFalseAllReasons(const LifecycleUnit* lifecycle_unit,
                                      DecisionFailureReason failure_reason) {
   ExpectCanDiscardFalse(lifecycle_unit, failure_reason,
                         LifecycleUnitDiscardReason::EXTERNAL);
-  ExpectCanDiscardFalse(lifecycle_unit, failure_reason,
-                        LifecycleUnitDiscardReason::PROACTIVE);
   ExpectCanDiscardFalse(lifecycle_unit, failure_reason,
                         LifecycleUnitDiscardReason::URGENT);
 }
@@ -141,8 +138,6 @@ void ExpectCanDiscardFalseTrivialAllReasons(
     const LifecycleUnit* lifecycle_unit) {
   ExpectCanDiscardFalseTrivial(lifecycle_unit,
                                LifecycleUnitDiscardReason::EXTERNAL);
-  ExpectCanDiscardFalseTrivial(lifecycle_unit,
-                               LifecycleUnitDiscardReason::PROACTIVE);
   ExpectCanDiscardFalseTrivial(lifecycle_unit,
                                LifecycleUnitDiscardReason::URGENT);
 }

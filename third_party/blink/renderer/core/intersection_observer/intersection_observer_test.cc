@@ -9,8 +9,10 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_delegate.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_init.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -535,6 +537,83 @@ TEST_F(IntersectionObserverTest, RootMarginDevicePixelRatio) {
   EXPECT_EQ(PixelSnappedIntRect(
                 observer_delegate->LastEntry()->GetGeometry().RootRect()),
             IntRect(0, 31, 800, 600 - 31));
+}
+
+TEST_F(IntersectionObserverTest, CachedRectsTest) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style>
+    body { margin: 0; }
+    .spacer { height: 1000px; }
+    .scroller { overflow-y: scroll; height: 100px; }
+    </style>
+    <div id='root' class='scroller'>
+      <div id='target1-container'>
+        <div id='target1'>Hello, world!</div>
+      </div>
+      <div class='scroller'>
+        <div id='target2'>Hello, world!</div>
+        <div class='spacer'></div>
+      </div>
+      <div class='spacer'></div>
+    </div>
+  )HTML");
+
+  Element* root = GetDocument().getElementById("root");
+  Element* target1 = GetDocument().getElementById("target1");
+  Element* target2 = GetDocument().getElementById("target2");
+
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
+  observer_init->setRoot(root);
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverDelegate* observer_delegate =
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_delegate, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  observer->observe(target1, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  observer->observe(target2, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+
+  IntersectionObservation* observation1 =
+      target1->IntersectionObserverData()->GetObservationFor(*observer);
+  EXPECT_FALSE(observation1->CanUseCachedRectsForTesting());
+  IntersectionObservation* observation2 =
+      target2->IntersectionObserverData()->GetObservationFor(*observer);
+  EXPECT_FALSE(observation2->CanUseCachedRectsForTesting());
+
+  // Generate initial notifications and populate cache
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(observation1->CanUseCachedRectsForTesting());
+  // observation2 can't use cached rects because the observer's root is not the
+  // target's enclosing scroller.
+  EXPECT_FALSE(observation2->CanUseCachedRectsForTesting());
+
+  // Scrolling the root should not invalidate.
+  PaintLayerScrollableArea* root_scroller = root->GetScrollableArea();
+  root_scroller->SetScrollOffset(ScrollOffset(0, 100), kProgrammaticScroll);
+  EXPECT_TRUE(observation1->CanUseCachedRectsForTesting());
+
+  // Changing layout between root and target should invalidate.
+  target1->parentElement()->SetInlineStyleProperty(CSSPropertyID::kMarginLeft,
+                                                   "10px");
+  // Invalidation happens during style recalc, so force it here.
+  GetDocument().EnsurePaintLocationDataValidForNode(target1);
+  EXPECT_FALSE(observation1->CanUseCachedRectsForTesting());
+
+  // Moving target2 out from the subscroller should allow it to cache rects.
+  target2->remove();
+  root->appendChild(target2);
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(observation1->CanUseCachedRectsForTesting());
+  EXPECT_TRUE(observation2->CanUseCachedRectsForTesting());
 }
 
 TEST_F(IntersectionObserverV2Test, TrackVisibilityInit) {

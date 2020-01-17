@@ -198,12 +198,12 @@ void ArcUsbHostPermissionManager::RestorePermissionFromChromePrefs() {
         continue;
       }
 
-      usb_access_permission_dict_.emplace(std::make_pair(
+      usb_access_permission_dict_.emplace(
           package,
           UsbDeviceEntry(std::string() /*guid*/,
                          base::UTF8ToUTF16(device_name_value->GetString()),
                          base::UTF8ToUTF16(serial_number_value->GetString()),
-                         vendor_id, product_id)));
+                         vendor_id, product_id));
     }
   }
 }

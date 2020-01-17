@@ -24,7 +24,7 @@ cr.define('ntp', function() {
   Trash.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    initialize: function(element) {
+    initialize(element) {
       this.dragWrapper_ = new cr.ui.DragWrapper(this, this);
     },
 
@@ -33,7 +33,7 @@ cr.define('ntp', function() {
      * @param {Event} e The event from drag enter.
      * @return {boolean} True if we are interested in the drag data for |e|.
      */
-    shouldAcceptDrag: function(e) {
+    shouldAcceptDrag(e) {
       const tile = ntp.getCurrentlyDraggingTile();
       if (!tile) {
         return false;
@@ -43,7 +43,7 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    doDragOver: function(e) {
+    doDragOver(e) {
       ntp.getCurrentlyDraggingTile().dragClone.classList.add(
           'hovering-on-trash');
       ntp.setCurrentDropEffect(e.dataTransfer, 'move');
@@ -51,12 +51,12 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    doDragEnter: function(e) {
+    doDragEnter(e) {
       this.doDragOver(e);
     },
 
     /** @override */
-    doDrop: function(e) {
+    doDrop(e) {
       e.preventDefault();
 
       const tile = ntp.getCurrentlyDraggingTile();
@@ -65,7 +65,7 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    doDragLeave: function(e) {
+    doDragLeave(e) {
       ntp.getCurrentlyDraggingTile().dragClone.classList.remove(
           'hovering-on-trash');
     },

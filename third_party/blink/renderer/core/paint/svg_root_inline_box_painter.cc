@@ -48,7 +48,7 @@ void SVGRootInlineBoxPainter::Paint(const PaintInfo& paint_info,
   ScopedSVGPaintState paint_state(*LineLayoutAPIShim::ConstLayoutObjectFrom(
                                       svg_root_inline_box_.GetLineLayoutItem()),
                                   paint_info_before_filtering);
-  if (paint_state.ApplyClipMaskAndFilterIfNecessary()) {
+  if (paint_state.ApplyEffects()) {
     for (InlineBox* child = svg_root_inline_box_.FirstChild(); child;
          child = child->NextOnLine())
       child->Paint(paint_state.GetPaintInfo(), paint_offset, LayoutUnit(),

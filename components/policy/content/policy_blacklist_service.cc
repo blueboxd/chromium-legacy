@@ -120,7 +120,5 @@ KeyedService* PolicyBlacklistFactory::BuildServiceInstanceFor(
 
 content::BrowserContext* PolicyBlacklistFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  // TODO(crbug.com/701326): This DCHECK should be moved to GetContextToUse().
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return context;
 }

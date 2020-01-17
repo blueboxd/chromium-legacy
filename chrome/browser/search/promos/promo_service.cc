@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -172,19 +173,24 @@ void PromoService::Refresh() {
 }
 
 void PromoService::ServeExtensionCheckupPromo() {
-  const int checkup_message = base::GetFieldTrialParamByFeatureAsInt(
-      extensions_features::kExtensionsCheckup,
-      extensions_features::kExtensionsCheckupBannerMessageParameter, 2);
+  const extensions::CheckupMessage checkup_message =
+      static_cast<extensions::CheckupMessage>(
+          base::GetFieldTrialParamByFeatureAsInt(
+              extensions_features::kExtensionsCheckup,
+              extensions_features::kExtensionsCheckupBannerMessageParameter,
+              static_cast<int>(extensions::CheckupMessage::NEUTRAL)));
+  UMA_HISTOGRAM_ENUMERATION("Extensions.Checkup.NtpPromoShown",
+                            checkup_message);
   PromoData checkup_promo;
   int promo_idr = -1;
-  switch (static_cast<extensions::CheckupMessage>(checkup_message)) {
+  switch (checkup_message) {
     case extensions::CheckupMessage::PERFORMANCE:
       promo_idr = IDS_EXTENSIONS_PROMO_PERFORMANCE;
       break;
     case extensions::CheckupMessage::PRIVACY:
       promo_idr = IDS_EXTENSIONS_PROMO_PRIVACY;
       break;
-    default:
+    case extensions::CheckupMessage::NEUTRAL:
       promo_idr = IDS_EXTENSIONS_PROMO_NEUTRAL;
       break;
   }

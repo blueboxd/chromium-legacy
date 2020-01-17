@@ -82,7 +82,7 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      if (opt_hideType == cr.ui.HideType.DELAYED) {
+      if (opt_hideType === cr.ui.HideType.DELAYED) {
         menu.classList.add('hide-delayed');
       } else {
         menu.classList.remove('hide-delayed');
@@ -144,7 +144,8 @@ cr.define('cr.ui', function() {
         case 'keydown':
           this.keyIsDown_ = !e.ctrlKey && !e.altKey &&
               // context menu key or Shift-F10
-              (e.keyCode == 93 && !e.shiftKey || e.key == 'F10' && e.shiftKey);
+              (e.keyCode === 93 && !e.shiftKey ||
+               e.key === 'F10' && e.shiftKey);
           break;
 
         case 'keyup':
@@ -153,7 +154,7 @@ cr.define('cr.ui', function() {
       }
 
       // Context menu is handled even when we have no menu.
-      if (e.type != 'contextmenu' && !this.menu) {
+      if (e.type !== 'contextmenu' && !this.menu) {
         return;
       }
 
@@ -161,7 +162,7 @@ cr.define('cr.ui', function() {
         case 'mousedown':
           if (!this.menu.contains(e.target)) {
             this.hideMenu();
-            if (e.button == 0 /* Left button */ && (cr.isLinux || cr.isMac)) {
+            if (e.button === 0 /* Left button */ && (cr.isLinux || cr.isMac)) {
               // Emulate Mac and Linux, which swallow native 'mousedown' events
               // that close menus.
               e.preventDefault();
@@ -179,7 +180,7 @@ cr.define('cr.ui', function() {
           break;
 
         case 'keydown':
-          if (e.key == 'Escape') {
+          if (e.key === 'Escape') {
             this.hideMenu();
             e.stopPropagation();
             e.preventDefault();
@@ -232,7 +233,7 @@ cr.define('cr.ui', function() {
      *     the contextMenu property to.
      */
     addContextMenuProperty(elementOrClass) {
-      const target = typeof elementOrClass == 'function' ?
+      const target = typeof elementOrClass === 'function' ?
           elementOrClass.prototype :
           elementOrClass;
 
@@ -244,7 +245,7 @@ cr.define('cr.ui', function() {
       target.__defineSetter__('contextMenu', function(menu) {
         const oldContextMenu = this.contextMenu;
 
-        if (typeof menu == 'string' && menu[0] == '#') {
+        if (typeof menu === 'string' && menu[0] === '#') {
           menu = this.ownerDocument.getElementById(menu.slice(1));
           cr.ui.decorate(menu, Menu);
         }

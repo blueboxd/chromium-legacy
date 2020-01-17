@@ -992,6 +992,11 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
         env, jmodel,
         base::android::ConvertUTF8ToJavaString(
             env, collect_user_data_options->date_time_range.end_label()));
+    Java_AssistantCollectUserDataModel_setDateRangeInvalidErrorMessage(
+        env, jmodel,
+        base::android::ConvertUTF8ToJavaString(
+            env, collect_user_data_options->date_time_range
+                     .invalid_error_message()));
   }
   Java_AssistantCollectUserDataModel_setTermsRequireReviewText(
       env, jmodel,

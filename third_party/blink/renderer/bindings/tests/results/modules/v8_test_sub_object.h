@@ -58,12 +58,6 @@ class V8TestSubObject {
 };
 
 template <>
-struct NativeValueTraits<TestSubObject> : public NativeValueTraitsBase<TestSubObject> {
-  MODULES_EXPORT static TestSubObject* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  MODULES_EXPORT static TestSubObject* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestSubObject> {
   typedef V8TestSubObject Type;
 };

@@ -25,13 +25,13 @@ class TestContextProvider;
 
 namespace cc {
 
+class Animation;
 class AnimationHost;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostForTesting;
 class LayerTreeTestLayerTreeFrameSinkClient;
 class Proxy;
-class SingleKeyframeEffectAnimation;
 class TestLayerTreeFrameSink;
 class TestTaskGraphRunner;
 
@@ -59,8 +59,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     RENDERER_SOFTWARE,
   };
 
-  static std::string TestTypeToString(RendererType renderer_type) {
-    switch (renderer_type) {
+  std::string TestTypeToString() {
+    switch (renderer_type_) {
       case RENDERER_GL:
         return "GL";
       case RENDERER_SKIA_GL:
@@ -78,13 +78,13 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void EndTestAfterDelayMs(int delay_milliseconds);
 
   void PostAddNoDamageAnimationToMainThread(
-      SingleKeyframeEffectAnimation* animation_to_receive_animation);
+      Animation* animation_to_receive_animation);
   void PostAddOpacityAnimationToMainThread(
-      SingleKeyframeEffectAnimation* animation_to_receive_animation);
+      Animation* animation_to_receive_animation);
   void PostAddOpacityAnimationToMainThreadInstantly(
-      SingleKeyframeEffectAnimation* animation_to_receive_animation);
+      Animation* animation_to_receive_animation);
   void PostAddOpacityAnimationToMainThreadDelayed(
-      SingleKeyframeEffectAnimation* animation_to_receive_animation);
+      Animation* animation_to_receive_animation);
   void PostSetLocalSurfaceIdAllocationToMainThread(
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void PostRequestNewLocalSurfaceIdToMainThread();
@@ -111,7 +111,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void SetUseLayerLists() { settings_.use_layer_lists = true; }
 
  protected:
-  LayerTreeTest();
+  explicit LayerTreeTest(RendererType renderer_type = RENDERER_GL);
 
   void SkipAllocateInitialLocalSurfaceId();
   const viz::LocalSurfaceIdAllocation& GetCurrentLocalSurfaceIdAllocation()
@@ -196,21 +196,23 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     begin_frame_source_ = begin_frame_source;
   }
 
-  bool use_skia_renderer() {
+  bool use_skia_renderer() const {
     return renderer_type_ == RENDERER_SKIA_GL ||
            renderer_type_ == RENDERER_SKIA_VK;
   }
-  bool use_software_renderer() { return renderer_type_ == RENDERER_SOFTWARE; }
-  bool use_vulkan() { return renderer_type_ == RENDERER_SKIA_VK; }
+  bool use_software_renderer() const {
+    return renderer_type_ == RENDERER_SOFTWARE;
+  }
+  bool use_vulkan() const { return renderer_type_ == RENDERER_SKIA_VK; }
 
-  RendererType renderer_type_ = RENDERER_GL;
+  const RendererType renderer_type_;
 
  private:
   virtual void DispatchAddNoDamageAnimation(
-      SingleKeyframeEffectAnimation* animation_to_receive_animation,
+      Animation* animation_to_receive_animation,
       double animation_duration);
   virtual void DispatchAddOpacityAnimation(
-      SingleKeyframeEffectAnimation* animation_to_receive_animation,
+      Animation* animation_to_receive_animation,
       double animation_duration);
   void DispatchSetLocalSurfaceIdAllocation(
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);

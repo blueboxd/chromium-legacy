@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/utility/transformer_util.h"
 #include "base/command_line.h"
+#include "base/system/sys_info.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout_store.h"
@@ -97,6 +98,7 @@ gfx::Transform CreateReverseRotatedInsetsTransform(
 class AshRootWindowTransformer : public RootWindowTransformer {
  public:
   AshRootWindowTransformer(const display::Display& display) {
+    initial_root_bounds_ = gfx::Rect(display.size());
     display::DisplayManager* display_manager = Shell::Get()->display_manager();
     display::ManagedDisplayInfo info =
         display_manager->GetDisplayInfo(display.id());
@@ -122,6 +124,8 @@ class AshRootWindowTransformer : public RootWindowTransformer {
 
     root_window_bounds_transform_.Scale(1.f / display.device_scale_factor(),
                                         1.f / display.device_scale_factor());
+
+    initial_host_size_ = info.bounds_in_native().size();
   }
 
   // aura::RootWindowTransformer overrides:
@@ -130,6 +134,15 @@ class AshRootWindowTransformer : public RootWindowTransformer {
     return invert_transform_;
   }
   gfx::Rect GetRootWindowBounds(const gfx::Size& host_size) const override {
+    if (base::SysInfo::IsRunningOnChromeOS())
+      return initial_root_bounds_;
+
+    // If we're running on linux desktop for dev purpose, the host window
+    // may be updated to new size. Recompute the root window bounds based
+    // on the host size if the host size changed.
+    if (initial_host_size_ == host_size)
+      return initial_root_bounds_;
+
     gfx::RectF new_bounds = gfx::RectF(gfx::SizeF(host_size));
     new_bounds.Inset(host_insets_);
     root_window_bounds_transform_.TransformRect(&new_bounds);
@@ -176,6 +189,8 @@ class AshRootWindowTransformer : public RootWindowTransformer {
 
   gfx::Insets host_insets_;
   gfx::Transform insets_and_scale_transform_;
+  gfx::Rect initial_root_bounds_;
+  gfx::Size initial_host_size_;
 
   DISALLOW_COPY_AND_ASSIGN(AshRootWindowTransformer);
 };

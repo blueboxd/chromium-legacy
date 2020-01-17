@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -214,8 +215,6 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   void SetNeedsCommitOnImplThread() override { did_request_commit_ = true; }
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override {}
-  void PostAnimationEventsToMainThreadOnImplThread(
-      std::unique_ptr<MutatorEvents> events) override {}
   bool IsInsideDraw() override { return false; }
   bool IsBeginMainFrameExpected() override { return true; }
   void RenewTreePriority() override {}
@@ -1430,6 +1429,79 @@ TEST_F(LayerTreeHostImplTest, ScrolledOverlappingDrawnScrollbarLayer) {
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             status.main_thread_scrolling_reasons);
+}
+
+gfx::PresentationFeedback ExampleFeedback() {
+  return gfx::PresentationFeedback(
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(42),
+      base::TimeDelta::FromMicroseconds(18),
+      gfx::PresentationFeedback::Flags::kVSync |
+          gfx::PresentationFeedback::Flags::kHWCompletion);
+}
+
+class LayerTreeHostImplTestInvokeMainThreadCallbacks
+    : public LayerTreeHostImplTest {
+ public:
+  void DidPresentCompositorFrameOnImplThread(
+      uint32_t frame_token,
+      std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
+      const viz::FrameTimingDetails& details) override {
+    for (LayerTreeHost::PresentationTimeCallback& callback : callbacks) {
+      std::move(callback).Run(details.presentation_feedback);
+    }
+  }
+};
+
+// Tests that, when the LayerTreeHostImpl receives presentation feedback, the
+// feedback gets routed to a properly registered callback.
+TEST_F(LayerTreeHostImplTestInvokeMainThreadCallbacks,
+       PresentationFeedbackCallbacksFire) {
+  bool compositor_thread_callback_fired = false;
+  bool main_thread_callback_fired = false;
+  gfx::PresentationFeedback feedback_seen_by_compositor_thread_callback;
+  gfx::PresentationFeedback feedback_seen_by_main_thread_callback;
+
+  // Register a compositor-thread callback to run when the frame for
+  // |frame_token_1| gets presented.
+  constexpr uint32_t frame_token_1 = 1;
+  host_impl_->RegisterCompositorPresentationTimeCallback(
+      frame_token_1, base::BindLambdaForTesting(
+                         [&](const gfx::PresentationFeedback& feedback) {
+                           compositor_thread_callback_fired = true;
+                           feedback_seen_by_compositor_thread_callback =
+                               feedback;
+                         }));
+
+  // Register a main-thread callback to run when the frame for |frame_token_2|
+  // gets presented.
+  constexpr uint32_t frame_token_2 = 2;
+  ASSERT_GT(frame_token_2, frame_token_1);
+  host_impl_->RegisterMainThreadPresentationTimeCallback(
+      frame_token_2, base::BindLambdaForTesting(
+                         [&](const gfx::PresentationFeedback& feedback) {
+                           main_thread_callback_fired = true;
+                           feedback_seen_by_main_thread_callback = feedback;
+                         }));
+
+  viz::FrameTimingDetails mock_details;
+  mock_details.presentation_feedback = ExampleFeedback();
+
+  host_impl_->DidPresentCompositorFrame(frame_token_1, mock_details);
+
+  EXPECT_TRUE(compositor_thread_callback_fired);
+  EXPECT_EQ(feedback_seen_by_compositor_thread_callback,
+            mock_details.presentation_feedback);
+
+  // Since |frame_token_2| is strictly greater than |frame_token_1|, the
+  // main-thread callback must remain queued for now.
+  EXPECT_FALSE(main_thread_callback_fired);
+  EXPECT_EQ(feedback_seen_by_main_thread_callback, gfx::PresentationFeedback());
+
+  host_impl_->DidPresentCompositorFrame(frame_token_2, mock_details);
+
+  EXPECT_TRUE(main_thread_callback_fired);
+  EXPECT_EQ(feedback_seen_by_main_thread_callback,
+            mock_details.presentation_feedback);
 }
 
 TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {

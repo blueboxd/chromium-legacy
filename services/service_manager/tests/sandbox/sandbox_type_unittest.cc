@@ -76,8 +76,8 @@ TEST(SandboxTypeTest, Utility) {
 
   base::CommandLine command_line7(command_line);
   SetCommandLineFlagsForSandboxType(&command_line7,
-                                    SandboxType::kPdfCompositor);
-  EXPECT_EQ(SandboxType::kPdfCompositor,
+                                    SandboxType::kPrintCompositor);
+  EXPECT_EQ(SandboxType::kPrintCompositor,
             SandboxTypeFromCommandLine(command_line7));
 
   command_line.AppendSwitch(switches::kNoSandbox);

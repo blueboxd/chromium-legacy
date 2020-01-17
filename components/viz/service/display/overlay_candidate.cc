@@ -253,6 +253,7 @@ bool OverlayCandidate::FromDrawQuadResource(
 
   candidate->resource_id = resource_id;
   candidate->transform = overlay_transform;
+  candidate->mailbox = resource_provider->GetMailbox(resource_id);
 
   return true;
 }

@@ -336,6 +336,10 @@ void NGFragmentItem::RecalcInkOverflow(
   cursor->MoveToNextSibling();
   PhysicalRect contents_rect = RecalcInkOverflowForCursor(&descendants_cursor);
 
+  // |contents_rect| is relative to the inline formatting context. Make it
+  // relative to |this|.
+  contents_rect.offset -= Offset();
+
   // Compute the self ink overflow.
   PhysicalRect self_rect;
   if (Type() == kLine) {

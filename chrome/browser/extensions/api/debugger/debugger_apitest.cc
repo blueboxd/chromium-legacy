@@ -15,13 +15,13 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/extension.h"
@@ -94,7 +94,7 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunction(
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // Attach by tabId.
-  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
   std::string debugee_by_tab = base::StringPrintf("{\"tabId\": %d}", tab_id);
   testing::AssertionResult result =
       RunAttachFunctionOnTarget(debugee_by_tab, expected_error);
@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
-  int tab_id = SessionTabHelper::IdForTab(
+  int tab_id = sessions::SessionTabHelper::IdForTab(
                    browser()->tab_strip_model()->GetActiveWebContents())
                    .id();
   scoped_refptr<DebuggerAttachFunction> attach_function;
@@ -211,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
       new Browser(Browser::CreateParams(profile(), true));
   AddBlankTabAndShow(another_browser);
   AddBlankTabAndShow(another_browser);
-  int tab_id2 = SessionTabHelper::IdForTab(
+  int tab_id2 = sessions::SessionTabHelper::IdForTab(
                     another_browser->tab_strip_model()->GetActiveWebContents())
                     .id();
 

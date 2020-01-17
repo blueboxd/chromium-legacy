@@ -38,9 +38,7 @@ source_set("modular") {
     "lifecycle_impl.cc",
     "lifecycle_impl.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   public_deps = [
     "//third_party/fuchsia-sdk/sdk:fuchsia-modular",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
@@ -49,12 +47,8 @@ source_set("modular") {
 
 # FIDL/Mojo adapters for MessagePorts.
 source_set("message_port") {
-  sources = [
-    "message_port.cc",
-  ]
-  public = [
-    "message_port.h",
-  ]
+  sources = [ "message_port.cc" ]
+  public = [ "message_port.h" ]
   deps = [
     ":base",
     "//base",
@@ -94,9 +88,7 @@ source_set("test_support") {
 
 # Unit-tests for all //fuchsia/base utilities.
 test("cr_fuchsia_base_unittests") {
-  sources = [
-    "agent_impl_unittests.cc",
-  ]
+  sources = [ "agent_impl_unittests.cc" ]
   deps = [
     ":modular",
     ":test_support",

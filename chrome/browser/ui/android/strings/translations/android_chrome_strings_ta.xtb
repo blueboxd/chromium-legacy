@@ -39,7 +39,6 @@
 <translation id="124678866338384709">தற்போதைய தாவலை மூடும்</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">இணையத்தில் தேடுக &amp; உள்ளடக்கங்களை உலாவுக</translation>
-<translation id="1264974993859112054">விளையாட்டு</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" />ஐப் பகிர முடியவில்லை</translation>
 <translation id="1272079795634619415">நிறுத்து</translation>
 <translation id="1283039547216852943">விரிவாக்க, தட்டவும்</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">உங்கள் அனைத்துச் சாதனங்களிலும் புத்தகக்குறிகளைப் பெற, உள்நுழைந்து, ஒத்திசைவை இயக்கவும்</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" />க்கான தள அனுமதிகள் அனைத்தையும் நிச்சயமாக மீட்டமைக்க விரும்புகிறீர்களா?</translation>
 <translation id="2842985007712546952">மூலக் கோப்புறை</translation>
-<translation id="2858138569776157458">பிரபலமானவை</translation>
 <translation id="2860954141821109167">இந்தச் சாதனத்தில் ஃபோன் ஆப்ஸ் இயக்கப்பட்டுள்ளதை உறுதிசெய்து கொள்ளவும்</translation>
 <translation id="2870560284913253234">தளம்</translation>
 <translation id="2874939134665556319">முந்தைய ட்ராக்</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Chrome இல் உள்நுழைக</translation>
 <translation id="3288003805934695103">பக்கத்தை மீண்டும் ஏற்றுதல்</translation>
 <translation id="32895400574683172">அறிவிப்புகள் அனுமதிக்கப்படுகின்றன</translation>
+<translation id="3290926146403723641">Google அசிஸ்டண்ட் மூலமாக இணையத்தில் பணிகளை முடிக்க, தளத்தின் URL மற்றும் உள்ளடக்கத்தையும் தொடர்புடைய தனிப்பட்ட தகவலையும் Googleளுக்கு Chrome அனுப்பும்</translation>
 <translation id="3295530008794733555">வேகமாக உலாவலாம். குறைவான டேட்டாவைப் பயன்படுத்தலாம்.</translation>
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">உள்ளடக்கத்தைப் பதிவிறக்குவதைத் தொடரவா?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">ஃபோன் எண்கள்</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> பதிவிறக்கங்கள் உள்ளன</translation>
 <translation id="3822502789641063741">தளச் சேமிப்பகத்தை அழிக்கவா?</translation>
-<translation id="3853625385350850937">தொடர்வதற்கு உங்கள் சாதனத்தில் NFCயை ஆன் செய்யுங்கள்</translation>
 <translation id="3859306556332390985">முன்செல்</translation>
 <translation id="388596076286380598">ஆஃப்லைனிலும், வேகம் குறைந்த இணைப்பிலும் கூட உங்களுக்கு விருப்பமான தளங்களில் இருந்து கட்டுரைகள், வீடியோக்கள் மற்றும் பிற உள்ளடக்கங்களைப் பெற்றிடுங்கள்.</translation>
 <translation id="3894427358181296146">கோப்புறையைச் சேர்</translation>
@@ -764,7 +762,6 @@
 <translation id="6697947395630195233">இந்தத் தளத்துடன் இருப்பிடத்தைப் பகிர, Chromeமுக்கு உங்கள் இருப்பிடத்திற்கான அணுகல் தேவை.</translation>
 <translation id="6698801883190606802">ஒத்திசைத்த தரவை நிர்வகித்தல்</translation>
 <translation id="6699370405921460408">நீங்கள் பார்க்கும் பக்கங்களை Google சேவையகங்கள் மேம்படுத்தும்.</translation>
-<translation id="6709133671862442373">செய்திகள்</translation>
 <translation id="6710213216561001401">முந்தையது</translation>
 <translation id="671481426037969117">உங்கள் <ph name="FQDN" /> டைமர் நேரம் முடிந்தது. நாளை மீண்டும் தொடங்கும்.</translation>
 <translation id="6738867403308150051">பதிவிறக்குகிறது…</translation>
@@ -1079,7 +1076,6 @@
 <translation id="9133397713400217035">ஆஃப்லைனில் கண்டறியுங்கள்</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">அசலைக் காண்பி</translation>
-<translation id="9139318394846604261">ஷாப்பிங்</translation>
 <translation id="9155898266292537608">ஒரு சொல்லைத் தட்டி உடனடியாகவும் தேடலாம்</translation>
 <translation id="9169507124922466868">வழிசெலுத்தல் வரலாறு பாதியளவு திறந்துள்ளது</translation>
 <translation id="9204836675896933765">1 கோப்பு மீதமுள்ளது</translation>

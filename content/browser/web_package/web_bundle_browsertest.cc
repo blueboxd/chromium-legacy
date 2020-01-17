@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -32,6 +33,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
+#include "services/data_decoder/public/cpp/test_support/web_bundle_builder.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
@@ -48,6 +50,11 @@ constexpr char kTestPage1Url[] = "https://test.example.org/page1.html";
 constexpr char kTestPage2Url[] = "https://test.example.org/page2.html";
 constexpr char kTestPageForHashUrl[] =
     "https://test.example.org/hash.html#hello";
+
+constexpr char kDefaultHeaders[] =
+    "HTTP/1.1 200 OK\n"
+    "Content-Type: application/webbundle\n"
+    "X-Content-Type-Options: nosniff\n";
 
 base::FilePath GetTestDataPath(base::StringPiece file) {
   base::FilePath test_data_dir;
@@ -411,6 +418,45 @@ std::string ExpectNavigationFailureAndReturnConsoleMessage(
     return std::string();
   }
   return base::UTF16ToUTF8(console_observer.messages()[0].message);
+}
+
+std::string CreateSimpleWebBundle(const GURL& primary_url) {
+  data_decoder::test::WebBundleBuilder builder(primary_url.spec(), "");
+  builder.AddExchange(primary_url.spec(),
+                      {{":status", "200"}, {"content-type", "text/html"}},
+                      "<title>Ready</title>");
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  return std::string(bundle.begin(), bundle.end());
+}
+
+std::string CreatePathTestWebBundle(
+    const net::test_server::EmbeddedTestServer* server) {
+  const GURL primary_url = server->GetURL("/web_bundle/path_test/in_scope/");
+  data_decoder::test::WebBundleBuilder builder(primary_url.spec(), "");
+  builder.AddExchange(primary_url.spec(),
+                      {{":status", "200"}, {"content-type", "text/html"}},
+                      "<title>Ready</title>");
+  builder.AddExchange(
+      server->GetURL("/web_bundle/path_test/in_scope/page.html").spec(),
+      {{":status", "200"}, {"content-type", "text/html"}},
+      "<script>const page_info = 'In scope page in Web Bundle';</script>"
+      "<script src=\"page.js\"></script>");
+  builder.AddExchange(
+      server->GetURL("/web_bundle/path_test/in_scope/page.js").spec(),
+      {{":status", "200"}, {"content-type", "application/javascript"}},
+      "document.title = page_info + ' / in scope script in Web Bundle';");
+  builder.AddExchange(
+      server->GetURL("/web_bundle/path_test/out_scope/page.html").spec(),
+      {{":status", "200"}, {"content-type", "text/html"}},
+      "<script>const page_info = 'Out scope page in Web Bundle';</script>"
+      "<script src=\"page.js\"></script>");
+  builder.AddExchange(
+      server->GetURL("/web_bundle/path_test/out_scope/page.js").spec(),
+      {{":status", "200"}, {"content-type", "application/javascript"}},
+      "document.title = page_info + ' / out scope script in Web Bundle';");
+
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  return std::string(bundle.begin(), bundle.end());
 }
 
 }  // namespace
@@ -939,9 +985,6 @@ INSTANTIATE_TEST_SUITE_P(WebBundleFileBrowserTest,
 
 class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
  protected:
-  // Keep consistent with NETWORK_TEST_PORT in generate-test-wbns.sh.
-  static constexpr int kNetworkTestPort = 39600;
-
   WebBundleNetworkBrowserTest() = default;
   ~WebBundleNetworkBrowserTest() override = default;
 
@@ -949,37 +992,27 @@ class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
     WebBundleBrowserTestBase::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
+  void TearDownOnMainThread() override {
+    // Shutdown the server to avoid the data race of |headers_| and |contents_|
+    // caused by page reload on error.
+    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+    WebBundleBrowserTestBase::TearDownOnMainThread();
+  }
 
   void SetUp() override {
     feature_list_.InitWithFeatures({features::kWebBundlesFromNetwork}, {});
     WebBundleBrowserTestBase::SetUp();
   }
 
-  void RegisterRequestHandler(const std::string& relative_url,
-                              const std::string& headers,
-                              const std::string& contents) {
-    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
-        [](const std::string& relative_url, const std::string& headers,
-           const std::string& contents,
-           const net::test_server::HttpRequest& request)
+  void RegisterRequestHandler(const std::string& relative_url) {
+    embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(
+        [this, relative_url](const net::test_server::HttpRequest& request)
             -> std::unique_ptr<net::test_server::HttpResponse> {
           if (request.relative_url != relative_url)
             return nullptr;
-          return std::make_unique<net::test_server::RawHttpResponse>(headers,
-                                                                     contents);
-        },
-        relative_url, headers, contents));
-  }
-
-  std::string GetTestFile(const std::string& file_name) const {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    std::string contents;
-    base::FilePath src_dir;
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
-    base::FilePath test_path =
-        src_dir.Append(FILE_PATH_LITERAL("content/test/data/web_bundle"));
-    CHECK(base::ReadFileToString(test_path.AppendASCII(file_name), &contents));
-    return contents;
+          return std::make_unique<net::test_server::RawHttpResponse>(headers_,
+                                                                     contents_);
+        }));
   }
 
   void TestNavigationFailure(const GURL& url,
@@ -990,50 +1023,8 @@ class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
     EXPECT_EQ(expected_console_error, console_message);
   }
 
-  void RunHistoryNavigationErrorTest(
-      const std::string& first_headers,
-      const std::string& first_contents,
-      const std::string& subsequent_headers,
-      const std::string& subsequent_contents,
+  void HistoryBackAndWaitUntilConsoleError(
       const std::string& expected_error_message) {
-    scoped_refptr<base::RefCountedData<bool>> is_first_call =
-        base::MakeRefCounted<base::RefCountedData<bool>>(true);
-    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
-        [](const std::string& relative_url,
-           scoped_refptr<base::RefCountedData<bool>> is_first_call,
-           const std::string& first_headers, const std::string& first_contents,
-           const std::string& subsequent_headers,
-           const std::string& subsequent_contents,
-           const net::test_server::HttpRequest& request)
-            -> std::unique_ptr<net::test_server::HttpResponse> {
-          if (request.relative_url != relative_url)
-            return nullptr;
-          if (is_first_call->data) {
-            is_first_call->data = false;
-            return std::make_unique<net::test_server::RawHttpResponse>(
-                first_headers, first_contents);
-          } else {
-            return std::make_unique<net::test_server::RawHttpResponse>(
-                subsequent_headers, subsequent_contents);
-          }
-        },
-        "/web_bundle/path_test/in_scope/path_test.wbn",
-        std::move(is_first_call), first_headers, first_contents,
-        subsequent_headers, subsequent_contents));
-    ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
-    NavigateToBundleAndWaitForReady(
-        GURL(base::StringPrintf(
-            "http://localhost:%d/web_bundle/path_test/in_scope/path_test.wbn",
-            kNetworkTestPort)),
-        GURL(base::StringPrintf(
-            "http://localhost:%d/web_bundle/path_test/in_scope/",
-            kNetworkTestPort)));
-    NavigateToURLAndWaitForTitle(
-        GURL(base::StringPrintf(
-            "http://localhost:%d/web_bundle/path_test/out_scope/page.html",
-            kNetworkTestPort)),
-        "Out scope page from server / out scope script from server");
-
     WebContents* web_contents = shell()->web_contents();
     WebContentsConsoleObserver console_observer(web_contents);
 
@@ -1055,181 +1046,193 @@ class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
               base::UTF16ToUTF8(console_observer.messages()[0].message));
   }
 
-  static GURL GetTestUrl(const std::string& host) {
-    return GURL(base::StringPrintf("http://%s:%d/web_bundle/test.wbn",
-                                   host.c_str(), kNetworkTestPort));
-  }
+  void SetHeaders(const std::string& headers) { headers_ = headers; }
+  void AddHeaders(const std::string& headers) { headers_ += headers; }
+  void SetContents(const std::string& contents) { contents_ = contents; }
+  const std::string& contents() const { return contents_; }
 
  private:
   base::test::ScopedFeatureList feature_list_;
+  std::string headers_ = kDefaultHeaders;
+  std::string contents_;
 
   DISALLOW_COPY_AND_ASSIGN(WebBundleNetworkBrowserTest);
 };
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_Simple) {
-  const std::string test_bundle =
-      GetTestFile("web_bundle_browsertest_network.wbn");
-  RegisterRequestHandler(
-      "/web_bundle/test.wbn",
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle);
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
-  NavigateToBundleAndWaitForReady(
-      GetTestUrl("localhost"),
-      GURL(base::StringPrintf("http://localhost:%d/web_bundle/network/",
-                              kNetworkTestPort)));
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Simple) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url = embedded_test_server()->GetURL(primary_url_path);
+
+  SetContents(CreateSimpleWebBundle(primary_url));
+  NavigateToBundleAndWaitForReady(wbn_url, primary_url);
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_Download) {
-  const std::string test_bundle =
-      GetTestFile("web_bundle_browsertest_network.wbn");
-  // Web Bundle file with attachment Content-Disposition must trigger download.
-  RegisterRequestHandler(
-      "/web_bundle/test.wbn",
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Content-Disposition:attachment; filename=test.wbn\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle);
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
-  const GURL url = GetTestUrl("localhost");
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, SimpleWithScript) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url =
+      embedded_test_server()->GetURL("/web_bundle/test.html");
+  const GURL script_url =
+      embedded_test_server()->GetURL("/web_bundle/script.js");
+
+  data_decoder::test::WebBundleBuilder builder(primary_url.spec(), "");
+  builder.AddExchange(primary_url.spec(),
+                      {{":status", "200"}, {"content-type", "text/html"}},
+                      "<script src=\"script.js\"></script>");
+  builder.AddExchange(
+      script_url.spec(),
+      {{":status", "200"}, {"content-type", "application/javascript"}},
+      "document.title = 'Ready';");
+
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  SetContents(std::string(bundle.begin(), bundle.end()));
+  NavigateToBundleAndWaitForReady(wbn_url, primary_url);
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Download) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  RegisterRequestHandler(wbn_path);
+  AddHeaders("Content-Disposition:attachment; filename=test.wbn\n");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url = embedded_test_server()->GetURL(primary_url_path);
+
+  SetContents(CreateSimpleWebBundle(primary_url));
   WebContents* web_contents = shell()->web_contents();
   std::unique_ptr<DownloadObserver> download_observer =
       std::make_unique<DownloadObserver>(BrowserContext::GetDownloadManager(
           web_contents->GetBrowserContext()));
-  EXPECT_FALSE(NavigateToURL(web_contents, url));
+
+  EXPECT_FALSE(NavigateToURL(web_contents, wbn_url));
   download_observer->WaitUntilDownloadCreated();
-  EXPECT_EQ(url, download_observer->observed_url());
+  EXPECT_EQ(wbn_url, download_observer->observed_url());
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_NoContentLength) {
-  const std::string test_bundle =
-      GetTestFile("web_bundle_browsertest_network.wbn");
-  // No Content-Length header.
-  RegisterRequestHandler("/web_bundle/test.wbn",
-                         "HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n",
-                         test_bundle);
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
-  NavigateToBundleAndWaitForReady(
-      GetTestUrl("localhost"),
-      GURL(base::StringPrintf("http://localhost:%d/web_bundle/network/",
-                              kNetworkTestPort)));
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, ContentLength) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url = embedded_test_server()->GetURL(primary_url_path);
+
+  SetContents(CreateSimpleWebBundle(primary_url));
+  AddHeaders(
+      base::StringPrintf("Content-Length: %" PRIuS "\n", contents().size()));
+  NavigateToBundleAndWaitForReady(wbn_url, primary_url);
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_NonSecureUrl) {
-  const std::string test_bundle =
-      GetTestFile("web_bundle_browsertest_network.wbn");
-  RegisterRequestHandler(
-      "/web_bundle/test.wbn",
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle);
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, NonSecureUrl) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL wbn_url = embedded_test_server()->GetURL("example.com", wbn_path);
+  const GURL primary_url =
+      embedded_test_server()->GetURL("example.com", primary_url_path);
+  SetContents(CreateSimpleWebBundle(primary_url));
   TestNavigationFailure(
-      GetTestUrl("example.com"),
+      wbn_url,
       "Web Bundle response must be served from HTTPS or localhost HTTP.");
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       DISABLED_PrimaryURLNotFound) {
-  const std::string test_bundle =
-      GetTestFile("web_bundle_browsertest_network_primary_url_not_found.wbn");
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, MissingNosniff) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  RegisterRequestHandler(
-      "/web_bundle/test.wbn",
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle);
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
-  TestNavigationFailure(
-      GetTestUrl("localhost"),
-      "The primary URL resource is not found in the web bundle.");
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url = embedded_test_server()->GetURL(primary_url_path);
+
+  SetContents(CreateSimpleWebBundle(primary_url));
+  SetHeaders(
+      "HTTP/1.1 200 OK\n"
+      "Content-Type: application/webbundle\n");
+  TestNavigationFailure(wbn_url,
+                        "Web Bundle response must have "
+                        "\"X-Content-Type-Options: nosniff\" header.");
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_OriginMismatch) {
-  const std::string test_bundle =
-      GetTestFile("web_bundle_browsertest_network.wbn");
-  RegisterRequestHandler(
-      "/web_bundle/test.wbn",
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle);
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, PrimaryURLNotFound) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url = embedded_test_server()->GetURL(primary_url_path);
+  const GURL inner_url =
+      embedded_test_server()->GetURL("/web_bundle/inner.html");
+  data_decoder::test::WebBundleBuilder builder(primary_url.spec(), "");
+  builder.AddExchange(inner_url.spec(),
+                      {{":status", "200"}, {"content-type", "text/html"}},
+                      "<title>Ready</title>");
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  SetContents(std::string(bundle.begin(), bundle.end()));
   TestNavigationFailure(
-      GetTestUrl("127.0.0.1"),
+      wbn_url, "The primary URL resource is not found in the web bundle.");
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, OriginMismatch) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL primary_url =
+      embedded_test_server()->GetURL("localhost", primary_url_path);
+
+  SetContents(CreateSimpleWebBundle(primary_url));
+  TestNavigationFailure(
+      embedded_test_server()->GetURL("127.0.0.1", wbn_path),
       "The origin of primary URL doesn't match with the origin of the web "
       "bundle.");
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_InvalidFile) {
-  const std::string test_bundle = GetTestFile("invalid_web_bundle.wbn");
-  RegisterRequestHandler(
-      "/web_bundle/test.wbn",
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle);
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, InvalidFile) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  RegisterRequestHandler(wbn_path);
+  SetContents("This is an invalid Web Bundle file.");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   TestNavigationFailure(
-      GetTestUrl("localhost"),
+      embedded_test_server()->GetURL(wbn_path),
       "Failed to read metadata of Web Bundle file: Wrong magic bytes.");
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       DISABLED_DataDecoderRestart) {
-  const GURL primary_url(base::StringPrintf(
-      "http://localhost:%d/web_bundle/network/", kNetworkTestPort));
-  const GURL script_url(base::StringPrintf(
-      "http://localhost:%d/web_bundle/network/script.js", kNetworkTestPort));
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DataDecoderRestart) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL primary_url =
+      embedded_test_server()->GetURL("/web_bundle/test.html");
+  const GURL script_url =
+      embedded_test_server()->GetURL("/web_bundle/script.js");
   const std::string primary_url_content = "<title>Ready</title>";
   const std::string script_url_content = "document.title = 'OK'";
+  SetContents(primary_url_content + script_url_content);
+
   std::vector<std::pair<GURL, const std::string&>> items = {
       {primary_url, primary_url_content}, {script_url, script_url_content}};
-  const std::string test_bundle = primary_url_content + script_url_content;
-  RegisterRequestHandler(
-      "/web_bundle/test.wbn",
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle);
-
   MockParserFactory mock_factory(items);
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
 
-  const GURL test_data_url = GetTestUrl("localhost");
-  NavigateToBundleAndWaitForReady(
-      test_data_url,
-      GURL(base::StringPrintf("http://localhost:%d/web_bundle/network/",
-                              kNetworkTestPort)));
+  NavigateToBundleAndWaitForReady(embedded_test_server()->GetURL(wbn_path),
+                                  primary_url);
 
   EXPECT_EQ(1, mock_factory.GetParserCreationCount());
   mock_factory.SimulateParserDisconnect();
@@ -1243,258 +1246,255 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
   EXPECT_EQ(2, mock_factory.GetParserCreationCount());
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       DISABLED_ParseMetadataCrash) {
-  const GURL primary_url(base::StringPrintf(
-      "http://localhost:%d/web_bundle/network/", kNetworkTestPort));
-  const std::string test_bundle = "<title>Ready</title>";
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, ParseMetadataCrash) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  RegisterRequestHandler(wbn_path);
+  SetContents("<title>Ready</title>");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL primary_url =
+      embedded_test_server()->GetURL("/web_bundle/test.html");
   std::vector<std::pair<GURL, const std::string&>> items = {
-      {primary_url, test_bundle}};
-  RegisterRequestHandler(
-      "/web_bundle/test.wbn",
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle);
+      {primary_url, contents()}};
   MockParserFactory mock_factory(items);
   mock_factory.SimulateParseMetadataCrash();
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
 
-  const GURL test_data_url = GetTestUrl("localhost");
-  TestNavigationFailure(test_data_url,
+  TestNavigationFailure(embedded_test_server()->GetURL(wbn_path),
                         "Failed to read metadata of Web Bundle file: Cannot "
                         "connect to the remote parser service");
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       DISABLED_ParseResponseCrash) {
-  const GURL primary_url(base::StringPrintf(
-      "http://localhost:%d/web_bundle/network/", kNetworkTestPort));
-  const std::string test_bundle = "<title>Ready</title>";
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, ParseResponseCrash) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  RegisterRequestHandler(wbn_path);
+  SetContents("<title>Ready</title>");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL primary_url =
+      embedded_test_server()->GetURL("/web_bundle/test.html");
   std::vector<std::pair<GURL, const std::string&>> items = {
-      {primary_url, test_bundle}};
-  RegisterRequestHandler(
-      "/web_bundle/test.wbn",
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle);
+      {primary_url, contents()}};
   MockParserFactory mock_factory(items);
   mock_factory.SimulateParseResponseCrash();
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
 
-  const GURL test_data_url = GetTestUrl("localhost");
-  TestNavigationFailure(test_data_url,
+  TestNavigationFailure(embedded_test_server()->GetURL(wbn_path),
                         "Failed to read response header of Web Bundle file: "
                         "Cannot connect to the remote parser service");
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_PathMismatch) {
-  const std::string test_bundle =
-      GetTestFile("web_bundle_browsertest_network.wbn");
-  RegisterRequestHandler(
-      "/other_dir/test.wbn",
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle);
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, PathMismatch) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/other_dir/test.html";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url = embedded_test_server()->GetURL(primary_url_path);
+
+  SetContents(CreateSimpleWebBundle(primary_url));
   TestNavigationFailure(
-      GURL(base::StringPrintf("http://localhost:%d/other_dir/"
-                              "test.wbn",
-                              kNetworkTestPort)),
-      base::StringPrintf(
-          "Path restriction mismatch: Can't navigate to "
-          "http://localhost:%d/web_bundle/network/ in the web bundle served "
-          "from http://localhost:%d/other_dir/test.wbn.",
-          kNetworkTestPort, kNetworkTestPort));
+      wbn_url,
+      base::StringPrintf("Path restriction mismatch: Can't navigate to %s in "
+                         "the web bundle served from %s.",
+                         primary_url.spec().c_str(), wbn_url.spec().c_str()));
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, DISABLED_Navigations) {
-  const std::string test_bundle = GetTestFile("path_test.wbn");
-  RegisterRequestHandler(
-      "/web_bundle/path_test/in_scope/path_test.wbn",
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle);
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, Navigations) {
+  const std::string wbn_path = "/web_bundle/path_test/in_scope/path_test.wbn";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  SetContents(CreatePathTestWebBundle(embedded_test_server()));
 
-  NavigateToBundleAndWaitForReady(
-      GURL(base::StringPrintf(
-          "http://localhost:%d/web_bundle/path_test/in_scope/path_test.wbn",
-          kNetworkTestPort)),
-      GURL(base::StringPrintf(
-          "http://localhost:%d/web_bundle/path_test/in_scope/",
-          kNetworkTestPort)));
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url =
+      embedded_test_server()->GetURL("/web_bundle/path_test/in_scope/");
+  NavigateToBundleAndWaitForReady(wbn_url, primary_url);
 
   NavigateToURLAndWaitForTitle(
-      GURL(base::StringPrintf(
-          "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
-          kNetworkTestPort)),
+      embedded_test_server()->GetURL(
+          "/web_bundle/path_test/in_scope/page.html"),
       "In scope page in Web Bundle / in scope script in Web Bundle");
-
   NavigateToURLAndWaitForTitle(
-      GURL(base::StringPrintf(
-          "http://localhost:%d/web_bundle/path_test/out_scope/page.html",
-          kNetworkTestPort)),
+      embedded_test_server()->GetURL(
+          "/web_bundle/path_test/out_scope/page.html"),
       "Out scope page from server / out scope script from server");
-
   NavigateToURLAndWaitForTitle(
-      GURL(base::StringPrintf(
-          "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
-          kNetworkTestPort)),
+      embedded_test_server()->GetURL(
+          "/web_bundle/path_test/in_scope/page.html"),
       "In scope page from server / in scope script from server");
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
-IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       DISABLED_HistoryNavigations) {
-  const std::string test_bundle = GetTestFile("path_test.wbn");
-  RegisterRequestHandler(
-      "/web_bundle/path_test/in_scope/path_test.wbn",
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle);
-  ASSERT_TRUE(embedded_test_server()->Start(kNetworkTestPort));
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, HistoryNavigations) {
+  const std::string wbn_path = "/web_bundle/path_test/in_scope/path_test.wbn";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  SetContents(CreatePathTestWebBundle(embedded_test_server()));
 
-  NavigateToBundleAndWaitForReady(
-      GURL(base::StringPrintf(
-          "http://localhost:%d/web_bundle/path_test/in_scope/path_test.wbn",
-          kNetworkTestPort)),
-      GURL(base::StringPrintf(
-          "http://localhost:%d/web_bundle/path_test/in_scope/",
-          kNetworkTestPort)));
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url =
+      embedded_test_server()->GetURL("/web_bundle/path_test/in_scope/");
+  NavigateToBundleAndWaitForReady(wbn_url, primary_url);
 
   NavigateToURLAndWaitForTitle(
-      GURL(base::StringPrintf(
-          "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
-          kNetworkTestPort)),
+      embedded_test_server()->GetURL(
+          "/web_bundle/path_test/in_scope/page.html"),
       "In scope page in Web Bundle / in scope script in Web Bundle");
 
   NavigateToURLAndWaitForTitle(
-      GURL(base::StringPrintf(
-          "http://localhost:%d/web_bundle/path_test/in_scope/",
-          kNetworkTestPort)),
+      embedded_test_server()->GetURL("/web_bundle/path_test/in_scope/"),
       "Ready");
 
   ExecuteScriptAndWaitForTitle(
       "history.back();",
       "In scope page in Web Bundle / in scope script in Web Bundle");
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
-            GURL(base::StringPrintf(
-                "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
-                kNetworkTestPort)));
+            embedded_test_server()->GetURL(
+                "/web_bundle/path_test/in_scope/page.html"));
 
   NavigateToURLAndWaitForTitle(
-      GURL(base::StringPrintf(
-          "http://localhost:%d/web_bundle/path_test/out_scope/page.html",
-          kNetworkTestPort)),
+      embedded_test_server()->GetURL(
+          "/web_bundle/path_test/out_scope/page.html"),
       "Out scope page from server / out scope script from server");
 
   ExecuteScriptAndWaitForTitle(
       "history.back();",
       "In scope page in Web Bundle / in scope script in Web Bundle");
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
-            GURL(base::StringPrintf(
-                "http://localhost:%d/web_bundle/path_test/in_scope/page.html",
-                kNetworkTestPort)));
+            embedded_test_server()->GetURL(
+                "/web_bundle/path_test/in_scope/page.html"));
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       DISABLED_HistoryNavigationError_UnexpectedContentType) {
-  const std::string test_bundle = GetTestFile("path_test.wbn");
-  RunHistoryNavigationErrorTest(
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Cache-Control:no-store\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle,
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/foo_bar\n"
-                         "Cache-Control:no-store\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle, "Unexpected content type.");
+                       HistoryNavigationError_UnexpectedContentType) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url = embedded_test_server()->GetURL(primary_url_path);
+
+  SetHeaders(
+      "HTTP/1.1 200 OK\n"
+      "Cache-Control:no-store\n"
+      "Content-Type:application/webbundle\n"
+      "X-Content-Type-Options: nosniff\n");
+  SetContents(CreateSimpleWebBundle(primary_url));
+  NavigateToBundleAndWaitForReady(wbn_url, primary_url);
+  NavigateToURLAndWaitForTitle(
+      embedded_test_server()->GetURL("/web_bundle/empty_page.html"),
+      "Empty Page");
+
+  SetHeaders(
+      "HTTP/1.1 200 OK\n"
+      "Cache-Control:no-store\n"
+      "Content-Type:application/foo_bar\n"
+      "X-Content-Type-Options: nosniff\n");
+  HistoryBackAndWaitUntilConsoleError("Unexpected content type.");
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       DISABLED_HistoryNavigationError_UnexpectedRedirect) {
-  const std::string test_bundle = GetTestFile("path_test.wbn");
-  RunHistoryNavigationErrorTest(
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Cache-Control:no-store\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle,
+                       HistoryNavigationError_MissingNosniff) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url = embedded_test_server()->GetURL(primary_url_path);
+
+  SetHeaders(
+      "HTTP/1.1 200 OK\n"
+      "Cache-Control:no-store\n"
+      "Content-Type:application/webbundle\n"
+      "X-Content-Type-Options: nosniff\n");
+  SetContents(CreateSimpleWebBundle(primary_url));
+  NavigateToBundleAndWaitForReady(wbn_url, primary_url);
+  NavigateToURLAndWaitForTitle(
+      embedded_test_server()->GetURL("/web_bundle/empty_page.html"),
+      "Empty Page");
+
+  SetHeaders(
+      "HTTP/1.1 200 OK\n"
+      "Cache-Control:no-store\n"
+      "Content-Type:application/webbundle\n");
+  HistoryBackAndWaitUntilConsoleError(
+      "Web Bundle response must have \"X-Content-Type-Options: nosniff\" "
+      "header.");
+}
+
+IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
+                       HistoryNavigationError_UnexpectedRedirect) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url = embedded_test_server()->GetURL(primary_url_path);
+
+  SetHeaders(
+      "HTTP/1.1 200 OK\n"
+      "Cache-Control:no-store\n"
+      "Content-Type:application/webbundle\n"
+      "X-Content-Type-Options: nosniff\n");
+  SetContents(CreateSimpleWebBundle(primary_url));
+  NavigateToBundleAndWaitForReady(wbn_url, primary_url);
+  NavigateToURLAndWaitForTitle(
+      embedded_test_server()->GetURL("/web_bundle/empty_page.html"),
+      "Empty Page");
+
+  SetHeaders(
       "HTTP/1.1 302 OK\n"
-      "Location:/web_bundle/empty_page.html\n",
-      "", "Unexpected redirect.");
+      "Location:/web_bundle/empty_page.html\n"
+      "X-Content-Type-Options: nosniff\n");
+  SetContents("");
+  HistoryBackAndWaitUntilConsoleError("Unexpected redirect.");
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       DISABLED_HistoryNavigationError_ReadMetadataFailure) {
-  const std::string test_bundle = GetTestFile("path_test.wbn");
-  const std::string invalid_bundle = GetTestFile("invalid_web_bundle.wbn");
-  RunHistoryNavigationErrorTest(
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Cache-Control:no-store\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle,
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Cache-Control:no-store\n"
-                         "Content-Length: %" PRIuS "\n",
-                         invalid_bundle.size()),
-      invalid_bundle,
+                       HistoryNavigationError_ReadMetadataFailure) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url = embedded_test_server()->GetURL(primary_url_path);
+
+  AddHeaders("Cache-Control:no-store\n");
+  SetContents(CreateSimpleWebBundle(primary_url));
+  NavigateToBundleAndWaitForReady(wbn_url, primary_url);
+  NavigateToURLAndWaitForTitle(
+      embedded_test_server()->GetURL("/web_bundle/empty_page.html"),
+      "Empty Page");
+
+  SetContents("This is an invalid Web Bundle file.");
+  HistoryBackAndWaitUntilConsoleError(
       "Failed to read metadata of Web Bundle file: Wrong magic bytes.");
 }
 
-// TODO(crbug.com/1038346): Starting the embedded test server on a fixed port
-// will fail if the bot is simultaneously running several of these tests.
 IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
-                       DISABLED_HistoryNavigationError_ExpectedUrlNotFound) {
-  const std::string test_bundle = GetTestFile("path_test.wbn");
-  const std::string other_bundle =
-      GetTestFile("web_bundle_browsertest_network.wbn");
-  RunHistoryNavigationErrorTest(
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Cache-Control:no-store\n"
-                         "Content-Length: %" PRIuS "\n",
-                         test_bundle.size()),
-      test_bundle,
-      base::StringPrintf("HTTP/1.1 200 OK\n"
-                         "Content-Type:application/webbundle\n"
-                         "Cache-Control:no-store\n"
-                         "Content-Length: %" PRIuS "\n",
-                         other_bundle.size()),
-      other_bundle,
+                       HistoryNavigationError_ExpectedUrlNotFound) {
+  const std::string wbn_path = "/web_bundle/test.wbn";
+  const std::string primary_url_path = "/web_bundle/test.html";
+  const std::string alt_primary_url_path = "/web_bundle/alt.html";
+  RegisterRequestHandler(wbn_path);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL wbn_url = embedded_test_server()->GetURL(wbn_path);
+  const GURL primary_url = embedded_test_server()->GetURL(primary_url_path);
+
+  AddHeaders("Cache-Control:no-store\n");
+  SetContents(CreateSimpleWebBundle(primary_url));
+  NavigateToBundleAndWaitForReady(wbn_url, primary_url);
+  NavigateToURLAndWaitForTitle(
+      embedded_test_server()->GetURL("/web_bundle/empty_page.html"),
+      "Empty Page");
+
+  SetContents(CreateSimpleWebBundle(
+      embedded_test_server()->GetURL(alt_primary_url_path)));
+  HistoryBackAndWaitUntilConsoleError(
       "The expected URL resource is not found in the web bundle.");
 }
 

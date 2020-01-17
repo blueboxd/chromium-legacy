@@ -38,17 +38,16 @@ import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
+import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.metrics.WebApkUma;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
@@ -272,7 +271,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                 tab.reloadIgnoringCache();
             }
         }
-        tab.addObserver(createTabObserver());
+        mTabObserverRegistrar.registerActivityTabObserver(createTabObserver());
     }
 
     @Override
@@ -491,28 +490,15 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         // app is not directly launched from the home screen, as this interferes
         // with the heuristic.
         if (mWebappInfo.isLaunchedFromHomescreen()) {
-            boolean previouslyLaunched = storage.hasBeenLaunched();
-            long previousUsageTimestamp = storage.getLastUsedTimeMs();
-            storage.setHasBeenLaunched();
             // TODO(yusufo): WebappRegistry#unregisterOldWebapps uses this information to delete
             // WebappDataStorage objects for legacy webapps which haven't been used in a while.
             // That will need to be updated to not delete anything for a TWA which remains installed
             storage.updateLastUsedTime();
-            onUpdatedLastUsedTime(storage, previouslyLaunched, previousUsageTimestamp);
         }
     }
 
-    /**
-     * Called after updating the last used time in {@link WebappDataStorage}.
-     * @param previouslyLaunched Whether the webapp has been previously launched from the home
-     *     screen.
-     * @param previousUsageTimestamp The previous time that the webapp was used.
-     */
-    protected void onUpdatedLastUsedTime(
-            WebappDataStorage storage, boolean previouslyLaunched, long previousUsageTimestamp) {}
-
-    protected TabObserver createTabObserver() {
-        return new EmptyTabObserver() {
+    protected CustomTabTabObserver createTabObserver() {
+        return new CustomTabTabObserver() {
             @Override
             public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
                 if (navigation.hasCommitted() && navigation.isInMainFrame()) {
@@ -532,7 +518,8 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                         mToolbarCoordinator.showToolbarTemporarily();
                     }
                     if (mWebappInfo.isForWebApk()) {
-                        WebApkUma.recordNavigation(isNavigationInScope);
+                        boolean isChildTab = (tab.getParentId() != Tab.INVALID_TAB_ID);
+                        WebApkUma.recordNavigation(isChildTab, isNavigationInScope);
                     }
                 }
             }
@@ -560,16 +547,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                         if (getActivityTab().canGoBack()) {
                             getActivityTab().goBack();
                         } else {
-                            if (mWebappInfo.isSplashProvidedByWebApk()) {
-                                // We need to call into WebAPK to finish activity stack because:
-                                // 1) WebApkActivity is not the root of the task.
-                                // 2) The activity stack no longer has focus and thus cannot rely on
-                                //    the client's Activity#onResume() behaviour.
-                                WebApkServiceClient.getInstance().finishAndRemoveTaskSdk23(
-                                        (WebApkActivity) WebappActivity.this);
-                            } else {
-                                ApiCompatibilityUtils.finishAndRemoveTask(WebappActivity.this);
-                            }
+                            handleFinishAndClose();
                         }
                     }
                 }, MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL);
@@ -696,14 +674,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         }
         ScreenOrientationProvider.getInstance().lockOrientation(
                 getWindowAndroid(), (byte) mWebappInfo.orientation());
-    }
-
-    /**
-     * Handles finishing activity on behalf of {@link CustomTabNavigationController}.
-     * Overridden by {@link WebApkActivity}.
-     */
-    protected void handleFinishAndClose() {
-        finish();
     }
 
     protected boolean isSplashShowing() {

@@ -52,12 +52,12 @@ Polymer({
   kioskBrowserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.kioskBrowserProxy_ = KioskBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.kioskBrowserProxy_.initializeKioskAppSettings()
         .then(params => {
           this.canEditAutoLaunch_ = params.autoLaunchEnabled;
@@ -77,7 +77,7 @@ Polymer({
    * @param {!KioskAppSettings} settings
    * @private
    */
-  setSettings_: function(settings) {
+  setSettings_(settings) {
     this.apps_ = settings.apps;
     this.bailoutDisabled_ = settings.disableBailout;
     this.canEditBailout_ = settings.hasAutoLaunchApp;
@@ -87,7 +87,7 @@ Polymer({
    * @param {!KioskApp} app
    * @private
    */
-  updateApp_: function(app) {
+  updateApp_(app) {
     const index = this.apps_.findIndex(a => a.id === app.id);
     assert(index < this.apps_.length);
     this.set('apps_.' + index, app);
@@ -97,7 +97,7 @@ Polymer({
    * @param {string} appId
    * @private
    */
-  showError_: function(appId) {
+  showError_(appId) {
     this.errorAppId_ = appId;
   },
 
@@ -106,19 +106,19 @@ Polymer({
    * @return {string}
    * @private
    */
-  getErrorMessage_: function(errorMessage) {
+  getErrorMessage_(errorMessage) {
     return this.errorAppId_ + ' ' + errorMessage;
   },
 
   /** @private */
-  onAddAppTap_: function() {
+  onAddAppTap_() {
     assert(this.addAppInput_);
     this.kioskBrowserProxy_.addKioskApp(this.addAppInput_);
     this.addAppInput_ = null;
   },
 
   /** @private */
-  clearInputInvalid_: function() {
+  clearInputInvalid_() {
     this.errorAppId_ = null;
   },
 
@@ -126,7 +126,7 @@ Polymer({
    * @param {{model: {item: !KioskApp}}} event
    * @private
    */
-  onAutoLaunchButtonTap_: function(event) {
+  onAutoLaunchButtonTap_(event) {
     const app = event.model.item;
     if (app.autoLaunch) {  // If the app is originally set to
                            // auto-launch.
@@ -140,7 +140,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onBailoutChanged_: function(event) {
+  onBailoutChanged_(event) {
     event.preventDefault();
     if (this.$.bailout.checked) {
       this.$['confirm-dialog'].showModal();
@@ -151,19 +151,19 @@ Polymer({
   },
 
   /** @private */
-  onBailoutDialogCancelTap_: function() {
+  onBailoutDialogCancelTap_() {
     this.$.bailout.checked = false;
     this.$['confirm-dialog'].cancel();
   },
 
   /** @private */
-  onBailoutDialogConfirmTap_: function() {
+  onBailoutDialogConfirmTap_() {
     this.kioskBrowserProxy_.setDisableBailoutShortcut(true);
     this.$['confirm-dialog'].close();
   },
 
   /** @private */
-  onDoneTap_: function() {
+  onDoneTap_() {
     this.$.dialog.close();
   },
 
@@ -171,7 +171,7 @@ Polymer({
    * @param {{model: {item: !KioskApp}}} event
    * @private
    */
-  onDeleteAppTap_: function(event) {
+  onDeleteAppTap_(event) {
     this.kioskBrowserProxy_.removeKioskApp(event.model.item.id);
   },
 
@@ -182,7 +182,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getAutoLaunchButtonLabel_: function(autoLaunched, disableStr, enableStr) {
+  getAutoLaunchButtonLabel_(autoLaunched, disableStr, enableStr) {
     return autoLaunched ? disableStr : enableStr;
   },
 
@@ -190,7 +190,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  stopPropagation_: function(e) {
+  stopPropagation_(e) {
     e.stopPropagation();
   },
 });

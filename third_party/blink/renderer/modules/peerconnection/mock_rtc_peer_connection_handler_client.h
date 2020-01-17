@@ -29,8 +29,10 @@ class MockRTCPeerConnectionHandlerClient
   MOCK_METHOD0(NegotiationNeeded, void());
   MOCK_METHOD1(DidGenerateICECandidate,
                void(RTCIceCandidatePlatform* candidate));
-  MOCK_METHOD4(DidFailICECandidate,
-               void(const String& host_candidate,
+  MOCK_METHOD6(DidFailICECandidate,
+               void(const String& address,
+                    base::Optional<uint16_t> port,
+                    const String& host_candidate,
                     const String& url,
                     int error_code,
                     const String& error_text));

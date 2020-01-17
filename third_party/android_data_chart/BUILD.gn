@@ -21,7 +21,5 @@ android_library("android_data_chart_java") {
     "java/src/org/chromium/third_party/android/datausagechart/NetworkStats.java",
     "java/src/org/chromium/third_party/android/datausagechart/NetworkStatsHistory.java",
   ]
-  deps = [
-    ":android_data_chart_java_resources",
-  ]
+  deps = [ ":android_data_chart_java_resources" ]
 }

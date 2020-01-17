@@ -58,6 +58,7 @@ class FakeArCore : public ArCore {
 
   mojom::XRPlaneDetectionDataPtr GetDetectedPlanesData() override;
   mojom::XRAnchorsDataPtr GetAnchorsData() override;
+  mojom::XRLightEstimationDataPtr GetLightEstimationData() override;
 
   base::Optional<uint64_t> CreateAnchor(
       const device::mojom::PosePtr& pose) override;

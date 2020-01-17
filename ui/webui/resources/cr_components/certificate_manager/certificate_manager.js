@@ -162,7 +162,7 @@ Polymer({
    * @private
    */
   isTabSelected_(selectedIndex, tabIndex) {
-    return selectedIndex == tabIndex;
+    return selectedIndex === tabIndex;
   },
 
   /** @override */
@@ -171,26 +171,26 @@ Polymer({
       this.dialogModel_ = event.detail.subnode;
       this.dialogModelCertificateType_ = event.detail.certificateType;
 
-      if (event.detail.action == CertificateAction.IMPORT) {
-        if (event.detail.certificateType == CertificateType.PERSONAL) {
+      if (event.detail.action === CertificateAction.IMPORT) {
+        if (event.detail.certificateType === CertificateType.PERSONAL) {
           this.openDialog_(
               'certificate-password-decryption-dialog',
               'showPasswordDecryptionDialog_', event.detail.anchor);
-        } else if (event.detail.certificateType == CertificateType.CA) {
+        } else if (event.detail.certificateType === CertificateType.CA) {
           this.openDialog_(
               'ca-trust-edit-dialog', 'showCaTrustEditDialog_',
               event.detail.anchor);
         }
       } else {
-        if (event.detail.action == CertificateAction.EDIT) {
+        if (event.detail.action === CertificateAction.EDIT) {
           this.openDialog_(
               'ca-trust-edit-dialog', 'showCaTrustEditDialog_',
               event.detail.anchor);
-        } else if (event.detail.action == CertificateAction.DELETE) {
+        } else if (event.detail.action === CertificateAction.DELETE) {
           this.openDialog_(
               'certificate-delete-confirmation-dialog',
               'showDeleteConfirmationDialog_', event.detail.anchor);
-        } else if (event.detail.action == CertificateAction.EXPORT_PERSONAL) {
+        } else if (event.detail.action === CertificateAction.EXPORT_PERSONAL) {
           this.openDialog_(
               'certificate-password-encryption-dialog',
               'showPasswordEncryptionDialog_', event.detail.anchor);

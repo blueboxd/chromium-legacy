@@ -51,7 +51,6 @@ public class JavascriptTabModalDialog extends JavascriptModalDialog {
         Context context = window.getContext().get();
         ModalDialogManager dialogManager = window.getModalDialogManager();
         // If the context has gone away, then just clean up the native pointer.
-        // TODO(estade): consider changing null checks to an assert.
         if (context == null || dialogManager == null) {
             JavascriptTabModalDialogJni.get().cancel(
                     nativeDialogPointer, JavascriptTabModalDialog.this, false);

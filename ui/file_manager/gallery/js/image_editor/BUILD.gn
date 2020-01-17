@@ -58,9 +58,7 @@ js_unittest("exif_encoder_unittest") {
 }
 
 js_library("filter") {
-  deps = [
-    ":image_util",
-  ]
+  deps = [ ":image_util" ]
 }
 
 js_library("image_adjust") {
@@ -98,9 +96,7 @@ js_library("image_editor_mode") {
 }
 
 js_library("image_editor_prompt") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
+  deps = [ "//ui/webui/resources/js:assert" ]
 }
 
 js_library("image_editor_toolbar") {
@@ -162,9 +158,7 @@ js_library("image_transform") {
 }
 
 js_library("image_util") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
+  deps = [ "//ui/webui/resources/js:assert" ]
 }
 
 js_library("image_view") {

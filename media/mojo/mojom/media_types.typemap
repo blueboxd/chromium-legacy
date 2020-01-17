@@ -44,6 +44,7 @@ sources = [
 
 type_mappings = [
   "media.mojom.AudioCodec=::media::AudioCodec",
+  "media.mojom.AudioCodecProfile=::media::AudioCodecProfile",
   "media.mojom.BufferingState=::media::BufferingState",
   "media.mojom.BufferingStateChangeReason=::media::BufferingStateChangeReason",
   "media.mojom.ChannelLayout=::media::ChannelLayout",

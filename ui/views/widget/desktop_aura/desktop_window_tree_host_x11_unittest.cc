@@ -320,6 +320,8 @@ TEST_F(DesktopWindowTreeHostX11Test, WindowManagerTogglesFullscreen) {
   if (!ui::WmSupportsHint(gfx::GetAtom("_NET_WM_STATE_FULLSCREEN")))
     return;
 
+  Display* display = gfx::GetXDisplay();
+
   std::unique_ptr<Widget> widget = CreateWidget(new ShapedWidgetDelegate());
   auto* non_client_view = static_cast<ShapedNonClientFrameView*>(
       widget->non_client_view()->frame_view());
@@ -343,10 +345,8 @@ TEST_F(DesktopWindowTreeHostX11Test, WindowManagerTogglesFullscreen) {
   EXPECT_FALSE(non_client_view->GetAndResetLayoutRequest());
 
   // Emulate the window manager exiting fullscreen via a window manager
-  // accelerator key. It should affect the widget's fullscreen state.
+  // accelerator key.
   {
-    Display* display = gfx::GetXDisplay();
-
     XEvent xclient;
     memset(&xclient, 0, sizeof(xclient));
     xclient.type = ClientMessage;
@@ -364,6 +364,30 @@ TEST_F(DesktopWindowTreeHostX11Test, WindowManagerTogglesFullscreen) {
     WMStateWaiter waiter(xid, "_NET_WM_STATE_FULLSCREEN", false);
     waiter.Wait();
   }
+  // Ensure it continues in browser fullscreen mode and bounds are restored to
+  // |initial_bounds|.
+  EXPECT_TRUE(widget->IsFullscreen());
+  EXPECT_EQ(initial_bounds.ToString(),
+            widget->GetWindowBoundsInScreen().ToString());
+
+  // Emulate window resize (through X11 configure events) while in browser
+  // fullscreen mode and ensure bounds are tracked correctly.
+  initial_bounds.set_size({400, 400});
+  {
+    XWindowChanges changes = {0};
+    changes.width = initial_bounds.width();
+    changes.height = initial_bounds.height();
+    XConfigureWindow(display, xid, CWHeight | CWWidth, &changes);
+    // Ensure that the task which is posted when a window is resized is run.
+    base::RunLoop().RunUntilIdle();
+  }
+  EXPECT_TRUE(widget->IsFullscreen());
+  EXPECT_EQ(initial_bounds.ToString(),
+            widget->GetWindowBoundsInScreen().ToString());
+
+  // Calling Widget::SetFullscreen(false) should clear the widget's fullscreen
+  // state and clean things up.
+  widget->SetFullscreen(false);
   EXPECT_FALSE(widget->IsFullscreen());
   EXPECT_EQ(initial_bounds.ToString(),
             widget->GetWindowBoundsInScreen().ToString());

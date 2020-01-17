@@ -27,7 +27,7 @@ Polymer({
     /** @private */
     accountImageSrc_: {
       type: String,
-      value: function() {
+      value() {
         return loadTimeData.getString('accountPictureUrl');
       },
     },
@@ -40,7 +40,7 @@ Polymer({
   boundKeyDownHandler_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.syncConfirmationBrowserProxy_ =
         SyncConfirmationBrowserProxyImpl.getInstance();
     this.boundKeyDownHandler_ = this.onKeyDown_.bind(this);
@@ -54,29 +54,29 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     document.removeEventListener('keydown', this.boundKeyDownHandler_);
   },
 
   /** @private */
-  onConfirm_: function(e) {
+  onConfirm_(e) {
     this.syncConfirmationBrowserProxy_.confirm(
         this.getConsentDescription_(), this.getConsentConfirmation_(e.path));
   },
 
   /** @private */
-  onUndo_: function() {
+  onUndo_() {
     this.syncConfirmationBrowserProxy_.undo();
   },
 
   /** @private */
-  onGoToSettings_: function(e) {
+  onGoToSettings_(e) {
     this.syncConfirmationBrowserProxy_.goToSettings(
         this.getConsentDescription_(), this.getConsentConfirmation_(e.path));
   },
 
   /** @private */
-  onKeyDown_: function(e) {
+  onKeyDown_(e) {
     if (e.key == 'Enter' && !/^(A|CR-BUTTON)$/.test(e.path[0].tagName)) {
       this.onConfirm_(e);
       e.preventDefault();
@@ -89,7 +89,7 @@ Polymer({
    * @return {string} The text of the consent confirmation element.
    * @private
    */
-  getConsentConfirmation_: function(path) {
+  getConsentConfirmation_(path) {
     for (const element of path) {
       if (element.nodeType !== Node.DOCUMENT_FRAGMENT_NODE &&
           element.hasAttribute('consent-confirmation')) {
@@ -101,7 +101,7 @@ Polymer({
   },
 
   /** @return {!Array<string>} Text of the consent description elements. */
-  getConsentDescription_: function() {
+  getConsentDescription_() {
     const consentDescription =
         Array.from(this.shadowRoot.querySelectorAll('[consent-description]'))
             .filter(element => element.clientWidth * element.clientHeight > 0)
@@ -115,7 +115,7 @@ Polymer({
    * @param {string} imageSrc
    * @private
    */
-  handleAccountImageChanged_: function(imageSrc) {
+  handleAccountImageChanged_(imageSrc) {
     this.accountImageSrc_ = imageSrc;
   },
 

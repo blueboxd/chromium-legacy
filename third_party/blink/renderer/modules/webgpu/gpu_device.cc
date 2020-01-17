@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_uncaptured_error_event_init.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -27,7 +28,6 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_uncaptured_error_event.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_uncaptured_error_event_init.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
@@ -44,9 +44,7 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
       queue_(MakeGarbageCollected<GPUQueue>(
           this,
           GetProcs().deviceCreateQueue(GetHandle()))),
-      lost_property_(MakeGarbageCollected<LostProperty>(execution_context,
-                                                        this,
-                                                        LostProperty::kLost)),
+      lost_property_(MakeGarbageCollected<LostProperty>(execution_context)),
       error_callback_(
           BindRepeatingDawnCallback(&GPUDevice::OnUncapturedError,
                                     WrapWeakPersistent(this),
@@ -77,7 +75,7 @@ void GPUDevice::OnUncapturedError(ExecutionContext* execution_context,
 
   // TODO: Use device lost callback instead of uncaptured error callback.
   if (errorType == WGPUErrorType_DeviceLost &&
-      lost_property_->GetState() == ScriptPromisePropertyBase::kPending) {
+      lost_property_->GetState() == LostProperty::kPending) {
     auto* device_lost_info = MakeGarbageCollected<GPUDeviceLostInfo>(message);
     lost_property_->Resolve(device_lost_info);
   }
@@ -152,8 +150,9 @@ GPUPipelineLayout* GPUDevice::createPipelineLayout(
 }
 
 GPUShaderModule* GPUDevice::createShaderModule(
-    const GPUShaderModuleDescriptor* descriptor) {
-  return GPUShaderModule::Create(this, descriptor);
+    const GPUShaderModuleDescriptor* descriptor,
+    ExceptionState& exception_state) {
+  return GPUShaderModule::Create(this, descriptor, exception_state);
 }
 
 GPURenderPipeline* GPUDevice::createRenderPipeline(

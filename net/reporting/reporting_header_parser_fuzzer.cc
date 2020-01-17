@@ -22,10 +22,6 @@
 // Silence logging from the protobuf library.
 protobuf_mutator::protobuf::LogSilencer log_silencer;
 
-// TODO: consider including proto definition for URL after moving that to
-// testing/libfuzzer/proto and creating a separate converter.
-const GURL kUrl_ = GURL("https://origin/path");
-
 namespace net_reporting_header_parser_fuzzer {
 
 void FuzzReportingHeaderParser(const std::string& data_json,
@@ -40,7 +36,9 @@ void FuzzReportingHeaderParser(const std::string& data_json,
   if (!data_value)
     return;
 
-  net::ReportingHeaderParser::ParseHeader(&context, kUrl_,
+  // TODO: consider including proto definition for URL after moving that to
+  // testing/libfuzzer/proto and creating a separate converter.
+  net::ReportingHeaderParser::ParseHeader(&context, GURL("https://origin/path"),
                                           std::move(data_value));
   if (context.cache()->GetEndpointCount() == 0) {
     return;

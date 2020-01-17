@@ -15,6 +15,7 @@ import org.chromium.device.mojom.NdefRecordTypeCategory;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -448,19 +449,21 @@ public final class NdefMessageUtils {
      * https://w3c.github.io/web-nfc/#dfn-validate-external-type
      */
     private static boolean isValidExternalType(String input) {
+        // Must be an ASCII string first.
+        if (!Charset.forName("US-ASCII").newEncoder().canEncode(input)) return false;
+
         if (input.isEmpty() || input.length() > 255) return false;
 
-        int colonIndex = input.lastIndexOf(':');
+        int colonIndex = input.indexOf(':');
         if (colonIndex == -1) return false;
 
         String domain = input.substring(0, colonIndex).trim();
         if (domain.isEmpty()) return false;
-        // TODO(https://crbug.com/520391): Make sure |domain| can be converted successfully to ASCII
-        // using IDN rules and does not contain any forbidden host code point.
+        // TODO(https://crbug.com/520391): Validate |domain|.
 
         String type = input.substring(colonIndex + 1).trim();
         if (type.isEmpty()) return false;
-        if (!type.matches("[a-zA-Z0-9()+,\\-=@;$_*'.]+")) return false;
+        if (!type.matches("[a-zA-Z0-9:!()+,\\-=@;$_*'.]+")) return false;
 
         return true;
     }

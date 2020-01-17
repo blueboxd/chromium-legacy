@@ -41,6 +41,15 @@ bool BindingStateBase::WaitForIncomingMethodCall(MojoDeadline deadline) {
   return router_->WaitForIncomingMessage(deadline);
 }
 
+void BindingStateBase::PauseRemoteCallbacksUntilFlushCompletes(
+    PendingFlush flush) {
+  router_->PausePeerUntilFlushCompletes(std::move(flush));
+}
+
+void BindingStateBase::FlushAsync(AsyncFlusher flusher) {
+  router_->FlushAsync(std::move(flusher));
+}
+
 void BindingStateBase::Close() {
   if (!router_)
     return;

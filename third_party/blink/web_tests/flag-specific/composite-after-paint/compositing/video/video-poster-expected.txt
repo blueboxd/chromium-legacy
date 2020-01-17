@@ -48,8 +48,19 @@ Case: Displaying movie
     },
     {
       "name": "LayoutVideo VIDEO",
-      "position": [8, 8],
-      "bounds": [352, 288]
+      "bounds": [352, 288],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
     }
   ]
 }

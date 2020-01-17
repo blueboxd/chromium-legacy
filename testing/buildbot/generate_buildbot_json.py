@@ -1196,7 +1196,8 @@ class BBJSONGenerator(object):
             # so we don't know about their bot names.
             continue  # pragma: no cover
           if waterfall['name'] in ['client.devtools-frontend.integration',
-                                   'tryserver.devtools-frontend']:
+                                   'tryserver.devtools-frontend',
+                                   'chromium.devtools-frontend']:
             continue  # pragma: no cover
           raise self.unknown_bot(bot_name, waterfall['name'])
 

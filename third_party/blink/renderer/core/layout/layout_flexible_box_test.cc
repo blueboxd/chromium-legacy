@@ -500,7 +500,7 @@ TEST_P(LayoutFlexibleBoxTest, ResizedFlexChildRequiresVisualOverflowRecalc) {
 
   auto* child1_box = ToLayoutBox(child1_element->GetLayoutObject());
   ASSERT_TRUE(child1_box->HasSelfPaintingLayer());
-  EXPECT_TRUE(child1_box->Layer()->NeedsVisualOverflowRecalcForTesting());
+  EXPECT_TRUE(child1_box->Layer()->NeedsVisualOverflowRecalc());
 
   UpdateAllLifecyclePhasesForTest();
 

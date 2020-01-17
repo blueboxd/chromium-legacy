@@ -42,7 +42,7 @@ BluetoothBrailleDisplayUI.prototype = {
    * Attaches this widget to |element|.
    * @param {!Element} element
    */
-  attach: function(element) {
+  attach(element) {
     this.manager_.start();
     var container = document.createElement('div');
     element.appendChild(container);
@@ -90,7 +90,7 @@ BluetoothBrailleDisplayUI.prototype = {
   /**
    * Detaches the rendered widget.
    */
-  detach: function() {
+  detach() {
     this.manager_.stop();
 
     if (this.root_) {
@@ -100,7 +100,7 @@ BluetoothBrailleDisplayUI.prototype = {
   },
 
   /** @override */
-  onDisplayListChanged: function(displays) {
+  onDisplayListChanged(displays) {
     if (!this.displaySelect_) {
       throw 'Expected attach to have been called.';
     }
@@ -134,7 +134,7 @@ BluetoothBrailleDisplayUI.prototype = {
   },
 
   /** @override */
-  onPincodeRequested: function(display) {
+  onPincodeRequested(display) {
     this.controls_.hidden = true;
     var form = document.createElement('form');
     this.controls_.parentElement.insertBefore(form, this.controls_);
@@ -184,7 +184,7 @@ BluetoothBrailleDisplayUI.prototype = {
   /**
    * @private
    */
-  updateControls_: function() {
+  updateControls_() {
     // Only update controls if there is a selected display.
     var sel = this.displaySelect_.options[this.displaySelect_.selectedIndex];
     if (!sel) {

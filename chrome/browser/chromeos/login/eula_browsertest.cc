@@ -272,8 +272,14 @@ IN_PROC_BROWSER_TEST_F(EulaOfflineTest, LoadOffline) {
                   .find(kOfflineEULAWarning) != std::string::npos);
 }
 
+#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
+// TODO(http://crbug.com/1041188): flaky on ChromeOS MSAN.
+#define MAYBE_LoadOnline DISABLED_LoadOnline
+#else
+#define MAYBE_LoadOnline LoadOnline
+#endif
 // Tests that online version is shown when it is accessible.
-IN_PROC_BROWSER_TEST_F(EulaTest, LoadOnline) {
+IN_PROC_BROWSER_TEST_F(EulaTest, MAYBE_LoadOnline) {
   ShowEulaScreen();
 
   // Wait until the webview has finished loading.

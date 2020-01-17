@@ -124,7 +124,7 @@ Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
 Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
                                         SVGElement& context_element,
                                         const String& href_string) {
-  TreeScope& tree_scope = context_element.GetTreeScope();
+  TreeScope& tree_scope = context_element.OriginatingTreeScope();
   AtomicString id = FragmentIdentifierFromIRIString(href_string, tree_scope);
   return ObserveTarget(
       observer, tree_scope, id,

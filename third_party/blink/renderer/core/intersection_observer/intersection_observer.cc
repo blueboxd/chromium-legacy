@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_delegate.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_init.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -244,10 +245,11 @@ IntersectionObserver::IntersectionObserver(
       delay_(delay),
       root_margin_(4, Length::Fixed(0)),
       root_is_implicit_(root ? 0 : 1),
-      track_visibility_(track_visibility ? 1 : 0),
+      track_visibility_(track_visibility),
       track_fraction_of_root_(semantics == kFractionOfRoot),
-      always_report_root_bounds_(always_report_root_bounds ? 1 : 0),
-      needs_delivery_(0) {
+      always_report_root_bounds_(always_report_root_bounds),
+      needs_delivery_(0),
+      can_use_cached_rects_(0) {
   switch (root_margin.size()) {
     case 0:
       break;
@@ -401,7 +403,8 @@ bool IntersectionObserver::ComputeIntersections(unsigned flags) {
   if (!RootIsValid() || !GetExecutionContext() || observations_.IsEmpty())
     return false;
   IntersectionGeometry::RootGeometry root_geometry(
-      IntersectionGeometry::GetRootLayoutObjectForTarget(root(), nullptr),
+      IntersectionGeometry::GetRootLayoutObjectForTarget(root(), nullptr,
+                                                         false),
       root_margin_);
   HeapVector<Member<IntersectionObservation>> observations_to_process;
   // TODO(szager): Is this copy necessary?
@@ -409,6 +412,7 @@ bool IntersectionObserver::ComputeIntersections(unsigned flags) {
   for (auto& observation : observations_to_process) {
     observation->ComputeIntersection(root_geometry, flags);
   }
+  can_use_cached_rects_ = 1;
   return trackVisibility();
 }
 

@@ -10,12 +10,12 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:focusable="false">
-    <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout
+    <org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout
         android:id="@+id/radio_button_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-      <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
+      <org.chromium.components.browser_ui.widget.RadioButtonWithDescription
           android:id="@+id/system_default"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
           app:descriptionText="@string/themes_system_default_summary" />
 
       <!-- override default padding top and bottom -->
-      <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
+      <org.chromium.components.browser_ui.widget.RadioButtonWithDescription
           android:id="@+id/light"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
@@ -34,7 +34,7 @@
           android:background="?attr/selectableItemBackground"
           app:primaryText="@string/light_mode" />
 
-      <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
+      <org.chromium.components.browser_ui.widget.RadioButtonWithDescription
           android:id="@+id/dark"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
@@ -44,7 +44,7 @@
           android:background="?attr/selectableItemBackground"
           app:primaryText="@string/dark_mode" />
 
-    </org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout>
+    </org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout>
 
     <!-- Make the row clickable -->
     <LinearLayout

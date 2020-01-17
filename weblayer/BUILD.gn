@@ -27,12 +27,8 @@ if (is_android) {
 }
 
 source_set("android_descriptors") {
-  sources = [
-    "browser/android_descriptors.h",
-  ]
-  public_deps = [
-    "//content/public/common:content_descriptors",
-  ]
+  sources = [ "browser/android_descriptors.h" ]
+  public_deps = [ "//content/public/common:content_descriptors" ]
 }
 
 if (is_android) {
@@ -43,9 +39,7 @@ if (is_android) {
     # will never display most of them, so we try to limit the included
     # strings.
     whitelist = rebase_path("grit_strings_whitelist.txt", root_build_dir)
-    inputs = [
-      "//weblayer/grit_strings_whitelist.txt",
-    ]
+    inputs = [ "//weblayer/grit_strings_whitelist.txt" ]
     grit_flags = [
       "-w",
       whitelist,
@@ -66,9 +60,7 @@ if (is_android) {
     input_locales = locales
     output_locales = locales
     source_patterns = [ "${root_gen_dir}/weblayer/components_strings_" ]
-    deps = [
-      ":generate_components_strings",
-    ]
+    deps = [ ":generate_components_strings" ]
     output_dir = "$root_out_dir/weblayer/locales"
   }
 
@@ -77,9 +69,7 @@ if (is_android) {
     renaming_sources = [ "$root_out_dir/weblayer/locales/en-US.pak" ]
     renaming_destinations = [ "stored-locales/weblayer/en-US.pak" ]
     treat_as_locale_paks = true
-    deps = [
-      ":weblayer_locales",
-    ]
+    deps = [ ":weblayer_locales" ]
   }
 
   android_assets("bundle_locale_pak_assets") {
@@ -91,9 +81,7 @@ if (is_android) {
       renaming_destinations += [ "locales/$_locale.pak" ]
     }
     treat_as_locale_paks = true
-    deps = [
-      ":weblayer_locales",
-    ]
+    deps = [ ":weblayer_locales" ]
   }
 }
 
@@ -112,8 +100,12 @@ jumbo_static_library("weblayer_lib") {
     "browser/browser_process.h",
     "browser/content_browser_client_impl.cc",
     "browser/content_browser_client_impl.h",
+    "browser/download_impl.cc",
+    "browser/download_impl.h",
     "browser/download_manager_delegate_impl.cc",
     "browser/download_manager_delegate_impl.h",
+    "browser/fake_permission_controller_delegate.cc",
+    "browser/fake_permission_controller_delegate.h",
     "browser/file_select_helper.cc",
     "browser/file_select_helper.h",
     "browser/i18n_util.cc",
@@ -151,6 +143,7 @@ jumbo_static_library("weblayer_lib") {
     "common/weblayer_paths.h",
     "public/common/switches.cc",
     "public/common/switches.h",
+    "public/download.h",
     "public/download_delegate.h",
     "public/error_page_delegate.h",
     "public/fullscreen_delegate.h",
@@ -173,7 +166,6 @@ jumbo_static_library("weblayer_lib") {
   ]
 
   if (is_android) {
-    # TODO(timvolodine): move this to safe_browsing/
     sources += [
       "browser/android/metrics/uma_utils.cc",
       "browser/android/metrics/uma_utils.h",
@@ -181,12 +173,6 @@ jumbo_static_library("weblayer_lib") {
       "browser/devtools_manager_delegate_android.h",
       "browser/devtools_server_android.cc",
       "browser/devtools_server_android.h",
-      "browser/safe_browsing/safe_browsing_service.cc",
-      "browser/safe_browsing/safe_browsing_service.h",
-      "browser/safe_browsing/safe_browsing_ui_manager.cc",
-      "browser/safe_browsing/safe_browsing_ui_manager.h",
-      "browser/safe_browsing/url_checker_delegate_impl.cc",
-      "browser/safe_browsing/url_checker_delegate_impl.h",
       "browser/weblayer_impl_android.cc",
       "renderer/url_loader_throttle_provider.cc",
       "renderer/url_loader_throttle_provider.h",
@@ -200,9 +186,7 @@ jumbo_static_library("weblayer_lib") {
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
-  public_deps = [
-    ":android_descriptors",
-  ]
+  public_deps = [ ":android_descriptors" ]
   deps = [
     "//base",
     "//base:base_static",
@@ -280,19 +264,15 @@ jumbo_static_library("weblayer_lib") {
     deps += [
       "//android_webview:generate_aw_resources",
       "//android_webview:generate_aw_strings",
+      "//components/android_system_error_page",
+      "//components/autofill/android:provider",
       "//components/crash/android:crashpad_main",
       "//components/metrics",
       "//components/minidump_uploader",
-      "//components/safe_browsing/android:remote_database_manager",
-      "//components/safe_browsing/android:safe_browsing_api_handler",
-      "//components/safe_browsing/content",
-      "//components/safe_browsing/content/browser",
       "//components/safe_browsing/content/renderer:throttles",
-      "//components/safe_browsing/core/browser",
-      "//components/safe_browsing/core/browser:network_context",
       "//components/safe_browsing/core/common",
-      "//components/safe_browsing/core/db:database_manager",
       "//components/version_info/android:channel_getter",
+      "//weblayer/browser/safe_browsing:safe_browsing",
     ]
   }
 
@@ -374,9 +354,7 @@ grit("resources") {
     "-E",
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
-  deps = [
-    "//weblayer/browser/webui:mojo_bindings_js",
-  ]
+  deps = [ "//weblayer/browser/webui:mojo_bindings_js" ]
 }
 
 # TODO(jam): move weblayer_shell_resources_grit and copy_shell_resources here in
@@ -384,9 +362,7 @@ grit("resources") {
 
 if (is_android) {
   shared_library("libweblayer") {
-    sources = [
-      "app/entry_point.cc",
-    ]
+    sources = [ "app/entry_point.cc" ]
     deps = [
       ":weblayer_lib",
       "//base",

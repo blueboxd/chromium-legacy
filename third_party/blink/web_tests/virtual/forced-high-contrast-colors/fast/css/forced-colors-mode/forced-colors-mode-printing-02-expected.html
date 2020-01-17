@@ -3,7 +3,7 @@
 <title>Test styles defined in forced-colors media query while printing in forced colors mode.</title>
 <style>
   div::before {
-    content: "FAIL";
+    content: "PASS";
     font-size: 100px;
   }
 </style>
@@ -11,5 +11,5 @@
   if (window.testRunner)
       testRunner.setPrinting();
 </script>
-<p>You should not see a FAIL below when printing</p>
+<p>You should see a PASS below when printing in forced colors mode.</p>
 <div></div>

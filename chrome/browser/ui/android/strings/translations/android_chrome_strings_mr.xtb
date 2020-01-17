@@ -39,7 +39,6 @@
 <translation id="124678866338384709">वर्तमान टॅब बंद करा</translation>
 <translation id="1258753120186372309">Google डूडल: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">शोधा आणि एक्सप्लोर करा</translation>
-<translation id="1264974993859112054">क्रीडा</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> शेअर करू शकलो नाही</translation>
 <translation id="1272079795634619415">थांबा</translation>
 <translation id="1283039547216852943">विस्तृत करण्यासाठी टॅप करा</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">तुमच्या सर्व डिव्हाइसवर तुमचे बुकमार्क मिळवण्यासाठी, साइन इन करा आणि सिंक सुरू करा</translation>
 <translation id="2822354292072154809">तुम्हाला नक्की <ph name="CHOSEN_OBJECT_NAME" /> साठी सर्व साइट परवानग्या रीसेट करायच्या आहेत का?</translation>
 <translation id="2842985007712546952">मुख्य फोल्डर</translation>
-<translation id="2858138569776157458">टॉप साइट</translation>
 <translation id="2860954141821109167">या डिव्हाइसवर फोन ॲप सुरू केले असल्याची खात्री करा</translation>
 <translation id="2870560284913253234">साइट</translation>
 <translation id="2874939134665556319">मागील ट्रॅक</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Chrome वर साइन इन करा</translation>
 <translation id="3288003805934695103">पृष्ठ रीलोड करणे</translation>
 <translation id="32895400574683172">सूचनांना अनुमती आहे</translation>
+<translation id="3290926146403723641">Google Assistant सह वेबवर कार्य पूर्ण करण्यासाठी, Chrome साइटची URL आणि आशय तसेच संबंधित वैयक्तिक माहिती Google ला पाठवेल</translation>
 <translation id="3295530008794733555">आणखी जलद ब्राउझ करा. कमी डेटा वापरा.</translation>
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">आशय डाउनलोड करणे सुरु ठेवायचे?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">फोन नंबर</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> डाउनलोड हटविले</translation>
 <translation id="3822502789641063741">साइट स्टोरेज साफ करायचे?</translation>
-<translation id="3853625385350850937">पुढे सुरू ठेवण्यासाठी, तुमच्या डिव्हाइसवर NFC सुरू करा</translation>
 <translation id="3859306556332390985">पुढे शोधा</translation>
 <translation id="388596076286380598">तुम्ही ऑफलाइन असलात किंवा तुमचे कनेक्शन खराब असले तरीही, तुमच्या आवडीच्या साइटवरून लेख, व्हिडिओ आणि इतर आशय मिळवा.</translation>
 <translation id="3894427358181296146">फोल्डर जोडा</translation>
@@ -764,7 +762,6 @@
 <translation id="6697947395630195233">तुमचे स्थान या साइटसोबत शेअर करण्यासाठी Chromeला तुमच्या स्थानाचा अ‍ॅक्सेस हवा आहे.</translation>
 <translation id="6698801883190606802">संकालित केलेला डेटा व्यवस्थापित करा</translation>
 <translation id="6699370405921460408">Google सर्व्हर तुम्ही भेट देत असलेली पेज ऑप्टिमाइझ करतील.</translation>
-<translation id="6709133671862442373">News</translation>
 <translation id="6710213216561001401">मागील</translation>
 <translation id="671481426037969117">तुमचा <ph name="FQDN" /> टायमर झाला आहे. तो उद्या पुन्हा सुरू होईल.</translation>
 <translation id="6738867403308150051">डाउनलोड करीत आहे…</translation>
@@ -1079,7 +1076,6 @@
 <translation id="9133397713400217035">ऑफलाइन असताना एक्सप्लोर करा</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">मूळ दर्शवा</translation>
-<translation id="9139318394846604261">खरेदी</translation>
 <translation id="9155898266292537608">तुम्ही शब्दावर जलद टॅप करूनदेखील शोधू शकता</translation>
 <translation id="9169507124922466868">नेव्हिगेशन इतिहास अर्धा उघडा आहे</translation>
 <translation id="9204836675896933765">1 फाइल शिल्लक</translation>

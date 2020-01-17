@@ -14,7 +14,7 @@ login.createScreen('MultiDeviceSetupScreen', 'multidevice-setup', function() {
     /**
      * This is called after resources are updated.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       $('multidevice-setup-impl').updateLocalizedContent();
     },
   };

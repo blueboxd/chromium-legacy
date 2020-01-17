@@ -44,8 +44,6 @@ class JavascriptAppModalDialogAndroid : public NativeAppModalDialog {
   const base::android::ScopedJavaGlobalRef<jobject>& GetDialogObject() const;
 
  protected:
-  void DoShowAppModalDialog();
-
   JavaScriptAppModalDialog* dialog() { return dialog_.get(); }
 
   ~JavascriptAppModalDialogAndroid() override;

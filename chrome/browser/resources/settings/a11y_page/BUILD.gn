@@ -25,6 +25,7 @@ js_library("captions_subpage") {
 js_library("a11y_page") {
   deps = [
     "..:route",
+    "..:router",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
@@ -32,7 +33,5 @@ js_library("a11y_page") {
 }
 
 js_library("captions_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }

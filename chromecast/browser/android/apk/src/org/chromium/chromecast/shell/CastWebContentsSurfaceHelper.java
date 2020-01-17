@@ -115,7 +115,6 @@ class CastWebContentsSurfaceHelper {
         Controller<WebContents> webContentsState = new Controller<>();
         mStartParamsState.map(params -> params.webContents)
                 .subscribe(Observers.onEnter(webContentsState::set));
-        mCreatedState.subscribe(Observers.onExit(x -> webContentsState.reset()));
 
         // Receive broadcasts indicating the screen turned off while we have active WebContents.
         uriState.subscribe((Uri uri) -> {

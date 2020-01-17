@@ -28,9 +28,7 @@ js_library("crostini_arc_adb") {
 }
 
 js_library("crostini_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("crostini_export_import") {
@@ -44,6 +42,7 @@ js_library("crostini_page") {
   deps = [
     ":crostini_browser_proxy",
     "../..:route",
+    "../..:router",
     "../../prefs:prefs_behavior",
     "../localized_link:localized_link",
     "//ui/webui/resources/js:i18n_behavior",
@@ -72,6 +71,7 @@ js_library("crostini_subpage") {
     ":crostini_browser_proxy",
     "..:route_origin_behavior",
     "../..:route",
+    "../..:router",
     "../../prefs:prefs_behavior",
   ]
 }

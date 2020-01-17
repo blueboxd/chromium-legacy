@@ -121,7 +121,7 @@ Polymer({
     /** @private {?chrome.developerPrivate.StackFrame}*/
     selectedStackFrame_: {
       type: Object,
-      value: function() {
+      value() {
         return null;
       },
     },
@@ -136,12 +136,12 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     FocusOutlineManager.forDocument(document);
   },
 
   /** @return {!ManifestError|!RuntimeError} */
-  getSelectedError: function() {
+  getSelectedError() {
     return this.entries_[this.selectedEntry_];
   },
 
@@ -149,7 +149,7 @@ Polymer({
    * Focuses the back button when page is loaded.
    * @private
    */
-  onViewEnterStart_: function() {
+  onViewEnterStart_() {
     afterNextRender(this, () => focusWithoutInk(this.$.closeButton));
     chrome.metricsPrivate.recordUserAction('Options_ViewExtensionErrors');
   },
@@ -160,7 +160,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getContextUrl_: function(error, unknown) {
+  getContextUrl_(error, unknown) {
     return error.contextUrl ? getRelativeUrl(error.contextUrl, error) : unknown;
   },
 
@@ -169,7 +169,7 @@ Polymer({
    * file source.
    * @private
    */
-  observeDataChanges_: function() {
+  observeDataChanges_() {
     const errors = this.data.manifestErrors.concat(this.data.runtimeErrors);
     this.entries_ = errors;
     this.selectedEntry_ = -1;  // This also help reset code-section content.
@@ -179,12 +179,12 @@ Polymer({
   },
 
   /** @private */
-  onCloseButtonTap_: function() {
+  onCloseButtonTap_() {
     navigation.navigateTo({page: Page.LIST});
   },
 
   /** @private */
-  onClearAllTap_: function() {
+  onClearAllTap_() {
     const ids = this.entries_.map(entry => entry.id);
     this.delegate.deleteErrors(this.data.id, ids);
   },
@@ -194,7 +194,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeErrorIcon_: function(error) {
+  computeErrorIcon_(error) {
     // Do not i18n these strings, they're CSS classes.
     return getErrorSeverityText_(error, 'info', 'warning', 'error');
   },
@@ -204,7 +204,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeErrorTypeLabel_: function(error) {
+  computeErrorTypeLabel_(error) {
     return getErrorSeverityText_(
         error, loadTimeData.getString('logLevel'),
         loadTimeData.getString('warnLevel'),
@@ -215,14 +215,14 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onDeleteErrorAction_: function(e) {
+  onDeleteErrorAction_(e) {
     this.delegate.deleteErrors(
         this.data.id, [(/** @type {!{model:Object}} */ (e)).model.item.id]);
     e.stopPropagation();
   },
 
   /** private */
-  onInDevModeChanged_: function() {
+  onInDevModeChanged_() {
     if (!this.inDevMode) {
       // Wait until next render cycle in case error page is loading.
       this.async(() => {
@@ -235,7 +235,7 @@ Polymer({
    * Fetches the source for the selected error and populates the code section.
    * @private
    */
-  onSelectedErrorChanged_: function() {
+  onSelectedErrorChanged_() {
     this.code_ = null;
 
     if (this.selectedEntry_ < 0) {
@@ -271,7 +271,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeIsRuntimeError_: function(item) {
+  computeIsRuntimeError_(item) {
     return item.type === chrome.developerPrivate.ErrorType.RUNTIME;
   },
 
@@ -283,7 +283,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getStackTraceLabel_: function(frame) {
+  getStackTraceLabel_(frame) {
     let description = getRelativeUrl(frame.url, this.getSelectedError()) + ':' +
         frame.lineNumber;
 
@@ -302,7 +302,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getStackFrameClass_: function(frame) {
+  getStackFrameClass_(frame) {
     return frame === this.selectedStackFrame_ ? 'selected' : '';
   },
 
@@ -311,7 +311,7 @@ Polymer({
    * @return {number}
    * @private
    */
-  getStackFrameTabIndex_: function(frame) {
+  getStackFrameTabIndex_(frame) {
     return frame === this.selectedStackFrame_ ? 0 : -1;
   },
 
@@ -322,7 +322,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldDisplayFrame_: function(url) {
+  shouldDisplayFrame_(url) {
     // All our internal scripts are in the 'extensions::' namespace.
     return !/^extensions::/.test(url);
   },
@@ -331,7 +331,7 @@ Polymer({
    * @param {!chrome.developerPrivate.StackFrame} frame
    * @private
    */
-  updateSelected_: function(frame) {
+  updateSelected_(frame) {
     this.selectedStackFrame_ = assert(frame);
 
     const selectedError = this.getSelectedError();
@@ -349,7 +349,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onStackFrameTap_: function(e) {
+  onStackFrameTap_(e) {
     const frame = /** @type {!{model:Object}} */ (e).model.item;
     this.updateSelected_(frame);
   },
@@ -358,7 +358,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onStackKeydown_: function(e) {
+  onStackKeydown_(e) {
     let direction = 0;
 
     if (e.key === 'ArrowDown') {
@@ -393,12 +393,12 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeErrorClass_: function(index) {
+  computeErrorClass_(index) {
     return index === this.selectedEntry_ ? 'selected' : '';
   },
 
   /** @private */
-  iconName_: function(index) {
+  iconName_(index) {
     return index === this.selectedEntry_ ? 'icon-expand-less' :
                                            'icon-expand-more';
   },
@@ -409,7 +409,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isOpened_: function(index) {
+  isOpened_(index) {
     return index === this.selectedEntry_;
   },
 
@@ -419,7 +419,7 @@ Polymer({
    * @return {string} The aria-expanded value as a string.
    * @private
    */
-  isAriaExpanded_: function(index) {
+  isAriaExpanded_(index) {
     return this.isOpened_(index).toString();
   },
 
@@ -427,7 +427,7 @@ Polymer({
    * @param {!{type: string, code: string, model: !{index: number}}} e
    * @private
    */
-  onErrorItemAction_: function(e) {
+  onErrorItemAction_(e) {
     if (e.type === 'keydown' && !((e.code === 'Space' || e.code === 'Enter'))) {
       return;
     }

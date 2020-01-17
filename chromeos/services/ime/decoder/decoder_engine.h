@@ -9,7 +9,6 @@
 #include "chromeos/services/ime/input_engine.h"
 #include "chromeos/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace chromeos {
 namespace ime {

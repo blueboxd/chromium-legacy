@@ -3677,4 +3677,20 @@ void EndSharedImageAccessDirectCHROMIUM(GLuint texture) {
   }
 }
 
+void BeginBatchReadAccessSharedImageCHROMIUM() {
+  gles2::cmds::BeginBatchReadAccessSharedImageCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::BeginBatchReadAccessSharedImageCHROMIUM>();
+  if (c) {
+    c->Init();
+  }
+}
+
+void EndBatchReadAccessSharedImageCHROMIUM() {
+  gles2::cmds::EndBatchReadAccessSharedImageCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::EndBatchReadAccessSharedImageCHROMIUM>();
+  if (c) {
+    c->Init();
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

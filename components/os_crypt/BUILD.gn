@@ -32,16 +32,10 @@ if (use_gnome_keyring) {
 
 component("os_crypt") {
   sources = [
-    "encryption_key_creation_util_ios.cc",
-    "encryption_key_creation_util_ios.h",
-    "encryption_key_creation_util_mac.cc",
-    "encryption_key_creation_util_mac.h",
     "keychain_password_mac.h",
     "keychain_password_mac.mm",
     "os_crypt.h",
     "os_crypt_mac.mm",
-    "os_crypt_pref_names_mac.cc",
-    "os_crypt_pref_names_mac.h",
     "os_crypt_switches.cc",
     "os_crypt_switches.h",
     "os_crypt_win.cc",
@@ -72,11 +66,6 @@ component("os_crypt") {
       "os_crypt_mac.mm",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
-  }
-
-  if (is_ios || is_mac) {
-    sources += [ "encryption_key_creation_util.h" ]
-    libs = [ "CoreFoundation.framework" ]
   }
 
   if (is_win) {

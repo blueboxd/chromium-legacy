@@ -15,6 +15,10 @@
 
 namespace extensions {
 
+namespace {
+const char kChromeUntrustedTestURL[] = "chrome-untrusted://test/";
+}  // namespace
+
 namespace errors = manifest_errors;
 
 typedef ChromeManifestTest ChromePermissionManifestTest;
@@ -24,6 +28,13 @@ TEST_F(ChromePermissionManifestTest, ChromeURLPermissionInvalid) {
                        ErrorUtils::FormatErrorMessage(
                            errors::kInvalidPermissionScheme,
                            chrome::kChromeUINewTabURL));
+}
+
+TEST_F(ChromePermissionManifestTest, ChromeUntrustedURLPermissionInvalid) {
+  LoadAndExpectWarning(
+      "permission_chrome_untrusted_url_invalid.json",
+      ErrorUtils::FormatErrorMessage(errors::kPermissionUnknownOrMalformed,
+                                     kChromeUntrustedTestURL));
 }
 
 TEST_F(ChromePermissionManifestTest, ChromeURLPermissionAllowedWithFlag) {
@@ -39,6 +50,20 @@ TEST_F(ChromePermissionManifestTest, ChromeURLPermissionAllowedWithFlag) {
   EXPECT_TRUE(
       extension->permissions_data()->CanAccessPage(newtab_url, 0, &error))
       << error;
+}
+
+// Tests that extensions can't access chrome-untrusted:// even with the
+// kExtensionsOnChromeURLs flag enabled.
+TEST_F(ChromePermissionManifestTest,
+       ChromeUntrustedURLPermissionDisallowedWithFlag) {
+  // Ignore the policy delegate for this test.
+  PermissionsData::SetPolicyDelegate(nullptr);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kExtensionsOnChromeURLs);
+  LoadAndExpectWarning(
+      "permission_chrome_untrusted_url_invalid.json",
+      ErrorUtils::FormatErrorMessage(errors::kPermissionUnknownOrMalformed,
+                                     kChromeUntrustedTestURL));
 }
 
 TEST_F(ChromePermissionManifestTest,

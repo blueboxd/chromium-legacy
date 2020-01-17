@@ -95,7 +95,7 @@ Polymer({
    */
   userSelectedCustomScaling_: false,
 
-  onProcessSelectChange: function(value) {
+  onProcessSelectChange(value) {
     const isCustom = value === ScalingType.CUSTOM.toString();
     if (isCustom && !this.customScalingSettingSet_) {
       this.userSelectedCustomScaling_ = true;
@@ -119,7 +119,7 @@ Polymer({
   },
 
   /** @private */
-  updateScalingToValid_: function() {
+  updateScalingToValid_() {
     if (!this.getSetting('scaling').valid) {
       this.currentValue_ = this.lastValidScaling_;
     } else {
@@ -131,14 +131,14 @@ Polymer({
    * Updates the input string when scaling setting is set.
    * @private
    */
-  onScalingSettingChanged_: function() {
+  onScalingSettingChanged_() {
     const value = /** @type {string} */ (this.getSetting('scaling').value);
     this.lastValidScaling_ = value;
     this.currentValue_ = value;
   },
 
   /** @private */
-  onScalingTypeSettingChanged_: function() {
+  onScalingTypeSettingChanged_() {
     if (!this.settingKey_) {
       return;
     }
@@ -158,7 +158,7 @@ Polymer({
    * scaling input.
    * @private
    */
-  onInputChanged_: function() {
+  onInputChanged_() {
     this.setSettingValid('scaling', this.inputValid_);
 
     if (this.currentValue_ !== '' && this.inputValid_ &&
@@ -168,7 +168,7 @@ Polymer({
   },
 
   /** @private */
-  onDisabledChanged_: function() {
+  onDisabledChanged_() {
     this.dropdownDisabled_ = this.disabled && this.inputValid_;
   },
 
@@ -176,7 +176,7 @@ Polymer({
    * @return {boolean} Whether the input should be disabled.
    * @private
    */
-  inputDisabled_: function() {
+  inputDisabled_() {
     return !this.customSelected_ || this.dropdownDisabled_;
   },
 
@@ -184,7 +184,7 @@ Polymer({
    * @return {boolean} Whether the custom scaling option is selected.
    * @private
    */
-  computeCustomSelected_: function() {
+  computeCustomSelected_() {
     return !!this.settingKey_ &&
         this.getSettingValue(this.settingKey_) === ScalingType.CUSTOM;
   },
@@ -193,12 +193,12 @@ Polymer({
    * @return {string} The key of the appropriate scaling setting.
    * @private
    */
-  computeSettingKey_: function() {
+  computeSettingKey_() {
     return this.isPdf ? 'scalingTypePdf' : 'scalingType';
   },
 
   /** @private */
-  onCollapseChanged_: function() {
+  onCollapseChanged_() {
     if (this.customSelected_ && this.userSelectedCustomScaling_) {
       this.$$('print-preview-number-settings-section').getInput().focus();
     }

@@ -125,9 +125,7 @@ template("generate_event_interfaces") {
 
     output_file =
         "$root_gen_dir/third_party/blink/renderer/" + invoker.output_file
-    outputs = [
-      output_file,
-    ]
+    outputs = [ output_file ]
 
     script = "//third_party/blink/renderer/bindings/scripts/generate_event_interfaces.py"
     args = [
@@ -342,9 +340,7 @@ template("compute_global_objects") {
                idl_files_list,
              ] + invoker.sources_generated + invoker.sources
 
-    outputs = [
-      invoker.output_file,
-    ]
+    outputs = [ invoker.output_file ]
 
     args = [
       "--idl-files-list",

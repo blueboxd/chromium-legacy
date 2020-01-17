@@ -11,5 +11,6 @@
 ]
 interface XRWorldInformation {
    readonly attribute XRPlaneSet? detectedPlanes;
+   readonly attribute XRLightEstimation? lightEstimation;
 };
 

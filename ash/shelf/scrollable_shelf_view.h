@@ -82,6 +82,12 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Returns whether the view should adapt to RTL.
   bool ShouldAdaptToRTL() const;
 
+  // Returns the icon's target bounds in screen. The returned bounds are
+  // calculated with the hotseat's target bounds instead of the actual bounds.
+  // It helps to get the icon's final location before the bounds animation on
+  // hotseat ends.
+  gfx::Rect GetTargetScreenBoundsOfItemIcon(const ShelfID& id) const;
+
   views::View* GetShelfContainerViewForTest();
   bool ShouldAdjustForTest() const;
 
@@ -147,22 +153,28 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
     kNotInScroll
   };
 
-  // Returns the maximum scroll distance.
-  int CalculateScrollUpperBound() const;
+  // Returns the maximum scroll distance based on the given space for icons.
+  int CalculateScrollUpperBound(int available_space_for_icons) const;
 
   // Returns the clamped scroll offset.
-  float CalculateClampedScrollOffset(float scroll) const;
+  float CalculateClampedScrollOffset(float scroll,
+                                     int available_space_for_icons) const;
 
   // Creates the animation for scrolling shelf by |scroll_distance|.
   void StartShelfScrollAnimation(float scroll_distance);
 
-  // Calculates the layout strategy based on the available space and scroll
-  // distance.
-  LayoutStrategy CalculateLayoutStrategy(
-      int scroll_distance_on_main_axis) const;
+  // Calculates the layout strategy based on the three factors:
+  // (1) scroll offset on the main axis; (2) available space for shelf icons;
+  // (3) Bounds of the scrollable shelf view: actual view bounds or target
+  // bounds.
+  LayoutStrategy CalculateLayoutStrategy(int scroll_distance_on_main_axis,
+                                         int space_for_icons,
+                                         bool use_target_bounds) const;
 
   // Returns whether the app icon layout should be centering alignment.
-  bool ShouldApplyDisplayCentering() const;
+  // |use_target_bounds| indicates which view bounds are used for
+  // calculation: actual view bounds or target view bounds.
+  bool ShouldApplyDisplayCentering(bool use_target_bounds) const;
 
   Shelf* GetShelf();
   const Shelf* GetShelf() const;
@@ -235,7 +247,15 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // (1) display centering alignment
   // (2) scrollable shelf centering alignment
   // (3) overflow mode
-  gfx::Insets CalculateEdgePadding() const;
+  // |use_target_bounds| indicates which view bounds are used for
+  // calculation: actual view bounds or target view bounds.
+  gfx::Insets CalculateEdgePadding(bool use_target_bounds) const;
+
+  int GetStatusWidgetSizeOnPrimaryAxis(bool use_target_bounds) const;
+
+  // Returns the local bounds depending on which view bounds are used: actual
+  // view bounds or target view bounds.
+  gfx::Rect GetAvailableLocalBounds(bool use_target_bounds) const;
 
   // Calculates padding for display centering alignment.
   gfx::Insets CalculatePaddingForDisplayCentering() const;
@@ -312,7 +332,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   int GetSpaceForIcons() const;
 
   // Returns whether there is available space to accommodate all shelf icons.
-  bool CanFitAllAppsWithoutScrolling() const;
+  // |use_target_bounds| indicates which view bounds are used for
+  // calculation: actual view bounds or target view bounds.
+  bool CanFitAllAppsWithoutScrolling(bool use_target_bounds) const;
 
   // Returns whether scrolling should be handled. |is_gesture_fling| is true
   // when the scrolling is triggered by gesture fling event; when it is false,
@@ -326,8 +348,11 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   // Returns the offset by which the scroll distance along the main axis should
   // be adjusted to ensure the correct UI under the specific layout strategy.
+  // Three parameters are needed: (1) scroll offset on the main axis (2) layout
+  // strategy (3) available space for shelf icons.
   int CalculateAdjustmentOffset(int main_axis_scroll_distance,
-                                LayoutStrategy layout_strategy) const;
+                                LayoutStrategy layout_strategy,
+                                int available_space_for_icons) const;
 
   int CalculateScrollDistanceAfterAdjustment(
       int main_axis_scroll_distance,
@@ -373,6 +398,10 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Updates the available space, which may also trigger the change in scroll
   // offset and layout strategy.
   void UpdateAvailableSpaceAndScroll();
+
+  // Returns the scroll offset assuming view bounds being the target bounds.
+  int CalculateScrollOffsetForTargetAvailableSpace(
+      const gfx::Rect& target_space) const;
 
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 

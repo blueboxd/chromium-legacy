@@ -102,7 +102,7 @@ Polymer({
     /** @private */
     rememberPasswordEnabled_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('kerberosRememberPasswordEnabled');
       },
     },
@@ -124,13 +124,13 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ =
         settings.KerberosAccountsBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.addDialog.showModal();
 
     if (this.presetAccount) {
@@ -171,12 +171,12 @@ Polymer({
   },
 
   /** @private */
-  onCancel_: function() {
+  onCancel_() {
     this.$.addDialog.cancel();
   },
 
   /** @private */
-  onAdd_: function() {
+  onAdd_() {
     assert(!this.inProgress_);
     this.inProgress_ = true;
 
@@ -211,14 +211,14 @@ Polymer({
   },
 
   /** @private */
-  onPasswordInput_: function() {
+  onPasswordInput_() {
     // On first input, don't reuse the remembered password, but submit the
     // changed one.
     this.useRememberedPassword_ = false;
   },
 
   /** @private */
-  onAdvancedConfigClick_: function() {
+  onAdvancedConfigClick_() {
     // Keep a copy of the config in case the user cancels.
     this.editableConfig_ = this.config_;
     this.showAdvancedConfig_ = true;
@@ -227,14 +227,14 @@ Polymer({
   },
 
   /** @private */
-  onAdvancedConfigCancel_: function() {
+  onAdvancedConfigCancel_() {
     this.configErrorText_ = '';
     this.showAdvancedConfig_ = false;
     this.$$('#advancedConfigDialog').cancel();
   },
 
   /** @private */
-  onAdvancedConfigSave_: function() {
+  onAdvancedConfigSave_() {
     assert(!this.inProgress_);
     this.inProgress_ = true;
 
@@ -255,7 +255,7 @@ Polymer({
     });
   },
 
-  onAdvancedConfigClose_: function(event) {
+  onAdvancedConfigClose_(event) {
     // Note: 'Esc' doesn't trigger onAdvancedConfigCancel_() and some tests
     // that trigger onAdvancedConfigCancel_() don't trigger this for some
     // reason, hence this is needed here and above.
@@ -270,7 +270,7 @@ Polymer({
    * @param {!settings.KerberosErrorType} error Current error enum
    * @private
    */
-  updateErrorMessages_: function(error) {
+  updateErrorMessages_(error) {
     this.generalErrorText_ = '';
     this.usernameErrorText_ = '';
     this.passwordErrorText_ = '';
@@ -317,7 +317,7 @@ Polymer({
    *    validateKerberosConfig() call.
    * @private
    */
-  updateConfigErrorMessage_: function(result) {
+  updateConfigErrorMessage_(result) {
     // There should be an error at this point.
     assert(result.error != settings.KerberosErrorType.kNone);
 
@@ -349,7 +349,7 @@ Polymer({
    * @return {string} Localized error string that corresponds to code
    * @private
    */
-  getConfigErrorString_: function(code, errorLine) {
+  getConfigErrorString_(code, errorLine) {
     switch (code) {
       case settings.KerberosConfigErrorCode.kSectionNestedInGroup:
         return this.i18n('kerberosConfigErrorSectionNestedInGroup', errorLine);
@@ -381,7 +381,7 @@ Polymer({
    * @return {string} The line at lineIndex.
    * @private
    */
-  selectAndScrollTo_: function(textArea, lineIndex) {
+  selectAndScrollTo_(textArea, lineIndex) {
     const lines = textArea.value.split('\n');
     assert(lineIndex >= 0 && lineIndex < lines.length);
 
@@ -415,7 +415,7 @@ Polymer({
    * @return {boolean} True iff errorText is not empty.
    * @private
    */
-  showError_: function(errorText) {
+  showError_(errorText) {
     return !!errorText;
   }
 });

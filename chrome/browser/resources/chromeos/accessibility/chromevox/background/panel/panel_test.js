@@ -24,21 +24,21 @@ ChromeVoxPanelTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
   /** @override */
-  testGenCppIncludes: function() {
+  testGenCppIncludes() {
     ChromeVoxE2ETest.prototype.testGenCppIncludes.call(this);
   },
 
   /**
    * @return {!MockFeedback}
    */
-  createMockFeedback: function() {
+  createMockFeedback() {
     var mockFeedback =
         new MockFeedback(this.newCallback(), this.newCallback.bind(this));
     mockFeedback.install();
     return mockFeedback;
   },
 
-  getPanelWindow: function() {
+  getPanelWindow() {
     var panelWindow = null;
     while (!panelWindow) {
       panelWindow = chrome.extension.getViews().find(function(view) {
@@ -53,11 +53,11 @@ ChromeVoxPanelTest.prototype = {
    * system destroys our reference to this object unpredictably so always ask
    * chrome.extension.getViews for it.
    */
-  getPanel: function() {
+  getPanel() {
     return this.getPanelWindow().Panel;
   },
 
-  fireMockEvent: function(key) {
+  fireMockEvent(key) {
     return function() {
       var obj = {};
       obj.preventDefault = function() {};

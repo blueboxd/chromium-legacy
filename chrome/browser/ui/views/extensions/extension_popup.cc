@@ -114,7 +114,7 @@ void ExtensionPopup::OnWindowActivated(
   // DesktopNativeWidgetAura does not trigger the expected browser widget
   // [de]activation events when activating widgets in its own root window.
   // This additional check handles those cases. See https://crbug.com/320889 .
-  if (gained_active == anchor_widget()->GetNativeWindow())
+  if (anchor_widget() && gained_active == anchor_widget()->GetNativeWindow())
     CloseUnlessUnderInspection();
 }
 #endif  // defined(USE_AURA)

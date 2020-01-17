@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/handoff/pref_names_ios.h"
-#include "components/payments/core/payment_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
@@ -42,10 +41,6 @@ class PrivacyTableViewControllerTest : public ChromeTableViewControllerTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.SetPrefService(CreatePrefService());
     chrome_browser_state_ = test_cbs_builder.Build();
-
-    // Toggle off payments::kCanMakePaymentEnabled.
-    chrome_browser_state_->GetPrefs()->SetBoolean(
-        payments::kCanMakePaymentEnabled, false);
 
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     initialValueForSpdyProxyEnabled_ =
@@ -93,7 +88,7 @@ TEST_F(PrivacyTableViewControllerTest, TestModel) {
   EXPECT_EQ(2, NumberOfSections());
 
   // Sections[0].
-  EXPECT_EQ(2, NumberOfItemsInSection(0));
+  EXPECT_EQ(1, NumberOfItemsInSection(0));
   NSString* handoffSubtitle = chrome_browser_state_->GetPrefs()->GetBoolean(
                                   prefs::kIosHandoffToOtherDevices)
                                   ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
@@ -101,9 +96,6 @@ TEST_F(PrivacyTableViewControllerTest, TestModel) {
   CheckTextCellTextAndDetailText(
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ENABLE_HANDOFF_TO_OTHER_DEVICES),
       handoffSubtitle, 0, 0);
-  CheckSwitchCellStateAndText(
-      NO, l10n_util::GetNSString(IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL), 0,
-      1);
 
   // Sections[1].
   EXPECT_EQ(1, NumberOfItemsInSection(1));

@@ -29,9 +29,7 @@ if (optimize_webui) {
     pak_file = extensions_pak_file
     out_folder = unpak_folder
 
-    deps = [
-      ":flattened_resources",
-    ]
+    deps = [ ":flattened_resources" ]
   }
 
   grit("flattened_resources") {
@@ -44,9 +42,7 @@ if (optimize_webui) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
-    deps = [
-      ":polymer3_elements",
-    ]
+    deps = [ ":polymer3_elements" ]
     defines = chrome_grit_defines
     outputs = [
       "grit/extensions_resources.h",
@@ -352,16 +348,12 @@ js_library("error_page") {
 }
 
 js_library("host_permissions_toggle_list") {
-  deps = [
-    ":item",
-  ]
+  deps = [ ":item" ]
   externs_list = [ "$externs_path/developer_private.js" ]
 }
 
 js_library("install_warnings_dialog") {
-  deps = [
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
-  ]
+  deps = [ "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m" ]
   externs_list = [ "$externs_path/developer_private.js" ]
 }
 
@@ -380,9 +372,7 @@ js_library("item") {
 }
 
 js_library("item_behavior") {
-  deps = [
-    "//ui/webui/resources/js:load_time_data.m",
-  ]
+  deps = [ "//ui/webui/resources/js:load_time_data.m" ]
   externs_list = [ "$externs_path/developer_private.js" ]
 }
 
@@ -428,9 +418,7 @@ js_library("keyboard_shortcuts") {
 }
 
 js_library("kiosk_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 if (is_chromeos) {

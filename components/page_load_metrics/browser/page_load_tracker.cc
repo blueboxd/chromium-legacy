@@ -298,7 +298,7 @@ void PageLoadTracker::LogAbortChainHistograms(
   }
 }
 
-void PageLoadTracker::WebContentsHidden() {
+void PageLoadTracker::PageHidden() {
   // Only log the first time we background in a given page load.
   if (!first_background_time_.has_value()) {
     // Make sure we either started in the foreground and haven't been
@@ -316,7 +316,7 @@ void PageLoadTracker::WebContentsHidden() {
                              metrics_update_dispatcher_.timing());
 }
 
-void PageLoadTracker::WebContentsShown() {
+void PageLoadTracker::PageShown() {
   // Only log the first time we foreground in a given page load.
   if (!first_foreground_time_.has_value()) {
     // Make sure we either started in the background and haven't been

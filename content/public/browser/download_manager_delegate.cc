@@ -60,6 +60,9 @@ void DownloadManagerDelegate::CheckDownloadAllowed(
     base::Optional<url::Origin> request_initiator,
     bool from_download_cross_origin_redirect,
     CheckDownloadAllowedCallback check_download_allowed_cb) {
+  // TODO: once hook up delegate callback, make sure sync run of it doesn't
+  // crash and test it
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(check_download_allowed_cb), true));
 }

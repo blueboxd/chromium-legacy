@@ -897,6 +897,10 @@ namespace autotestPrivate {
     //     parameter.
     static void stopTracing(TraceCompleteCallback completeCallback);
 
+    // Sends ARC touch mode enabled or disabled.
+    // |enable|: whether enabled touch mode.
+    // |callback|: called when action performed.
+    static void setArcTouchMode(boolean enabled, VoidCallback callback);
   };
 
   interface Events {

@@ -25,37 +25,37 @@
     },
 
     /** @override */
-    attached: function() {
+    attached() {
       this.typeChanged_();
     },
 
-    onKeyDown: function(e) {
+    onKeyDown(e) {
       this.isInvalid = false;
     },
 
     /** @private */
-    updateDomainVisibility_: function() {
+    updateDomainVisibility_() {
       this.$.domainLabel.hidden = (this.type !== 'email') || !this.domain ||
           (this.value && this.value.indexOf('@') !== -1);
     },
 
-    onTap: function() {
+    onTap() {
       this.isInvalid = false;
     },
 
-    focus: function() {
+    focus() {
       this.$.input.focus();
     },
 
     /** @return {!boolean} */
-    checkValidity: function() {
+    checkValidity() {
       var valid = this.$.ironInput.validate();
       this.isInvalid = !valid;
       return valid;
     },
 
     /** @private */
-    typeChanged_: function() {
+    typeChanged_() {
       if (this.type == 'email') {
         this.$.input.pattern = INPUT_EMAIL_PATTERN;
         this.$.input.type = 'text';

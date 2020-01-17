@@ -66,7 +66,7 @@ std::unique_ptr<InputMethod> CreateInputMethod(
 #elif defined(USE_X11)
   return std::make_unique<InputMethodAuraLinux>(delegate);
 #elif defined(USE_OZONE)
-  return ui::OzonePlatform::GetInstance()->CreateInputMethod(delegate);
+  return ui::OzonePlatform::GetInstance()->CreateInputMethod(delegate, widget);
 #else
   return std::make_unique<InputMethodMinimal>(delegate);
 #endif

@@ -5,7 +5,7 @@
 from page_sets.system_health import platforms
 from page_sets.system_health import story_tags
 from page_sets.system_health import system_health_story
-from page_sets.system_health.loading_stories import LoadGmailMobileStory
+from page_sets.system_health import loading_stories
 from page_sets.system_health import browsing_stories
 
 _WAIT_FOR_VIDEO_SECONDS = 5
@@ -122,7 +122,7 @@ class BackgroundImgurMobileStory2019(_BackgroundStory):
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
 
-class BackgroundGmailMobileStory(LoadGmailMobileStory):
+class BackgroundGmailMobileStory(loading_stories.LoadGmailMobileStory):
   NAME = 'background:tools:gmail'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
@@ -130,3 +130,13 @@ class BackgroundGmailMobileStory(LoadGmailMobileStory):
   def _Measure(self, action_runner):
     action_runner.tab.browser.Background()
     super(BackgroundGmailMobileStory, self)._Measure(action_runner)
+
+
+class BackgroundGmailMobileStory2019(loading_stories.LoadGmailStory2019):
+  NAME = 'background:tools:gmail:2019'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
+
+  def _Measure(self, action_runner):
+    action_runner.tab.browser.Background()
+    super(BackgroundGmailMobileStory2019, self)._Measure(action_runner)

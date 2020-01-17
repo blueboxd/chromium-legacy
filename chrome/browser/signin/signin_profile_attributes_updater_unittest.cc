@@ -7,12 +7,10 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/signin_util.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -149,34 +147,7 @@ TEST_F(SigninProfileAttributesUpdaterTest, AuthError) {
 }
 
 #if !defined(OS_CHROMEOS)
-class SigninProfileAttributesUpdaterTestWithParam
-    : public SigninProfileAttributesUpdaterTest,
-      public ::testing::WithParamInterface<bool> {
- public:
-  SigninProfileAttributesUpdaterTestWithParam()
-      : SigninProfileAttributesUpdaterTest() {
-    concatenate_enabled_ = GetParam();
-    if (concatenate_enabled_) {
-      scoped_feature_list_.InitAndEnableFeature(features::kProfileMenuRevamp);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(features::kProfileMenuRevamp);
-    }
-  }
-
- protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  bool concatenate_enabled_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SigninProfileAttributesUpdaterTestWithParam);
-};
-
-INSTANTIATE_TEST_SUITE_P(SigninProfileAttributesUpdaterTest,
-                         SigninProfileAttributesUpdaterTestWithParam,
-                         testing::Bool());
-
-TEST_P(SigninProfileAttributesUpdaterTestWithParam,
-       SigninSignoutResetsProfilePrefs) {
+TEST_F(SigninProfileAttributesUpdaterTest, SigninSignoutResetsProfilePrefs) {
   PrefService* pref_service = profile_->GetPrefs();
   ProfileAttributesEntry* entry;
   ASSERT_TRUE(profile_manager_.profile_attributes_storage()
@@ -191,9 +162,7 @@ TEST_P(SigninProfileAttributesUpdaterTestWithParam,
   AccountInfo account_info = identity_test_env_.MakeAccountAvailableWithCookies(
       "email1@example.com", "gaia_id_1");
   EXPECT_FALSE(entry->IsAuthenticated());
-  // If concatenate is disabled, we reset kProfileIsUsingDefault to true on
-  // sign in/ sync. Otherwise, we don't reset kProfileIsUsingDefault.
-  CheckProfilePrefsReset(pref_service, !concatenate_enabled_);
+  CheckProfilePrefsReset(pref_service, false);
   SetProfilePrefs(pref_service);
   // Signout should reset profile prefs.
   identity_test_env_.SetCookieAccounts({});
@@ -204,7 +173,7 @@ TEST_P(SigninProfileAttributesUpdaterTestWithParam,
   // Set primary account should reset profile prefs.
   AccountInfo primary_account =
       identity_test_env_.MakePrimaryAccountAvailable("primary@example.com");
-  CheckProfilePrefsReset(pref_service, !concatenate_enabled_);
+  CheckProfilePrefsReset(pref_service, false);
   SetProfilePrefs(pref_service);
   // Disabling sync should reset profile prefs.
   identity_test_env_.ClearPrimaryAccount();
@@ -232,7 +201,7 @@ TEST_F(SigninProfileAttributesUpdaterTest,
   CheckProfilePrefsReset(pref_service, false);
 }
 
-TEST_P(SigninProfileAttributesUpdaterTestWithParam,
+TEST_F(SigninProfileAttributesUpdaterTest,
        EnablingSyncWithDifferentAccountThanUPAResetsProfilePrefs) {
   PrefService* pref_service = profile_->GetPrefs();
   ProfileAttributesEntry* entry;
@@ -246,7 +215,7 @@ TEST_P(SigninProfileAttributesUpdaterTestWithParam,
   AccountInfo primary_account =
       identity_test_env_.MakePrimaryAccountAvailable("primary@example.com");
   EXPECT_TRUE(entry->IsAuthenticated());
-  CheckProfilePrefsReset(pref_service, !concatenate_enabled_);
+  CheckProfilePrefsReset(pref_service, false);
 }
 #endif  // !defined(OS_ANDROID)
 

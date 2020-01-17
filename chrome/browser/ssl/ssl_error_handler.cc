@@ -29,7 +29,6 @@
 #include "chrome/browser/ssl/blocked_interception_blocking_page.h"
 #include "chrome/browser/ssl/captive_portal_helper.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
-#include "chrome/browser/ssl/mitm_software_blocking_page.h"
 #include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
@@ -37,6 +36,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
+#include "components/security_interstitials/content/mitm_software_blocking_page.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
@@ -526,9 +526,11 @@ void SSLErrorHandlerDelegateImpl::ShowMITMSoftwareInterstitial(
     const std::string& mitm_software_name,
     bool is_enterprise_managed) {
   // Show MITM software blocking page. The interstitial owns the blocking page.
-  OnBlockingPageReady(new MITMSoftwareBlockingPage(
-      web_contents_, cert_error_, request_url_, std::move(ssl_cert_reporter_),
-      ssl_info_, mitm_software_name, is_enterprise_managed));
+  OnBlockingPageReady(
+      ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
+          web_contents_, cert_error_, request_url_,
+          std::move(ssl_cert_reporter_), ssl_info_, mitm_software_name,
+          is_enterprise_managed));
 }
 
 void SSLErrorHandlerDelegateImpl::ShowSSLInterstitial(const GURL& support_url) {

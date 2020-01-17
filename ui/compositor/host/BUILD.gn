@@ -6,12 +6,8 @@ import("//build/config/ui.gni")
 
 source_set("host") {
   if (use_aura || is_mac) {
-    public = [
-      "host_context_factory_private.h",
-    ]
-    sources = [
-      "host_context_factory_private.cc",
-    ]
+    public = [ "host_context_factory_private.h" ]
+    sources = [ "host_context_factory_private.cc" ]
 
     deps = [
       "//cc/mojo_embedder",
@@ -22,8 +18,6 @@ source_set("host") {
       "//ui/gfx",
     ]
 
-    public_deps = [
-      "//services/viz/public/mojom",
-    ]
+    public_deps = [ "//services/viz/public/mojom" ]
   }
 }

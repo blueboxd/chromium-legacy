@@ -45,7 +45,7 @@ cr.define('cr.ui', function() {
      */
     get selectedIndexes() {
       const i = this.selectedIndex;
-      return i != -1 ? [this.selectedIndex] : [];
+      return i !== -1 ? [this.selectedIndex] : [];
     }
 
     set selectedIndexes(indexes) {
@@ -65,7 +65,7 @@ cr.define('cr.ui', function() {
       const oldSelectedIndex = this.selectedIndex;
       const i = Math.max(-1, Math.min(this.length_ - 1, selectedIndex));
 
-      if (i != oldSelectedIndex) {
+      if (i !== oldSelectedIndex) {
         this.beginChange();
         this.selectedIndex_ = i;
         this.leadIndex = i >= 0 ? i : this.leadIndex;
@@ -115,14 +115,14 @@ cr.define('cr.ui', function() {
      */
     setIndexSelected(index, b) {
       // Only allow selection
-      const oldSelected = index == this.selectedIndex_;
-      if (oldSelected == b) {
+      const oldSelected = index === this.selectedIndex_;
+      if (oldSelected === b) {
         return;
       }
 
       if (b) {
         this.selectedIndex = index;
-      } else if (index == this.selectedIndex_) {
+      } else if (index === this.selectedIndex_) {
         this.selectedIndex = -1;
       }
     }
@@ -133,7 +133,7 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether an index is selected.
      */
     getIndexSelected(index) {
-      return index == this.selectedIndex_;
+      return index === this.selectedIndex_;
     }
 
     /**
@@ -155,7 +155,7 @@ cr.define('cr.ui', function() {
     endChange() {
       this.changeCount_--;
       if (!this.changeCount_) {
-        if (this.selectedIndexBefore_ != this.selectedIndex_) {
+        if (this.selectedIndexBefore_ !== this.selectedIndex_) {
           const beforeChange = this.createChangeEvent('beforeChange');
           if (this.dispatchEvent(beforeChange)) {
             this.dispatchEvent(this.createChangeEvent('change'));
@@ -176,10 +176,10 @@ cr.define('cr.ui', function() {
       e.changes =
           indexes
               .filter(function(index) {
-                return index != -1;
+                return index !== -1;
               })
               .map(function(index) {
-                return {index: index, selected: index == this.selectedIndex_};
+                return {index: index, selected: index === this.selectedIndex_};
               }, this);
 
       return e;
@@ -196,7 +196,7 @@ cr.define('cr.ui', function() {
 
     set leadIndex(leadIndex) {
       const li = this.adjustIndex_(leadIndex);
-      if (li != this.leadIndex_) {
+      if (li !== this.leadIndex_) {
         const oldLeadIndex = this.leadIndex_;
         this.leadIndex_ = li;
         cr.dispatchPropertyChange(this, 'leadIndex', li, oldLeadIndex);
@@ -237,12 +237,12 @@ cr.define('cr.ui', function() {
      * @param {!Array<number>} permutation The reordering permutation.
      */
     adjustToReordering(permutation) {
-      if (this.leadIndex != -1) {
+      if (this.leadIndex !== -1) {
         this.leadIndex = permutation[this.leadIndex];
       }
 
       const oldSelectedIndex = this.selectedIndex;
-      if (oldSelectedIndex != -1) {
+      if (oldSelectedIndex !== -1) {
         this.selectedIndex = permutation[oldSelectedIndex];
       }
     }

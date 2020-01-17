@@ -478,12 +478,10 @@ TEST_F(MockAppCacheStorageTest, BasicFindMainFallbackResponse) {
   const int64_t kResponseId2 = 2;
 
   AppCacheManifest manifest;
-  manifest.fallback_namespaces.push_back(
-      AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespaceUrl1,
-                kFallbackEntryUrl1, false));
-  manifest.fallback_namespaces.push_back(
-      AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespaceUrl2,
-                kFallbackEntryUrl2, false));
+  manifest.fallback_namespaces.push_back(AppCacheNamespace(
+      APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespaceUrl1, kFallbackEntryUrl1));
+  manifest.fallback_namespaces.push_back(AppCacheNamespace(
+      APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespaceUrl2, kFallbackEntryUrl2));
 
   auto cache = base::MakeRefCounted<AppCache>(service.storage(), kCacheId);
   cache->InitializeWithManifest(&manifest);
@@ -591,9 +589,8 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
   const int64_t kResponseId = 1;
 
   AppCacheManifest manifest;
-  manifest.online_whitelist_namespaces.push_back(
-      AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE, kOnlineNamespaceUrl,
-                GURL(), false));
+  manifest.online_whitelist_namespaces.push_back(AppCacheNamespace(
+      APPCACHE_NETWORK_NAMESPACE, kOnlineNamespaceUrl, GURL()));
   auto cache = base::MakeRefCounted<AppCache>(service.storage(), kCacheId);
   cache->InitializeWithManifest(&manifest);
   cache->AddEntry(

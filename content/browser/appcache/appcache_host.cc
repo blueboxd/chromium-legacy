@@ -71,6 +71,12 @@ bool CanAccessDocumentURL(int process_id, const GURL& document_url) {
          !security_policy->HasSecurityState(process_id);  // process shutdown.
 }
 
+base::debug::CrashKeyString* GetDocumentUrlCrashKey() {
+  static auto* appcache_document_url_key = base::debug::AllocateCrashKeyString(
+      "appcache_document_url", base::debug::CrashKeySize::Size256);
+  return appcache_document_url_key;
+}
+
 }  // namespace
 
 AppCacheHost::AppCacheHost(
@@ -150,6 +156,8 @@ void AppCacheHost::SelectCache(const GURL& document_url,
 
   DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
   if (!CanAccessDocumentURL(process_id_, document_url)) {
+    base::debug::SetCrashKeyString(GetDocumentUrlCrashKey(),
+                                   document_url.spec());
     mojo::ReportBadMessage("ACH_SELECT_CACHE_DOCUMENT_URL_ACCESS_NOT_ALLOWED");
     return;
   }
@@ -256,6 +264,8 @@ void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
   }
 
   if (!CanAccessDocumentURL(process_id_, document_url)) {
+    base::debug::SetCrashKeyString(GetDocumentUrlCrashKey(),
+                                   document_url.spec());
     mojo::ReportBadMessage(
         "ACH_MARK_AS_FOREIGN_ENTRY_DOCUMENT_URL_ACCESS_NOT_ALLOWED");
     return;

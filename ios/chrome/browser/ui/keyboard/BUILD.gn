@@ -17,9 +17,7 @@ source_set("keyboard") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "UIKeyCommand+ChromeTest.mm",
-  ]
+  sources = [ "UIKeyCommand+ChromeTest.mm" ]
   deps = [
     ":keyboard",
     "//base",
@@ -32,9 +30,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "keyboard_commands_egtest.mm",
-  ]
+  sources = [ "keyboard_commands_egtest.mm" ]
   deps = [
     "//components/strings",
     "//ios/chrome/app/strings",
@@ -58,9 +54,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "keyboard_commands_egtest.mm",
-  ]
+  sources = [ "keyboard_commands_egtest.mm" ]
   deps = [
     "//components/strings",
     "//ios/chrome/app/strings",

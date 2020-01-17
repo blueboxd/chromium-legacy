@@ -28,6 +28,9 @@ constexpr int EXTENSION_CONTEXT_MENU = 13;
 constexpr int EXTENSION_PINNING = 14;
 }  // namespace
 
+// static
+constexpr char ExtensionsMenuItemView::kClassName[];
+
 ExtensionsMenuItemView::ExtensionsMenuItemView(
     Browser* browser,
     std::unique_ptr<ToolbarActionViewController> controller)
@@ -95,6 +98,10 @@ void ExtensionsMenuItemView::ButtonPressed(views::Button* sender,
     return;
   }
   NOTREACHED();
+}
+
+const char* ExtensionsMenuItemView::GetClassName() const {
+  return kClassName;
 }
 
 void ExtensionsMenuItemView::UpdatePinButton() {

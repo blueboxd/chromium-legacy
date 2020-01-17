@@ -8,9 +8,7 @@ import("//remoting/ios/app/remoting_ios_tmpl.gni")
 group("all") {
   testonly = true
 
-  deps = [
-    ":ios_remoting_app",
-  ]
+  deps = [ ":ios_remoting_app" ]
 }
 
 # source set to be used by both external and internal app.

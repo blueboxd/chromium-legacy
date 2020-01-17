@@ -601,12 +601,3 @@ export class PhotoConstraintsPreferrer extends ConstraintsPreferrer {
         .sort(sortPrefResol);
   }
 }
-
-/** @const */
-cca.CaptureCandidate = CaptureCandidate;
-/** @const */
-cca.device.ConstraintsPreferrer = ConstraintsPreferrer;
-/** @const */
-cca.device.VideoConstraintsPreferrer = VideoConstraintsPreferrer;
-/** @const */
-cca.device.PhotoConstraintsPreferrer = PhotoConstraintsPreferrer;

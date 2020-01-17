@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -1114,7 +1115,9 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
   if (item->GetDangerType() == download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
       item->GetDangerType() ==
           download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT ||
-      item->GetDangerType() == download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
+      item->GetDangerType() == download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING ||
+      item->GetDangerType() ==
+          download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
     download::DownloadDangerType danger_type =
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
     switch (result) {
@@ -1441,3 +1444,8 @@ ChromeDownloadManagerDelegate::SafeBrowsingState::~SafeBrowsingState() {}
 const char ChromeDownloadManagerDelegate::SafeBrowsingState::
     kSafeBrowsingUserDataKey[] = "Safe Browsing ID";
 #endif  // FULL_SAFE_BROWSING
+
+base::WeakPtr<ChromeDownloadManagerDelegate>
+ChromeDownloadManagerDelegate::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}

@@ -30,9 +30,7 @@ jumbo_source_set("browser") {
 
 jumbo_source_set("unit_tests") {
   testonly = true
-  sources = [
-    "media_drm_storage_impl_unittest.cc",
-  ]
+  sources = [ "media_drm_storage_impl_unittest.cc" ]
   deps = [
     ":browser",
     "//base/test:test_support",

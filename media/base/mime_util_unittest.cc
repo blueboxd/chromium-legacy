@@ -440,6 +440,7 @@ TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecBehavior) {
           case MimeUtil::MP3:
           case MimeUtil::MPEG2_AAC:
           case MimeUtil::MPEG4_AAC:
+          case MimeUtil::MPEG4_XHE_AAC:
           case MimeUtil::VORBIS:
           case MimeUtil::FLAC:
           case MimeUtil::H264:
@@ -514,6 +515,10 @@ TEST(IsCodecSupportedOnAndroidTest, ClearCodecBehavior) {
             break;
 
           // These codecs are only supported if platform decoders are supported.
+          case MimeUtil::MPEG4_XHE_AAC:
+            EXPECT_EQ(info.has_platform_decoders, result);
+            break;
+
           case MimeUtil::HEVC:
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
             EXPECT_EQ(

@@ -38,7 +38,7 @@ Polymer({
     /** @private */
     printButtonLabel_: {
       type: String,
-      value: function() {
+      value() {
         return loadTimeData.getString('printButton');
       },
     },
@@ -50,12 +50,12 @@ Polymer({
   lastState_: State.NOT_READY,
 
   /** @private */
-  onPrintClick_: function() {
+  onPrintClick_() {
     this.fire('print-requested');
   },
 
   /** @private */
-  onCancelClick_: function() {
+  onCancelClick_() {
     this.fire('cancel-requested');
   },
 
@@ -63,20 +63,20 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isPdfOrDrive_: function() {
+  isPdfOrDrive_() {
     return this.destination &&
         (this.destination.id === Destination.GooglePromotedId.SAVE_AS_PDF ||
          this.destination.id === Destination.GooglePromotedId.DOCS);
   },
 
   /** @private */
-  updatePrintButtonLabel_: function() {
+  updatePrintButtonLabel_() {
     this.printButtonLabel_ = loadTimeData.getString(
         this.isPdfOrDrive_() ? 'saveButton' : 'printButton');
   },
 
   /** @private */
-  updatePrintButtonEnabled_: function() {
+  updatePrintButtonEnabled_() {
     switch (this.state) {
       case (State.PRINTING):
         this.printButtonEnabled_ = false;

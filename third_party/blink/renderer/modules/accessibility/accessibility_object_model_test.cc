@@ -346,10 +346,10 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
             sparse_attributes.object_attributes
                 .at(AXObjectAttribute::kAriaActiveDescendant)
                 ->RoleValue());
-  ASSERT_EQ(
-      ax::mojom::Role::kContentInfo,
-      sparse_attributes.object_attributes.at(AXObjectAttribute::kAriaDetails)
-          ->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kContentInfo,
+            sparse_attributes.object_vector_attributes
+                .at(AXObjectVectorAttribute::kAriaDetails)[0]
+                ->RoleValue());
   ASSERT_EQ(ax::mojom::Role::kArticle,
             sparse_attributes.object_attributes
                 .at(AXObjectAttribute::kAriaErrorMessage)
@@ -359,8 +359,11 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
   target->accessibleNode()->setRoleDescription("Object");
   target->accessibleNode()->setActiveDescendant(
       GetDocument().getElementById("active2")->accessibleNode());
-  target->accessibleNode()->setDetails(
+  AccessibleNodeList* details_node_list =
+      MakeGarbageCollected<AccessibleNodeList>();
+  details_node_list->add(
       GetDocument().getElementById("details2")->accessibleNode());
+  target->accessibleNode()->setDetails(details_node_list);
   target->accessibleNode()->setErrorMessage(
       GetDocument().getElementById("error2")->accessibleNode());
 
@@ -375,10 +378,10 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
             sparse_attributes2.object_attributes
                 .at(AXObjectAttribute::kAriaActiveDescendant)
                 ->RoleValue());
-  ASSERT_EQ(
-      ax::mojom::Role::kContentInfo,
-      sparse_attributes2.object_attributes.at(AXObjectAttribute::kAriaDetails)
-          ->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kContentInfo,
+            sparse_attributes2.object_vector_attributes
+                .at(AXObjectVectorAttribute::kAriaDetails)[0]
+                ->RoleValue());
   ASSERT_EQ(ax::mojom::Role::kArticle,
             sparse_attributes2.object_attributes
                 .at(AXObjectAttribute::kAriaErrorMessage)

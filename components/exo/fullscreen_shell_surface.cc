@@ -171,14 +171,6 @@ void FullscreenShellSurface::WindowClosing() {
   widget_ = nullptr;
 }
 
-views::Widget* FullscreenShellSurface::GetWidget() {
-  return widget_;
-}
-
-const views::Widget* FullscreenShellSurface::GetWidget() const {
-  return widget_;
-}
-
 views::View* FullscreenShellSurface::GetContentsView() {
   return this;
 }
@@ -208,6 +200,24 @@ void FullscreenShellSurface::OnWindowDestroying(aura::Window* window) {
   }
 
   window->RemoveObserver(this);
+}
+
+void FullscreenShellSurface::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kClient;
+
+  if (child_ax_tree_id_ == ui::AXTreeIDUnknown())
+    return;
+
+  node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                                child_ax_tree_id_.ToString());
+}
+
+void FullscreenShellSurface::SetChildAxTreeId(ui::AXTreeID child_ax_tree_id) {
+  child_ax_tree_id_ = child_ax_tree_id;
+}
+
+const views::Widget* FullscreenShellSurface::GetWidgetImpl() const {
+  return widget_;
 }
 
 void FullscreenShellSurface::UpdateHostWindowBounds() {
@@ -268,20 +278,6 @@ bool FullscreenShellSurface::OnPreWidgetCommit() {
     return false;
 
   return true;
-}
-
-void FullscreenShellSurface::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kClient;
-
-  if (child_ax_tree_id_ == ui::AXTreeIDUnknown())
-    return;
-
-  node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
-                                child_ax_tree_id_.ToString());
-}
-
-void FullscreenShellSurface::SetChildAxTreeId(ui::AXTreeID child_ax_tree_id) {
-  child_ax_tree_id_ = child_ax_tree_id;
 }
 
 }  // namespace exo

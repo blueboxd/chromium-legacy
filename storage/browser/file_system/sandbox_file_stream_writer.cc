@@ -155,8 +155,7 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
           file_system_context_->sandbox_delegate()->memory_file_util_delegate();
     }
     file_writer_ = FileStreamWriter::CreateForMemoryFile(
-        memory_file_util_delegate, platform_path, initial_offset_,
-        FileStreamWriter::OPEN_EXISTING_FILE);
+        memory_file_util_delegate, platform_path, initial_offset_);
 
   } else {
     file_writer_ = FileStreamWriter::CreateForLocalFile(

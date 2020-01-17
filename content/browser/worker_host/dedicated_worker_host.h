@@ -8,6 +8,7 @@
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "content/browser/browser_interface_broker_impl.h"
+#include "content/public/browser/dedicated_worker_service.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -37,13 +38,14 @@ class Origin;
 
 namespace content {
 
+class DedicatedWorkerServiceImpl;
 class ServiceWorkerMainResourceHandle;
 class ServiceWorkerObjectHost;
 class StoragePartitionImpl;
 
 // Creates a host factory for a dedicated worker. This must be called on the UI
 // thread.
-void CreateDedicatedWorkerHostFactory(
+CONTENT_EXPORT void CreateDedicatedWorkerHostFactory(
     GlobalFrameRoutingId creator_render_frame_host_id,
     GlobalFrameRoutingId ancestor_render_frame_host_id,
     const url::Origin& origin,
@@ -56,6 +58,8 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
                                   public RenderProcessHostObserver {
  public:
   DedicatedWorkerHost(
+      DedicatedWorkerServiceImpl* service,
+      DedicatedWorkerId id,
       RenderProcessHost* worker_process_host,
       GlobalFrameRoutingId creator_render_frame_host_id,
       GlobalFrameRoutingId ancestor_render_frame_host_id,
@@ -148,6 +152,11 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
   void UpdateSubresourceLoaderFactories();
 
   void OnMojoDisconnect();
+
+  DedicatedWorkerServiceImpl* const service_;
+
+  // An internal ID that is unique within a storage partition.
+  const DedicatedWorkerId id_;
 
   // The RenderProcessHost that hosts this worker.
   RenderProcessHost* const worker_process_host_;

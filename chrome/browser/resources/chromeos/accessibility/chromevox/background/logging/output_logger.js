@@ -23,7 +23,7 @@ OutputRulesStr = function(enableKey) {
 
 OutputRulesStr.prototype = {
   /** @param {string} str */
-  write: function(str) {
+  write(str) {
     if (this.disableLogging()) {
       return;
     }
@@ -34,7 +34,7 @@ OutputRulesStr.prototype = {
    * @param {string} token
    * @param {string|undefined} value
    */
-  writeTokenWithValue: function(token, value) {
+  writeTokenWithValue(token, value) {
     if (this.disableLogging()) {
       return;
     }
@@ -48,7 +48,7 @@ OutputRulesStr.prototype = {
   },
 
   /** @param {string} token */
-  writeToken: function(token) {
+  writeToken(token) {
     if (this.disableLogging()) {
       return;
     }
@@ -61,7 +61,7 @@ OutputRulesStr.prototype = {
    *          navigation: (string|undefined),
    *          output: (string|undefined)}} rule
    */
-  writeRule: function(rule) {
+  writeRule(rule) {
     if (this.disableLogging()) {
       return;
     }
@@ -76,7 +76,7 @@ OutputRulesStr.prototype = {
     this.str += '\n';
   },
 
-  bufferClear: function() {
+  bufferClear() {
     if (this.disableLogging()) {
       return;
     }
@@ -84,7 +84,7 @@ OutputRulesStr.prototype = {
   },
 
   /** @param {string} errorMsg */
-  writeError: function(errorMsg) {
+  writeError(errorMsg) {
     if (this.disableLogging()) {
       return;
     }

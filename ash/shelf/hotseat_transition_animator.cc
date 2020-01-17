@@ -122,11 +122,11 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
 
   int starting_y;
   if (animating_to_shown_hotseat) {
-    // This animation is triggered after bounds have been set in the shelf. When
-    // transitioning to HotseatState::kShown, the shelf increases in size. To
-    // prevent the background from jumping, adjust the y position to account for
-    // the size increase.
-    starting_y = ShelfConfig::Get()->system_shelf_size() -
+    // This animation is triggered after bounds have been set in the shelf, or
+    // while the shelf is beginning to animate to new bounds. To prevent the
+    // background from jumping in either case, adjust the y position to account
+    // for the current size of the |shelf_widget_|.
+    starting_y = shelf_widget_->GetWindowBoundsInScreen().height() -
                  ShelfConfig::Get()->in_app_shelf_size();
   } else {
     starting_y = ShelfConfig::Get()->shelf_size();

@@ -74,8 +74,7 @@ void WebXRSessionTracker::RecordRequestedFeatures(
                     XRSessionFeatureRequestStatus::kNotRequested);
   SetFeatureRequest(XRSessionFeature::REF_SPACE_UNBOUNDED,
                     XRSessionFeatureRequestStatus::kNotRequested);
-  // Not currently recording metrics for
-  // XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR
+  // Not currently recording metrics for XRSessionFeature::DOM_OVERLAY
 
   // Record required feature requests
   for (auto feature : session_options.required_features) {
@@ -112,7 +111,7 @@ void WebXRSessionTracker::ReportFeatureUsed(
     case XRSessionFeature::REF_SPACE_UNBOUNDED:
       ukm_entry_->SetFeatureUse_Unbounded(true);
       break;
-    case XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR:
+    case XRSessionFeature::DOM_OVERLAY:
       // Not recording metrics for this feature currently
       break;
   }
@@ -144,7 +143,7 @@ void WebXRSessionTracker::SetFeatureRequest(
     case XRSessionFeature::REF_SPACE_UNBOUNDED:
       ukm_entry_->SetFeatureRequest_Local(static_cast<int64_t>(status));
       break;
-    case XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR:
+    case XRSessionFeature::DOM_OVERLAY:
       // Not recording metrics for this feature currently.
       break;
   }

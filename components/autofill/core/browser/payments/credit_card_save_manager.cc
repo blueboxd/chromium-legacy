@@ -43,6 +43,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/infobars/core/infobar_feature.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "url/gurl.h"
@@ -217,6 +218,20 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     LogSaveCardRequestExpirationDateReasonMetric();
     should_request_expiration_date_from_user_ = true;
   }
+
+#if defined(OS_IOS)
+  if ((base::FeatureList::IsEnabled(
+           features::kAutofillSaveCardInfobarEditSupport) &&
+       base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+    // iOS's new credit card save dialog requires the user to enter both
+    // cardholder name and expiration date before saving.  Regardless of what
+    // Chrome thought it needed to do before, disable both of the previous
+    // standalone fix flows, and let the new save dialog handle their combined
+    // case.
+    should_request_name_from_user_ = false;
+    should_request_expiration_date_from_user_ = false;
+  }
+#endif  // defined(OS_IOS)
 
   // The cardholder name and expiration date fix flows cannot both be
   // active at the same time. If they are, abort offering upload.
@@ -766,6 +781,18 @@ int CreditCardSaveManager::GetDetectedValues() const {
     detected_values |= DetectedValue::USER_PROVIDED_NAME;
   }
 
+// On iOS if the new Infobar UI is enabled, it won't be possible to save the
+// card unless the user provides both a valid cardholder name and expiration
+// date.
+#if defined(OS_IOS)
+  if ((base::FeatureList::IsEnabled(
+           features::kAutofillSaveCardInfobarEditSupport) &&
+       base::FeatureList::IsEnabled(kIOSInfobarUIReboot))) {
+    detected_values |= DetectedValue::USER_PROVIDED_NAME;
+    detected_values |= DetectedValue::USER_PROVIDED_EXPIRATION_DATE;
+  }
+#endif  // defined(OS_IOS)
+
   return detected_values;
 }
 
@@ -829,7 +856,17 @@ void CreditCardSaveManager::OnUserDidAcceptUploadHelper(
   // that it is possible a name already existed on the card if conflicting names
   // were found, which this intentionally overwrites.)
   if (!user_provided_card_details.cardholder_name.empty()) {
+#if defined(OS_IOS)
+    // On iOS if the new Infobar UI is enabled, cardholder name was provided by
+    // the user, but not through the fix flow triggered via
+    // |should_request_name_from_user_|.
+    DCHECK(should_request_name_from_user_ ||
+           (base::FeatureList::IsEnabled(
+                autofill::features::kAutofillSaveCardInfobarEditSupport) &&
+            base::FeatureList::IsEnabled(kIOSInfobarUIReboot)));
+#else
     DCHECK(should_request_name_from_user_);
+#endif
     upload_request_.card.SetInfo(CREDIT_CARD_NAME_FULL,
                                  user_provided_card_details.cardholder_name,
                                  app_locale_);
@@ -840,7 +877,17 @@ void CreditCardSaveManager::OnUserDidAcceptUploadHelper(
   // the expiration date on |upload_request_.card| with the selected date.
   if (!user_provided_card_details.expiration_date_month.empty() &&
       !user_provided_card_details.expiration_date_year.empty()) {
+#if defined(OS_IOS)
+    // On iOS if the new Infobar UI is enabled, expiration date was provided by
+    // the user, but not through the fix flow triggered via
+    // |should_request_expiration_date_from_user_|.
+    DCHECK(should_request_expiration_date_from_user_ ||
+           (base::FeatureList::IsEnabled(
+                autofill::features::kAutofillSaveCardInfobarEditSupport) &&
+            base::FeatureList::IsEnabled(kIOSInfobarUIReboot)));
+#else
     DCHECK(should_request_expiration_date_from_user_);
+#endif
     upload_request_.card.SetInfo(
         CREDIT_CARD_EXP_MONTH, user_provided_card_details.expiration_date_month,
         app_locale_);

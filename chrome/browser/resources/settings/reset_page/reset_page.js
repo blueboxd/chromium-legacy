@@ -20,7 +20,7 @@ Polymer({
     /** @private */
     showIncompatibleApplications_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('showIncompatibleApplications');
       },
     },
@@ -32,7 +32,7 @@ Polymer({
    * @param {!settings.Route} route
    * @protected
    */
-  currentRouteChanged: function(route) {
+  currentRouteChanged(route) {
     const lazyRender =
         /** @type {!CrLazyRenderElement} */ (this.$.resetProfileDialog);
 
@@ -50,26 +50,27 @@ Polymer({
   },
 
   /** @private */
-  onShowResetProfileDialog_: function() {
-    settings.navigateTo(
+  onShowResetProfileDialog_() {
+    settings.Router.getInstance().navigateTo(
         settings.routes.RESET_DIALOG, new URLSearchParams('origin=userclick'));
   },
 
   /** @private */
-  onResetProfileDialogClose_: function() {
-    settings.navigateToPreviousRoute();
+  onResetProfileDialogClose_() {
+    settings.Router.getInstance().navigateToPreviousRoute();
     cr.ui.focusWithoutInk(assert(this.$.resetProfile));
   },
 
   // <if expr="_google_chrome and is_win">
   /** @private */
-  onChromeCleanupTap_: function() {
-    settings.navigateTo(settings.routes.CHROME_CLEANUP);
+  onChromeCleanupTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.CHROME_CLEANUP);
   },
 
   /** @private */
-  onIncompatibleApplicationsTap_: function() {
-    settings.navigateTo(settings.routes.INCOMPATIBLE_APPLICATIONS);
+  onIncompatibleApplicationsTap_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.INCOMPATIBLE_APPLICATIONS);
   },
   // </if>
 });

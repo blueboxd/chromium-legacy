@@ -88,7 +88,5 @@ blink_modules_sources("indexeddb") {
     "web_idb_transaction_impl.h",
   ]
 
-  public_deps = [
-    "//third_party/blink/public/mojom:mojom_modules_blink",
-  ]
+  public_deps = [ "//third_party/blink/public/mojom:mojom_modules_blink" ]
 }

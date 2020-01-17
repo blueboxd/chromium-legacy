@@ -53,9 +53,7 @@ source_set("reading_list") {
     "//ui/base",
     "//url",
   ]
-  public_deps = [
-    "//ios/chrome/browser/dom_distiller",
-  ]
+  public_deps = [ "//ios/chrome/browser/dom_distiller" ]
   allow_circular_includes_from = [ ":reading_list_remover" ]
 }
 
@@ -113,9 +111,7 @@ source_set("unit_tests") {
 bundle_data("distilled_bundle_data") {
   testonly = true
 
-  sources = [
-    "data/distilled.html",
-  ]
+  sources = [ "data/distilled.html" ]
   outputs = [
     "{{bundle_resources_dir}}/ios/testing/data/Offline/{{source_file_part}}",
   ]

@@ -6,9 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/polymer.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":cr_tabs",
-  ]
+  deps = [ ":cr_tabs" ]
 }
 
 js_library("cr_tabs") {
@@ -22,15 +20,12 @@ polymer_modulizer("cr_tabs") {
 
 js_type_check("closure_compile_module") {
   is_polymer3 = true
-  deps = [
-    ":cr_tabs.m",
-  ]
+  deps = [ ":cr_tabs.m" ]
 }
 
 js_library("cr_tabs.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_tabs/cr_tabs.m.js",
-  ]
+  sources =
+      [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_tabs/cr_tabs.m.js" ]
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]

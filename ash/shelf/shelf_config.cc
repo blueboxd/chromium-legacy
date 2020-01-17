@@ -34,6 +34,7 @@ bool IsTabletMode() {
 
 ShelfConfig::ShelfConfig()
     : is_dense_(false),
+      shelf_controls_shown_(true),
       is_app_list_visible_(false),
       shelf_button_icon_size_(44),
       shelf_button_icon_size_dense_(36),
@@ -60,10 +61,9 @@ ShelfConfig::ShelfConfig()
       shelf_tooltip_preview_min_ratio_(0.666),  // = 2/3
       shelf_blur_radius_(30),
       mousewheel_scroll_offset_threshold_(20),
-      in_app_control_button_height_inset_(4) {
-  // Ensure ShelfConfig observers are notified if |is_dense_| is updated.
-  if (UpdateIsDense())
-    OnShelfConfigUpdated();
+      in_app_control_button_height_inset_(4),
+      app_icon_end_padding_(4) {
+  UpdateConfig(is_app_list_visible_);
 }
 
 ShelfConfig::~ShelfConfig() = default;
@@ -102,22 +102,16 @@ void ShelfConfig::Shutdown() {
 }
 
 void ShelfConfig::OnTabletModeStarted() {
-  // Ensure ShelfConfig observers are notified if |is_dense_| is updated.
-  if (UpdateIsDense())
-    OnShelfConfigUpdated();
+  UpdateConfig(is_app_list_visible_);
 }
 
 void ShelfConfig::OnTabletModeEnded() {
-  // Ensure ShelfConfig observers are notified if |is_dense_| is updated.
-  if (UpdateIsDense())
-    OnShelfConfigUpdated();
+  UpdateConfig(is_app_list_visible_);
 }
 
 void ShelfConfig::OnDisplayMetricsChanged(const display::Display& display,
                                           uint32_t changed_metrics) {
-  // Ensure ShelfConfig observers are notified if |is_dense_| is updated.
-  if (UpdateIsDense())
-    OnShelfConfigUpdated();
+  UpdateConfig(is_app_list_visible_);
 }
 
 void ShelfConfig::OnAppListVisibilityWillChange(bool shown,
@@ -126,15 +120,7 @@ void ShelfConfig::OnAppListVisibilityWillChange(bool shown,
   // would lead to a lot of extraneous relayout work.
   DCHECK_NE(is_app_list_visible_, shown);
 
-  is_app_list_visible_ = shown;
-
-  // Ensure |is_dense_| is updated since this code path can be triggered
-  // by a tablet mode change before the tablet mode change has propagated to
-  // ShelfConfig. Updating |is_dense_| here will minimize the number of times
-  // OnShelfConfigUpdated() is called during a tablet mode change.
-  UpdateIsDense();
-
-  OnShelfConfigUpdated();
+  UpdateConfig(shown /*app_list_visible*/);
 }
 
 int ShelfConfig::shelf_size() const {
@@ -223,20 +209,33 @@ bool ShelfConfig::is_in_app() const {
          !is_app_list_visible_;
 }
 
-bool ShelfConfig::UpdateIsDense() {
+void ShelfConfig::UpdateConfig(bool app_list_visible) {
   const gfx::Rect screen_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
+  const bool in_tablet_mode = IsTabletMode();
   const bool new_is_dense =
       chromeos::switches::ShouldShowShelfHotseat() &&
-      (!IsTabletMode() ||
+      (!in_tablet_mode ||
        (screen_size.width() <= kDenseShelfScreenSizeThreshold ||
         screen_size.height() <= kDenseShelfScreenSizeThreshold));
-  if (new_is_dense == is_dense_)
-    return false;
+
+  // TODO(http::crbug.com/1008956): Add a user preference that would allow the
+  // user or a policy to override this behavior.
+  const bool new_shelf_controls_shown =
+      !(in_tablet_mode && features::IsHideShelfControlsInTabletModeEnabled());
+
+  if (new_is_dense == is_dense_ &&
+      shelf_controls_shown_ == new_shelf_controls_shown &&
+      is_app_list_visible_ == app_list_visible) {
+    return;
+  }
 
   is_dense_ = new_is_dense;
-  return true;
+  shelf_controls_shown_ = new_shelf_controls_shown;
+  is_app_list_visible_ = app_list_visible;
+
+  OnShelfConfigUpdated();
 }
 
 int ShelfConfig::GetShelfSize(bool ignore_in_app_state) const {
@@ -312,6 +311,12 @@ int ShelfConfig::GetShelfControlButtonBlurRadius() const {
     return shelf_blur_radius_;
   }
   return 0;
+}
+
+int ShelfConfig::GetAppIconEndPadding() const {
+  return (chromeos::switches::ShouldShowShelfHotseat() && IsTabletMode())
+             ? app_icon_end_padding_
+             : 0;
 }
 
 void ShelfConfig::OnShelfConfigUpdated() {

@@ -110,7 +110,7 @@ Event* DeviceMotionController::LastEvent() const {
 }
 
 bool DeviceMotionController::IsNullEvent(Event* event) const {
-  DeviceMotionEvent* motion_event = ToDeviceMotionEvent(event);
+  auto* motion_event = To<DeviceMotionEvent>(event);
   return !motion_event->GetDeviceMotionData()->CanProvideEventData();
 }
 

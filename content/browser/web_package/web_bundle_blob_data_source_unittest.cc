@@ -31,7 +31,7 @@ class WebBundleBlobDataSourceTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     context_ = std::make_unique<storage::BlobStorageContext>(
-        data_dir_.GetPath(),
+        data_dir_.GetPath(), data_dir_.GetPath(),
         base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()}));
     storage::BlobStorageLimits limits;
     limits.max_ipc_memory_size = kTestBlobStorageMaxBytesDataItemSize;

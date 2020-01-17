@@ -12,9 +12,7 @@ js_type_check("closure_compile") {
 }
 
 js_library("google_assistant_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 

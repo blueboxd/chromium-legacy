@@ -168,4 +168,23 @@ TEST_F(AXPositionPerfTest, AsLeafTextPositionFromTreePosition) {
   reporter.AddResult(kMetricCallsPerSecondRunsPerS, timer.LapsPerSecond());
 }
 
+TEST_F(AXPositionPerfTest, CompareTextPositions) {
+  TestPositionType text_position_1 = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, /*anchor_id=*/7, /*text_offset=*/1,
+      ax::mojom::TextAffinity::kDownstream);
+
+  TestPositionType text_position_2 = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, /*anchor_id=*/27, /*text_offset=*/1,
+      ax::mojom::TextAffinity::kDownstream);
+
+  base::LapTimer timer(kWarmupLaps, base::TimeDelta(), kLaps);
+  for (int i = 0; i < kLaps + kWarmupLaps; ++i) {
+    text_position_1->CompareTo(*text_position_2);
+    timer.NextLap();
+  }
+
+  auto reporter = SetUpReporter("CompareTextPositions");
+  reporter.AddResult(kMetricCallsPerSecondRunsPerS, timer.LapsPerSecond());
+}
+
 }  // namespace ui

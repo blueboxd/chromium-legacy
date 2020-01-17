@@ -78,19 +78,13 @@ group("policy_testserver_pyproto") {
 if (is_android) {
   android_library("test_support_java") {
     testonly = true
-    deps = [
-      "//chrome/android:chrome_all_java",
-    ]
-    sources = [
-      "android/test_support/src/org/chromium/chrome/test_support/PaymentRequestTestBridge.java",
-    ]
+    deps = [ "//chrome/android:chrome_all_java" ]
+    sources = [ "android/test_support/src/org/chromium/chrome/test_support/PaymentRequestTestBridge.java" ]
   }
 
   generate_jni("test_support_jni_headers") {
     testonly = true
-    sources = [
-      "android/test_support/src/org/chromium/chrome/test_support/PaymentRequestTestBridge.java",
-    ]
+    sources = [ "android/test_support/src/org/chromium/chrome/test_support/PaymentRequestTestBridge.java" ]
   }
 }
 
@@ -412,9 +406,7 @@ static_library("test_support") {
 
 group("telemetry_gpu_integration_test") {
   testonly = true
-  deps = [
-    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
-  ]
+  deps = [ "//tools/perf/chrome_telemetry_build:telemetry_chrome_test" ]
 
   data = [
     # For isolate contract.
@@ -476,9 +468,7 @@ group("telemetry_gpu_integration_test_scripts_only") {
     "//tools/perf/chrome_telemetry_build:telemetry_chrome_test_without_chrome",
   ]
 
-  data = [
-    "//content/test/gpu/",
-  ]
+  data = [ "//content/test/gpu/" ]
 }
 
 if (is_win) {
@@ -488,9 +478,7 @@ if (is_win) {
       "../browser/ui/startup/credential_provider_signin_dialog_win_test_data.cc",
       "../browser/ui/startup/credential_provider_signin_dialog_win_test_data.h",
     ]
-    deps = [
-      "//base",
-    ]
+    deps = [ "//base" ]
   }
 }
 
@@ -528,11 +516,10 @@ if (is_android) {
       "//testing/android/native_test:native_test_support",
     ]
 
-    data_deps = [
-      "//testing/buildbot/filters:android_browsertests_filters",
-    ]
+    data_deps = [ "//testing/buildbot/filters:android_browsertests_filters" ]
 
     sources = [
+      "../browser/android/webapk/webapk_icon_hasher_browsertest.cc",
       "../browser/engagement/important_sites_util_browsertest.cc",
       "../browser/games/games_service_browsertest.cc",
       "../browser/payments/empty_parameters_browsertest.cc",
@@ -560,6 +547,7 @@ if (is_android) {
       "$root_gen_dir/components/dev_ui_components_resources.pak",
       "$root_out_dir/browser_tests.pak",
       "//components/test/data/payments/",
+      "//chrome/test/data/banners/",
       "//chrome/test/data/ssl/",
     ]
   }
@@ -574,9 +562,7 @@ if (is_android) {
       "base/android/android_browser_test.cc",
       "base/android/android_browser_test.h",
     ]
-    public_deps = [
-      "//content/test:test_support",
-    ]
+    public_deps = [ "//content/test:test_support" ]
     deps = [
       "//chrome/browser",
       "//content/public/browser",
@@ -647,9 +633,7 @@ static_library("browser_tests_runner") {
   testonly = true
   sources = []
 
-  deps = [
-    ":test_support",
-  ]
+  deps = [ ":test_support" ]
 
   if (is_chromeos) {
     sources += [ "base/browser_tests_main_chromeos.cc" ]
@@ -959,6 +943,7 @@ if (!is_android) {
       "../browser/media/defer_background_media_browsertest.cc",
       "../browser/media/encrypted_media_browsertest.cc",
       "../browser/media/encrypted_media_supported_types_browsertest.cc",
+      "../browser/media/history/media_history_browsertest.cc",
       "../browser/media/media_browsertest.cc",
       "../browser/media/media_browsertest.h",
       "../browser/media/media_engagement_autoplay_browsertest.cc",
@@ -1033,6 +1018,8 @@ if (!is_android) {
       "../browser/net/network_request_metrics_browsertest.cc",
       "../browser/net/nss_context_chromeos_browsertest.cc",
       "../browser/net/profile_network_context_service_browsertest.cc",
+      "../browser/net/profile_network_context_service_test_utils.cc",
+      "../browser/net/profile_network_context_service_test_utils.h",
       "../browser/net/proxy_browsertest.cc",
       "../browser/net/proxy_test_utils.cc",
       "../browser/net/proxy_test_utils.h",
@@ -1106,6 +1093,7 @@ if (!is_android) {
       "../browser/prefs/pref_functional_browsertest.cc",
       "../browser/prefs/pref_service_browsertest.cc",
       "../browser/prefs/tracked/pref_hash_browsertest.cc",
+      "../browser/prerender/isolated/isolated_prerender_browsertest.cc",
       "../browser/prerender/prerender_browsertest.cc",
       "../browser/prerender/prerender_nostate_prefetch_browsertest.cc",
       "../browser/prerender/prerender_test_utils.cc",
@@ -1352,6 +1340,7 @@ if (!is_android) {
       "../browser/ui/webui/bookmarks/bookmarks_browsertest.cc",
       "../browser/ui/webui/bookmarks/bookmarks_browsertest.h",
       "../browser/ui/webui/chrome_url_data_manager_browsertest.cc",
+      "../browser/ui/webui/chrome_webui_navigation_browsertest.cc",
       "../browser/ui/webui/chromeos/account_migration_welcome_ui_test.cc",
       "../browser/ui/webui/chromeos/account_migration_welcome_ui_test.h",
       "../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest-inl.h",
@@ -2803,9 +2792,7 @@ if (is_linux || is_mac || is_win) {
 
   group("browser_tests_apprtc") {
     testonly = true
-    data_deps = [
-      ":browser_tests",
-    ]
+    data_deps = [ ":browser_tests" ]
     data = [
       "//third_party/webrtc/rtc_tools/testing/browsertest/apprtc/out/app_engine/",
       "//third_party/webrtc/rtc_tools/testing/browsertest/apprtc/temp/google-cloud-sdk/",
@@ -2819,9 +2806,7 @@ if (is_linux || is_mac || is_win) {
   }
 
   sizes_test("chrome_sizes") {
-    data_deps = [
-      "//chrome",
-    ]
+    data_deps = [ "//chrome" ]
     if (is_win) {
       data_deps += [ "//chrome/installer/mini_installer" ]
     }
@@ -2830,9 +2815,7 @@ if (is_linux || is_mac || is_win) {
 
 group("telemetry_perf_unittests") {
   testonly = true
-  deps = [
-    "//tools/perf:perf",
-  ]
+  deps = [ "//tools/perf:perf" ]
 
   data = [
     # For isolate contract.
@@ -2851,9 +2834,7 @@ group("telemetry_perf_unittests") {
 
 group("telemetry_perf_tests") {
   testonly = true
-  deps = [
-    "//tools/perf/:perf",
-  ]
+  deps = [ "//tools/perf/:perf" ]
 
   data = [
     # Needed for isolate script to execute.
@@ -2864,13 +2845,9 @@ group("telemetry_perf_tests") {
 
 group("ct_telemetry_perf_tests_without_chrome") {
   testonly = true
-  deps = [
-    "//tools/perf/:perf_without_chrome",
-  ]
+  deps = [ "//tools/perf/:perf_without_chrome" ]
 
-  data = [
-    "//tools/perf/contrib/cluster_telemetry/",
-  ]
+  data = [ "//tools/perf/contrib/cluster_telemetry/" ]
 
   data_deps = [
     "//components/subresource_filter/tools:index_ruleset",
@@ -2882,9 +2859,7 @@ group("ct_telemetry_perf_tests_without_chrome") {
 # is done.
 group("performance_test_suite") {
   testonly = true
-  deps = [
-    "//chrome/test:telemetry_perf_tests",
-  ]
+  deps = [ "//chrome/test:telemetry_perf_tests" ]
 
   data_deps = [
     "//base:base_perftests",
@@ -2919,16 +2894,12 @@ group("performance_test_suite") {
 # //testing/buildbot/gn_isolate_map.pyl
 group("performance_webview_test_suite") {
   testonly = true
-  deps = [
-    "//chrome/test:performance_test_suite",
-  ]
+  deps = [ "//chrome/test:performance_test_suite" ]
 }
 
 group("performance_weblayer_test_suite") {
   testonly = true
-  deps = [
-    "//chrome/test:performance_test_suite",
-  ]
+  deps = [ "//chrome/test:performance_test_suite" ]
 }
 
 # Difference between this and telemetry_perf_tests is that this runs a devil
@@ -2936,16 +2907,12 @@ group("performance_weblayer_test_suite") {
 # //testing/buildbot/gn_isolate_map.pyl
 group("telemetry_perf_webview_tests") {
   testonly = true
-  deps = [
-    "//chrome/test:telemetry_perf_tests",
-  ]
+  deps = [ "//chrome/test:telemetry_perf_tests" ]
 }
 
 group("angle_perftests") {
   testonly = true
-  data_deps = [
-    "//testing:run_perf_test",
-  ]
+  data_deps = [ "//testing:run_perf_test" ]
   if (is_win || is_linux || is_android) {
     data_deps += [ "//third_party/angle/src/tests:angle_perftests" ]
   }
@@ -2953,9 +2920,7 @@ group("angle_perftests") {
 
 group("dawn_perf_tests") {
   testonly = true
-  data_deps = [
-    "//testing:run_perf_test",
-  ]
+  data_deps = [ "//testing:run_perf_test" ]
   if (use_dawn) {
     data_deps += [ "//third_party/dawn:dawn_perf_tests_temp_group" ]
   }
@@ -2963,9 +2928,8 @@ group("dawn_perf_tests") {
 
 if (is_mac) {
   mojom("firefox_importer_interface") {
-    sources = [
-      "../utility/importer/firefox_importer_unittest_utils_mac.mojom",
-    ]
+    sources =
+        [ "../utility/importer/firefox_importer_unittest_utils_mac.mojom" ]
     public_deps = [
       "//components/autofill/core/common/mojom:mojo_types",
       "//mojo/public/mojom/base",
@@ -3012,6 +2976,7 @@ test("unit_tests") {
     "../browser/android/explore_sites/image_helper_unittest.cc",
     "../browser/android/explore_sites/import_catalog_task_unittest.cc",
     "../browser/android/explore_sites/increment_shown_count_task_unittest.cc",
+    "../browser/android/explore_sites/most_visited_client_unittest.cc",
     "../browser/android/explore_sites/ntp_json_fetcher_unittest.cc",
     "../browser/android/explore_sites/record_site_click_task_unittest.cc",
     "../browser/android/history_report/data_observer_unittest.cc",
@@ -3066,6 +3031,7 @@ test("unit_tests") {
     "../browser/background_sync/periodic_background_sync_permission_context_unittest.cc",
     "../browser/banners/app_banner_settings_helper_unittest.cc",
     "../browser/bitmap_fetcher/bitmap_fetcher_service_unittest.cc",
+    "../browser/bluetooth/bluetooth_chooser_context_unittest.cc",
     "../browser/bookmarks/managed_bookmark_service_unittest.cc",
     "../browser/browser_about_handler_unittest.cc",
     "../browser/browsing_data/browsing_data_appcache_helper_unittest.cc",
@@ -3320,6 +3286,7 @@ test("unit_tests") {
     "../browser/prefs/profile_pref_store_manager_unittest.cc",
     "../browser/prefs/proxy_policy_unittest.cc",
     "../browser/prefs/session_startup_pref_unittest.cc",
+    "../browser/prerender/isolated/isolated_prerender_url_loader_interceptor_unittest.cc",
     "../browser/prerender/prerender_history_unittest.cc",
     "../browser/prerender/prerender_unittest.cc",
     "../browser/prerender/prerender_util_unittest.cc",
@@ -3562,6 +3529,11 @@ test("unit_tests") {
     ]
   }
 
+  if (enable_webui_tab_strip) {
+    sources +=
+        [ "../browser/ui/webui/tab_strip/tab_strip_ui_handler_unittest.cc" ]
+  }
+
   configs += [ "//build/config:precompiled_headers" ]
 
   if (is_android && notouch_build) {
@@ -3793,9 +3765,11 @@ test("unit_tests") {
       "../browser/permissions/permission_request_notification_android_unittest.cc",
       "../browser/permissions/permission_request_notification_handler_unittest.cc",
       "../browser/tabmodel/tab_persistent_store_unittest.cc",
+      "../browser/toolbar/toolbar_security_icon_unittest.cc",
       "../browser/touch_to_fill/touch_to_fill_controller_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_android_unittest.cc",
       "../browser/updates/update_notification_config_unittest.cc",
+      "../browser/util/url_utilities_unittest.cc",
     ]
     deps += [
       "//base:base_java",
@@ -3848,6 +3822,7 @@ test("unit_tests") {
       "../browser/download/download_shelf_unittest.cc",
       "../browser/enterprise_reporting/browser_report_generator_unittest.cc",
       "../browser/enterprise_reporting/extension_info_unittest.cc",
+      "../browser/enterprise_reporting/notification/extension_request_notification_unittest.cc",
       "../browser/enterprise_reporting/policy_info_unittest.cc",
       "../browser/enterprise_reporting/profile_report_generator_unittest.cc",
       "../browser/enterprise_reporting/report_generator_unittest.cc",
@@ -3903,6 +3878,7 @@ test("unit_tests") {
       "../browser/resource_coordinator/background_tab_navigation_throttle_unittest.cc",
       "../browser/resource_coordinator/decision_details_unittest.cc",
       "../browser/resource_coordinator/discard_metrics_lifecycle_unit_observer_unittest.cc",
+      "../browser/resource_coordinator/intervention_policy_database_unittest.cc",
       "../browser/resource_coordinator/leveldb_site_characteristics_database_unittest.cc",
       "../browser/resource_coordinator/lifecycle_unit_base_unittest.cc",
       "../browser/resource_coordinator/lifecycle_unit_unittest.cc",
@@ -3944,6 +3920,9 @@ test("unit_tests") {
       "../browser/performance_manager/persistence/site_data/site_data_writer_unittest.cc",
       "../browser/performance_manager/persistence/site_data/unittest_utils.cc",
       "../browser/performance_manager/persistence/site_data/unittest_utils.h",
+
+      # Urgent discarding from performance_manager isn't supported on Android.
+      "../browser/performance_manager/graph/policies/urgent_page_discarding_policy_unittest.cc",
 
       # Android does not use the Message Center notification system.
       "../browser/notifications/notification_ui_manager_unittest.cc",
@@ -4876,6 +4855,7 @@ test("unit_tests") {
       "../browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate_unittest.cc",
       "../browser/safe_browsing/cloud_content_scanning/deep_scanning_utils_unittest.cc",
       "../browser/safe_browsing/cloud_content_scanning/multipart_uploader_unittest.cc",
+      "../browser/safe_browsing/download_protection/deep_scanning_request_unittest.cc",
       "../browser/safe_browsing/download_protection/download_feedback_service_unittest.cc",
       "../browser/safe_browsing/download_protection/download_feedback_unittest.cc",
       "../browser/safe_browsing/download_protection/download_item_request_unittest.cc",
@@ -5379,9 +5359,7 @@ test("unit_tests") {
 
 static_library("test_support_unit") {
   testonly = true
-  sources = [
-    "base/run_all_unittests.cc",
-  ]
+  sources = [ "base/run_all_unittests.cc" ]
 
   public_deps = [
     ":test_support",
@@ -5395,9 +5373,7 @@ static_library("test_support_unit") {
   deps = []
 
   if (is_win) {
-    deps = [
-      "//chrome/install_static/test:test_support",
-    ]
+    deps = [ "//chrome/install_static/test:test_support" ]
   }
 
   if (is_chromeos) {
@@ -5492,9 +5468,7 @@ if (!is_android) {
   import("//third_party/protobuf/proto_library.gni")
 
   proto_library("test_proto") {
-    sources = [
-      "../common/safe_browsing/ipc_protobuf_message_test.proto",
-    ]
+    sources = [ "../common/safe_browsing/ipc_protobuf_message_test.proto" ]
   }
 
   if (is_chromeos) {
@@ -5592,6 +5566,7 @@ if (!is_android) {
       "../browser/password_manager/password_manager_interactive_test_base.cc",
       "../browser/password_manager/password_manager_interactive_test_base.h",
       "../browser/password_manager/password_manager_interactive_uitest.cc",
+      "../browser/portal/portal_interactive_uittest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.h",
       "../browser/resource_coordinator/tab_metrics_logger_interactive_uitest.cc",
@@ -6130,9 +6105,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/sync/test/integration/wallet_helper.cc",
       "../browser/sync/test/integration/wallet_helper.h",
     ]
-    public_deps = [
-      "//chrome/browser",
-    ]
+    public_deps = [ "//chrome/browser" ]
     deps = [
       ":test_support",
       "//base",
@@ -6373,9 +6346,7 @@ if (!is_android && !is_fuchsia) {
 
   # Executable to measure time to load libraries.
   test("load_library_perf_tests") {
-    sources = [
-      "../browser/load_library_perf_test.cc",
-    ]
+    sources = [ "../browser/load_library_perf_test.cc" ]
 
     # This test deliberately does not depend in chrome's test support targets.
     # This is a small test and Chrome's test support targets bring in the
@@ -6390,9 +6361,7 @@ if (!is_android && !is_fuchsia) {
       "//third_party/widevine/cdm:buildflags",
     ]
 
-    data_deps = [
-      "//testing:run_perf_test",
-    ]
+    data_deps = [ "//testing:run_perf_test" ]
 
     if (enable_library_cdms) {
       deps += [ "//media/cdm:cdm_paths" ]
@@ -6407,9 +6376,7 @@ if (!is_android && !is_fuchsia) {
   }
 
   test("ntp_render_browsertests") {
-    sources = [
-      "../browser/ui/search/local_ntp_render_browsertest.cc",
-    ]
+    sources = [ "../browser/ui/search/local_ntp_render_browsertest.cc" ]
 
     configs += [ "//build/config:precompiled_headers" ]
 
@@ -6472,9 +6439,7 @@ if (!is_android && !is_fuchsia) {
     ]
 
     if (is_linux || is_win) {
-      data_deps = [
-        "//chrome:packed_resources",
-      ]
+      data_deps = [ "//chrome:packed_resources" ]
     }
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -6538,9 +6503,7 @@ if (!is_android && !is_fuchsia) {
 
   group("telemetry_unittests") {
     testonly = true
-    deps = [
-      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
-    ]
+    deps = [ "//tools/perf/chrome_telemetry_build:telemetry_chrome_test" ]
 
     data = [
       "//third_party/catapult/telemetry/telemetry/internal/bin/",
@@ -6555,9 +6518,7 @@ if (!is_android && !is_fuchsia) {
 
   group("telemetry_gpu_unittests_run") {
     testonly = true
-    deps = [
-      ":telemetry_gpu_unittests",
-    ]
+    deps = [ ":telemetry_gpu_unittests" ]
   }
 
   group("telemetry_gpu_unittests") {
@@ -6614,9 +6575,7 @@ if (is_win) {
 
 if (is_chromeos) {
   fuzzer_test("tokenized_string_fuzzer") {
-    sources = [
-      "../common/string_matching/tokenized_string_fuzzer.cc",
-    ]
+    sources = [ "../common/string_matching/tokenized_string_fuzzer.cc" ]
     deps = [
       "//base",
       "//chrome/common/string_matching",
@@ -6626,9 +6585,7 @@ if (is_chromeos) {
 
 if (is_win) {
   test("pixel_browser_tests") {
-    sources = [
-      "pixel/demo/skia_gold_demo_pixeltest.cc",
-    ]
+    sources = [ "pixel/demo/skia_gold_demo_pixeltest.cc" ]
     configs += [ "//build/config:precompiled_headers" ]
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
     deps = [
@@ -6636,18 +6593,12 @@ if (is_win) {
       ":test_support",
     ]
     if (is_win) {
-      data = [
-        "//tools/skia_goldctl/goldctl.exe",
-      ]
+      data = [ "//tools/skia_goldctl/goldctl.exe" ]
     } else {
-      data = [
-        "//tools/skia_goldctl/goldctl",
-      ]
+      data = [ "//tools/skia_goldctl/goldctl" ]
     }
     if (!is_mac) {
-      data_deps = [
-        "//chrome:packed_resources",
-      ]
+      data_deps = [ "//chrome:packed_resources" ]
     }
   }
 }
@@ -6693,9 +6644,7 @@ if (is_chromeos) {
 
   proto_library("consistency_golden_proto") {
     visibility = [ ":usage_time_limit_unittests" ]
-    sources = [
-      "../browser/chromeos/child_accounts/time_limit_consistency_test/goldens/consistency_golden.proto",
-    ]
+    sources = [ "../browser/chromeos/child_accounts/time_limit_consistency_test/goldens/consistency_golden.proto" ]
     generate_python = false
   }
 }
@@ -6703,9 +6652,7 @@ if (is_chromeos) {
 if (is_mac || is_win || is_android) {
   group("rendering_representative_perf_tests") {
     testonly = true
-    deps = [
-      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
-    ]
+    deps = [ "//tools/perf/chrome_telemetry_build:telemetry_chrome_test" ]
     data = [
       "//build/android/pylib",
       "//chrome/test/data/perf",
@@ -6722,9 +6669,7 @@ if (is_mac || is_win || is_android) {
 if (is_win) {
   test("delayloads_unittests") {
     output_name = "delayloads_unittests"
-    sources = [
-      "delayload/delayloads_unittest.cc",
-    ]
+    sources = [ "delayload/delayloads_unittest.cc" ]
 
     defines = []
     if (is_multi_dll_chrome) {
@@ -6745,9 +6690,7 @@ if (is_win) {
     # the //chrome target to bundle up both initial/chrome.exe and chrome.exe.
     # As a workaround, explicitly include a data dep on just chrome.exe, and
     # add //chrome to deps above to make sure it's been built.
-    data = [
-      "$root_out_dir/chrome.exe",
-    ]
+    data = [ "$root_out_dir/chrome.exe" ]
 
     # Don't want the test-specific dependencies to affect load tests.
     # In particular, a few system DLLs cause user32 to be loaded, which is bad.
@@ -6792,9 +6735,7 @@ if (!is_android) {
 
   test("xr_browser_tests_binary") {
     testonly = true
-    deps = [
-      ":xr_browser_tests_common",
-    ]
+    deps = [ ":xr_browser_tests_common" ]
 
     # Most tests require VR to be enabled.
     if (enable_vr) {
@@ -6845,9 +6786,7 @@ if (!is_android) {
     ]
 
     if (!is_mac) {
-      data_deps = [
-        "//chrome:packed_resources",
-      ]
+      data_deps = [ "//chrome:packed_resources" ]
     }
   }
 
@@ -6855,11 +6794,7 @@ if (!is_android) {
   # once the functionality is available on all platforms.
   copy("xr_browser_tests_runner") {
     testonly = true
-    sources = [
-      "//chrome/browser/vr/test/run_xr_browser_tests.py",
-    ]
-    outputs = [
-      "$root_out_dir/run_xr_browser_tests.py",
-    ]
+    sources = [ "//chrome/browser/vr/test/run_xr_browser_tests.py" ]
+    outputs = [ "$root_out_dir/run_xr_browser_tests.py" ]
   }
 }

@@ -34,9 +34,7 @@ source_set("cells") {
     "//ui/base",
     "//url",
   ]
-  public_deps = [
-    "//ios/third_party/material_components_ios",
-  ]
+  public_deps = [ "//ios/third_party/material_components_ios" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

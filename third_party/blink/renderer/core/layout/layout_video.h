@@ -77,6 +77,7 @@ class LayoutVideo final : public LayoutMedia {
       LayoutUnit estimated_used_width = LayoutUnit()) const override;
   LayoutUnit MinimumReplacedHeight() const override;
 
+  bool CanHaveAdditionalCompositingReasons() const override { return true; }
   CompositingReasons AdditionalCompositingReasons() const override;
 
   void UpdatePlayer(bool is_in_layout);

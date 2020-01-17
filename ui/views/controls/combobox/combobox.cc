@@ -357,8 +357,8 @@ void Combobox::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 bool Combobox::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
   // Escape should close the drop down list when it is active, not host UI.
-  if (e.key_code() != ui::VKEY_ESCAPE ||
-      e.IsShiftDown() || e.IsControlDown() || e.IsAltDown()) {
+  if (e.key_code() != ui::VKEY_ESCAPE || e.IsShiftDown() || e.IsControlDown() ||
+      e.IsAltDown() || e.IsAltGrDown()) {
     return false;
   }
   return !!menu_runner_;

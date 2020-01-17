@@ -292,9 +292,10 @@ void TextInputHost::SetCompositionText(const base::string16& text,
   // the Chrome renderer. Add code to extract underlines from |text| once our
   // render text implementation supports thick underlines and discontinuous
   // underlines for consecutive characters. See http://crbug.com/612675.
-  composition.ime_text_spans.push_back(
-      ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, text.length(),
-                      ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
+  composition.ime_text_spans.push_back(ui::ImeTextSpan(
+      ui::ImeTextSpan::Type::kComposition, 0, text.length(),
+      ui::ImeTextSpan::Thickness::kThin,
+      ui::ImeTextSpan::UnderlineStyle::kSolid, SK_ColorTRANSPARENT));
   text_input_client_->SetCompositionText(composition);
 }
 

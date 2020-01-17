@@ -21,12 +21,12 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/blocked_interception_blocking_page.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
-#include "chrome/browser/ssl/mitm_software_blocking_page.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/dev_ui_components_resources.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
+#include "components/security_interstitials/content/mitm_software_blocking_page.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
@@ -173,9 +173,9 @@ MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
 
   net::SSLInfo ssl_info;
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
-  return new MITMSoftwareBlockingPage(web_contents, cert_error, request_url,
-                                      nullptr, ssl_info, mitm_software_name,
-                                      is_enterprise_managed);
+  return ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
+      web_contents, cert_error, request_url, nullptr, ssl_info,
+      mitm_software_name, is_enterprise_managed);
 }
 
 BlockedInterceptionBlockingPage* CreateBlockedInterceptionBlockingPage(

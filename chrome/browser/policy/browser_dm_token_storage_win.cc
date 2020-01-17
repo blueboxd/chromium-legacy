@@ -15,6 +15,7 @@
 #include <wrl/client.h>
 
 #include <memory>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -25,6 +26,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -151,46 +153,50 @@ std::string BrowserDMTokenStorageWin::InitClientId() {
 }
 
 std::string BrowserDMTokenStorageWin::InitEnrollmentToken() {
-  return base::WideToUTF8(
-      InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentToken());
+  return base::WideToUTF8(InstallUtil::GetCloudManagementEnrollmentToken());
 }
 
 std::string BrowserDMTokenStorageWin::InitDMToken() {
-  base::win::RegKey key;
-  base::string16 dm_token_key_path;
-  base::string16 dm_token_value_name;
-  InstallUtil::GetMachineLevelUserCloudPolicyDMTokenRegistryPath(
-      &dm_token_key_path, &dm_token_value_name);
-  LONG result = key.Open(HKEY_LOCAL_MACHINE, dm_token_key_path.c_str(),
-                         KEY_QUERY_VALUE | KEY_WOW64_64KEY);
-  if (result != ERROR_SUCCESS)
-    return std::string();
-
   // At the time of writing (January 2018), the DM token is about 200 bytes
   // long. The initial size of the buffer should be enough to cover most
   // realistic future size-increase scenarios, although we still make an effort
   // to support somewhat larger token sizes just to be safe.
   constexpr size_t kInitialDMTokenSize = 512;
 
-  DWORD size = kInitialDMTokenSize;
-  std::vector<char> raw_value(size);
-  DWORD dtype = REG_NONE;
-  result = key.ReadValue(dm_token_value_name.c_str(), raw_value.data(), &size,
-                         &dtype);
-  if (result == ERROR_MORE_DATA && size <= installer::kMaxDMTokenLength) {
-    raw_value.resize(size);
-    result = key.ReadValue(dm_token_value_name.c_str(), raw_value.data(), &size,
-                           &dtype);
+  base::win::RegKey key;
+  base::string16 dm_token_value_name;
+  std::vector<char> raw_value(kInitialDMTokenSize);
+
+  // Prefer the app-neutral location over the browser's to match Google Update's
+  // behavior.
+  for (const auto& location : {InstallUtil::BrowserLocation(false),
+                               InstallUtil::BrowserLocation(true)}) {
+    std::tie(key, dm_token_value_name) =
+        InstallUtil::GetCloudManagementDmTokenLocation(
+            InstallUtil::ReadOnly(true), location);
+    if (!key.Valid())
+      continue;
+
+    DWORD dtype = REG_NONE;
+    DWORD size = DWORD{raw_value.size()};
+    auto result = key.ReadValue(dm_token_value_name.c_str(), raw_value.data(),
+                                &size, &dtype);
+    if (result == ERROR_MORE_DATA && size <= installer::kMaxDMTokenLength) {
+      raw_value.resize(size);
+      result = key.ReadValue(dm_token_value_name.c_str(), raw_value.data(),
+                             &size, &dtype);
+    }
+    if (result != ERROR_SUCCESS || dtype != REG_BINARY || size == 0)
+      continue;
+
+    DCHECK_LE(size, installer::kMaxDMTokenLength);
+    return base::TrimWhitespaceASCII(base::StringPiece(raw_value.data(), size),
+                                     base::TRIM_ALL)
+        .as_string();
   }
 
-  if (result != ERROR_SUCCESS || dtype != REG_BINARY || size == 0) {
-    DVLOG(1) << "Failed to get DMToken from Registry.";
-    return std::string();
-  }
-  DCHECK_LE(size, installer::kMaxDMTokenLength);
-  std::string dm_token;
-  dm_token.assign(raw_value.data(), size);
-  return base::TrimWhitespaceASCII(dm_token, base::TRIM_ALL).as_string();
+  DVLOG(1) << "Failed to get DMToken from Registry.";
+  return std::string();
 }
 
 bool BrowserDMTokenStorageWin::InitEnrollmentErrorOption() {

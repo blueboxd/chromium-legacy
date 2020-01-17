@@ -1064,8 +1064,7 @@ TEST_F(LayoutObjectTest, FirstLineBackgroundImageChangeStyleCrash) {
   UpdateAllLifecyclePhasesForTest();
 }
 
-// TODO(rego): Test is failing until we can fix https://crbug.com/941180.
-TEST_F(LayoutObjectTest, DISABLED_NeedsLayoutOverflowRecalc) {
+TEST_F(LayoutObjectTest, NeedsLayoutOverflowRecalc) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;
 

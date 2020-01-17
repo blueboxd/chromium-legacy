@@ -31,14 +31,10 @@ component("ports") {
 
   defines = [ "IS_MOJO_CORE_PORTS_IMPL" ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 
   if (!is_nacl) {
-    deps = [
-      "//crypto",
-    ]
+    deps = [ "//crypto" ]
   }
 }
 

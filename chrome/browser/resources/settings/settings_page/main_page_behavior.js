@@ -2,29 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('settings');
-
-/**
- * @enum {string}
- * A categorization of every possible Settings URL, necessary for implementing
- * a finite state machine.
- */
-settings.RouteState = {
-  // Initial state before anything has loaded yet.
-  INITIAL: 'initial',
-  // A dialog that has a dedicated URL (e.g. /importData).
-  DIALOG: 'dialog',
-  // A section (basically a scroll position within the top level page, e.g,
-  // /appearance.
-  SECTION: 'section',
-  // A subpage, or sub-subpage e.g, /searchEngins.
-  SUBPAGE: 'subpage',
-  // The top level Settings page, '/'.
-  TOP_LEVEL: 'top-level',
-};
-
 cr.define('settings', function() {
-  const RouteState = settings.RouteState;
+  /**
+   * @enum {string}
+   * A categorization of every possible Settings URL, necessary for implementing
+   * a finite state machine.
+   */
+  const RouteState = {
+    // Initial state before anything has loaded yet.
+    INITIAL: 'initial',
+    // A dialog that has a dedicated URL (e.g. /importData).
+    DIALOG: 'dialog',
+    // A section (basically a scroll position within the top level page, e.g,
+    // /appearance.
+    SECTION: 'section',
+    // A subpage, or sub-subpage e.g, /searchEngins.
+    SUBPAGE: 'subpage',
+    // The top level Settings page, '/'.
+    TOP_LEVEL: 'top-level',
+  };
 
   /**
    * @param {?settings.Route} route
@@ -97,7 +93,7 @@ cr.define('settings', function() {
     })(),
 
     /** @override */
-    attached: function() {
+    attached() {
       this.scroller = this.domHost ? this.domHost.parentNode : document.body;
     },
 
@@ -106,7 +102,7 @@ cr.define('settings', function() {
      * @param {!settings.Route} route
      * @return {boolean} Whether the given route is part of |this| page.
      */
-    containsRoute: function(route) {
+    containsRoute(route) {
       return false;
     },
 
@@ -115,7 +111,7 @@ cr.define('settings', function() {
      * @param {boolean} previous
      * @private
      */
-    inSearchModeChanged_: function(current, previous) {
+    inSearchModeChanged_(current, previous) {
       // Ignore 1st occurrence which happens while the element is being
       // initialized.
       if (previous === undefined) {
@@ -123,7 +119,7 @@ cr.define('settings', function() {
       }
 
       if (!this.inSearchMode) {
-        const route = settings.getCurrentRoute();
+        const route = settings.Router.getInstance().getCurrentRoute();
         if (this.containsRoute(route) &&
             classifyRoute(route) === RouteState.SECTION) {
           // Re-fire the showing-section event to trigger settings-main
@@ -139,7 +135,7 @@ cr.define('settings', function() {
      * @return {boolean}
      * @private
      */
-    shouldExpandAdvanced_: function(route) {
+    shouldExpandAdvanced_(route) {
       return (
                  this.tagName == 'SETTINGS-BASIC-PAGE'
                  // <if expr="chromeos">
@@ -159,7 +155,7 @@ cr.define('settings', function() {
      * @return {!Promise<!SettingsSectionElement>}
      * @private
      */
-    ensureSectionForRoute_: function(route) {
+    ensureSectionForRoute_(route) {
       const section = this.getSection(route.section);
       if (section != null) {
         return Promise.resolve(section);
@@ -188,7 +184,7 @@ cr.define('settings', function() {
      * @param {!settings.Route} route
      * @private
      */
-    enterSubpage_: function(route) {
+    enterSubpage_(route) {
       this.lastScrollTop_ = this.scroller.scrollTop;
       this.scroller.scrollTop = 0;
       this.classList.add('showing-subpage');
@@ -217,13 +213,13 @@ cr.define('settings', function() {
      * @return {!Promise<void>}
      * @private
      */
-    enterMainPage_: function(oldRoute) {
+    enterMainPage_(oldRoute) {
       const oldSection = this.getSection(oldRoute.section);
       oldSection.classList.remove('expanded');
       this.classList.remove('showing-subpage');
       return new Promise((res, rej) => {
         requestAnimationFrame(() => {
-          if (settings.lastRouteChangeWasPopstate()) {
+          if (settings.Router.getInstance().lastRouteChangeWasPopstate()) {
             this.scroller.scrollTop = this.lastScrollTop_;
           }
           this.fire('showing-main-page');
@@ -236,7 +232,7 @@ cr.define('settings', function() {
      * @param {!settings.Route} route
      * @private
      */
-    scrollToSection_: function(route) {
+    scrollToSection_(route) {
       this.ensureSectionForRoute_(route).then(section => {
         if (!this.inSearchMode) {
           this.fire('showing-section', section);
@@ -326,7 +322,7 @@ cr.define('settings', function() {
 
           // Scroll to the corresponding section, only if the user explicitly
           // navigated to a section (via the menu).
-          if (!settings.lastRouteChangeWasPopstate()) {
+          if (!settings.Router.getInstance().lastRouteChangeWasPopstate()) {
             this.scrollToSection_(newRoute);
           }
         } else if (newState == RouteState.SUBPAGE) {
@@ -385,7 +381,7 @@ cr.define('settings', function() {
      * @param {string} section Section name of the element to get.
      * @return {?SettingsSectionElement}
      */
-    getSection: function(section) {
+    getSection(section) {
       if (!section) {
         return null;
       }
@@ -394,5 +390,5 @@ cr.define('settings', function() {
     },
   };
 
-  return {MainPageBehavior: MainPageBehavior};
+  return {MainPageBehavior, RouteState};
 });

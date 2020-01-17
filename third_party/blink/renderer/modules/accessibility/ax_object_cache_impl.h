@@ -419,7 +419,10 @@ class MODULES_EXPORT AXObjectCacheImpl
 };
 
 // This is the only subclass of AXObjectCache.
-DEFINE_TYPE_CASTS(AXObjectCacheImpl, AXObjectCache, cache, true, true);
+template <>
+struct DowncastTraits<AXObjectCacheImpl> {
+  static bool AllowFrom(const AXObjectCache& cache) { return true; }
+};
 
 // This will let you know if aria-hidden was explicitly set to false.
 bool IsNodeAriaVisible(Node*);

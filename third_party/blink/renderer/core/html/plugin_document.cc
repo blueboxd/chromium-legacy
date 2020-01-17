@@ -180,10 +180,9 @@ WebPluginContainerImpl* PluginDocumentParser::GetPluginView() const {
   return To<PluginDocument>(GetDocument())->GetPluginView();
 }
 
-PluginDocument::PluginDocument(const DocumentInit& initializer,
-                               Color background_color)
+PluginDocument::PluginDocument(const DocumentInit& initializer)
     : HTMLDocument(initializer, kPluginDocumentClass),
-      background_color_(background_color) {
+      background_color_(initializer.GetPluginBackgroundColor()) {
   SetCompatibilityMode(kQuirksMode);
   LockCompatibilityMode();
   if (GetScheduler()) {

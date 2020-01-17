@@ -10,14 +10,16 @@
 #import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
-#import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/main_controller_guts.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 
 @class AppState;
 @class MetricsMediator;
+@protocol AppURLLoadingServiceDelegate;
 @protocol BrowsingDataCommands;
+@protocol SceneControllerGuts;
+@protocol TabOpening;
 @protocol TabSwitcherDelegate;
 
 // The main controller of the application, owned by the MainWindow nib. Also
@@ -30,7 +32,6 @@
                                       BrowserLauncher,
                                       MainControllerGuts,
                                       StartupInformation,
-                                      TabOpening,
                                       BrowsingDataCommands>
 
 // The application window.
@@ -45,7 +46,11 @@
 @property(nonatomic, weak) MetricsMediator* metricsMediator;
 
 // For temporary plumbing only.
-@property(nonatomic, weak) id<ApplicationCommands, TabSwitcherDelegate>
+@property(nonatomic, weak) id<ApplicationCommands,
+                              TabSwitcherDelegate,
+                              AppURLLoadingServiceDelegate,
+                              SceneControllerGuts,
+                              TabOpening>
     sceneController;
 
 @end

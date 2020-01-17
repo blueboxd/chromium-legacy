@@ -87,8 +87,3 @@ export function setup(elements) {
   });
   return elements;
 }
-
-/** @const */
-cca.tooltip.hide = hide;
-/** @const */
-cca.tooltip.setup = setup;

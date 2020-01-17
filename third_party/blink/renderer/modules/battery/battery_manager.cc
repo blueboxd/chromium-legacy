@@ -30,7 +30,7 @@ BatteryManager::BatteryManager(ExecutionContext* context)
 ScriptPromise BatteryManager::StartRequest(ScriptState* script_state) {
   if (!battery_property_) {
     battery_property_ = MakeGarbageCollected<BatteryProperty>(
-        ExecutionContext::From(script_state), this, BatteryProperty::kReady);
+        ExecutionContext::From(script_state));
 
     // If the context is in a stopped state already, do not start updating.
     if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
@@ -66,7 +66,7 @@ void BatteryManager::DidUpdateData() {
   BatteryStatus old_status = battery_status_;
   battery_status_ = *BatteryDispatcher::Instance().LatestData();
 
-  if (battery_property_->GetState() == ScriptPromisePropertyBase::kPending) {
+  if (battery_property_->GetState() == BatteryProperty::kPending) {
     battery_property_->Resolve(this);
     return;
   }
@@ -120,7 +120,7 @@ bool BatteryManager::HasPendingActivity() const {
   // event listeners or pending promises attached to it.
   return HasEventListeners() ||
          (battery_property_ &&
-          battery_property_->GetState() == ScriptPromisePropertyBase::kPending);
+          battery_property_->GetState() == BatteryProperty::kPending);
 }
 
 void BatteryManager::Trace(blink::Visitor* visitor) {

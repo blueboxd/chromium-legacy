@@ -263,6 +263,33 @@ public class SharedPreferencesManager {
     }
 
     /**
+     * Writes the given float to the named shared preference.
+     *
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     */
+    public void writeFloat(String key, float value) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
+        ed.putFloat(key, value);
+        ed.apply();
+    }
+
+    /**
+     * Reads the given float value from the named shared preference.
+     *
+     * @param key The name of the preference to return.
+     * @param defaultValue The default value to return if there's no value stored.
+     * @return The value of the preference if stored; defaultValue otherwise.
+     */
+    public float readFloat(String key, float defaultValue) {
+        mKeyChecker.checkIsKeyInUse(key);
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            return ContextUtils.getAppSharedPreferences().getFloat(key, defaultValue);
+        }
+    }
+
+    /**
      * Writes the given boolean to the named shared preference.
      *
      * @param key The name of the preference to modify.

@@ -2,27 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview
- * 'settings-keyboard' is the settings subpage with keyboard settings.
- */
-cr.exportPath('settings');
+cr.define('settings', function() {
+  /**
+   * Modifier key IDs corresponding to the ModifierKey enumerators in
+   * /ui/base/ime/chromeos/ime_keyboard.h.
+   * @enum {number}
+   */
+  const ModifierKey = {
+    SEARCH_KEY: 0,
+    CONTROL_KEY: 1,
+    ALT_KEY: 2,
+    VOID_KEY: 3,  // Represents a disabled key.
+    CAPS_LOCK_KEY: 4,
+    ESCAPE_KEY: 5,
+    BACKSPACE_KEY: 6,
+    ASSISTANT_KEY: 7,
+  };
 
-/**
- * Modifier key IDs corresponding to the ModifierKey enumerators in
- * /ui/base/ime/chromeos/ime_keyboard.h.
- * @enum {number}
- */
-settings.ModifierKey = {
-  SEARCH_KEY: 0,
-  CONTROL_KEY: 1,
-  ALT_KEY: 2,
-  VOID_KEY: 3,  // Represents a disabled key.
-  CAPS_LOCK_KEY: 4,
-  ESCAPE_KEY: 5,
-  BACKSPACE_KEY: 6,
-  ASSISTANT_KEY: 7,
-};
+  return {ModifierKey};
+});
 
 Polymer({
   is: 'settings-keyboard',
@@ -87,7 +85,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     cr.addWebUIListener('show-keys-changed', this.onShowKeysChange_.bind(this));
     settings.DevicePageBrowserProxyImpl.getInstance().initializeKeyboard();
     this.setUpKeyMapTargets_();
@@ -97,7 +95,7 @@ Polymer({
    * Initializes the dropdown menu options for remapping keys.
    * @private
    */
-  setUpKeyMapTargets_: function() {
+  setUpKeyMapTargets_() {
     // Ordering is according to UX, but values match settings.ModifierKey.
     this.keyMapTargets_ = [
       {
@@ -140,7 +138,7 @@ Polymer({
    * @param {Object} keyboardParams
    * @private
    */
-  onShowKeysChange_: function(keyboardParams) {
+  onShowKeysChange_(keyboardParams) {
     this.hasInternalKeyboard_ = keyboardParams['hasInternalKeyboard'];
     this.hasAssistantKey_ = keyboardParams['hasAssistantKey'];
     this.showCapsLock_ = keyboardParams['showCapsLock'];
@@ -148,23 +146,23 @@ Polymer({
     this.showAppleCommandKey_ = keyboardParams['showAppleCommandKey'];
   },
 
-  onShowKeyboardShortcutViewerTap_: function() {
+  onShowKeyboardShortcutViewerTap_() {
     settings.DevicePageBrowserProxyImpl.getInstance()
         .showKeyboardShortcutViewer();
   },
 
-  onShowLanguageInputTap_: function() {
-    settings.navigateTo(
+  onShowLanguageInputTap_() {
+    settings.Router.getInstance().navigateTo(
         settings.routes.LANGUAGES_DETAILS,
         /* dynamicParams */ null, /* removeSearch */ true);
   },
 
-  getExternalMetaKeyLabel_: function(hasInternalKeyboard) {
+  getExternalMetaKeyLabel_(hasInternalKeyboard) {
     return loadTimeData.getString(
         hasInternalKeyboard ? 'keyboardKeyExternalMeta' : 'keyboardKeyMeta');
   },
 
-  getExternalCommandKeyLabel_: function(hasInternalKeyboard) {
+  getExternalCommandKeyLabel_(hasInternalKeyboard) {
     return loadTimeData.getString(
         hasInternalKeyboard ? 'keyboardKeyExternalCommand' :
                               'keyboardKeyCommand');

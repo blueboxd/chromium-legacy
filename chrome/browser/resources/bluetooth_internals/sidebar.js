@@ -51,7 +51,7 @@ cr.define('sidebar', function() {
      * Adds a new list item to the sidebar using the given |item|.
      * @param {!SidebarItem} item
      */
-    addItem: function(item) {
+    addItem(item) {
       const sidebarItem = document.createElement('li');
       sidebarItem.dataset.pageName = item.pageName.toLowerCase();
 
@@ -67,7 +67,7 @@ cr.define('sidebar', function() {
     /**
      * Closes the sidebar. Only applies to layouts with window width <= 600px.
      */
-    close: function() {
+    close() {
       this.sidebarDiv_.classList.remove('open');
       document.body.style.overflow = '';
       document.dispatchEvent(new CustomEvent('contentfocus'));
@@ -76,7 +76,7 @@ cr.define('sidebar', function() {
     /**
      * Opens the sidebar. Only applies to layouts with window width <= 600px.
      */
-    open: function() {
+    open() {
       document.body.style.overflow = 'hidden';
       this.sidebarDiv_.classList.add('open');
       document.dispatchEvent(new CustomEvent('contentblur'));
@@ -86,7 +86,7 @@ cr.define('sidebar', function() {
      * Removes a sidebar item where |pageName| matches the item's pageName.
      * @param {string} pageName
      */
-    removeItem: function(pageName) {
+    removeItem(pageName) {
       pageName = pageName.toLowerCase();
       const query = 'li[data-page-name="' + pageName + '"]';
       this.sidebarList_.removeChild(this.sidebarList_.querySelector(query));
@@ -97,7 +97,7 @@ cr.define('sidebar', function() {
      * @override
      * @param {string} path The path of the page being visited.
      */
-    updateHistory: function(path) {
+    updateHistory(path) {
       this.sidebarContent_.querySelectorAll('li').forEach(function(item) {
         item.classList.toggle('selected', item.dataset.pageName === path);
       });
@@ -108,7 +108,7 @@ cr.define('sidebar', function() {
      * @param {!Event} event
      * @private
      */
-    onItemClick_: function(event) {
+    onItemClick_(event) {
       this.close();
       PageManager.showPageByName(event.target.parentNode.dataset.pageName);
     },

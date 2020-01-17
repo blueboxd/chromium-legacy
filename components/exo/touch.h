@@ -5,8 +5,7 @@
 #ifndef COMPONENTS_EXO_TOUCH_H_
 #define COMPONENTS_EXO_TOUCH_H_
 
-#include <vector>
-
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "components/exo/surface_observer.h"
 #include "ui/events/event_handler.h"
@@ -45,6 +44,9 @@ class Touch : public ui::EventHandler, public SurfaceObserver {
   // Returns the effective target for |event|.
   Surface* GetEffectiveTargetForEvent(ui::LocatedEvent* event) const;
 
+  // Cancels touches on all the surfaces.
+  void CancelAllTouches();
+
   // The delegate instance that all events are dispatched to.
   TouchDelegate* const delegate_;
 
@@ -53,11 +55,11 @@ class Touch : public ui::EventHandler, public SurfaceObserver {
   // The delegate instance that all stylus related events are dispatched to.
   TouchStylusDelegate* stylus_delegate_ = nullptr;
 
-  // The current focus surface for the touch device.
-  Surface* focus_ = nullptr;
+  // Map of touch points to its focus surface.
+  base::flat_map<int, Surface*> touch_points_surface_map_;
 
-  // Vector of touch points in focus surface.
-  std::vector<int> touch_points_;
+  // Map of a touched surface to the count of touch pointers on that surface.
+  base::flat_map<Surface*, int> surface_touch_count_map_;
 
   DISALLOW_COPY_AND_ASSIGN(Touch);
 };

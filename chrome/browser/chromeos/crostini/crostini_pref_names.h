@@ -24,6 +24,7 @@ extern const char kUserCrostiniExportImportUIAllowedByPolicy[];
 extern const char kVmManagementCliAllowedByPolicy[];
 extern const char kUserCrostiniRootAccessAllowedByPolicy[];
 extern const char kCrostiniAnsiblePlaybookFilePath[];
+extern const char kCrostiniDefaultContainerConfigured[];
 
 extern const char kReportCrostiniUsageEnabled[];
 extern const char kCrostiniLastLaunchTerminaComponentVersion[];

@@ -136,7 +136,7 @@ cr.define('settings_people_page_account_manager', function() {
       accountList = accountManager.$$('#account-list');
       assertTrue(!!accountList);
 
-      settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
+      settings.Router.getInstance().navigateTo(settings.routes.ACCOUNT_MANAGER);
     });
 
     teardown(function() {
@@ -244,7 +244,7 @@ cr.define('settings_people_page_account_manager', function() {
       accountList = accountManager.$$('#account-list');
       assertTrue(!!accountList);
 
-      settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
+      settings.Router.getInstance().navigateTo(settings.routes.ACCOUNT_MANAGER);
     });
 
     teardown(function() {
@@ -283,7 +283,7 @@ cr.define('settings_people_page_account_manager', function() {
       accountList = accountManager.$$('#account-list');
       assertTrue(!!accountList);
 
-      settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
+      settings.Router.getInstance().navigateTo(settings.routes.ACCOUNT_MANAGER);
     });
 
     teardown(function() {
@@ -322,7 +322,7 @@ cr.define('settings_people_page_account_manager', function() {
       accountList = accountManager.$$('#account-list');
       assertTrue(!!accountList);
 
-      settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
+      settings.Router.getInstance().navigateTo(settings.routes.ACCOUNT_MANAGER);
     });
 
     teardown(function() {

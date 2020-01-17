@@ -20,9 +20,7 @@ source_set("color_headers") {
     "color_provider.h",
   ]
 
-  public_deps = [
-    ":color_buildflags",
-  ]
+  public_deps = [ ":color_buildflags" ]
 
   if (use_color_pipeline) {
     sources += [
@@ -99,9 +97,7 @@ if (use_color_pipeline) {
       "//ui/gfx:color_utils",
     ]
 
-    public_deps = [
-      "//base",
-    ]
+    public_deps = [ "//base" ]
 
     if (is_chromeos) {
       sources += [ "cros/native_color_mixer.cc" ]

@@ -15,7 +15,7 @@ source_set("fast_ink") {
   deps = [
     "//base",
     "//cc",
-    "//components/viz/service",
+    "//components/viz/common",
     "//gpu",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/common",
@@ -30,9 +30,7 @@ source_set("fast_ink") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "fast_ink_points_unittest.cc",
-  ]
+  sources = [ "fast_ink_points_unittest.cc" ]
 
   deps = [
     ":fast_ink",

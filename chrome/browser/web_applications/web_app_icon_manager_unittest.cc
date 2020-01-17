@@ -88,6 +88,28 @@ class WebAppIconManagerTest : public WebAppTest {
     return result;
   }
 
+  SkColor ReadIconAndResize(const AppId& app_id, int desired_icon_size) {
+    base::RunLoop run_loop;
+    SkColor icon_color = SK_ColorBLACK;
+
+    icon_manager().ReadIconAndResize(
+        app_id, desired_icon_size,
+        base::BindLambdaForTesting(
+            [&](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
+              EXPECT_EQ(1u, icon_bitmaps.size());
+              SkBitmap bitmap = icon_bitmaps[desired_icon_size];
+              EXPECT_FALSE(bitmap.empty());
+              EXPECT_EQ(desired_icon_size, bitmap.width());
+              EXPECT_EQ(desired_icon_size, bitmap.height());
+              icon_color = bitmap.getColor(0, 0);
+
+              run_loop.Quit();
+            }));
+
+    run_loop.Run();
+    return icon_color;
+  }
+
   std::unique_ptr<WebApp> CreateWebApp() {
     const GURL app_url = GURL("https://example.com/path");
     const AppId app_id = GenerateAppIdFromURL(app_url);
@@ -441,6 +463,56 @@ TEST_F(WebAppIconManagerTest, ReadSmallestCompressedIcon_Failure) {
   std::vector<uint8_t> compressed_data =
       ReadSmallestCompressedIcon(app_id, sizes_px[0]);
   EXPECT_TRUE(compressed_data.empty());
+}
+
+TEST_F(WebAppIconManagerTest, ReadIconAndResize_Success) {
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  const std::vector<int> sizes_px{icon_size::k32, icon_size::k64,
+                                  icon_size::k256, icon_size::k512};
+  const std::vector<SkColor> colors{SK_ColorBLUE, SK_ColorGREEN, SK_ColorYELLOW,
+                                    SK_ColorRED};
+  WriteIcons(app_id, sizes_px, colors);
+
+  web_app->SetDownloadedIconSizes(sizes_px);
+
+  controller().RegisterApp(std::move(web_app));
+
+  for (SquareSizePx size : sizes_px)
+    EXPECT_TRUE(icon_manager().HasIconToResize(app_id, size));
+
+  EXPECT_TRUE(icon_manager().HasIconToResize(app_id, icon_size::k128));
+  EXPECT_TRUE(icon_manager().HasIconToResize(app_id, icon_size::k16));
+  EXPECT_TRUE(icon_manager().HasIconToResize(app_id, 1024));
+
+  for (size_t i = 0; i < sizes_px.size(); ++i)
+    EXPECT_EQ(colors[i], ReadIconAndResize(app_id, sizes_px[i]));
+
+  EXPECT_EQ(SK_ColorYELLOW, ReadIconAndResize(app_id, icon_size::k128));
+  EXPECT_EQ(SK_ColorBLUE, ReadIconAndResize(app_id, icon_size::k16));
+  EXPECT_EQ(SK_ColorRED, ReadIconAndResize(app_id, 1024));
+}
+
+TEST_F(WebAppIconManagerTest, ReadIconAndResize_Failure) {
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  web_app->SetDownloadedIconSizes({icon_size::k32, icon_size::k64});
+
+  controller().RegisterApp(std::move(web_app));
+
+  base::RunLoop run_loop;
+
+  icon_manager().ReadIconAndResize(
+      app_id, icon_size::k128,
+      base::BindLambdaForTesting(
+          [&](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
+            EXPECT_TRUE(icon_bitmaps.empty());
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
 }
 
 }  // namespace web_app

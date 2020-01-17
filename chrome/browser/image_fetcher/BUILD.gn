@@ -27,7 +27,5 @@ android_library("java") {
 }
 
 generate_jni("jni_headers") {
-  sources = [
-    "android/java/src/org/chromium/chrome/browser/image_fetcher/ImageFetcherBridge.java",
-  ]
+  sources = [ "android/java/src/org/chromium/chrome/browser/image_fetcher/ImageFetcherBridge.java" ]
 }

@@ -126,14 +126,13 @@ void SearchEnginePreconnector::PreconnectDSE() {
   if (!loading_predictor)
     return;
 
-  loading_predictor->preconnect_manager()->StartPreconnectUrl(
-      preconnect_url, true /* allow_credentials */,
+  loading_predictor->PreconnectURLIfAllowed(
+      preconnect_url, /*allow_credentials=*/true,
       net::NetworkIsolationKey(url::Origin::Create(preconnect_url),
                                url::Origin::Create(preconnect_url)));
 
-  loading_predictor->preconnect_manager()->StartPreconnectUrl(
-      preconnect_url, false /* allow_credentials */,
-      net::NetworkIsolationKey());
+  loading_predictor->PreconnectURLIfAllowed(
+      preconnect_url, /*allow_credentials=*/false, net::NetworkIsolationKey());
 
   // The delay beyond the idle socket timeout that net uses when
   // re-preconnecting. If negative, no retries occur.

@@ -118,7 +118,7 @@ unpacker.request = {
    * @param {!unpacker.request.Operation} operation
    * @return {boolean}
    */
-  isPackRequest: function(operation) {
+  isPackRequest(operation) {
     return unpacker.request.MINIMUM_PACK_REQUEST_VALUE <= operation ||
         operation == unpacker.request.Operation.COMPRESSOR_ERROR;
   },
@@ -132,7 +132,7 @@ unpacker.request = {
    * @private
    * @return {!Object} A new request with mandatory fields.
    */
-  createBasic_: function(operation, fileSystemId, requestId) {
+  createBasic_(operation, fileSystemId, requestId) {
     // Protect from ill-defined or invalid |operation|, crbug.com/867842
     if (Object.values(unpacker.request.Operation).indexOf(operation) === -1)
       throwInvalidOperation(operation);
@@ -160,8 +160,7 @@ unpacker.request = {
    * @param {number} archiveSize The size of the archive for fileSystemId.
    * @return {!Object} A read metadata request.
    */
-  createReadMetadataRequest: function(
-      fileSystemId, requestId, encoding, archiveSize) {
+  createReadMetadataRequest(fileSystemId, requestId, encoding, archiveSize) {
     var readMetadataRequest = unpacker.request.createBasic_(
         unpacker.request.Operation.READ_METADATA, fileSystemId, requestId);
     readMetadataRequest[unpacker.request.Key.ENCODING] = encoding;
@@ -181,8 +180,7 @@ unpacker.request = {
    *     parallel for different offsets.
    * @return {!Object} A read chunk done response.
    */
-  createReadChunkDoneResponse: function(
-      fileSystemId, requestId, buffer, readOffset) {
+  createReadChunkDoneResponse(fileSystemId, requestId, buffer, readOffset) {
     var response = unpacker.request.createBasic_(
         unpacker.request.Operation.READ_CHUNK_DONE, fileSystemId, requestId);
     response[unpacker.request.Key.CHUNK_BUFFER] = buffer;
@@ -198,7 +196,7 @@ unpacker.request = {
    * @param {!unpacker.types.RequestId} requestId
    * @return {!Object} A read chunk error response.
    */
-  createReadChunkErrorResponse: function(fileSystemId, requestId) {
+  createReadChunkErrorResponse(fileSystemId, requestId) {
     return unpacker.request.createBasic_(
         unpacker.request.Operation.READ_CHUNK_ERROR, fileSystemId, requestId);
   },
@@ -211,8 +209,7 @@ unpacker.request = {
    * @param {string} passphrase The passphrase.
    * @return {!Object} A read passphrase done response.
    */
-  createReadPassphraseDoneResponse: function(
-      fileSystemId, requestId, passphrase) {
+  createReadPassphraseDoneResponse(fileSystemId, requestId, passphrase) {
     var response = unpacker.request.createBasic_(
         unpacker.request.Operation.READ_PASSPHRASE_DONE, fileSystemId,
         requestId);
@@ -228,7 +225,7 @@ unpacker.request = {
    * @param {!unpacker.types.RequestId} requestId
    * @return {!Object} A read passphrase error response.
    */
-  createReadPassphraseErrorResponse: function(fileSystemId, requestId) {
+  createReadPassphraseErrorResponse(fileSystemId, requestId) {
     return unpacker.request.createBasic_(
         unpacker.request.Operation.READ_PASSPHRASE_ERROR, fileSystemId,
         requestId);
@@ -240,7 +237,7 @@ unpacker.request = {
    * @param {!unpacker.types.FileSystemId} fileSystemId
    * @return {!Object} A close volume request.
    */
-  createCloseVolumeRequest: function(fileSystemId) {
+  createCloseVolumeRequest(fileSystemId) {
     return unpacker.request.createBasic_(
         unpacker.request.Operation.CLOSE_VOLUME, fileSystemId, -1);
   },
@@ -253,8 +250,7 @@ unpacker.request = {
    * @param {number} archiveSize The size of the volume's archive.
    * @return {!Object} An open file request.
    */
-  createOpenFileRequest: function(
-      fileSystemId, requestId, index, encoding, archiveSize) {
+  createOpenFileRequest(fileSystemId, requestId, index, encoding, archiveSize) {
     var openFileRequest = unpacker.request.createBasic_(
         unpacker.request.Operation.OPEN_FILE, fileSystemId, requestId);
     openFileRequest[unpacker.request.Key.INDEX] = index.toString();
@@ -270,7 +266,7 @@ unpacker.request = {
    * @param {!unpacker.types.RequestId} openRequestId
    * @return {!Object} A close file request.
    */
-  createCloseFileRequest: function(fileSystemId, requestId, openRequestId) {
+  createCloseFileRequest(fileSystemId, requestId, openRequestId) {
     var closeFileRequest = unpacker.request.createBasic_(
         unpacker.request.Operation.CLOSE_FILE, fileSystemId, requestId);
     closeFileRequest[unpacker.request.Key.OPEN_REQUEST_ID] =
@@ -287,7 +283,7 @@ unpacker.request = {
    * @param {number} length The number of bytes required.
    * @return {!Object} A read file request.
    */
-  createReadFileRequest: function(
+  createReadFileRequest(
       fileSystemId, requestId, openRequestId, offset, length) {
     var readFileRequest = unpacker.request.createBasic_(
         unpacker.request.Operation.READ_FILE, fileSystemId, requestId);
@@ -303,7 +299,7 @@ unpacker.request = {
    * @param {!unpacker.types.CompressorId} compressorId
    * @return {!Object} A create archive request.
    */
-  createCreateArchiveRequest: function(compressorId) {
+  createCreateArchiveRequest(compressorId) {
     var request = {};
     request[unpacker.request.Key.OPERATION] =
         unpacker.request.Operation.CREATE_ARCHIVE;
@@ -321,7 +317,7 @@ unpacker.request = {
    * @param {boolean} isDirectory Whether the entry is a directory or not.
    * @return {!Object} An add to archive request.
    */
-  createAddToArchiveRequest: function(
+  createAddToArchiveRequest(
       compressorId, entryId, pathname, fileSize, modificationTime,
       isDirectory) {
     var request = {};
@@ -344,7 +340,7 @@ unpacker.request = {
    * @param {!ArrayBuffer} buffer A buffer containing the data that was read.
    * @return {!Object} A read file chunk done response.
    */
-  createReadFileChunkDoneResponse: function(compressorId, length, buffer) {
+  createReadFileChunkDoneResponse(compressorId, length, buffer) {
     var response = {};
     response[unpacker.request.Key.OPERATION] =
         unpacker.request.Operation.READ_FILE_CHUNK_DONE;
@@ -360,7 +356,7 @@ unpacker.request = {
    * @param {number} length The number of bytes written onto the archive file.
    * @return {!Object} A write chunk done response.
    */
-  createWriteChunkDoneResponse: function(compressorId, length) {
+  createWriteChunkDoneResponse(compressorId, length) {
     var response = {};
     response[unpacker.request.Key.OPERATION] =
         unpacker.request.Operation.WRITE_CHUNK_DONE;
@@ -375,7 +371,7 @@ unpacker.request = {
    * @param {boolean} hasError True if some error occurred.
    * @return {!Object} A close archive request.
    */
-  createCloseArchiveRequest: function(compressorId, hasError) {
+  createCloseArchiveRequest(compressorId, hasError) {
     var request = {};
     request[unpacker.request.Key.OPERATION] =
         unpacker.request.Operation.CLOSE_ARCHIVE;
@@ -389,7 +385,7 @@ unpacker.request = {
    * @param {!unpacker.types.CompressorId} compressorId
    * @return {!Object} A close archive request.
    */
-  createCancelArchiveRequest: function(compressorId) {
+  createCancelArchiveRequest(compressorId) {
     var request = {};
     request[unpacker.request.Key.OPERATION] =
         unpacker.request.Operation.CANCEL_ARCHIVE;
@@ -402,7 +398,7 @@ unpacker.request = {
    * @param {!unpacker.types.CompressorId} compressorId
    * @return {!Object} A close archive request.
    */
-  createReleaseCompressorRequest: function(compressorId) {
+  createReleaseCompressorRequest(compressorId) {
     var request = {};
     request[unpacker.request.Key.OPERATION] =
         unpacker.request.Operation.RELEASE_COMPRESSOR;

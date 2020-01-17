@@ -26,18 +26,18 @@ Polymer({
    * Fires a custom event when the menu button is clicked. Sends the details of
    * the printer and where the menu should appear.
    */
-  onOpenActionMenuTap_: function(e) {
+  onOpenActionMenuTap_(e) {
     this.fire('open-action-menu', {
       target: e.target,
       item: this.printerEntry,
     });
   },
 
-  onAddDiscoveredPrinterTap_: function(e) {
+  onAddDiscoveredPrinterTap_(e) {
     this.fire('query-discovered-printer', {item: this.printerEntry});
   },
 
-  onAddAutomaticPrinterTap_: function() {
+  onAddAutomaticPrinterTap_() {
     this.fire('add-automatic-printer', {item: this.printerEntry});
   },
 
@@ -45,7 +45,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isSavedPrinter_: function() {
+  isSavedPrinter_() {
     return this.printerEntry.printerType == PrinterType.SAVED;
   },
 
@@ -53,7 +53,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDiscoveredPrinter_: function() {
+  isDiscoveredPrinter_() {
     return this.printerEntry.printerType == PrinterType.DISCOVERED;
   },
 
@@ -61,16 +61,16 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isAutomaticPrinter_: function() {
+  isAutomaticPrinter_() {
     return this.printerEntry.printerType == PrinterType.AUTOMATIC;
   },
 
-  getSaveButtonAria_: function() {
+  getSaveButtonAria_() {
     return loadTimeData.getStringF(
         'savePrinterAria', this.printerEntry.printerInfo.printerName);
   },
 
-  getSetupButtonAria_: function() {
+  getSetupButtonAria_() {
     return loadTimeData.getStringF(
         'setupPrinterAria', this.printerEntry.printerInfo.printerName);
   },

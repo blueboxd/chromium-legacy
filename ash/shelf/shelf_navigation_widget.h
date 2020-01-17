@@ -9,7 +9,6 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/shell_observer.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -33,9 +32,25 @@ class ShelfView;
 class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
                                          public TabletModeObserver,
                                          public ShellObserver,
-                                         public ui::ImplicitAnimationObserver,
                                          public ShelfConfig::Observer {
  public:
+  class TestApi {
+   public:
+    explicit TestApi(ShelfNavigationWidget* widget);
+    ~TestApi();
+
+    // Whether the home button view is visible.
+    bool IsHomeButtonVisible() const;
+
+    // Whether the back button view is visible.
+    bool IsBackButtonVisible() const;
+
+    views::BoundsAnimator* GetBoundsAnimator();
+
+   private:
+    ShelfNavigationWidget* navigation_widget_;
+  };
+
   ShelfNavigationWidget(Shelf* shelf, ShelfView* shelf_view);
   ~ShelfNavigationWidget() override;
 
@@ -51,13 +66,13 @@ class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
   bool OnNativeWidgetActivationChanged(bool active) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // Getters for the back and home buttons.
+  // Getter for the back button view - nullptr if the back button should not be
+  // shown for the current shelf configuration.
   BackButton* GetBackButton() const;
-  HomeButton* GetHomeButton() const;
 
-  // Places the keyboard focus on either the first or the last child of this
-  // widget.
-  void FocusFirstOrLastFocusableChild(bool last);
+  // Getter for the home button view - nullptr if the home button should not be
+  // shown for  the current shelf configuration.
+  HomeButton* GetHomeButton() const;
 
   // Sets whether the last focusable child (instead of the first) should be
   // focused when activating this widget.
@@ -71,9 +86,6 @@ class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
   void OnShelfAlignmentChanged(aura::Window* root_window,
                                ShelfAlignment old_alignment) override;
 
-  // ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsCompleted() override;
-
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
 
@@ -81,12 +93,10 @@ class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
   // mode and shelf orientation.
   void UpdateLayout(bool animate);
 
-  views::BoundsAnimator* get_bounds_animator_for_testing() {
-    return bounds_animator_.get();
-  }
-
  private:
   class Delegate;
+
+  void UpdateButtonVisibility(views::View* button, bool visible, bool animate);
 
   Shelf* shelf_ = nullptr;
   Delegate* delegate_ = nullptr;

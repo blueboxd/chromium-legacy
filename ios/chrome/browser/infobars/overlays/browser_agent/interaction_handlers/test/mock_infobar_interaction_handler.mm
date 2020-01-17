@@ -4,50 +4,39 @@
 
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/test/mock_infobar_interaction_handler.h"
 
-#import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
+#include "base/logging.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-#pragma mark - MockInfobarBannerInteractionHandler
+#pragma mark - MockInfobarInteractionHandler::Handler
 
-MockInfobarBannerInteractionHandler::MockInfobarBannerInteractionHandler() =
-    default;
+MockInfobarInteractionHandler::Handler::Handler() = default;
+MockInfobarInteractionHandler::Handler::~Handler() = default;
 
-MockInfobarBannerInteractionHandler::~MockInfobarBannerInteractionHandler() =
-    default;
+#pragma mark - MockInfobarInteractionHandler::Builder
 
-#pragma mark - MockInfobarDetailSheetInteractionHandler
+MockInfobarInteractionHandler::Builder::Builder(InfobarType infobar_type)
+    : infobar_type_(infobar_type) {}
 
-MockInfobarDetailSheetInteractionHandler::
-    MockInfobarDetailSheetInteractionHandler() = default;
+MockInfobarInteractionHandler::Builder::~Builder() = default;
 
-MockInfobarDetailSheetInteractionHandler::
-    ~MockInfobarDetailSheetInteractionHandler() = default;
+std::unique_ptr<InfobarInteractionHandler>
+MockInfobarInteractionHandler::Builder::Build() {
+  DCHECK(!has_built_);
+  has_built_ = true;
 
-#pragma mark - MockInfobarModalInteractionHandler
-
-MockInfobarModalInteractionHandler::MockInfobarModalInteractionHandler() =
-    default;
-
-MockInfobarModalInteractionHandler::~MockInfobarModalInteractionHandler() =
-    default;
-
-#pragma mark - MockInfobarModalInteractionHandler
-
-MockInfobarInteractionHandler::MockInfobarInteractionHandler()
-    : InfobarInteractionHandler(
-          InfobarOverlayRequestConfig::RequestSupport(),
-          std::make_unique<MockInfobarBannerInteractionHandler>(),
-          std::make_unique<MockInfobarDetailSheetInteractionHandler>(),
-          std::make_unique<MockInfobarModalInteractionHandler>()) {
-  mock_banner_handler_ =
-      static_cast<MockInfobarBannerInteractionHandler*>(banner_handler());
-  mock_sheet_handler_ =
-      static_cast<MockInfobarDetailSheetInteractionHandler*>(sheet_handler());
-  mock_modal_handler_ =
-      static_cast<MockInfobarModalInteractionHandler*>(modal_handler());
+  std::unique_ptr<MockInfobarInteractionHandler::Handler> banner_handler =
+      std::make_unique<MockInfobarInteractionHandler::Handler>();
+  std::unique_ptr<MockInfobarInteractionHandler::Handler> sheet_handler =
+      std::make_unique<MockInfobarInteractionHandler::Handler>();
+  std::unique_ptr<MockInfobarInteractionHandler::Handler> modal_handler =
+      std::make_unique<MockInfobarInteractionHandler::Handler>();
+  mock_handlers_[InfobarOverlayType::kBanner] = banner_handler.get();
+  mock_handlers_[InfobarOverlayType::kDetailSheet] = sheet_handler.get();
+  mock_handlers_[InfobarOverlayType::kModal] = modal_handler.get();
+  return std::make_unique<InfobarInteractionHandler>(
+      infobar_type_, std::move(banner_handler), std::move(sheet_handler),
+      std::move(modal_handler));
 }
-
-MockInfobarInteractionHandler::~MockInfobarInteractionHandler() = default;

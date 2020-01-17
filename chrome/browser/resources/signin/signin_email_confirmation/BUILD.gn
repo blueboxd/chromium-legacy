@@ -7,9 +7,7 @@ import("//tools/polymer/polymer.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true
-  deps = [
-    ":signin_email_confirmation_app",
-  ]
+  deps = [ ":signin_email_confirmation_app" ]
 }
 
 js_library("signin_email_confirmation_app") {
@@ -21,9 +19,7 @@ js_library("signin_email_confirmation_app") {
 }
 
 group("polymer3_elements") {
-  deps = [
-    ":signin_email_confirmation_app_module",
-  ]
+  deps = [ ":signin_email_confirmation_app_module" ]
 }
 
 polymer_modulizer("signin_email_confirmation_app") {

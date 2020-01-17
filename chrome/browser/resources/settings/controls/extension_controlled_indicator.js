@@ -19,7 +19,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getLabel_: function(extensionId, extensionName) {
+  getLabel_(extensionId, extensionName) {
     if (this.extensionId == undefined || this.extensionName == undefined) {
       return '';
     }
@@ -33,7 +33,7 @@ Polymer({
   },
 
   /** @private */
-  onDisableTap_: function() {
+  onDisableTap_() {
     assert(this.extensionCanBeDisabled);
     settings.ExtensionControlBrowserProxyImpl.getInstance().disableExtension(
         assert(this.extensionId));

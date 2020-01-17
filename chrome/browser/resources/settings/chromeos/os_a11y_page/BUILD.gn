@@ -18,7 +18,8 @@ js_type_check("closure_compile") {
 
 js_library("os_a11y_page") {
   deps = [
-    "../../:route",
+    "../..:route",
+    "../../:router",
     "../../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
@@ -29,6 +30,7 @@ js_library("manage_a11y_page") {
   deps = [
     "..:route_origin_behavior",
     "../..:route",
+    "../..:router",
     "../device_page:device_page_browser_proxy",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
@@ -38,7 +40,7 @@ js_library("manage_a11y_page") {
 
 js_library("switch_access_subpage") {
   deps = [
-    "../..:route",
+    "../..:router",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:load_time_data",
@@ -50,7 +52,7 @@ js_library("switch_access_subpage") {
 js_library("tts_subpage") {
   deps = [
     ":externs",
-    "../..:route",
+    "../..:router",
     "../../controls:settings_slider",
     "../../languages_page:languages_browser_proxy",
     "../../settings_page:settings_animated_pages",

@@ -50,6 +50,9 @@ class PageLiveStateDecorator {
   // can be discarded during an intervention.
   static void SetIsAutoDiscardable(content::WebContents* contents,
                                    bool is_auto_discardable);
+
+  static void SetWasDiscarded(content::WebContents* contents,
+                              bool was_discarded);
 };
 
 class PageLiveStateDecorator::Data {
@@ -66,7 +69,9 @@ class PageLiveStateDecorator::Data {
   virtual bool IsBeingMirrored() const = 0;
   virtual bool IsCapturingDesktop() const = 0;
   virtual bool IsAutoDiscardable() const = 0;
+  virtual bool WasDiscarded() const = 0;
 
+  static const Data* FromPageNode(const PageNode* page_node);
   static Data* GetOrCreateForTesting(PageNode* page_node);
 };
 

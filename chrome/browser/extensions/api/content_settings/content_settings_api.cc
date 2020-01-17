@@ -6,8 +6,8 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -24,8 +24,6 @@
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
-#include "chrome/browser/plugins/plugin_finder.h"
-#include "chrome/browser/plugins/plugin_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -38,14 +36,18 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/extension_prefs_scope.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/error_utils.h"
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/plugin_finder.h"
+#include "chrome/browser/plugins/plugin_installer.h"
+#include "content/public/browser/plugin_service.h"
+#endif
+
 using content::BrowserThread;
-using content::PluginService;
 
 namespace Clear = extensions::api::content_settings::ContentSetting::Clear;
 namespace Get = extensions::api::content_settings::ContentSetting::Get;
@@ -320,13 +322,17 @@ bool ContentSettingsContentSettingGetResourceIdentifiersFunction::RunAsync() {
     return true;
   }
 
-  PluginService::GetInstance()->GetPlugins(base::BindOnce(
+#if BUILDFLAG(ENABLE_PLUGINS)
+  content::PluginService::GetInstance()->GetPlugins(base::BindOnce(
       &ContentSettingsContentSettingGetResourceIdentifiersFunction::
           OnGotPlugins,
       this));
+#endif
+
   return true;
 }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
 void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
     const std::vector<content::WebPluginInfo>& plugins) {
   PluginFinder* finder = PluginFinder::GetInstance();
@@ -354,5 +360,6 @@ void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
               SendResponse,
           this, true));
 }
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 }  // namespace extensions

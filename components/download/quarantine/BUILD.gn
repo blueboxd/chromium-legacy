@@ -8,7 +8,5 @@ static_library("quarantine") {
     "quarantine.h",
   ]
 
-  deps = [
-    "//components/services/quarantine",
-  ]
+  deps = [ "//components/services/quarantine" ]
 }

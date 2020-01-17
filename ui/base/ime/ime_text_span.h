@@ -37,11 +37,19 @@ struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) ImeTextSpan {
     kThick,
   };
 
+  enum class UnderlineStyle {
+    kNone,
+    kSolid,
+    kDot,
+    kDash,
+  };
+
   ImeTextSpan(
       Type type = Type::kComposition,
       uint32_t start_offset = 0,
       uint32_t end_offset = 0,
       Thickness thickness = Thickness::kThin,
+      UnderlineStyle underline_style = UnderlineStyle::kSolid,
       SkColor background_color = SK_ColorTRANSPARENT,
       SkColor suggestion_highlight_color = SK_ColorTRANSPARENT,
       const std::vector<std::string>& suggestions = std::vector<std::string>());
@@ -56,6 +64,8 @@ struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) ImeTextSpan {
            (this->end_offset == rhs.end_offset) &&
            (this->underline_color == rhs.underline_color) &&
            (this->thickness == rhs.thickness) &&
+           (this->underline_style == rhs.underline_style) &&
+           (this->text_color == rhs.text_color) &&
            (this->background_color == rhs.background_color) &&
            (this->suggestion_highlight_color ==
             rhs.suggestion_highlight_color) &&
@@ -71,6 +81,8 @@ struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) ImeTextSpan {
   uint32_t end_offset;
   SkColor underline_color = SK_ColorTRANSPARENT;
   Thickness thickness;
+  UnderlineStyle underline_style;
+  SkColor text_color = SK_ColorTRANSPARENT;
   SkColor background_color;
   SkColor suggestion_highlight_color;
   bool remove_on_finish_composing = false;

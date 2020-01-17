@@ -34,22 +34,20 @@ std::string GetSerialNumber();
 // locally.
 base::Value ConvertProtoToValue(
     const em::AppInstallReportRequest* app_install_report_request,
+    const base::Value& context,
     Profile* profile);
 
 // Converts AppInstallReportLogEvent proto defined in
 // components/policy/proto/device_management_backend.proto to a dictionary value
 // that corresponds to the definition of AndroidAppInstallEvent defined in
 // google3/chrome/cros/reporting/proto/chrome_app_install_events.proto.
+// Appends event_id to the event by calculating hash of the (event,
+// |context|) pair, so long as the calculation is possible.
 base::Value ConvertEventToValue(
     const std::string& package,
     const em::AppInstallReportLogEvent& app_install_report_log_event,
+    const base::Value& context,
     Profile* profile);
-
-// Appends event_id to events in |event_list| by calculating hash of the (event,
-// |context|) pair. If calculating hash is not possible for an event in
-// |event_list|, event_id for that event will not be populated. event_id is used
-// by "Chrome Reporting API" to deduplicate events.
-void AppendEventId(base::Value* event_list, const base::Value& context);
 
 }  // namespace policy
 

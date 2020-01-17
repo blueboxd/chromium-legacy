@@ -57,7 +57,7 @@ cr.define('descriptor_list', function() {
      * a fieldset for displaying property values.
      * @override
      */
-    decorate: function() {
+    decorate() {
       this.classList.add('descriptor-list-item');
 
       /** @private {!object_fieldset.ObjectFieldSet} */
@@ -122,7 +122,7 @@ cr.define('descriptor_list', function() {
     __proto__: ExpandableList.prototype,
 
     /** @override */
-    decorate: function() {
+    decorate() {
       ExpandableList.prototype.decorate.call(this);
 
       /** @private {?string} */
@@ -138,7 +138,7 @@ cr.define('descriptor_list', function() {
       this.setEmptyMessage('No Descriptors Found');
     },
 
-    createItem: function(data) {
+    createItem(data) {
       return new DescriptorListItem(
           data, assert(this.deviceAddress_), assert(this.serviceId_),
           assert(this.characteristicId_));
@@ -153,7 +153,7 @@ cr.define('descriptor_list', function() {
      * @param {string} serviceId
      * @param {string} characteristicId
      */
-    load: function(deviceAddress, serviceId, characteristicId) {
+    load(deviceAddress, serviceId, characteristicId) {
       if (this.descriptorsRequested_ || !this.isSpinnerShowing()) {
         return;
       }

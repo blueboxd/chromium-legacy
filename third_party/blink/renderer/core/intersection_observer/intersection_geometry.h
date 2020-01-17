@@ -34,10 +34,11 @@ class CORE_EXPORT IntersectionGeometry {
     kShouldTrackFractionOfRoot = 1 << 2,
     kShouldUseReplacedContentRect = 1 << 3,
     kShouldConvertToCSSPixels = 1 << 4,
+    kShouldUseCachedRects = 1 << 5,
 
     // These flags will be computed
-    kRootIsImplicit = 1 << 5,
-    kIsVisible = 1 << 6
+    kRootIsImplicit = 1 << 6,
+    kIsVisible = 1 << 7
   };
 
   struct RootGeometry {
@@ -52,21 +53,37 @@ class CORE_EXPORT IntersectionGeometry {
     TransformationMatrix root_to_document_transform;
   };
 
+  struct CachedRects {
+    // Target's bounding rect in the target's coordinate space
+    PhysicalRect local_target_rect;
+    // Target rect mapped up to the root's space, with intermediate clips
+    // applied, but without applying the root's clip or scroll offset.
+    PhysicalRect unscrolled_unclipped_intersection_rect;
+    // True iff unscrolled_unclipped_intersection_rect actually intersects the
+    // root, as defined by edge-inclusive intersection rules.
+    bool does_intersect;
+    // Invalidation flag
+    bool valid;
+  };
+
   static const LayoutObject* GetRootLayoutObjectForTarget(
       const Element* root_element,
-      LayoutObject* target);
+      LayoutObject* target,
+      bool check_containing_block_chain);
 
   IntersectionGeometry(const Element* root,
                        const Element& target,
                        const Vector<Length>& root_margin,
                        const Vector<float>& thresholds,
-                       unsigned flags);
+                       unsigned flags,
+                       CachedRects* cached_rects = nullptr);
 
   IntersectionGeometry(const RootGeometry& root_geometry,
                        const Element& explicit_root,
                        const Element& target,
                        const Vector<float>& thresholds,
-                       unsigned flags);
+                       unsigned flags,
+                       CachedRects* cached_rects = nullptr);
 
   IntersectionGeometry(const IntersectionGeometry&) = default;
 
@@ -102,17 +119,20 @@ class CORE_EXPORT IntersectionGeometry {
   bool IsVisible() const { return flags_ & kIsVisible; }
 
  private:
+  bool ShouldUseCachedRects() const { return flags_ & kShouldUseCachedRects; }
   void ComputeGeometry(const RootGeometry& root_geometry,
                        const LayoutObject* root,
                        const LayoutObject* target,
-                       const Vector<float>& thresholds);
+                       const Vector<float>& thresholds,
+                       CachedRects* cached_rects);
   // Map intersection_rect from the coordinate system of the target to the
   // coordinate system of the root, applying intervening clips.
   bool ClipToRoot(const LayoutObject* root,
                   const LayoutObject* target,
                   const PhysicalRect& root_rect,
                   PhysicalRect& unclipped_intersection_rect,
-                  PhysicalRect& intersection_rect);
+                  PhysicalRect& intersection_rect,
+                  CachedRects* cached_rects = nullptr);
   unsigned FirstThresholdGreaterThan(float ratio,
                                      const Vector<float>& thresholds) const;
 

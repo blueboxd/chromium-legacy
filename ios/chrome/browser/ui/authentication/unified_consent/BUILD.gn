@@ -48,9 +48,7 @@ source_set("unified_consent_ui") {
     "//ios/third_party/material_components_ios",
     "//ui/base",
   ]
-  public_deps = [
-    ":constants",
-  ]
+  public_deps = [ ":constants" ]
 }
 
 source_set("constants") {

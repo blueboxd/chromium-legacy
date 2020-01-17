@@ -687,7 +687,7 @@ void FromGWSPageLoadMetricsLogger::LogMetricsOnComplete(
   const page_load_metrics::ContentfulPaintTimingInfo&
       all_frames_largest_contentful_paint =
           largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
-  if (!all_frames_largest_contentful_paint.IsEmpty() &&
+  if (all_frames_largest_contentful_paint.ContainsValidTime() &&
       WasStartedInForegroundOptionalEventInForeground(
           all_frames_largest_contentful_paint.Time(), delegate)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSLargestContentfulPaint,

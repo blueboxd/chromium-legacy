@@ -8,9 +8,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 proto_library("seatbelt_proto") {
   visibility = [ ":*" ]
-  sources = [
-    "seatbelt.proto",
-  ]
+  sources = [ "seatbelt.proto" ]
 }
 
 component("seatbelt") {
@@ -26,12 +24,8 @@ component("seatbelt") {
     "seatbelt_export.h",
   ]
   libs = [ "sandbox" ]
-  deps = [
-    ":seatbelt_proto",
-  ]
-  public_deps = [
-    "//third_party/protobuf:protobuf_lite",
-  ]
+  deps = [ ":seatbelt_proto" ]
+  public_deps = [ "//third_party/protobuf:protobuf_lite" ]
   defines = [ "SEATBELT_IMPLEMENTATION" ]
 }
 
@@ -43,9 +37,7 @@ component("seatbelt_extension") {
     "seatbelt_extension_token.h",
   ]
   libs = [ "sandbox" ]
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
   defines = [ "SEATBELT_IMPLEMENTATION" ]
 }
 
@@ -59,9 +51,7 @@ component("system_services") {
     "Carbon.framework",
     "CoreFoundation.framework",
   ]
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
   defines = [ "SEATBELT_IMPLEMENTATION" ]
 }
 

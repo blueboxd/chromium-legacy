@@ -50,7 +50,7 @@ class HomeButtonController : public AppListControllerObserver,
 
  private:
   // AppListControllerObserver:
-  void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
+  void OnAppListVisibilityWillChange(bool shown, int64_t display_id) override;
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;

@@ -580,7 +580,6 @@ enum IntAttribute {
 
   // Relationships between this element and other elements.
   kActivedescendantId,
-  kDetailsId,
   kErrormessageId,
   kInPageLinkTargetId,
   kMemberOfId,
@@ -751,6 +750,7 @@ enum IntListAttribute {
 
   // Relationships between this element and other elements.
   kControlsIds,
+  kDetailsIds,
   kDescribedbyIds,
   kFlowtoIds,
   kLabelledbyIds,

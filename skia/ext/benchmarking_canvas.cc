@@ -435,11 +435,34 @@ void BenchmarkingCanvas::willRestore() {
   INHERITED::willRestore();
 }
 
+void BenchmarkingCanvas::didConcat44(const SkScalar m[16]) {
+  AutoOp op(this, "Concat44");
+  op.addParam("column-major", AsListValue(m, 16));
+
+  INHERITED::didConcat44(m);
+}
+
 void BenchmarkingCanvas::didConcat(const SkMatrix& m) {
   AutoOp op(this, "Concat");
   op.addParam("matrix", AsValue(m));
 
   INHERITED::didConcat(m);
+}
+
+void BenchmarkingCanvas::didScale(SkScalar x, SkScalar y) {
+  AutoOp op(this, "Scale");
+  op.addParam("scale-x", AsValue(x));
+  op.addParam("scale-y", AsValue(y));
+
+  INHERITED::didScale(x, y);
+}
+
+void BenchmarkingCanvas::didTranslate(SkScalar x, SkScalar y) {
+  AutoOp op(this, "Translate");
+  op.addParam("translate-x", AsValue(x));
+  op.addParam("translate-y", AsValue(y));
+
+  INHERITED::didTranslate(x, y);
 }
 
 void BenchmarkingCanvas::didSetMatrix(const SkMatrix& m) {

@@ -69,11 +69,11 @@ Polymer({
         .getSearchField();
   },
 
-  deleteSelectedItems: function() {
+  deleteSelectedItems() {
     this.fire('delete-selected');
   },
 
-  clearSelectedItems: function() {
+  clearSelectedItems() {
     this.fire('unselect-all');
   },
 
@@ -82,7 +82,7 @@ Polymer({
    * are currently selected.
    * @private
    */
-  changeToolbarView_: function() {
+  changeToolbarView_() {
     this.itemsSelected_ = this.count > 0;
   },
 
@@ -91,7 +91,7 @@ Polymer({
    * reflect the new search term.
    * @private
    */
-  searchTermChanged_: function() {
+  searchTermChanged_() {
     if (this.searchField.getValue() !== this.searchTerm) {
       this.searchField.showAndFocus();
       this.searchField.setValue(this.searchTerm);
@@ -103,7 +103,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  canShowMenuPromo_: function(showMenuPromo) {
+  canShowMenuPromo_(showMenuPromo) {
     return this.showMenuPromo && !loadTimeData.getBoolean('isGuestSession');
   },
 
@@ -111,12 +111,12 @@ Polymer({
    * @param {!CustomEvent<string>} event
    * @private
    */
-  onSearchChanged_: function(event) {
+  onSearchChanged_(event) {
     this.fire('change-query', {search: event.detail});
   },
 
   /** @private */
-  numberOfItemsSelected_: function(count) {
+  numberOfItemsSelected_(count) {
     return count > 0 ? loadTimeData.getStringF('itemsSelected', count) : '';
   },
 });

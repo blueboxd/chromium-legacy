@@ -501,9 +501,10 @@ TEST_F(PaymentRequestMediatorTest, TestFooterItem) {
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
   AuthenticationServiceFactory::GetForBrowserState(browser_state())
-      ->SignOut(signin_metrics::ProfileSignout::SIGNOUT_TEST, ^{
-        quit_closure.Run();
-      });
+      ->SignOut(signin_metrics::ProfileSignout::SIGNOUT_TEST,
+                /*force_clear_browsing_data=*/false, ^{
+                  quit_closure.Run();
+                });
   run_loop.Run();
 
   // The signed in state has no effect on the footer text if the first

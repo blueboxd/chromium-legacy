@@ -38,6 +38,7 @@
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -450,8 +451,9 @@ void IndexedDBFactoryImpl::HandleBackingStoreFailure(const Origin& origin) {
   // NULL after ContextDestroyed() called, and in some unit tests.
   if (!context_)
     return;
-  context_->ForceClose(origin,
-                       IndexedDBContextImpl::FORCE_CLOSE_BACKING_STORE_FAILURE);
+  context_->ForceCloseSync(
+      origin,
+      storage::mojom::ForceCloseReason::FORCE_CLOSE_BACKING_STORE_FAILURE);
 }
 
 void IndexedDBFactoryImpl::HandleBackingStoreCorruption(

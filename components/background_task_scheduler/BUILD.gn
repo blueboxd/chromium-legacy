@@ -24,9 +24,7 @@ if (is_android) {
   # related permissions for WebView while still wanting to avoid collision
   # between WebView and Chrome.
   android_library("background_task_scheduler_task_ids_java") {
-    sources = [
-      "android/java/src/org/chromium/components/background_task_scheduler/TaskIds.java",
-    ]
+    sources = [ "android/java/src/org/chromium/components/background_task_scheduler/TaskIds.java" ]
   }
 
   android_library("background_task_scheduler_java") {
@@ -125,8 +123,6 @@ if (is_android) {
   proto_java_library("scheduled_task_java") {
     proto_path =
         "android/java/src/org/chromium/components/background_task_scheduler"
-    sources = [
-      "$proto_path/scheduled_task.proto",
-    ]
+    sources = [ "$proto_path/scheduled_task.proto" ]
   }
 }

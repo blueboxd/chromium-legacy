@@ -77,9 +77,10 @@ class WTF_EXPORT PartitionAllocator {
   }
 
   static void TraceBackingStoreIfMarked(void*) {}
-  static void BackingWriteBarrier(void*) {}
-  template <typename>
-  static void BackingWriteBarrierForHashTable(void*) {}
+  template <typename T>
+  static void BackingWriteBarrier(T**) {}
+  template <typename, typename T>
+  static void BackingWriteBarrierForHashTable(T**) {}
 
   static bool IsAllocationAllowed() { return true; }
   static bool IsObjectResurrectionForbidden() { return false; }

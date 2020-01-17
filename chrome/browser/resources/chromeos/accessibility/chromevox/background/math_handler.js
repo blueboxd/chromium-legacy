@@ -23,7 +23,7 @@ MathHandler.prototype = {
    * Speaks the current node.
    * @return {boolean} Whether any math was spoken.
    */
-  speak: function() {
+  speak() {
     var mathml;
 
     // Math can exist either as explicit innerHtml (handled by the Blink

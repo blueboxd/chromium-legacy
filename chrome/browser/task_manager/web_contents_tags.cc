@@ -17,6 +17,7 @@
 #include "chrome/browser/task_manager/providers/web_contents/devtools_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/extension_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/guest_tag.h"
+#include "chrome/browser/task_manager/providers/web_contents/portal_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/prerender_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/printing_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/tab_contents_tag.h"
@@ -155,9 +156,23 @@ void WebContentsTags::CreateForExtension(content::WebContents* web_contents,
 }
 
 // static
+void WebContentsTags::CreateForPortal(content::WebContents* web_contents) {
+#if !defined(OS_ANDROID)
+  if (!WebContentsTag::FromWebContents(web_contents)) {
+    TagWebContents(web_contents, base::WrapUnique(new PortalTag(web_contents)),
+                   WebContentsTag::kTagKey);
+  }
+#endif  // !defined(OS_ANDROID)
+}
+
+// static
 void WebContentsTags::ClearTag(content::WebContents* web_contents) {
 #if !defined(OS_ANDROID)
+  // Some callers may clear the tag of a contents that is currently untagged
+  // (for example, it may have previously been cleared). Doing so is a no-op.
   const WebContentsTag* tag = WebContentsTag::FromWebContents(web_contents);
+  if (!tag)
+    return;
   WebContentsTagsManager::GetInstance()->ClearFromProvider(tag);
   web_contents->RemoveUserData(WebContentsTag::kTagKey);
 #endif  // !defined(OS_ANDROID)

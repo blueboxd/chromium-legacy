@@ -184,7 +184,7 @@ stage_install_common() {
   strippedfile="${buildfile}.stripped"
   debugfile="${buildfile}.debug"
   "${BUILDDIR}/installer/common/eu-strip" -o "${strippedfile}" -f "${debugfile}" "${buildfile}"
-  install -m 4755 "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}-sandbox"
+  install -m 4755 "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/chrome-sandbox"
 
   # l10n paks
   install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/locales/"

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -13,10 +14,10 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -67,16 +68,33 @@ public class AutofillAssistantFacade {
     private static final String EXPERIMENTS_SYNTHETIC_TRIAL = "AutofillAssistantExperimentsTrial";
 
     /** Returns true if conditions are satisfied to attempt to start Autofill Assistant. */
-    public static boolean isConfigured(@Nullable Bundle intentExtras) {
+    private static boolean isConfigured(@Nullable Bundle intentExtras) {
         return getBooleanParameter(intentExtras, PARAMETER_ENABLED);
     }
 
-    /** Starts Autofill Assistant on the given {@code activity}. */
+    /**
+     * Starts Autofill Assistant.
+     * @param activity {@link ChromeActivity} the activity on which the Autofill Assistant is being
+     *         started. This must be a launch activity holding the correct intent for starting.
+     */
     public static void start(ChromeActivity activity) {
+        start(activity, activity.getInitialIntent().getExtras(),
+                activity.getInitialIntent().getDataString());
+    }
+
+    /**
+     * Starts Autofill Assistant.
+     * @param activity {@link ChromeActivity} the activity on which the Autofill Assistant is being
+     *         started.
+     * @param bundleExtras {@link Bundle} the extras which were used to start the Autofill
+     *         Assistant.
+     * @param initialUrl the initial URL the Autofill Assistant should be started on.
+     */
+    public static void start(ChromeActivity activity, Bundle bundleExtras, String initialUrl) {
         // Register synthetic trial as soon as possible.
         UmaSessionStats.registerSyntheticFieldTrial(TRIGGERED_SYNTHETIC_TRIAL, ENABLED_GROUP);
         // Synthetic trial for experiments.
-        String experimentIds = getExperimentIds(activity.getInitialIntent().getExtras());
+        String experimentIds = getExperimentIds(bundleExtras);
         if (!experimentIds.isEmpty()) {
             for (String experimentId : experimentIds.split(",")) {
                 UmaSessionStats.registerSyntheticFieldTrial(
@@ -95,13 +113,11 @@ public class AutofillAssistantFacade {
                             return;
                         }
 
-                        Bundle bundleExtras = activity.getInitialIntent().getExtras();
                         Map<String, String> parameters = extractParameters(bundleExtras);
                         parameters.remove(PARAMETER_ENABLED);
-                        String initialUrl = activity.getInitialIntent().getDataString();
                         moduleEntry.start(tab, tab.getWebContents(),
                                 !AutofillAssistantPreferencesUtil.getShowOnboarding(), initialUrl,
-                                parameters, experimentIds, activity.getInitialIntent().getExtras());
+                                parameters, experimentIds, bundleExtras);
                     });
         });
     }
@@ -202,5 +218,19 @@ public class AutofillAssistantFacade {
                         callback.onResult(tab);
                     }
                 });
+    }
+
+    public static boolean isAutofillAssistantEnabled(Intent intent) {
+        // Check for configuration first for early return to prevent test failures on checking
+        // feature flags.
+        return AutofillAssistantFacade.isConfigured(intent.getExtras())
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT);
+    }
+
+    public static boolean isAutofillAssistantByIntentTriggeringEnabled(Intent intent) {
+        // Check for configuration first for early return to prevent test failures on checking
+        // feature flags.
+        return AutofillAssistantFacade.isAutofillAssistantEnabled(intent)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY);
     }
 }

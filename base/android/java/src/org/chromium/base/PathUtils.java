@@ -12,6 +12,8 @@ import android.os.Environment;
 import android.system.Os;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.task.AsyncTask;
@@ -185,11 +187,14 @@ public abstract class PathUtils {
     }
 
     /**
-     * @return the public downloads directory.
+     * Returns the downloads directory. Before Android Q, this returns the public download directory
+     * for Chrome app. On Q+, this returns the first private download directory for the app, since Q
+     * will block public directory access. May return null when there is no external storage volumes
+     * mounted.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static String getDownloadsDirectory() {
+    private static @NonNull String getDownloadsDirectory() {
         // TODO(crbug.com/508615): Temporarily allowing disk access until more permanent fix is in.
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             if (BuildInfo.isAtLeastQ()) {
@@ -198,7 +203,8 @@ public abstract class PathUtils {
                 // permission to write to Environment.getExternalStoragePublicDirectory(). Instead
                 // using Context.getExternalFilesDir() will return a path to sandboxed external
                 // storage for which no additional permissions are required.
-                return getAllPrivateDownloadsDirectories()[0];
+                String[] dirs = getAllPrivateDownloadsDirectories();
+                return getAllPrivateDownloadsDirectories().length == 0 ? "" : dirs[0];
             }
             return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                     .getPath();

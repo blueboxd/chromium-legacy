@@ -30,7 +30,5 @@ bundle_data("icons") {
     "Icon-87.png",
     "Sample-screenshot-portrait.png",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
 }

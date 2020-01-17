@@ -7,9 +7,7 @@ import("//remoting/build/config/remoting_build.gni")
 group("remoting_all") {
   testonly = true
 
-  deps = [
-    ":remoting_unittests",
-  ]
+  deps = [ ":remoting_unittests" ]
 
   if (is_win) {
     deps += [
@@ -86,9 +84,7 @@ if (is_win) {
 
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-    sources = [
-      "tools/breakpad_tester_win.cc",
-    ]
+    sources = [ "tools/breakpad_tester_win.cc" ]
 
     if (is_win) {
       libs += [

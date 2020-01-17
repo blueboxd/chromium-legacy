@@ -6,8 +6,9 @@
 <script>
 'use strict';
 
-promise_test(t => {
-  self.testRunner.setPermission('wake-lock-screen', 'denied', location.origin, location.origin);
+promise_test(async t => {
+  await internals.setPermission({name: 'wake-lock', type: 'screen'}, 'denied',
+                                location.origin, location.origin);
   return promise_rejects(t, "NotAllowedError", navigator.wakeLock.request('screen'));
 }, 'Denied requests should abort with NotAllowedError');
 </script>

@@ -57,9 +57,7 @@ source_set("language_ui") {
     "//ios/chrome/common/ui_util",
     "//ui/base",
   ]
-  public_deps = [
-    ":language_ui_constants",
-  ]
+  public_deps = [ ":language_ui_constants" ]
 }
 
 source_set("language_ui_constants") {
@@ -73,9 +71,7 @@ source_set("language_ui_constants") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "language_settings_mediator_unittest.mm",
-  ]
+  sources = [ "language_settings_mediator_unittest.mm" ]
   deps = [
     ":language_ui",
     "//base/test:test_support",
@@ -152,9 +148,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "language_settings_egtest.mm",
-  ]
+  sources = [ "language_settings_egtest.mm" ]
   deps = [
     ":language_ui_constants",
     "//base/test:test_support",
@@ -174,9 +168,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "language_settings_egtest.mm",
-  ]
+  sources = [ "language_settings_egtest.mm" ]
   deps = [
     ":eg_test_support",
     ":language_ui_constants",

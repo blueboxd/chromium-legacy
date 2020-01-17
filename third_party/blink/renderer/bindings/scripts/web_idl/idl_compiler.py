@@ -223,14 +223,21 @@ class IdlCompiler(object):
 
     def _determine_blink_headers(self):
         irs = self._ir_map.irs_of_kinds(
-            IRMap.IR.Kind.INTERFACE, IRMap.IR.Kind.NAMESPACE,
-            IRMap.IR.Kind.PARTIAL_INTERFACE, IRMap.IR.Kind.PARTIAL_NAMESPACE)
+            IRMap.IR.Kind.INTERFACE, IRMap.IR.Kind.INTERFACE_MIXIN,
+            IRMap.IR.Kind.NAMESPACE, IRMap.IR.Kind.PARTIAL_INTERFACE,
+            IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN,
+            IRMap.IR.Kind.PARTIAL_NAMESPACE)
 
         self._ir_map.move_to_new_phase()
 
         for old_ir in irs:
             new_ir = make_copy(old_ir)
             self._ir_map.add(new_ir)
+
+            if (new_ir.is_mixin and "LegacyTreatAsPartialInterface" not in
+                    new_ir.extended_attributes):
+                continue
+
             basepath, _ = posixpath.splitext(
                 new_ir.debug_info.location.filepath)
             dirpath, filename = posixpath.split(basepath)
@@ -378,7 +385,7 @@ class IdlCompiler(object):
             ]
 
     def _propagate_extattrs_to_overload_group(self):
-        ANY_OF = ("CrossOrigin", "LenientThis", "NotEnumerable",
+        ANY_OF = ("CrossOrigin", "Custom", "LenientThis", "NotEnumerable",
                   "PerWorldBindings", "SecureContext", "Unforgeable",
                   "Unscopable")
 

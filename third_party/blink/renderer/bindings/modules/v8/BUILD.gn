@@ -73,12 +73,8 @@ generate_origin_trial_features("bindings_modules_origin_trial_features") {
 action("bindings_modules_v8_generated_init_partial") {
   script = "$bindings_scripts_dir/generate_init_partial_interfaces.py"
 
-  inputs = [
-    "$bindings_output_dir/interfaces_info.pickle",
-  ]
-  outputs = [
-    bindings_modules_generated_init_partial_interfaces_file,
-  ]
+  inputs = [ "$bindings_output_dir/interfaces_info.pickle" ]
+  outputs = [ bindings_modules_generated_init_partial_interfaces_file ]
 
   # Put the IDL file list in a response file to avoid command-line limits.
   response_file_contents =
@@ -92,9 +88,7 @@ action("bindings_modules_v8_generated_init_partial") {
                 root_build_dir),
   ]
 
-  deps = [
-    "//third_party/blink/renderer/bindings:interfaces_info",
-  ]
+  deps = [ "//third_party/blink/renderer/bindings:interfaces_info" ]
 }
 
 # Note that this intentionally depends on the generator target of the mojom
@@ -149,9 +143,7 @@ action("generate_v8_context_snapshot_external_references") {
   output = bindings_generated_v8_context_snapshot_external_references_file
 
   inputs = idl_files + [ script ]
-  outputs = [
-    output,
-  ]
+  outputs = [ output ]
 
   response_file_contents = rebase_path(idl_files, root_build_dir)
   args = [

@@ -94,9 +94,7 @@ source_set("scanner_controller") {
 }
 
 source_set("facade_interface_header") {
-  sources = [
-    "engine_facade_interface.h",
-  ]
+  sources = [ "engine_facade_interface.h" ]
 
   deps = [
     "//base",

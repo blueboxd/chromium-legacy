@@ -20,7 +20,7 @@ login.createScreen('NetworkScreen', 'network-selection', function() {
     networkModule_: null,
 
     /** @override */
-    decorate: function() {
+    decorate() {
       this.networkModule_ = $('oobe-network-md');
       this.networkModule_.screen = this;
       this.networkModule_.enabled = true;
@@ -32,7 +32,7 @@ login.createScreen('NetworkScreen', 'network-selection', function() {
     },
 
     /** @override */
-    onBeforeShow: function(data) {
+    onBeforeShow(data) {
       var isDemoModeSetupKey = 'isDemoModeSetup';
       var isDemoModeSetup =
           data && isDemoModeSetupKey in data && data[isDemoModeSetupKey];
@@ -44,7 +44,7 @@ login.createScreen('NetworkScreen', 'network-selection', function() {
      * Shows the network error message.
      * @param {string} message Message to be shown.
      */
-    showError: function(message) {
+    showError(message) {
       var error = document.createElement('div');
       var messageDiv = document.createElement('div');
       messageDiv.className = 'error-message-bubble';
@@ -57,12 +57,12 @@ login.createScreen('NetworkScreen', 'network-selection', function() {
      * Enables or disables the offline Demo Mode option.
      * @param {bool} enabled
      */
-    setOfflineDemoModeEnabled: function(enabled) {
+    setOfflineDemoModeEnabled(enabled) {
       this.networkModule_.offlineDemoModeEnabled = enabled;
     },
 
     /** Called after resources are updated. */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       this.networkModule_.updateLocalizedContent();
     },
   };

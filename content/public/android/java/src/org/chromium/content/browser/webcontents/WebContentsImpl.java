@@ -974,6 +974,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
                 mNativeWebContentsAndroid, WebContentsImpl.this);
     }
 
+    @Override
     public void setFocus(boolean hasFocus) {
         if (mNativeWebContentsAndroid == 0) return;
         WebContentsImplJni.get().setFocus(
@@ -991,6 +992,13 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     public void notifyRendererPreferenceUpdate() {
         if (mNativeWebContentsAndroid == 0) return;
         WebContentsImplJni.get().notifyRendererPreferenceUpdate(
+                mNativeWebContentsAndroid, WebContentsImpl.this);
+    }
+
+    @Override
+    public void notifyBrowserControlsHeightChanged() {
+        if (mNativeWebContentsAndroid == 0) return;
+        WebContentsImplJni.get().notifyBrowserControlsHeightChanged(
                 mNativeWebContentsAndroid, WebContentsImpl.this);
     }
 
@@ -1088,6 +1096,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         void setDisplayCutoutSafeArea(long nativeWebContentsAndroid, WebContentsImpl caller,
                 int top, int left, int bottom, int right);
         void notifyRendererPreferenceUpdate(long nativeWebContentsAndroid, WebContentsImpl caller);
+        void notifyBrowserControlsHeightChanged(
+                long nativeWebContentsAndroid, WebContentsImpl caller);
         boolean isBeingDestroyed(long nativeWebContentsAndroid, WebContentsImpl caller);
     }
 }

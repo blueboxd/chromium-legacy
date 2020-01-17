@@ -21,10 +21,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.translate.TranslateBridge;
-import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu;
 import org.chromium.chrome.browser.ui.widget.listmenu.ListMenu;
 import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuItemProperties;
+import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 

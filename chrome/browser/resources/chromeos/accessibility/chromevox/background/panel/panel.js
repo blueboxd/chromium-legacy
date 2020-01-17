@@ -157,6 +157,18 @@ Panel.init = function() {
 
   /** @type {Window} */
   Panel.ownerWindow = window;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  Panel.menuSearchEnabled_ = false;
+
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-experimental-accessibility-chromevox-search-menus',
+      function(enabled) {
+        Panel.menuSearchEnabled_ = enabled;
+      });
 };
 
 /**
@@ -302,8 +314,9 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
   Panel.clearMenus();
   Panel.pendingCallback_ = null;
 
-  // Build the top-level menus.
-  var searchMenu = Panel.addSearchMenu('panel_search_menu');
+  var searchMenu = (Panel.menuSearchEnabled_) ?
+      Panel.addSearchMenu('panel_search_menu') :
+      null;
   var jumpMenu = Panel.addMenu('panel_menu_jump');
   var speechMenu = Panel.addMenu('panel_menu_speech');
   var tabsMenu = Panel.addMenu('panel_menu_tabs');
@@ -488,7 +501,8 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
   }
 
   // Activate either the specified menu or the search menu.
-  var selectedMenu = Panel.searchMenu;
+  // Search menu can be null, since it is hidden behind a flag.
+  var selectedMenu = Panel.searchMenu || Panel.menus_[0];
   for (var i = 0; i < Panel.menus_.length; i++) {
     if (Panel.menus_[i].menuMsg == opt_activateMenuTitle) {
       selectedMenu = Panel.menus_[i];
@@ -868,7 +882,7 @@ Panel.onKeyDown = function(event) {
   // If left/right arrow are pressed, we should adjust the search bar's cursor.
   // We only want to advance the active menu if we are at the beginning/end of
   // the search bar's contents.
-  if (event.target == Panel.searchMenu.searchBar) {
+  if (Panel.searchMenu && event.target == Panel.searchMenu.searchBar) {
     switch (event.key) {
       case 'ArrowLeft':
       case 'ArrowRight':

@@ -108,7 +108,7 @@ Document* HTMLImportChild::GetDocument() const {
 }
 
 void HTMLImportChild::StateWillChange() {
-  ToHTMLImportTreeRoot(Root())->ScheduleRecalcState();
+  To<HTMLImportTreeRoot>(Root())->ScheduleRecalcState();
 }
 
 void HTMLImportChild::StateDidChange() {

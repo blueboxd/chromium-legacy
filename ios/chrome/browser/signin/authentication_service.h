@@ -90,9 +90,12 @@ class AuthenticationService : public KeyedService,
   // Virtual for testing.
   virtual void SignIn(ChromeIdentity* identity);
 
-  // Signs the authenticated user out of Chrome.
+  // Signs the authenticated user out of Chrome and clears the browsing
+  // data if the account is managed. If force_clear_browsing_data is true,
+  // clears the browsing data unconditionally.
   // Virtual for testing.
   virtual void SignOut(signin_metrics::ProfileSignout signout_source,
+                       bool force_clear_browsing_data,
                        ProceduralBlock completion);
 
   // Returns whether there is a cached associated MDM error for |identity|.

@@ -240,9 +240,7 @@ jumbo_component("wtf") {
 }
 
 test("wtf_unittests") {
-  deps = [
-    ":wtf_unittests_sources",
-  ]
+  deps = [ ":wtf_unittests_sources" ]
 }
 
 jumbo_source_set("wtf_unittests_sources") {

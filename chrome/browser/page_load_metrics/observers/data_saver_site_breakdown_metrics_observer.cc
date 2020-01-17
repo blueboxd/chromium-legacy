@@ -50,6 +50,10 @@ DataSaverSiteBreakdownMetricsObserver::OnCommit(
   committed_host_ = navigation_handle->GetWebContents()
                         ->GetLastCommittedURL()
                         .HostNoBrackets();
+  committed_origin_ = navigation_handle->GetWebContents()
+                          ->GetLastCommittedURL()
+                          .GetOrigin()
+                          .spec();
   return CONTINUE_OBSERVING;
 }
 
@@ -65,6 +69,7 @@ void DataSaverSiteBreakdownMetricsObserver::OnResourceDataUseObserved(
   if (data_reduction_proxy_settings &&
       data_reduction_proxy_settings->data_reduction_proxy_service()) {
     DCHECK(!committed_host_.empty());
+    DCHECK(!committed_origin_.empty());
     int64_t received_data_length = 0;
     int64_t data_reduction_proxy_bytes_saved = 0;
     for (auto const& resource : resources) {
@@ -83,6 +88,14 @@ void DataSaverSiteBreakdownMetricsObserver::OnResourceDataUseObserved(
             (resource->data_reduction_proxy_compression_ratio_estimate - 1.0);
       }
     }
+    double origin_save_data_savings =
+        data_reduction_proxy_settings->data_reduction_proxy_service()
+            ->GetSaveDataSavingsPercentEstimate(committed_origin_);
+    if (origin_save_data_savings) {
+      data_reduction_proxy_bytes_saved +=
+          received_data_length * origin_save_data_savings / 100;
+    }
+
     data_reduction_proxy_settings->data_reduction_proxy_service()
         ->UpdateDataUseForHost(
             received_data_length,

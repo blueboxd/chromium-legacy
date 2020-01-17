@@ -101,6 +101,7 @@ const TableInfo kTables[] = {
      " response_size INTEGER,"
      " padding_size INTEGER)"},
 
+    // The |is_pattern| field is obsolete.
     {kNamespacesTable,
      "(cache_id INTEGER,"
      " origin TEXT,"  // intentionally not normalized
@@ -109,6 +110,7 @@ const TableInfo kTables[] = {
      " target_url TEXT,"
      " is_pattern INTEGER CHECK(is_pattern IN (0, 1)))"},
 
+    // The |is_pattern| field is obsolete.
     {kOnlineWhiteListsTable,
      "(cache_id INTEGER,"
      " namespace_url TEXT,"
@@ -803,7 +805,7 @@ bool AppCacheDatabase::InsertNamespace(
   statement.BindInt(2, record->namespace_.type);
   statement.BindString(3, record->namespace_.namespace_url.spec());
   statement.BindString(4, record->namespace_.target_url.spec());
-  statement.BindBool(5, record->namespace_.is_pattern);
+  statement.BindBool(5, /*is_pattern=*/false);
   return statement.Run();
 }
 
@@ -867,7 +869,7 @@ bool AppCacheDatabase::InsertOnlineWhiteList(
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
   statement.BindString(1, record->namespace_url.spec());
-  statement.BindBool(2, record->is_pattern);
+  statement.BindBool(2, /*is_pattern=*/false);
 
   return statement.Run();
 }
@@ -1061,7 +1063,6 @@ void AppCacheDatabase::ReadNamespaceRecord(
       static_cast<AppCacheNamespaceType>(statement->ColumnInt(2));
   record->namespace_.namespace_url = GURL(statement->ColumnString(3));
   record->namespace_.target_url = GURL(statement->ColumnString(4));
-  record->namespace_.is_pattern = statement->ColumnBool(5);
   DCHECK(record->namespace_.type == APPCACHE_FALLBACK_NAMESPACE ||
          record->namespace_.type == APPCACHE_INTERCEPT_NAMESPACE);
   // The APPCACHE_NETWORK_NAMESPACE are stored as OnlineWhiteListRecords.
@@ -1071,7 +1072,6 @@ void AppCacheDatabase::ReadOnlineWhiteListRecord(
     const sql::Statement& statement, OnlineWhiteListRecord* record) {
   record->cache_id = statement.ColumnInt64(0);
   record->namespace_url = GURL(statement.ColumnString(1));
-  record->is_pattern = statement.ColumnBool(2);
 }
 
 bool AppCacheDatabase::LazyOpen(bool create_if_needed) {

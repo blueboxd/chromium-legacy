@@ -38,8 +38,8 @@ bool DummyDriveService::CanSendRequest() const { return true; }
 
 bool DummyDriveService::HasAccessToken() const { return true; }
 
-void DummyDriveService::RequestAccessToken(const AuthStatusCallback& callback) {
-  callback.Run(google_apis::HTTP_NOT_MODIFIED, "fake_access_token");
+void DummyDriveService::RequestAccessToken(AuthStatusCallback callback) {
+  std::move(callback).Run(google_apis::HTTP_NOT_MODIFIED, "fake_access_token");
 }
 
 bool DummyDriveService::HasRefreshToken() const { return true; }

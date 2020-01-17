@@ -26,9 +26,7 @@ buildflag_header("cronet_buildflags") {
 
 process_version("cronet_version_header") {
   template_file = "//components/cronet/version.h.in"
-  sources = [
-    "//chrome/VERSION",
-  ]
+  sources = [ "//chrome/VERSION" ]
   output = "$target_gen_dir/version.h"
   extra_args = [
     "-e",
@@ -84,9 +82,7 @@ source_set("metrics_util") {
     "metrics_util.cc",
     "metrics_util.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 # Unit tests for Cronet common implementation.
@@ -117,15 +113,11 @@ source_set("cronet_common_unittests") {
 if (is_android) {
   group("cronet_package") {
     testonly = true
-    deps = [
-      "//components/cronet/android:cronet_package_android",
-    ]
+    deps = [ "//components/cronet/android:cronet_package_android" ]
   }
 } else if (is_ios) {
   group("cronet_package") {
-    deps = [
-      "//components/cronet/ios:cronet_package_ios",
-    ]
+    deps = [ "//components/cronet/ios:cronet_package_ios" ]
   }
 } else {
   config("shared_library_public_config") {
@@ -153,9 +145,7 @@ if (is_android) {
       "//net",
     ]
 
-    sources = [
-      "cronet_global_state_stubs.cc",
-    ]
+    sources = [ "cronet_global_state_stubs.cc" ]
 
     if (is_mac && !is_component_build) {
       ldflags = [
@@ -211,12 +201,8 @@ if (is_android) {
     _license_path = "$_package_dir/LICENSE"
 
     script = "//tools/licenses.py"
-    inputs = [
-      lastchange_file,
-    ]
-    outputs = [
-      _license_path,
-    ]
+    inputs = [ lastchange_file ]
+    outputs = [ _license_path ]
     args = [
       "license_file",
       rebase_path(_license_path, root_build_dir),
@@ -234,21 +220,15 @@ if (is_android) {
       "//AUTHORS",
       "//chrome/VERSION",
     ]
-    deps = [
-      ":cronet",
-    ]
-    outputs = [
-      "$_package_dir/{{source_file_part}}",
-    ]
+    deps = [ ":cronet" ]
+    outputs = [ "$_package_dir/{{source_file_part}}" ]
   }
 
   # Copy headers.
   copy("cronet_package_headers") {
     sources = cronet_native_public_headers + grpc_public_headers
 
-    outputs = [
-      "$_package_dir/include/{{source_file_part}}",
-    ]
+    outputs = [ "$_package_dir/include/{{source_file_part}}" ]
   }
 
   group("cronet_package") {
@@ -294,9 +274,7 @@ if (is_android) {
   }
 
   test("cronet_sample_test") {
-    sources = [
-      "native/sample/test/sample_test.cc",
-    ]
+    sources = [ "native/sample/test/sample_test.cc" ]
     deps = [
       ":cronet_sample",
       "//testing/gtest:gtest",

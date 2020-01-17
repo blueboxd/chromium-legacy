@@ -145,17 +145,6 @@ const char* ContentSettingImageView::GetClassName() const {
   return "ContentSettingsImageView";
 }
 
-void ContentSettingImageView::OnBoundsChanged(
-    const gfx::Rect& previous_bounds) {
-  if (indicator_promo_)
-    indicator_promo_->OnAnchorBoundsChanged();
-
-  if (bubble_view_)
-    bubble_view_->OnAnchorBoundsChanged();
-
-  IconLabelBubbleView::OnBoundsChanged(previous_bounds);
-}
-
 bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
   // Pause animation so that the icon does not shrink and deselect while the
   // user is attempting to press it.

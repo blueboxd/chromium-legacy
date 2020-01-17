@@ -89,7 +89,8 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, DISABLED_BasicApiTest) {
   composition.text = base::UTF8ToUTF16("test_set_composition");
   composition.ime_text_spans.push_back(ui::ImeTextSpan(
       ui::ImeTextSpan::Type::kComposition, 0, composition.text.length(),
-      ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
+      ui::ImeTextSpan::Thickness::kThin,
+      ui::ImeTextSpan::UnderlineStyle::kSolid, SK_ColorTRANSPARENT));
   composition.selection = gfx::Range(2, 2);
   const std::vector<ui::CompositionText>& composition_history =
       client->composition_history();

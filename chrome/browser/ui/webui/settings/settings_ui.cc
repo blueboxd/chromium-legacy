@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
 #include "chrome/browser/ui/webui/settings/font_handler.h"
+#include "chrome/browser/ui/webui/settings/import_data_handler.h"
 #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
 #include "chrome/browser/ui/webui/settings/on_startup_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
@@ -41,12 +42,12 @@
 #include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_clear_browsing_data_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_cookies_view_handler.h"
-#include "chrome/browser/ui/webui/settings/settings_import_data_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/settings_media_devices_selection_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_security_key_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
+#include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -281,7 +282,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->SetDefaultResource(IDR_SETTINGS_SETTINGS_HTML);
 #endif
 
-  AddLocalizedStrings(html_source, profile, web_ui->GetWebContents());
+  AddSharedLocalizedStrings(html_source, profile, web_ui->GetWebContents());
+  AddBrowserLocalizedStrings(html_source, profile, web_ui->GetWebContents());
 
   ManagedUIHandler::Initialize(web_ui, html_source);
 
@@ -313,6 +315,9 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers() {
             account_manager, IdentityManagerFactory::GetForProfile(profile)));
   }
 
+  // MultideviceHandler is required in browser settings to show a special note
+  // under the notification permission that is auto-granted for Android Messages
+  // integration in ChromeOS.
   if (!profile->IsGuestSession()) {
     chromeos::android_sms::AndroidSmsService* android_sms_service =
         chromeos::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(

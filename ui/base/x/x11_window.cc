@@ -554,17 +554,7 @@ bool XWindow::IsActive() const {
   // a window is topmost iff it has focus, just use the focus state to determine
   // if a window is active.  Note that Activate() and Deactivate() change the
   // stacking order in addition to changing the focus state.
-  bool is_active =
-      (has_window_focus_ || has_pointer_focus_) && !ignore_keyboard_input_;
-
-  // is_active => window_mapped_in_server_
-  // !window_mapped_in_server_ => !is_active
-  DCHECK(!is_active || window_mapped_in_server_);
-
-  // |has_window_focus_| and |has_pointer_focus_| are mutually exclusive.
-  DCHECK(!has_window_focus_ || !has_pointer_focus_);
-
-  return is_active;
+  return (has_window_focus_ || has_pointer_focus_) && !ignore_keyboard_input_;
 }
 void XWindow::SetSize(const gfx::Size& size_in_pixels) {
   XResizeWindow(xdisplay_, xwindow_, size_in_pixels.width(),

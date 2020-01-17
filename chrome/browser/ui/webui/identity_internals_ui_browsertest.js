@@ -108,7 +108,7 @@ BaseIdentityInternalsWebUITest.prototype = {
 // Test verifying chrome://identity-internals Web UI when the token cache is
 // empty.
 TEST_F('BaseIdentityInternalsWebUITest', 'emptyTokenCache', function() {
-  var tokenListEntries = this.getTokens();
+  const tokenListEntries = this.getTokens();
   expectEquals(0, tokenListEntries.length);
 });
 
@@ -132,7 +132,7 @@ IdentityInternalsSingleTokenWebUITest.prototype = {
 // Test for listing a token cache with a single token. It uses a known extension
 // - the Chrome Web Store, in order to check the extension name.
 TEST_F('IdentityInternalsSingleTokenWebUITest', 'getAllTokens', function() {
-  var tokenListEntries = this.getTokens();
+  const tokenListEntries = this.getTokens();
   expectEquals(1, tokenListEntries.length);
   expectEquals('Web Store', this.getExtensionName(tokenListEntries[0]));
   expectEquals('ahfgeienlihckogmohjhadlkjgocpleb',
@@ -141,7 +141,7 @@ TEST_F('IdentityInternalsSingleTokenWebUITest', 'getAllTokens', function() {
   expectEquals('Token Present', this.getTokenStatus(tokenListEntries[0]));
   expectLT(this.getExpirationTime(tokenListEntries[0]) - new Date(),
            3600 * 1000);
-  var scopes = this.getScopes(tokenListEntries[0]);
+  const scopes = this.getScopes(tokenListEntries[0]);
   expectEquals(3, scopes.length);
   expectEquals('store_scope1', scopes[0]);
   expectEquals('store_scope2', scopes[1]);
@@ -152,8 +152,8 @@ TEST_F('IdentityInternalsSingleTokenWebUITest', 'getAllTokens', function() {
 // correctly. They are implemented on the child class, because the parent does
 // not have any tokens to display.
 TEST_F('IdentityInternalsSingleTokenWebUITest', 'verifyGetters', function() {
-  var tokenListEntries = document.querySelectorAll('#token-list > div');
-  var actualTokens = this.getTokens();
+  const tokenListEntries = document.querySelectorAll('#token-list > div');
+  const actualTokens = this.getTokens();
   expectEquals(tokenListEntries.length, actualTokens.length);
   expectEquals(tokenListEntries[0], actualTokens[0]);
   expectEquals(this.getExtensionName(tokenListEntries[0]),
@@ -169,11 +169,11 @@ TEST_F('IdentityInternalsSingleTokenWebUITest', 'verifyGetters', function() {
   expectEquals(this.getExpirationTime(tokenListEntries[0]),
       Date.parse(tokenListEntries[0].querySelector('.expiration-time')
           .innerText.replace(' at ', ' ')));
-  var scopes = tokenListEntries[0].querySelector('.scope-list')
-      .innerHTML.split('<br>');
-  var actualScopes = this.getScopes(tokenListEntries[0]);
+  const scopes =
+      tokenListEntries[0].querySelector('.scope-list').innerHTML.split('<br>');
+  const actualScopes = this.getScopes(tokenListEntries[0]);
   expectEquals(scopes.length, actualScopes.length);
-  for (var i = 0; i < scopes.length; i++) {
+  for (let i = 0; i < scopes.length; i++) {
     expectEquals(scopes[i], actualScopes[i]);
   }
 });
@@ -199,7 +199,7 @@ IdentityInternalsMultipleTokensWebUITest.prototype = {
 // are empty, because extensions are faked, and not present in the extension
 // service.
 TEST_F('IdentityInternalsMultipleTokensWebUITest', 'getAllTokens', function() {
-  var tokenListEntries = this.getTokens();
+  const tokenListEntries = this.getTokens();
   expectEquals(2, tokenListEntries.length);
   expectEquals('', this.getExtensionName(tokenListEntries[0]));
   expectEquals('extension0',
@@ -208,7 +208,7 @@ TEST_F('IdentityInternalsMultipleTokensWebUITest', 'getAllTokens', function() {
   expectEquals('Token Present', this.getTokenStatus(tokenListEntries[0]));
   expectLT(this.getExpirationTime(tokenListEntries[0]) - new Date(),
            3600 * 1000);
-  var scopes = this.getScopes(tokenListEntries[0]);
+  let scopes = this.getScopes(tokenListEntries[0]);
   expectEquals(3, scopes.length);
   expectEquals('scope_1_0', scopes[0]);
   expectEquals('scope_2_0', scopes[1]);
@@ -220,7 +220,7 @@ TEST_F('IdentityInternalsMultipleTokensWebUITest', 'getAllTokens', function() {
   expectEquals('Token Present', this.getTokenStatus(tokenListEntries[1]));
   expectLT(this.getExpirationTime(tokenListEntries[1]) - new Date(),
            3600 * 1000);
-  var scopes = this.getScopes(tokenListEntries[1]);
+  scopes = this.getScopes(tokenListEntries[1]);
   expectEquals(3, scopes.length);
   expectEquals('scope_1_1', scopes[0]);
   expectEquals('scope_2_1', scopes[1]);
@@ -243,18 +243,17 @@ IdentityInternalsWebUITestAsync.prototype = {
 };
 
 TEST_F('IdentityInternalsWebUITestAsync', 'revokeToken', function() {
-  var tokenListBefore = this.getTokens();
+  const tokenListBefore = this.getTokens();
   expectEquals(2, tokenListBefore.length);
-  var tokenRevokeDone = identity_internals.tokenRevokeDone;
+  const tokenRevokeDone = identity_internals.tokenRevokeDone;
   identity_internals.tokenRevokeDone = this.continueTest(
       WhenTestDone.ALWAYS, function(accessTokens) {
         tokenRevokeDone.call(identity_internals, accessTokens);
         identity_internals.tokenRevokeDone = tokenRevokeDone;
-        var tokenListAfter = this.getTokens();
+        const tokenListAfter = this.getTokens();
         expectEquals(1, tokenListAfter.length);
         expectEquals(this.getAccessToken(tokenListBefore[0]),
                      this.getAccessToken(tokenListAfter[0]));
       }.bind(this));
   this.getRevokeButton(tokenListBefore[1]).click();
 });
-

@@ -17,17 +17,15 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
-import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
+import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -56,9 +54,9 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
     private FaviconHelper mFaviconHelper;
 
     @Nullable
-    private TabObserver mTabObserver;
+    private CustomTabTabObserver mTabObserver;
     @Nullable
-    private TabObserver mIconTabObserver;
+    private CustomTabTabObserver mIconTabObserver;
     @Nullable
     private CustomTabActivityTabProvider.Observer mActivityTabObserver;
 
@@ -105,11 +103,10 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
         mFaviconHelper = new FaviconHelper();
 
         startObserving();
-        onActiveTabChanged();
     }
 
     private void startObserving() {
-        mTabObserver = new EmptyTabObserver() {
+        mTabObserver = new CustomTabTabObserver() {
             @Override
             public void onUrlUpdated(Tab tab) {
                 updateTaskDescription();
@@ -138,11 +135,21 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
             public void onDidChangeThemeColor(Tab tab, int color) {
                 updateTaskDescription();
             }
+
+            @Override
+            public void onAttachedToInitialTab(@NonNull Tab tab) {
+                onActiveTabChanged();
+            }
+
+            @Override
+            public void onObservingDifferentTab(@NonNull Tab tab) {
+                onActiveTabChanged();
+            }
         };
         mTabObserverRegistrar.registerActivityTabObserver(mTabObserver);
 
         if (mForceIcon != null) {
-            mIconTabObserver = new EmptyTabObserver() {
+            mIconTabObserver = new CustomTabTabObserver() {
                 @Override
                 public void onWebContentsSwapped(
                         Tab tab, boolean didStartLoad, boolean didFinishLoad) {
@@ -178,25 +185,11 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
             };
             mTabObserverRegistrar.registerActivityTabObserver(mIconTabObserver);
         }
-
-        mActivityTabObserver = new CustomTabActivityTabProvider.Observer() {
-            @Override
-            public void onInitialTabCreated(@NonNull Tab tab, @TabCreationMode int mode) {
-                onActiveTabChanged();
-            }
-
-            @Override
-            public void onTabSwapped(@NonNull Tab tab) {
-                onActiveTabChanged();
-            }
-        };
-        mTabProvider.addObserver(mActivityTabObserver);
     }
 
     private void stopObserving() {
         mTabObserverRegistrar.unregisterActivityTabObserver(mTabObserver);
         mTabObserverRegistrar.unregisterActivityTabObserver(mIconTabObserver);
-        mTabProvider.removeObserver(mActivityTabObserver);
     }
 
     private void onActiveTabChanged() {

@@ -167,6 +167,11 @@ luci.console_view(
             short_name = 'M proguard',
         ),
         luci.console_view_entry(
+            builder = 'ci/android-10-arm64-rel',
+            category = 'builder_tester',
+            short_name = '10',
+        ),
+        luci.console_view_entry(
             builder = 'ci/android-kitkat-arm-rel',
             category = 'on_cq',
             short_name = 'K',

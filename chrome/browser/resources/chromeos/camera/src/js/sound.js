@@ -25,6 +25,3 @@ export function play(selector) {
   p.cancel = cancel;
   return p;
 }
-
-/** @const */
-cca.sound.play = play;

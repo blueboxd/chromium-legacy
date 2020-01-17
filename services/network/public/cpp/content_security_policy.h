@@ -45,6 +45,10 @@ class COMPONENT_EXPORT(NETWORK_CPP) ContentSecurityPolicy {
     return std::move(content_security_policies_);
   }
 
+  // string <-> enum conversions:
+  static std::string ToString(mojom::CSPDirectiveName);
+  static mojom::CSPDirectiveName ToDirectiveName(const std::string&);
+
  private:
   std::vector<mojom::ContentSecurityPolicyPtr> content_security_policies_;
 };

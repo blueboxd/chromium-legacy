@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/generated_children.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_quote.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
@@ -176,12 +177,26 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
   DCHECK(CanHaveGeneratedChildren(*layout_object->Parent()));
 
   const ComputedStyle& style = layout_object->StyleRef();
-  if (style.StyleType() != kPseudoIdBefore &&
-      style.StyleType() != kPseudoIdAfter &&
-      style.StyleType() != kPseudoIdMarker)
-    return;
-  DCHECK(style.GetContentData());
+  switch (style.StyleType()) {
+    case kPseudoIdMarker: {
+      LayoutObject* parent = layout_object->Parent();
+      if (parent && parent->IsLayoutNGListItem()) {
+        ToLayoutNGListItem(layout_object->Parent())
+            ->UpdateMarkerContentIfNeeded();
+      }
+      if (style.ContentBehavesAsNormal())
+        return;
+      break;
+    }
+    case kPseudoIdBefore:
+    case kPseudoIdAfter:
+      break;
+    default:
+      return;
+  }
 
+  DCHECK(!style.ContentBehavesAsNormal());
+  DCHECK(!style.ContentPreventsBoxGeneration());
   for (const ContentData* content = style.GetContentData(); content;
        content = content->Next()) {
     LegacyLayout legacy = context.force_legacy_layout ? LegacyLayout::kForce
@@ -200,7 +215,7 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
 }
 
 bool PseudoElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
-  return PseudoElementLayoutObjectIsNeeded(&style);
+  return PseudoElementLayoutObjectIsNeeded(&style, this->parentElement());
 }
 
 bool PseudoElement::CanGeneratePseudoElement(PseudoId pseudo_id) const {
@@ -220,15 +235,32 @@ Node* PseudoElement::InnerNodeForHitTesting() const {
   return ParentOrShadowHostNode();
 }
 
-bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle* style) {
-  if (!style)
+bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle* pseudo_style,
+                                       const Element* originating_element) {
+  if (!pseudo_style)
     return false;
-  if (style->Display() == EDisplay::kNone)
+  if (pseudo_style->Display() == EDisplay::kNone)
     return false;
-  if (style->StyleType() == kPseudoIdFirstLetter ||
-      style->StyleType() == kPseudoIdBackdrop)
-    return true;
-  return style->GetContentData();
+  switch (pseudo_style->StyleType()) {
+    case kPseudoIdFirstLetter:
+    case kPseudoIdBackdrop:
+      return true;
+    case kPseudoIdBefore:
+    case kPseudoIdAfter:
+      return !pseudo_style->ContentPreventsBoxGeneration();
+    case kPseudoIdMarker: {
+      if (!pseudo_style->ContentBehavesAsNormal())
+        return !pseudo_style->ContentPreventsBoxGeneration();
+      const ComputedStyle* parent_style =
+          originating_element->GetComputedStyle();
+      return parent_style &&
+             (parent_style->ListStyleType() != EListStyleType::kNone ||
+              parent_style->GeneratesMarkerImage());
+    }
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 }  // namespace blink

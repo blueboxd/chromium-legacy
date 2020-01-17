@@ -224,17 +224,14 @@ void CryptAuthV2DeviceManagerImpl::OnDeviceSyncFinished(
   // This is particularly relevant for timeout failures.
   callback_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  // The DeviceSync result might be owned by the device syncer, so we copy the
-  // result here before destroying the device syncer.
-  CryptAuthDeviceSyncResult device_sync_result_copy = device_sync_result;
   device_syncer_.reset();
 
   std::stringstream prefix;
   prefix << "DeviceSync attempt with invocation reason "
          << current_client_metadata_->invocation_reason();
   std::stringstream suffix;
-  suffix << "with result code " << device_sync_result_copy.result_code() << ".";
-  switch (device_sync_result_copy.GetResultType()) {
+  suffix << "with result code " << device_sync_result.result_code() << ".";
+  switch (device_sync_result.GetResultType()) {
     case CryptAuthDeviceSyncResult::ResultType::kSuccess:
       PA_LOG(INFO) << prefix.str() << " succeeded  " << suffix.str();
       break;
@@ -248,7 +245,7 @@ void CryptAuthV2DeviceManagerImpl::OnDeviceSyncFinished(
   }
 
   PA_LOG(INFO) << "The device registry "
-               << (device_sync_result_copy.did_device_registry_change()
+               << (device_sync_result.did_device_registry_change()
                        ? "changed."
                        : "did not change.");
 
@@ -257,7 +254,7 @@ void CryptAuthV2DeviceManagerImpl::OnDeviceSyncFinished(
   // TODO(nohle): Log DeviceSync result metrics: success, result code, and if
   // devices changed.
 
-  scheduler_->HandleDeviceSyncResult(device_sync_result_copy);
+  scheduler_->HandleDeviceSyncResult(device_sync_result);
 
   base::Optional<base::TimeDelta> time_to_next_attempt = GetTimeToNextAttempt();
   if (time_to_next_attempt) {
@@ -267,14 +264,14 @@ void CryptAuthV2DeviceManagerImpl::OnDeviceSyncFinished(
     PA_LOG(INFO) << "No future DeviceSync requests currently scheduled.";
   }
 
-  if (!device_sync_result_copy.IsSuccess()) {
+  if (!device_sync_result.IsSuccess()) {
     PA_LOG(INFO) << "Number of consecutive DeviceSync failures: "
                  << scheduler_->GetNumConsecutiveDeviceSyncFailures() << ".";
   }
 
   SetState(State::kIdle);
 
-  NotifyDeviceSyncFinished(device_sync_result_copy);
+  NotifyDeviceSyncFinished(device_sync_result);
 }
 
 std::ostream& operator<<(std::ostream& stream,

@@ -14,7 +14,6 @@ namespace resource_coordinator {
 using ::mojom::LifecycleUnitState;
 
 extern const char kPendingFreezeTracingEventName[];
-extern const char kPendingDiscardTracingEventName[];
 extern const char kPendingUnfreezeTracingEventName[];
 
 // Observes a LifecycleUnit to generate trace events.

@@ -138,24 +138,24 @@ Polymer({
     restoreFocusAfterCancel_: false,
 
     /** @override */
-    attached: function() {
+    attached() {
       afterNextRender(this, function() {
         IronA11yAnnouncer.requestAvailability();
       });
     },
 
     /** @override */
-    ready: function() {
+    ready() {
       this.mojoHandler_ = BrowserProxy.getInstance().handler;
       this.content = this.$.content;
     },
 
-    focusOnRemoveButton: function() {
+    focusOnRemoveButton() {
       focusWithoutInk(this.$.remove);
     },
 
     /** Overrides FocusRowBehavior. */
-    getCustomEquivalent: function(sampleElement) {
+    getCustomEquivalent(sampleElement) {
       if (sampleElement.getAttribute('focus-type') === 'cancel') {
         return this.$$('[focus-type="retry"]');
       }
@@ -166,7 +166,7 @@ Polymer({
     },
 
     /** @return {!HTMLElement} */
-    getFileIcon: function() {
+    getFileIcon() {
       return /** @type {!HTMLElement} */ (this.$['file-icon']);
     },
 
@@ -175,12 +175,12 @@ Polymer({
      * @return {string} A reasonably long URL.
      * @private
      */
-    chopUrl_: function(url) {
+    chopUrl_(url) {
       return url.slice(0, 300);
     },
 
     /** @private */
-    computeClass_: function() {
+    computeClass_() {
       const classes = [];
 
       if (this.isActive_) {
@@ -202,7 +202,7 @@ Polymer({
      * @return {boolean}
      * @private
      */
-    computeCompletelyOnDisk_: function() {
+    computeCompletelyOnDisk_() {
       return this.data.state === States.COMPLETE &&
           !this.data.fileExternallyRemoved;
     },
@@ -211,7 +211,7 @@ Polymer({
      * @return {string}
      * @private
      */
-    computeControlledBy_: function() {
+    computeControlledBy_() {
       if (!this.data.byExtId || !this.data.byExtName) {
         return '';
       }
@@ -225,7 +225,7 @@ Polymer({
      * @return {string}
      * @private
      */
-    computeControlRemoveFromListAriaLabel_: function() {
+    computeControlRemoveFromListAriaLabel_() {
       return loadTimeData.getStringF(
           'controlRemoveFromListAriaLabel', this.data.fileName);
     },
@@ -234,7 +234,7 @@ Polymer({
      * @return {string}
      * @private
      */
-    computeDate_: function() {
+    computeDate_() {
       assert(typeof this.data.hideDate === 'boolean');
       if (this.data.hideDate) {
         return '';
@@ -243,7 +243,7 @@ Polymer({
     },
 
     /** @private @return {boolean} */
-    computeDescriptionVisible_: function() {
+    computeDescriptionVisible_() {
       return this.computeDescription_() !== '';
     },
 
@@ -251,7 +251,7 @@ Polymer({
      * @return {string}
      * @private
      */
-    computeDescription_: function() {
+    computeDescription_() {
       const data = this.data;
 
       switch (data.state) {
@@ -308,7 +308,7 @@ Polymer({
      * @return {string}
      * @private
      */
-    computeIcon_: function() {
+    computeIcon_() {
       if (this.data) {
         const dangerType = this.data.dangerType;
 
@@ -340,7 +340,7 @@ Polymer({
      * @return {boolean}
      * @private
      */
-    computeIsActive_: function() {
+    computeIsActive_() {
       return this.data.state !== States.CANCELLED &&
           this.data.state !== States.INTERRUPTED &&
           !this.data.fileExternallyRemoved;
@@ -350,7 +350,7 @@ Polymer({
      * @return {boolean}
      * @private
      */
-    computeIsDangerous_: function() {
+    computeIsDangerous_() {
       return this.data.state === States.DANGEROUS;
     },
 
@@ -358,7 +358,7 @@ Polymer({
      * @return {boolean}
      * @private
      */
-    computeIsInProgress_: function() {
+    computeIsInProgress_() {
       return this.data.state === States.IN_PROGRESS;
     },
 
@@ -366,7 +366,7 @@ Polymer({
      * @return {boolean}
      * @private
      */
-    computeIsMalware_: function() {
+    computeIsMalware_() {
       return this.isDangerous_ &&
           (this.data.dangerType === DangerType.DANGEROUS_CONTENT ||
            this.data.dangerType === DangerType.DANGEROUS_HOST ||
@@ -375,7 +375,7 @@ Polymer({
     },
 
     /** @private */
-    toggleButtonClass_: function() {
+    toggleButtonClass_() {
       this.$$('#pauseOrResume')
           .classList.toggle(
               'action-button',
@@ -384,7 +384,7 @@ Polymer({
     },
 
     /** @private */
-    updatePauseOrResumeClass_: function() {
+    updatePauseOrResumeClass_() {
       if (!this.pauseOrResumeText_) {
         return;
       }
@@ -398,7 +398,7 @@ Polymer({
      * @return {string}
      * @private
      */
-    computePauseOrResumeText_: function() {
+    computePauseOrResumeText_() {
       if (this.data === undefined) {
         return '';
       }
@@ -416,7 +416,7 @@ Polymer({
      * @return {string}
      * @private
      */
-    computeRemoveStyle_: function() {
+    computeRemoveStyle_() {
       const canDelete = loadTimeData.getBoolean('allowDeletingHistory');
       const hideRemove = this.isDangerous_ || this.showCancel_ || !canDelete;
       return hideRemove ? 'visibility: hidden' : '';
@@ -426,7 +426,7 @@ Polymer({
      * @return {boolean}
      * @private
      */
-    computeShowCancel_: function() {
+    computeShowCancel_() {
       return this.data.state === States.IN_PROGRESS ||
           this.data.state === States.PAUSED;
     },
@@ -435,7 +435,7 @@ Polymer({
      * @return {boolean}
      * @private
      */
-    computeShowProgress_: function() {
+    computeShowProgress_() {
       return this.showCancel_ && this.data.percent >= -1;
     },
 
@@ -443,7 +443,7 @@ Polymer({
      * @return {string}
      * @private
      */
-    computeTag_: function() {
+    computeTag_() {
       switch (this.data.state) {
         case States.CANCELLED:
           return loadTimeData.getString('statusCancelled');
@@ -464,12 +464,12 @@ Polymer({
      * @return {boolean}
      * @private
      */
-    isIndeterminate_: function() {
+    isIndeterminate_() {
       return this.data.percent === -1;
     },
 
     /** @private */
-    observeControlledBy_: function() {
+    observeControlledBy_() {
       this.$['controlled-by'].innerHTML = this.controlledBy_;
       if (this.controlledBy_) {
         const link = this.$$('#controlled-by a');
@@ -479,7 +479,7 @@ Polymer({
     },
 
     /** @private */
-    observeIsDangerous_: function() {
+    observeIsDangerous_() {
       if (!this.data) {
         return;
       }
@@ -509,13 +509,13 @@ Polymer({
     },
 
     /** @private */
-    onCancelTap_: function() {
+    onCancelTap_() {
       this.restoreFocusAfterCancel_ = true;
       this.mojoHandler_.cancel(this.data.id);
     },
 
     /** @private */
-    onDiscardDangerousTap_: function() {
+    onDiscardDangerousTap_() {
       this.mojoHandler_.discardDangerous(this.data.id);
     },
 
@@ -523,7 +523,7 @@ Polymer({
      * @private
      * @param {Event} e
      */
-    onDragStart_: function(e) {
+    onDragStart_(e) {
       e.preventDefault();
       this.mojoHandler_.drag(this.data.id);
     },
@@ -532,19 +532,19 @@ Polymer({
      * @param {Event} e
      * @private
      */
-    onFileLinkTap_: function(e) {
+    onFileLinkTap_(e) {
       e.preventDefault();
       this.mojoHandler_.openFileRequiringGesture(this.data.id);
     },
 
     /** @private */
-    onUrlTap_: function() {
+    onUrlTap_() {
       chrome.send('metricsHandler:recordAction',
         ['Downloads_OpenUrlOfDownloadedItem']);
     },
 
     /** @private */
-    onPauseOrResumeTap_: function() {
+    onPauseOrResumeTap_() {
       if (this.isInProgress_) {
         this.mojoHandler_.pause(this.data.id);
       } else {
@@ -553,7 +553,7 @@ Polymer({
     },
 
     /** @private */
-    onRemoveTap_: function() {
+    onRemoveTap_() {
       const pieces = loadTimeData.getSubstitutedStringPieces(
           loadTimeData.getString('toastRemovedFromList'), this.data.fileName);
       pieces.forEach(p => {
@@ -574,22 +574,22 @@ Polymer({
     },
 
     /** @private */
-    onRetryTap_: function() {
+    onRetryTap_() {
       this.mojoHandler_.retryDownload(this.data.id);
     },
 
     /** @private */
-    onSaveDangerousTap_: function() {
+    onSaveDangerousTap_() {
       this.mojoHandler_.saveDangerousRequiringGesture(this.data.id);
     },
 
     /** @private */
-    onShowTap_: function() {
+    onShowTap_() {
       this.mojoHandler_.show(this.data.id);
     },
 
     /** @private */
-    restoreFocusAfterCancelIfNeeded_: function() {
+    restoreFocusAfterCancelIfNeeded_() {
       if (!this.restoreFocusAfterCancel_) {
         return;
       }

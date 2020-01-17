@@ -101,6 +101,9 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // header of v2 and ARC apps.
   virtual void SetShouldPaintHeader(bool paint);
 
+  // Height from top of window to top of client area.
+  int NonClientTopBorderHeight() const;
+
   const views::View* GetAvatarIconViewForTest() const;
 
   SkColor GetActiveFrameColorForTest() const;
@@ -125,9 +128,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // Returns the container for the minimize/maximize/close buttons that is
   // held by the HeaderView. Used in testing.
   FrameCaptionButtonContainerView* GetFrameCaptionButtonContainerViewForTest();
-
-  // Height from top of window to top of client area.
-  int NonClientTopBorderHeight() const;
 
   // Not owned.
   views::Widget* frame_;

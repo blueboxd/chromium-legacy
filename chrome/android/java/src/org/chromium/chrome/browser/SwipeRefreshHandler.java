@@ -6,8 +6,6 @@ package org.chromium.chrome.browser;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.view.View;
-import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 
@@ -18,9 +16,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegateFactory;
-import org.chromium.chrome.browser.gesturenav.NavigationGlowFactory;
 import org.chromium.chrome.browser.gesturenav.NavigationHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -35,8 +30,8 @@ import org.chromium.ui.OverscrollRefreshHandler;
  * An overscroll handler implemented in terms a modified version of the Android
  * compat library's SwipeRefreshLayout effect.
  */
-public class SwipeRefreshHandler extends TabWebContentsUserData
-        implements OverscrollRefreshHandler, OnAttachStateChangeListener {
+public class SwipeRefreshHandler
+        extends TabWebContentsUserData implements OverscrollRefreshHandler {
     private static final Class<SwipeRefreshHandler> USER_DATA_KEY = SwipeRefreshHandler.class;
 
     // Synthetic delay between the {@link #didStopRefreshing()} signal and the
@@ -73,14 +68,10 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
     // Accessibility utterance used to indicate refresh activation.
     private String mAccessibilityRefreshString;
 
-    // Overscroll Navigation delegate providing info/object constructor.
-    private HistoryNavigationDelegate mNavigationDelegate =
-            HistoryNavigationDelegateFactory.DEFAULT;
-
-    // Handles overscroll history navigation.
+    // Handles overscroll history navigation. Gesture events from native layer are forwarded
+    // to this object. Remains null while navigation feature is disabled due to feature flag,
+    // system settings (Q and forward), etc.
     private NavigationHandler mNavigationHandler;
-
-    private NavigationHandler.ActionDelegate mActionDelegate;
 
     public static SwipeRefreshHandler from(Tab tab) {
         SwipeRefreshHandler handler = get(tab);
@@ -117,7 +108,6 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
             }
         };
         mTab.addObserver(mTabObserver);
-        mNavigationDelegate = HistoryNavigationDelegateFactory.create(tab);
     }
 
     private void initSwipeRefreshLayout(final Context context) {
@@ -156,9 +146,6 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
     public void initWebContents(WebContents webContents) {
         webContents.setOverscrollRefreshHandler(this);
         mContainerView = mTab.getContentView();
-        mContainerView.addOnAttachStateChangeListener(this);
-        mNavigationDelegate.setWindowInsetsChangeObserver(
-                mContainerView, () -> updateNavigationHandler());
         setEnabled(true);
     }
 
@@ -166,24 +153,10 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
     @Override
     public void cleanupWebContents(WebContents webContents) {
         if (mSwipeRefreshLayout != null) detachSwipeRefreshLayoutIfNecessary();
-        mContainerView.removeOnAttachStateChangeListener(this);
-        mNavigationDelegate.setWindowInsetsChangeObserver(mContainerView, null);
         mContainerView = null;
-        if (mNavigationHandler != null) {
-            mNavigationHandler.destroy();
-            mNavigationHandler = null;
-            mActionDelegate = null;
-        }
+        mNavigationHandler = null;
         setEnabled(false);
     }
-
-    @Override
-    public void onViewAttachedToWindow(View v) {
-        updateNavigationHandler();
-    }
-
-    @Override
-    public void onViewDetachedFromWindow(View v) {}
 
     @Override
     public void destroyInternal() {
@@ -215,36 +188,22 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
             return mSwipeRefreshLayout.start();
         } else if (type == OverscrollAction.HISTORY_NAVIGATION) {
             if (mNavigationHandler != null) {
-                boolean navigable = mActionDelegate.canNavigate(navigateForward);
-                boolean showGlow = navigateForward && !mTab.canGoForward();
                 mNavigationHandler.onDown(); // Simulates the initial onDown event.
-                if (navigable) {
-                    mNavigationHandler.showArrowWidget(navigateForward);
-                } else if (showGlow) {
-                    mNavigationHandler.showGlow(startX, startY);
-                }
-                return navigable || showGlow;
+                boolean navigable = mNavigationHandler.navigate(navigateForward, startX, startY);
+                boolean showGlow = navigateForward && !mTab.canGoForward();
+                return showGlow || navigable;
             }
         }
         mSwipeType = OverscrollAction.NONE;
         return false;
     }
 
-    private void updateNavigationHandler() {
-        if (mNavigationDelegate.isNavigationEnabled(mContainerView)) {
-            if (mNavigationHandler == null) {
-                mActionDelegate = mNavigationDelegate.createActionDelegate();
-                mNavigationHandler = new NavigationHandler(mContainerView, mTab.getContext(),
-                        mNavigationDelegate,
-                        NavigationGlowFactory.forRenderedPage(
-                                mContainerView, mTab.getWebContents()));
-            }
-        } else {
-            if (mNavigationHandler != null) {
-                mNavigationHandler.destroy();
-                mNavigationHandler = null;
-            }
-        }
+    /**
+     * Sets {@link NavigationHandler} object.
+     * @param layout {@link NavigationHandler} object.
+     */
+    public void setNavigationHandler(NavigationHandler navigationHandler) {
+        mNavigationHandler = navigationHandler;
     }
 
     @Override

@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/fake_device_info.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -26,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using ::testing::Eq;
 using ::testing::Property;
 
 namespace {
@@ -84,15 +86,17 @@ TEST_F(ClickToCallUiControllerTest, OnDeviceChosen) {
       kExpectedPhoneNumber);
   EXPECT_CALL(
       *service(),
-      SendMessageToDevice(Property(&syncer::DeviceInfo::guid, kReceiverGuid),
-                          testing::Eq(kSendMessageTimeout),
-                          ProtoEquals(sharing_message), testing::_));
+      SendMessageToDevice(
+          Property(&syncer::DeviceInfo::guid, kReceiverGuid),
+          Eq(base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get())),
+          ProtoEquals(sharing_message), testing::_));
   controller_->OnDeviceChosen(*device_info.get());
 }
 
 // Check the call to sharing service to get all synced devices.
 TEST_F(ClickToCallUiControllerTest, GetSyncedDevices) {
-  EXPECT_CALL(*service(), GetDeviceCandidates(testing::Eq(
-                              sync_pb::SharingSpecificFields::CLICK_TO_CALL)));
+  EXPECT_CALL(
+      *service(),
+      GetDeviceCandidates(Eq(sync_pb::SharingSpecificFields::CLICK_TO_CALL)));
   controller_->GetDevices();
 }

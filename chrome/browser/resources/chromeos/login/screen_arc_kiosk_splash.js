@@ -13,13 +13,13 @@ login.createScreen('ArcKioskSplashScreen', 'arc-kiosk-splash', function() {
     ],
 
     /** @override */
-    decorate: function() {},
+    decorate() {},
 
     /**
      * Event handler that is invoked just before the frame is shown.
      * @param {string} data Screen init payload.
      */
-    onBeforeShow: function(data) {
+    onBeforeShow(data) {
       this.updateApp(data['appInfo']);
 
       Oobe.getInstance().solidBackground = true;
@@ -28,7 +28,7 @@ login.createScreen('ArcKioskSplashScreen', 'arc-kiosk-splash', function() {
     /**
      * Event handler that is invoked just before the frame is hidden.
      */
-    onBeforeHide: function() {
+    onBeforeHide() {
       Oobe.getInstance().solidBackground = false;
     },
 
@@ -36,7 +36,7 @@ login.createScreen('ArcKioskSplashScreen', 'arc-kiosk-splash', function() {
      * Updates the app name and icon.
      * @param {Object} app Details of app being launched.
      */
-    updateApp: function(app) {
+    updateApp(app) {
       $('arc-splash-header').textContent = app.name;
       $('arc-splash-header').style.backgroundImage = 'url(' + app.iconURL + ')';
     },
@@ -45,7 +45,7 @@ login.createScreen('ArcKioskSplashScreen', 'arc-kiosk-splash', function() {
      * Updates the message for the current ARC kiosk state.
      * @param {string} message Description for current state.
      */
-    updateArcKioskMessage: function(message) {
+    updateArcKioskMessage(message) {
       $('arc-splash-launch-text').textContent = message;
     }
   };

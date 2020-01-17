@@ -81,13 +81,16 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // word break that are in the range [|start_pos|, |end_pos|).
   // start_pos == string::npos is treated as start_pos = length of string.
   // (In other words, no matches will be filtered.)
-  // end_pos == string::npos is treated as end_pos = length of string.
+  // end_pos == string::npos is treated as end_pos = length of string. If
+  // |allow_midword_continuations| is true, matches not at a word break are not
+  // filtered if they continue where the previous match ended.
   static TermMatches FilterTermMatchesByWordStarts(
       const TermMatches& term_matches,
       const WordStarts& terms_to_word_starts_offsets,
       const WordStarts& word_starts,
       size_t start_pos,
-      size_t end_pos);
+      size_t end_pos,
+      bool allow_midword_continuations = false);
 
   // An interim score taking into consideration location and completeness
   // of the match.

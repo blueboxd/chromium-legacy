@@ -65,12 +65,6 @@ class V8TestInterfaceEventTarget {
 };
 
 template <>
-struct NativeValueTraits<TestInterfaceEventTarget> : public NativeValueTraitsBase<TestInterfaceEventTarget> {
-  CORE_EXPORT static TestInterfaceEventTarget* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestInterfaceEventTarget* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestInterfaceEventTarget> {
   typedef V8TestInterfaceEventTarget Type;
 };

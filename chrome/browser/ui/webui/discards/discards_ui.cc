@@ -46,11 +46,6 @@
 
 namespace {
 
-mojom::LifecycleUnitDiscardReason GetDiscardReason(bool urgent) {
-  return urgent ? mojom::LifecycleUnitDiscardReason::URGENT
-                : mojom::LifecycleUnitDiscardReason::PROACTIVE;
-}
-
 discards::mojom::LifecycleUnitVisibility GetLifecycleUnitVisibility(
     content::Visibility visibility) {
   switch (visibility) {
@@ -206,13 +201,8 @@ class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
       info->can_freeze = lifecycle_unit->CanFreeze(&freeze_details);
       info->cannot_freeze_reasons = freeze_details.GetFailureReasonStrings();
       resource_coordinator::DecisionDetails discard_details;
-      info->can_discard = lifecycle_unit->CanDiscard(
-          mojom::LifecycleUnitDiscardReason::PROACTIVE, &discard_details);
       info->cannot_discard_reasons = discard_details.GetFailureReasonStrings();
       info->discard_count = lifecycle_unit->GetDiscardCount();
-      // This is only valid if the state is PENDING_DISCARD or DISCARD, but the
-      // javascript code takes care of that.
-      info->discard_reason = lifecycle_unit->GetDiscardReason();
       info->utility_rank = rank++;
       const base::TimeTicks last_focused_time =
           lifecycle_unit->GetLastFocusedTime();
@@ -264,11 +254,10 @@ class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
   }
 
   void DiscardById(int32_t id,
-                   bool urgent,
                    DiscardByIdCallback callback) override {
     auto* lifecycle_unit = GetLifecycleUnitById(id);
     if (lifecycle_unit)
-      lifecycle_unit->Discard(GetDiscardReason(urgent));
+      lifecycle_unit->Discard(mojom::LifecycleUnitDiscardReason::URGENT);
     std::move(callback).Run();
   }
 
@@ -284,10 +273,10 @@ class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
       lifecycle_unit->Load();
   }
 
-  void Discard(bool urgent, DiscardCallback callback) override {
+  void Discard(DiscardCallback callback) override {
     resource_coordinator::TabManager* tab_manager =
         g_browser_process->GetTabManager();
-    tab_manager->DiscardTab(GetDiscardReason(urgent));
+    tab_manager->DiscardTab(mojom::LifecycleUnitDiscardReason::URGENT);
     std::move(callback).Run();
   }
 

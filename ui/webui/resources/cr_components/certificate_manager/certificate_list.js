@@ -52,7 +52,7 @@ Polymer({
    * @private
    */
   getDescription_() {
-    if (this.certificates.length == 0) {
+    if (this.certificates.length === 0) {
       return this.i18n('certificateManagerNoCertificates');
     }
 
@@ -75,7 +75,7 @@ Polymer({
    * @private
    */
   canImport_() {
-    return !this.isKiosk_ && this.certificateType != CertificateType.OTHER &&
+    return !this.isKiosk_ && this.certificateType !== CertificateType.OTHER &&
         this.importAllowed;
   },
 
@@ -85,8 +85,8 @@ Polymer({
    * @private
    */
   canImportAndBind_() {
-    return !this.isGuest_ && this.certificateType == CertificateType.PERSONAL &&
-        this.importAllowed;
+    return !this.isGuest_ &&
+        this.certificateType === CertificateType.PERSONAL && this.importAllowed;
   },
   // </if>
 
@@ -151,18 +151,18 @@ Polymer({
   handleImport_(useHardwareBacked, anchor) {
     const browserProxy =
         certificate_manager.CertificatesBrowserProxyImpl.getInstance();
-    if (this.certificateType == CertificateType.PERSONAL) {
+    if (this.certificateType === CertificateType.PERSONAL) {
       browserProxy.importPersonalCertificate(useHardwareBacked)
           .then(showPasswordPrompt => {
             if (showPasswordPrompt) {
               this.dispatchImportActionEvent_(null, anchor);
             }
           }, this.onRejected_.bind(this, anchor));
-    } else if (this.certificateType == CertificateType.CA) {
+    } else if (this.certificateType === CertificateType.CA) {
       browserProxy.importCaCertificate().then(certificateName => {
         this.dispatchImportActionEvent_({name: certificateName}, anchor);
       }, this.onRejected_.bind(this, anchor));
-    } else if (this.certificateType == CertificateType.SERVER) {
+    } else if (this.certificateType === CertificateType.SERVER) {
       browserProxy.importServerCertificate().catch(
           this.onRejected_.bind(this, anchor));
     } else {

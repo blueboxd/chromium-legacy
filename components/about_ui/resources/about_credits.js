@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.addEventListener('keypress', function(e) {
     // Make the license show/hide toggle when the Enter is pressed.
-    if (e.keyCode == 0x0d && e.target.tagName == 'LABEL') {
+    if (e.keyCode === 0x0d && e.target.tagName === 'LABEL') {
       e.target.previousElementSibling.click();
     }
   });

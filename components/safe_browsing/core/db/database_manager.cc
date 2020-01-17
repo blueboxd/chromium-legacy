@@ -10,20 +10,17 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace safe_browsing {
 
 SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager()
     : base::RefCountedDeleteOnSequence<SafeBrowsingDatabaseManager>(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})),
+          base::CreateSingleThreadTaskRunner(CreateTaskTraits(ThreadID::IO))),
       enabled_(false) {}
 
 SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {
@@ -31,7 +28,7 @@ SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {
 }
 
 bool SafeBrowsingDatabaseManager::CancelApiCheck(Client* client) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   auto it = FindClientApiCheck(client);
   if (it != api_checks_.end()) {
     api_checks_.erase(it);
@@ -43,7 +40,7 @@ bool SafeBrowsingDatabaseManager::CancelApiCheck(Client* client) {
 
 bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
                                                        Client* client) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   DCHECK(v4_get_hash_protocol_manager_);
 
   // Make sure we can check this url and that the service is enabled.
@@ -73,7 +70,7 @@ bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
 
 SafeBrowsingDatabaseManager::ApiCheckSet::iterator
 SafeBrowsingDatabaseManager::FindClientApiCheck(Client* client) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   for (auto it = api_checks_.begin(); it != api_checks_.end(); ++it) {
     if ((*it)->client() == client) {
       return it;
@@ -101,7 +98,7 @@ std::unique_ptr<StoreStateMap> SafeBrowsingDatabaseManager::GetStoreStateMap() {
 void SafeBrowsingDatabaseManager::OnThreatMetadataResponse(
     std::unique_ptr<SafeBrowsingApiCheck> check,
     const ThreatMetadata& md) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   DCHECK(check);
 
   // If the check is not in |api_checks_| then the request was cancelled by the
@@ -117,7 +114,7 @@ void SafeBrowsingDatabaseManager::OnThreatMetadataResponse(
 void SafeBrowsingDatabaseManager::StartOnIOThread(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const V4ProtocolConfig& config) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
 
   v4_get_hash_protocol_manager_ = V4GetHashProtocolManager::Create(
       url_loader_factory, GetStoresForFullHashRequests(), config);
@@ -127,7 +124,7 @@ void SafeBrowsingDatabaseManager::StartOnIOThread(
 // multiple times during the life of the DatabaseManager.
 // Must be called on IO thread.
 void SafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
 
   // Delete pending checks, calling back any clients with empty metadata.
   for (const SafeBrowsingApiCheck* check : api_checks_) {
@@ -153,7 +150,7 @@ SafeBrowsingDatabaseManager::RegisterDatabaseUpdatedCallback(
 }
 
 void SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   update_complete_callback_list_.Notify();
 }
 

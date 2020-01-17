@@ -13,12 +13,15 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/signin/internal/identity_manager/oauth_multilogin_token_fetcher.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/identity_manager/set_accounts_in_cookie_result.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth_multilogin_result.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+
+namespace signin {
 
 namespace {
 
@@ -36,7 +39,7 @@ std::string FindTokenForAccount(
 }
 
 CoreAccountId FindAccountIdForGaiaId(
-    const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair>& accounts,
+    const std::vector<OAuthMultiloginHelper::AccountIdGaiaIdPair>& accounts,
     const std::string& gaia_id) {
   for (const auto& account : accounts) {
     if (gaia_id == account.second)
@@ -47,30 +50,31 @@ CoreAccountId FindAccountIdForGaiaId(
 
 }  // namespace
 
-namespace signin {
-
 OAuthMultiloginHelper::OAuthMultiloginHelper(
     SigninClient* signin_client,
+    AccountsCookieMutator::PartitionDelegate* partition_delegate,
     ProfileOAuth2TokenService* token_service,
     gaia::MultiloginMode mode,
-    const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair>& accounts,
+    const std::vector<AccountIdGaiaIdPair>& accounts,
     const std::string& external_cc_result,
     base::OnceCallback<void(SetAccountsInCookieResult)> callback)
     : signin_client_(signin_client),
+      partition_delegate_(partition_delegate),
       token_service_(token_service),
       mode_(mode),
       accounts_(accounts),
       external_cc_result_(external_cc_result),
       callback_(std::move(callback)) {
   DCHECK(signin_client_);
+  DCHECK(partition_delegate_);
   DCHECK(token_service_);
   DCHECK(!accounts_.empty());
   DCHECK(callback_);
 
 #ifndef NDEBUG
   // Check that there is no duplicate accounts.
-  std::set<GaiaCookieManagerService::AccountIdGaiaIdPair>
-      accounts_no_duplicates(accounts_.begin(), accounts_.end());
+  std::set<AccountIdGaiaIdPair> accounts_no_duplicates(accounts_.begin(),
+                                                       accounts_.end());
   DCHECK_EQ(accounts_.size(), accounts_no_duplicates.size());
 #endif
 
@@ -125,7 +129,7 @@ void OAuthMultiloginHelper::OnAccessTokensFailure(
 void OAuthMultiloginHelper::StartFetchingMultiLogin() {
   DCHECK_EQ(gaia_id_token_pairs_.size(), accounts_.size());
   gaia_auth_fetcher_ =
-      signin_client_->CreateGaiaAuthFetcher(this, gaia::GaiaSource::kChrome);
+      partition_delegate_->CreateGaiaAuthFetcherForPartition(this);
   gaia_auth_fetcher_->StartOAuthMultilogin(mode_, gaia_id_token_pairs_,
                                            external_cc_result_);
 }
@@ -179,7 +183,7 @@ void OAuthMultiloginHelper::StartSettingCookies(
     const OAuthMultiloginResult& result) {
   DCHECK(cookies_to_set_.empty());
   network::mojom::CookieManager* cookie_manager =
-      signin_client_->GetCookieManager();
+      partition_delegate_->GetCookieManagerForPartition();
   const std::vector<net::CanonicalCookie>& cookies = result.cookies();
 
   for (const net::CanonicalCookie& cookie : cookies) {

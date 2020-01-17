@@ -189,12 +189,6 @@ public interface LocationBar extends UrlBarDelegate, FakeboxDelegate {
     void setDefaultTextEditActionModeCallback(ToolbarActionModeCallback callback);
 
     /**
-     * @return The margin to be applied to the URL bar based on the buttons currently visible next
-     *         to it, used to avoid text overlapping the buttons and vice versa.
-     */
-    int getUrlContainerMarginEnd();
-
-    /**
      * Called to set the width of the location bar when the url bar is not focused.
      *
      * Immediately after the animation to transition the URL bar from focused to unfocused finishes,

@@ -121,7 +121,9 @@ content::SharedWorkerInstance TestSharedWorkerService::StartSharedWorker(
   // Create a new SharedWorkerInstance and add it to the map.
   GURL worker_url = GenerateWorkerUrl();
   content::SharedWorkerInstance instance(
-      next_shared_worker_instance_id_++, worker_url, "SharedWorker",
+      next_shared_worker_instance_id_++, worker_url,
+      blink::mojom::ScriptType::kClassic,
+      network::mojom::CredentialsMode::kSameOrigin, "SharedWorker",
       url::Origin::Create(worker_url), "",
       network::mojom::ContentSecurityPolicyType::kReport,
       network::mojom::IPAddressSpace::kPublic,

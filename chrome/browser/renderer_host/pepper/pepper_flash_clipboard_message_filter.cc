@@ -163,11 +163,12 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgIsFormatAvailable(
   bool available = false;
   switch (format) {
     case PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT: {
-      bool plain = clipboard->IsFormatAvailable(
+      available = clipboard->IsFormatAvailable(
           ui::ClipboardFormatType::GetPlainTextType(), clipboard_buffer);
-      bool plainw = clipboard->IsFormatAvailable(
-          ui::ClipboardFormatType::GetPlainTextWType(), clipboard_buffer);
-      available = plain || plainw;
+#if defined(OS_WIN)
+      available |= clipboard->IsFormatAvailable(
+          ui::ClipboardFormatType::GetPlainTextAType(), clipboard_buffer);
+#endif
       break;
     }
     case PP_FLASH_CLIPBOARD_FORMAT_HTML:
@@ -212,7 +213,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
   switch (format) {
     case PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT: {
       if (clipboard->IsFormatAvailable(
-              ui::ClipboardFormatType::GetPlainTextWType(), clipboard_buffer)) {
+              ui::ClipboardFormatType::GetPlainTextType(), clipboard_buffer)) {
         base::string16 text;
         clipboard->ReadText(clipboard_buffer, &text);
         if (!text.empty()) {
@@ -221,13 +222,15 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
           break;
         }
       }
-      // If the PlainTextW format isn't available or is empty, take the
+#if defined(OS_WIN)
+      // If the PlainText format isn't available or is empty, take the
       // ASCII text format.
       if (clipboard->IsFormatAvailable(
-              ui::ClipboardFormatType::GetPlainTextType(), clipboard_buffer)) {
+              ui::ClipboardFormatType::GetPlainTextAType(), clipboard_buffer)) {
         result = PP_OK;
         clipboard->ReadAsciiText(clipboard_buffer, &clipboard_string);
       }
+#endif
       break;
     }
     case PP_FLASH_CLIPBOARD_FORMAT_HTML: {

@@ -91,17 +91,17 @@ class PasswordManager : public FormSubmissionObserver {
 
   // Handles password forms being parsed.
   void OnPasswordFormsParsed(PasswordManagerDriver* driver,
-                             const std::vector<autofill::PasswordForm>& forms);
+                             const std::vector<autofill::FormData>& forms_data);
 
   // Handles password forms being rendered.
   void OnPasswordFormsRendered(
       PasswordManagerDriver* driver,
-      const std::vector<autofill::PasswordForm>& visible_forms,
+      const std::vector<autofill::FormData>& visible_forms_data,
       bool did_stop_loading);
 
   // Handles a password form being submitted.
   void OnPasswordFormSubmitted(PasswordManagerDriver* driver,
-                               const autofill::PasswordForm& password_form);
+                               const autofill::FormData& form_data);
 
   // Handles a password form being submitted, assumes that submission is
   // successful and does not do any checks on success of submission. For
@@ -119,7 +119,7 @@ class PasswordManager : public FormSubmissionObserver {
   // different signature for now.
   void OnPasswordFormSubmittedNoChecksForiOS(
       PasswordManagerDriver* driver,
-      const autofill::PasswordForm& password_form);
+      const autofill::FormData& form_data);
 #endif
 
   // Called when a user changed a value in a non-password field. The field is in
@@ -132,7 +132,7 @@ class PasswordManager : public FormSubmissionObserver {
   // Handles a request to show manual fallback for password saving, i.e. the
   // omnibox icon with the anchored hidden prompt.
   void ShowManualFallbackForSaving(PasswordManagerDriver* driver,
-                                   const autofill::PasswordForm& password_form);
+                                   const autofill::FormData& form_data);
 
   // Handles a request to hide manual fallback for password saving.
   void HideManualFallbackForSaving();
@@ -237,16 +237,17 @@ class PasswordManager : public FormSubmissionObserver {
   // data from |submitted_manager| for password reuse detection purpose.
   void MaybeSavePasswordHash(PasswordFormManager* submitted_manager);
 
-  // Checks for every form in |forms| whether |pending_login_managers_| already
-  // contain a manager for that form. If not, adds a manager for each such form.
+  // Checks for every form in |forms_data| whether |pending_login_managers_|
+  // already contain a manager for that form. If not, adds a manager for each
+  // such form.
   void CreatePendingLoginManagers(
       PasswordManagerDriver* driver,
-      const std::vector<autofill::PasswordForm>& forms);
+      const std::vector<autofill::FormData>& forms_data);
 
-  // Checks for every form in |forms| whether |form_managers_| already contain a
-  // manager for that form. If not, adds a manager for each such form.
+  // Checks for every form in |forms_data| whether |form_managers_| already
+  // contain a manager for that form. If not, adds a manager for each such form.
   void CreateFormManagers(PasswordManagerDriver* driver,
-                          const std::vector<autofill::PasswordForm>& forms);
+                          const std::vector<autofill::FormData>& forms_data);
 
   // Create PasswordFormManager for |form|, adds the newly created one to
   // |form_managers_| and returns it.
@@ -337,7 +338,7 @@ class PasswordManager : public FormSubmissionObserver {
   // page. When the page stops loading, the password manager checks if one of
   // the recorded forms matches the login form from the previous page
   // (to see if the login was a failure), and clears the vector.
-  std::vector<autofill::PasswordForm> all_visible_forms_;
+  std::vector<autofill::FormData> visible_forms_data_;
 
   // Server predictions for the forms on the page.
   std::map<autofill::FormSignature, FormPredictions> predictions_;

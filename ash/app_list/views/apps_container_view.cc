@@ -260,6 +260,14 @@ void AppsContainerView::UpdateYPositionAndOpacity(float progress,
                         chip_grid_y_distance_);
   page_switcher_->SetY(suggestion_chip_container_view_->y() +
                        chip_grid_y_distance_);
+
+  // If app list is in drag, reset transforms that might started animating in
+  // AnimateYPosition().
+  if (app_list_view->is_in_drag()) {
+    suggestion_chip_container_view_->layer()->SetTransform(gfx::Transform());
+    apps_grid_view_->layer()->SetTransform(gfx::Transform());
+    page_switcher_->layer()->SetTransform(gfx::Transform());
+  }
 }
 
 void AppsContainerView::OnTabletModeChanged(bool started) {

@@ -20,7 +20,7 @@ var LoginScreenBehavior = {
    * @param {string} screenName Name of created class (external api prefix).
    * @param {DisplayManagerScreenAttributes} attributes
    */
-  initializeLoginScreen: function(screenName, attributes) {
+  initializeLoginScreen(screenName, attributes) {
     let api = {};
 
     if (this.EXTERNAL_API.length != 0) {
@@ -63,7 +63,7 @@ var LoginScreenBehavior = {
    * returns current screen size.
    * @return {{width: number, height: number}}
    */
-  getPreferredSize: function() {
+  getPreferredSize() {
     return {width: this.offsetWidth, height: this.offsetHeight};
   },
 
@@ -104,7 +104,7 @@ var LoginScreenBehavior = {
    * Register external screen API with login object.
    * Example:
    *    this.registerScreenApi_('ScreenName', {
-   *         foo: function() { console.log('foo'); },
+   *         foo() { console.log('foo'); },
    *     });
    *     login.ScreenName.foo(); // valid
    *
@@ -112,7 +112,7 @@ var LoginScreenBehavior = {
    * @param {Object} api Screen API.
    * @private
    */
-  registerScreenApi_: function(name, api) {
+  registerScreenApi_(name, api) {
     // Closure compiler incorrectly parses this, so we use cr.define.call(...).
     cr.define.call(cr.define, 'login', function() {
       var result = {};

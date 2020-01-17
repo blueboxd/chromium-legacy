@@ -939,17 +939,7 @@
       }
     },
     {
-      "command": "darkenScreen",
-      "sequence": {
-        "cvoxModifier": true,
-        "keys": {
-          "keyCode": [118],
-          "shiftKey": [true]
-        }
-      }
-    },
-    {
-      "command": "undarkenScreen",
+      "command": "toggleDarkScreen",
       "sequence": {
         "cvoxModifier": true,
         "keys": {

@@ -1,8 +1,12 @@
 {
     "0": {
-        "benchmarks": {
-            "dummy_benchmark.noisy_benchmark_1": {
-                "abridged": false
+        "executables": {
+            "angle_perftests": {
+                "path": "angle_perftests",
+                "arguments": [
+                    "--test-launcher-retry-limit=0",
+                    "--test-launcher-jobs=1"
+                ]
             }
         }
     },
@@ -14,6 +18,15 @@
             "blink_perf.bindings": {
                 "end": 27,
                 "abridged": false
+            }
+        },
+        "executables": {
+            "base_perftests": {
+                "path": "base_perftests",
+                "arguments": [
+                    "--test-launcher-jobs=1",
+                    "--test-launcher-retry-limit=0"
+                ]
             }
         }
     },
@@ -77,6 +90,9 @@
             "dromaeo": {
                 "abridged": false
             },
+            "dummy_benchmark.noisy_benchmark_1": {
+                "abridged": false
+            },
             "dummy_benchmark.stable_benchmark_1": {
                 "abridged": false
             },
@@ -92,6 +108,21 @@
             "loading.desktop": {
                 "end": 12,
                 "abridged": false
+            }
+        },
+        "executables": {
+            "components_perftests": {
+                "path": "components_perftests",
+                "arguments": [
+                    "--xvfb"
+                ]
+            },
+            "dawn_perf_tests": {
+                "path": "dawn_perf_tests",
+                "arguments": [
+                    "--test-launcher-jobs=1",
+                    "--test-launcher-retry-limit=0"
+                ]
             }
         }
     },
@@ -125,6 +156,16 @@
             "memory.desktop": {
                 "end": 4,
                 "abridged": false
+            }
+        },
+        "executables": {
+            "media_perftests": {
+                "path": "media_perftests",
+                "arguments": [
+                    "--single-process-tests",
+                    "--test-launcher-retry-limit=0",
+                    "--isolated-script-test-filter=*::-*_unoptimized::*_unaligned::*unoptimized_aligned"
+                ]
             }
         }
     },
@@ -327,6 +368,14 @@
             },
             "webrtc": {
                 "abridged": false
+            }
+        },
+        "executables": {
+            "views_perftests": {
+                "path": "views_perftests",
+                "arguments": [
+                    "--xvfb"
+                ]
             }
         }
     },

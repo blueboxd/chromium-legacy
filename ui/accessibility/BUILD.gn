@@ -23,18 +23,14 @@ if (is_android) {
 set_sources_assignment_filter([])
 
 mojom_component("ax_enums_mojo") {
-  sources = [
-    "ax_enums.mojom",
-  ]
+  sources = [ "ax_enums.mojom" ]
 
   macro_prefix = "UI_ACCESSIBILITY_AX_MOJOM"
   output_prefix = "ui_accessibility_ax_mojom"
 }
 
 mojom("ax_constants_mojo") {
-  sources = [
-    "ax_constants.mojom",
-  ]
+  sources = [ "ax_constants.mojom" ]
 }
 
 jumbo_component("accessibility") {
@@ -171,9 +167,7 @@ jumbo_component("accessibility") {
 
   defines = [ "ACCESSIBILITY_IMPLEMENTATION" ]
 
-  deps = [
-    "//third_party/cld_3/src/src:cld_3",
-  ]
+  deps = [ "//third_party/cld_3/src/src:cld_3" ]
 
   public_deps = [
     ":ax_constants_mojo",
@@ -235,9 +229,7 @@ source_set("ax_assistant") {
     "ax_assistant_structure.cc",
     "ax_assistant_structure.h",
   ]
-  deps = [
-    ":accessibility",
-  ]
+  deps = [ ":accessibility" ]
 }
 
 static_library("test_support") {
@@ -249,9 +241,7 @@ static_library("test_support") {
     "tree_generator.h",
   ]
 
-  deps = [
-    ":accessibility",
-  ]
+  deps = [ ":accessibility" ]
 }
 
 test("accessibility_unittests") {
@@ -340,32 +330,22 @@ test("accessibility_unittests") {
 }
 
 fuzzer_test("ax_tree_fuzzer") {
-  sources = [
-    "ax_tree_fuzzer.cc",
-  ]
+  sources = [ "ax_tree_fuzzer.cc" ]
 
-  deps = [
-    ":accessibility",
-  ]
+  deps = [ ":accessibility" ]
 }
 
 fuzzer_test("ax_table_fuzzer") {
-  sources = [
-    "ax_table_fuzzer.cc",
-  ]
+  sources = [ "ax_table_fuzzer.cc" ]
 
-  deps = [
-    ":accessibility",
-  ]
+  deps = [ ":accessibility" ]
 
   seed_corpus = "fuzz_corpus"
 }
 
 test("accessibility_perftests") {
   testonly = true
-  sources = [
-    "ax_node_position_perftest.cc",
-  ]
+  sources = [ "ax_node_position_perftest.cc" ]
 
   deps = [
     "//base",

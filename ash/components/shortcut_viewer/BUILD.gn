@@ -43,9 +43,7 @@ source_set("shortcut_viewer") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "views/keyboard_shortcut_view_unittest.cc",
-  ]
+  sources = [ "views/keyboard_shortcut_view_unittest.cc" ]
   deps = [
     ":shortcut_viewer",
     "//ash:test_support",

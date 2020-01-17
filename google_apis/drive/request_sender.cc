@@ -50,8 +50,8 @@ base::Closure RequestSender::StartRequestWithAuthRetryInternal(
   if (!auth_service_->HasAccessToken()) {
     // Fetch OAuth2 access token from the refresh token first.
     auth_service_->StartAuthentication(
-        base::Bind(&RequestSender::OnAccessTokenFetched,
-                   weak_ptr_factory_.GetWeakPtr(), request->GetWeakPtr()));
+        base::BindOnce(&RequestSender::OnAccessTokenFetched,
+                       weak_ptr_factory_.GetWeakPtr(), request->GetWeakPtr()));
   } else {
     request->Start(auth_service_->access_token(), custom_user_agent_,
                    base::BindRepeating(&RequestSender::RetryRequest,

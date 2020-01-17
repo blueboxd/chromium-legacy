@@ -1,7 +1,7 @@
 rootWebArea
 ++genericContainer ignored
 ++++genericContainer
-++++++textField detailsId=paragraph
+++++++textField detailsIds=paragraph
 ++++++++genericContainer
 ++++paragraph
 ++++++staticText name='Details'
@@ -9,7 +9,7 @@ rootWebArea
 ++++paragraph
 ++++++staticText name='This '
 ++++++++inlineTextBox name='This '
-++++++genericContainer detailsId=group
+++++++genericContainer detailsIds=group,image
 ++++++++staticText name='text'
 ++++++++++inlineTextBox name='text'
 ++++++staticText name=' has details'
@@ -17,3 +17,4 @@ rootWebArea
 ++++group
 ++++++staticText name='Text details'
 ++++++++inlineTextBox name='Text details'
+++++image name='Image details'

@@ -22,10 +22,13 @@ static struct EncodingParameters {
 } const kEncodingParameters[] = {
     {true, "video/webm;codecs=VP8"},
     {true, "video/webm;codecs=VP9"},
-    {true, "video/x-matroska;codecs=AVC1"},
     {false, ""},  // Instructs the platform to choose any accelerated codec.
     {false, "video/webm;codecs=VP8"},
     {false, "video/webm;codecs=VP9"},
+};
+
+static const EncodingParameters kProprietaryEncodingParameters[] = {
+    {true, "video/x-matroska;codecs=AVC1"},
     {false, "video/x-matroska;codecs=AVC1"},
 };
 
@@ -233,8 +236,16 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
                   kMediaRecorderHtmlFile);
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
+INSTANTIATE_TEST_SUITE_P(OpenCodec,
                          MAYBE_WebRtcMediaRecorderTest,
                          testing::ValuesIn(kEncodingParameters));
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+
+INSTANTIATE_TEST_SUITE_P(ProprietaryCodec,
+                         MAYBE_WebRtcMediaRecorderTest,
+                         testing::ValuesIn(kProprietaryEncodingParameters));
+
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 }  // namespace content

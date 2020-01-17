@@ -91,6 +91,7 @@ NSString* FakeGetHostedDomainForIdentity(ChromeIdentity* identity) {
 @end
 
 namespace ios {
+NSString* const kManagedIdentityEmailFormat = @"%@@google.com";
 NSString* const kIdentityEmailFormat = @"%@@gmail.com";
 NSString* const kIdentityGaiaIDFormat = @"%@ID";
 
@@ -261,6 +262,17 @@ NSString* FakeChromeIdentityService::GetCachedHostedDomainForIdentity(
 }
 
 void FakeChromeIdentityService::SetUpForIntegrationTests() {}
+
+void FakeChromeIdentityService::AddManagedIdentities(NSArray* identitiesNames) {
+  for (NSString* name in identitiesNames) {
+    NSString* email =
+        [NSString stringWithFormat:kManagedIdentityEmailFormat, name];
+    NSString* gaiaID = [NSString stringWithFormat:kIdentityGaiaIDFormat, name];
+    [identities_ addObject:[FakeChromeIdentity identityWithEmail:email
+                                                          gaiaID:gaiaID
+                                                            name:name]];
+  }
+}
 
 void FakeChromeIdentityService::AddIdentities(NSArray* identitiesNames) {
   for (NSString* name in identitiesNames) {

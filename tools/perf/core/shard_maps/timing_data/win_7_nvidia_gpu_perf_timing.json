@@ -4658,5 +4658,25 @@
     {
         "duration": "41.0",
         "name": "webrtc/pause_play_peerconnections"
+    },
+    {
+        "duration": "30.0",
+        "name": "passthrough_command_buffer_perftests/_gtest_"
+    },
+    {
+        "duration": "1988.0",
+        "name": "angle_perftests/_gtest_"
+    },
+    {
+        "duration": "16.0",
+        "name": "media_perftests/_gtest_"
+    },
+    {
+        "duration": "3.0",
+        "name": "load_library_perf_tests/_gtest_"
+    },
+    {
+        "duration": "23.0",
+        "name": "validating_command_buffer_perftests/_gtest_"
     }
 ]

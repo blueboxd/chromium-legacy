@@ -14,6 +14,7 @@
 #include "base/win/post_async_results.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_winrt.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 namespace device {
 
@@ -126,8 +127,10 @@ bool GetAsVector(IVectorView<T*>* view, std::vector<ComPtr<I>>* vector) {
 }  // namespace
 
 BluetoothGattDiscovererWinrt::BluetoothGattDiscovererWinrt(
-    ComPtr<IBluetoothLEDevice> ble_device)
-    : ble_device_(std::move(ble_device)) {}
+    ComPtr<IBluetoothLEDevice> ble_device,
+    base::Optional<BluetoothUUID> service_uuid)
+    : ble_device_(std::move(ble_device)),
+      service_uuid_(std::move(service_uuid)) {}
 
 BluetoothGattDiscovererWinrt::~BluetoothGattDiscovererWinrt() = default;
 
@@ -144,7 +147,14 @@ void BluetoothGattDiscovererWinrt::StartGattDiscovery(
   }
 
   ComPtr<IAsyncOperation<GattDeviceServicesResult*>> get_gatt_services_op;
-  hr = ble_device_3->GetGattServicesAsync(&get_gatt_services_op);
+  if (service_uuid_.has_value()) {
+    hr = ble_device_3->GetGattServicesForUuidAsync(
+        BluetoothUUID::GetCanonicalValueAsGUID(
+            service_uuid_->canonical_value()),
+        &get_gatt_services_op);
+  } else {
+    hr = ble_device_3->GetGattServicesAsync(&get_gatt_services_op);
+  }
   if (FAILED(hr)) {
     BLUETOOTH_LOG(DEBUG) << "BluetoothLEDevice::GetGattServicesAsync failed: "
                          << logging::SystemErrorCodeToString(hr);

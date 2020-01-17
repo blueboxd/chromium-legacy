@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
+#include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
@@ -14,6 +16,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_change_registrar.h"
 
 // TODO(crbug.com/826982): the equivalent of
@@ -170,6 +173,23 @@ void CrostiniApps::PauseApp(const std::string& app_id) {
 
 void CrostiniApps::UnpauseApps(const std::string& app_id) {
   NOTIMPLEMENTED();
+}
+
+void CrostiniApps::GetMenuModel(const std::string& app_id,
+                                apps::mojom::MenuType menu_type,
+                                GetMenuModelCallback callback) {
+  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
+  if (crostini::IsUninstallable(profile_, app_id)) {
+    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, &menu_items);
+  }
+
+  if (app_id == crostini::GetTerminalId() &&
+      crostini::IsCrostiniRunning(profile_)) {
+    AddCommandItem(ash::STOP_APP, IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM,
+                   &menu_items);
+  }
+
+  std::move(callback).Run(std::move(menu_items));
 }
 
 void CrostiniApps::OpenNativeSettings(const std::string& app_id) {

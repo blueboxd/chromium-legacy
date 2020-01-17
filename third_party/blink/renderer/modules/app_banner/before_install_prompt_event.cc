@@ -28,10 +28,8 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
                 std::move(event_receiver),
                 frame.GetTaskRunner(TaskType::kApplicationLifeCycle)),
       platforms_(platforms),
-      user_choice_(MakeGarbageCollected<UserChoiceProperty>(
-          frame.GetDocument(),
-          this,
-          UserChoiceProperty::kUserChoice)) {
+      user_choice_(
+          MakeGarbageCollected<UserChoiceProperty>(frame.GetDocument())) {
   DCHECK(banner_service_remote_);
   DCHECK(receiver_.is_bound());
   UseCounter::Count(frame.GetDocument(), WebFeature::kBeforeInstallPromptEvent);
@@ -113,7 +111,7 @@ void BeforeInstallPromptEvent::preventDefault() {
 
 bool BeforeInstallPromptEvent::HasPendingActivity() const {
   return user_choice_ &&
-         user_choice_->GetState() == ScriptPromisePropertyBase::kPending;
+         user_choice_->GetState() == UserChoiceProperty::kPending;
 }
 
 void BeforeInstallPromptEvent::BannerAccepted(const String& platform) {

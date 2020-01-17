@@ -13,12 +13,12 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/sessions/session_tab_helper_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/test_browser_window.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/api_test_utils.h"
@@ -108,7 +108,6 @@ void TabsApiUnitTest::SetUp() {
 
   ExtensionServiceTestBase::SetUp();
   InitializeEmptyExtensionService();
-  content::BrowserSideNavigationSetUp();
 
   browser_window_.reset(new TestBrowserWindow());
   Browser::CreateParams params(profile(), true);
@@ -122,7 +121,6 @@ void TabsApiUnitTest::SetUp() {
 void TabsApiUnitTest::TearDown() {
   browser_.reset();
   browser_window_.reset();
-  content::BrowserSideNavigationTearDown();
   ExtensionServiceTestBase::TearDown();
 }
 
@@ -298,8 +296,8 @@ TEST_F(TabsApiUnitTest, PDFExtensionNavigation) {
   EXPECT_EQ(kGoogle, raw_web_contents->GetLastCommittedURL());
   EXPECT_EQ(kGoogle, raw_web_contents->GetVisibleURL());
 
-  SessionTabHelper::CreateForWebContents(raw_web_contents);
-  int tab_id = SessionTabHelper::IdForTab(raw_web_contents).id();
+  CreateSessionServiceTabHelper(raw_web_contents);
+  int tab_id = sessions::SessionTabHelper::IdForTab(raw_web_contents).id();
   browser()->tab_strip_model()->AppendWebContents(std::move(web_contents),
                                                   true);
 
@@ -367,8 +365,8 @@ TEST_F(TabsApiUnitTest, TabsUpdateJavaScriptUrlNotAllowed) {
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(raw_contents);
   web_contents_tester->NavigateAndCommit(GURL("http://www.example.com"));
-  SessionTabHelper::CreateForWebContents(raw_contents);
-  int tab_id = SessionTabHelper::IdForTab(raw_contents).id();
+  CreateSessionServiceTabHelper(raw_contents);
+  int tab_id = sessions::SessionTabHelper::IdForTab(raw_contents).id();
 
   static constexpr char kFormatArgs[] = R"([%d, {"url": "%s"}])";
   const std::string args = base::StringPrintf(
@@ -404,8 +402,9 @@ TEST_F(TabsApiUnitTest, TabsGoForwardAndBack) {
   content::WebContents* raw_web_contents = web_contents.get();
   ASSERT_TRUE(raw_web_contents);
 
-  SessionTabHelper::CreateForWebContents(raw_web_contents);
-  const int tab_id = SessionTabHelper::IdForTab(raw_web_contents).id();
+  CreateSessionServiceTabHelper(raw_web_contents);
+  const int tab_id =
+      sessions::SessionTabHelper::IdForTab(raw_web_contents).id();
   browser()->tab_strip_model()->AppendWebContents(std::move(web_contents),
                                                   true);
   // Go back with chrome.tabs.goBack.

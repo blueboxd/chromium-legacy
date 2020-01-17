@@ -8,9 +8,7 @@ import("//third_party/libaom/options.gni")
 
 source_set("run_all_unittests") {
   testonly = true
-  sources = [
-    "run_all_unittests.cc",
-  ]
+  sources = [ "run_all_unittests.cc" ]
   configs += [ "//media:media_config" ]
   deps = [
     "//base",
@@ -59,9 +57,7 @@ source_set("pipeline_integration_tests") {
   # TODO(watk): Refactor tests that could be made to run on Android. See
   # http://crbug.com/570762
   if (media_use_ffmpeg && !is_android) {
-    sources = [
-      "pipeline_integration_test.cc",
-    ]
+    sources = [ "pipeline_integration_test.cc" ]
 
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
@@ -88,9 +84,7 @@ source_set("pipeline_integration_perftests") {
   testonly = true
 
   if (media_use_ffmpeg) {
-    sources = [
-      "pipeline_integration_perftest.cc",
-    ]
+    sources = [ "pipeline_integration_perftest.cc" ]
 
     deps = [
       ":pipeline_integration_test_base",
@@ -170,9 +164,7 @@ foreach(variant, pipeline_integration_fuzzer_variants) {
   }
 
   fuzzer_test(test_name) {
-    sources = [
-      "pipeline_integration_fuzzertest.cc",
-    ]
+    sources = [ "pipeline_integration_fuzzertest.cc" ]
     deps = [
       ":pipeline_integration_test_base",
       "//base",

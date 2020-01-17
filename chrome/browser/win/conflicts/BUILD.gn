@@ -11,9 +11,7 @@ assert(is_win)
 #       to the //chrome/browser target (chrome/browser/BUILD.gn).
 
 proto_library("module_list_proto") {
-  sources = [
-    "proto/module_list.proto",
-  ]
+  sources = [ "proto/module_list.proto" ]
 }
 
 source_set("module_info") {
@@ -39,9 +37,7 @@ source_set("module_info") {
 
 loadable_module("conflicts_dll") {
   testonly = true
-  sources = [
-    "test/conflicts_dll.cc",
-  ]
+  sources = [ "test/conflicts_dll.cc" ]
 }
 
 source_set("unit_tests") {

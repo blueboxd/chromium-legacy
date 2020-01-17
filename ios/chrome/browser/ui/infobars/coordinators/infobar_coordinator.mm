@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator+subclassing.h"
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
@@ -212,7 +213,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   if (self.bannerViewController)
     [self dismissInfobarBannerAnimated:NO completion:nil];
   if (self.modalViewController)
-    [self dismissInfobarModal:self animated:NO completion:nil];
+    [self dismissInfobarModalAnimated:NO];
   [self stop];
 }
 
@@ -301,49 +302,20 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 #pragma mark InfobarModalDelegate
 
-- (void)modalInfobarButtonWasAccepted:(id)sender {
+- (void)modalInfobarButtonWasAccepted:(id)infobarModal {
   [self performInfobarAction];
   if ([self isInfobarAccepted]) {
     [self.badgeDelegate infobarWasAccepted:self.infobarType
                                forWebState:self.webState];
   }
-  [self dismissInfobarModal:sender animated:YES completion:nil];
+  [self dismissInfobarModalAnimated:YES];
 }
 
-- (void)dismissInfobarModal:(id)sender
-                   animated:(BOOL)animated
-                 completion:(ProceduralBlock)completion {
-  DCHECK(self.baseViewController);
-  if (self.baseViewController.presentedViewController) {
-    // If the Modal is being presented by the Banner, call dismiss on it.
-    // This way the modal dismissal will animate correctly and the completion
-    // block cleans up the banner correctly.
-    if (self.baseViewController.presentedViewController ==
-        self.bannerViewController) {
-      __weak __typeof(self) weakSelf = self;
-      [self.bannerViewController
-          dismissViewControllerAnimated:animated
-                             completion:^{
-                               [weakSelf
-                                   dismissInfobarBannerAnimated:NO
-                                                     completion:completion];
-                             }];
-
-    } else if (self.baseViewController.presentedViewController ==
-               self.modalNavigationController) {
-      [self.baseViewController dismissViewControllerAnimated:animated
-                                                  completion:^{
-                                                    if (completion)
-                                                      completion();
-                                                  }];
-    }
-  } else {
-    if (completion)
-      completion();
-  }
+- (void)dismissInfobarModal:(id)infobarModal {
+  [self dismissInfobarModalAnimated:YES];
 }
 
-- (void)modalInfobarWasDismissed:(id)sender {
+- (void)modalInfobarWasDismissed:(id)infobarModal {
   self.modalTransitionDriver = nil;
 
   // If InfobarBanner is being presented it means that this Modal was presented
@@ -461,6 +433,8 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   }
 }
 
+#pragma mark - Dismissal Helpers
+
 // Helper method for non-user initiated InfobarBanner dismissals.
 - (void)dismissInfobarBannerAnimated:(BOOL)animated
                           completion:(void (^)())completion {
@@ -485,6 +459,46 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
                                                 completion:completion];
   } else if (completion) {
     completion();
+  }
+}
+
+- (void)dismissInfobarModalAnimated:(BOOL)animated {
+  [self dismissInfobarModalAnimated:animated completion:nil];
+}
+
+@end
+
+@implementation InfobarCoordinator (Subclassing)
+
+- (void)dismissInfobarModalAnimated:(BOOL)animated
+                         completion:(ProceduralBlock)completion {
+  DCHECK(self.baseViewController);
+  UIViewController* presentedViewController =
+      self.baseViewController.presentedViewController;
+  if (!presentedViewController) {
+    if (completion)
+      completion();
+    return;
+  }
+  // If the Modal is being presented by the Banner, call dismiss on it.
+  // This way the modal dismissal will animate correctly and the completion
+  // block cleans up the banner correctly.
+  if (self.baseViewController.presentedViewController ==
+      self.bannerViewController) {
+    __weak __typeof(self) weakSelf = self;
+    [self.bannerViewController
+        dismissViewControllerAnimated:animated
+                           completion:^{
+                             [weakSelf dismissInfobarBannerAnimated:NO
+                                                         completion:completion];
+                           }];
+
+  } else if (presentedViewController == self.modalNavigationController) {
+    [self.baseViewController dismissViewControllerAnimated:animated
+                                                completion:^{
+                                                  if (completion)
+                                                    completion();
+                                                }];
   }
 }
 

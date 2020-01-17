@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
@@ -76,12 +77,14 @@ class BlobStorageContextTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    base::ThreadRestrictions::SetIOAllowed(false);
     context_ = std::make_unique<BlobStorageContext>();
   }
 
   void TearDown() override {
     base::RunLoop().RunUntilIdle();
-    file_runner_->RunPendingTasks();
+    RunFileTasks();
+    base::ThreadRestrictions::SetIOAllowed(true);
     ASSERT_TRUE(temp_dir_.Delete());
   }
 
@@ -124,6 +127,11 @@ class BlobStorageContextTest : public testing::Test {
         loop.QuitClosure(), &received_uuid));
     loop.Run();
     return received_uuid;
+  }
+
+  void RunFileTasks() {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    file_runner_->RunPendingTasks();
   }
 
   std::vector<FileCreationInfo> files_;
@@ -500,8 +508,8 @@ TEST_F(BlobStorageContextTest, BuildReadableDataHandleBlob) {
 
 TEST_F(BlobStorageContextTest, BuildFutureFileOnlyBlob) {
   const std::string kId1("id1");
-  context_ =
-      std::make_unique<BlobStorageContext>(temp_dir_.GetPath(), file_runner_);
+  context_ = std::make_unique<BlobStorageContext>(
+      temp_dir_.GetPath(), temp_dir_.GetPath(), file_runner_);
   SetTestMemoryLimits();
 
   auto builder = std::make_unique<BlobDataBuilder>(kId1);
@@ -521,7 +529,7 @@ TEST_F(BlobStorageContextTest, BuildFutureFileOnlyBlob) {
   EXPECT_EQ(0u, blobs_finished);
 
   EXPECT_TRUE(file_runner_->HasPendingTask());
-  file_runner_->RunPendingTasks();
+  RunFileTasks();
   EXPECT_EQ(0u, blobs_finished);
   EXPECT_EQ(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS, status);
   EXPECT_EQ(BlobStatus::PENDING_QUOTA, handle->GetBlobStatus());
@@ -546,7 +554,7 @@ TEST_F(BlobStorageContextTest, BuildFutureFileOnlyBlob) {
   base::RunLoop().RunUntilIdle();
   // We should have file cleanup tasks.
   EXPECT_TRUE(file_runner_->HasPendingTask());
-  file_runner_->RunPendingTasks();
+  RunFileTasks();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0lu, context_->memory_controller().memory_usage());
   EXPECT_EQ(0lu, context_->memory_controller().disk_usage());
@@ -770,8 +778,8 @@ void PopulateDataInBuilder(
 TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
   const std::string kId("id");
 
-  context_ =
-      std::make_unique<BlobStorageContext>(temp_dir_.GetPath(), file_runner_);
+  context_ = std::make_unique<BlobStorageContext>(
+      temp_dir_.GetPath(), temp_dir_.GetPath(), file_runner_);
 
   SetTestMemoryLimits();
   auto data_handle = base::MakeRefCounted<storage::FakeBlobDataHandle>(
@@ -837,7 +845,7 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
   // We should be needing to send a page or two to disk.
   EXPECT_TRUE(file_runner_->HasPendingTask());
   do {
-    file_runner_->RunPendingTasks();
+    RunFileTasks();
     base::RunLoop().RunUntilIdle();
     // Continue populating data for items that can fit.
     for (size_t i = 0; i < kTotalRawBlobs; i++) {
@@ -871,7 +879,7 @@ TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
   files_.clear();
   // We should have file cleanup tasks.
   EXPECT_TRUE(file_runner_->HasPendingTask());
-  file_runner_->RunPendingTasks();
+  RunFileTasks();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0lu, context_->memory_controller().memory_usage());
   EXPECT_EQ(0lu, context_->memory_controller().disk_usage());

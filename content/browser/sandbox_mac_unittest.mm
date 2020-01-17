@@ -85,8 +85,8 @@ class SandboxMacTest : public base::MultiProcessTest {
         service_manager::SandboxType::kCdm,
         service_manager::SandboxType::kGpu,
         service_manager::SandboxType::kNaClLoader,
-        service_manager::SandboxType::kPdfCompositor,
         service_manager::SandboxType::kPpapi,
+        service_manager::SandboxType::kPrintCompositor,
         service_manager::SandboxType::kRenderer,
         service_manager::SandboxType::kUtility,
     };

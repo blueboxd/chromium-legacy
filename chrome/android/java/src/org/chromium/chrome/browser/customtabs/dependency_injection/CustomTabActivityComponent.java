@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityCoordinator;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityClientConnectionKeeper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityLifecycleUmaTracker;
 import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
@@ -43,7 +42,6 @@ public interface CustomTabActivityComponent extends BaseCustomTabActivityCompone
     CustomTabUmaRecorder resolveCustomTabUmaRecorder();
     CustomTabSessionHandler resolveSessionHandler();
     CustomTabActivityClientConnectionKeeper resolveConnectionKeeper();
-    TwaFinishHandler resolveTwaFinishHandler();
     ImmersiveModeController resolveImmersiveModeController();
 
     // For testing

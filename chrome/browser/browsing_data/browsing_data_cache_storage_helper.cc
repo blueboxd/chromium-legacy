@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_context.h"
 #include "content/public/browser/storage_usage_info.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 using content::CacheStorageContext;
@@ -55,7 +56,8 @@ void BrowsingDataCacheStorageHelper::StartFetching(FetchCallback callback) {
       &GetAllOriginsInfoForCacheStorageCallback, std::move(callback)));
 }
 
-void BrowsingDataCacheStorageHelper::DeleteCacheStorage(const GURL& origin) {
+void BrowsingDataCacheStorageHelper::DeleteCacheStorage(
+    const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   cache_storage_context_->DeleteForOrigin(origin);
 }
@@ -104,7 +106,7 @@ void CannedBrowsingDataCacheStorageHelper::StartFetching(
 }
 
 void CannedBrowsingDataCacheStorageHelper::DeleteCacheStorage(
-    const GURL& origin) {
-  pending_origins_.erase(url::Origin::Create(origin));
+    const url::Origin& origin) {
+  pending_origins_.erase(origin);
   BrowsingDataCacheStorageHelper::DeleteCacheStorage(origin);
 }

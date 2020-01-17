@@ -101,7 +101,7 @@ GTEST_CONVERSION_WHITELIST = [
   'load_library_perf_tests',
   'media_perftests',
   'net_perftests',
-  'performance_browser_tests',
+  'browser_tests',
   'services_perftests',
   'tracing_perftests',
   'views_perftests',

@@ -266,6 +266,7 @@ _DAWN_PERF_TESTS = ExecutableConfig(
     ], estimated_runtime=270)
 _PERFORMANCE_BROWSER_TESTS = ExecutableConfig(
     'performance_browser_tests',
+    path='browser_tests',
     flags=[
         '--full-performance-run',
         '--test-launcher-jobs=1',
@@ -284,9 +285,7 @@ _LINUX_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _MAC_HIGH_END_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _MAC_HIGH_END_EXECUTABLE_CONFIGS = frozenset([
     _DAWN_PERF_TESTS,
-    # TODO(crbug.com/1039019): Figure out how to get performance_browser_tests
-    # working on from the shard maps.
-    #_PERFORMANCE_BROWSER_TESTS,
+    _PERFORMANCE_BROWSER_TESTS,
     _NET_PERFTESTS,
     _MEDIA_PERFTESTS,
     _BASE_PERFTESTS
@@ -334,9 +333,6 @@ _ANDROID_NEXUS_5_BENCHMARK_CONFIGS = PerfSuite(
 ])
 _ANDROID_NEXUS_5_EXECUTABLE_CONFIGS = frozenset([
     _TRACING_PERFTESTS, _COMPONENTS_PERFTESTS, _GPU_PERFTESTS])
-_ANDROID_NEXUS_5X_BENCHMARK_CONFIGS = PerfSuite(
-    _OFFICIAL_EXCEPT_JETSTREAM2).Abridge(
-        ['rendering.mobile', 'system_health.memory_mobile'])
 _ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_CONFIGS = (
     _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2)
 _ANDROID_NEXUS_6_WEBVIEW_BENCHMARK_CONFIGS = (
@@ -401,13 +397,13 @@ WIN_10 = PerfPlatform(
     'win-10-perf',
     'Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM,'
     ' Intel Kaby Lake HD Graphics 630', _WIN_10_BENCHMARK_CONFIGS,
-    26, 'win')#, executables=_WIN_10_EXECUTABLE_CONFIGS) crbug.com/1039019
+    26, 'win', executables=_WIN_10_EXECUTABLE_CONFIGS)
 WIN_7 = PerfPlatform(
     'Win 7 Perf', 'N/A', _WIN_7_BENCHMARK_CONFIGS,
-    4, 'win')#, executables=_WIN_7_EXECUTABLE_CONFIGS) crbug.com/1039019
+    4, 'win', executables=_WIN_7_EXECUTABLE_CONFIGS)
 WIN_7_GPU = PerfPlatform(
     'Win 7 Nvidia GPU Perf', 'N/A', _WIN_7_GPU_BENCHMARK_CONFIGS,
-    4, 'win')#, executables=_WIN_7_GPU_EXECUTABLE_CONFIGS) crbug.com/1039019
+    4, 'win', executables=_WIN_7_GPU_EXECUTABLE_CONFIGS)
 
 # Android
 ANDROID_GO = PerfPlatform(
@@ -420,11 +416,6 @@ ANDROID_GO_WEBVIEW = PerfPlatform(
 ANDROID_NEXUS_5 = PerfPlatform(
     'Android Nexus5 Perf', 'Android KOT49H', _ANDROID_NEXUS_5_BENCHMARK_CONFIGS,
     16, 'android', executables=_ANDROID_NEXUS_5_EXECUTABLE_CONFIGS)
-ANDROID_NEXUS_5X = PerfPlatform(
-    'android-nexus5x-perf', 'Android MMB29Q',
-    _ANDROID_NEXUS_5X_BENCHMARK_CONFIGS,
-    10, # Reduced from 16 per crbug.com/1014120.
-    'android')
 ANDROID_NEXUS_5X_WEBVIEW = PerfPlatform(
     'Android Nexus5X WebView Perf', 'Android AOSP MOB30K',
     _ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_CONFIGS, 16, 'android',

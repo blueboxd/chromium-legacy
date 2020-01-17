@@ -120,13 +120,13 @@ cr.define('cr.ui', function() {
     initialize(ignoreMouseWheelEvents) {
       const view = this.container_.ownerDocument.defaultView;
       assert(
-          view.getComputedStyle(this.container_).display == '-webkit-box',
+          view.getComputedStyle(this.container_).display === '-webkit-box',
           'Container should be display -webkit-box.');
       assert(
-          view.getComputedStyle(this.frame_).overflow == 'hidden',
+          view.getComputedStyle(this.frame_).overflow === 'hidden',
           'Frame should be overflow hidden.');
       assert(
-          view.getComputedStyle(this.container_).position == 'static',
+          view.getComputedStyle(this.container_).position === 'static',
           'Container should be position static.');
 
       this.updateCardWidths_();
@@ -166,7 +166,7 @@ cr.define('cr.ui', function() {
      * @param {number} newCardWidth Width all cards should have, in pixels.
      */
     resize(newCardWidth) {
-      if (newCardWidth != this.cardWidth_) {
+      if (newCardWidth !== this.cardWidth_) {
         this.cardWidth_ = newCardWidth;
 
         this.updateCardWidths_();
@@ -205,7 +205,7 @@ cr.define('cr.ui', function() {
      */
     updateSelectedCardAttributes_() {
       for (let i = 0; i < this.cards_.length; i++) {
-        if (i == this.currentCard_) {
+        if (i === this.currentCard_) {
           this.cards_[i].classList.add('selected-card');
           this.cards_[i].removeAttribute('aria-hidden');
         } else {
@@ -271,7 +271,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     onMouseWheel_(e) {
-      if (e.wheelDeltaX == 0) {
+      if (e.wheelDeltaX === 0) {
         return;
       }
 
@@ -318,12 +318,12 @@ cr.define('cr.ui', function() {
       }
 
       // We got a mouse wheel event, so cancel any pending scroll wheel timeout.
-      if (this.scrollClearTimeout_ != null) {
+      if (this.scrollClearTimeout_ !== null) {
         clearTimeout(this.scrollClearTimeout_);
       }
       // If we didn't use up all the scroll, hold onto it for a little bit, but
       // drop it after a delay.
-      if (this.mouseWheelScrollAmount_ != 0) {
+      if (this.mouseWheelScrollAmount_ !== 0) {
         this.scrollClearTimeout_ =
             setTimeout(this.clearMouseWheelScroll_.bind(this), 500);
       }
@@ -347,7 +347,7 @@ cr.define('cr.ui', function() {
      */
     onTransitionEnd_(e) {
       // Ignore irrelevant transitions that might bubble up.
-      if (e.target !== this.container_ || e.propertyName != 'transform') {
+      if (e.target !== this.container_ || e.propertyName !== 'transform') {
         return;
       }
       this.fireChangeEndedEvent_(true);
@@ -384,7 +384,7 @@ cr.define('cr.ui', function() {
 
       this.updateSelectedCardAttributes_();
 
-      if (this.currentCard_ == -1) {
+      if (this.currentCard_ === -1) {
         this.currentCard_ = 0;
       } else if (index <= this.currentCard_) {
         this.selectCard(this.currentCard_ + 1, false, true, true);
@@ -449,7 +449,7 @@ cr.define('cr.ui', function() {
       this.assertValidIndex_(index);
       const removed = this.cards_.splice(index, 1).pop();
 
-      if (this.cards_.length == 0) {
+      if (this.cards_.length === 0) {
         this.currentCard_ = -1;
       } else if (index < this.currentCard_) {
         this.selectCard(this.currentCard_ - 1, false, true);
@@ -509,7 +509,7 @@ cr.define('cr.ui', function() {
       let isChangingCard =
           !this.cards_[newCardIndex].classList.contains('selected-card');
 
-      if (typeof opt_forceChange != 'undefined' && opt_forceChange) {
+      if (typeof opt_forceChange !== 'undefined' && opt_forceChange) {
         isChangingCard = true;
       }
 
@@ -550,7 +550,7 @@ cr.define('cr.ui', function() {
      */
     selectCardByValue(newCard, opt_animate) {
       const i = this.cards_.indexOf(newCard);
-      assert(i != -1);
+      assert(i !== -1);
       this.selectCard(i, opt_animate);
     },
 
@@ -570,7 +570,7 @@ cr.define('cr.ui', function() {
 
       // If there's no change, return something to let the caller know there
       // won't be a transition occuring.
-      if (prevLeft == this.currentLeft_ && this.deltaX_ == 0) {
+      if (prevLeft === this.currentLeft_ && this.deltaX_ === 0) {
         return false;
       }
 
@@ -640,7 +640,7 @@ cr.define('cr.ui', function() {
       // If dragging beyond the first or last card then apply a backoff so the
       // dragging feels stickier than usual.
       if (!this.currentCard && deltaX > 0 ||
-          this.currentCard == (this.cards_.length - 1) && deltaX < 0) {
+          this.currentCard === (this.cards_.length - 1) && deltaX < 0) {
         deltaX /= 2;
       }
       this.translateTo_(this.currentLeft_ + deltaX);
@@ -659,7 +659,7 @@ cr.define('cr.ui', function() {
       const newX = this.currentLeft_ + deltaX;
       let newCardIndex = Math.round(-newX / this.cardWidth_);
 
-      if (newCardIndex == this.currentCard &&
+      if (newCardIndex === this.currentCard &&
           Math.abs(velocity) > CardSlider.TRANSITION_VELOCITY_THRESHOLD_) {
         // The drag wasn't far enough to change cards but the velocity was
         // high enough to transition anyways. If the velocity is to the left

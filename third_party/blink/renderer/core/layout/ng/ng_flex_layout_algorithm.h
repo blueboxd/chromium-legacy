@@ -47,7 +47,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   bool IsColumnContainerMainSizeDefinite() const;
   bool IsContainerCrossSizeDefinite() const;
 
-  NGConstraintSpace BuildConstraintSpaceForDeterminingFlexBasis(
+  NGConstraintSpace BuildSpaceForFlexBasis(const NGBlockNode& flex_item) const;
+  NGConstraintSpace BuildSpaceForIntrinsicBlockSize(
       const NGBlockNode& flex_item) const;
   void ConstructAndAppendFlexItems();
   void ApplyStretchAlignmentToChild(FlexItem& flex_item);
@@ -60,6 +61,14 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   LayoutUnit MainAxisContentExtent(LayoutUnit sum_hypothetical_main_size) const;
 
   void HandleOutOfFlowPositioned(NGBlockNode child);
+
+  // Propagates the baseline from the given flex-item if needed.
+  void PropagateBaselineFromChild(
+      const FlexItem&,
+      const NGPhysicalBoxFragment&,
+      LayoutUnit block_offset,
+      base::Optional<LayoutUnit>* fallback_baseline);
+
   // TODO(dgrogan): This is redundant with FlexLayoutAlgorithm.IsMultiline() but
   // it's needed before the algorithm is instantiated. Figure out how to
   // not reimplement.

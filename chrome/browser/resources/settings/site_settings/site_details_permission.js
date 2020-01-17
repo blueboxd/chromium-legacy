@@ -41,13 +41,13 @@ Polymer({
   observers: ['siteChanged_(site)'],
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'contentSettingCategoryChanged',
         this.onDefaultSettingChanged_.bind(this));
   },
 
-  shouldHideCategory_: function(category) {
+  shouldHideCategory_(category) {
     return !this.getCategoryList().includes(category);
   },
 
@@ -56,7 +56,7 @@ Polymer({
    * @param {!RawSiteException} site The site to display.
    * @private
    */
-  siteChanged_: function(site) {
+  siteChanged_(site) {
     if (site.source == settings.SiteSettingSource.DEFAULT) {
       this.defaultSetting_ = site.setting;
       this.$.permission.value = settings.ContentSetting.DEFAULT;
@@ -78,7 +78,7 @@ Polymer({
    * @param {!RawSiteException} site The site to display.
    * @private
    */
-  updateDefaultPermission_: function(site) {
+  updateDefaultPermission_(site) {
     this.browserProxy.getDefaultValueForContentType(this.category)
         .then((defaultValue) => {
           this.defaultSetting_ = defaultValue.setting;
@@ -91,7 +91,7 @@ Polymer({
    *     that has changed default permission.
    * @private
    */
-  onDefaultSettingChanged_: function(category) {
+  onDefaultSettingChanged_(category) {
     if (category == this.category) {
       this.updateDefaultPermission_(this.site);
     }
@@ -101,7 +101,7 @@ Polymer({
    * Handles the category permission changing for this origin.
    * @private
    */
-  onPermissionSelectionChange_: function() {
+  onPermissionSelectionChange_() {
     this.browserProxy.setOriginPermissions(
         this.site.origin, [this.category], this.$.permission.value);
   },
@@ -112,7 +112,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  useCustomSoundLabels_: function(category) {
+  useCustomSoundLabels_(category) {
     return category == settings.ContentSettingsTypes.SOUND &&
         loadTimeData.getBoolean('enableAutoplayWhitelistContentSetting');
   },
@@ -127,7 +127,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  defaultSettingString_: function(defaultSetting, category, useAutomaticLabel) {
+  defaultSettingString_(defaultSetting, category, useAutomaticLabel) {
     if (defaultSetting == undefined || category == undefined ||
         useAutomaticLabel == undefined) {
       return '';
@@ -159,7 +159,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  blockSettingString_: function(category, blockString, muteString) {
+  blockSettingString_(category, blockString, muteString) {
     if (this.useCustomSoundLabels_(category)) {
       return muteString;
     }
@@ -177,7 +177,7 @@ Polymer({
    *     display.
    * @private
    */
-  hasPermissionInfoString_: function(source, category, setting) {
+  hasPermissionInfoString_(source, category, setting) {
     // This method assumes that an empty string will be returned for categories
     // that have no permission info string.
     return this.permissionInfoString_(
@@ -199,7 +199,7 @@ Polymer({
    *     string.
    * @private
    */
-  permissionInfoStringClass_: function(source, category, setting) {
+  permissionInfoStringClass_(source, category, setting) {
     return this.hasPermissionInfoString_(source, category, setting) ?
         'two-line' :
         '';
@@ -211,7 +211,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isPermissionUserControlled_: function(source) {
+  isPermissionUserControlled_(source) {
     return !(
         source == settings.SiteSettingSource.DRM_DISABLED ||
         source == settings.SiteSettingSource.POLICY ||
@@ -226,7 +226,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showAllowedSetting_: function(category) {
+  showAllowedSetting_(category) {
     return !(
         category == settings.ContentSettingsTypes.SERIAL_PORTS ||
         category == settings.ContentSettingsTypes.USB_DEVICES ||
@@ -243,7 +243,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showAskSetting_: function(category, setting, source) {
+  showAskSetting_(category, setting, source) {
     // For chooser-based permissions 'ask' takes the place of 'allow'.
     if (category == settings.ContentSettingsTypes.SERIAL_PORTS ||
         category == settings.ContentSettingsTypes.USB_DEVICES ||
@@ -268,7 +268,7 @@ Polymer({
    * @param {!settings.SiteSettingSource} source The source of the permission.
    * @private
    */
-  isNonDefaultAsk_: function(setting, source) {
+  isNonDefaultAsk_(setting, source) {
     if (setting != settings.ContentSetting.ASK ||
         source == settings.SiteSettingSource.DEFAULT) {
       return false;
@@ -306,7 +306,7 @@ Polymer({
    * @return {?string} The permission information string to display in the HTML.
    * @private
    */
-  permissionInfoString_: function(
+  permissionInfoString_(
       source, category, setting, adsBlacklistString, adsBlockString,
       embargoString, insecureOriginString, killSwitchString,
       extensionAllowString, extensionBlockString, extensionAskString,

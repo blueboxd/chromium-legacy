@@ -23,9 +23,7 @@ js_library("app") {
 }
 
 js_library("browser_switch_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 polymer_modulizer("app") {

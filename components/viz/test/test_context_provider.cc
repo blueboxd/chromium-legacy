@@ -231,6 +231,11 @@ void TestSharedImageInterface::Flush() {
   // No need to flush in this implementation.
 }
 
+scoped_refptr<gfx::NativePixmap> TestSharedImageInterface::GetNativePixmap(
+    const gpu::Mailbox& mailbox) {
+  return nullptr;
+}
+
 bool TestSharedImageInterface::CheckSharedImageExists(
     const gpu::Mailbox& mailbox) const {
   base::AutoLock locked(lock_);

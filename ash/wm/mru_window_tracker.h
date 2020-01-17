@@ -21,6 +21,11 @@ enum DesksMruType {
   kAllDesks,
 
   // The MRU window list will exclude windows from the inactive desks.
+  //
+  // NOTE: During an on-going desk-switch animation, getting the MRU window list
+  // for the active desk can be inconsistent, depending on at which stage of the
+  // animation it is done. If you want the MRU windows in the soon-to-be active
+  // desk, then wait for the animation to finish.
   kActiveDesk,
 };
 

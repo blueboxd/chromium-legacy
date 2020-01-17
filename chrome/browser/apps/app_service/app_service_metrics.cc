@@ -70,10 +70,18 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
       UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromFileManager",
                                 default_app_name);
       break;
-    // TODO(crbug.com/853604): Add metrics.
     case apps::mojom::LaunchSource::kFromLink:
+      UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromLink",
+                                default_app_name);
+      break;
     case apps::mojom::LaunchSource::kFromOmnibox:
-      return;
+      UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromOmnibox",
+                                default_app_name);
+      break;
+    case apps::mojom::LaunchSource::kFromChromeInternal:
+      UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromChromeInternal",
+                                default_app_name);
+      break;
   }
 }
 
@@ -98,6 +106,7 @@ void RecordBuiltInAppLaunch(apps::BuiltInAppName built_in_app_name,
     case apps::mojom::LaunchSource::kFromFileManager:
     case apps::mojom::LaunchSource::kFromLink:
     case apps::mojom::LaunchSource::kFromOmnibox:
+    case apps::mojom::LaunchSource::kFromChromeInternal:
       break;
   }
 }

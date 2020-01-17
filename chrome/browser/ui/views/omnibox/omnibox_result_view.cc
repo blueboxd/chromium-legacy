@@ -33,7 +33,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -48,12 +47,10 @@
 
 OmniboxResultView::OmniboxResultView(
     OmniboxPopupContentsView* popup_contents_view,
-    size_t model_index,
-    const ui::ThemeProvider* theme_provider)
+    size_t model_index)
     : AnimationDelegateViews(this),
       popup_contents_view_(popup_contents_view),
       model_index_(model_index),
-      theme_provider_(theme_provider),
       animation_(new gfx::SlideAnimation(this)) {
   CHECK_GE(model_index, 0u);
 
@@ -74,11 +71,6 @@ OmniboxResultView::OmniboxResultView(
   remove_suggestion_button_ =
       AddChildView(views::CreateVectorImageButton(this));
   views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
-  // TODO(tommycli): We may need to update the color for theme changes.
-  int icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
-  views::SetImageFromVectorIcon(remove_suggestion_button_,
-                                vector_icons::kCloseRoundedIcon, icon_size,
-                                GetColor(OmniboxPart::RESULTS_ICON));
   remove_suggestion_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_OMNIBOX_REMOVE_SUGGESTION));
   remove_suggestion_focus_ring_ =
@@ -90,22 +82,13 @@ OmniboxResultView::OmniboxResultView(
 
   keyword_view_ = AddChildView(std::make_unique<OmniboxMatchCellView>(this));
   keyword_view_->icon()->EnableCanvasFlippingForRTLUI(true);
-  keyword_view_->icon()->SetImage(
-      gfx::CreateVectorIcon(omnibox::kKeywordSearchIcon, icon_size,
-                            GetColor(OmniboxPart::RESULTS_ICON)));
   keyword_view_->icon()->SizeToPreferredSize();
-
-  // Calling SetMatch() will result in the child OmniboxMatchCellViews
-  // constructing their RenderTexts.  Without this, the first time the popup is
-  // opened, it will call Invalidate() before SetMatch(), which will try to
-  // apply styles to nonexistent RenderTexts, which will crash.
-  SetMatch(AutocompleteMatch());
 }
 
 OmniboxResultView::~OmniboxResultView() {}
 
 SkColor OmniboxResultView::GetColor(OmniboxPart part) const {
-  return GetOmniboxColor(theme_provider_, part, GetThemeState());
+  return GetOmniboxColor(GetThemeProvider(), part, GetThemeState());
 }
 
 void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
@@ -486,6 +469,10 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
 }
 
 void OmniboxResultView::OnThemeChanged() {
+  views::SetImageFromVectorIcon(remove_suggestion_button_,
+                                vector_icons::kCloseRoundedIcon,
+                                GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+                                GetColor(OmniboxPart::RESULTS_ICON));
   Invalidate(true);
 }
 

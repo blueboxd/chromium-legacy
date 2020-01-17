@@ -10,7 +10,7 @@
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
 #if defined(OS_ANDROID)
-#include "android_webview/grit/aw_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif
 
@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageBrowserTest, NameNotResolved) {
   // Currently, interstitials for error pages are displayed only on Android.
 #if defined(OS_ANDROID)
   base::string16 expected_title =
-      l10n_util::GetStringUTF16(IDS_AW_WEBPAGE_NOT_AVAILABLE);
+      l10n_util::GetStringUTF16(IDS_ANDROID_ERROR_PAGE_WEBPAGE_NOT_AVAILABLE);
   EXPECT_EQ(expected_title, GetTitle(shell()));
 #endif
 }

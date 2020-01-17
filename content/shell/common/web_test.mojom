@@ -68,4 +68,20 @@ interface WebTestControl {
   // Sets up a secondary renderer (renderer that doesn't [yet] host parts of the
   // main test window) for a web test.
   SetupSecondaryRenderer();
+
+  // Tells the renderer to reset all test runners.
+  Reset();
+
+  // Tells the main window that a secondary renderer in a different process
+  // asked to finish the test.
+  TestFinishedInSecondaryRenderer();
+
+  // Notifies BlinkTestRunner that the layout dump has completed (and that it
+  // can proceed with finishing up the test).
+  // TODO(crbug.com/1039247): This message should be removed and the callback
+  // should happen part of LayoutDump call on the host interface.
+  LayoutDumpCompleted(string completed_layout_dump);
+
+  // Reply Bluetooth manual events to BlinkTestRunner.
+  ReplyBluetoothManualChooserEvents(array<string> events);
 };

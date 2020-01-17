@@ -25,9 +25,6 @@ crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap-alpha.html [ S
 crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap-no-alpha.html [ Skip ]
 crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap.html [ Skip ]
 
-# Crashing third_party/blink/tools/blinkpy/common/message_pool.py
-crbug.com/1018884 compositing/overflow/scrollbar-layer-placement.html [ Skip ]
-
 # OOPIF tests fail due to input event coordinates.
 crbug.com/935970 http/tests/misc/scroll-cross-origin-iframes-scrollbar.html [ Skip ]
 crbug.com/935970 http/tests/security/referrer-policy-redirect-link.html [ Skip ]

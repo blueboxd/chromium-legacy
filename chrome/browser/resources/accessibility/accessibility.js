@@ -106,13 +106,25 @@ cr.define('accessibility', function() {
       element.textContent = 'Stop recording';
       element.setAttribute('aria-expanded', 'true');
 
-      // TODO Hide all other start recording elements. UI should reflect the
-      // fact that there can only be one accessibility recorder at once.
+      // Disable all other start recording buttons. UI reflects the fact that
+      // there can only be one accessibility recorder at once.
+      const buttons = document.getElementsByClassName('recordEventsButton');
+      for (const button of buttons) {
+        if (button != element) {
+          button.disabled = true;
+        }
+      }
     } else {
       element.textContent = 'Start recording';
       element.setAttribute('aria-expanded', 'false');
 
-      // TODO Show all start recording elements.
+      // Enable all start recording buttons.
+      const buttons = document.getElementsByClassName('recordEventsButton');
+      for (const button of buttons) {
+        if (button != element) {
+          button.disabled = false;
+        }
+      }
     }
     chrome.send('requestAccessibilityEvents', [
       {'processId': data.processId, 'routingId': data.routingId, 'start': start}
@@ -368,6 +380,7 @@ cr.define('accessibility', function() {
 
   function createStartStopAccessibilityEventRecordingElement(data, id) {
     const show = document.createElement('button');
+    show.classList.add('recordEventsButton');
     show.textContent = 'Start recording';
     show.id = id + ':startOrStopEvents';
     show.setAttribute('aria-expanded', 'false');

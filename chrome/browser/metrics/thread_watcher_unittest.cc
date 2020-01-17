@@ -23,11 +23,13 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/crash/core/common/crash_key.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -302,10 +304,15 @@ class ThreadWatcherTest : public ::testing::Test {
   CustomThreadWatcher* ui_watcher_;
   ThreadWatcherList* thread_watcher_list_;
 
-  ThreadWatcherTest()
-      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
+  template <typename... TaskEnvironmentTraits>
+  ThreadWatcherTest(base::test::TaskEnvironment::TimeSource time_source =
+                        base::test::TaskEnvironment::TimeSource::SYSTEM_TIME)
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD,
+                          time_source),
         setup_complete_(&lock_),
         initialized_(false) {
+    crash_reporter::InitializeCrashKeysForTesting();
+
     // Make sure UI and IO threads are started and ready.
     task_environment_.RunIOThreadUntilIdle();
 
@@ -366,9 +373,11 @@ class ThreadWatcherTest : public ::testing::Test {
     ui_watcher_ = nullptr;
     watchdog_thread_.reset();
     thread_watcher_list_ = nullptr;
+
+    crash_reporter::ResetCrashKeysForTesting();
   }
 
- private:
+ protected:
   content::BrowserTaskEnvironment task_environment_;
   base::Lock lock_;
   base::ConditionVariable setup_complete_;
@@ -377,6 +386,65 @@ class ThreadWatcherTest : public ::testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(ThreadWatcherTest);
 };
+
+class ThreadWatcherTestWithMockTime : public ThreadWatcherTest {
+ public:
+  ThreadWatcherTestWithMockTime()
+      : ThreadWatcherTest(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+};
+
+// Verify that the "seconds-since-last-memory-pressure" crash key is written
+// correctly.
+//
+// Note: It is not possible to split this test in 3 smaller tests, because
+// reusing the same crash key in multiple unit tests is broken with breakpad.
+// https://crbug.com/1041106.
+TEST_F(ThreadWatcherTestWithMockTime, MemoryPressureCrashKey) {
+  // The "seconds-since-last-memory-pressure" crash key should hold "No memory
+  // pressure" when there has never been any memory pressure signal.
+  watchdog_thread_->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        ui_watcher_->SetTimeSinceLastCriticalMemoryPressureCrashKey();
+        EXPECT_EQ("No memory pressure",
+                  crash_reporter::GetCrashKeyValue(
+                      "seconds-since-last-memory-pressure"));
+      }));
+
+  watchdog_thread_->FlushForTesting();
+
+  // The "seconds-since-last-memory-pressure" crash key should hold "No memory
+  // pressure" when there has been a MODERATE memory pressure signal, but no
+  // CRITICAL memory pressure signal.
+  base::MemoryPressureListener::SimulatePressureNotification(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  watchdog_thread_->FlushForTesting();
+
+  watchdog_thread_->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        ui_watcher_->SetTimeSinceLastCriticalMemoryPressureCrashKey();
+        EXPECT_EQ("No memory pressure",
+                  crash_reporter::GetCrashKeyValue(
+                      "seconds-since-last-memory-pressure"));
+      }));
+
+  watchdog_thread_->FlushForTesting();
+
+  // The "seconds-since-last-memory-pressure" crash key should hold "4" when set
+  // 4 seconds after a CRITICAL memory pressure signal.
+  base::MemoryPressureListener::SimulatePressureNotification(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  watchdog_thread_->FlushForTesting();
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(4));
+  watchdog_thread_->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        ui_watcher_->SetTimeSinceLastCriticalMemoryPressureCrashKey();
+        EXPECT_EQ("4", crash_reporter::GetCrashKeyValue(
+                           "seconds-since-last-memory-pressure"));
+      }));
+
+  watchdog_thread_->FlushForTesting();
+}
 
 // Test fixture that runs a test body on the WatchDogThread. Subclasses override
 // TestBodyOnWatchDogThread() and should call RunTestOnWatchDogThread() in their

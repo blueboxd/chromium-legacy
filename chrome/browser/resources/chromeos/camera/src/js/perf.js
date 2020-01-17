@@ -145,8 +145,3 @@ export class PerfLogger {
     this.interruptedTime_ = performance.now();
   }
 }
-
-/** @const */
-cca.perf.PerfEvent = PerfEvent;
-/** @const */
-cca.perf.PerfLogger = PerfLogger;

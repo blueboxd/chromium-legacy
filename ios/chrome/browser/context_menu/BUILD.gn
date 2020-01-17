@@ -6,9 +6,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "context_menu_egtest.mm",
-  ]
+  sources = [ "context_menu_egtest.mm" ]
   deps = [
     "//base",
     "//base/test:test_support",
@@ -35,9 +33,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "context_menu_egtest.mm",
-  ]
+  sources = [ "context_menu_egtest.mm" ]
   deps = [
     "//base",
     "//base/test:test_support",

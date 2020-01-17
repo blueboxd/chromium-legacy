@@ -534,7 +534,7 @@ size_t QuicChromiumClientStream::WriteHeaders(
     bool fin,
     quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
         ack_listener) {
-  if (!session()->IsCryptoHandshakeConfirmed()) {
+  if (!session()->OneRttKeysAvailable()) {
     auto entry = header_block.find(":method");
     DCHECK(entry != header_block.end());
     DCHECK_NE("POST", entry->second);

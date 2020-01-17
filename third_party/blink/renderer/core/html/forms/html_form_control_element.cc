@@ -205,13 +205,15 @@ const AtomicString& HTMLFormControlElement::autocapitalize() const {
 void HTMLFormControlElement::AttachLayoutTree(AttachContext& context) {
   HTMLElement::AttachLayoutTree(context);
 
-  if (!GetLayoutObject())
-    return;
-
-  // The call to updateFromElement() needs to go after the call through
+  // The call to UpdateFromElement() needs to go after the call through
   // to the base class's attachLayoutTree() because that can sometimes do a
-  // close on the layoutObject.
-  GetLayoutObject()->UpdateFromElement();
+  // close on the LayoutObject.
+  UpdateFromElement();
+}
+
+void HTMLFormControlElement::UpdateFromElement() {
+  if (auto* layout_object = GetLayoutObject())
+    layout_object->UpdateFromElement();
 }
 
 void HTMLFormControlElement::DidMoveToNewDocument(Document& old_document) {
@@ -270,10 +272,8 @@ String HTMLFormControlElement::ResultForDialogSubmit() {
 }
 
 void HTMLFormControlElement::DidRecalcStyle(const StyleRecalcChange change) {
-  if (change.ReattachLayoutTree())
-    return;
-  if (LayoutObject* layout_object = GetLayoutObject())
-    layout_object->UpdateFromElement();
+  if (!change.ReattachLayoutTree())
+    UpdateFromElement();
 }
 
 bool HTMLFormControlElement::SupportsFocus() const {

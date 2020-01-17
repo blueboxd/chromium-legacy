@@ -170,10 +170,6 @@ chrome::MessageBoxResult SimpleMessageBoxViews::Show(
   return chrome::MESSAGE_BOX_RESULT_DEFERRED;
 }
 
-bool SimpleMessageBoxViews::Close() {
-  return can_close_ ? DialogDelegate::Close() : false;
-}
-
 bool SimpleMessageBoxViews::Cancel() {
   result_ = chrome::MESSAGE_BOX_RESULT_NO;
   Done();
@@ -192,6 +188,10 @@ bool SimpleMessageBoxViews::Accept() {
   return true;
 }
 
+bool SimpleMessageBoxViews::Close() {
+  return can_close_ && DialogDelegate::Close();
+}
+
 base::string16 SimpleMessageBoxViews::GetWindowTitle() const {
   return window_title_;
 }
@@ -208,12 +208,8 @@ views::View* SimpleMessageBoxViews::GetContentsView() {
   return message_box_view_;
 }
 
-views::Widget* SimpleMessageBoxViews::GetWidget() {
-  return message_box_view_->GetWidget();
-}
-
-const views::Widget* SimpleMessageBoxViews::GetWidget() const {
-  return message_box_view_->GetWidget();
+bool SimpleMessageBoxViews::ShouldShowCloseButton() const {
+  return can_close_;
 }
 
 void SimpleMessageBoxViews::OnWidgetActivationChanged(views::Widget* widget,
@@ -282,8 +278,8 @@ void SimpleMessageBoxViews::Done() {
   std::move(result_callback_).Run(result_);
 }
 
-bool SimpleMessageBoxViews::ShouldShowCloseButton() const {
-  return can_close_;
+const views::Widget* SimpleMessageBoxViews::GetWidgetImpl() const {
+  return message_box_view_->GetWidget();
 }
 
 namespace chrome {

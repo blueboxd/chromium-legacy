@@ -5,6 +5,7 @@
 #include "cc/test/animation_test_common.h"
 
 #include "base/memory/ptr_util.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/element_animations.h"
@@ -12,7 +13,6 @@
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/scroll_offset_animation_curve_factory.h"
-#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/time_util.h"
@@ -33,8 +33,7 @@ int AddOpacityTransition(Animation* target,
                          double duration,
                          float start_opacity,
                          float end_opacity,
-                         bool use_timing_function,
-                         KeyframeEffectId effect_id) {
+                         bool use_timing_function) {
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
 
@@ -55,16 +54,14 @@ int AddOpacityTransition(Animation* target,
       TargetProperty::OPACITY));
   keyframe_model->set_needs_synchronized_start_time(true);
 
-  target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
-                                            effect_id);
+  target->AddKeyframeModel(std::move(keyframe_model));
   return id;
 }
 
 int AddAnimatedTransform(Animation* target,
                          double duration,
                          TransformOperations start_operations,
-                         TransformOperations operations,
-                         KeyframeEffectId effect_id) {
+                         TransformOperations operations) {
   std::unique_ptr<KeyframedTransformAnimationCurve> curve(
       KeyframedTransformAnimationCurve::Create());
 
@@ -83,16 +80,14 @@ int AddAnimatedTransform(Animation* target,
       TargetProperty::TRANSFORM));
   keyframe_model->set_needs_synchronized_start_time(true);
 
-  target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
-                                            effect_id);
+  target->AddKeyframeModel(std::move(keyframe_model));
   return id;
 }
 
 int AddAnimatedTransform(Animation* target,
                          double duration,
                          int delta_x,
-                         int delta_y,
-                         KeyframeEffectId effect_id) {
+                         int delta_y) {
   TransformOperations start_operations;
   if (duration > 0.0) {
     start_operations.AppendTranslate(0, 0, 0.0);
@@ -100,15 +95,13 @@ int AddAnimatedTransform(Animation* target,
 
   TransformOperations operations;
   operations.AppendTranslate(delta_x, delta_y, 0.0);
-  return AddAnimatedTransform(target, duration, start_operations, operations,
-                              effect_id);
+  return AddAnimatedTransform(target, duration, start_operations, operations);
 }
 
 int AddAnimatedFilter(Animation* target,
                       double duration,
                       float start_brightness,
-                      float end_brightness,
-                      KeyframeEffectId effect_id) {
+                      float end_brightness) {
   std::unique_ptr<KeyframedFilterAnimationCurve> curve(
       KeyframedFilterAnimationCurve::Create());
 
@@ -132,16 +125,14 @@ int AddAnimatedFilter(Animation* target,
       TargetProperty::FILTER));
   keyframe_model->set_needs_synchronized_start_time(true);
 
-  target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
-                                            effect_id);
+  target->AddKeyframeModel(std::move(keyframe_model));
   return id;
 }
 
 int AddAnimatedBackdropFilter(Animation* target,
                               double duration,
                               float start_invert,
-                              float end_invert,
-                              KeyframeEffectId effect_id) {
+                              float end_invert) {
   std::unique_ptr<KeyframedFilterAnimationCurve> curve(
       KeyframedFilterAnimationCurve::Create());
 
@@ -164,8 +155,7 @@ int AddAnimatedBackdropFilter(Animation* target,
       TargetProperty::BACKDROP_FILTER));
   keyframe_model->set_needs_synchronized_start_time(true);
 
-  target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
-                                            effect_id);
+  target->AddKeyframeModel(std::move(keyframe_model));
   return id;
 }
 
@@ -251,8 +241,7 @@ std::unique_ptr<AnimationCurve> FakeFloatTransition::Clone() const {
 
 int AddScrollOffsetAnimationToAnimation(Animation* animation,
                                         gfx::ScrollOffset initial_value,
-                                        gfx::ScrollOffset target_value,
-                                        KeyframeEffectId effect_id) {
+                                        gfx::ScrollOffset target_value) {
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
       ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
           target_value));
@@ -265,8 +254,7 @@ int AddScrollOffsetAnimationToAnimation(Animation* animation,
       TargetProperty::SCROLL_OFFSET));
   keyframe_model->SetIsImplOnly();
 
-  animation->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
-                                               effect_id);
+  animation->AddKeyframeModel(std::move(keyframe_model));
 
   return id;
 }
@@ -274,54 +262,48 @@ int AddScrollOffsetAnimationToAnimation(Animation* animation,
 int AddAnimatedTransformToAnimation(Animation* animation,
                                     double duration,
                                     int delta_x,
-                                    int delta_y,
-                                    KeyframeEffectId effect_id) {
-  return AddAnimatedTransform(animation, duration, delta_x, delta_y, effect_id);
+                                    int delta_y) {
+  return AddAnimatedTransform(animation, duration, delta_x, delta_y);
 }
 
 int AddAnimatedTransformToAnimation(Animation* animation,
                                     double duration,
                                     TransformOperations start_operations,
-                                    TransformOperations operations,
-                                    KeyframeEffectId effect_id) {
-  return AddAnimatedTransform(animation, duration, start_operations, operations,
-                              effect_id);
+                                    TransformOperations operations) {
+  return AddAnimatedTransform(animation, duration, start_operations,
+                              operations);
 }
 
 int AddOpacityTransitionToAnimation(Animation* animation,
                                     double duration,
                                     float start_opacity,
                                     float end_opacity,
-                                    bool use_timing_function,
-                                    KeyframeEffectId effect_id) {
+                                    bool use_timing_function) {
   return AddOpacityTransition(animation, duration, start_opacity, end_opacity,
-                              use_timing_function, effect_id);
+                              use_timing_function);
 }
 
 int AddAnimatedFilterToAnimation(Animation* animation,
                                  double duration,
                                  float start_brightness,
-                                 float end_brightness,
-                                 KeyframeEffectId effect_id) {
+                                 float end_brightness) {
   return AddAnimatedFilter(animation, duration, start_brightness,
-                           end_brightness, effect_id);
+                           end_brightness);
 }
 
 int AddAnimatedBackdropFilterToAnimation(Animation* animation,
                                          double duration,
                                          float start_invert,
-                                         float end_invert,
-                                         KeyframeEffectId effect_id) {
+                                         float end_invert) {
   return AddAnimatedBackdropFilter(animation, duration, start_invert,
-                                   end_invert, effect_id);
+                                   end_invert);
 }
 
 int AddOpacityStepsToAnimation(Animation* animation,
                                double duration,
                                float start_opacity,
                                float end_opacity,
-                               int num_steps,
-                               KeyframeEffectId effect_id) {
+                               int num_steps) {
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
 
@@ -340,8 +322,7 @@ int AddOpacityStepsToAnimation(Animation* animation,
       TargetProperty::OPACITY));
   keyframe_model->set_needs_synchronized_start_time(true);
 
-  animation->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
-                                               effect_id);
+  animation->AddKeyframeModel(std::move(keyframe_model));
   return id;
 }
 
@@ -349,9 +330,8 @@ void AddKeyframeModelToElementWithAnimation(
     ElementId element_id,
     scoped_refptr<AnimationTimeline> timeline,
     std::unique_ptr<KeyframeModel> keyframe_model) {
-  scoped_refptr<SingleKeyframeEffectAnimation> animation =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
   timeline->AttachAnimation(animation);
   animation->AttachElement(element_id);
   DCHECK(animation->keyframe_effect()->element_animations());
@@ -403,9 +383,8 @@ int AddAnimatedFilterToElementWithAnimation(
     double duration,
     float start_brightness,
     float end_brightness) {
-  scoped_refptr<SingleKeyframeEffectAnimation> animation =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
   timeline->AttachAnimation(animation);
   animation->AttachElement(element_id);
   DCHECK(animation->keyframe_effect()->element_animations());
@@ -419,9 +398,8 @@ int AddAnimatedTransformToElementWithAnimation(
     double duration,
     int delta_x,
     int delta_y) {
-  scoped_refptr<SingleKeyframeEffectAnimation> animation =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
   timeline->AttachAnimation(animation);
   animation->AttachElement(element_id);
   DCHECK(animation->keyframe_effect()->element_animations());
@@ -435,9 +413,8 @@ int AddAnimatedTransformToElementWithAnimation(
     double duration,
     TransformOperations start_operations,
     TransformOperations operations) {
-  scoped_refptr<SingleKeyframeEffectAnimation> animation =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
   timeline->AttachAnimation(animation);
   animation->AttachElement(element_id);
   DCHECK(animation->keyframe_effect()->element_animations());
@@ -452,9 +429,8 @@ int AddOpacityTransitionToElementWithAnimation(
     float start_opacity,
     float end_opacity,
     bool use_timing_function) {
-  scoped_refptr<SingleKeyframeEffectAnimation> animation =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
   timeline->AttachAnimation(animation);
   animation->AttachElement(element_id);
   DCHECK(animation->keyframe_effect()->element_animations());

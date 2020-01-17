@@ -141,6 +141,58 @@ TEST_F(ChooserContextBaseTest, GrantObjectPermissionEmbedded) {
   EXPECT_EQ(0u, objects.size());
 }
 
+TEST_F(ChooserContextBaseTest, GrantAndUpdateObjectPermission) {
+  TestChooserContext context(profile());
+  MockPermissionObserver mock_observer;
+  context.AddObserver(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _));
+  context.GrantObjectPermission(origin1_, origin1_, object1_.Clone());
+
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
+      context.GetGrantedObjects(origin1_, origin1_);
+  EXPECT_EQ(1u, objects.size());
+  EXPECT_EQ(object1_, objects[0]->value);
+
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+  EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _));
+  context.UpdateObjectPermission(origin1_, origin1_, objects[0]->value,
+                                 object2_.Clone());
+
+  objects = context.GetGrantedObjects(origin1_, origin1_);
+  EXPECT_EQ(1u, objects.size());
+  EXPECT_EQ(object2_, objects[0]->value);
+}
+
+// UpdateObjectPermission() should not grant new permissions.
+TEST_F(ChooserContextBaseTest,
+       UpdateObjectPermissionWithNonExistentPermission) {
+  TestChooserContext context(profile());
+  MockPermissionObserver mock_observer;
+  context.AddObserver(&mock_observer);
+
+  // Attempt to update permission for non-existent |object1_| permission.
+  EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _)).Times(0);
+  context.UpdateObjectPermission(origin1_, origin1_, object1_,
+                                 object2_.Clone());
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
+      context.GetGrantedObjects(origin1_, origin1_);
+  EXPECT_TRUE(objects.empty());
+
+  // Grant permission for |object2_| but attempt to update permission for
+  // non-existent |object1_| permission again.
+  EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _));
+  context.GrantObjectPermission(origin1_, origin1_, object2_.Clone());
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _)).Times(0);
+  context.UpdateObjectPermission(origin1_, origin1_, object1_,
+                                 object2_.Clone());
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+}
+
 TEST_F(ChooserContextBaseTest, GetAllGrantedObjects) {
   TestChooserContext context(profile());
   MockPermissionObserver mock_observer;

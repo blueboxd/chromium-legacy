@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Закрыць бягучую ўкладку</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Агляд прапанаванага змесціва і пошук</translation>
-<translation id="1264974993859112054">Спорт</translation>
 <translation id="1266864766717917324">Не ўдалося абагуліць змесціва наступнага тыпу: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Спыніць</translation>
 <translation id="1283039547216852943">Дакраніцеся, каб разгарнуць</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Каб перанесці закладкі на ўсе прылады, увайдзіце ва ўліковы запіс і ўключыце сінхранізацыю</translation>
 <translation id="2822354292072154809">Сапраўды скінуць усе дазволы сайта для <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2842985007712546952">Бацькоўская папка</translation>
-<translation id="2858138569776157458">Топ сайтаў</translation>
 <translation id="2860954141821109167">Праверце, ці ўключана на гэтай прыладзе праграма для тэлефона</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2874939134665556319">Папярэдні трэк</translation>
@@ -366,7 +364,6 @@
 <translation id="381841723434055211">Нумары тэлефонаў</translation>
 <translation id="3819178904835489326">Выдалена спамповак: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Ачысц. сховішча сайтаў?</translation>
-<translation id="3853625385350850937">Каб працягнуць, уключыце на прыладзе функцыю NFC</translation>
 <translation id="3859306556332390985">Перайсці ўперад</translation>
 <translation id="388596076286380598">Чытайце артыкулы, глядзіце відэа і іншае змесціва на любімых сайтах, нават калі вы не падключаны да інтэрнэту або якасць падключэння дрэнная.</translation>
 <translation id="3894427358181296146">Дадаць папку</translation>
@@ -764,7 +761,6 @@
 <translation id="6697947395630195233">Chrome патрабуе доступу да вашага месцазнаходжання, каб абагуліць яго з гэтым сайтам.</translation>
 <translation id="6698801883190606802">Кіраванне сінхранізаванымі данымі</translation>
 <translation id="6699370405921460408">Серверы Google будуць аптымізаваць старонкі, якія вы наведваеце.</translation>
-<translation id="6709133671862442373">Навіны</translation>
 <translation id="6710213216561001401">Назад</translation>
 <translation id="671481426037969117">Спрацаваў таймер праграмы "<ph name="FQDN" />". Заўтра ён зноў будзе запушчаны.</translation>
 <translation id="6738867403308150051">Ідзе спампоўка…</translation>
@@ -1079,7 +1075,6 @@
 <translation id="9133397713400217035">Агляд па-за сеткай</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Паказаць арыгінал</translation>
-<translation id="9139318394846604261">Шопінг</translation>
 <translation id="9155898266292537608">Запусціць пошук таксама можна, коратка націснуўшы на слова</translation>
 <translation id="9169507124922466868">Гісторыя навігацыі адкрыта напалову</translation>
 <translation id="9204836675896933765">Застаўся 1 файл</translation>

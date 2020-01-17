@@ -26,12 +26,10 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
-import org.chromium.chrome.browser.ui.widget.FadingShadow;
-import org.chromium.chrome.browser.ui.widget.FadingShadowView;
-import org.chromium.chrome.browser.ui.widget.LoadingView;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
+import org.chromium.components.browser_ui.widget.FadingShadow;
+import org.chromium.components.browser_ui.widget.FadingShadowView;
+import org.chromium.components.browser_ui.widget.LoadingView;
 import org.chromium.components.browser_ui.widget.displaystyle.DisplayStyleObserver;
 import org.chromium.components.browser_ui.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
@@ -286,18 +284,6 @@ public class SelectableListLayout<E>
     @Override
     public void onSelectionStateChange(List<E> selectedItems) {
         setToolbarShadowVisibility();
-        if (!selectedItems.isEmpty()) {
-            ((HistoryNavigationLayout) findViewById(R.id.list_content)).release();
-        }
-    }
-
-    /**
-     * Sets the delegate object needed for history navigation logic.
-     * @param delegate {@link HistoryNavigationDelegate} object.
-     */
-    public void setHistoryNavigationDelegate(HistoryNavigationDelegate delegate) {
-        HistoryNavigationLayout layout = (HistoryNavigationLayout) findViewById(R.id.list_content);
-        layout.setNavigationDelegate(delegate);
     }
 
     /**

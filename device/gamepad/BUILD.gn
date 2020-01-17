@@ -102,9 +102,7 @@ component("gamepad") {
     "//third_party/blink/public:blink_headers",
   ]
 
-  public_deps = [
-    "//services/device/public/mojom",
-  ]
+  public_deps = [ "//services/device/public/mojom" ]
 
   defines = [ "DEVICE_GAMEPAD_IMPLEMENTATION" ]
 
@@ -171,9 +169,8 @@ static_library("test_helpers") {
 
 if (is_android) {
   generate_jni("jni_headers") {
-    sources = [
-      "android/java/src/org/chromium/device/gamepad/GamepadList.java",
-    ]
+    sources =
+        [ "android/java/src/org/chromium/device/gamepad/GamepadList.java" ]
   }
 
   android_library("java") {
@@ -192,8 +189,6 @@ if (is_android) {
   }
 
   java_cpp_enum("java_enums_srcjar") {
-    sources = [
-      "gamepad_standard_mappings.h",
-    ]
+    sources = [ "gamepad_standard_mappings.h" ]
   }
 }

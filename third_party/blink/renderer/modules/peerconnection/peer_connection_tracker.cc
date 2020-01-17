@@ -906,6 +906,8 @@ void PeerConnectionTracker::TrackAddIceCandidate(
 
 void PeerConnectionTracker::TrackIceCandidateError(
     RTCPeerConnectionHandler* pc_handler,
+    const String& address,
+    base::Optional<uint16_t> port,
     const String& host_candidate,
     const String& url,
     int error_code,
@@ -914,10 +916,12 @@ void PeerConnectionTracker::TrackIceCandidateError(
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
-  String value = "url: " + url + "\n" + "host_candidate: " + host_candidate +
-                 "\n"
-                 "error_text: " +
-                 error_text + "\n" +
+  String address_string = address ? "address: " + address + "\n" : String();
+  String port_string =
+      port.has_value() ? String::Format("port: %d\n", port.value()) : "";
+  String value = "url: " + url + "\n" + address_string + port_string +
+                 "host_candidate: " + host_candidate + "\n" +
+                 "error_text: " + error_text + "\n" +
                  "error_code: " + String::Number(error_code);
   SendPeerConnectionUpdate(id, "icecandidateerror", value);
 }

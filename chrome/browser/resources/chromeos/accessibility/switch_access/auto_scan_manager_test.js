@@ -18,7 +18,7 @@ SwitchAccessAutoScanManagerTest.prototype = {
   __proto__: SwitchAccessE2ETest.prototype,
 
   /** @override */
-  setUp: function() {
+  setUp() {
     // Use intervalCount and intervalDelay to check how many intervals are
     // currently running (should be no more than 1) and the current delay.
     window.intervalCount = 0;

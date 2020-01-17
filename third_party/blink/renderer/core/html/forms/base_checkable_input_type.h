@@ -70,6 +70,7 @@ class BaseCheckableInputType : public InputType, public InputTypeView {
                 TextControlSetValueSelection) final;
   void ReadingChecked() const final;
   bool IsCheckable() final;
+  bool TypeShouldForceLegacyLayout() const final;
 };
 
 }  // namespace blink

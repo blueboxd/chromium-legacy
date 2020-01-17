@@ -47,9 +47,7 @@ source_set("lib") {
     "regkey.h",
   ]
 
-  deps = [
-    "//build:branding_buildflags",
-  ]
+  deps = [ "//build:branding_buildflags" ]
 
   if (skip_archive_compression) {
     defines = [ "SKIP_ARCHIVE_COMPRESSION" ]
@@ -75,9 +73,7 @@ source_set("unit_tests") {
     "mini_string_test.cc",
   ]
 
-  public_deps = [
-    ":lib",
-  ]
+  public_deps = [ ":lib" ]
   deps = [
     "//base",
     "//base/test:test_support",
@@ -103,9 +99,7 @@ group("chrome_runtime_deps") {
 
 group("setup_runtime_deps") {
   write_runtime_deps = setup_runtime_deps
-  data_deps = [
-    "//chrome/installer/setup",
-  ]
+  data_deps = [ "//chrome/installer/setup" ]
 }
 
 # Generates a mini installer.
@@ -330,9 +324,7 @@ if (!(is_component_build && is_debug && target_cpu == "x86") &&
       "$root_out_dir/" + alternate_version_generator_rel_path,
       "$root_out_dir/mini_installer.exe",
     ]
-    outputs = [
-      "$root_out_dir/$target_name.exe",
-    ]
+    outputs = [ "$root_out_dir/$target_name.exe" ]
     args = [
       "--alternate_version_generator",
       alternate_version_generator_rel_path,

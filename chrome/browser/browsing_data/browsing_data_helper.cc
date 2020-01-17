@@ -27,8 +27,3 @@ bool BrowsingDataHelper::HasWebScheme(const GURL& origin) {
 bool BrowsingDataHelper::IsExtensionScheme(const std::string& scheme) {
   return scheme == extensions::kExtensionScheme;
 }
-
-// Static
-bool BrowsingDataHelper::HasExtensionScheme(const GURL& origin) {
-  return BrowsingDataHelper::IsExtensionScheme(origin.scheme());
-}

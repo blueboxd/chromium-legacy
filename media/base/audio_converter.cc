@@ -118,6 +118,12 @@ void AudioConverter::PrimeWithSilence() {
   }
 }
 
+int AudioConverter::GetMaxInputFramesRequested(int output_frames_requested) {
+  return resampler_
+             ? resampler_->GetMaxInputFramesRequested(output_frames_requested)
+             : output_frames_requested;
+}
+
 void AudioConverter::ConvertWithDelay(uint32_t initial_frames_delayed,
                                       AudioBus* dest) {
   initial_frames_delayed_ = initial_frames_delayed;

@@ -461,11 +461,6 @@ WebContents* OpenApplicationWindow(Profile* profile,
   WebContents* web_contents = NavigateApplicationWindow(
       browser, params, url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
 
-  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
-    web_launch::WebLaunchFilesHelper::SetLaunchPaths(
-        web_contents, web_contents->GetURL(), params.launch_files);
-  }
-
   browser->window()->Show();
   return web_contents;
 }

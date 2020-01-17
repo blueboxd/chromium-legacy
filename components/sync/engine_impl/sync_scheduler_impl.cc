@@ -158,6 +158,16 @@ void SyncSchedulerImpl::OnCredentialsUpdated() {
   }
 }
 
+void SyncSchedulerImpl::OnCredentialsInvalidated() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!nigori_configuration_with_invalidated_credentials_recorded &&
+      IsNigoriOnlyConfiguration(pending_configure_params_.get())) {
+    UMA_HISTOGRAM_BOOLEAN("Sync.NigoriConfigurationWithInvalidatedCredentials",
+                          true);
+    nigori_configuration_with_invalidated_credentials_recorded = true;
+  }
+}
+
 void SyncSchedulerImpl::OnConnectionStatusChange(
     network::mojom::ConnectionType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

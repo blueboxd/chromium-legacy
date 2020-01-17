@@ -220,7 +220,7 @@ const CrPngBehavior = {
    */
   isEncodedPngDataUrlAnimated(url) {
     const decoded = atob(url.substr('data:image/png;base64,'.length));
-    return decoded.substr(37, 4) == 'acTL';
+    return decoded.substr(37, 4) === 'acTL';
   },
 
   /**
@@ -359,7 +359,7 @@ const CrPngBehavior = {
 
     /** Check signature. */
     const signature = bytes.subarray(0, PNG_SIGNATURE.length);
-    if (signature.toString() != PNG_SIGNATURE.toString()) {
+    if (signature.toString() !== PNG_SIGNATURE.toString()) {
       console.error('Bad PNG signature');
     }
 
@@ -407,7 +407,7 @@ const CrPngBehavior = {
       const chunk = bytes.subarray(i + 8, i + 8 + length);
 
       /** We should have enough bytes left for length. */
-      if (length != chunk.length) {
+      if (length !== chunk.length) {
         console.error('Unexpectedly reached end of file');
       }
 
@@ -433,38 +433,38 @@ const CrPngBehavior = {
           const interlace = chunk[12];
 
           /** Initialize size and colour if this is the first frame. */
-          if (png.frames == 0) {
+          if (png.frames === 0) {
             png.width = width;
             png.height = height;
             png.colour = colour;
           }
 
           /** Check that header matches our expectations. */
-          if (width != png.width) {
+          if (width !== png.width) {
             console.error('Bad PNG width: ' + width);
           }
-          if (height != png.height) {
+          if (height !== png.height) {
             console.error('Bad PNG height: ' + height);
           }
-          if (depth != PNG_BIT_DEPTH) {
+          if (depth !== PNG_BIT_DEPTH) {
             console.error('Bad PNG bit depth: ' + depth);
           }
-          if (colour != png.colour) {
+          if (colour !== png.colour) {
             console.error('Bad PNG colour type: ' + colour);
           }
-          if (compression != PNG_COMPRESSION_METHOD) {
+          if (compression !== PNG_COMPRESSION_METHOD) {
             console.error('Bad PNG compression method: ' + compression);
           }
-          if (filter != PNG_FILTER_METHOD) {
+          if (filter !== PNG_FILTER_METHOD) {
             console.error('Bad PNG filter method: ' + filter);
           }
-          if (interlace != PNG_INTERLACE_METHOD) {
+          if (interlace !== PNG_INTERLACE_METHOD) {
             console.error('Bad PNG interlace method: ' + interlace);
           }
           break;
         case 'IDAT':
           /** Append as IDAT chunk if this is the first frame. */
-          if (png.frames == 0) {
+          if (png.frames === 0) {
             /**
              * http://www.w3.org/TR/2003/REC-PNG-20031110/#11IDAT
              *

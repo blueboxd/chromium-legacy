@@ -2,26 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/large_icon_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/session_hierarchy_match_checker.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
+#include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
+#include "components/favicon/core/favicon_service.h"
+#include "components/favicon/core/large_icon_service_impl.h"
+#include "components/favicon_base/favicon_types.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/sessions/core/session_types.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -34,6 +44,9 @@
 #include "components/sync_sessions/session_sync_test_helper.h"
 #include "components/sync_sessions/synced_session_tracker.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,6 +98,22 @@ void ExpectUniqueSampleGE(const HistogramTester& histogram_tester,
       << " for histogram " << name << " sample " << sample;
   EXPECT_EQ(sample_count, samples->TotalCount())
       << " for histogram " << name << " sample " << sample;
+}
+
+std::unique_ptr<net::test_server::HttpResponse> FaviconServerRequestHandler(
+    const net::test_server::HttpRequest& request) {
+  // An arbitrary 16x16 png (opaque black square), Base64 encoded.
+  const std::string kTestPngBase64 =
+      "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAE0lEQVR42mNk+M+"
+      "AFzCOKhhJCgBrLxABLz0PwwAAAABJRU5ErkJggg==";
+  std::string content;
+  base::Base64Decode(kTestPngBase64, &content);
+
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+      new net::test_server::BasicHttpResponse);
+  http_response->set_content(content);
+  http_response->set_code(net::HTTP_OK);
+  return std::move(http_response);
 }
 
 class IsHistoryURLSyncedChecker : public SingleClientStatusChangeChecker {
@@ -145,6 +174,72 @@ class IsIconURLSyncedChecker : public SingleClientStatusChangeChecker {
   const std::string page_url_;
   const std::string icon_url_;
   fake_server::FakeServer* fake_server_;
+};
+
+// Checker to block until the history DB for |profile| does / does not have a
+// favicon for |page_url| (depending on |should_be_available|).
+class FaviconForPageUrlAvailableChecker : public StatusChangeChecker {
+ public:
+  FaviconForPageUrlAvailableChecker(Profile* profile,
+                                    const GURL& page_url,
+                                    bool should_be_available)
+      : profile_(profile),
+        page_url_(page_url),
+        should_be_available_(should_be_available) {
+    history::HistoryService* history_service =
+        HistoryServiceFactory::GetForProfile(
+            profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    callback_subscription_ =
+        history_service->AddFaviconsChangedCallback(base::BindRepeating(
+            &FaviconForPageUrlAvailableChecker::OnFaviconsChanged,
+            base::Unretained(this)));
+
+    // Load the state asynchronously to figure out if further waiting is needed.
+    CheckExitConditionAsync();
+  }
+  ~FaviconForPageUrlAvailableChecker() override = default;
+
+ protected:
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    return exit_condition_satisfied_;
+  }
+
+ private:
+  void OnFaviconsChanged(const std::set<GURL>& page_urls,
+                         const GURL& icon_url) {
+    for (const GURL& page_url : page_urls) {
+      if (page_url == page_url_) {
+        CheckExitConditionAsync();
+      }
+    }
+  }
+
+  void CheckExitConditionAsync() {
+    favicon::FaviconService* favicon_service =
+        FaviconServiceFactory::GetForProfile(
+            profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    favicon_service->GetFaviconImageForPageURL(
+        page_url_,
+        base::BindOnce(&FaviconForPageUrlAvailableChecker::OnFaviconLoaded,
+                       base::Unretained(this)),
+        &tracker_);
+  }
+
+  void OnFaviconLoaded(const favicon_base::FaviconImageResult& result) {
+    bool is_available = !result.image.IsEmpty();
+    exit_condition_satisfied_ = (is_available == should_be_available_);
+    CheckExitCondition();
+  }
+
+  Profile* const profile_;
+  const GURL page_url_;
+  const bool should_be_available_;
+  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
+                                          const GURL&)>::Subscription>
+      callback_subscription_;
+  bool exit_condition_satisfied_ = false;
+  base::CancelableTaskTracker tracker_;
 };
 
 class SingleClientSessionsSyncTest : public SyncTest {
@@ -777,6 +872,90 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   IsIconURLSyncedChecker checker(page_url, icon_url, GetFakeServer(),
                                  GetSyncService(0));
   EXPECT_TRUE(checker.Wait());
+}
+
+class SingleClientSessionsSyncTestWithFaviconTestServer
+    : public SingleClientSessionsSyncTest {
+ public:
+  SingleClientSessionsSyncTestWithFaviconTestServer()
+      : SingleClientSessionsSyncTest() {}
+  ~SingleClientSessionsSyncTestWithFaviconTestServer() override = default;
+
+ protected:
+  void SetUpOnMainThread() override {
+    // Mock favicon server response.
+    embedded_test_server()->RegisterRequestHandler(
+        base::BindRepeating(&FaviconServerRequestHandler));
+    ASSERT_TRUE(embedded_test_server()->Start());
+    SingleClientSessionsSyncTest::SetUpOnMainThread();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SingleClientSessionsSyncTestWithFaviconTestServer);
+};
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTestWithFaviconTestServer,
+                       ShouldDeleteOnDemandIconsOnSessionsDisabled) {
+  const std::string kForeignSessionTag = "ForeignSessionTag";
+  const SessionID kWindowId = SessionID::FromSerializedValue(5);
+  const SessionID kTabId = SessionID::FromSerializedValue(1);
+  const base::Time kLastModifiedTime = base::Time::Now();
+
+  // Inject fake data on the server.
+  SessionSyncTestHelper helper;
+  sync_pb::EntitySpecifics tab;
+  *tab.mutable_session() =
+      helper.BuildTabSpecifics(kForeignSessionTag, kWindowId, kTabId);
+  sync_pb::EntitySpecifics header;
+  SessionSyncTestHelper::BuildSessionSpecifics(kForeignSessionTag,
+                                               header.mutable_session());
+  SessionSyncTestHelper::AddWindowSpecifics(kWindowId, {kTabId},
+                                            header.mutable_session());
+  for (const sync_pb::EntitySpecifics& specifics : {tab, header}) {
+    GetFakeServer()->InjectEntity(
+        syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+            "somename",
+            sync_sessions::SessionStore::GetClientTag(specifics.session()),
+            specifics,
+            /*creation_time=*/syncer::TimeToProtoTime(kLastModifiedTime),
+            /*last_modified_time=*/syncer::TimeToProtoTime(kLastModifiedTime)));
+  }
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Override large icon service to talk to the mock server.
+  favicon::LargeIconServiceImpl* large_icon_service =
+      static_cast<favicon::LargeIconServiceImpl*>(
+          LargeIconServiceFactory::GetForBrowserContext(GetProfile(0)));
+  large_icon_service->SetServerUrlForTesting(
+      embedded_test_server()->GetURL("/"));
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Expect injected foreign sessions to be synced down.
+  SyncedSessionVector sessions;
+  ASSERT_TRUE(GetSessionData(0, &sessions));
+  ASSERT_EQ(1U, sessions.size());
+
+  // Force creation of RecentTabsSubMenuModel which as a result fetches the
+  // favicon for the injected fake recent tab.
+  chrome::ShowAppMenu(GetBrowser(0));
+
+  EXPECT_TRUE(FaviconForPageUrlAvailableChecker(GetProfile(0),
+                                                GURL("http://foo/1"),
+                                                /*should_be_available=*/true)
+                  .Wait());
+
+  // Disable tabs and history toggles.
+  ASSERT_TRUE(
+      GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kTabs));
+  ASSERT_TRUE(
+      GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kHistory));
+
+  EXPECT_TRUE(FaviconForPageUrlAvailableChecker(GetProfile(0),
+                                                GURL("http://foo/1"),
+                                                /*should_be_available=*/false)
+                  .Wait());
 }
 
 }  // namespace

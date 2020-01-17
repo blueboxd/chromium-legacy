@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -919,4 +920,74 @@ TEST_F(MediaNotificationServiceTest,
   // The notification should become inactive now that it's not in an overlay.
   AdvanceClockMinutes(61);
   EXPECT_TRUE(IsSessionInactive(id));
+}
+
+TEST_F(MediaNotificationServiceTest, HidingNotification_FeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      media::kGlobalMediaControlsAutoDismiss);
+
+  // Start playing active media.
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // Then, pause the media. We should still have the active notification.
+  SimulatePlaybackStateChanged(id, false);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // After 61 minutes, the notification should still be there.
+  AdvanceClockMinutes(61);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  ExpectHistogramDismissReasonRecorded(
+      MediaNotificationService::GlobalMediaControlsDismissReason::
+          kInactiveTimeout,
+      0);
+
+  // Since the user never interacted with the media before it was paused, we
+  // should not have recorded any post-pause interactions.
+  ExpectEmptyInteractionHistogram();
+
+  ExpectHistogramInteractionDelayAfterPause(base::TimeDelta::FromMinutes(61),
+                                            0);
+  SimulatePlaybackStateChanged(id, true);
+  ExpectHistogramInteractionDelayAfterPause(base::TimeDelta::FromMinutes(61),
+                                            1);
+}
+
+TEST_F(MediaNotificationServiceTest, HidingNotification_TimerParams) {
+  const int kTimerInMinutes = 6;
+  base::test::ScopedFeatureList scoped_feature_list;
+  base::FieldTrialParams params;
+  params["timer_in_minutes"] = base::NumberToString(kTimerInMinutes);
+
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      media::kGlobalMediaControlsAutoDismiss, params);
+
+  // Start playing active media.
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // Then, pause the media. We should still have the active notification.
+  SimulatePlaybackStateChanged(id, false);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // After (kTimerInMinutes-1) minutes, the notification should still be there.
+  AdvanceClockMinutes(kTimerInMinutes - 1);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // If we start playing again, we should not hide the notification, even after
+  // kTimerInMinutes.
+  ExpectHistogramInteractionDelayAfterPause(
+      base::TimeDelta::FromMinutes(kTimerInMinutes - 1), 0);
+  SimulatePlaybackStateChanged(id, true);
+  ExpectHistogramInteractionDelayAfterPause(
+      base::TimeDelta::FromMinutes(kTimerInMinutes - 1), 1);
+  AdvanceClockMinutes(2);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // If we pause again, it should hide after kTimerInMinutes.
+  SimulatePlaybackStateChanged(id, false);
+  AdvanceClockMinutes(kTimerInMinutes + 1);
+  EXPECT_FALSE(HasActiveNotifications());
 }

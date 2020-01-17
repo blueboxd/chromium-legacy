@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
 
@@ -157,12 +158,21 @@ LayoutObject* GetTargetLayoutObject(const Element& target_element) {
   return target;
 }
 
+bool CanUseGeometryMapper(const LayoutObject* object) {
+  // This checks for cases where we didn't just complete a successful lifecycle
+  // update, e.g., if the frame is throttled.
+  LayoutView* layout_view = object->GetDocument().GetLayoutView();
+  return layout_view && !layout_view->NeedsPaintPropertyUpdate() &&
+         !layout_view->DescendantNeedsPaintPropertyUpdate();
+}
+
 static const unsigned kConstructorFlagsMask =
     IntersectionGeometry::kShouldReportRootBounds |
     IntersectionGeometry::kShouldComputeVisibility |
     IntersectionGeometry::kShouldTrackFractionOfRoot |
     IntersectionGeometry::kShouldUseReplacedContentRect |
-    IntersectionGeometry::kShouldConvertToCSSPixels;
+    IntersectionGeometry::kShouldConvertToCSSPixels |
+    IntersectionGeometry::kShouldUseCachedRects;
 
 }  // namespace
 
@@ -187,7 +197,8 @@ IntersectionGeometry::RootGeometry::RootGeometry(const LayoutObject* root,
 //   https://w3c.github.io/IntersectionObserver/#dom-intersectionobserver-root
 const LayoutObject* IntersectionGeometry::GetRootLayoutObjectForTarget(
     const Element* root_element,
-    LayoutObject* target) {
+    LayoutObject* target,
+    bool check_containing_block_chain) {
   if (!root_element)
     return target ? LocalRootView(*target) : nullptr;
   if (!root_element->isConnected())
@@ -200,8 +211,10 @@ const LayoutObject* IntersectionGeometry::GetRootLayoutObjectForTarget(
     root = root_element->GetDocument().GetLayoutView();
   } else {
     root = root_element->GetLayoutObject();
-    if (target && !IsContainingBlockChainDescendant(target, root))
+    if (target && check_containing_block_chain &&
+        !IsContainingBlockChainDescendant(target, root)) {
       root = nullptr;
+    }
   }
   return root;
 }
@@ -210,59 +223,103 @@ IntersectionGeometry::IntersectionGeometry(const Element* root_element,
                                            const Element& target_element,
                                            const Vector<Length>& root_margin,
                                            const Vector<float>& thresholds,
-                                           unsigned flags)
+                                           unsigned flags,
+                                           CachedRects* cached_rects)
     : flags_(flags & kConstructorFlagsMask),
       intersection_ratio_(0),
       threshold_index_(0) {
+  if (cached_rects)
+    cached_rects->valid = false;
   if (!root_element)
     flags_ |= kRootIsImplicit;
   LayoutObject* target = GetTargetLayoutObject(target_element);
   if (!target)
     return;
-  const LayoutObject* root = GetRootLayoutObjectForTarget(root_element, target);
+  const LayoutObject* root = GetRootLayoutObjectForTarget(
+      root_element, target, !ShouldUseCachedRects());
   if (!root)
     return;
   RootGeometry root_geometry(root, root_margin);
-  ComputeGeometry(root_geometry, root, target, thresholds);
+  ComputeGeometry(root_geometry, root, target, thresholds, cached_rects);
 }
 
 IntersectionGeometry::IntersectionGeometry(const RootGeometry& root_geometry,
                                            const Element& explicit_root,
                                            const Element& target_element,
                                            const Vector<float>& thresholds,
-                                           unsigned flags)
+                                           unsigned flags,
+                                           CachedRects* cached_rects)
     : flags_(flags & kConstructorFlagsMask),
       intersection_ratio_(0),
       threshold_index_(0) {
+  if (cached_rects)
+    cached_rects->valid = false;
   LayoutObject* target = GetTargetLayoutObject(target_element);
   if (!target)
     return;
-  const LayoutObject* root =
-      GetRootLayoutObjectForTarget(&explicit_root, target);
+  const LayoutObject* root = GetRootLayoutObjectForTarget(
+      &explicit_root, target, !ShouldUseCachedRects());
   if (!root)
     return;
-  ComputeGeometry(root_geometry, root, target, thresholds);
+  ComputeGeometry(root_geometry, root, target, thresholds, cached_rects);
 }
 
 void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
                                            const LayoutObject* root,
                                            const LayoutObject* target,
-                                           const Vector<float>& thresholds) {
+                                           const Vector<float>& thresholds,
+                                           CachedRects* cached_rects) {
+  DCHECK(cached_rects || !ShouldUseCachedRects());
   // Initially:
   //   target_rect_ is in target's coordinate system
-  //   intersection_rect_ is in target's coordinate system
   //   root_rect_ is in root's coordinate system
-  target_rect_ = InitializeTargetRect(target, flags_);
-  intersection_rect_ = unclipped_intersection_rect_ = target_rect_;
+  //   The coordinate system for unclipped_intersection_rect_ depends on whether
+  //       or not we can use previously cached geometry...
+  if (ShouldUseCachedRects()) {
+    target_rect_ = cached_rects->local_target_rect;
+    // The cached intersection rect has already been mapped/clipped up to the
+    // root, except that the root's scroll offset and overflow clip have not
+    // been applied.
+    unclipped_intersection_rect_ =
+        cached_rects->unscrolled_unclipped_intersection_rect;
+  } else {
+    target_rect_ = InitializeTargetRect(target, flags_);
+    // We have to map/clip target_rect_ up to the root, so we begin with the
+    // intersection rect in target's coordinate system. After ClipToRoot, it
+    // will be in root's coordinate system.
+    unclipped_intersection_rect_ = target_rect_;
+  }
+  if (cached_rects)
+    cached_rects->local_target_rect = target_rect_;
   root_rect_ = root_geometry.local_root_rect;
 
-  // This maps intersection_rect_ up to root's coordinate system
   bool does_intersect =
       ClipToRoot(root, target, root_rect_, unclipped_intersection_rect_,
-                 intersection_rect_);
+                 intersection_rect_, cached_rects);
 
-  // Map target_rect_ to absolute coordinates for target's document
-  target_rect_ = target->LocalToAncestorRect(target_rect_, nullptr);
+  // Map target_rect_ to absolute coordinates for target's document.
+  // GeometryMapper is faster, so we use it when possible; otherwise, fall back
+  // to LocalToAncestorRect.
+  PropertyTreeState container_properties = PropertyTreeState::Uninitialized();
+  const LayoutObject* property_container =
+      CanUseGeometryMapper(target)
+          ? target->GetPropertyContainer(nullptr, &container_properties)
+          : nullptr;
+  if (property_container) {
+    LayoutRect target_layout_rect = target_rect_.ToLayoutRect();
+    target_layout_rect.Move(
+        target->FirstFragment().PaintOffset().ToLayoutSize());
+    GeometryMapper::SourceToDestinationRect(container_properties.Transform(),
+                                            target->GetDocument()
+                                                .GetLayoutView()
+                                                ->FirstFragment()
+                                                .LocalBorderBoxProperties()
+                                                .Transform(),
+                                            target_layout_rect);
+    target_rect_ = PhysicalRect(target_layout_rect);
+  } else {
+    target_rect_ = target->LocalToAncestorRect(target_rect_, nullptr);
+  }
   if (does_intersect) {
     if (RootIsImplicit()) {
       // Generate matrix to transform from the space of the implicit root to
@@ -340,8 +397,9 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
     threshold_index_ = 0;
   }
   if (IsIntersecting() && ShouldComputeVisibility() &&
-      ComputeIsVisible(target, target_rect_))
+      ComputeIsVisible(target, target_rect_)) {
     flags_ |= kIsVisible;
+  }
 
   if (flags_ & kShouldConvertToCSSPixels) {
     FloatRect target_float_rect(target_rect_);
@@ -354,30 +412,41 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
     AdjustForAbsoluteZoom::AdjustFloatRect(root_float_rect, *root);
     root_rect_ = PhysicalRect::EnclosingRect(root_float_rect);
   }
+
+  if (cached_rects)
+    cached_rects->valid = true;
 }
 
 bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
                                       const LayoutObject* target,
                                       const PhysicalRect& root_rect,
                                       PhysicalRect& unclipped_intersection_rect,
-                                      PhysicalRect& intersection_rect) {
+                                      PhysicalRect& intersection_rect,
+                                      CachedRects* cached_rects) {
   // Map and clip rect into root element coordinates.
   // TODO(szager): the writing mode flipping needs a test.
   const LayoutBox* local_ancestor = nullptr;
   if (!RootIsImplicit() || root->GetDocument().IsInMainFrame())
     local_ancestor = ToLayoutBox(root);
 
-  const LayoutView* layout_view = target->GetDocument().GetLayoutView();
-
   unsigned flags = kDefaultVisualRectFlags | kEdgeInclusive |
                    kDontApplyMainFrameOverflowClip;
-  if (!layout_view->NeedsPaintPropertyUpdate() &&
-      !layout_view->DescendantNeedsPaintPropertyUpdate()) {
+  if (CanUseGeometryMapper(target))
     flags |= kUseGeometryMapper;
+
+  bool does_intersect;
+  if (ShouldUseCachedRects()) {
+    does_intersect = cached_rects->does_intersect;
+  } else {
+    does_intersect = target->MapToVisualRectInAncestorSpace(
+        local_ancestor, unclipped_intersection_rect,
+        static_cast<VisualRectFlags>(flags));
   }
-  bool does_intersect = target->MapToVisualRectInAncestorSpace(
-      local_ancestor, unclipped_intersection_rect,
-      static_cast<VisualRectFlags>(flags));
+  if (cached_rects) {
+    cached_rects->unscrolled_unclipped_intersection_rect =
+        unclipped_intersection_rect;
+    cached_rects->does_intersect = does_intersect;
+  }
 
   intersection_rect = PhysicalRect();
 

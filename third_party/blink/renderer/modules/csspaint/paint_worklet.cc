@@ -49,13 +49,20 @@ PaintWorklet::PaintWorklet(LocalFrame* frame)
       Supplement<LocalDOMWindow>(*frame->DomWindow()),
       pending_generator_registry_(
           MakeGarbageCollected<PaintWorkletPendingGeneratorRegistry>()),
-      worklet_id_(NextId()) {}
+      worklet_id_(NextId()),
+      is_paint_off_thread_(
+          RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled() &&
+          Thread::CompositorThread()) {}
 
 PaintWorklet::~PaintWorklet() = default;
 
 void PaintWorklet::AddPendingGenerator(const String& name,
                                        CSSPaintImageGeneratorImpl* generator) {
   pending_generator_registry_->AddPendingGenerator(name, generator);
+}
+
+void PaintWorklet::ResetIsPaintOffThreadForTesting() {
+  is_paint_off_thread_ = RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled();
 }
 
 // We start with a random global scope when a new frame starts. Then within this
@@ -169,10 +176,9 @@ void PaintWorklet::RegisterCSSPaintDefinition(const String& name,
     // regiserered from RegisterCSSPaintDefinition and one extra definition from
     // RegisterMainThreadDocumentPaintDefinition if OffMainThreadCSSPaintEnabled
     // is true.
-    unsigned required_registered_count =
-        RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()
-            ? kNumGlobalScopesPerThread + 1
-            : kNumGlobalScopesPerThread;
+    unsigned required_registered_count = is_paint_off_thread_
+                                             ? kNumGlobalScopesPerThread + 1
+                                             : kNumGlobalScopesPerThread;
     if (existing_document_definition->GetRegisteredDefinitionCount() ==
         required_registered_count)
       pending_generator_registry_->NotifyGeneratorReady(name);
@@ -229,7 +235,7 @@ void PaintWorklet::RegisterMainThreadDocumentPaintDefinition(
 bool PaintWorklet::NeedsToCreateGlobalScope() {
   wtf_size_t num_scopes_needed = kNumGlobalScopesPerThread;
   // If we are running off main thread, we will need twice as many global scopes
-  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
+  if (is_paint_off_thread_)
     num_scopes_needed *= 2;
   return GetNumberOfGlobalScopes() < num_scopes_needed;
 }
@@ -241,7 +247,7 @@ WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
   // scopes from the beginning of the vector.  If this code is changed to put
   // the main thread global scopes at the end, then SelectNewGlobalScope must
   // also be changed.
-  if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled() ||
+  if (!is_paint_off_thread_ ||
       GetNumberOfGlobalScopes() < kNumGlobalScopesPerThread) {
     return MakeGarbageCollected<PaintWorkletGlobalScopeProxy>(
         To<Document>(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),

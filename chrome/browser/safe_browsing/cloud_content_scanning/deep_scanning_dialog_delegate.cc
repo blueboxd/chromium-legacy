@@ -10,21 +10,29 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/platform_file.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
+#include "chrome/browser/file_util_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/services/file_util/public/cpp/sandboxed_rar_analyzer.h"
+#include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/prefs/pref_service.h"
@@ -164,26 +172,19 @@ std::string GetFileMimeType(base::FilePath path) {
 
 // File types supported for DLP scanning.
 // Keep sorted for efficient access.
-constexpr const std::array<const base::FilePath::CharType*, 36>
+constexpr const std::array<const base::FilePath::CharType*, 21>
     kSupportedDLPFileTypes = {
-        FILE_PATH_LITERAL(".7z"),          FILE_PATH_LITERAL(".bzip"),
-        FILE_PATH_LITERAL(".cab"),         FILE_PATH_LITERAL(".doc"),
-        FILE_PATH_LITERAL(".docx"),        FILE_PATH_LITERAL(".eps"),
-        FILE_PATH_LITERAL(".gzip"),        FILE_PATH_LITERAL(".hwp"),
-        FILE_PATH_LITERAL(".img_for_ocr"), FILE_PATH_LITERAL(".kml"),
-        FILE_PATH_LITERAL(".kmz"),         FILE_PATH_LITERAL(".odp"),
-        FILE_PATH_LITERAL(".ods"),         FILE_PATH_LITERAL(".odt"),
-        FILE_PATH_LITERAL(".pdf"),         FILE_PATH_LITERAL(".ppt"),
-        FILE_PATH_LITERAL(".pptx"),        FILE_PATH_LITERAL(".ps"),
-        FILE_PATH_LITERAL(".rar"),         FILE_PATH_LITERAL(".rtf"),
-        FILE_PATH_LITERAL(".sdc"),         FILE_PATH_LITERAL(".sdd"),
-        FILE_PATH_LITERAL(".sdw"),         FILE_PATH_LITERAL(".sxc"),
-        FILE_PATH_LITERAL(".sxi"),         FILE_PATH_LITERAL(".sxw"),
-        FILE_PATH_LITERAL(".tar"),         FILE_PATH_LITERAL(".ttf"),
-        FILE_PATH_LITERAL(".txt"),         FILE_PATH_LITERAL(".wml"),
-        FILE_PATH_LITERAL(".wpd"),         FILE_PATH_LITERAL(".xls"),
-        FILE_PATH_LITERAL(".xlsx"),        FILE_PATH_LITERAL(".xml"),
-        FILE_PATH_LITERAL(".xps"),         FILE_PATH_LITERAL(".zip")};
+        FILE_PATH_LITERAL(".7z"),   FILE_PATH_LITERAL(".bzip"),
+        FILE_PATH_LITERAL(".cab"),  FILE_PATH_LITERAL(".doc"),
+        FILE_PATH_LITERAL(".docx"), FILE_PATH_LITERAL(".eps"),
+        FILE_PATH_LITERAL(".gzip"), FILE_PATH_LITERAL(".odt"),
+        FILE_PATH_LITERAL(".pdf"),  FILE_PATH_LITERAL(".ppt"),
+        FILE_PATH_LITERAL(".pptx"), FILE_PATH_LITERAL(".ps"),
+        FILE_PATH_LITERAL(".rar"),  FILE_PATH_LITERAL(".rtf"),
+        FILE_PATH_LITERAL(".tar"),  FILE_PATH_LITERAL(".txt"),
+        FILE_PATH_LITERAL(".wpd"),  FILE_PATH_LITERAL(".xls"),
+        FILE_PATH_LITERAL(".xlsx"), FILE_PATH_LITERAL(".xps"),
+        FILE_PATH_LITERAL(".zip")};
 
 }  // namespace
 
@@ -533,13 +534,10 @@ bool DeepScanningDialogDelegate::UploadData() {
   for (size_t i = 0; i < data_.paths.size(); ++i) {
     if (FileTypeSupported(data_.do_malware_scan, data_.do_dlp_scan,
                           data_.paths[i])) {
-      auto request = std::make_unique<FileSourceRequest>(
-          weak_ptr_factory_.GetWeakPtr(), data_.paths[i],
-          base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
-                         weak_ptr_factory_.GetWeakPtr(), data_.paths[i]));
-
-      PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request.get());
-      UploadFileForDeepScanning(data_.paths[i], std::move(request));
+      PrepareFileRequest(
+          data_.paths[i],
+          base::BindOnce(&DeepScanningDialogDelegate::AnalyzerCallback,
+                         base::Unretained(this), i));
     } else {
       ++file_result_count_;
       result_.paths_results[i] = true;
@@ -547,6 +545,53 @@ bool DeepScanningDialogDelegate::UploadData() {
   }
 
   return !text_request_complete_ || file_result_count_ != data_.paths.size();
+}
+
+void DeepScanningDialogDelegate::PrepareFileRequest(base::FilePath path,
+                                                    AnalyzeCallback callback) {
+  base::FilePath::StringType ext(path.FinalExtension());
+  std::transform(ext.begin(), ext.end(), ext.begin(), tolower);
+  if (ext == FILE_PATH_LITERAL(".zip")) {
+    auto analyzer = base::MakeRefCounted<SandboxedZipAnalyzer>(
+        path, std::move(callback), LaunchFileUtilService());
+    analyzer->Start();
+  } else if (ext == FILE_PATH_LITERAL(".rar")) {
+    auto analyzer = base::MakeRefCounted<SandboxedRarAnalyzer>(
+        path, std::move(callback), LaunchFileUtilService());
+    analyzer->Start();
+  } else {
+    std::move(callback).Run(safe_browsing::ArchiveAnalyzerResults());
+  }
+}
+
+void DeepScanningDialogDelegate::AnalyzerCallback(
+    int index,
+    const safe_browsing::ArchiveAnalyzerResults& results) {
+  bool contains_encrypted_parts = std::any_of(
+      results.archived_binary.begin(), results.archived_binary.end(),
+      [](const auto& binary) { return binary.is_encrypted(); });
+
+  // If the file contains encrypted parts and the user is not allowed to use
+  // them, fail the request.
+  if (contains_encrypted_parts) {
+    int state = g_browser_process->local_state()->GetInteger(
+        prefs::kAllowPasswordProtectedFiles);
+    BinaryUploadService::Result result =
+        state == ALLOW_UPLOADS || state == ALLOW_UPLOADS_AND_DOWNLOADS
+            ? BinaryUploadService::Result::SUCCESS
+            : BinaryUploadService::Result::FILE_ENCRYPTED;
+    FileRequestCallback(data_.paths[index], result,
+                        DeepScanningClientResponse());
+    return;
+  }
+
+  auto request = std::make_unique<FileSourceRequest>(
+      weak_ptr_factory_.GetWeakPtr(), data_.paths[index],
+      base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
+                     weak_ptr_factory_.GetWeakPtr(), data_.paths[index]));
+
+  PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request.get());
+  UploadFileForDeepScanning(data_.paths[index], std::move(request));
 }
 
 void DeepScanningDialogDelegate::PrepareRequest(

@@ -143,9 +143,8 @@ BrailleCommandData.init_ = function() {
   // Question.
   map([1, 4, 5, 6], 'toggleKeyboardHelp');
 
-  // All cells (with 7 as mod).
-  map([1, 2, 3, 4, 5, 6, 7], 'darkenScreen');
-  map([1, 2, 3, 4, 5, 6], 'undarkenScreen');
+  // All cells.
+  map([1, 2, 3, 4, 5, 6], 'toggleDarkScreen');
 
   // s.
   map([1, 2, 3, 4, 5], 'toggleSpeechOnOrOff');

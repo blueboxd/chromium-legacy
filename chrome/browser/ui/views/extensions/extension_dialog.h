@@ -68,18 +68,16 @@ class ExtensionDialog : public views::DialogDelegate,
 
   extensions::ExtensionViewHost* host() const { return host_.get(); }
 
-  // views::DialogDelegate override.
+  // views::DialogDelegate:
   bool CanResize() const override;
   ui::ModalType GetModalType() const override;
   bool ShouldShowWindowTitle() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
   void DeleteDelegate() override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
   views::View* GetContentsView() override;
 
-  // content::NotificationObserver overrides.
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
@@ -104,6 +102,9 @@ class ExtensionDialog : public views::DialogDelegate,
   ExtensionViewViews* GetExtensionView() const;
   static ExtensionViewViews* GetExtensionView(
       extensions::ExtensionViewHost* host);
+
+  // views::DialogDelegate:
+  const views::Widget* GetWidgetImpl() const override;
 
   // Window Title
   base::string16 window_title_;

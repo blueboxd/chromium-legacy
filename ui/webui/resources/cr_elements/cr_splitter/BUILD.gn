@@ -6,9 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/polymer.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":cr_splitter",
-  ]
+  deps = [ ":cr_splitter" ]
 }
 
 js_library("cr_splitter") {
@@ -22,9 +20,7 @@ polymer_modulizer("cr_splitter") {
 
 js_type_check("closure_compile_module") {
   is_polymer3 = true
-  deps = [
-    ":cr_splitter.m",
-  ]
+  deps = [ ":cr_splitter.m" ]
 }
 
 js_library("cr_splitter.m") {

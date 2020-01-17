@@ -14,8 +14,8 @@ import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.signin.ChromeSigninController;
 
 /**

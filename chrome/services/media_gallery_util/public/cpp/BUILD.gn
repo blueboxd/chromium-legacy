@@ -23,9 +23,7 @@ source_set("cpp") {
     "//third_party/libyuv",
   ]
 
-  public_deps = [
-    "//chrome/services/media_gallery_util/public/mojom",
-  ]
+  public_deps = [ "//chrome/services/media_gallery_util/public/mojom" ]
 
   if (media_use_ffmpeg) {
     deps += [
@@ -38,9 +36,7 @@ source_set("cpp") {
 source_set("browser_tests") {
   testonly = true
 
-  sources = [
-    "media_gallery_util_browsertest.cc",
-  ]
+  sources = [ "media_gallery_util_browsertest.cc" ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
   deps = [

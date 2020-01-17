@@ -6,13 +6,13 @@ package org.chromium.chrome.browser.tab;
 
 import android.content.Context;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.native_page.NativePage;
+import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -78,7 +78,7 @@ public interface Tab extends TabLifecycle {
      * @return Content view used for rendered web contents. Can be null
      *    if web contents is null.
      */
-    ViewGroup getContentView();
+    ContentView getContentView();
 
     /**
      * @return The {@link View} displaying the current page in the tab. This can be {@code null}, if

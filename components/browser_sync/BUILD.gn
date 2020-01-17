@@ -16,9 +16,7 @@ static_library("browser_sync") {
     "signin_confirmation_helper.h",
   ]
 
-  public_deps = [
-    "//components/sync",
-  ]
+  public_deps = [ "//components/sync" ]
 
   deps = [
     "//base",

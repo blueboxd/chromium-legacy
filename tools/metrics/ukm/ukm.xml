@@ -3038,6 +3038,76 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="DetachedWindows.Experimental">
+  <obsolete>
+    Deprecated as of 01/2020.
+  </obsolete>
+  <owner>bartekn@chromium.org</owner>
+  <summary>
+    Metrics related to detached windows.
+  </summary>
+  <metric name="NavigationSourceId">
+    <summary>
+      Contains the UKM source id of the navigation as an integer.
+    </summary>
+  </metric>
+  <metric name="NumberOfCallsInDetachedWindowByClosing">
+    <summary>
+      The number of function calls in a window detached by closing/removal.
+    </summary>
+  </metric>
+  <metric name="NumberOfCallsInDetachedWindowByClosing_After10sSinceDetaching">
+    <summary>
+      The number of function calls in a window detached by closing/removal, that
+      happened at least 10 seconds after detaching.
+    </summary>
+  </metric>
+  <metric name="NumberOfCallsInDetachedWindowByClosing_After1minSinceDetaching">
+    <summary>
+      The number of function calls in a window detached by closing/removal, that
+      happened at least 1 minute after detaching.
+    </summary>
+  </metric>
+  <metric name="NumberOfCallsInDetachedWindowByNavigation">
+    <summary>
+      The number of function calls in a window detached by navigating away.
+    </summary>
+  </metric>
+  <metric
+      name="NumberOfCallsInDetachedWindowByNavigation_After10sSinceDetaching">
+    <summary>
+      The number of function calls in a window detached by navigating away, that
+      happened at least 10 seconds after detaching.
+    </summary>
+  </metric>
+  <metric
+      name="NumberOfCallsInDetachedWindowByNavigation_After1minSinceDetaching">
+    <summary>
+      The number of function calls in a window detached by navigating away, that
+      happened at least 1 minute after detaching.
+    </summary>
+  </metric>
+  <metric name="NumberOfCallsInDetachedWindowByOtherReason">
+    <summary>
+      The number of function calls in a window detached by another reason.
+    </summary>
+  </metric>
+  <metric
+      name="NumberOfCallsInDetachedWindowByOtherReason_After10sSinceDetaching">
+    <summary>
+      The number of function calls in a window detached by another reason, that
+      happened at least 10 seconds after detaching.
+    </summary>
+  </metric>
+  <metric
+      name="NumberOfCallsInDetachedWindowByOtherReason_After1minSinceDetaching">
+    <summary>
+      The number of function calls in a window detached by another reason, that
+      happened at least 1 minute after detaching.
+    </summary>
+  </metric>
+</event>
+
 <event name="Document.OutliveTimeAfterShutdown">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>keishi@chromium.org</owner>
@@ -5202,29 +5272,44 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="NumberOfCallsInDetachedWindowByClosing">
+    <obsolete>
+      Deprecated as of 01/2020.
+    </obsolete>
     <summary>
       The number of function calls in a window detached by closing/removal.
     </summary>
   </metric>
   <metric name="NumberOfCallsInDetachedWindowByClosing_After10sSinceDetaching">
+    <obsolete>
+      Deprecated as of 01/2020.
+    </obsolete>
     <summary>
       The number of function calls in a window detached by closing/removal, that
       happened at least 10 seconds after detaching.
     </summary>
   </metric>
   <metric name="NumberOfCallsInDetachedWindowByClosing_After1minSinceDetaching">
+    <obsolete>
+      Deprecated as of 01/2020.
+    </obsolete>
     <summary>
       The number of function calls in a window detached by closing/removal, that
       happened at least 1 minute after detaching.
     </summary>
   </metric>
   <metric name="NumberOfCallsInDetachedWindowByNavigation">
+    <obsolete>
+      Deprecated as of 01/2020.
+    </obsolete>
     <summary>
       The number of function calls in a window detached by navigating away.
     </summary>
   </metric>
   <metric
       name="NumberOfCallsInDetachedWindowByNavigation_After10sSinceDetaching">
+    <obsolete>
+      Deprecated as of 01/2020.
+    </obsolete>
     <summary>
       The number of function calls in a window detached by navigating away, that
       happened at least 10 seconds after detaching.
@@ -5232,18 +5317,27 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="NumberOfCallsInDetachedWindowByNavigation_After1minSinceDetaching">
+    <obsolete>
+      Deprecated as of 01/2020.
+    </obsolete>
     <summary>
       The number of function calls in a window detached by navigating away, that
       happened at least 1 minute after detaching.
     </summary>
   </metric>
   <metric name="NumberOfCallsInDetachedWindowByOtherReason">
+    <obsolete>
+      Deprecated as of 01/2020.
+    </obsolete>
     <summary>
       The number of function calls in a window detached by another reason.
     </summary>
   </metric>
   <metric
       name="NumberOfCallsInDetachedWindowByOtherReason_After10sSinceDetaching">
+    <obsolete>
+      Deprecated as of 01/2020.
+    </obsolete>
     <summary>
       The number of function calls in a window detached by another reason, that
       happened at least 10 seconds after detaching.
@@ -5251,6 +5345,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="NumberOfCallsInDetachedWindowByOtherReason_After1minSinceDetaching">
+    <obsolete>
+      Deprecated as of 01/2020.
+    </obsolete>
     <summary>
       The number of function calls in a window detached by another reason, that
       happened at least 1 minute after detaching.
@@ -6366,6 +6463,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="InteractiveTiming.FirstInputDelay.SkipFilteringComparison">
+    <obsolete>
+      Removed in January 2020 as the experiment is launched.
+    </obsolete>
     <summary>
       For comparing FirstInputDelay metrics in the SkipTouchEventFilter
       experiment. Measures First Input Delay, the duration between the hardware
@@ -6439,6 +6539,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="InteractiveTiming.FirstInputTimestamp.SkipFilteringComparison">
+    <obsolete>
+      Removed in Jaunary 2020 as the experiment is launched.
+    </obsolete>
     <summary>
       The duration between navigation start and the hardware timestamp of the
       first meaningful input per navigation. See https://goo.gl/tr1oTZ for a
@@ -7670,6 +7773,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="navigation_restart_penalty">
+    <obsolete>
+      Feature removed in M79.
+    </obsolete>
     <summary>
       Set to the number of milliseconds spent restarting navigations when a Lite
       Page Redirect preview is attempted, whether or not it is committed, during

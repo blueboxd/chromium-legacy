@@ -36,9 +36,7 @@ source_set("cups_proxy") {
     "//net",
   ]
 
-  public_deps = [
-    "//printing",
-  ]
+  public_deps = [ "//printing" ]
 
   configs += [ "//printing:cups" ]
 }
@@ -50,9 +48,7 @@ static_library("test_support") {
     "fake_cups_proxy_service_delegate.h",
   ]
 
-  public_deps = [
-    ":cups_proxy",
-  ]
+  public_deps = [ ":cups_proxy" ]
 }
 
 test("libcups_unittests") {
@@ -79,7 +75,5 @@ test("libcups_unittests") {
     "//testing/gtest",
   ]
 
-  data = [
-    "//chrome/services/cups_proxy/test/data",
-  ]
+  data = [ "//chrome/services/cups_proxy/test/data" ]
 }

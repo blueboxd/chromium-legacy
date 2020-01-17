@@ -7,8 +7,6 @@ source_set("startup") {
     "startupLoggers.h",
     "startupLoggers.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

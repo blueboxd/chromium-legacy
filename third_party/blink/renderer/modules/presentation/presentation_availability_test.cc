@@ -30,8 +30,7 @@ TEST(PresentationAvailabilityTest, NoPageVisibilityChangeAfterDetach) {
 
     Persistent<PresentationAvailabilityProperty> resolver =
         MakeGarbageCollected<PresentationAvailabilityProperty>(
-            scope.GetExecutionContext(), nullptr,
-            PresentationAvailabilityProperty::kReady);
+            scope.GetExecutionContext());
     Persistent<PresentationAvailability> availability =
         PresentationAvailability::Take(resolver, urls, false);
 

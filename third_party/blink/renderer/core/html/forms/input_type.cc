@@ -602,6 +602,9 @@ void InputType::SetValue(const String& sanitized_value,
     case TextFieldEventBehavior::kDispatchChangeEvent:
       GetElement().DispatchFormControlChangeEvent();
       break;
+    case TextFieldEventBehavior::kDispatchInputEvent:
+      GetElement().DispatchInputEvent();
+      break;
     case TextFieldEventBehavior::kDispatchInputAndChangeEvent:
       GetElement().DispatchInputEvent();
       GetElement().DispatchFormControlChangeEvent();

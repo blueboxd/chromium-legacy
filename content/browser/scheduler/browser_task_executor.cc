@@ -133,30 +133,15 @@ BaseBrowserTaskExecutor::GetTaskRunner(const base::TaskTraits& traits) const {
 BaseBrowserTaskExecutor::ThreadIdAndQueueType
 BaseBrowserTaskExecutor::GetThreadIdAndQueueType(
     const base::TaskTraits& traits) const {
-  BrowserTaskType task_type;
-  BrowserThread::ID thread_id;
+  DCHECK_EQ(BrowserTaskTraitsExtension::kExtensionId, traits.extension_id());
+  const BrowserTaskTraitsExtension extension =
+      traits.GetExtension<BrowserTaskTraitsExtension>();
 
-  if (traits.use_current_thread()) {
-    thread_id = GetCurrentThreadID();
+  const BrowserThread::ID thread_id = extension.browser_thread();
+  DCHECK_GE(thread_id, 0);
 
-    // BrowserTaskTraitsExtension is optional if use_current_thread() is true.
-    if (traits.extension_id() == BrowserTaskTraitsExtension::kExtensionId) {
-      task_type = traits.GetExtension<BrowserTaskTraitsExtension>().task_type();
-    } else {
-      task_type = BrowserTaskType::kDefault;
-    }
-  } else {
-    // Otherwise BrowserTaskTraitsExtension is mandatory.
-    DCHECK_EQ(BrowserTaskTraitsExtension::kExtensionId, traits.extension_id());
-    BrowserTaskTraitsExtension extension =
-        traits.GetExtension<BrowserTaskTraitsExtension>();
-
-    thread_id = extension.browser_thread();
-    DCHECK_GE(thread_id, 0);
-
-    task_type = extension.task_type();
-    DCHECK_LT(task_type, BrowserTaskType::kBrowserTaskType_Last);
-  }
+  const BrowserTaskType task_type = extension.task_type();
+  DCHECK_LT(task_type, BrowserTaskType::kBrowserTaskType_Last);
 
   return {thread_id, GetQueueType(traits, task_type)};
 }

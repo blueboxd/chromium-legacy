@@ -32,17 +32,17 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     chrome.send('initializeDeviceEmulator');
   },
 
   /** @private */
-  onMenuButtonClick_: function() {
+  onMenuButtonClick_() {
     this.$.drawer.toggle();
   },
 
   /** @private */
-  onSelectedPageChange_: function() {
+  onSelectedPageChange_() {
     this.$.drawer.close();
   },
 });

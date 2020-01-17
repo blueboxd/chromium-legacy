@@ -1114,10 +1114,6 @@ component("ash") {
     "wm/always_on_top_controller.h",
     "wm/ash_focus_rules.cc",
     "wm/ash_focus_rules.h",
-    "wm/back_gesture_affordance.cc",
-    "wm/back_gesture_affordance.h",
-    "wm/back_gesture_metrics.cc",
-    "wm/back_gesture_metrics.h",
     "wm/base_state.cc",
     "wm/base_state.h",
     "wm/client_controlled_state.cc",
@@ -1167,6 +1163,12 @@ component("ash") {
     "wm/event_client_impl.h",
     "wm/fullscreen_window_finder.cc",
     "wm/fullscreen_window_finder.h",
+    "wm/gestures/back_gesture/back_gesture_affordance.cc",
+    "wm/gestures/back_gesture/back_gesture_affordance.h",
+    "wm/gestures/back_gesture/back_gesture_event_handler.cc",
+    "wm/gestures/back_gesture/back_gesture_event_handler.h",
+    "wm/gestures/back_gesture/back_gesture_metrics.cc",
+    "wm/gestures/back_gesture/back_gesture_metrics.h",
     "wm/gestures/wm_gesture_handler.cc",
     "wm/gestures/wm_gesture_handler.h",
     "wm/immersive_context_ash.cc",
@@ -1454,7 +1456,6 @@ component("ash") {
     "//components/user_manager",
     "//components/vector_icons",
     "//components/viz/host",
-    "//components/viz/service",
     "//dbus",
     "//device/bluetooth",
     "//extensions/common:common_constants",
@@ -1503,9 +1504,7 @@ component("ash") {
     "//url",
   ]
 
-  data_deps = [
-    ":dbus_service_files",
-  ]
+  data_deps = [ ":dbus_service_files" ]
 
   assert_no_deps = [
     # Ash should not depend upon cryptohome_client or components that depend
@@ -1640,9 +1639,7 @@ static_library("ash_shell_lib_with_content") {
     "//ui/views/examples:views_examples_with_content_lib",
     "//ui/wm",
   ]
-  public_deps = [
-    ":ash_shell_lib",
-  ]
+  public_deps = [ ":ash_shell_lib" ]
   data_deps = [
     "//ash/resources:ash_test_resources_200_percent",
     "//ash/resources:ash_test_resources_with_content_100_percent",
@@ -1658,9 +1655,7 @@ action("dbus_service_files") {
     "dbus/org.chromium.UrlHandlerService.conf",
   ]
   output_conf_file = "$root_out_dir/dbus/ash_dbus_services.conf"
-  outputs = [
-    output_conf_file,
-  ]
+  outputs = [ output_conf_file ]
 
   script = "//chromeos/tools/concat_dbus_conf_files.py"
   args = [ rebase_path(output_conf_file, root_build_dir) ]
@@ -1940,7 +1935,6 @@ test("ash_unittests") {
     "window_user_data_unittest.cc",
     "wm/always_on_top_controller_unittest.cc",
     "wm/ash_focus_rules_unittest.cc",
-    "wm/back_gesture_affordance_unittest.cc",
     "wm/client_controlled_state_unittest.cc",
     "wm/collision_detection/collision_detection_utils_unittest.cc",
     "wm/container_finder_unittest.cc",
@@ -1949,6 +1943,8 @@ test("ash_unittests") {
     "wm/desks/desks_unittests.cc",
     "wm/drag_window_resizer_unittest.cc",
     "wm/fullscreen_window_finder_unittest.cc",
+    "wm/gestures/back_gesture/back_gesture_affordance_unittest.cc",
+    "wm/gestures/back_gesture/back_gesture_event_handler_unittest.cc",
     "wm/gestures/wm_gesture_handler_unittest.cc",
     "wm/immersive_fullscreen_controller_unittest.cc",
     "wm/lock_action_handler_layout_manager_unittest.cc",
@@ -2132,9 +2128,7 @@ test("ash_unittests") {
     "//url",
   ]
 
-  data_deps = [
-    "//ash/resources:ash_test_resources_100_percent",
-  ]
+  data_deps = [ "//ash/resources:ash_test_resources_100_percent" ]
 
   data = [
     # See DisplayColorManagerTest.
@@ -2204,9 +2198,7 @@ test("ash_ui_perftests") {
 
 executable("ash_shell_with_content") {
   testonly = true
-  sources = [
-    "shell/content/shell_with_content_main.cc",
-  ]
+  sources = [ "shell/content/shell_with_content_main.cc" ]
 
   deps = [
     ":ash_shell_lib_with_content",
@@ -2249,6 +2241,10 @@ static_library("test_support") {
     "assistant/test/assistant_ash_test_base.h",
     "assistant/test/test_assistant_service.cc",
     "assistant/test/test_assistant_service.h",
+    "assistant/test/test_assistant_web_view.cc",
+    "assistant/test/test_assistant_web_view.h",
+    "assistant/test/test_assistant_web_view_factory.cc",
+    "assistant/test/test_assistant_web_view_factory.h",
     "display/display_configuration_controller_test_api.cc",
     "display/display_configuration_controller_test_api.h",
     "display/mirror_window_test_api.cc",

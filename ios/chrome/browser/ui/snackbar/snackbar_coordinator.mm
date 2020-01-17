@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -14,15 +15,18 @@
 #endif
 
 @implementation SnackbarCoordinator
-@synthesize dispatcher = _dispatcher;
 
 - (void)start {
-  [self.dispatcher startDispatchingToTarget:self
-                                forProtocol:@protocol(SnackbarCommands)];
+  DCHECK(self.browser);
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  [dispatcher startDispatchingToTarget:self
+                           forProtocol:@protocol(SnackbarCommands)];
 }
 
 - (void)stop {
-  [self.dispatcher stopDispatchingToTarget:self];
+  DCHECK(self.browser);
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  [dispatcher stopDispatchingToTarget:self];
 }
 
 #pragma mark - SnackbarCommands

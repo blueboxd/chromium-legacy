@@ -838,7 +838,6 @@ class ArcDefaultAppForManagedUserTest : public ArcPlayStoreAppTest {
   bool IsEnabledByPolicy() const {
     switch (GetParam()) {
       case ArcState::ARC_PLAY_STORE_MANAGED_AND_ENABLED:
-        return true;
       case ArcState::ARC_PLAY_STORE_MANAGED_AND_DISABLED:
       case ArcState::ARC_WITHOUT_PLAY_STORE:
         return false;
@@ -2947,20 +2946,8 @@ TEST_P(ArcDefaultAppForManagedUserTest, DefaultAppsForManagedUser) {
   // There is no default app for managed users except Play Store
   for (const auto& app : fake_default_apps()) {
     const std::string app_id = ArcAppTest::GetAppId(app);
-    if (IsEnabledByPolicy()) {
-      // Only system apps are allowed. App from package test.app2 is declared as
-      // a system app.
-      auto app = prefs->GetApp(app_id);
-      if (app) {
-        EXPECT_EQ("test.app2", app->package_name);
-        EXPECT_TRUE(prefs->IsRegistered(app_id));
-      } else {
-        EXPECT_FALSE(prefs->IsRegistered(app_id));
-      }
-    } else {
-      EXPECT_FALSE(prefs->IsRegistered(app_id));
-      EXPECT_FALSE(prefs->GetApp(app_id));
-    }
+    EXPECT_FALSE(prefs->IsRegistered(app_id));
+    EXPECT_FALSE(prefs->GetApp(app_id));
   }
 
   // PlayStor exists for managed and enabled state.

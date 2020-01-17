@@ -47,8 +47,8 @@ import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderMode
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
-import org.chromium.chrome.browser.ui.widget.MaterialProgressBar;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.browser_ui.widget.MaterialProgressBar;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**

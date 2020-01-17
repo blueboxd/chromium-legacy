@@ -66,7 +66,7 @@ class TabMetricsLoggerTest : public InProcessBrowserTest {
   void DiscardTabAt(const int index) {
     auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(index);
     auto* external = TabLifecycleUnitExternal::FromWebContents(web_contents);
-    external->DiscardTab();
+    external->DiscardTab(mojom::LifecycleUnitDiscardReason::URGENT);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

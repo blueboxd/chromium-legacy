@@ -52,12 +52,6 @@ class V8TestInterfaceConstructor2 {
 };
 
 template <>
-struct NativeValueTraits<TestInterfaceConstructor2> : public NativeValueTraitsBase<TestInterfaceConstructor2> {
-  CORE_EXPORT static TestInterfaceConstructor2* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestInterfaceConstructor2* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestInterfaceConstructor2> {
   typedef V8TestInterfaceConstructor2 Type;
 };

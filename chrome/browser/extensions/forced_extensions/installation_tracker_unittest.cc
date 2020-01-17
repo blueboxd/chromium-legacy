@@ -32,8 +32,8 @@ constexpr char kExtensionUpdateUrl[] =
                                                         // Store backend.
 
 const int kFetchTries = 5;
-// HTTP_SUCCESS
-const int kResponseCode = 200;
+// HTTP_UNAUTHORIZED
+const int kResponseCode = 401;
 
 constexpr char kLoadTimeStats[] = "Extensions.ForceInstalledLoadTime";
 constexpr char kTimedOutStats[] = "Extensions.ForceInstalledTimedOutCount";
@@ -56,6 +56,12 @@ constexpr char kNetworkErrorCodeStats[] =
     "Extensions.ForceInstalledNetworkErrorCode";
 constexpr char kHttpErrorCodeStats[] = "Extensions.ForceInstalledHttpErrorCode";
 constexpr char kFetchRetriesStats[] = "Extensions.ForceInstalledFetchTries";
+constexpr char kNetworkErrorCodeManifestFetchFailedStats[] =
+    "Extensions.ForceInstalledManifestFetchFailedNetworkErrorCode";
+constexpr char kHttpErrorCodeManifestFetchFailedStats[] =
+    "Extensions.ForceInstalledManifestFetchFailedHttpErrorCode";
+constexpr char kFetchRetriesManifestFetchFailedStats[] =
+    "Extensions.ForceInstalledManifestFetchFailedFetchTries";
 }  // namespace
 
 namespace extensions {
@@ -256,8 +262,12 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionCrxFetchFailed) {
                                                  kFetchTries);
   ExtensionDownloaderDelegate::FailureData data2(
       -net::Error::ERR_INVALID_ARGUMENT, kFetchTries);
-  installation_reporter_->ReportCrxFetchError(kExtensionId1, data1);
-  installation_reporter_->ReportCrxFetchError(kExtensionId2, data2);
+  installation_reporter_->ReportFetchError(
+      kExtensionId1, InstallationReporter::FailureReason::CRX_FETCH_FAILED,
+      data1);
+  installation_reporter_->ReportFetchError(
+      kExtensionId2, InstallationReporter::FailureReason::CRX_FETCH_FAILED,
+      data2);
   // InstallationTracker shuts down timer because all extension are either
   // loaded or failed.
   EXPECT_FALSE(fake_timer_->IsRunning());
@@ -267,6 +277,32 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionCrxFetchFailed) {
   histogram_tester_.ExpectBucketCount(kNetworkErrorCodeStats,
                                       -net::Error::ERR_INVALID_ARGUMENT, 1);
   histogram_tester_.ExpectBucketCount(kFetchRetriesStats, kFetchTries, 2);
+}
+
+// Error Codes in case of MANIFEST_FETCH_FAILED.
+TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionManifestFetchFailed) {
+  SetupForceList();
+  ExtensionDownloaderDelegate::FailureData data1(net::Error::OK, kResponseCode,
+                                                 kFetchTries);
+  ExtensionDownloaderDelegate::FailureData data2(
+      -net::Error::ERR_INVALID_ARGUMENT, kFetchTries);
+  installation_reporter_->ReportFetchError(
+      kExtensionId1, InstallationReporter::FailureReason::MANIFEST_FETCH_FAILED,
+      data1);
+  installation_reporter_->ReportFetchError(
+      kExtensionId2, InstallationReporter::FailureReason::MANIFEST_FETCH_FAILED,
+      data2);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(kNetworkErrorCodeManifestFetchFailedStats,
+                                      net::Error::OK, 1);
+  histogram_tester_.ExpectBucketCount(kHttpErrorCodeManifestFetchFailedStats,
+                                      kResponseCode, 1);
+  histogram_tester_.ExpectBucketCount(kNetworkErrorCodeManifestFetchFailedStats,
+                                      -net::Error::ERR_INVALID_ARGUMENT, 1);
+  histogram_tester_.ExpectBucketCount(kFetchRetriesManifestFetchFailedStats,
+                                      kFetchTries, 2);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest, NoExtensionsConfigured) {

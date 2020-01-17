@@ -47,7 +47,7 @@ function FakeTranslator(resultChar, opt_styleMap) {
 
 FakeTranslator.prototype = {
   /** @Override */
-  translate: function(text, formTypeMap, callback) {
+  translate(text, formTypeMap, callback) {
     var result = new Uint8Array(text.length);
     var textToBraille = [];
     var brailleToText = [];
@@ -88,7 +88,7 @@ TEST_F(
       var contractedTranslator = new FakeTranslator('c');
       // Translator that always results in an error.
       var uncontractedTranslator = {
-        translate: function(text, formTypeMap, callback) {
+        translate(text, formTypeMap, callback) {
           callback(null, null, null);
         }
       };

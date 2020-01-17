@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -28,6 +29,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -65,8 +67,8 @@
 // Superclass property.
 @synthesize baseViewController = _baseViewController;
 // Ivars are not auto-synthesized when both accessor and mutator are overridden.
-@synthesize regularTabModel = _regularTabModel;
-@synthesize incognitoTabModel = _incognitoTabModel;
+@synthesize regularBrowser = _regularBrowser;
+@synthesize incognitoBrowser = _incognitoBrowser;
 
 - (instancetype)initWithWindow:(nullable UIWindow*)window
      applicationCommandEndpoint:
@@ -95,33 +97,33 @@
   return self.adaptor;
 }
 
-- (TabModel*)regularTabModel {
-  // Ensure tab model actually used by the mediator is returned, as it may have
-  // been updated.
-  return self.regularTabsMediator ? self.regularTabsMediator.tabModel
-                                  : _regularTabModel;
+- (Browser*)regularBrowser {
+  // Ensure browser which is actually used by the mediator is returned, as it
+  // may have been updated.
+  return self.regularTabsMediator ? self.regularTabsMediator.browser
+                                  : _regularBrowser;
 }
 
-- (void)setRegularTabModel:(TabModel*)regularTabModel {
+- (void)setRegularBrowser:(Browser*)regularBrowser {
   if (self.regularTabsMediator) {
-    self.regularTabsMediator.tabModel = regularTabModel;
+    self.regularTabsMediator.browser = regularBrowser;
   } else {
-    _regularTabModel = regularTabModel;
+    _regularBrowser = regularBrowser;
   }
 }
 
-- (TabModel*)incognitoTabModel {
-  // Ensure tab model actually used by the mediator is returned, as it may have
-  // been updated.
-  return self.incognitoTabsMediator ? self.incognitoTabsMediator.tabModel
-                                    : _incognitoTabModel;
+- (Browser*)incognitoBrowser {
+  // Ensure browser which is actually used by the mediator is returned, as it
+  // may have been updated.
+  return self.incognitoTabsMediator ? self.incognitoTabsMediator.browser
+                                    : _incognitoBrowser;
 }
 
-- (void)setIncognitoTabModel:(TabModel*)incognitoTabModel {
+- (void)setIncognitoBrowser:(Browser*)incognitoBrowser {
   if (self.incognitoTabsMediator) {
-    self.incognitoTabsMediator.tabModel = incognitoTabModel;
+    self.incognitoTabsMediator.browser = incognitoBrowser;
   } else {
-    _incognitoTabModel = incognitoTabModel;
+    _incognitoBrowser = incognitoBrowser;
   }
 }
 
@@ -155,15 +157,20 @@
 
   self.regularTabsMediator = [[TabGridMediator alloc]
       initWithConsumer:baseViewController.regularTabsConsumer];
-  self.regularTabsMediator.tabModel = _regularTabModel;
-  if (_regularTabModel.browserState) {
+  ios::ChromeBrowserState* regularBrowserState =
+      _regularBrowser ? _regularBrowser->GetBrowserState() : nullptr;
+  WebStateList* regularWebStateList =
+      _regularBrowser ? _regularBrowser->GetWebStateList() : nullptr;
+
+  self.regularTabsMediator.browser = _regularBrowser;
+  if (regularBrowserState) {
     self.regularTabsMediator.tabRestoreService =
         IOSChromeTabRestoreServiceFactory::GetForBrowserState(
-            _regularTabModel.browserState);
+            regularBrowserState);
   }
   self.incognitoTabsMediator = [[TabGridMediator alloc]
       initWithConsumer:baseViewController.incognitoTabsConsumer];
-  self.incognitoTabsMediator.tabModel = _incognitoTabModel;
+  self.incognitoTabsMediator.browser = _incognitoBrowser;
   self.adaptor.incognitoMediator = self.incognitoTabsMediator;
   baseViewController.regularTabsDelegate = self.regularTabsMediator;
   baseViewController.incognitoTabsDelegate = self.incognitoTabsMediator;
@@ -173,11 +180,11 @@
   // TODO(crbug.com/845192) : Remove RecentTabsTableViewController dependency on
   // ChromeBrowserState so that we don't need to expose the view controller.
   baseViewController.remoteTabsViewController.browserState =
-      _regularTabModel.browserState;
+      regularBrowserState;
   self.remoteTabsMediator = [[RecentTabsMediator alloc] init];
-  self.remoteTabsMediator.browserState = _regularTabModel.browserState;
+  self.remoteTabsMediator.browserState = regularBrowserState;
   self.remoteTabsMediator.consumer = baseViewController.remoteTabsConsumer;
-  self.remoteTabsMediator.webStateList = self.regularTabModel.webStateList;
+  self.remoteTabsMediator.webStateList = regularWebStateList;
   // TODO(crbug.com/845636) : Currently, the image data source must be set
   // before the mediator starts updating its consumer. Fix this so that order of
   // calls does not matter.
@@ -192,7 +199,7 @@
   baseViewController.remoteTabsViewController.restoredTabDisposition =
       WindowOpenDisposition::NEW_FOREGROUND_TAB;
   baseViewController.remoteTabsViewController.webStateList =
-      self.regularTabModel.webStateList;
+      regularWebStateList;
   baseViewController.remoteTabsViewController.presentationDelegate = self;
 
   // Insert the launch screen view in front of this view to hide it until after
@@ -217,10 +224,10 @@
     [self.remoteTabsMediator refreshSessionsView];
   }
 
-  // Once the mediators are set up, stop keeping pointers to the tab models used
+  // Once the mediators are set up, stop keeping pointers to the browsers used
   // to initialize them.
-  _regularTabModel = nil;
-  _incognitoTabModel = nil;
+  _regularBrowser = nil;
+  _incognitoBrowser = nil;
 }
 
 - (void)stop {
@@ -230,8 +237,8 @@
   [self.dispatcher stopDispatchingForProtocol:@protocol(BrowsingDataCommands)];
 
   // Disconnect UI from models they observe.
-  self.regularTabsMediator.tabModel = nil;
-  self.incognitoTabsMediator.tabModel = nil;
+  self.regularTabsMediator.browser = nil;
+  self.incognitoTabsMediator.browser = nil;
 
   // TODO(crbug.com/845192) : RecentTabsTableViewController behaves like a
   // coordinator and that should be factored out.
@@ -353,16 +360,16 @@
 #pragma mark - TabPresentationDelegate
 
 - (void)showActiveTabInPage:(TabGridPage)page focusOmnibox:(BOOL)focusOmnibox {
-  DCHECK(self.regularTabModel && self.incognitoTabModel);
+  DCHECK(self.regularBrowser && self.incognitoBrowser);
   TabModel* activeTabModel;
   switch (page) {
     case TabGridPageIncognitoTabs:
-      DCHECK_GT(self.incognitoTabModel.count, 0U);
-      activeTabModel = self.incognitoTabModel;
+      DCHECK_GT(self.incognitoBrowser->GetWebStateList()->count(), 0);
+      activeTabModel = self.incognitoBrowser->GetTabModel();
       break;
     case TabGridPageRegularTabs:
-      DCHECK_GT(self.regularTabModel.count, 0U);
-      activeTabModel = self.regularTabModel;
+      DCHECK_GT(self.regularBrowser->GetWebStateList()->count(), 0);
+      activeTabModel = self.regularBrowser->GetTabModel();
       break;
     case TabGridPageRemoteTabs:
       NOTREACHED() << "It is invalid to have an active tab in remote tabs.";
@@ -388,7 +395,7 @@
   // |loadStrategy| to YES to ALWAYS_NEW_FOREGROUND_TAB.
   self.historyCoordinator = [[HistoryCoordinator alloc]
       initWithBaseViewController:self.baseViewController
-                    browserState:self.regularTabModel.browserState];
+                    browserState:self.regularBrowser->GetBrowserState()];
   self.historyCoordinator.loadStrategy =
       UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
   self.historyCoordinator.presentationDelegate = self;
@@ -400,7 +407,7 @@
 
 - (void)showActiveRegularTabFromRecentTabs {
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
-             shouldFinishWithActiveModel:self.regularTabModel
+             shouldFinishWithActiveModel:self.regularBrowser->GetTabModel()
                             focusOmnibox:NO];
 }
 
@@ -408,13 +415,13 @@
 
 - (void)showActiveRegularTabFromHistory {
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
-             shouldFinishWithActiveModel:self.regularTabModel
+             shouldFinishWithActiveModel:self.regularBrowser->GetTabModel()
                             focusOmnibox:NO];
 }
 
 - (void)showActiveIncognitoTabFromHistory {
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
-             shouldFinishWithActiveModel:self.incognitoTabModel
+             shouldFinishWithActiveModel:self.incognitoBrowser->GetTabModel()
                             focusOmnibox:NO];
 }
 

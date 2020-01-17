@@ -169,6 +169,11 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
 
   void Flush() override { NOTREACHED(); }
 
+  scoped_refptr<gfx::NativePixmap> GetNativePixmap(
+      const gpu::Mailbox& mailbox) override {
+    return nullptr;
+  }
+
  private:
   base::flat_map<gfx::SysmemBufferCollectionId,
                  std::unique_ptr<TestBufferCollection>>

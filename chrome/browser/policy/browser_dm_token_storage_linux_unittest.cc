@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/browser_dm_token_storage_linux.h"
 
 #include <iostream>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -28,9 +29,6 @@ namespace {
 const char kDmTokenBaseDir[] = FILE_PATH_LITERAL("Policy/Enrollment/");
 const char kEnrollmentTokenFilename[] =
     FILE_PATH_LITERAL("enrollment/CloudManagementEnrollmentToken");
-// TODO(crbug.com/907589): Remove once no longer in use.
-const char kEnrollmentTokenOldFilename[] =
-    FILE_PATH_LITERAL("enrollment/enrollment_token");
 
 const char kMachineId[] = "a1254c624234b270985170c3549725f1";
 const char kExpectedClientId[] =
@@ -68,32 +66,6 @@ TEST_F(BrowserDMTokenStorageLinuxTest, InitEnrollmentToken) {
       base::PathService::Get(chrome::DIR_POLICY_FILES, &dir_policy_files_path));
   base::FilePath enrollment_token_file_path =
       dir_policy_files_path.Append(kEnrollmentTokenFilename);
-
-  ASSERT_TRUE(base::CreateDirectory(enrollment_token_file_path.DirName()));
-
-  int bytes_written =
-      base::WriteFile(base::FilePath(enrollment_token_file_path),
-                      kEnrollmentToken, strlen(kEnrollmentToken));
-  ASSERT_EQ(static_cast<int>(strlen(kEnrollmentToken)), bytes_written);
-
-  MockBrowserDMTokenStorageLinux storage;
-  EXPECT_EQ(kEnrollmentToken, storage.InitEnrollmentToken());
-}
-
-// TODO(crbug.com/907589): Remove once no longer in use.
-TEST_F(BrowserDMTokenStorageLinuxTest, InitOldEnrollmentToken) {
-  std::unique_ptr<base::ScopedPathOverride> path_override;
-  base::ScopedTempDir fake_policy_dir;
-
-  ASSERT_TRUE(fake_policy_dir.CreateUniqueTempDir());
-  path_override.reset(new base::ScopedPathOverride(chrome::DIR_POLICY_FILES,
-                                                   fake_policy_dir.GetPath()));
-
-  base::FilePath dir_policy_files_path;
-  ASSERT_TRUE(
-      base::PathService::Get(chrome::DIR_POLICY_FILES, &dir_policy_files_path));
-  base::FilePath enrollment_token_file_path =
-      dir_policy_files_path.Append(kEnrollmentTokenOldFilename);
 
   ASSERT_TRUE(base::CreateDirectory(enrollment_token_file_path.DirName()));
 

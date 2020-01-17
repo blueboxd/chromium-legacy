@@ -306,6 +306,7 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
   }
 
   DialogDelegate::SetFootnoteView(CreateFooterView());
+  UpdateDialogButtons();
 }
 
 views::View* PasswordPendingView::GetUsernameTextfieldForTest() const {
@@ -472,9 +473,12 @@ void PasswordPendingView::ReplaceWithPromo() {
 }
 
 void PasswordPendingView::UpdateDialogButtons() {
+  if (sign_in_promo_) {
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+    return;
+  }
   DialogDelegate::set_buttons(
-      sign_in_promo_ ? ui::DIALOG_BUTTON_NONE
-                     : (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
+      (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(model()->IsCurrentStateUpdate()

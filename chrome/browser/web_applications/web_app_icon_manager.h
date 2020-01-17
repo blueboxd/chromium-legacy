@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/common/web_application_info.h"
 
@@ -54,10 +55,22 @@ class WebAppIconManager : public AppIconManager {
       SquareSizePx icon_size_in_px,
       ReadCompressedIconCallback callback) const override;
 
+  // If there is no icon at the downloaded sizes, we may resize what we can get.
+  bool HasIconToResize(const AppId& app_id,
+                       SquareSizePx desired_icon_size) const;
+  // Looks for a larger icon first, a smaller icon second. (Resizing a large
+  // icon smaller is preferred to resizing a small icon larger)
+  void ReadIconAndResize(const AppId& app_id,
+                         SquareSizePx desired_icon_size,
+                         ReadIconsCallback callback) const;
+
  private:
-  bool FindBestSizeInPx(const AppId& app_id,
-                        int icon_size_in_px,
-                        int* best_size_in_px) const;
+  base::Optional<SquareSizePx> FindDownloadedSizeInPxMatchBigger(
+      const AppId& app_id,
+      SquareSizePx desired_size) const;
+  base::Optional<SquareSizePx> FindDownloadedSizeInPxMatchSmaller(
+      const AppId& app_id,
+      SquareSizePx desired_size) const;
 
   const WebAppRegistrar& registrar_;
   base::FilePath web_apps_directory_;

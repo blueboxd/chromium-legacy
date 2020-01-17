@@ -65,6 +65,9 @@ class LoopbackServerEntity {
   // a valid ModelType, UNSPECIFIED is returned.
   static syncer::ModelType GetModelTypeFromId(const std::string& id);
 
+  // Extracts the inner ID as specified in the constructor from |id|.
+  static std::string GetInnerIdFromId(const std::string& id);
+
  protected:
   LoopbackServerEntity(const std::string& id,
                        const syncer::ModelType& model_type,

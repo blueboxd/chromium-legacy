@@ -166,6 +166,7 @@ class GLRendererWithExpandedViewport : public viz::GLRenderer {
       : viz::GLRenderer(settings,
                         output_surface,
                         resource_provider,
+                        nullptr,
                         std::move(current_task_runner)) {}
 };
 
@@ -175,7 +176,8 @@ class SoftwareRendererWithExpandedViewport : public viz::SoftwareRenderer {
       const viz::RendererSettings* settings,
       viz::OutputSurface* output_surface,
       viz::DisplayResourceProvider* resource_provider)
-      : SoftwareRenderer(settings, output_surface, resource_provider) {}
+      : SoftwareRenderer(settings, output_surface, resource_provider, nullptr) {
+  }
 };
 
 class GLRendererWithFlippedSurface : public viz::GLRenderer {
@@ -188,6 +190,7 @@ class GLRendererWithFlippedSurface : public viz::GLRenderer {
       : viz::GLRenderer(settings,
                         output_surface,
                         resource_provider,
+                        nullptr,
                         std::move(current_task_runner)) {}
 };
 
@@ -202,6 +205,7 @@ class SkiaRendererWithFlippedSurface : public viz::SkiaRenderer {
       : SkiaRenderer(settings,
                      output_surface,
                      resource_provider,
+                     nullptr,
                      skia_output_surface,
                      mode) {}
 };
@@ -216,6 +220,7 @@ class VulkanSkiaRenderer : public viz::SkiaRenderer {
       : SkiaRenderer(settings,
                      output_surface,
                      resource_provider,
+                     nullptr,
                      skia_output_surface,
                      mode) {}
 };
@@ -231,6 +236,7 @@ class VulkanSkiaRendererWithFlippedSurface : public viz::SkiaRenderer {
       : SkiaRenderer(settings,
                      output_surface,
                      resource_provider,
+                     nullptr,
                      skia_output_surface,
                      mode) {}
 };

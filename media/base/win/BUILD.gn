@@ -45,12 +45,8 @@ jumbo_component("media_foundation_util") {
 }
 
 source_set("d3d11") {
-  sources = [
-    "d3d11_create_device_cb.h",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "d3d11_create_device_cb.h" ]
+  deps = [ "//base" ]
 }
 
 source_set("d3d11_test_support") {

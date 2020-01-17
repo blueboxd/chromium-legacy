@@ -73,13 +73,14 @@ TEST(SyncServerConnectionManagerTest, VeryEarlyAbortPost) {
   SyncServerConnectionManager server(
       "server", 0, true, std::make_unique<BlockingHttpPostFactory>(), &signal);
 
-  ServerConnectionManager::PostBufferParams params;
+  std::string buffer_out;
+  HttpResponse http_response = HttpResponse::Uninitialized();
 
-  bool result = server.PostBufferToPath(&params, "/testpath", "testauth");
+  bool result = server.PostBufferToPath("", "/testpath", "testauth",
+                                        &buffer_out, &http_response);
 
   EXPECT_FALSE(result);
-  EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE,
-            params.response.server_status);
+  EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE, http_response.server_status);
 }
 
 // Ask the ServerConnectionManager to stop before its first request is made.
@@ -88,14 +89,15 @@ TEST(SyncServerConnectionManagerTest, EarlyAbortPost) {
   SyncServerConnectionManager server(
       "server", 0, true, std::make_unique<BlockingHttpPostFactory>(), &signal);
 
-  ServerConnectionManager::PostBufferParams params;
+  std::string buffer_out;
+  HttpResponse http_response = HttpResponse::Uninitialized();
 
   signal.Signal();
-  bool result = server.PostBufferToPath(&params, "/testpath", "testauth");
+  bool result = server.PostBufferToPath("", "/testpath", "testauth",
+                                        &buffer_out, &http_response);
 
   EXPECT_FALSE(result);
-  EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE,
-            params.response.server_status);
+  EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE, http_response.server_status);
 }
 
 // Ask the ServerConnectionManager to stop during a request.
@@ -104,8 +106,6 @@ TEST(SyncServerConnectionManagerTest, AbortPost) {
   SyncServerConnectionManager server(
       "server", 0, true, std::make_unique<BlockingHttpPostFactory>(), &signal);
 
-  ServerConnectionManager::PostBufferParams params;
-
   base::Thread abort_thread("Test_AbortThread");
   ASSERT_TRUE(abort_thread.Start());
   abort_thread.task_runner()->PostDelayedTask(
@@ -113,11 +113,14 @@ TEST(SyncServerConnectionManagerTest, AbortPost) {
       base::BindOnce(&CancelationSignal::Signal, base::Unretained(&signal)),
       TestTimeouts::tiny_timeout());
 
-  bool result = server.PostBufferToPath(&params, "/testpath", "testauth");
+  std::string buffer_out;
+  HttpResponse http_response = HttpResponse::Uninitialized();
+
+  bool result = server.PostBufferToPath("", "/testpath", "testauth",
+                                        &buffer_out, &http_response);
 
   EXPECT_FALSE(result);
-  EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE,
-            params.response.server_status);
+  EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE, http_response.server_status);
   abort_thread.Stop();
 }
 
@@ -179,13 +182,14 @@ TEST(SyncServerConnectionManagerTest, FailPostWithTimedOut) {
       "server", 0, true,
       std::make_unique<FailingHttpPostFactory>(net::ERR_TIMED_OUT), &signal);
 
-  ServerConnectionManager::PostBufferParams params;
+  std::string buffer_out;
+  HttpResponse http_response = HttpResponse::Uninitialized();
 
-  bool result = server.PostBufferToPath(&params, "/testpath", "testauth");
+  bool result = server.PostBufferToPath("", "/testpath", "testauth",
+                                        &buffer_out, &http_response);
 
   EXPECT_FALSE(result);
-  EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE,
-            params.response.server_status);
+  EXPECT_EQ(HttpResponse::CONNECTION_UNAVAILABLE, http_response.server_status);
 }
 
 }  // namespace syncer

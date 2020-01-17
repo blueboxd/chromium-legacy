@@ -30,7 +30,7 @@ Polymer({
    */
   keyHandler_: null,
 
-  open: function() {
+  open() {
     this.keyHandler_ = this.handleKeyEvent_.bind(this);
     // We need to attach the event listener to |window|, not |this| so that
     // changing focus does not prevent key events from occurring.
@@ -41,7 +41,7 @@ Polymer({
     this.$$('#reset').blur();
   },
 
-  close: function() {
+  close() {
     window.removeEventListener('keydown', this.keyHandler_);
 
     this.displayId = '';  // Will trigger displayIdChanged_.
@@ -52,7 +52,7 @@ Polymer({
   },
 
   /** @private */
-  displayIdChanged_: function(newValue, oldValue) {
+  displayIdChanged_(newValue, oldValue) {
     if (oldValue && !this.committed_) {
       settings.display.systemDisplayApi.overscanCalibrationReset(oldValue);
       settings.display.systemDisplayApi.overscanCalibrationComplete(oldValue);
@@ -65,12 +65,12 @@ Polymer({
   },
 
   /** @private */
-  onResetTap_: function() {
+  onResetTap_() {
     settings.display.systemDisplayApi.overscanCalibrationReset(this.displayId);
   },
 
   /** @private */
-  onSaveTap_: function() {
+  onSaveTap_() {
     settings.display.systemDisplayApi.overscanCalibrationComplete(
         this.displayId);
     this.committed_ = true;
@@ -81,7 +81,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  handleKeyEvent_: function(event) {
+  handleKeyEvent_(event) {
     if (event.altKey || event.ctrlKey || event.metaKey) {
       return;
     }
@@ -126,7 +126,7 @@ Polymer({
    * @param {number} y
    * @private
    */
-  move_: function(x, y) {
+  move_(x, y) {
     /** @type {!chrome.system.display.Insets} */ const delta = {
       left: x,
       top: y,
@@ -142,7 +142,7 @@ Polymer({
    * @param {number} y
    * @private
    */
-  resize_: function(x, y) {
+  resize_(x, y) {
     /** @type {!chrome.system.display.Insets} */ const delta = {
       left: x,
       top: y,

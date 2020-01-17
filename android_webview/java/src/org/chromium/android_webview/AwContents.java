@@ -179,7 +179,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     // Used to record the UMA histogram Android.WebView.LoadDataWithBaseUrl.HistoryUrl. Since these
-    // values are persisted to logs, they should never be renumbered nor reused.
+    // values are persisted to logs, they should never be renumbered or reused.
     @IntDef({HistoryUrl.EMPTY, HistoryUrl.BASEURL, HistoryUrl.DIFFERENT, HistoryUrl.COUNT})
     @interface HistoryUrl {
         int EMPTY = 0;
@@ -189,7 +189,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     // Used to record the UMA histogram Android.WebView.LoadDataWithBaseUrl.UrlScheme. Since these
-    // values are persisted to logs, they should never be renumbered nor reused.
+    // values are persisted to logs, they should never be renumbered or reused.
     @VisibleForTesting
     @IntDef({UrlScheme.EMPTY, UrlScheme.UNKNOWN_SCHEME, UrlScheme.HTTP_SCHEME,
             UrlScheme.HTTPS_SCHEME, UrlScheme.FILE_SCHEME, UrlScheme.FTP_SCHEME,

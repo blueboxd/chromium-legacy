@@ -198,7 +198,7 @@ def CompareToMsRcOutput(preprocessed_output, is_utf8, flags):
   msrc_in = flags.output + '.preprocessed.rc'
 
   # Strip preprocessor line markers.
-  preprocessed_output = re.sub(r'^#.*$', '', preprocessed_output, flags=re.M)
+  preprocessed_output = re.sub(br'^#.*$', b'', preprocessed_output, flags=re.M)
   if is_utf8:
     preprocessed_output = preprocessed_output.decode('utf-8').encode('utf-16le')
   with open(msrc_in, 'wb') as f:

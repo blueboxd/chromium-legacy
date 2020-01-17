@@ -101,6 +101,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Gets the color for displaying text and/or icons.
   virtual SkColor GetForegroundColor() const;
 
+  // Sets the label text and background colors.
+  void UpdateLabelColors();
+
   // Returns true when the separator should be visible.
   virtual bool ShouldShowSeparator() const;
 

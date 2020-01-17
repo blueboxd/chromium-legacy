@@ -23,9 +23,7 @@ static_library("browser") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "web_cache_manager_unittest.cc",
-  ]
+  sources = [ "web_cache_manager_unittest.cc" ]
   deps = [
     ":browser",
     "//base",

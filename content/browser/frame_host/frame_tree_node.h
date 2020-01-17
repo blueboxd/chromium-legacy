@@ -20,10 +20,11 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
+#include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
-#include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -35,7 +36,6 @@ class NavigationRequest;
 class Navigator;
 class RenderFrameHostImpl;
 class NavigationEntryImpl;
-struct ContentSecurityPolicyHeader;
 
 // When a page contains iframes, its renderer process maintains a tree structure
 // of those frames. We are mirroring this tree in the browser process. This
@@ -184,7 +184,7 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Add CSP headers to replication state, notify proxies about the update.
   void AddContentSecurityPolicies(
-      const std::vector<ContentSecurityPolicyHeader>& headers);
+      std::vector<network::mojom::ContentSecurityPolicyHeaderPtr> headers);
 
   // Sets the current insecure request policy, and notifies proxies about the
   // update.
@@ -328,7 +328,8 @@ class CONTENT_EXPORT FrameTreeNode {
   // (which initiated the update).  Returns |false| if the update tries to
   // consume an already consumed/expired transient state, |true| otherwise.  See
   // the comment on user_activation_state_ below.
-  bool UpdateUserActivationState(blink::UserActivationUpdateType update_type);
+  bool UpdateUserActivationState(
+      blink::mojom::UserActivationUpdateType update_type);
 
   void OnSetHadStickyUserActivationBeforeNavigation(bool value);
 
@@ -404,6 +405,18 @@ class CONTENT_EXPORT FrameTreeNode {
   // feature policies.
   void SetOpenerFeaturePolicyState(
       const blink::FeaturePolicy::FeatureState& feature_state);
+
+  // Returns the embedding token for the frame. A frame is embedded if it is the
+  // child to a parent frame that is cross-process. As such, this will return
+  // base::nullopt for:
+  // - The main frame.
+  // - Child frames that are in the same process as their parent.
+  const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const;
+
+  // Called by NavigationImpl::DidNavigate() on completion of a navigation to
+  // update the embedding token for the frame.
+  void SetEmbeddingToken(
+      const base::Optional<base::UnguessableToken>& embedding_token);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessFeaturePolicyBrowserTest,
@@ -506,6 +519,13 @@ class CONTENT_EXPORT FrameTreeNode {
   // sent back from the renderer in the control calls. It should be never used
   // to look up the FrameTreeNode instance.
   base::UnguessableToken devtools_frame_token_;
+
+  // A token tracking the embedding relationship between a out-of-process
+  // frames. This is only accessible by the renderer for the active
+  // RenderFrameHost and the renderer for the RenderFrameProxyHost from
+  // RenderFrameProxyHostManager::GetProxyToParent(). Should only be set
+  // if the frame is embedded in a parent frame.
+  base::Optional<base::UnguessableToken> embedding_token_;
 
   // Tracks the scrolling and margin properties for this frame.  These
   // properties affect the child renderer but are stored on its parent's

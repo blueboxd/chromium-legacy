@@ -29,7 +29,7 @@ Polymer({
      */
     languageList_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -42,12 +42,12 @@ Polymer({
   ],
 
   /** @private */
-  availableInputMethodsChanged_: function() {
+  availableInputMethodsChanged_() {
     this.populateLanguageList_();
   },
 
   /** @private */
-  enabledInputMethodsChanged_: function() {
+  enabledInputMethodsChanged_() {
     this.populateLanguageList_();
   },
 
@@ -57,7 +57,7 @@ Polymer({
    *           target: !Element}} e
    * @private
    */
-  onCheckboxChange_: function(e) {
+  onCheckboxChange_(e) {
     // TODO(michaelpg): Show confirmation dialog for 3rd-party IMEs.
     const id = e.model.item.id;
     if (e.target.checked) {
@@ -75,7 +75,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  enableInputMethodCheckbox_: function(targetInputMethod, change) {
+  enableInputMethodCheckbox_(targetInputMethod, change) {
     if (targetInputMethod.isProhibitedByPolicy) {
       return false;
     }
@@ -101,7 +101,7 @@ Polymer({
    * for the view.
    * @private
    */
-  populateLanguageList_: function() {
+  populateLanguageList_() {
     const languageList = [];
 
     // Languages that have already been listed further up.
@@ -180,7 +180,7 @@ Polymer({
    * @return {!Array<!chrome.languageSettingsPrivate.InputMethod>}
    * @private
    */
-  getInputMethodsForLanguages: function(languageCodes) {
+  getInputMethodsForLanguages(languageCodes) {
     // Input methods that have already been listed for this language.
     const /** !Set<string> */ usedInputMethods = new Set();
     /** @type {!Array<chrome.languageSettingsPrivate.InputMethod>} */
@@ -206,7 +206,7 @@ Polymer({
   // is set to a new array.
   // TODO(michaelpg): Test this behavior.
   /** @private */
-  notifyInputMethodsChanged_: function() {
+  notifyInputMethodsChanged_() {
     for (let i = 0; i < this.languageList_.length; i++) {
       for (let j = 0; j < this.languageList_[i].inputMethods.length; j++) {
         this.notifyPath(
@@ -221,7 +221,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  inputMethodsLimitedByPolicy_: function(allowedInputMethods) {
+  inputMethodsLimitedByPolicy_(allowedInputMethods) {
     return !!allowedInputMethods && allowedInputMethods.value.length > 0;
   }
 });

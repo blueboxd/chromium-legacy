@@ -18,10 +18,10 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "components/mirroring/browser/cast_remoting_sender.h"
 #include "components/prefs/pref_service.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -142,18 +142,18 @@ CastRemotingConnector* CastRemotingConnector::Get(
         media_router::MediaRouterFactory::GetApiForBrowserContext(
             contents->GetBrowserContext()),
         Profile::FromBrowserContext(contents->GetBrowserContext())->GetPrefs(),
-        SessionTabHelper::IdForTab(contents),
+        sessions::SessionTabHelper::IdForTab(contents),
 #if defined(TOOLKIT_VIEWS)
         base::BindRepeating(
             [](content::WebContents* contents,
                PermissionResultCallback result_callback) {
-                media_router::MediaRemotingDialogView::GetPermission(
-                    contents, std::move(result_callback));
-                return media_router::MediaRemotingDialogView::IsShowing()
-                           ? base::BindOnce(
-                                 &media_router::MediaRemotingDialogView::
-                                     HideDialog)
-                           : CancelPermissionRequestCallback();
+              media_router::MediaRemotingDialogView::GetPermission(
+                  contents, std::move(result_callback));
+              return media_router::MediaRemotingDialogView::IsShowing()
+                         ? base::BindOnce(
+                               &media_router::MediaRemotingDialogView::
+                                   HideDialog)
+                         : CancelPermissionRequestCallback();
             },
             contents)
 #else

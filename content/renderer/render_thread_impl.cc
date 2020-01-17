@@ -1034,6 +1034,14 @@ void RenderThreadImpl::RegisterSchemes() {
   WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
       chrome_scheme);
 
+  // chrome-untrusted:
+  WebString chrome_untrusted_scheme(
+      WebString::FromASCII(kChromeUIUntrustedScheme));
+  WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(
+      chrome_untrusted_scheme);
+  WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
+      chrome_untrusted_scheme);
+
   // devtools:
   WebString devtools_scheme(WebString::FromASCII(kChromeDevToolsScheme));
   WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(devtools_scheme);

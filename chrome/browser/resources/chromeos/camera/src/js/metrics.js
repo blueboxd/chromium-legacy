@@ -171,10 +171,3 @@ export const Type = {
 export function log(type, ...args) {
   ga.then((tracker) => tracker.send(type(...args)));
 }
-
-/** const */
-cca.metrics.IntentResultType = IntentResultType;
-/** const */
-cca.metrics.Type = Type;
-/** const */
-cca.metrics.log = log;

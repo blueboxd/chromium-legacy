@@ -35,7 +35,7 @@ ISearchHandler.prototype = {
    * @param {!AutomationNode} boundaryNode The last node before reaching either
    * the start or end of the document.
    */
-  onSearchReachedBoundary: function(boundaryNode) {},
+  onSearchReachedBoundary(boundaryNode) {},
 
   /**
    * Called when search result node changes.
@@ -44,7 +44,7 @@ ISearchHandler.prototype = {
    *     starts.
    * @param {number} end The index into the name where the search match ends.
    */
-  onSearchResultChanged: function(node, start, end) {}
+  onSearchResultChanged(node, start, end) {}
 };
 
 /**
@@ -86,7 +86,7 @@ ISearch.prototype = {
    * @param {Dir} dir
    * @param {boolean=} opt_nextObject
    */
-  search: function(searchStr, dir, opt_nextObject) {
+  search(searchStr, dir, opt_nextObject) {
     clearTimeout(this.callbackId_);
     var step = function() {
       searchStr = searchStr.toLocaleLowerCase();
@@ -117,7 +117,7 @@ ISearch.prototype = {
     this.callbackId_ = setTimeout(step.bind(this), 0);
   },
 
-  clear: function() {
+  clear() {
     clearTimeout(this.callbackId_);
   }
 };
@@ -168,7 +168,7 @@ ISearchUI.prototype = {
    * @param {Event} evt
    * @return {boolean}
    */
-  onKeyDown: function(evt) {
+  onKeyDown(evt) {
     switch (evt.key) {
       case 'ArrowUp':
         this.dir_ = Dir.BACKWARD;
@@ -205,7 +205,7 @@ ISearchUI.prototype = {
    * @param {Event} evt
    * @return {boolean}
    */
-  onTextInput: function(evt) {
+  onTextInput(evt) {
     var searchStr = evt.target.value + evt.data;
     this.iSearch_.clear();
     this.iSearch_.search(searchStr, this.dir_);
@@ -215,7 +215,7 @@ ISearchUI.prototype = {
   /**
    * @override
    */
-  onSearchReachedBoundary: function(boundaryNode) {
+  onSearchReachedBoundary(boundaryNode) {
     this.output_(boundaryNode);
     ChromeVox.earcons.playEarcon(Earcon.WRAP);
   },
@@ -223,7 +223,7 @@ ISearchUI.prototype = {
   /**
    * @override
    */
-  onSearchResultChanged: function(node, start, end) {
+  onSearchResultChanged(node, start, end) {
     this.output_(node, start, end);
   },
 
@@ -233,7 +233,7 @@ ISearchUI.prototype = {
    * @param {number=} opt_end
    * @private
    */
-  output_: function(node, opt_start, opt_end) {
+  output_(node, opt_start, opt_end) {
     Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
     var o = new Output();
     if (opt_start && opt_end) {
@@ -253,7 +253,7 @@ ISearchUI.prototype = {
   },
 
   /** Unregisters event handlers. */
-  destroy: function() {
+  destroy() {
     this.iSearch_.handler_ = null;
     this.iSearch_ = null;
     var input = this.input_;

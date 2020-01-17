@@ -19,10 +19,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/db/test_database_manager.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/db/v4_test_util.h"
-#include "content/public/test/browser_task_environment.h"
 #include "crypto/sha2.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -66,6 +66,7 @@ class TestClient : public SafeBrowsingDatabaseManager::Client {
 class SafeBrowsingDatabaseManagerTest : public testing::Test {
  protected:
   void SetUp() override {
+    task_environment_ = CreateTestTaskEnvironment();
     test_shared_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
@@ -109,7 +110,7 @@ class SafeBrowsingDatabaseManagerTest : public testing::Test {
   scoped_refptr<SafeBrowsingDatabaseManager> db_manager_;
 
  private:
-  content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 };
 
 TEST_F(SafeBrowsingDatabaseManagerTest, CheckApiBlacklistUrlWrongScheme) {

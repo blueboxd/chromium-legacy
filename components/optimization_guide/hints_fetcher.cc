@@ -56,6 +56,17 @@ std::string GetStringNameForRequestContext(
   return std::string();
 }
 
+// Returns the subset of URLs from |urls| for which the URL is considered
+// valid and can be included in a hints fetch.
+std::vector<GURL> GetValidURLsForFetching(const std::vector<GURL>& urls) {
+  std::vector<GURL> valid_urls;
+  for (const auto& url : urls) {
+    if (IsValidURLForURLKeyedHint(url))
+      valid_urls.push_back(url);
+  }
+  return valid_urls;
+}
+
 }  // namespace
 
 HintsFetcher::HintsFetcher(
@@ -111,9 +122,13 @@ bool HintsFetcher::WasHostCoveredByFetch(PrefService* pref_service,
 
 bool HintsFetcher::FetchOptimizationGuideServiceHints(
     const std::vector<std::string>& hosts,
+    const std::vector<GURL>& urls,
+    const base::flat_set<optimization_guide::proto::OptimizationType>&
+        optimization_types,
     optimization_guide::proto::RequestContext request_context,
     HintsFetchedCallback hints_fetched_callback) {
   SEQUENCE_CHECKER(sequence_checker_);
+  DCHECK_GT(optimization_types.size(), 0u);
 
   if (content::GetNetworkConnectionTracker()->IsOffline()) {
     std::move(hints_fetched_callback)
@@ -131,9 +146,10 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
 
   std::vector<std::string> filtered_hosts =
       GetSizeLimitedHostsDueForHintsRefresh(hosts);
-  if (filtered_hosts.empty()) {
+  std::vector<GURL> valid_urls = GetValidURLsForFetching(urls);
+  if (filtered_hosts.empty() && valid_urls.empty()) {
     std::move(hints_fetched_callback)
-        .Run(request_context, HintsFetcherRequestStatus::kNoHostsToFetch,
+        .Run(request_context, HintsFetcherRequestStatus::kNoHostsOrURLsToFetch,
              base::nullopt);
     return false;
   }
@@ -141,21 +157,26 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   DCHECK_GE(features::MaxHostsForOptimizationGuideServiceHintsFetch(),
             filtered_hosts.size());
 
+  if (optimization_types.empty()) {
+    std::move(hints_fetched_callback)
+        .Run(request_context,
+             HintsFetcherRequestStatus::kNoSupportedOptimizationTypes,
+             base::nullopt);
+    return false;
+  }
+
   hints_fetch_start_time_ = base::TimeTicks::Now();
   request_context_ = request_context;
 
   get_hints_request_ = std::make_unique<proto::GetHintsRequest>();
 
-  // Add all the optimizations supported by the current version of Chrome,
-  // regardless of whether the session is in holdback for any of them.
-  get_hints_request_->add_supported_optimizations(proto::NOSCRIPT);
-  get_hints_request_->add_supported_optimizations(proto::RESOURCE_LOADING);
-  get_hints_request_->add_supported_optimizations(proto::DEFER_ALL_SCRIPT);
-  // TODO(crbug/969558): Figure out a way to either have a registration call
-  // for clients to specify their supported optimization types or have a static
-  // assert on the last OptimizationType.
+  for (const auto& optimization_type : optimization_types)
+    get_hints_request_->add_supported_optimizations(optimization_type);
 
   get_hints_request_->set_context(request_context_);
+
+  for (const auto& url : valid_urls)
+    get_hints_request_->add_urls()->set_url(url.spec());
 
   for (const auto& host : filtered_hosts) {
     proto::HostInfo* host_info = get_hints_request_->add_hosts();

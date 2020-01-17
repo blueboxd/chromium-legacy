@@ -149,7 +149,7 @@ cr.define('cr.ui', function() {
     },
 
     handleMouseDown(e) {
-      if (e.button == 2) {  // right
+      if (e.button === 2) {  // right
         this.handleClick(e);
       }
     },
@@ -181,7 +181,7 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      const rtl = getComputedStyle(item).direction == 'rtl';
+      const rtl = getComputedStyle(item).direction === 'rtl';
 
       switch (e.key) {
         case 'ArrowUp':
@@ -198,7 +198,7 @@ cr.define('cr.ui', function() {
             break;
           }
 
-          if (e.key == 'ArrowLeft' && !rtl || e.key == 'ArrowRight' && rtl) {
+          if (e.key === 'ArrowLeft' && !rtl || e.key === 'ArrowRight' && rtl) {
             if (item.expanded) {
               item.expanded = false;
             } else {
@@ -235,7 +235,7 @@ cr.define('cr.ui', function() {
     },
     set selectedItem(item) {
       const oldSelectedItem = this.selectedItem_;
-      if (oldSelectedItem != item) {
+      if (oldSelectedItem !== item) {
         // Set the selectedItem_ before deselecting the old item since we only
         // want one change when moving between items.
         this.selectedItem_ = item;
@@ -351,7 +351,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     setDepth_(depth) {
-      if (depth != this.depth_) {
+      if (depth !== this.depth_) {
         const rowDepth = Math.max(0, depth - 1);
         if (!customRowElementDepthStyleHandler) {
           this.rowElement.style.paddingInlineStart = rowDepth * INDENT + 'px';
@@ -382,7 +382,7 @@ cr.define('cr.ui', function() {
      */
     addAt(child, index) {
       this.lastElementChild.insertBefore(child, this.items[index]);
-      if (this.items.length == 1) {
+      if (this.items.length === 1) {
         this.hasChildren = true;
       }
       child.setDepth_(this.depth + 1);
@@ -402,7 +402,7 @@ cr.define('cr.ui', function() {
       }
 
       this.lastElementChild.removeChild(/** @type {!cr.ui.TreeItem} */ (child));
-      if (this.items.length == 0) {
+      if (this.items.length === 0) {
         this.hasChildren = false;
       }
     },
@@ -439,7 +439,7 @@ cr.define('cr.ui', function() {
       return this.hasAttribute('expanded');
     },
     set expanded(b) {
-      if (this.expanded == b) {
+      if (this.expanded === b) {
         return;
       }
 
@@ -518,7 +518,7 @@ cr.define('cr.ui', function() {
       return this.hasAttribute('selected');
     },
     set selected(b) {
-      if (this.selected == b) {
+      if (this.selected === b) {
         return;
       }
       const rowItem = this.rowElement;
@@ -534,7 +534,7 @@ cr.define('cr.ui', function() {
       } else {
         this.removeAttribute('selected');
         rowItem.removeAttribute('selected');
-        if (tree && tree.selectedItem == this) {
+        if (tree && tree.selectedItem === this) {
           tree.selectedItem = null;
         }
       }
@@ -586,7 +586,7 @@ cr.define('cr.ui', function() {
      * @param {Event} e The click event.
      */
     handleClick(e) {
-      if (e.target.className == 'expand-icon') {
+      if (e.target.className === 'expand-icon') {
         this.expanded = !this.expanded;
       } else {
         this.selected = true;
@@ -600,7 +600,7 @@ cr.define('cr.ui', function() {
      */
     set editing(editing) {
       const oldEditing = this.editing;
-      if (editing == oldEditing) {
+      if (editing === oldEditing) {
         return;
       }
 
@@ -678,7 +678,7 @@ cr.define('cr.ui', function() {
           labelEl.textContent = this.oldLabel_;
         } else {
           labelEl.textContent = value;
-          if (value != this.oldLabel_) {
+          if (value !== this.oldLabel_) {
             cr.dispatchSimpleEvent(this, 'rename', true);
           }
         }

@@ -55,9 +55,7 @@ js_library("all_sites") {
 }
 
 js_library("android_info_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
@@ -106,9 +104,7 @@ js_library("chooser_exception_list_entry") {
 }
 
 js_library("constants") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("local_data_browser_proxy") {
@@ -131,9 +127,7 @@ js_library("media_picker") {
 }
 
 js_library("cookie_info") {
-  deps = [
-    "//ui/webui/resources/js:load_time_data",
-  ]
+  deps = [ "//ui/webui/resources/js:load_time_data" ]
 }
 
 js_library("protocol_handlers") {
@@ -154,6 +148,7 @@ js_library("site_data") {
     ":site_data_entry",
     ":site_settings_behavior",
     "..:global_scroll_target_behavior",
+    "..:route",
     "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
@@ -168,6 +163,7 @@ js_library("site_data_details_subpage") {
   deps = [
     ":local_data_browser_proxy",
     "..:route",
+    "..:router",
     "//third_party/polymer/v1_0/components-chromium/iron-list:iron-list-extracted",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:web_ui_listener_behavior",
@@ -191,7 +187,7 @@ js_library("site_details") {
     ":site_details_permission",
     ":site_settings_behavior",
     ":website_usage_private_api",
-    "..:route",
+    "..:router",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
@@ -219,6 +215,7 @@ js_library("site_entry") {
     ":site_settings_behavior",
     ":site_settings_prefs_browser_proxy",
     "..:route",
+    "..:router",
     "//third_party/polymer/v1_0/components-chromium/iron-collapse:iron-collapse-extracted",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
@@ -248,7 +245,7 @@ js_library("site_list_entry") {
   deps = [
     ":constants",
     ":site_settings_behavior",
-    "..:route",
+    "..:router",
     "//ui/webui/resources/cr_elements/policy:cr_policy_pref_indicator",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr/ui:focus_row_behavior",
@@ -259,7 +256,7 @@ js_library("site_settings_behavior") {
   deps = [
     ":constants",
     ":site_settings_prefs_browser_proxy",
-    "..:route",
+    "..:router",
     "//ui/webui/resources/cr_elements/policy:cr_policy_indicator_behavior",
     "//ui/webui/resources/cr_elements/policy:cr_policy_pref_behavior",
     "//ui/webui/resources/js:assert",
@@ -281,9 +278,7 @@ js_library("site_settings_prefs_browser_proxy") {
 }
 
 js_library("website_usage_private_api") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 

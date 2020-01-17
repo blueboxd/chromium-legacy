@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
+#include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/buffer_usage_util.h"
 
 #if defined(OS_MACOSX)
 #include "gpu/ipc/common/gpu_memory_buffer_impl_io_surface.h"
@@ -186,7 +188,8 @@ GpuMemoryBufferSupport::CreateGpuMemoryBufferImplFromHandle(
 #endif
     default:
       // TODO(dcheng): Remove default case (https://crbug.com/676224).
-      NOTREACHED();
+      NOTREACHED() << gfx::BufferFormatToString(format) << ", "
+                   << gfx::BufferUsageToString(usage);
       return nullptr;
   }
 }

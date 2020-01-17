@@ -46,31 +46,6 @@ xxd -p broken_bundle_base.wbn |
   sed 's/3a737461747573/3a787878787878/3' |
   xxd -r -p > broken_bundle_broken_script_entry.wbn
 
-
-# Keep consistent with WebBundleNetworkBrowserTest::kNetworkTestPort.
-NETWORK_TEST_PORT=39600
-
-gen-bundle \
-  -version b1 \
-  -baseURL http://localhost:$NETWORK_TEST_PORT/web_bundle/network/ \
-  -primaryURL http://localhost:$NETWORK_TEST_PORT/web_bundle/network/ \
-  -dir web_bundle_browsertest/ \
-  -o web_bundle_browsertest_network.wbn
-
-gen-bundle \
-  -version b1 \
-  -baseURL http://localhost:$NETWORK_TEST_PORT/web_bundle/network/ \
-  -primaryURL http://localhost:$NETWORK_TEST_PORT/web_bundle/network/not_found.html \
-  -dir web_bundle_browsertest/ \
-  -o web_bundle_browsertest_network_primary_url_not_found.wbn
-
-gen-bundle \
-  -version b1 \
-  -baseURL http://localhost:$NETWORK_TEST_PORT/web_bundle/path_test/ \
-  -primaryURL http://localhost:$NETWORK_TEST_PORT/web_bundle/path_test/in_scope/ \
-  -dir path_test_wbn/ \
-  -o path_test.wbn
-
 gen-bundle \
   -version b1 \
   -primaryURL https://test.example.org/ \

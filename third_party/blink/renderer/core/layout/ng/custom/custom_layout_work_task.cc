@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_intrinsic_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_child.h"
-#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_constraints_options.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"

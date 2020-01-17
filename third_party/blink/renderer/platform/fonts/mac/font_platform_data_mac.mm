@@ -34,13 +34,19 @@
 #import "third_party/blink/public/platform/platform.h"
 #import "third_party/blink/renderer/platform/fonts/font.h"
 #import "third_party/blink/renderer/platform/fonts/font_platform_data.h"
+#import "third_party/blink/renderer/platform/fonts/mac/core_text_font_format_support.h"
 #import "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
 #import "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
 #import "third_party/blink/renderer/platform/web_test_support.h"
 #import "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #import "third_party/skia/include/core/SkFont.h"
 #import "third_party/skia/include/core/SkStream.h"
+#import "third_party/skia/include/core/SkTypes.h"
 #import "third_party/skia/include/ports/SkTypeface_mac.h"
+
+namespace {
+constexpr SkFourByteTag kOpszTag = SkSetFourByteTag('o', 'p', 's', 'z');
+}
 
 namespace blink {
 
@@ -117,6 +123,7 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
     bool synthetic_bold,
     bool synthetic_italic,
     FontOrientation orientation,
+    OpticalSizing optical_sizing,
     FontVariationSettings* variation_settings) {
   DCHECK(ns_font);
   sk_sp<SkTypeface> typeface;
@@ -129,19 +136,82 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
     typeface = LoadFromBrowserProcess(ns_font, size);
   }
 
-  if (variation_settings && variation_settings->size() < UINT16_MAX) {
-    SkFontArguments::Axis axes[variation_settings->size()];
-    for (size_t i = 0; i < variation_settings->size(); ++i) {
-      AtomicString feature_tag = variation_settings->at(i).Tag();
-      axes[i] = {AtomicStringToFourByteTag(feature_tag),
-                 SkFloatToScalar(variation_settings->at(i).Value())};
+  wtf_size_t valid_configured_axes =
+      variation_settings && variation_settings->size() < UINT16_MAX
+          ? variation_settings->size()
+          : 0;
+
+  // No variable font requested, return static font.
+  if (!valid_configured_axes) {
+    return std::make_unique<FontPlatformData>(
+        std::move(typeface), std::string(), size, synthetic_bold,
+        synthetic_italic, orientation);
+  }
+
+  int existing_axes = typeface->getVariationDesignPosition(nullptr, 0);
+  // Don't apply variation parameters if the font does not have axes or we fail
+  // to retrieve the existing ones.
+  if (existing_axes <= 0) {
+    return std::make_unique<FontPlatformData>(
+        std::move(typeface), std::string(), size, synthetic_bold,
+        synthetic_italic, orientation);
+  }
+
+  Vector<SkFontArguments::VariationPosition::Coordinate> coordinates_to_set;
+  coordinates_to_set.resize(existing_axes);
+
+  if (typeface->getVariationDesignPosition(coordinates_to_set.data(),
+                                           existing_axes) != existing_axes) {
+    return std::make_unique<FontPlatformData>(
+        std::move(typeface), std::string(), size, synthetic_bold,
+        synthetic_italic, orientation);
+  }
+
+  // Iterate over the font's axes and find a missing tag from variation
+  // settings, special case opsz, track the number of axes reconfigured.
+  size_t reconfigured_axes = 0;
+  for (auto& coordinate : coordinates_to_set) {
+    FontVariationAxis current_axis(AtomicString(), 0);
+    // Set opsz to font size but allow having it overriden by
+    // font-variation-settings in case it has 'opsz'.
+    if (coordinate.axis == kOpszTag) {
+      if (coordinate.value != SkFloatToScalar(size)) {
+        coordinate.value = SkFloatToScalar(size);
+        reconfigured_axes++;
+      }
     }
+    if (variation_settings->FindPair(FourByteTagToAtomicString(coordinate.axis),
+                                     &current_axis)) {
+      if (coordinate.value != current_axis.Value() &&
+          coordinate.axis != kOpszTag) {
+        coordinate.value = current_axis.Value();
+        reconfigured_axes++;
+      }
+    }
+  }
+
+  if (!reconfigured_axes) {
+    // No variable axes touched, return the previous typeface.
+    return std::make_unique<FontPlatformData>(
+        std::move(typeface), std::string(), size, synthetic_bold,
+        synthetic_italic, orientation);
+  }
+
+  SkFontArguments::VariationPosition variation_design_position{
+      coordinates_to_set.data(), coordinates_to_set.size()};
+
+  // See https://bugs.chromium.org/p/skia/issues/detail?id=9747 - Depending on
+  // variation axes parameters Mac OS pre 10.15 produces broken SkTypefaces when
+  // using makeClone() on system fonts. Work around this issue by only using the
+  // more efficient makeClone() on supported versions.
+  if (CoreTextVersionSupportsSystemFontMakeClone()) {
+    typeface = typeface->makeClone(SkFontArguments().setVariationDesignPosition(
+        variation_design_position));
+  } else {
     sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
-    // TODO crbug.com/670246: Refactor this to a future Skia API that acccepts
-    // axis parameters on system fonts directly.
-    typeface = fm->makeFromStream(
-        typeface->openStream(nullptr)->duplicate(),
-        SkFontArguments().setAxes(axes, variation_settings->size()));
+    typeface = fm->makeFromStream(typeface->openStream(nullptr)->duplicate(),
+                                  SkFontArguments().setVariationDesignPosition(
+                                      variation_design_position));
   }
 
   return std::make_unique<FontPlatformData>(

@@ -98,6 +98,15 @@ public final class BrowserViewController
                     new WebContentsGestureStateTracker(mContentView, webContents, this);
         }
         mContentView.setWebContents(webContents);
+
+        if (mTab != null) {
+            // Now that |mContentView| is associated with this Tab's WebContents,
+            // associate |mContentView| with this Tab's AutofillProvider as well.
+            mContentView.setAutofillProvider(mTab.getAutofillProvider());
+        } else {
+            mContentView.setAutofillProvider(null);
+        }
+
         mContentViewRenderView.setWebContents(webContents);
         mTopControlsContainerView.setWebContents(webContents);
         if (mTab != null) {

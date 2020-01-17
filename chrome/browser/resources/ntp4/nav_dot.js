@@ -32,7 +32,7 @@ cr.define('ntp', function() {
   NavDot.prototype = {
     __proto__: HTMLLIElement.prototype,
 
-    initialize: function(page, title, titleIsEditable, animate) {
+    initialize(page, title, titleIsEditable, animate) {
       this.className = 'dot';
       this.setAttribute('role', 'button');
 
@@ -96,7 +96,7 @@ cr.define('ntp', function() {
      * transition the element to 0 width.
      * @param {boolean=} opt_animate Whether to animate the removal or not.
      */
-    remove: function(opt_animate) {
+    remove(opt_animate) {
       if (opt_animate) {
         this.classList.add('small');
       } else {
@@ -107,7 +107,7 @@ cr.define('ntp', function() {
     /**
      * Navigates the card slider to the page for this dot.
      */
-    switchToPage: function() {
+    switchToPage() {
       ntp.getCardSlider().selectCardByValue(this.page_, true);
     },
 
@@ -115,7 +115,7 @@ cr.define('ntp', function() {
      * Handler for keydown event on the dot.
      * @param {Event} e The KeyboardEvent.
      */
-    onKeyDown_: function(e) {
+    onKeyDown_(e) {
       if (e.key == 'Enter') {
         this.onClick_(e);
         e.stopPropagation();
@@ -127,7 +127,7 @@ cr.define('ntp', function() {
      * @param {Event} e The click event.
      * @private
      */
-    onClick_: function(e) {
+    onClick_(e) {
       this.switchToPage();
       // The explicit focus call is necessary because of overriding the default
       // handling in onInputMouseDown_.
@@ -143,7 +143,7 @@ cr.define('ntp', function() {
      * @param {Event} e The click event.
      * @private
      */
-    onDoubleClick_: function(e) {
+    onDoubleClick_(e) {
       if (this.titleIsEditable_) {
         this.input_.disabled = false;
         this.input_.focus();
@@ -156,7 +156,7 @@ cr.define('ntp', function() {
      * @param {Event} e The click event.
      * @private
      */
-    onInputMouseDown_: function(e) {
+    onInputMouseDown_(e) {
       if (this.ownerDocument.activeElement != this.input_) {
         e.preventDefault();
       }
@@ -167,7 +167,7 @@ cr.define('ntp', function() {
      * @param {Event} e The click event.
      * @private
      */
-    onInputKeyDown_: function(e) {
+    onInputKeyDown_(e) {
       switch (e.key) {
         case 'Escape':  // Escape cancels edits.
           this.input_.value = this.displayTitle;
@@ -182,19 +182,19 @@ cr.define('ntp', function() {
      * @param {Event} e The blur event.
      * @private
      */
-    onInputBlur_: function(e) {
+    onInputBlur_(e) {
       window.getSelection().removeAllRanges();
       this.displayTitle = this.input_.value;
       ntp.saveAppPageName(this.page_, this.displayTitle);
       this.input_.disabled = true;
     },
 
-    shouldAcceptDrag: function(e) {
+    shouldAcceptDrag(e) {
       return this.page_.shouldAcceptDrag(e);
     },
 
     /** @override */
-    doDragEnter: function(e) {
+    doDragEnter(e) {
       const self = this;
       function navPageClearTimeout() {
         self.switchToPage();
@@ -206,7 +206,7 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    doDragOver: function(e) {
+    doDragOver(e) {
       // Prevent default handling so the <input> won't act as a drag target.
       e.preventDefault();
 
@@ -218,7 +218,7 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    doDrop: function(e) {
+    doDrop(e) {
       e.stopPropagation();
       const tile = ntp.getCurrentlyDraggingTile();
       if (tile && tile.tilePage != this.page_) {
@@ -230,7 +230,7 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    doDragLeave: function(e) {
+    doDragLeave(e) {
       this.cancelDelayedSwitch_();
     },
 
@@ -238,7 +238,7 @@ cr.define('ntp', function() {
      * Cancels the timer for page switching.
      * @private
      */
-    cancelDelayedSwitch_: function() {
+    cancelDelayedSwitch_() {
       if (this.dragNavTimeout) {
         window.clearTimeout(this.dragNavTimeout);
         this.dragNavTimeout = null;
@@ -250,7 +250,7 @@ cr.define('ntp', function() {
      * @param {Event} e The transition end event.
      * @private
      */
-    onTransitionEnd_: function(e) {
+    onTransitionEnd_(e) {
       if (e.propertyName === 'max-width' && this.classList.contains('small')) {
         this.parentNode.removeChild(this);
       }

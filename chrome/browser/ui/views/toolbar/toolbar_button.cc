@@ -383,10 +383,7 @@ SkColor ToolbarButton::AdjustHighlightColorForContrast(
     SkColor light_extreme) {
   if (!theme_provider)
     return desired_light_color;
-  const SkColor background_color =
-      base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)
-          ? GetDefaultBackgroundColor(theme_provider)
-          : theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  const SkColor background_color = GetDefaultBackgroundColor(theme_provider);
   const SkColor contrasting_color = color_utils::PickContrastingColor(
       desired_dark_color, desired_light_color, background_color);
   const SkColor limit =
@@ -514,39 +511,25 @@ ToolbarButton::HighlightColorAnimation::~HighlightColorAnimation() {}
 
 void ToolbarButton::HighlightColorAnimation::Show(
     base::Optional<SkColor> highlight_color) {
-  if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
-    // If the animation is showing, we will jump to a different color in the
-    // middle of the animation and continue animating towards the new
-    // |highlight_color_|. If the animation is fully shown, we will jump
-    // directly to the new |highlight_color_|. This is not ideal but making it
-    // smoother is not worth the extra complexity given this should be very
-    // rare.
-    if (highlight_color_animation_.GetCurrentValue() == 0.0f ||
-        highlight_color_animation_.IsClosing()) {
-      highlight_color_animation_.Show();
-    }
-  } else {
-    // If the animation is disabled, jump directly to the final state.
-    highlight_color_animation_.Reset(1.0f);
+  // If the animation is showing, we will jump to a different color in the
+  // middle of the animation and continue animating towards the new
+  // |highlight_color_|. If the animation is fully shown, we will jump directly
+  // to the new |highlight_color_|. This is not ideal but making it smoother is
+  // not worth the extra complexity given this should be very rare.
+  if (highlight_color_animation_.GetCurrentValue() == 0.0f ||
+      highlight_color_animation_.IsClosing()) {
+    highlight_color_animation_.Show();
   }
-
   highlight_color_ = highlight_color;
   parent_->UpdateColorsAndInsets();
 }
 
 void ToolbarButton::HighlightColorAnimation::Hide() {
-  if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
-    highlight_color_animation_.Hide();
-  } else {
-    ClearHighlightColor();
-  }
+  highlight_color_animation_.Hide();
 }
 
 base::Optional<SkColor> ToolbarButton::HighlightColorAnimation::GetTextColor()
     const {
-  if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButton))
-    return highlight_color_;
-
   if (!IsShown() || !parent_->GetThemeProvider())
     return base::nullopt;
   SkColor text_color;
@@ -560,9 +543,7 @@ base::Optional<SkColor> ToolbarButton::HighlightColorAnimation::GetTextColor()
 
 base::Optional<SkColor> ToolbarButton::HighlightColorAnimation::GetBorderColor()
     const {
-  if (!IsShown() ||
-      !base::FeatureList::IsEnabled(features::kAnimatedAvatarButton) ||
-      !parent_->GetThemeProvider()) {
+  if (!IsShown() || !parent_->GetThemeProvider()) {
     return base::nullopt;
   }
 
@@ -577,12 +558,6 @@ base::Optional<SkColor> ToolbarButton::HighlightColorAnimation::GetBorderColor()
 
 base::Optional<SkColor>
 ToolbarButton::HighlightColorAnimation::GetBackgroundColor() const {
-  if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
-    if (!highlight_color_)
-      return base::nullopt;
-    return SkColorSetA(*highlight_color_, kToolbarButtonBackgroundAlpha);
-  }
-
   if (!IsShown() || !parent_->GetThemeProvider())
     return base::nullopt;
   SkColor bg_color =

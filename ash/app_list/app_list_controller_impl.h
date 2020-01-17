@@ -33,6 +33,7 @@
 #include "ash/wm/overview/overview_observer.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
+#include "ui/aura/window_observer.h"
 #include "ui/display/types/display_constants.h"
 
 class PrefRegistrySimple;
@@ -59,6 +60,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
                                          public WallpaperControllerObserver,
                                          public AssistantStateObserver,
                                          public WindowTreeHostManager::Observer,
+                                         public aura::WindowObserver,
                                          public MruWindowTracker::Observer,
                                          public AssistantControllerObserver,
                                          public AssistantUiModelObserver,
@@ -151,6 +153,11 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
                                  float background_opacity);
   void EndDragFromShelf(AppListViewState app_list_state);
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
+  // Toggles app list visibility. In tablet mode, this can only show the app
+  // list (by hiding any windows that might be shown over the homde launcher).
+  // |display_id| is the id of display where app list should toggle.
+  // |show_source| is the source of the event. |event_time_stamp| records the
+  // event timestamp.
   ShelfAction ToggleAppList(int64_t display_id,
                             AppListShowSource show_source,
                             base::TimeTicks event_time_stamp);
@@ -255,6 +262,10 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
+  // aura::WindowObserver:
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
+  void OnWindowDestroyed(aura::Window* window) override;
+
   // MruWindowTracker::Observer:
   void OnWindowUntracked(aura::Window* untracked_window) override;
 
@@ -300,15 +311,6 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void Back();
 
   void SetKeyboardTraversalMode(bool engaged);
-
-  // Handles home button press event. (Search key should trigger the same
-  // behavior.) All three parameters are only used in clamshell mode.
-  // |display_id| is the id of display where app list should toggle.
-  // |show_source| is the source of the event. |event_time_stamp| records the
-  // event timestamp.
-  ShelfAction OnHomeButtonPressed(int64_t display_id,
-                                  AppListShowSource show_source,
-                                  base::TimeTicks event_time_stamp);
 
   // Returns current visibility of the Assistant page.
   bool IsShowingEmbeddedAssistantUI() const;
@@ -379,6 +381,9 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // Record the app launch for AppListAppLaunchedV2 metric.
   void RecordAppLaunched(AppListLaunchedFrom launched_from);
 
+  // Updates the window that is tracked as |tracked_app_window_|.
+  void UpdateTrackedAppWindow();
+
   // Whether the home launcher is
   // * being shown (either through an animation or a drag)
   // * being hidden (either through an animation or a drag)
@@ -423,6 +428,13 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // read/written by Ash side through IPC. Notice that in multi-profile mode,
   // each profile has its own AppListModelUpdater to manipulate app list items.
   int profile_id_ = kAppListInvalidProfileID;
+
+  // Used when tablet mode is active to track the MRU window among the windows
+  // that were obscuring the home launcher when the home launcher visibility was
+  // last calculated.
+  // This window changing it's visibility to false is used as a signal that the
+  // home launcher visibility should be recalculated.
+  aura::Window* tracked_app_window_ = nullptr;
 
   // A callback that can be registered by a test to wait for the app list state
   // transition animation to finish.

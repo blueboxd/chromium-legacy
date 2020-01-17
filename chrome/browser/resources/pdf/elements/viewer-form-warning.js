@@ -21,18 +21,18 @@ Polymer({
   /** @private {PromiseResolver} */
   resolver_: null,
 
-  show: function() {
+  show() {
     this.resolver_ = new PromiseResolver();
     /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
     return this.resolver_.promise;
   },
 
-  onCancel: function() {
+  onCancel() {
     this.resolver_.reject();
     this.$.dialog.cancel();
   },
 
-  onAction: function() {
+  onAction() {
     this.resolver_.resolve();
     this.$.dialog.close();
   },

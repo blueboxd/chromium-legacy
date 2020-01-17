@@ -78,7 +78,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     // Populate the preview text with textToSpeechPreviewInput. Users can change
     // this to their own value later.
     this.previewText_ = this.i18n('textToSpeechPreviewInput');
@@ -98,7 +98,7 @@ Polymer({
    * @return Array<cr_slider.SliderTick>
    * @private
    */
-  speechRateTicks_: function() {
+  speechRateTicks_() {
     return Array.from(Array(16).keys()).map(x => {
       return x <= 4 ?
           // Linear from rates 0.6 to 1.0
@@ -114,7 +114,7 @@ Polymer({
    * @return Array<cr_slider.SliderTick>
    * @private
    */
-  speechPitchTicks_: function() {
+  speechPitchTicks_() {
     return Array.from(Array(10).keys()).map(x => {
       return this.initTick_(x * .2 + .2);
     });
@@ -127,7 +127,7 @@ Polymer({
    * @return Array<cr_slider.SliderTick>
    * @private
    */
-  speechVolumeTicks_: function() {
+  speechVolumeTicks_() {
     return Array.from(Array(9).keys()).map(x => {
       return this.initTick_(x * .1 + .2);
     });
@@ -139,7 +139,7 @@ Polymer({
    * @return {cr_slider.SliderTick}
    * @private
    */
-  initTick_: function(tick) {
+  initTick_(tick) {
     const value = Math.round(100 * tick);
     const strValue = value.toFixed(0);
     const label = strValue === '100' ?
@@ -154,7 +154,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasVoices_: function(voices) {
+  hasVoices_(voices) {
     return voices.length > 0;
   },
 
@@ -167,7 +167,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  enablePreviewButton_: function(voices, isPreviewing, previewText) {
+  enablePreviewButton_(voices, isPreviewing, previewText) {
     const nonWhitespaceRe = /\S+/;
     const hasPreviewText = nonWhitespaceRe.exec(previewText) != null;
     return this.hasVoices_(voices) && !isPreviewing && hasPreviewText;
@@ -178,7 +178,7 @@ Polymer({
    * @param {Array<TtsHandlerVoice>} voices
    * @private
    */
-  populateVoiceList_: function(voices) {
+  populateVoiceList_(voices) {
     // Build a map of language code to human-readable language and voice.
     const result = {};
     const languageCodeMap = {};
@@ -220,7 +220,7 @@ Polymer({
    *     voice: TtsHandlerVoice}} language
    * @return {boolean} true if it's a primary language.
    */
-  isPrimaryLanguage_: function(language) {
+  isPrimaryLanguage_(language) {
     return language.preferred;
   },
 
@@ -231,7 +231,7 @@ Polymer({
    *     voice: TtsHandlerVoice}} language
    * @return {boolean} true if it's a secondary language.
    */
-  isSecondaryLanguage_: function(language) {
+  isSecondaryLanguage_(language) {
     return !language.preferred;
   },
 
@@ -240,7 +240,7 @@ Polymer({
    * @param {Array<TtsHandlerExtension>} extensions
    * @private
    */
-  populateExtensionList_: function(extensions) {
+  populateExtensionList_(extensions) {
     this.extensions = extensions;
   },
 
@@ -250,7 +250,7 @@ Polymer({
    * @param {boolean} isSpeaking
    * @private
    */
-  onTtsPreviewStateChanged_: function(isSpeaking) {
+  onTtsPreviewStateChanged_(isSpeaking) {
     this.isPreviewing_ = isSpeaking;
   },
 
@@ -261,7 +261,7 @@ Polymer({
    * @return {number} The result of the comparison.
    * @private
    */
-  alphabeticalSort_: function(first, second) {
+  alphabeticalSort_(first, second) {
     return first.language.localeCompare(second.language);
   },
 
@@ -271,7 +271,7 @@ Polymer({
    * @return {boolean} True if the item has only one voice.
    * @private
    */
-  hasOneLanguage_: function(lang) {
+  hasOneLanguage_(lang) {
     return lang['voices'].length == 1;
   },
 
@@ -282,7 +282,7 @@ Polymer({
    * @return {Array<Object>} An array of menu options with a value and name.
    * @private
    */
-  menuOptionsForLang_: function(lang) {
+  menuOptionsForLang_(lang) {
     return lang.voices.map(voice => {
       return {value: voice.id, name: voice.name};
     });
@@ -294,7 +294,7 @@ Polymer({
    *     voices: Array<TtsHandlerVoice>}>} langToVoices
    * @private
    */
-  updateLangToVoicePrefs_: function(langToVoices) {
+  updateLangToVoicePrefs_(langToVoices) {
     if (langToVoices.length == 0) {
       return;
     }
@@ -339,7 +339,7 @@ Polymer({
    *     to simple language code without locale.
    * @private
    */
-  setDefaultPreviewVoiceForLocale_: function(allVoices, languageCodeMap) {
+  setDefaultPreviewVoiceForLocale_(allVoices, languageCodeMap) {
     if (!allVoices || allVoices.length == 0) {
       return;
     }
@@ -378,7 +378,7 @@ Polymer({
    * @return {string} The ID of the best matching voice in the array.
    * @private
    */
-  getBestVoiceForLocale_: function(voices) {
+  getBestVoiceForLocale_(voices) {
     let bestScore = -1;
     let bestVoice = '';
     voices.forEach((voice) => {
@@ -391,7 +391,7 @@ Polymer({
   },
 
   /** @private */
-  onPreviewTtsClick_: function() {
+  onPreviewTtsClick_() {
     chrome.send(
         'previewTtsVoice', [this.previewText_, this.$.previewVoice.value]);
     chrome.metricsPrivate.recordSparseHashable(
@@ -414,7 +414,7 @@ Polymer({
    * @param {{model:Object}} event
    * @private
    */
-  onEngineSettingsTap_: function(event) {
+  onEngineSettingsTap_(event) {
     chrome.send('wakeTtsEngine');
     window.open(event.model.extension.optionsPage);
   },

@@ -12,6 +12,7 @@
 #include "base/test/task_environment.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/os_crypt/os_crypt_mocker.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/protocol/local_trusted_vault.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,9 +45,12 @@ std::vector<std::vector<uint8_t>> FetchKeysAndWaitForClient(
     FileBasedTrustedVaultClient* client) {
   DCHECK(client);
 
+  CoreAccountInfo account_info;
+  account_info.gaia = gaia_id;
+
   base::RunLoop loop;
   std::vector<std::vector<uint8_t>> fetched_keys;
-  client->FetchKeys(gaia_id,
+  client->FetchKeys(account_info,
                     base::BindLambdaForTesting(
                         [&](const std::vector<std::vector<uint8_t>>& keys) {
                           fetched_keys = keys;

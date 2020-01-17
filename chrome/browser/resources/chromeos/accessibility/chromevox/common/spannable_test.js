@@ -73,7 +73,7 @@ ChromeVoxSpannableUnitTest.prototype = {
   ],
 
   /** @override */
-  setUp: function() {
+  setUp() {
     Spannable.registerStatelessSerializableSpan(
         StatelessSerializableSpan, 'StatelessSerializableSpan');
 

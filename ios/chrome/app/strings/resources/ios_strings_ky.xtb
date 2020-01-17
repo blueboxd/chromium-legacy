@@ -385,7 +385,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="6184086493125982861">Өтмөктөрдү көрсөтүү</translation>
 <translation id="6187302354554850004">Акркы жолу шайкешт: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">Окулбагандар</translation>
-<translation id="6196207969502475924">Үн менен издөө</translation>
+<translation id="6196207969502475924">Айтып издөө</translation>
 <translation id="6219688215832490856">Эч качан которулбасын</translation>
 <translation id="6254066287920239840">Шилтемелерди серепчиден эмес, колдонмодон ачыңыз.</translation>
 <translation id="6255097610484507482">Насыя картсын түзтүү</translation>
@@ -432,7 +432,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="6780034285637185932">Почта индекси</translation>
 <translation id="6785453220513215166">Ката жөнүндө кабар жөнөтүү…</translation>
 <translation id="679325081238418596">Бардык түзмөктөрүңүздөн кыстармаларды, таржымалды, сырсөздөрдү жана башка жөндөөлөрүңүздү алыңыз</translation>
-<translation id="6797885426782475225">Үн менен издөө</translation>
+<translation id="6797885426782475225">Айтып издөө</translation>
 <translation id="6807889908376551050">Баарын көрсөтүү…</translation>
 <translation id="681368974849482173">Нерсе түзүлдү</translation>
 <translation id="6831043979455480757">Которуу</translation>
@@ -480,7 +480,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="7383797227493018512">Окуу тизмеси</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> окула элек макала.</translation>
-<translation id="7425346204213733349">Кыстармаларыңызга, таржымалыңызга, сырсөздөрүңүзгө жана башка жөндөөлөргө киргизилген өзгөртүүлөр Google Каттоо эсебиңиз менен шайкештирилбейт. Ал эми учурдагы дайын-даректериңиз Google Каттоо эсебиңизде сакталып кала берет.</translation>
+<translation id="7425346204213733349">Кыстармаларыңызга, таржымалыңызга, сырсөздөрүңүзгө жана башка жөндөөлөргө киргизилген өзгөртүүлөр Google Аккаунтуңуз менен шайкештирилбейт. Ал эми учурдагы дайын-даректериңиз Google Аккаунтуңузде сакталып кала берет.</translation>
 <translation id="7454057999980797137">Өлкө/Округ</translation>
 <translation id="7456847797759667638">Жайгашкан жерди ачуу…</translation>
 <translation id="7460314822154045102">Камераны колдонуу</translation>
@@ -563,7 +563,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="8721297211384281569">Куралдар менюсу</translation>
 <translation id="8725066075913043281">Кайра аракет кылып көрүү</translation>
 <translation id="8730621377337864115">Бүттү</translation>
-<translation id="8741995161408053644">Google каттоо эсебиңиздин серептөө таржымалынын башка түрлөрү <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> дарегинде болушу мүмкүн.</translation>
+<translation id="8741995161408053644">Google аккаунтуңуздун серептөө таржымалынын башка түрлөрү <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> дарегинде болушу мүмкүн.</translation>
 <translation id="8756969031206844760">Сырсөз жаңыртылсынбы?</translation>
 <translation id="8775144690796719618">Жараксыз URL</translation>
 <translation id="8820817407110198400">Кыстармалар</translation>

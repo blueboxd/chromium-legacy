@@ -167,6 +167,14 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
         ],
+        # TODO(https://crbug.com/1039746): Move this back to the main pool.
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'chrome.tests.browser_tests_killer',
+            },
+          ],
+        },
       },
       'linux-chromeos-code-coverage': {
         'swarming': {
@@ -227,6 +235,18 @@
         'swarming': {
           'shards': 3,
         },
+      },
+      'android-marshmallow-x86-fyi-rel': {
+        # https://crbug.com/1039860
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.cc_unittests.filter',
+        ],
+      },
+      'android-pie-x86-fyi-rel': {
+        # https://crbug.com/1039860
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.cc_unittests.filter',
+        ],
       },
     },
   },
@@ -1638,12 +1658,12 @@
   'viz_unittests': {
     'modifications': {
       'android-marshmallow-x86-fyi-rel': {
-        'flags': [
+        'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter',
         ],
       },
       'android-pie-x86-fyi-rel': {
-        'flags': [
+        'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter',
         ],
       },

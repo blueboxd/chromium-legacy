@@ -328,13 +328,13 @@ void ServiceWorkerRegistration::AbortPendingClear(StatusCallback callback) {
       break;
   }
 
-  context_->storage()->NotifyDoneUninstallingRegistration(this,
-                                                          Status::kIntact);
+  context_->registry()->NotifyDoneUninstallingRegistration(this,
+                                                           Status::kIntact);
 
   scoped_refptr<ServiceWorkerVersion> most_recent_version =
       waiting_version() ? waiting_version() : active_version();
   DCHECK(most_recent_version.get());
-  context_->storage()->NotifyInstallingRegistration(this);
+  context_->registry()->NotifyInstallingRegistration(this);
   context_->storage()->StoreRegistration(
       this, most_recent_version.get(),
       base::BindOnce(&ServiceWorkerRegistration::OnRestoreFinished, this,
@@ -548,8 +548,8 @@ void ServiceWorkerRegistration::ForceDelete() {
         base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, protect));
   }
   DCHECK(is_uninstalling());
-  context_->storage()->NotifyDoneUninstallingRegistration(this,
-                                                          Status::kUninstalled);
+  context_->registry()->NotifyDoneUninstallingRegistration(
+      this, Status::kUninstalled);
 
   // Tell observers that this registration is gone.
   NotifyRegistrationFailed();
@@ -660,7 +660,7 @@ void ServiceWorkerRegistration::Clear() {
   auto protect = base::WrapRefCounted(this);
 
   if (context_) {
-    context_->storage()->NotifyDoneUninstallingRegistration(
+    context_->registry()->NotifyDoneUninstallingRegistration(
         this, Status::kUninstalled);
   }
 
@@ -706,8 +706,8 @@ void ServiceWorkerRegistration::OnRestoreFinished(
     std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort);
     return;
   }
-  context_->storage()->NotifyDoneInstallingRegistration(
-      this, version.get(), status);
+  context_->registry()->NotifyDoneInstallingRegistration(this, version.get(),
+                                                         status);
   std::move(callback).Run(status);
 }
 

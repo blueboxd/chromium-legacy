@@ -1,8 +1,15 @@
 This is a testharness.js-based test.
+Found 50 tests; 23 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface RTCPeerConnection: original interface defined
 PASS Partial interface RTCPeerConnection: member names are unique
+PASS Partial dictionary RTCConfiguration: original dictionary defined
+PASS Partial dictionary RTCConfiguration: member names are unique
+PASS Partial interface RTCError: original interface defined
+PASS Partial interface RTCError: member names are unique
+PASS Partial dictionary RTCErrorInit: original dictionary defined
+PASS Partial dictionary RTCErrorInit: member names are unique
 PASS Partial dictionary MediaStreamConstraints: original dictionary defined
 PASS Partial dictionary MediaStreamConstraints: member names are unique
 PASS Partial interface MediaStreamTrack: original interface defined
@@ -37,6 +44,7 @@ FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property 
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "peerIdentity" with the proper type assert_inherits: property "peerIdentity" not found in prototype chain
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "idpLoginUrl" with the proper type assert_inherits: property "idpLoginUrl" not found in prototype chain
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "idpErrorInfo" with the proper type assert_inherits: property "idpErrorInfo" not found in prototype chain
+PASS RTCError interface: attribute httpRequestStatusCode
 FAIL MediaStreamTrack interface: attribute isolated assert_true: The prototype object must have a property "isolated" expected true got false
 FAIL MediaStreamTrack interface: attribute onisolationchange assert_true: The prototype object must have a property "onisolationchange" expected true got false
 FAIL MediaStreamTrack interface: track must inherit property "isolated" with the proper type assert_inherits: property "isolated" not found in prototype chain

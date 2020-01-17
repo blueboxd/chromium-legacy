@@ -120,19 +120,15 @@ class RunPackageArgs:
   symbolizer_config: A newline delimited list of source files contained
       in the package. Omitting this parameter will disable symbolization.
   system_logging: If set, connects a system log reader to the target.
-  target_staging_path: Path to which package FARs will be staged, during
-      installation. Defaults to staging into '/data'.
   """
   def __init__(self):
     self.symbolizer_config = None
     self.system_logging = False
-    self.target_staging_path = '/data'
 
   @staticmethod
   def FromCommonArgs(args):
     run_package_args = RunPackageArgs()
     run_package_args.system_logging = args.include_system_logs
-    run_package_args.target_staging_path = args.target_staging_path
     return run_package_args
 
 

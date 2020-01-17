@@ -32,8 +32,6 @@ enum class SigninState {
   kSignedInWithConsentedPrimaryAccount,
 };
 
-extern const base::Feature kPersistUPAInProfileInfoCache;
-
 class ProfileAttributesEntry {
  public:
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);

@@ -26,6 +26,7 @@
 
 namespace device {
 class BluetoothSocketThread;
+class BluetoothUUID;
 }  // namespace device
 
 namespace bluez {
@@ -163,7 +164,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
 
  protected:
   // BluetoothDevice override
-  void CreateGattConnectionImpl() override;
+  void CreateGattConnectionImpl(
+      base::Optional<device::BluetoothUUID> service_uuid) override;
   void DisconnectGatt() override;
 
  private:

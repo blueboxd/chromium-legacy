@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/javascript_test_observer.h"
@@ -232,7 +232,8 @@ class CommandsApiTest : public ExtensionApiTest {
   bool IsGrantedForTab(const Extension* extension,
                        const content::WebContents* web_contents) {
     return extension->permissions_data()->HasAPIPermissionForTab(
-        SessionTabHelper::IdForTab(web_contents).id(), APIPermission::kTab);
+        sessions::SessionTabHelper::IdForTab(web_contents).id(),
+        APIPermission::kTab);
   }
 
 #if defined(OS_CHROMEOS)
@@ -321,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
-  int tab_id = SessionTabHelper::FromWebContents(
+  int tab_id = sessions::SessionTabHelper::FromWebContents(
                    browser()->tab_strip_model()->GetActiveWebContents())
                    ->session_id()
                    .id();
@@ -341,8 +342,10 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, InactivePageActionDoesntTrigger) {
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
-  int tab_id = SessionTabHelper::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents())->session_id().id();
+  int tab_id = sessions::SessionTabHelper::FromWebContents(
+                   browser()->tab_strip_model()->GetActiveWebContents())
+                   ->session_id()
+                   .id();
 
   ExtensionActionManager* action_manager =
       ExtensionActionManager::Get(profile());
@@ -379,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverflowedPageActionTriggers) {
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
-  const int tab_id = SessionTabHelper::FromWebContents(
+  const int tab_id = sessions::SessionTabHelper::FromWebContents(
                          browser()->tab_strip_model()->GetActiveWebContents())
                          ->session_id()
                          .id();
@@ -404,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionKeyUpdated) {
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
-  int tab_id = SessionTabHelper::FromWebContents(
+  int tab_id = sessions::SessionTabHelper::FromWebContents(
                    browser()->tab_strip_model()->GetActiveWebContents())
                    ->session_id()
                    .id();
@@ -435,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageActionOverrideChromeShortcut) {
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
-  int tab_id = SessionTabHelper::FromWebContents(
+  int tab_id = sessions::SessionTabHelper::FromWebContents(
                    browser()->tab_strip_model()->GetActiveWebContents())
                    ->session_id()
                    .id();

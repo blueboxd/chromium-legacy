@@ -41,8 +41,9 @@ cr.define('settings', function() {
      * Starts importing data for the specified source browser profile. The C++
      * responds with the 'import-data-status-changed' WebUIListener event.
      * @param {number} sourceBrowserProfileIndex
+     * @param {!Object<boolean>} types Which types of data to import.
      */
-    importData(sourceBrowserProfileIndex) {}
+    importData(sourceBrowserProfileIndex, types) {}
 
     /**
      * Prompts the user to choose a bookmarks file to import bookmarks from.
@@ -60,8 +61,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    importData(sourceBrowserProfileIndex) {
-      chrome.send('importData', [sourceBrowserProfileIndex]);
+    importData(sourceBrowserProfileIndex, types) {
+      chrome.send('importData', [sourceBrowserProfileIndex, types]);
     }
 
     /** @override */

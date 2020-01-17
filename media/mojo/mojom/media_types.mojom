@@ -15,6 +15,8 @@ import "ui/gfx/mojom/color_space.mojom";
 // See media/base/audio_codecs.h for descriptions.
 [Native]
 enum AudioCodec;
+[Native]
+enum AudioCodecProfile;
 
 // See media/base/buffering_state.h for descriptions.
 [Native]
@@ -141,6 +143,7 @@ struct HDRMetadata {
 // See media/base/audio_decoder_config.h for descriptions.
 struct AudioDecoderConfig {
   AudioCodec codec;
+  AudioCodecProfile profile;
   SampleFormat sample_format;
   ChannelLayout channel_layout;
   int32 samples_per_second;

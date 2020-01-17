@@ -532,7 +532,7 @@ string LoopbackServer::CommitEntity(
     EntityMap::const_iterator iter = entities_.find(client_entity.id_string());
     if (iter != entities_.end()) {
       entity = PersistentBookmarkEntity::CreateUpdatedVersion(
-          client_entity, *iter->second, parent_id);
+          client_entity, *iter->second, parent_id, client_guid);
     } else {
       entity = PersistentBookmarkEntity::CreateNew(client_entity, parent_id,
                                                    client_guid);

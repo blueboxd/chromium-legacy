@@ -20,14 +20,6 @@ class ExploreSitesService : public KeyedService {
   // Returns via callback the current catalog stored locally.
   virtual void GetCatalog(CatalogCallback callback) = 0;
 
-  // Returns via callback the image for a category. This image is composed from
-  // multiple site images. The site images are checked against the user
-  // blacklist so that unwanted sites are not represented in the category image.
-  // Returns |nullptr| if there was an error, or no match.
-  virtual void GetCategoryImage(int category_id,
-                                int pixel_size,
-                                BitmapCallback callback) = 0;
-
   // Returns via callback an image representing a summary of the current
   // catalog. This image is composed from multiple site images.
   // Returns |nullptr| if there was an error.
@@ -56,10 +48,6 @@ class ExploreSitesService : public KeyedService {
   virtual void ClearActivities(base::Time begin,
                                base::Time end,
                                base::OnceClosure callback) = 0;
-
-  // Increment the ntp_shown_count for the particular category.
-  // |category_id| the row id of the category to increment.
-  virtual void IncrementNtpShownCount(int category_id) = 0;
 
   // Controls for use by chrome://explore-sites-internals.
   virtual void ClearCachedCatalogsForDebugging() = 0;

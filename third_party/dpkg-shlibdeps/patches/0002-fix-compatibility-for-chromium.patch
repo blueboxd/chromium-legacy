@@ -1,18 +1,19 @@
-From 9f31bd9e8a69ee2821664e576d9fc7a957205230 Mon Sep 17 00:00:00 2001
+From 3f179bf13081f9dde0535a17864ceeba685ab907 Mon Sep 17 00:00:00 2001
 From: Tom Anderson <thomasanderson@chromium.org>
 Date: Wed, 8 Jan 2020 12:11:56 -0800
 Subject: [PATCH 2/2] Fix compatibility for Chromium
 
-Add debug() function in case the system dpkg doesn't have it.
+* Add debug() and g_() functions in case the system dpkg doesn't have it.
+* Implement List::Util::any and List::Util::none for older versions of perl.
 ---
- scripts/dpkg-shlibdeps.pl | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ scripts/dpkg-shlibdeps.pl | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
 diff --git a/scripts/dpkg-shlibdeps.pl b/scripts/dpkg-shlibdeps.pl
-index e3d8c7200..b40667f5a 100755
+index e3d8c7200..654dfa898 100755
 --- a/scripts/dpkg-shlibdeps.pl
 +++ b/scripts/dpkg-shlibdeps.pl
-@@ -21,7 +21,6 @@
+@@ -21,11 +21,10 @@
  # You should have received a copy of the GNU General Public License
  # along with this program.  If not, see <https://www.gnu.org/licenses/>.
  
@@ -20,7 +21,24 @@ index e3d8c7200..b40667f5a 100755
  use warnings;
  use feature qw(state);
  
-@@ -153,6 +152,11 @@ sub ignore_pkgdir {
+-use List::Util qw(any none);
++use List::Util qw(reduce);
+ use Cwd qw(realpath);
+ use File::Basename qw(dirname);
+ 
+@@ -51,6 +50,11 @@ use constant {
+     WARN_NOT_NEEDED => 4,
+ };
+ 
++sub none (&@) { my $code=shift; reduce { $a && !$code->(local $_ = $b) } 1, @_; }
++sub any  (&@) { my $code=shift; reduce { $a ||  $code->(local $_ = $b) } 0, @_; }
++
++sub g_ { return shift; }
++
+ # By increasing importance
+ my @depfields = qw(Suggests Recommends Depends Pre-Depends);
+ my $i = 0; my %depstrength = map { $_ => $i++ } @depfields;
+@@ -153,6 +157,11 @@ sub ignore_pkgdir {
      return any { $path =~ /^\Q$_\E/ } @pkg_dir_to_ignore;
  }
  
@@ -32,7 +50,7 @@ index e3d8c7200..b40667f5a 100755
  if (-d 'debian') {
      push @pkg_symbols, grep { !ignore_pkgdir($_) } glob 'debian/*/DEBIAN/symbols';
      push @pkg_shlibs, grep { !ignore_pkgdir($_) } glob 'debian/*/DEBIAN/shlibs';
-@@ -198,18 +202,17 @@ foreach my $file (keys %exec) {
+@@ -198,18 +207,17 @@ foreach my $file (keys %exec) {
      my %soname_notfound;
      my %alt_soname;
      foreach my $soname (@sonames) {
@@ -55,5 +73,5 @@ index e3d8c7200..b40667f5a 100755
  	    next;
  	}
 -- 
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

@@ -405,24 +405,27 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
     timing->paint_timing->first_meaningful_paint =
         ClampDelta(perf.FirstMeaningfulPaint(), start);
   }
-  if (perf.LargestImagePaint() > 0.0) {
-    timing->paint_timing->largest_image_paint =
-        ClampDelta(perf.LargestImagePaint(), start);
+  if (perf.LargestImagePaintSize() > 0) {
     timing->paint_timing->largest_image_paint_size =
         perf.LargestImagePaintSize();
-    // LargestImagePaintSize should be available if LargestImagePaint is
-    // available. Note that size can be nonzero while the time is 0 since a time
-    // of 0 is sent when the image is painting. We are intentionally ignoring
-    // these cases, as they should not be reported by the UMA/UKM histograms.
-    DCHECK(perf.LargestImagePaintSize());
+    // Note that size can be nonzero while the time is 0 since a time of 0 is
+    // sent when the image is painting. We assign the time even when it is 0 so
+    // that it's not ignored, but need to be careful when doing operations on
+    // the value.
+    timing->paint_timing->largest_image_paint =
+        perf.LargestImagePaint() == 0.0
+            ? base::TimeDelta()
+            : ClampDelta(perf.LargestImagePaint(), start);
   }
-  if (perf.LargestTextPaint() > 0.0) {
+  if (perf.LargestTextPaintSize() > 0) {
     timing->paint_timing->largest_text_paint =
-        ClampDelta(perf.LargestTextPaint(), start);
+        perf.LargestTextPaint() == 0.0
+            ? base::TimeDelta()
+            : ClampDelta(perf.LargestTextPaint(), start);
     timing->paint_timing->largest_text_paint_size = perf.LargestTextPaintSize();
     // LargestTextPaint and LargestTextPaintSize should be available at the
     // same time. This is a renderer side DCHECK to ensure this.
-    DCHECK(perf.LargestTextPaintSize());
+    DCHECK(perf.LargestTextPaint());
   }
   if (perf.ParseStart() > 0.0)
     timing->parse_timing->parse_start = ClampDelta(perf.ParseStart(), start);

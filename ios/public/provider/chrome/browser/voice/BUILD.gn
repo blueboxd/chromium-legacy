@@ -16,9 +16,7 @@ source_set("voice") {
     "voice_search_provider.h",
     "voice_search_provider.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("test_support") {

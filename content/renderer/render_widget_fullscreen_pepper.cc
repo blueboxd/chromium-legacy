@@ -293,7 +293,6 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     : RenderWidget(routing_id,
                    compositor_deps,
                    /*display_mode=*/blink::mojom::DisplayMode::kUndefined,
-                   /*is_undead=*/false,
                    /*hidden=*/false,
                    /*never_composited=*/false,
                    std::move(widget_receiver)),

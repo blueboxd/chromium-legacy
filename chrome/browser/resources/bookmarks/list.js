@@ -43,7 +43,7 @@ Polymer({
      */
     displayedList_: {
       type: Array,
-      value: function() {
+      value() {
         // Use an empty list during initialization so that the databinding to
         // hide #list takes effect.
         return [];
@@ -78,7 +78,7 @@ Polymer({
     'open-command-menu': 'onOpenCommandMenu_',
   },
 
-  attached: function() {
+  attached() {
     const list = /** @type {IronListElement} */ (this.$.list);
     list.scrollTarget = this;
 
@@ -106,13 +106,13 @@ Polymer({
     });
   },
 
-  detached: function() {
+  detached() {
     document.removeEventListener(
         'highlight-items', this.boundOnHighlightItems_);
   },
 
   /** @return {HTMLElement} */
-  getDropTarget: function() {
+  getDropTarget() {
     return /** @type {!HTMLDivElement} */ (this.$.message);
   },
 
@@ -161,7 +161,7 @@ Polymer({
   },
 
   /** @private */
-  onDisplayedListSourceChange_: function() {
+  onDisplayedListSourceChange_() {
     this.scrollTop = 0;
   },
 
@@ -170,7 +170,7 @@ Polymer({
    * @param {string} itemId
    * @private
    */
-  scrollToId_: function(itemId) {
+  scrollToId_(itemId) {
     const index = this.displayedIds_.indexOf(itemId);
     const list = this.$.list;
     if (index >= 0 && index < list.firstVisibleIndex ||
@@ -180,7 +180,7 @@ Polymer({
   },
 
   /** @private */
-  emptyListMessage_: function() {
+  emptyListMessage_() {
     let emptyListMessage = 'noSearchResults';
     if (!this.searchTerm_) {
       emptyListMessage =
@@ -192,12 +192,12 @@ Polymer({
   },
 
   /** @private */
-  isEmptyList_: function() {
+  isEmptyList_() {
     return this.displayedList_.length === 0;
   },
 
   /** @private */
-  deselectItems_: function() {
+  deselectItems_() {
     this.dispatch(deselectItems());
   },
 
@@ -205,7 +205,7 @@ Polymer({
    * @param{HTMLElement} el
    * @private
    */
-  getIndexForItemElement_: function(el) {
+  getIndexForItemElement_(el) {
     return this.$.list.modelForElement(el).index;
   },
 
@@ -213,7 +213,7 @@ Polymer({
    * @param {!CustomEvent<{source: !MenuSource}>} e
    * @private
    */
-  onOpenCommandMenu_: function(e) {
+  onOpenCommandMenu_(e) {
     // If the item is not visible, scroll to it before rendering the menu.
     if (e.detail.source === MenuSource.ITEM) {
       this.scrollToId_(
@@ -227,7 +227,7 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onHighlightItems_: function(e) {
+  onHighlightItems_(e) {
     // Ensure that we only select items which are actually being displayed.
     // This should only matter if an unrelated update to the bookmark model
     // happens with the perfect timing to end up in a tracked batch update.
@@ -254,7 +254,7 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onItemKeydown_: function(e) {
+  onItemKeydown_(e) {
     let handled = true;
     const list = this.$.list;
     let focusMoved = false;
@@ -335,7 +335,7 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onContextMenu_: function(e) {
+  onContextMenu_(e) {
     e.preventDefault();
     this.deselectItems_();
 
@@ -352,7 +352,7 @@ Polymer({
    * @return {number}
    * @private
    */
-  getAriaRowindex_: function(index) {
+  getAriaRowindex_(index) {
     return index + 1;
   },
 });

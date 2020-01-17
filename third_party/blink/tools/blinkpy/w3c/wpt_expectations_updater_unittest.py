@@ -394,8 +394,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             })
 
     def test_create_line_dict_with_manual_tests(self):
-        # In this example, there are three unexpected results for wpt tests.
-        # The new test expectation lines are sorted by test, and then specifier.
+        # In this example, there are two manual tests that should be skipped.
         updater = WPTExpectationsUpdater(self.mock_host())
         results = {
             'virtual/foo/external/wpt/test/aa-manual.html': {
@@ -409,6 +408,22 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                 'virtual/foo/external/wpt/test/aa-manual.html': [
                     'crbug.com/test [ Trusty ] virtual/foo/external/wpt/test/aa-manual.html [ Skip ]',
                     'crbug.com/test [ Mac10.11 ] virtual/foo/external/wpt/test/aa-manual.html [ Skip ]',
+                ],
+            })
+
+    def test_create_line_dict_with_asterisks(self):
+        # Literal asterisks in test names need to be escaped in expectations.
+        updater = WPTExpectationsUpdater(self.mock_host())
+        results = {
+            'external/wpt/html/dom/interfaces.https.html?exclude=(Document.*|HTML.*)': {
+                'test-linux-trusty': SimpleTestResult(expected='PASS', actual='FAIL', bug='crbug.com/test'),
+            },
+        }
+        self.assertEqual(
+            updater.create_line_dict(results),
+            {
+                'external/wpt/html/dom/interfaces.https.html?exclude=(Document.*|HTML.*)': [
+                    'crbug.com/test [ Trusty ] external/wpt/html/dom/interfaces.https.html?exclude=(Document.\*|HTML.\*) [ Failure ]',
                 ],
             })
 

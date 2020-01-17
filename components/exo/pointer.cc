@@ -34,6 +34,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/window_util.h"
 #include "chromeos/constants/chromeos_features.h"
 #endif
 
@@ -285,9 +286,15 @@ bool Pointer::ConstrainPointer(PointerConstraintDelegate* delegate) {
   // namespace only exists in chromeos builds). So we do not compile pointer
   // lock support unless we are on chromeos.
 #if defined(OS_CHROMEOS)
-  if (!base::FeatureList::IsEnabled(chromeos::features::kExoPointerLock))
+  Surface* constrained_surface = delegate->GetConstrainedSurface();
+  // Pointer lock should be enabled for ARC by default. The kExoPointerLock
+  // should only apply to Crostini windows.
+  bool is_arc_window = ash::window_util::IsArcWindow(
+      constrained_surface->window()->GetToplevelWindow());
+  if (!is_arc_window &&
+      !base::FeatureList::IsEnabled(chromeos::features::kExoPointerLock))
     return false;
-  bool success = EnablePointerCapture(delegate->GetConstrainedSurface());
+  bool success = EnablePointerCapture(constrained_surface);
   if (success)
     pointer_constraint_delegate_ = delegate;
   return success;

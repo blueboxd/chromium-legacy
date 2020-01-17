@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
-import org.chromium.chrome.browser.ui.widget.ClipDrawableProgressBar.DrawingInfo;
+import org.chromium.components.browser_ui.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -47,9 +47,6 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
     /** A LayoutRenderHost for accessing drawing information about the toolbar. */
     private LayoutRenderHost mRenderHost;
 
-    /** The static Y offset for the cases where there is a another cc layer above the toolbar. */
-    private int mStaticYOffset;
-
     /**
      * @param context An Android context to use.
      * @param provider A LayoutProvider for accessing the current layout.
@@ -60,14 +57,6 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         mContext = context;
         mLayoutProvider = provider;
         mRenderHost = renderHost;
-    }
-
-    /**
-     * Set a static Y offset for the toolbar.
-     * @param staticYOffset The Y offset in pixels.
-     */
-    public void setStaticYOffset(int staticYOffset) {
-        mStaticYOffset = staticYOffset;
     }
 
     /**
@@ -108,11 +97,15 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                         fullscreenManager.getTab(), browserControlsBackgroundColor);
 
         int textBoxResourceId = R.drawable.modern_location_bar;
+        // The content offset is passed to the toolbar layer so that it can position itself at the
+        // bottom of the space available for top controls. The main reason for using content offset
+        // instead of top controls offset is that top controls can have a greater height than that
+        // of the toolbar, e.g. when status indicator is visible, and the toolbar needs to be
+        // positioned at the bottom of the top controls regardless of the total height.
         ToolbarSceneLayerJni.get().updateToolbarLayer(mNativePtr, ToolbarSceneLayer.this,
                 resourceManager, R.id.control_container, browserControlsBackgroundColor,
                 textBoxResourceId, browserControlsUrlBarAlpha, textBoxColor,
-                fullscreenManager.getTopControlOffset() + mStaticYOffset, windowHeight, useTexture,
-                showShadow);
+                fullscreenManager.getContentOffset(), windowHeight, useTexture, showShadow);
 
         if (mProgressBarDrawingInfo == null) return;
         ToolbarSceneLayerJni.get().updateProgressBar(mNativePtr, ToolbarSceneLayer.this,
@@ -231,7 +224,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 long nativeToolbarSceneLayer, ToolbarSceneLayer caller, SceneLayer contentTree);
         void updateToolbarLayer(long nativeToolbarSceneLayer, ToolbarSceneLayer caller,
                 ResourceManager resourceManager, int resourceId, int toolbarBackgroundColor,
-                int urlBarResourceId, float urlBarAlpha, int urlBarColor, float topOffset,
+                int urlBarResourceId, float urlBarAlpha, int urlBarColor, float contentOffset,
                 float viewHeight, boolean visible, boolean showShadow);
         void updateProgressBar(long nativeToolbarSceneLayer, ToolbarSceneLayer caller,
                 int progressBarX, int progressBarY, int progressBarWidth, int progressBarHeight,

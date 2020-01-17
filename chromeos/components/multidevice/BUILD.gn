@@ -47,9 +47,7 @@ static_library("test_support") {
     "remote_device_test_util.h",
   ]
 
-  public_deps = [
-    ":multidevice",
-  ]
+  public_deps = [ ":multidevice" ]
 
   deps = [
     "//base",

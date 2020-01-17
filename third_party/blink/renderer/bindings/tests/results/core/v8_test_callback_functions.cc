@@ -340,14 +340,4 @@ TestCallbackFunctions* V8TestCallbackFunctions::ToImplWithTypeCheck(
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestCallbackFunctions* NativeValueTraits<TestCallbackFunctions>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestCallbackFunctions* native_value = V8TestCallbackFunctions::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestCallbackFunctions"));
-  }
-  return native_value;
-}
-
 }  // namespace blink

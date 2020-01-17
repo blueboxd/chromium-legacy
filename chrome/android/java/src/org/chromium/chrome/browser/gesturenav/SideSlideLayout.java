@@ -53,7 +53,7 @@ public class SideSlideLayout extends ViewGroup {
 
     private static final float DECELERATE_INTERPOLATION_FACTOR = 2f;
 
-    private static final int SCALE_DOWN_DURATION_MS = 400;
+    private static final int SCALE_DOWN_DURATION_MS = 600;
     private static final int ANIMATE_TO_START_DURATION_MS = 500;
 
     // Minimum number of pull updates necessary to trigger a side nav.
@@ -115,11 +115,7 @@ public class SideSlideLayout extends ViewGroup {
         public void onAnimationEnd(Animation animation) {
             mArrowView.setFaded(false, false);
             mArrowView.setVisibility(View.INVISIBLE);
-            if (mNavigating) {
-                if (mListener != null) mListener.onNavigate(mIsForward);
-            } else {
-                reset();
-            }
+            if (!mNavigating) reset();
             hideCloseIndicator();
         }
     };
@@ -195,6 +191,9 @@ public class SideSlideLayout extends ViewGroup {
     }
 
     private void startHidingAnimation(AnimationListener listener) {
+        // Start animation and navigation simultaneously.
+        if (mNavigating && mListener != null) mListener.onNavigate(mIsForward);
+
         // ScaleAnimation needs to be created again if the arrow widget width changes over time
         // (due to turning on/off close indicator) to set the right x pivot point.
         if (mHidingAnimation == null || mAnimationViewWidth != mArrowViewWidth) {

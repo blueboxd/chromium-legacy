@@ -117,7 +117,8 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(switches::kDisableNotifications);
   cl->AppendSwitch(switches::kDisableSpeechSynthesisAPI);
   cl->AppendSwitch(switches::kDisableSpeechAPI);
-  cl->AppendSwitch(switches::kDisablePermissionsAPI);
+  if (!cl->HasSwitch(switches::kWebLayerFakePermissions))
+    cl->AppendSwitch(switches::kDisablePermissionsAPI);
   cl->AppendSwitch(switches::kDisablePresentationAPI);
   cl->AppendSwitch(switches::kDisableRemotePlaybackAPI);
 #if defined(OS_ANDROID)

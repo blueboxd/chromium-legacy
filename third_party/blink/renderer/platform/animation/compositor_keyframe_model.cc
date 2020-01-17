@@ -90,9 +90,8 @@ double CompositorKeyframeModel::TimeOffset() const {
   return keyframe_model_->time_offset().InSecondsF();
 }
 
-void CompositorKeyframeModel::SetTimeOffset(double monotonic_time) {
-  keyframe_model_->set_time_offset(
-      base::TimeDelta::FromSecondsD(monotonic_time));
+void CompositorKeyframeModel::SetTimeOffset(base::TimeDelta monotonic_time) {
+  keyframe_model_->set_time_offset(monotonic_time);
 }
 
 blink::CompositorKeyframeModel::Direction

@@ -390,7 +390,7 @@ void OverviewGrid::Shutdown() {
 }
 
 void OverviewGrid::PrepareForOverview() {
-  if (!ShouldAnimateWallpaper())
+  if (!ShouldAnimateWallpaper(root_window_))
     MaybeInitDesksWidget();
 
   for (const auto& window : window_list_)
@@ -967,25 +967,6 @@ void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
     window->OnStartingAnimationComplete();
 }
 
-bool OverviewGrid::ShouldAnimateWallpaper() const {
-  // Never animate when doing app dragging or when immediately exiting.
-  const auto enter_exit_type = overview_session_->enter_exit_overview_type();
-  if (enter_exit_type ==
-          OverviewSession::EnterExitOverviewType::kImmediateEnter ||
-      enter_exit_type ==
-          OverviewSession::EnterExitOverviewType::kImmediateExit) {
-    return false;
-  }
-
-  // If one of the windows covers the workspace, we do not need to animate.
-  for (const auto& overview_item : window_list_) {
-    if (CanCoverAvailableWorkspace(overview_item->GetWindow()))
-      return false;
-  }
-
-  return true;
-}
-
 void OverviewGrid::CalculateWindowListAnimationStates(
     OverviewItem* selected_item,
     OverviewSession::OverviewTransition transition,
@@ -1520,7 +1501,7 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
   // Get the bounds of the window if there is a snapped window or a window
   // about to be snapped.
   base::Optional<gfx::RectF> split_view_bounds =
-      GetSplitviewBoundsMaintainingAspectRatio(item->GetWindow());
+      GetSplitviewBoundsMaintainingAspectRatio();
   if (!split_view_bounds) {
     item->set_unclipped_size(base::nullopt);
     return width;

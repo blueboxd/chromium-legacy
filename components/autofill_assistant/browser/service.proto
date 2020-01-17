@@ -974,6 +974,7 @@ message UseCreditCardProto {
       CREDIT_CARD_CARD_HOLDER_NAME = 5;
       CREDIT_CARD_NUMBER = 6;
       CREDIT_CARD_EXP_MM_YY = 7;
+      CREDIT_CARD_NETWORK = 8;
     }
 
     optional CardField card_field = 1;
@@ -1322,6 +1323,8 @@ message DateTimeRangeProto {
   optional string start_label = 5;
   // The label of the end date/time value (e.g., 'Return').
   optional string end_label = 6;
+  // The error to show if the date range is invalid.
+  optional string invalid_error_message = 7;
 }
 
 // A section showing a simple text message.

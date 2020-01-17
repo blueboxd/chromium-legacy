@@ -42,12 +42,12 @@ Polymer({
     this.landingViewProxy_ = LandingViewProxyImpl.getInstance();
   },
 
-  onRouteEnter: function() {
+  onRouteEnter() {
     this.finalized_ = false;
     this.landingViewProxy_.recordPageShown();
   },
 
-  onRouteUnload: function() {
+  onRouteUnload() {
     // Clicking on 'Returning user' will change the URL.
     if (this.finalized_) {
       return;
@@ -57,7 +57,7 @@ Polymer({
   },
 
   /** @private */
-  onExistingUserClick_: function() {
+  onExistingUserClick_() {
     this.finalized_ = true;
     this.landingViewProxy_.recordExistingUser();
     if (this.signinAllowed_) {
@@ -69,7 +69,7 @@ Polymer({
   },
 
   /** @private */
-  onNewUserClick_: function() {
+  onNewUserClick_() {
     this.finalized_ = true;
     this.landingViewProxy_.recordNewUser();
     navigateTo(Routes.NEW_USER, 1);

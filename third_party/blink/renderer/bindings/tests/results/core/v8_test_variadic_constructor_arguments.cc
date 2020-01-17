@@ -164,14 +164,4 @@ TestVariadicConstructorArguments* V8TestVariadicConstructorArguments::ToImplWith
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestVariadicConstructorArguments* NativeValueTraits<TestVariadicConstructorArguments>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestVariadicConstructorArguments* native_value = V8TestVariadicConstructorArguments::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestVariadicConstructorArguments"));
-  }
-  return native_value;
-}
-
 }  // namespace blink

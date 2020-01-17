@@ -63,18 +63,6 @@ HandleResourceRequestWithPlaintextMimeType(
 // Browser tests with Lite mode not enabled.
 class DataSaverSiteBreakdownMetricsObserverBrowserTestBase
     : public InProcessBrowserTest {
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{features::kLazyImageLoading,
-          {{"automatic-lazy-load-images-enabled", "true"},
-           {"enable-lazy-load-images-metadata-fetch", "true"},
-           {"lazy_image_first_k_fully_load", "4G:0"}}},
-         {features::kLazyFrameLoading,
-          {{"automatic-lazy-load-frames-enabled", "true"}}}},
-        {});
-    InProcessBrowserTest::SetUp();
-  }
-
  protected:
   // Gets the data usage recorded against the host the embedded server runs on.
   uint64_t GetDataUsage(const std::string& host) {
@@ -114,9 +102,6 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTestBase
         ->PostTask(FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Browser tests with Lite mode enabled.
@@ -137,14 +122,39 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
         data_reduction_proxy::switches::kEnableDataReductionProxy);
     command_line->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
   }
+};
 
-  void ScrollToAndWaitForScroll(unsigned int scroll_offset) {
-    ASSERT_TRUE(content::ExecuteScript(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        base::StringPrintf("window.scrollTo(0, %d);", scroll_offset)));
-    content::RenderFrameSubmissionObserver observer(
-        browser()->tab_strip_model()->GetActiveWebContents());
-    observer.WaitForScrollOffset(gfx::Vector2dF(0, scroll_offset));
+class LazyLoadWithoutLiteModeBrowserTest
+    : public DataSaverSiteBreakdownMetricsObserverBrowserTestBase {
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kLazyImageLoading,
+          {{"automatic-lazy-load-images-enabled", "true"},
+           {"enable-lazy-load-images-metadata-fetch", "true"},
+           {"lazy_image_first_k_fully_load", "4G:0"}}},
+         {features::kLazyFrameLoading,
+          {{"automatic-lazy-load-frames-enabled", "true"}}}},
+        {});
+    DataSaverSiteBreakdownMetricsObserverBrowserTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class LazyLoadWithLiteModeBrowserTest
+    : public DataSaverSiteBreakdownMetricsObserverBrowserTest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kLazyImageLoading,
+          {{"automatic-lazy-load-images-enabled", "true"},
+           {"enable-lazy-load-images-metadata-fetch", "true"},
+           {"lazy_image_first_k_fully_load", "4G:0"}}},
+         {features::kLazyFrameLoading,
+          {{"automatic-lazy-load-frames-enabled", "true"}}}},
+        {});
+    DataSaverSiteBreakdownMetricsObserverBrowserTest::SetUp();
   }
 
   // Navigates to |url| waiting until |expected_resources| are received and then
@@ -211,7 +221,125 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
     return GetDataSavings(test_url.HostNoBrackets()) -
            data_savings_before_navigation;
   }
+
+ private:
+  void ScrollToAndWaitForScroll(unsigned int scroll_offset) {
+    ASSERT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::StringPrintf("window.scrollTo(0, %d);", scroll_offset)));
+    content::RenderFrameSubmissionObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    observer.WaitForScrollOffset(gfx::Vector2dF(0, scroll_offset));
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+struct SaveDataSavingsEstimate {
+  std::string host;
+  std::string data_savings_percent;
+};
+
+struct SaveDataSingleTestCase {
+  std::string test_host;
+  double expected_savings_percent;
+};
+
+std::string ConvertSaveDataSavingsEstimateToJson(
+    std::vector<SaveDataSavingsEstimate> estimates,
+    const net::EmbeddedTestServer& embedded_test_server) {
+  std::string origin_savings_estimate_json;
+  for (const auto& estimate : estimates) {
+    base::StringAppendF(&origin_savings_estimate_json, "\"%s\": %s,",
+                        embedded_test_server.GetURL(estimate.host, "/")
+                            .GetOrigin()
+                            .spec()
+                            .c_str(),
+                        estimate.data_savings_percent.c_str());
+  }
+  origin_savings_estimate_json.pop_back();
+  return "{" + origin_savings_estimate_json + "}";
+}
+
+struct SaveDataTestCase {
+  // One of the origin_savings_estimate fields will be populated.
+  std::string origin_savings_estimate_raw_json;
+  std::vector<SaveDataSavingsEstimate> origin_savings_estimate_list;
+
+  std::vector<SaveDataSingleTestCase> tests;
+} kSaveDataTestCases[] = {
+    // No savings recorded without field trial config.
+    {"", {}, {{"foo.com", 0.0}}},
+
+    // No savings recorded with invalid field trial parameter.
+    {"invalid json", {}, {{"foo.com", 0.0}}},
+
+    {"",
+     {{"saving.com", "10"}},
+     {{{"saving.com", 10.0}, {"notsaving.com", 0.0}}}},
+
+    {"",
+     {{"saving.com", "20"}, {"savingfloatingpoint.edu", "15.7"}},
+     {{{"saving.com", 20.0},
+       {"savingfloatingpoint.edu", 15.7},
+       {"notsaving.com", 0.0}}}}
+
+};
+
+// Browser tests with Lite mode not enabled.
+class SaveDataSavingsEstimateBrowserTest
+    : public DataSaverSiteBreakdownMetricsObserverBrowserTest,
+      public ::testing::WithParamInterface<SaveDataTestCase> {
+ public:
+  void SetUp() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+    const std::string estimates_json =
+        !GetParam().origin_savings_estimate_raw_json.empty()
+            ? GetParam().origin_savings_estimate_raw_json
+            : (!GetParam().origin_savings_estimate_list.empty()
+                   ? ConvertSaveDataSavingsEstimateToJson(
+                         GetParam().origin_savings_estimate_list,
+                         *embedded_test_server())
+                   : "");
+    if (!estimates_json.empty()) {
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {{data_reduction_proxy::features::kReportSaveDataSavings,
+            {{"origin_savings_estimate", estimates_json}}}},
+          {});
+    }
+    DataSaverSiteBreakdownMetricsObserverBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(SaveDataSavingsEstimateBrowserTest,
+                         SaveDataSavingsEstimateBrowserTest,
+                         ::testing::ValuesIn(kSaveDataTestCases));
+
+IN_PROC_BROWSER_TEST_P(SaveDataSavingsEstimateBrowserTest,
+                       NavigateToSimplePage) {
+  WaitForDBToInitialize();
+
+  for (const auto& test : GetParam().tests) {
+    GURL test_url(
+        embedded_test_server()->GetURL(test.test_host, "/google/google.html"));
+    std::string host = test_url.HostNoBrackets();
+    uint64_t data_usage_before_navigation = GetDataUsage(host);
+    uint64_t data_savings_before_navigation = GetDataSavings(host);
+    ui_test_utils::NavigateToURL(browser(), test_url);
+
+    base::RunLoop().RunUntilIdle();
+    // Navigate away to force the histogram recording.
+    ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+    double data_savings_percent =
+        100.0 * (GetDataSavings(host) - data_savings_before_navigation) /
+        (GetDataUsage(host) - data_usage_before_navigation);
+    EXPECT_NEAR(data_savings_percent, test.expected_savings_percent, 0.01);
+  }
+}
 
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
                        NavigateToSimplePage) {
@@ -278,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
                       data_usage_before_navigation);
 }
 
-IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
                        LazyLoadImagesCSSBackgroundImage) {
   // 2 deferred images.
   EXPECT_EQ(10000 * 2,
@@ -286,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
                                       2 /* main html, favicon */));
 }
 
-IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
                        LazyLoadImagesCSSBackgroundImageScrollRemovesSavings) {
   // Scrolling should remove the savings.
   EXPECT_EQ(0u, NavigateAndGetDataSavingsAfterScroll(
@@ -294,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
                     2 /* lazyloaded images */));
 }
 
-IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
                        LazyLoadImagesImgElement) {
   // Choose reasonable minimum, any savings is indicative of the mechanism
   // working.
@@ -305,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
         10 /* main html, favicon, 8 images (2 eager, 4 placeholder, 2 full)*/));
 }
 
-IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
                        LazyLoadImagesImgElementScrollRemovesSavings) {
   // Choose reasonable minimum, any savings is indicative of the mechanism
   // working.
@@ -314,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
                                                     2 /* lazyloaded image */));
 }
 
-IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
                        LazyLoadImagesImgWithDimension) {
   // 1 deferred image.
   EXPECT_EQ(10000,
@@ -322,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
                                       3 /* main html, favicon, full image */));
 }
 
-IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
                        LazyLoadImagesImgWithDimensionScrollRemovesSavings) {
   // Scrolling should remove the savings.
   EXPECT_EQ(0u, NavigateAndGetDataSavingsAfterScroll(
@@ -330,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
                     1 /* lazyloaded image */));
 }
 
-IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTestBase,
+IN_PROC_BROWSER_TEST_F(LazyLoadWithoutLiteModeBrowserTest,
                        NoSavingsRecordedWithoutLiteMode) {
   std::vector<std::string> test_urls = {
       "/google/google.html",
@@ -354,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTestBase,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
                        LazyLoadImageDisabledInReload) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WaitForDBToInitialize();
@@ -396,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
+IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
                        DISABLED_LazyLoadFrameDisabledInReload) {
   net::EmbeddedTestServer cross_origin_server;
   cross_origin_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());

@@ -28,7 +28,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
@@ -37,6 +36,7 @@ import org.chromium.chrome.browser.feed.library.api.client.lifecycle.AppLifecycl
 import org.chromium.chrome.browser.feed.library.api.host.network.NetworkClient;
 import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryContentStorage;
 import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryJournalStorage;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;

@@ -30,18 +30,14 @@ if (optimize_webui) {
     ]
     excludes = [ "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom.html" ]
 
-    deps = [
-      ":unpak",
-    ]
+    deps = [ ":unpak" ]
   }
 
   unpak("unpak") {
     pak_file = settings_pak_file
     out_folder = unpak_folder
 
-    deps = [
-      ":flattened_resources",
-    ]
+    deps = [ ":flattened_resources" ]
   }
 
   grit("flattened_resources") {
@@ -114,10 +110,13 @@ js_type_check("settings_resources") {
     ":extension_control_browser_proxy",
     ":global_scroll_target_behavior",
     ":lifetime_browser_proxy",
+    ":metrics_browser_proxy",
     ":open_window_proxy",
     ":page_visibility",
     ":route",
+    ":router",
     ":search_settings",
+    ":settings_routes",
   ]
 }
 
@@ -131,22 +130,23 @@ js_library("extension_control_browser_proxy") {
 
 js_library("global_scroll_target_behavior") {
   deps = [
-    ":route",
+    ":router",
     "//ui/webui/resources/js:cr",
   ]
 }
 
 js_library("lifetime_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
+  externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("metrics_browser_proxy") {
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
 js_library("open_window_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("route") {

@@ -73,7 +73,7 @@ class OSCrypt {
       const std::string& ciphertext,
       std::string* plaintext);
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN)
   // Registers preferences used by OSCrypt.
   static COMPONENT_EXPORT(OS_CRYPT) void RegisterLocalPrefs(
       PrefRegistrySimple* registry);

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TESTING_LIBFUZZER_PROTO_JSON_PROTO_CONVERTER_H
-#define TESTING_LIBFUZZER_PROTO_JSON_PROTO_CONVERTER_H
-
-#include "json.pb.h"
+#ifndef TESTING_LIBFUZZER_PROTO_JSON_PROTO_CONVERTER_H_
+#define TESTING_LIBFUZZER_PROTO_JSON_PROTO_CONVERTER_H_
 
 #include <sstream>
 #include <string>
+
+#include "testing/libfuzzer/proto/json.pb.h"
 
 namespace json_proto {
 
@@ -27,4 +27,4 @@ class JsonProtoConverter {
 
 }  // namespace json_proto
 
-#endif  // TESTING_LIBFUZZER_PROTO_JSON_PROTO_CONVERTER_H
+#endif  // TESTING_LIBFUZZER_PROTO_JSON_PROTO_CONVERTER_H_

@@ -48,10 +48,8 @@ class NavigationManager {
     const newGroup = this.node_.asRootNode();
     if (newGroup) {
       this.groupStack_.push(this.group_);
-      this.group_ = newGroup;
+      this.setGroup_(newGroup);
     }
-
-    this.setNode_(this.group_.firstChild);
   }
 
   /**
@@ -120,6 +118,13 @@ class NavigationManager {
     }
 
     this.setNode_(this.node_.next);
+  }
+
+  /**
+   * Updates the focus ring locations in response to an automation event.
+   */
+  refreshFocusRings() {
+    this.focusRingManager_.setFocusNodes(this.node_, this.group_);
   }
 
   /**
@@ -230,18 +235,19 @@ class NavigationManager {
     }
 
     this.groupStack_ = [];
-    this.group_ = RootNodeWrapper.buildDesktopTree(this.desktop_);
+    let group = RootNodeWrapper.buildDesktopTree(this.desktop_);
     while (ancestorList.length > 0) {
       let ancestor = ancestorList.pop();
       if (ancestor.role === chrome.automation.RoleType.DESKTOP) {
         continue;
       }
 
-      if (SwitchAccessPredicate.isGroup(ancestor, this.group_)) {
-        this.groupStack_.push(this.group_);
-        this.group_ = RootNodeWrapper.buildTree(ancestor);
+      if (SwitchAccessPredicate.isGroup(ancestor, group)) {
+        this.groupStack_.push(group);
+        group = RootNodeWrapper.buildTree(ancestor);
       }
     }
+    this.setGroup_(group, false /* shouldSetNode */);
   }
 
   /**
@@ -255,17 +261,21 @@ class NavigationManager {
 
     this.group_.onExit();
 
+    let group = this.groupStack_.pop();
     // Find a group that is still valid.
-    do {
-      this.group_ = this.groupStack_.pop();
-    } while (!this.group_.isValid() && this.groupStack_.length);
+    while (!group.isValidGroup() && this.groupStack_.length) {
+      group = this.groupStack_.pop();
+    }
 
-    this.setNode_(this.group_.firstChild);
+    this.setGroup_(group);
   }
 
 
   /** @private */
   init_() {
+    this.group_.onFocus();
+    this.node_.onFocus();
+
     if (SwitchAccess.get().prefsAreReady()) {
       this.onPrefsReady();
     }
@@ -293,8 +303,7 @@ class NavigationManager {
     this.menuManager_.exit();
 
     this.groupStack_.push(this.group_);
-    this.group_ = group;
-    this.setNode_(this.group_.firstChild);
+    this.setGroup_(group);
   }
 
   /**
@@ -328,11 +337,11 @@ class NavigationManager {
    * @private
    */
   moveToValidNode_() {
-    if (this.node_.role && this.group_.isValid()) {
+    if (this.node_.isValidAndVisible() && this.group_.isValidGroup()) {
       return;
     }
 
-    if (this.node_.role) {
+    if (this.node_.isValidAndVisible()) {
       // Our group has been invalidated. Move to this node to repair the group
       // stack.
       const node = this.node_.automationNode;
@@ -342,7 +351,7 @@ class NavigationManager {
       }
     }
 
-    if (this.group_.isValid()) {
+    if (this.group_.isValidGroup()) {
       const group = this.group_.automationNode;
       if (group) {
         this.moveTo_(group);
@@ -351,7 +360,7 @@ class NavigationManager {
     }
 
     for (let group of this.groupStack_) {
-      if (group.isValid()) {
+      if (group.isValidGroup()) {
         group = group.automationNode;
         if (group) {
           this.moveTo_(group);
@@ -361,9 +370,23 @@ class NavigationManager {
     }
 
     // If there is no valid node in the group stack, go to the desktop.
-    this.group_ = RootNodeWrapper.buildDesktopTree(this.desktop_);
-    this.node_ = this.group_.firstChild;
+    this.setGroup_(RootNodeWrapper.buildDesktopTree(this.desktop_));
     this.groupStack_ = [];
+  }
+
+  /**
+   * Set |this.group_| to |group|.
+   * @param {!SARootNode} group
+   * @param {boolean} shouldSetNode
+   */
+  setGroup_(group, shouldSetNode = true) {
+    this.group_.onUnfocus();
+    this.group_ = group;
+    this.group_.onFocus();
+
+    if (shouldSetNode) {
+      this.setNode_(this.group_.firstChild);
+    }
   }
 
   /**

@@ -25,7 +25,6 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/content_security_policy/csp_context.h"
-#include "content/common/content_security_policy_header.h"
 #include "content/common/frame_delete_intention.h"
 #include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
@@ -53,7 +52,6 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
-#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
@@ -64,6 +62,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -129,16 +128,16 @@ IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDirective::Name,
-                          content::CSPDirective::NameLast)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CSPDirectiveName,
+                          network::mojom::CSPDirectiveName::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyFeature,
                           blink::mojom::FeaturePolicyFeature::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDisposition,
                           content::CSPDisposition::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::TriggeringEventInfo,
                           blink::TriggeringEventInfo::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::UserActivationUpdateType,
-                          blink::UserActivationUpdateType::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::UserActivationUpdateType,
+                          blink::mojom::UserActivationUpdateType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::MediaPlayerAction::Type,
                           blink::MediaPlayerAction::Type::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyDisposition,
@@ -426,6 +425,10 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // A token that has been passed by the browser process when it asked the
   // renderer process to commit the navigation.
   IPC_STRUCT_MEMBER(base::UnguessableToken, navigation_token)
+
+  // An embedding token used to signify the relationship between the frame and
+  // its parent. This is populated for cross-document navigations in a subframe.
+  IPC_STRUCT_MEMBER(base::Optional<base::UnguessableToken>, embedding_token)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)
@@ -588,7 +591,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ContentSecurityPolicy)
   IPC_STRUCT_TRAITS_MEMBER(use_reporting_api)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::ContentSecurityPolicyHeader)
+IPC_STRUCT_TRAITS_BEGIN(network::mojom::ContentSecurityPolicyHeader)
   IPC_STRUCT_TRAITS_MEMBER(header_value)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(source)
@@ -742,10 +745,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,
                     std::string /* name */,
                     std::string /* unique_name */)
 
-// Updates replicated ContentSecurityPolicy in a frame proxy.
-IPC_MESSAGE_ROUTED1(FrameMsg_AddContentSecurityPolicies,
-                    std::vector<content::ContentSecurityPolicyHeader>)
-
 // Update a proxy's replicated enforcement of insecure request policy.
 // Used when the frame's policy is changed in another process.
 IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureRequestPolicy,
@@ -815,18 +814,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_AdvanceFocus,
 IPC_MESSAGE_ROUTED1(FrameMsg_AdvanceFocusInForm,
                     blink::WebFocusType /* direction for advancing focus */)
 
-// Copies the image at location x, y to the clipboard (if there indeed is an
-// image at that location).
-IPC_MESSAGE_ROUTED2(FrameMsg_CopyImageAt,
-                    int /* x */,
-                    int /* y */)
-
-// Saves the image at location x, y to the disk (if there indeed is an
-// image at that location).
-IPC_MESSAGE_ROUTED2(FrameMsg_SaveImageAt,
-                    int /* x */,
-                    int /* y */)
-
 // Notify the renderer of our overlay routing token.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetOverlayRoutingToken,
                     base::UnguessableToken /* routing_token */)
@@ -842,23 +829,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SetPepperVolume,
                     int32_t /* pp_instance */,
                     double /* volume */)
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
-
-// Notifies a parent frame that the child frame requires information about
-// whether it is occluded or has visual effects applied.
-IPC_MESSAGE_ROUTED1(FrameMsg_SetNeedsOcclusionTracking,
-                    bool /* needs_tracking */)
-
-// Tells the frame to update the user activation state in appropriate part of
-// the frame tree (ancestors for activation notification and all nodes for
-// consumption).
-IPC_MESSAGE_ROUTED1(FrameMsg_UpdateUserActivationState,
-                    blink::UserActivationUpdateType /* type of state update */)
-
-// Updates the renderer with a list of unique WebFeature values representing
-// Blink features used, performed or encountered by the browser during the
-// current page load happening on the frame.
-IPC_MESSAGE_ROUTED1(FrameMsg_BlinkFeatureUsageReport,
-                    std::set<blink::mojom::WebFeature>) /* features */
 
 // Informs the renderer that mixed content was found by the browser. The
 // included data is used for instance to report to the CSP policy and to log to
@@ -1155,8 +1125,9 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_UpdateRenderThrottlingStatus,
 // Indicates that the user activation state in the current frame has been
 // updated, so the replicated states need to be synced (in the browser process
 // as well as in all other renderer processes).
-IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateUserActivationState,
-                    blink::UserActivationUpdateType /* type of state update */)
+IPC_MESSAGE_ROUTED1(
+    FrameHostMsg_UpdateUserActivationState,
+    blink::mojom::UserActivationUpdateType /* type of state update */)
 
 // Transfers user activation state from the source frame to the current frame.
 IPC_MESSAGE_ROUTED1(FrameMsg_TransferUserActivationFrom,

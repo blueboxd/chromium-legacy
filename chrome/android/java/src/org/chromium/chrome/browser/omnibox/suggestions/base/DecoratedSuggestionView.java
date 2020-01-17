@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.RoundedCornerImageView;
+import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
 
 /**
  * Container view for omnibox suggestions supplying icon decoration.

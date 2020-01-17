@@ -27,13 +27,16 @@ class FakeCompositorFrameReportingController
   FakeCompositorFrameReportingController& operator=(
       const FakeCompositorFrameReportingController& controller) = delete;
 
-  void WillBeginMainFrame() override;
-  void BeginMainFrameAborted() override;
+  void WillBeginMainFrame(const viz::BeginFrameId& id) override;
+  void BeginMainFrameAborted(const viz::BeginFrameId& id) override;
   void WillCommit() override;
   void DidCommit() override;
   void WillActivate() override;
   void DidActivate() override;
-  void DidSubmitCompositorFrame(uint32_t frame_token) override;
+  void DidSubmitCompositorFrame(
+      uint32_t frame_token,
+      const viz::BeginFrameId& current_frame_id,
+      const viz::BeginFrameId& last_activated_frame_id) override;
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const viz::FrameTimingDetails& details) override;

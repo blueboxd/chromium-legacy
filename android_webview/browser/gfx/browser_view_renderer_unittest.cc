@@ -679,7 +679,7 @@ class DidReachMaximalScrollOffsetTest : public RenderingTest {
     gfx::Vector2dF total_scroll_offset = kTotalScrollOffset;
     gfx::Vector2dF total_max_scroll_offset = kTotalMaxScrollOffset;
     gfx::SizeF scrollable_size = kScrollableSize;
-    // When --use-zoom-for-dsf is enabled, these value are in physical pixel.
+    // When --use-zoom-for-dsf is enabled, these values are in physical pixels.
     if (content::IsUseZoomForDSFEnabled()) {
       total_scroll_offset.Scale(kDipScale);
       total_max_scroll_offset.Scale(kDipScale);

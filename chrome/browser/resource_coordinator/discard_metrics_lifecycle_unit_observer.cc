@@ -90,15 +90,13 @@ void DiscardMetricsLifecycleUnitObserver::OnReload() {
 
   // TODO(fdoray): All discard histograms should have a reason suffix.
   switch (discard_reason_) {
-    case LifecycleUnitStateChangeReason::BROWSER_INITIATED:
-      RecordReloadAfterDiscardHistograms("Proactive");
-      break;
     case LifecycleUnitStateChangeReason::SYSTEM_MEMORY_PRESSURE:
       RecordReloadAfterDiscardHistograms("Urgent");
       break;
     case LifecycleUnitStateChangeReason::EXTENSION_INITIATED:
       RecordReloadAfterDiscardHistograms("Extension");
       break;
+    case LifecycleUnitStateChangeReason::BROWSER_INITIATED:
     default:
       NOTREACHED();
       break;

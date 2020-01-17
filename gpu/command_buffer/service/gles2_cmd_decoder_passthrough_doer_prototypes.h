@@ -1141,4 +1141,6 @@ error::Error DoCreateAndTexStorage2DSharedImageINTERNAL(
 error::Error DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id,
                                                     GLenum mode);
 error::Error DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id);
+error::Error DoBeginBatchReadAccessSharedImageCHROMIUM(void);
+error::Error DoEndBatchReadAccessSharedImageCHROMIUM(void);
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_PASSTHROUGH_DOER_PROTOTYPES_H_

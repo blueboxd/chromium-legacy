@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "components/handoff/pref_names_ios.h"
-#include "components/payments/core/payment_prefs.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -46,7 +45,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeOtherDevicesHandoff = kItemTypeEnumZero,
-  ItemTypeWebServicesPaymentSwitch,
   ItemTypeClearBrowsingDataClear,
   // Footer to suggest the user to open Sync and Google services settings.
   ItemTypeClearBrowsingDataFooter,
@@ -82,8 +80,7 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
-  self = [super initWithTableViewStyle:style
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:style];
   if (self) {
     _browserState = browserState;
     self.title =
@@ -120,8 +117,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
   // Web Services Section
   [model addSectionWithIdentifier:SectionIdentifierWebServices];
   [model addItem:[self handoffDetailItem]
-      toSectionWithIdentifier:SectionIdentifierWebServices];
-  [model addItem:[self canMakePaymentItem]
       toSectionWithIdentifier:SectionIdentifierWebServices];
 
   // Clear Browsing Section
@@ -166,25 +161,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
                        detailText:nil];
 }
 
-- (TableViewItem*)canMakePaymentItem {
-  SettingsSwitchItem* canMakePaymentItem = [[SettingsSwitchItem alloc]
-      initWithType:ItemTypeWebServicesPaymentSwitch];
-  canMakePaymentItem.text =
-      l10n_util::GetNSString(IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL);
-  canMakePaymentItem.on = [self isCanMakePaymentEnabled];
-  return canMakePaymentItem;
-}
-
-- (BOOL)isCanMakePaymentEnabled {
-  return _browserState->GetPrefs()->GetBoolean(
-      payments::kCanMakePaymentEnabled);
-}
-
-- (void)setCanMakePaymentEnabled:(BOOL)isEnabled {
-  _browserState->GetPrefs()->SetBoolean(payments::kCanMakePaymentEnabled,
-                                        isEnabled);
-}
-
 - (TableViewDetailIconItem*)detailItemWithType:(NSInteger)type
                                        titleId:(NSInteger)titleId
                                     detailText:(NSString*)detailText {
@@ -196,25 +172,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
   detailItem.accessibilityTraits |= UIAccessibilityTraitButton;
 
   return detailItem;
-}
-
-#pragma mark - UITableViewDataSource
-
-- (UITableViewCell*)tableView:(UITableView*)tableView
-        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
-  UITableViewCell* cell =
-      [super tableView:tableView cellForRowAtIndexPath:indexPath];
-
-  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
-
-  if (itemType == ItemTypeWebServicesPaymentSwitch) {
-    SettingsSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
-    [switchCell.switchView addTarget:self
-                              action:@selector(canMakePaymentSwitchChanged:)
-                    forControlEvents:UIControlEventValueChanged];
-  }
-  return cell;
 }
 
 #pragma mark - UITableViewDelegate
@@ -252,7 +209,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
       controller = clearBrowsingDataViewController;
       break;
     }
-    case ItemTypeWebServicesPaymentSwitch:
     default:
       break;
   }
@@ -278,25 +234,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
       base::mac::ObjCCastStrict<SettingsNavigationController>(
           self.navigationController);
   [navigationController closeSettings];
-}
-
-#pragma mark - Actions
-
-- (void)canMakePaymentSwitchChanged:(UISwitch*)sender {
-  NSIndexPath* switchPath =
-      [self.tableViewModel indexPathForItemType:ItemTypeWebServicesPaymentSwitch
-                              sectionIdentifier:SectionIdentifierWebServices];
-
-  SettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<SettingsSwitchItem>(
-          [self.tableViewModel itemAtIndexPath:switchPath]);
-  SettingsSwitchCell* switchCell =
-      base::mac::ObjCCastStrict<SettingsSwitchCell>(
-          [self.tableView cellForRowAtIndexPath:switchPath]);
-
-  DCHECK_EQ(switchCell.switchView, sender);
-  switchItem.on = sender.isOn;
-  [self setCanMakePaymentEnabled:sender.isOn];
 }
 
 #pragma mark - PrefObserverDelegate

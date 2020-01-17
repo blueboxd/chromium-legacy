@@ -233,7 +233,7 @@ Polymer({
   discardsDetailsProvider_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.setSortKey('origin');
     this.requestedOrigins_ = {};
     this.discardsDetailsProvider_ = getOrCreateDetailsProvider();
@@ -256,7 +256,7 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     // Clear the update timers to avoid memory leaks.
     clearInterval(this.updateTableTimer_);
     this.updateTableTimer_ = 0;
@@ -268,7 +268,7 @@ Polymer({
    * Issues a request for the data and renders on response.
    * @private
    */
-  updateDbRows_: function() {
+  updateDbRows_() {
     this.discardsDetailsProvider_
         .getSiteCharacteristicsDatabase(Object.keys(this.requestedOrigins_))
         .then(response => {
@@ -291,7 +291,7 @@ Polymer({
    * Adds the current new origin to requested origins and starts an update.
    * @private
    */
-  addNewOrigin_: function() {
+  addNewOrigin_() {
     this.requestedOrigins_[this.newOrigin_] = true;
     this.newOrigin_ = '';
     this.updateDbRows_();
@@ -302,7 +302,7 @@ Polymer({
    * origins.
    * @private
    */
-  onAddOriginClick_: function() {
+  onAddOriginClick_() {
     this.addNewOrigin_();
 
     // Set the focus back to the input field for convenience.
@@ -313,7 +313,7 @@ Polymer({
    * A key-down handler that adds the current new origin to requested origins.
    * @private
    */
-  onOriginKeydown_: function(e) {
+  onOriginKeydown_(e) {
     if (e.key === 'Enter' && this.isValidOrigin_(this.newOrigin_)) {
       this.addNewOrigin_();
       e.stopPropagation();
@@ -324,7 +324,7 @@ Polymer({
    * Issues a request for the database sizes and renders on response.
    * @private
    */
-  updateDbSizes_: function() {
+  updateDbSizes_() {
     this.discardsDetailsProvider_.getSiteCharacteristicsDatabaseSize().then(
         response => {
           // Bail if the SiteCharacteristicsDatabase is turned off.
@@ -346,7 +346,7 @@ Polymer({
    *     number if a > b.
    * @private
    */
-  computeSortFunction_: function(sortKey, sortReverse) {
+  computeSortFunction_(sortKey, sortReverse) {
     // Polymer 2 may invoke multi-property observers before all properties
     // are defined.
     if (!sortKey) {
@@ -365,7 +365,7 @@ Polymer({
    * @return {boolean} Whether the origin is valid.
    * @private
    */
-  isValidOrigin_: function(origin) {
+  isValidOrigin_(origin) {
     const re = /(https?|ftp):\/\/[a-z+.]/;
 
     return re.test(origin);
@@ -376,7 +376,7 @@ Polymer({
    * @return {boolean} Whether the origin is valid or empty.
    * @private
    */
-  isEmptyOrValidOrigin_: function(origin) {
+  isEmptyOrValidOrigin_(origin) {
     return !origin || this.isValidOrigin_(origin);
   },
 
@@ -385,7 +385,7 @@ Polymer({
    * @return {string} A display string representing value.
    * @private
    */
-  boolToString_: function(value) {
+  boolToString_(value) {
     return boolToString(value);
   },
 
@@ -396,7 +396,7 @@ Polymer({
    *     occurred.
    * @private
    */
-  lastUseToString_: function(time) {
+  lastUseToString_(time) {
     const nowSecondsFromEpoch = Math.round(Date.now() / 1000);
     return durationToString(nowSecondsFromEpoch - time);
   },
@@ -407,7 +407,7 @@ Polymer({
    * @return {string} A human-readable string representing the feature.
    * @private
    */
-  featureToString_: function(feature) {
+  featureToString_(feature) {
     if (!feature) {
       return 'N/A';
     }
@@ -432,7 +432,7 @@ Polymer({
    *     unavailable.
    * @private
    */
-  getLoadTimeEstimate_: function(item, propertyName) {
+  getLoadTimeEstimate_(item, propertyName) {
     return formatLoadTimeEstimate(item, propertyName);
   },
 
@@ -442,7 +442,7 @@ Polymer({
    * @return {string} A human readable string representing value.
    * @private
    */
-  kilobytesToString_: function(value) {
+  kilobytesToString_(value) {
     return value == -1 ? 'N/A' : kilobytesToString(value);
   },
 
@@ -451,7 +451,7 @@ Polymer({
    * @return {string} A human readable string representing value.
    * @private
    */
-  optionalIntegerToString_: function(value) {
+  optionalIntegerToString_(value) {
     return value == -1 ? 'N/A' : value.toString();
   },
 });

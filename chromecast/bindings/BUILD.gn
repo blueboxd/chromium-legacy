@@ -9,9 +9,7 @@ if (is_fuchsia) {
 }
 
 source_set("named_message_port_connector_resources") {
-  data = [
-    "resources/named_message_port_connector.js",
-  ]
+  data = [ "resources/named_message_port_connector.js" ]
 }
 
 grit("bindings_resources") {
@@ -28,12 +26,8 @@ source_set("bindings_manager") {
     "bindings_manager.cc",
     "bindings_manager.h",
   ]
-  deps = [
-    "//base",
-  ]
-  public_deps = [
-    "//mojo/public/cpp/bindings",
-  ]
+  deps = [ "//base" ]
+  public_deps = [ "//mojo/public/cpp/bindings" ]
 }
 
 if (is_fuchsia) {
@@ -50,9 +44,7 @@ if (is_fuchsia) {
       "//fuchsia/base:message_port",
     ]
 
-    public_deps = [
-      ":bindings_manager",
-    ]
+    public_deps = [ ":bindings_manager" ]
   }
 }
 
@@ -71,26 +63,18 @@ if (is_linux || is_android) {
       "//third_party/blink/public/common",
     ]
 
-    data = [
-      "named_message_port_connector.js",
-    ]
+    data = [ "named_message_port_connector.js" ]
 
-    public_deps = [
-      ":bindings_manager",
-    ]
+    public_deps = [ ":bindings_manager" ]
   }
 
   source_set("browsertests_cast") {
     testonly = true
-    sources = [
-      "bindings_manager_cast_browsertest.cc",
-    ]
+    sources = [ "bindings_manager_cast_browsertest.cc" ]
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-    data = [
-      "//chromecast/bindings/testdata",
-    ]
+    data = [ "//chromecast/bindings/testdata" ]
 
     deps = [
       "//base",

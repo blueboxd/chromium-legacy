@@ -130,8 +130,6 @@ class LayerTreeHostImplClient {
   virtual void SetNeedsCommitOnImplThread() = 0;
   virtual void SetNeedsPrepareTilesOnImplThread() = 0;
   virtual void SetVideoNeedsBeginFrames(bool needs_begin_frames) = 0;
-  virtual void PostAnimationEventsToMainThreadOnImplThread(
-      std::unique_ptr<MutatorEvents> events) = 0;
   virtual bool IsInsideDraw() = 0;
   virtual void RenewTreePriority() = 0;
   virtual void PostDelayedAnimationTaskOnImplThread(base::OnceClosure task,
@@ -343,7 +341,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       CommitEarlyOutReason reason,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises,
       const viz::BeginFrameArgs& args);
-  virtual void ReadyToCommit() {}  // For tests.
+  virtual void ReadyToCommit(const viz::BeginFrameArgs& commit_args);
   virtual void BeginCommit();
   virtual void CommitComplete();
   virtual void UpdateAnimationState(bool start_ready_animations);
@@ -549,6 +547,14 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   }
 
   uint32_t next_frame_token() const { return *next_frame_token_; }
+
+  // Buffers |callback| until a relevant frame swap ocurrs, at which point the
+  // callback will be posted to run on the main thread. A frame swap is
+  // considered relevant if the swapped frame's token is greater than or equal
+  // to |frame_token|.
+  void RegisterMainThreadPresentationTimeCallback(
+      uint32_t frame_token,
+      LayerTreeHost::PresentationTimeCallback callback);
 
   // Buffers |callback| until a relevant frame swap ocurrs, at which point the
   // callback will be run on the compositor thread. A frame swap is considered
@@ -775,6 +781,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   void QueueImageDecode(int request_id, const PaintImage& image);
   std::vector<std::pair<int, bool>> TakeCompletedImageDecodeRequests();
+  // Returns mutator events to be handled by BeginMainFrame.
+  std::unique_ptr<MutatorEvents> TakeMutatorEvents();
 
   void ClearCaches();
 
@@ -1174,6 +1182,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   gfx::Rect viewport_damage_rect_;
 
   std::unique_ptr<MutatorHost> mutator_host_;
+  std::unique_ptr<MutatorEvents> mutator_events_;
   std::set<VideoFrameController*> video_frame_controllers_;
 
   // Map from scroll element ID to scrollbar animation controller.

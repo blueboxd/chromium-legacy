@@ -9,13 +9,16 @@
 namespace blink {
 
 RTCPeerConnectionIceErrorEvent* RTCPeerConnectionIceErrorEvent::Create(
+    const String& address,
+    base::Optional<uint16_t> port,
     const String& host_candidate,
     const String& url,
     int error_code,
     const String& txt) {
   DCHECK(error_code > 0 && error_code <= USHRT_MAX);
   return MakeGarbageCollected<RTCPeerConnectionIceErrorEvent>(
-      host_candidate, url, static_cast<uint16_t>(error_code), txt);
+      address, port, host_candidate, url, static_cast<uint16_t>(error_code),
+      txt);
 }
 
 RTCPeerConnectionIceErrorEvent* RTCPeerConnectionIceErrorEvent::Create(
@@ -26,6 +29,8 @@ RTCPeerConnectionIceErrorEvent* RTCPeerConnectionIceErrorEvent::Create(
 }
 
 RTCPeerConnectionIceErrorEvent::RTCPeerConnectionIceErrorEvent(
+    const String& address,
+    base::Optional<uint16_t> port,
     const String& host_candidate,
     const String& url,
     uint16_t error_code,
@@ -33,6 +38,8 @@ RTCPeerConnectionIceErrorEvent::RTCPeerConnectionIceErrorEvent(
     : Event(event_type_names::kIcecandidateerror,
             Bubbles::kNo,
             Cancelable::kNo),
+      address_(address),
+      port_(port),
       host_candidate_(host_candidate),
       url_(url),
       error_code_(error_code),
@@ -42,12 +49,23 @@ RTCPeerConnectionIceErrorEvent::RTCPeerConnectionIceErrorEvent(
     const AtomicString& type,
     const RTCPeerConnectionIceErrorEventInit* initializer)
     : Event(type, initializer),
+      address_(initializer->address()),
+      port_(initializer->port()),
       host_candidate_(initializer->hostCandidate()),
       url_(initializer->url()),
       error_code_(initializer->errorCode()),
       error_text_(initializer->statusText()) {}
 
 RTCPeerConnectionIceErrorEvent::~RTCPeerConnectionIceErrorEvent() = default;
+
+String RTCPeerConnectionIceErrorEvent::address() const {
+  return address_;
+}
+
+uint16_t RTCPeerConnectionIceErrorEvent::port(bool& is_null) const {
+  is_null = !port_.has_value();
+  return is_null ? uint16_t() : port_.value();
+}
 
 String RTCPeerConnectionIceErrorEvent::hostCandidate() const {
   return host_candidate_;

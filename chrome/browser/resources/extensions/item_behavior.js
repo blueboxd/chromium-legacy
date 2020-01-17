@@ -12,7 +12,7 @@ export const ItemBehavior = {
    * @param {string} extensionLabel
    * @return {string} The app or extension label depending on |type|.
    */
-  appOrExtension: function(type, appLabel, extensionLabel) {
+  appOrExtension(type, appLabel, extensionLabel) {
     const ExtensionType = chrome.developerPrivate.ExtensionType;
     switch (type) {
       case ExtensionType.HOSTED_APP:

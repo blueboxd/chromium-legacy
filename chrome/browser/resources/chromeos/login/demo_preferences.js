@@ -52,7 +52,7 @@ Polymer({
   configuration_applied_: false,
 
   /** Called when dialog is shown */
-  onBeforeShow: function() {
+  onBeforeShow() {
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
@@ -61,7 +61,7 @@ Polymer({
   },
 
   /** Called when dialog is shown for the first time */
-  applyOobeConfiguration_: function() {
+  applyOobeConfiguration_() {
     if (this.configuration_applied_)
       return;
     var configuration = Oobe.getInstance().getOobeConfiguration();
@@ -74,7 +74,7 @@ Polymer({
   },
 
   /** Called after resources are updated. */
-  updateLocalizedContent: function() {
+  updateLocalizedContent() {
     assert(loadTimeData);
     var languageList = /** @type {!Array<OobeTypes.LanguageDsc>} */ (
         loadTimeData.getValue('languageList'));
@@ -95,7 +95,7 @@ Polymer({
    * Sets selected keyboard.
    * @param {string} keyboardId
    */
-  setSelectedKeyboard: function(keyboardId) {
+  setSelectedKeyboard(keyboardId) {
     var found = false;
     for (var keyboard of this.keyboards) {
       if (keyboard.value != keyboardId) {
@@ -117,7 +117,7 @@ Polymer({
    * @param {!Array<!OobeTypes.LanguageDsc>} languages
    * @private
    */
-  setLanguageList_: function(languages) {
+  setLanguageList_(languages) {
     this.languages = languages;
   },
 
@@ -126,7 +126,7 @@ Polymer({
    * @param {!Array<!OobeTypes.IMEDsc>} inputMethods
    * @private
    */
-  setInputMethods_: function(inputMethods) {
+  setInputMethods_(inputMethods) {
     this.keyboards = inputMethods;
   },
 
@@ -135,7 +135,7 @@ Polymer({
    * @param {!Array<!OobeTypes.DemoCountryDsc>} countries
    * @private
    */
-  setCountryList_: function(countries) {
+  setCountryList_(countries) {
     this.countries = countries;
     this.$.countryDropdownContainer.hidden = countries.length == 0;
   },
@@ -145,7 +145,7 @@ Polymer({
    * @param {!CustomEvent<!OobeTypes.LanguageDsc>} event
    * @private
    */
-  onLanguageSelected_: function(event) {
+  onLanguageSelected_(event) {
     var item = event.detail;
     var languageId = item.value;
     this.screen.onLanguageSelected_(languageId);
@@ -156,7 +156,7 @@ Polymer({
    * @param {!CustomEvent<!OobeTypes.IMEDsc>} event
    * @private
    */
-  onKeyboardSelected_: function(event) {
+  onKeyboardSelected_(event) {
     var item = event.detail;
     var inputMethodId = item.value;
     this.screen.onKeyboardSelected_(inputMethodId);
@@ -167,7 +167,7 @@ Polymer({
    * @param {!CustomEvent<!OobeTypes.DemoCountryDsc>} event
    * @private
    */
-  onCountrySelected_: function(event) {
+  onCountrySelected_(event) {
     this.screen.onCountrySelected_(event.detail.value);
   },
 
@@ -175,7 +175,7 @@ Polymer({
    * Back button click handler.
    * @private
    */
-  onBackClicked_: function() {
+  onBackClicked_() {
     chrome.send('login.DemoPreferencesScreen.userActed', ['close-setup']);
   },
 
@@ -183,7 +183,7 @@ Polymer({
    * Next button click handler.
    * @private
    */
-  onNextClicked_: function() {
+  onNextClicked_() {
     chrome.send('login.DemoPreferencesScreen.userActed', ['continue-setup']);
   },
 

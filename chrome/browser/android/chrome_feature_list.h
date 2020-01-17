@@ -84,7 +84,7 @@ extern const base::Feature kImmersiveUiMode;
 extern const base::Feature kImprovedA2HS;
 extern const base::Feature kInlineUpdateFlow;
 extern const base::Feature kIntentBlockExternalFormRedirectsNoGesture;
-extern const base::Feature kJellyBeanSupported;
+extern const base::Feature kKitKatSupported;
 extern const base::Feature kLanguagesPreference;
 extern const base::Feature kNewPhotoPicker;
 extern const base::Feature kNotificationSuspender;

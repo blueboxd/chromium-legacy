@@ -1,0 +1,28 @@
+<!doctype html>
+<title>Navigating to a text fragment activates a lock</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<meta name="timeout" content="long">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/testdriver.js"></script>
+<script src="/resources/testdriver-vendor.js"></script>
+<script src="/common/utils.js"></script>
+<script src="text-fragment-helper.js"></script>
+
+<script>
+const fragment = '#:~:text=lockedtext';
+promise_test(t => new Promise((resolve, reject) => {
+    const key = token();
+    test_driver.bless("Open a URL with a text fragment directive", () => {
+      window.open(`text-fragment-navigation-activates-target.html?key=${key}${fragment}`,
+                  '_blank',
+                  'noopener');
+    });
+    fetchResults(key, resolve, reject);
+}).then(data => {
+  assert_equals(data.scrollPosition, "text");
+  assert_equals(data.target, "text");
+}), "Fragment navigation with render-subtree");
+</script>
+

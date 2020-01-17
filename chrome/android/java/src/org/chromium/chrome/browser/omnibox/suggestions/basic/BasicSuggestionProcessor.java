@@ -12,8 +12,8 @@ import android.text.TextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -213,7 +213,6 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
                 !suggestion.isUrlSuggestion()
                         || suggestionType == OmniboxSuggestionType.CLIPBOARD_IMAGE
                         || suggestionType == OmniboxSuggestionType.CLIPBOARD_TEXT);
-        model.set(SuggestionViewProperties.SUGGESTION_TYPE, suggestion.getType());
         model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT, textLine1);
         model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT, textLine2);
         fetchSuggestionFavicon(model, suggestion.getUrl(), suggestion.getType());

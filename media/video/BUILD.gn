@@ -50,9 +50,7 @@ source_set("video") {
     ]
   }
 
-  public_deps = [
-    "//gpu/command_buffer/client:gles2_interface",
-  ]
+  public_deps = [ "//gpu/command_buffer/client:gles2_interface" ]
 
   deps = [
     "//gpu/command_buffer/client",
@@ -131,9 +129,7 @@ source_set("unit_tests") {
 }
 
 fuzzer_test("media_h264_parser_fuzzer") {
-  sources = [
-    "h264_parser_fuzzertest.cc",
-  ]
+  sources = [ "h264_parser_fuzzertest.cc" ]
   deps = [
     "//base",
     "//media",

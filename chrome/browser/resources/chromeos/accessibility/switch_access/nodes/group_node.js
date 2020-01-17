@@ -90,6 +90,16 @@ class GroupNode extends SAChildNode {
   }
 
   /** @override */
+  isValidAndVisible() {
+    for (const child of this.children_) {
+      if (child.isValidAndVisible()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** @override */
   performAction(action) {
     return true;
   }

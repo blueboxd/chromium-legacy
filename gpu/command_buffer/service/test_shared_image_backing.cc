@@ -115,7 +115,7 @@ class TestSharedImageRepresentationOverlay
                                        MemoryTypeTracker* tracker)
       : SharedImageRepresentationOverlay(manager, backing, tracker) {}
 
-  void BeginReadAccess() override {}
+  bool BeginReadAccess() override { return true; }
   void EndReadAccess() override {}
   gl::GLImage* GetGLImage() override { return nullptr; }
 

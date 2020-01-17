@@ -750,6 +750,8 @@ class Browser : public TabStripModelObserver,
                           content::WebContents* new_contents) override;
   void PortalWebContentsCreated(
       content::WebContents* portal_web_contents) override;
+  void WebContentsBecamePortal(
+      content::WebContents* portal_web_contents) override;
   void RendererUnresponsive(
       content::WebContents* source,
       content::RenderWidgetHost* render_widget_host,

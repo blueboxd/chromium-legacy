@@ -148,11 +148,13 @@ TEST_F(WindowPerformanceTest, NavigateAway) {
   EXPECT_TRUE(ObservingLongTasks());
 
   // Simulate navigation commit.
-  DocumentInit init = DocumentInit::Create().WithDocumentLoader(
-      GetFrame()->Loader().GetDocumentLoader());
+  DocumentInit init =
+      DocumentInit::Create()
+          .WithDocumentLoader(GetFrame()->Loader().GetDocumentLoader())
+          .WithTypeFrom("text/html");
   GetDocument()->Shutdown();
   GetFrame()->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*GetFrame()));
-  GetFrame()->DomWindow()->InstallNewDocument(AtomicString(), init, false);
+  GetFrame()->DomWindow()->InstallNewDocument(init, false);
 
   // m_performance is still alive, and should not crash when notified.
   SimulateDidProcessLongTask();
@@ -181,8 +183,10 @@ TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
   // Simulate changing the document while keeping the window.
   page_holder->GetDocument().Shutdown();
   page_holder->GetFrame().DomWindow()->InstallNewDocument(
-      AtomicString(),
-      DocumentInit::Create().WithDocumentLoader(document_loader), false);
+      DocumentInit::Create()
+          .WithDocumentLoader(document_loader)
+          .WithTypeFrom("text/html"),
+      false);
 
   EXPECT_EQ(perf, DOMWindowPerformance::performance(
                       *page_holder->GetFrame().DomWindow()));

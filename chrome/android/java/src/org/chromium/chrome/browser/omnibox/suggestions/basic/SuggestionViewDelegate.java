@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
-import android.widget.TextView;
 
 /**
  * Handler for actions that happen on suggestion view.
@@ -30,11 +29,4 @@ public interface SuggestionViewDelegate {
      * @param timestamp the timestamp for the ACTION_UP event.
      */
     void onGestureUp(long timestamp);
-
-    /**
-     * @param line1 The TextView containing the line 1 text whose padding is being calculated.
-     * @param maxTextWidth The maximum width the text can occupy.
-     * @return any additional padding to be applied to the start of the first line of text.
-     */
-    int getAdditionalTextLine1StartPadding(TextView line1, int maxTextWidth);
 }

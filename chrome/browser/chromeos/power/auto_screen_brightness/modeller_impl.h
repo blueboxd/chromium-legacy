@@ -127,7 +127,8 @@ class ModellerImpl : public Modeller,
   // Returns ModelSavingSpec used to store models. It also creates intermediate
   // directories if they do not exist. The returned paths will be empty on
   // failures.
-  static ModelSavingSpec GetModelSavingSpecFromProfile(const Profile* profile);
+  static ModelSavingSpec GetModelSavingSpecFromProfilePath(
+      const base::FilePath& profile_path);
 
  private:
   // ModellerImpl has weak dependencies on all parameters except |trainer|.

@@ -234,6 +234,8 @@ bool ThemePainterDefault::PaintTextField(const Node* node,
   Color background_color =
       style.VisitedDependentColor(GetCSSPropertyBackgroundColor());
   extra_params.text_field.background_color = background_color.Rgb();
+  extra_params.text_field.auto_complete_active =
+      DynamicTo<HTMLFormControlElement>(node)->IsAutofilled();
 
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartTextField, GetWebThemeState(node),

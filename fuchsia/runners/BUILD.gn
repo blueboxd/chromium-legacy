@@ -58,9 +58,7 @@ source_set("cast_runner_core") {
     "cast/named_message_port_connector.cc",
     "cast/named_message_port_connector.h",
   ]
-  data_deps = [
-    "//chromecast/bindings:named_message_port_connector_resources",
-  ]
+  data_deps = [ "//chromecast/bindings:named_message_port_connector_resources" ]
   deps = [
     "//base",
     "//fuchsia/base",
@@ -78,9 +76,7 @@ source_set("cast_runner_core") {
 }
 
 executable("cast_runner_exe") {
-  sources = [
-    "cast/main.cc",
-  ]
+  sources = [ "cast/main.cc" ]
   deps = [
     ":buildflags",
     ":cast_runner_core",
@@ -115,9 +111,7 @@ source_set("cast_runner_test_core") {
     "cast/test_api_bindings.cc",
     "cast/test_api_bindings.h",
   ]
-  deps = [
-    ":cast_runner_core",
-  ]
+  deps = [ ":cast_runner_core" ]
   public_deps = [
     "//base",
     "//fuchsia:cast_fidl",
@@ -128,9 +122,7 @@ source_set("cast_runner_test_core") {
 }
 
 test("cast_runner_unittests") {
-  sources = [
-    "cast/application_controller_impl_unittest.cc",
-  ]
+  sources = [ "cast/application_controller_impl_unittest.cc" ]
   deps = [
     ":cast_runner_core",
     ":cast_runner_test_core",
@@ -146,12 +138,8 @@ test("cast_runner_unittests") {
 }
 
 test("cast_runner_integration_tests") {
-  sources = [
-    "cast/cast_runner_integration_test.cc",
-  ]
-  data = [
-    "cast/testdata",
-  ]
+  sources = [ "cast/cast_runner_integration_test.cc" ]
+  data = [ "cast/testdata" ]
   deps = [
     ":cast_runner_core",
     ":cast_runner_test_core",
@@ -176,9 +164,7 @@ test("cast_runner_browsertests") {
     "cast/named_message_port_connector_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-  data = [
-    "cast/testdata",
-  ]
+  data = [ "cast/testdata" ]
   deps = [
     ":cast_runner_core",
     ":cast_runner_test_core",
@@ -195,9 +181,7 @@ test("cast_runner_browsertests") {
 }
 
 executable("web_runner_exe") {
-  sources = [
-    "web/main.cc",
-  ]
+  sources = [ "web/main.cc" ]
   deps = [
     ":buildflags",
     ":common",
@@ -224,9 +208,7 @@ fuchsia_package_runner("web_runner") {
 }
 
 test("web_runner_integration_tests") {
-  sources = [
-    "web/web_runner_smoke_test.cc",
-  ]
+  sources = [ "web/web_runner_smoke_test.cc" ]
   deps = [
     "//base",
     "//base/test:run_all_unittests",
@@ -250,18 +232,14 @@ test("web_runner_integration_tests") {
 
 if (is_official_build) {
   symbol_archive("cast_runner_symbol_archive") {
-    deps = [
-      ":cast_runner_pkg",
-    ]
+    deps = [ ":cast_runner_pkg" ]
     ids_txt = "$root_gen_dir/fuchsia/runners/cast_runner/ids.txt"
     archive_name =
         "$root_gen_dir/fuchsia/runners/cast_runner/cast_runner.symbols.tar.bz2"
   }
 
   symbol_archive("web_runner_symbol_archive") {
-    deps = [
-      ":web_runner_pkg",
-    ]
+    deps = [ ":web_runner_pkg" ]
     ids_txt = "$root_gen_dir/fuchsia/runners/web_runner/ids.txt"
     archive_name =
         "$root_gen_dir/fuchsia/runners/web_runner/web_runner.symbols.tar.bz2"

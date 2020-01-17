@@ -39,7 +39,7 @@
   // Configure the NavigationBar.
   UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                           target:self
+                           target:self.infobarModalDelegate
                            action:@selector(dismissInfobarModal:)];
   cancelButton.accessibilityIdentifier = kInfobarModalCancelButton;
   UIImage* settingsImage = [[UIImage imageNamed:@"infobar_settings_icon"]
@@ -56,14 +56,6 @@
 - (void)viewDidDisappear:(BOOL)animated {
   [self.infobarModalDelegate modalInfobarWasDismissed:self];
   [super viewDidDisappear:animated];
-}
-
-#pragma mark - Private Methods
-
-- (void)dismissInfobarModal:(UIButton*)sender {
-  [self.infobarModalDelegate dismissInfobarModal:sender
-                                        animated:YES
-                                      completion:nil];
 }
 
 @end

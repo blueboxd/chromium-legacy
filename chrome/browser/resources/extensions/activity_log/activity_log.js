@@ -97,7 +97,7 @@ Polymer({
    * be HISTORY when we navigate to the page.
    * @private
    */
-  onViewEnterStart_: function() {
+  onViewEnterStart_() {
     this.selectedSubpage_ = ActivityLogSubpage.HISTORY;
     afterNextRender(this, () => focusWithoutInk(this.$.closeButton));
   },
@@ -106,7 +106,7 @@ Polymer({
    * Set |selectedSubpage_| to NONE to remove the active view from the DOM.
    * @private
    */
-  onViewExitFinish_: function() {
+  onViewExitFinish_() {
     this.selectedSubpage_ = ActivityLogSubpage.NONE;
     // clear the stream if the user is exiting the activity log page.
     const activityLogStream = this.$$('activity-log-stream');
@@ -119,7 +119,7 @@ Polymer({
    * @private
    * @return {string}
    */
-  getActivityLogHeading_: function() {
+  getActivityLogHeading_() {
     const headingName = this.extensionInfo.isPlaceholder ?
         this.i18n('missingOrUninstalledExtension') :
         this.extensionInfo.name;
@@ -130,7 +130,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  isHistoryTabSelected_: function() {
+  isHistoryTabSelected_() {
     return this.selectedSubpage_ === ActivityLogSubpage.HISTORY;
   },
 
@@ -138,7 +138,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  isStreamTabSelected_: function() {
+  isStreamTabSelected_() {
     return this.selectedSubpage_ === ActivityLogSubpage.STREAM;
   },
 
@@ -147,7 +147,7 @@ Polymer({
    * @param {!ActivityLogSubpage} newTab
    * @param {!ActivityLogSubpage} oldTab
    */
-  onSelectedSubpageChanged_: function(newTab, oldTab) {
+  onSelectedSubpageChanged_(newTab, oldTab) {
     const activityLogStream = this.$$('activity-log-stream');
     if (activityLogStream) {
       if (newTab === ActivityLogSubpage.STREAM) {
@@ -165,7 +165,7 @@ Polymer({
   },
 
   /** @private */
-  onCloseButtonTap_: function() {
+  onCloseButtonTap_() {
     if (this.extensionInfo.isPlaceholder) {
       navigation.navigateTo({page: Page.LIST});
     } else {

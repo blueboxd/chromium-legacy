@@ -11,11 +11,9 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewBinder;
-import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionSpannable;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -27,31 +25,9 @@ public class SuggestionViewViewBinder extends BaseSuggestionViewBinder {
     public void bind(PropertyModel model, BaseSuggestionView view, PropertyKey propertyKey) {
         super.bind(model, view, propertyKey);
 
-        if (BaseSuggestionViewProperties.SUGGESTION_DELEGATE == propertyKey) {
-            SuggestionView content = (SuggestionView) view.getContentView();
-            content.setDelegate(model.get(BaseSuggestionViewProperties.SUGGESTION_DELEGATE));
-        } else if (propertyKey == SuggestionViewProperties.TEXT_LINE_1_TEXT) {
+        if (propertyKey == SuggestionViewProperties.TEXT_LINE_1_TEXT) {
             TextView tv = view.findContentView(R.id.line_1);
             tv.setText(model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT));
-            // Force layout to ensure infinite suggest aligns correctly.
-            // The view may be re-used and may not require re-positioning by itself.
-            // We want to make sure that regardless whether it's a regular text suggestion or
-            // infinite suggest, the position is always accurate.
-            // Without this change, re-layout will not occur for already measured/laid out
-            // suggestion views. This optimizes behavior of all other suggestion types,
-            // but penalizes tail suggestions.
-            @OmniboxSuggestionType
-            int type = model.get(SuggestionViewProperties.SUGGESTION_TYPE);
-            if (type == OmniboxSuggestionType.SEARCH_SUGGEST_TAIL) {
-                tv.requestLayout();
-            }
-        } else if (propertyKey == SuggestionViewProperties.SUGGESTION_TYPE) {
-            @OmniboxSuggestionType
-            int type = model.get(SuggestionViewProperties.SUGGESTION_TYPE);
-            if (type == OmniboxSuggestionType.SEARCH_SUGGEST_TAIL) {
-                TextView tv = view.findContentView(R.id.line_1);
-                tv.requestLayout();
-            }
         } else if (propertyKey == SuggestionCommonProperties.USE_DARK_COLORS) {
             updateSuggestionTextColor(view, model);
         } else if (propertyKey == SuggestionViewProperties.IS_SEARCH_SUGGESTION) {

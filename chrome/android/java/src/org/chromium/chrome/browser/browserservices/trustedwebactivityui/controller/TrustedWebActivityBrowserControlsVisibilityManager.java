@@ -4,18 +4,17 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CloseButtonVisibilityManager;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
+import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -38,25 +37,24 @@ public class TrustedWebActivityBrowserControlsVisibilityManager {
     private final CloseButtonVisibilityManager mCloseButtonVisibilityManager;
 
     private boolean mInTwaMode;
-    private boolean mHideBrowserControlsInTwaMode;
+    private boolean mShowBrowserControlsInTwaMode;
+    private boolean mShowBrowserControlsForChildTab;
+
     private @BrowserControlsState int mBrowserControlsState = DEFAULT_BROWSER_CONTROLS_STATE;
 
-    private final TabObserver mTabObserver = new EmptyTabObserver() {
+    private final CustomTabTabObserver mTabObserver = new CustomTabTabObserver() {
         @Override
         public void onSSLStateUpdated(Tab tab) {
             updateBrowserControlsState();
             updateCloseButtonVisibility();
         }
-    };
 
-    private final CustomTabActivityTabProvider.Observer mActivityTabObserver =
-            new CustomTabActivityTabProvider.Observer() {
-                @Override
-                public void onTabSwapped(@NonNull Tab tab) {
-                    updateBrowserControlsState();
-                    updateCloseButtonVisibility();
-                }
-            };
+        @Override
+        public void onObservingDifferentTab(@Nullable Tab tab) {
+            updateBrowserControlsState();
+            updateCloseButtonVisibility();
+        }
+    };
 
     @Inject
     public TrustedWebActivityBrowserControlsVisibilityManager(
@@ -70,9 +68,9 @@ public class TrustedWebActivityBrowserControlsVisibilityManager {
         mCloseButtonVisibilityManager = closeButtonVisibilityManager;
 
         WebappExtras webappExtras = intentDataProvider.getWebappExtras();
-        mHideBrowserControlsInTwaMode =
-                (webappExtras == null || webappExtras.displayMode == WebDisplayMode.FULLSCREEN
-                        || webappExtras.displayMode == WebDisplayMode.STANDALONE);
+        mShowBrowserControlsForChildTab = (webappExtras != null);
+        mShowBrowserControlsInTwaMode =
+                (webappExtras != null && webappExtras.displayMode == WebDisplayMode.MINIMAL_UI);
     }
 
     /**
@@ -88,10 +86,8 @@ public class TrustedWebActivityBrowserControlsVisibilityManager {
 
         if (mInTwaMode) {
             mTabObserverRegistrar.registerActivityTabObserver(mTabObserver);
-            mTabProvider.addObserver(mActivityTabObserver);
         } else {
             mTabObserverRegistrar.unregisterActivityTabObserver(mTabObserver);
-            mTabProvider.removeObserver(mActivityTabObserver);
         }
     }
 
@@ -114,12 +110,17 @@ public class TrustedWebActivityBrowserControlsVisibilityManager {
         // Show close button if toolbar is not visible, so that during the in and off-scope
         // transitions we avoid button flickering when toolbar is appearing/disappearing.
         boolean closeButtonVisibility =
-                !mInTwaMode || (mBrowserControlsState == BrowserControlsState.HIDDEN);
+                shouldShowBrowserControlsAndCloseButton(mTabProvider.getTab())
+                || (mBrowserControlsState == BrowserControlsState.HIDDEN);
 
         mCloseButtonVisibilityManager.setVisibility(closeButtonVisibility);
     }
 
-    private @BrowserControlsState int computeBrowserControlsState(Tab tab) {
+    private boolean shouldShowBrowserControlsAndCloseButton(@Nullable Tab tab) {
+        return !mInTwaMode || (isChildTab(tab) && mShowBrowserControlsForChildTab);
+    }
+
+    private @BrowserControlsState int computeBrowserControlsState(@Nullable Tab tab) {
         // Force browser controls to show when the security level is dangerous for consistency with
         // TabStateBrowserControlsVisibilityDelegate.
         if (tab != null
@@ -127,7 +128,15 @@ public class TrustedWebActivityBrowserControlsVisibilityManager {
             return BrowserControlsState.SHOWN;
         }
 
-        return mInTwaMode && mHideBrowserControlsInTwaMode ? BrowserControlsState.HIDDEN
-                                                           : BrowserControlsState.BOTH;
+        if (mInTwaMode && mShowBrowserControlsInTwaMode) {
+            return BrowserControlsState.BOTH;
+        }
+
+        return shouldShowBrowserControlsAndCloseButton(tab) ? BrowserControlsState.BOTH
+                                                            : BrowserControlsState.HIDDEN;
+    }
+
+    private boolean isChildTab(@Nullable Tab tab) {
+        return tab != null && tab.getParentId() != Tab.INVALID_TAB_ID;
     }
 }

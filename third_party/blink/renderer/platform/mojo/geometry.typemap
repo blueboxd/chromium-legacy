@@ -32,7 +32,7 @@ public_deps = [
 # TODO(zqzhang): ideally, gfx.mojom.Size should be mapped into ::blink::IntSize.
 # However that introduces an link issue on Windows. See https://crbug.com/653323
 type_mappings = [
-  "gfx.mojom.Point=::blink::WebPoint",
+  "gfx.mojom.Point=::gfx::Point",
   "gfx.mojom.PointF=::gfx::PointF",
   "gfx.mojom.Point3F=::blink::FloatPoint3D",
   "gfx.mojom.Quaternion=::gfx::Quaternion",

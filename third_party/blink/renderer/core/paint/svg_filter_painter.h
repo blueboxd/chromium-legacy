@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class DisplayItemClient;
 class LayoutObject;
 class LayoutSVGResourceFilter;
 
@@ -46,7 +47,9 @@ class SVGFilterPainter {
   // null if the content should not be recorded.
   GraphicsContext* PrepareEffect(const LayoutObject&,
                                  SVGFilterRecordingContext&);
-  void FinishEffect(const LayoutObject&, SVGFilterRecordingContext&);
+  void FinishEffect(const LayoutObject&,
+                    const DisplayItemClient&,
+                    SVGFilterRecordingContext&);
 
  private:
   LayoutSVGResourceFilter& filter_;

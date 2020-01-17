@@ -64,23 +64,23 @@ function versionToDateString(version) {
 function serializeNode(node) {
   return allFields.map(function(field) {
     let fieldVal;
-    if (field == 'SERVER_VERSION_TIME') {
+    if (field === 'SERVER_VERSION_TIME') {
       const version = node['SERVER_VERSION'];
       if (version != null) {
         fieldVal = versionToDateString(version);
       }
     }
-    if (field == 'BASE_VERSION_TIME') {
+    if (field === 'BASE_VERSION_TIME') {
       const version = node['BASE_VERSION'];
       if (version != null) {
         fieldVal = versionToDateString(version);
       }
     } else if (
-        (field == 'SERVER_SPECIFICS' || field == 'SPECIFICS') &&
+        (field === 'SERVER_SPECIFICS' || field === 'SPECIFICS') &&
         (!$('include-specifics').checked)) {
       fieldVal = 'REDACTED';
     } else if (
-        (field == 'SERVER_SPECIFICS' || field == 'SPECIFICS') &&
+        (field === 'SERVER_SPECIFICS' || field === 'SPECIFICS') &&
         $('include-specifics').checked) {
       fieldVal = JSON.stringify(node[field]);
     } else {

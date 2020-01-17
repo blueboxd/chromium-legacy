@@ -20,6 +20,7 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/scenic/scenic_gpu_host.h"
 #include "ui/ozone/platform/scenic/scenic_gpu_service.h"
@@ -118,8 +119,9 @@ class OzonePlatformScenic
   }
 
   std::unique_ptr<InputMethod> CreateInputMethod(
-      internal::InputMethodDelegate* delegate) override {
-    return std::make_unique<InputMethodFuchsia>(delegate);
+      internal::InputMethodDelegate* delegate,
+      gfx::AcceleratedWidget widget) override {
+    return std::make_unique<InputMethodFuchsia>(delegate, widget);
   }
 
   void InitializeUI(const InitParams& params) override {

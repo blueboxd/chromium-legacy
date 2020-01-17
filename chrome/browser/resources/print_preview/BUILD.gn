@@ -32,9 +32,7 @@ if (optimize_webui) {
     pak_file = print_preview_pak_file
     out_folder = unpak_folder
 
-    deps = [
-      ":flattened_resources",
-    ]
+    deps = [ ":flattened_resources" ]
   }
 
   grit("flattened_resources") {
@@ -47,9 +45,7 @@ if (optimize_webui) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
-    deps = [
-      "ui:polymer3_elements",
-    ]
+    deps = [ "ui:polymer3_elements" ]
     defines = chrome_grit_defines
     outputs = [
       "grit/print_preview_resources.h",
@@ -92,9 +88,7 @@ js_library("print_preview_utils") {
 }
 
 js_library("metrics") {
-  deps = [
-    ":native_layer",
-  ]
+  deps = [ ":native_layer" ]
 }
 
 js_library("cloud_print_interface") {
@@ -128,9 +122,7 @@ js_library("cloud_print_interface_js") {
 }
 
 js_library("cloud_print_interface_native") {
-  deps = [
-    ":cloud_print_interface",
-  ]
+  deps = [ ":cloud_print_interface" ]
 }
 
 js_library("native_layer") {
@@ -145,7 +137,5 @@ js_library("native_layer") {
 }
 
 js_library("dark_mode_behavior") {
-  deps = [
-    "//ui/webui/resources/js:assert.m",
-  ]
+  deps = [ "//ui/webui/resources/js:assert.m" ]
 }

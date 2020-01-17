@@ -255,51 +255,6 @@ void BrowserSavePasswordProgressLogger::LogSuccessfulSubmissionIndicatorEvent(
   SendLog(message);
 }
 
-void BrowserSavePasswordProgressLogger::LogFormData(
-    StringID label,
-    const autofill::FormData& form) {
-  std::string message = GetStringFromID(label) + ": {\n";
-  message +=
-      GetStringFromID(STRING_FORM_SIGNATURE) + ": " +
-      FormSignatureToDebugString(autofill::CalculateFormSignature(form)) + "\n";
-  message += GetStringFromID(STRING_ORIGIN) + ": " + ScrubURL(form.url) + "\n";
-  message +=
-      GetStringFromID(STRING_ACTION) + ": " + ScrubURL(form.action) + "\n";
-  if (form.main_frame_origin.GetURL().is_valid())
-    message += GetStringFromID(STRING_MAIN_FRAME_ORIGIN) + ": " +
-               ScrubURL(form.main_frame_origin.GetURL()) + "\n";
-  message += GetStringFromID(STRING_FORM_NAME) + ": " +
-             ScrubElementID(form.name) + "\n";
-
-  message += GetStringFromID(STRING_IS_FORM_TAG) + ": " +
-             (form.is_form_tag ? "true" : "false") + "\n";
-
-  if (form.is_form_tag) {
-    message +=
-        "Form renderer id: " + NumberToString(form.unique_renderer_id) + "\n";
-  }
-
-  // Log fields.
-  message += GetStringFromID(STRING_FIELDS) + ": " + "\n";
-  for (const auto& field : form.fields) {
-    std::string is_visible = field.is_focusable ? "visible" : "invisible";
-    std::string is_empty = field.value.empty() ? "empty" : "non-empty";
-    std::string autocomplete =
-        field.autocomplete_attribute.empty()
-            ? std::string()
-            : (", autocomplete=" +
-               ScrubElementID(field.autocomplete_attribute));
-    std::string field_info =
-        ScrubElementID(field.name) +
-        ": type=" + ScrubElementID(field.form_control_type) +
-        ", renderer_id = " + NumberToString(field.unique_renderer_id) + ", " +
-        is_visible + ", " + is_empty + autocomplete + "\n";
-    message += field_info;
-  }
-  message += "}";
-  SendLog(message);
-}
-
 void BrowserSavePasswordProgressLogger::SendLog(const std::string& log) {
   log_manager_->LogTextMessage(log);
 }

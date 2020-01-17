@@ -82,7 +82,7 @@ PanelMenu.prototype = {
    * @param {string=} opt_id An optional id for the menu item element.
    * @return {!PanelMenuItem} The menu item just created.
    */
-  addMenuItem: function(
+  addMenuItem(
       menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback,
       opt_id) {
     var menuItem = new PanelMenuItem(
@@ -122,7 +122,7 @@ PanelMenu.prototype = {
    *     menu's
    * first item.
    */
-  activate: function(activateFirstItem) {
+  activate(activateFirstItem) {
     this.menuContainerElement.style.visibility = 'visible';
     this.menuContainerElement.style.opacity = 1;
     this.menuBarItemElement.classList.add('active');
@@ -150,7 +150,7 @@ PanelMenu.prototype = {
    * Hide this menu. Make it invisible first to minimize spurious
    * accessibility events before the next menu activates.
    */
-  deactivate: function() {
+  deactivate() {
     this.menuContainerElement.style.opacity = 0.001;
     this.menuBarItemElement.classList.remove('active');
     this.activeIndex_ = -1;
@@ -166,7 +166,7 @@ PanelMenu.prototype = {
    * Make a specific menu item index active.
    * @param {number} itemIndex The index of the menu item.
    */
-  activateItem: function(itemIndex) {
+  activateItem(itemIndex) {
     this.activeIndex_ = itemIndex;
     if (this.activeIndex_ >= 0 && this.activeIndex_ < this.items_.length) {
       this.items_[this.activeIndex_].element.focus();
@@ -177,7 +177,7 @@ PanelMenu.prototype = {
    * Advanced the active menu item index by a given number.
    * @param {number} delta The number to add to the active menu item index.
    */
-  advanceItemBy: function(delta) {
+  advanceItemBy(delta) {
     if (this.activeIndex_ >= 0) {
       this.activeIndex_ += delta;
       this.activeIndex_ =
@@ -196,7 +196,7 @@ PanelMenu.prototype = {
   /**
    * Sets the active menu item index to be 0.
    */
-  scrollToTop: function() {
+  scrollToTop() {
     this.activeIndex_ = 0;
     this.items_[this.activeIndex_].element.focus();
   },
@@ -204,7 +204,7 @@ PanelMenu.prototype = {
   /**
    * Sets the active menu item index to be the last index.
    */
-  scrollToBottom: function() {
+  scrollToBottom() {
     this.activeIndex_ = this.items_.length - 1;
     this.items_[this.activeIndex_].element.focus();
   },
@@ -213,7 +213,7 @@ PanelMenu.prototype = {
    * Get the callback for the active menu item.
    * @return {Function} The callback.
    */
-  getCallbackForCurrentItem: function() {
+  getCallbackForCurrentItem() {
     if (this.activeIndex_ >= 0 && this.activeIndex_ < this.items_.length) {
       return this.items_[this.activeIndex_].callback;
     }
@@ -225,7 +225,7 @@ PanelMenu.prototype = {
    * @param {Element} element The DOM element.
    * @return {Function} The callback.
    */
-  getCallbackForElement: function(element) {
+  getCallbackForElement(element) {
     for (var i = 0; i < this.items_.length; i++) {
       if (element == this.items_[i].element) {
         return this.items_[i].callback;
@@ -237,7 +237,7 @@ PanelMenu.prototype = {
   /**
    * Handles key presses for first letter accelerators.
    */
-  onKeyPress_: function(evt) {
+  onKeyPress_(evt) {
     if (!this.items_.length) {
       return;
     }
@@ -288,7 +288,7 @@ PanelNodeMenu.prototype = {
   __proto__: PanelMenu.prototype,
 
   /** @override */
-  activate: function(activateFirstItem) {
+  activate(activateFirstItem) {
     PanelMenu.prototype.activate.call(this, activateFirstItem);
     if (activateFirstItem) {
       this.activateItem(this.activeIndex_);
@@ -300,7 +300,7 @@ PanelNodeMenu.prototype = {
    * nodes that match the predicate for this menu.
    * @private
    */
-  populate_: function() {
+  populate_() {
     if (!this.node_) {
       this.finish_();
       return;
@@ -313,7 +313,7 @@ PanelNodeMenu.prototype = {
     }
 
     this.walker_ = new AutomationTreeWalker(root, constants.Dir.FORWARD, {
-      visit: function(node) {
+      visit(node) {
         return !AutomationPredicate.shouldIgnoreNode(node);
       }
     });
@@ -332,7 +332,7 @@ PanelNodeMenu.prototype = {
    * it basically freezes up until all of the nodes have been found.
    * @private
    */
-  findMoreNodes_: function() {
+  findMoreNodes_() {
     while (this.walker_.next().node) {
       var node = this.walker_.node;
       if (node == this.node_) {
@@ -376,7 +376,7 @@ PanelNodeMenu.prototype = {
    * found, adds an item to the menu indicating none were found.
    * @private
    */
-  finish_: function() {
+  finish_() {
     if (!this.items_.length) {
       this.addMenuItem(
           Msgs.getMsg('panel_menu_item_none'), '', '', '', function() {});
@@ -419,13 +419,13 @@ PanelSearchMenu.prototype = {
   __proto__: PanelMenu.prototype,
 
   /** @override */
-  activate: function(activateFirstItem) {
+  activate(activateFirstItem) {
     PanelMenu.prototype.activate.call(this, false);
     this.searchBar.focus();
   },
 
   /** @override */
-  activateItem: function(index) {
+  activateItem(index) {
     this.resetItemAtActiveIndex();
     if (this.items_.length === 0) {
       return;
@@ -446,14 +446,14 @@ PanelSearchMenu.prototype = {
   },
 
   /** @override */
-  advanceItemBy: function(delta) {
+  advanceItemBy(delta) {
     this.activateItem(this.activeIndex_ + delta);
   },
 
   /**
    * Clears this menu's contents.
    */
-  clear: function() {
+  clear() {
     this.items_ = [];
     this.activeIndex_ = -1;
     while (this.menuElement.children.length !== 0) {
@@ -466,7 +466,7 @@ PanelSearchMenu.prototype = {
    * @param {!PanelMenuItem} item The item we want to copy.
    * @return {!PanelMenuItem} The menu item that was just created.
    */
-  copyAndAddMenuItem: function(item) {
+  copyAndAddMenuItem(item) {
     this.searchResultCounter_ = this.searchResultCounter_ + 1;
     return this.addMenuItem(
         item.menuItemTitle, item.menuItemShortcut, item.menuItemBraille,
@@ -475,7 +475,7 @@ PanelSearchMenu.prototype = {
   },
 
   /** @override */
-  deactivate: function() {
+  deactivate() {
     this.resetItemAtActiveIndex();
     PanelMenu.prototype.deactivate.call(this);
   },
@@ -483,7 +483,7 @@ PanelSearchMenu.prototype = {
   /**
    * Resets the item at this.activeIndex_.
    */
-  resetItemAtActiveIndex: function() {
+  resetItemAtActiveIndex() {
     // Sanity check.
     if (this.activeIndex_ < 0 || this.activeIndex_ >= this.items.length) {
       return;
@@ -493,12 +493,12 @@ PanelSearchMenu.prototype = {
   },
 
   /** @override */
-  scrollToTop: function() {
+  scrollToTop() {
     this.activateItem(0);
   },
 
   /** @override */
-  scrollToBottom: function() {
+  scrollToBottom() {
     this.activateItem(this.items_.length - 1);
   }
 };

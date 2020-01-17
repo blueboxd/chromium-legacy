@@ -67,6 +67,14 @@ base::WeakPtr<ManualFillingController> ManualFillingController::GetOrCreate(
 }
 
 // static
+base::WeakPtr<ManualFillingController> ManualFillingController::Get(
+    content::WebContents* contents) {
+  ManualFillingControllerImpl* mf_controller =
+      ManualFillingControllerImpl::FromWebContents(contents);
+  return mf_controller ? mf_controller->AsWeakPtr() : nullptr;
+}
+
+// static
 void ManualFillingControllerImpl::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
     base::WeakPtr<PasswordAccessoryController> pwd_controller,

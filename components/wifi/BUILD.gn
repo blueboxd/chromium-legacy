@@ -54,9 +54,7 @@ jumbo_static_library("test_support") {
 }
 
 executable("wifi_test") {
-  sources = [
-    "wifi_test.cc",
-  ]
+  sources = [ "wifi_test.cc" ]
 
   deps = [
     ":wifi",

@@ -683,7 +683,7 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
       DisplayLockLifecycleTarget::kChildren));
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
 
   EXPECT_FALSE(element->NeedsStyleRecalc());
   EXPECT_FALSE(element->ChildNeedsStyleRecalc());
@@ -769,7 +769,7 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChangeCSS) {
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
       DisplayLockLifecycleTarget::kChildren));
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
 
   EXPECT_TRUE(ReattachWasBlocked(element->GetDisplayLockContext()));
   // Note that we didn't create a layout object for inner, since the layout tree
@@ -821,7 +821,7 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   ASSERT_TRUE(GetDocument().getElementById("textfield")->IsMouseFocusable());
   ASSERT_TRUE(GetDocument().getElementById("textfield")->IsFocusable());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
 
   auto* element = GetDocument().getElementById("container");
   LockElement(*element, false);
@@ -834,7 +834,7 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
       DisplayLockLifecycleTarget::kChildren));
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
 
   // The input should not be focusable now.
   EXPECT_FALSE(
@@ -859,7 +859,7 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
   EXPECT_TRUE(GetDocument().getElementById("textfield")->IsKeyboardFocusable());
   EXPECT_TRUE(GetDocument().getElementById("textfield")->IsMouseFocusable());
   EXPECT_TRUE(GetDocument().getElementById("textfield")->IsFocusable());
@@ -906,7 +906,7 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
   LockElement(*container, false, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
   EXPECT_FALSE(
       host->DisplayLockPreventsActivation(DisplayLockActivationReason::kAny));
   EXPECT_TRUE(container->DisplayLockPreventsActivation(
@@ -921,7 +921,7 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
   CommitElement(*container, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
   EXPECT_FALSE(
       host->DisplayLockPreventsActivation(DisplayLockActivationReason::kAny));
   EXPECT_FALSE(container->DisplayLockPreventsActivation(
@@ -932,13 +932,31 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
   EXPECT_FALSE(
       host->DisplayLockPreventsActivation(DisplayLockActivationReason::kAny));
   EXPECT_FALSE(container->DisplayLockPreventsActivation(
       DisplayLockActivationReason::kAny));
   EXPECT_FALSE(slotted->DisplayLockPreventsActivation(
       DisplayLockActivationReason::kAny));
+
+  SetHtmlInnerHTML(R"HTML(
+    <body>
+    <div id="nonviewport" rendersubtree="invisible skip-viewport-activation">
+    </div>
+    </body>
+  )HTML");
+  auto* non_viewport = GetDocument().getElementById("nonviewport");
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
+
+  EXPECT_FALSE(non_viewport->DisplayLockPreventsActivation(
+      DisplayLockActivationReason::kAny));
+  EXPECT_FALSE(non_viewport->DisplayLockPreventsActivation(
+      DisplayLockActivationReason::kFindInPage));
+  EXPECT_TRUE(non_viewport->DisplayLockPreventsActivation(
+      DisplayLockActivationReason::kUserFocus));
 }
 
 TEST_F(DisplayLockContextTest,
@@ -976,7 +994,7 @@ TEST_F(DisplayLockContextTest,
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
       DisplayLockLifecycleTarget::kChildren));
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
 
   // The input should not be focusable now.
   EXPECT_FALSE(text_field->IsKeyboardFocusable());
@@ -1007,7 +1025,7 @@ TEST_F(DisplayLockContextTest, LockedCountsWithMultipleLocks) {
   )HTML");
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
 
   auto* one = GetDocument().getElementById("one");
   auto* two = GetDocument().getElementById("two");
@@ -1016,37 +1034,37 @@ TEST_F(DisplayLockContextTest, LockedCountsWithMultipleLocks) {
   LockElement(*one, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
 
   LockElement(*two, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 2);
 
   LockElement(*three, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 3);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 3);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 3);
 
   // Now commit the inner lock.
   CommitElement(*two);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 2);
 
   // Commit the outer lock.
   CommitElement(*one);
 
   // Both inner and outer locks should have committed.
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
 
   // Commit the sibling lock.
   CommitElement(*three);
 
   // Both inner and outer locks should have committed.
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
 }
 
 TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
@@ -1066,7 +1084,7 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
   )HTML");
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
 
   auto* activatable = GetDocument().getElementById("activatable");
   auto* non_activatable = GetDocument().getElementById("nonActivatable");
@@ -1081,14 +1099,14 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
   LockElement(*activatable, true);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
   EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable(
       DisplayLockActivationReason::kAny));
 
   LockElement(*non_activatable, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
   EXPECT_FALSE(non_activatable->GetDisplayLockContext()->IsActivatable(
       DisplayLockActivationReason::kAny));
 
@@ -1096,7 +1114,7 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
   CommitElement(*non_activatable);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
   EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable(
       DisplayLockActivationReason::kAny));
   EXPECT_TRUE(non_activatable->GetDisplayLockContext()->IsActivatable(
@@ -1118,7 +1136,7 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
   LockElement(*activatable, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
   EXPECT_FALSE(activatable->GetDisplayLockContext()->IsActivatable(
       DisplayLockActivationReason::kAny));
 
@@ -1126,7 +1144,7 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
   LockElement(*activatable, true);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
   EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable(
       DisplayLockActivationReason::kAny));
 }
@@ -1154,7 +1172,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
   )HTML");
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
 
   auto* template_el =
       To<HTMLTemplateElement>(GetDocument().getElementById("template"));
@@ -1165,7 +1183,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
   LockElement(*child, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
   EXPECT_TRUE(child->GetDisplayLockContext()->IsLocked());
 
   // commit() will unlock the element.
@@ -1181,7 +1199,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
   LockElement(*document_child, false);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 1);
   EXPECT_TRUE(document_child->GetDisplayLockContext()->IsLocked());
 
   container->setAttribute("style", "display: block;");
@@ -1198,7 +1216,7 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
   CommitElement(*document_child);
   EXPECT_FALSE(document_child->GetDisplayLockContext()->IsLocked());
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
 
   EXPECT_FALSE(document_child->NeedsStyleRecalc());
   EXPECT_FALSE(document_child->ChildNeedsStyleRecalc());

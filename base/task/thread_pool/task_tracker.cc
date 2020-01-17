@@ -593,7 +593,7 @@ void TaskTracker::RunTask(Task task,
     // Set up TaskRunnerHandle as expected for the scope of the task.
     Optional<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
     Optional<ThreadTaskRunnerHandle> single_thread_task_runner_handle;
-    Optional<EphemeralTaskExecutor> ephemiral_task_executor;
+    Optional<EphemeralTaskExecutor> ephemeral_task_executor;
     switch (task_source->execution_mode()) {
       case TaskSourceExecutionMode::kJob:
       case TaskSourceExecutionMode::kParallel:
@@ -602,7 +602,7 @@ void TaskTracker::RunTask(Task task,
         DCHECK(task_source->task_runner());
         sequenced_task_runner_handle.emplace(
             static_cast<SequencedTaskRunner*>(task_source->task_runner()));
-        ephemiral_task_executor.emplace(
+        ephemeral_task_executor.emplace(
             static_cast<SequencedTaskRunner*>(task_source->task_runner()),
             nullptr, &traits);
         break;
@@ -610,7 +610,7 @@ void TaskTracker::RunTask(Task task,
         DCHECK(task_source->task_runner());
         single_thread_task_runner_handle.emplace(
             static_cast<SingleThreadTaskRunner*>(task_source->task_runner()));
-        ephemiral_task_executor.emplace(
+        ephemeral_task_executor.emplace(
             static_cast<SequencedTaskRunner*>(task_source->task_runner()),
             static_cast<SingleThreadTaskRunner*>(task_source->task_runner()),
             &traits);

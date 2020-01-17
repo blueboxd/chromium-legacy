@@ -31,9 +31,7 @@ source_set("networking_private") {
     "//net",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 
   if (!is_chromeos && is_linux && use_dbus) {
     sources = default_sources + [
@@ -61,8 +59,6 @@ source_set("networking_private") {
               ]
   } else {
     not_needed([ "default_sources" ])
-    sources = [
-      "networking_private_stubs.cc",
-    ]
+    sources = [ "networking_private_stubs.cc" ]
   }
 }

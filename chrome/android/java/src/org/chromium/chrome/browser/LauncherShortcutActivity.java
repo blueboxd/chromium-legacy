@@ -8,7 +8,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.graphics.drawable.Icon;
@@ -18,9 +17,10 @@ import android.os.StrictMode;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +35,6 @@ public class LauncherShortcutActivity extends Activity {
             "chromium.shortcut.action.OPEN_NEW_INCOGNITO_TAB";
     private static final String DYNAMIC_OPEN_NEW_INCOGNITO_TAB_ID =
             "dynamic-new-incognito-tab-shortcut";
-    private static final String INCOGNITO_SHORTCUT_ADDED_PREF = "incognito-shortcut-added";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -71,18 +70,18 @@ public class LauncherShortcutActivity extends Activity {
     public static void updateIncognitoShortcut(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return;
 
-        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+        SharedPreferencesManager preferences = SharedPreferencesManager.getInstance();
         if (IncognitoUtils.isIncognitoModeEnabled()) {
             boolean success = LauncherShortcutActivity.addIncognitoLauncherShortcut(context);
 
             // Save a shared preference indicating the incognito shortcut has been added.
             if (success) {
-                preferences.edit().putBoolean(INCOGNITO_SHORTCUT_ADDED_PREF, true).apply();
+                preferences.writeBoolean(ChromePreferenceKeys.INCOGNITO_SHORTCUT_ADDED, true);
             }
-        } else if (preferences.getBoolean(INCOGNITO_SHORTCUT_ADDED_PREF, false)
+        } else if (preferences.readBoolean(ChromePreferenceKeys.INCOGNITO_SHORTCUT_ADDED, false)
                 && !IncognitoUtils.isIncognitoModeEnabled()) {
             LauncherShortcutActivity.removeIncognitoLauncherShortcut(context);
-            preferences.edit().putBoolean(INCOGNITO_SHORTCUT_ADDED_PREF, false).apply();
+            preferences.writeBoolean(ChromePreferenceKeys.INCOGNITO_SHORTCUT_ADDED, false);
         }
     }
 

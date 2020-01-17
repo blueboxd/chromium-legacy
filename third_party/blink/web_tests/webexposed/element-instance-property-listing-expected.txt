@@ -41,7 +41,7 @@ namespace http://www.w3.org/1999/xhtml
     property ariaControlsElements
     property ariaCurrent
     property ariaDescribedByElements
-    property ariaDetailsElement
+    property ariaDetailsElements
     property ariaDisabled
     property ariaErrorMessageElement
     property ariaExpanded
@@ -175,6 +175,7 @@ namespace http://www.w3.org/1999/xhtml
     property onbeforecopy
     property onbeforecut
     property onbeforepaste
+    property onbeforexrselect
     property onblur
     property oncancel
     property oncanplay
@@ -260,8 +261,12 @@ namespace http://www.w3.org/1999/xhtml
     property ontransitionend
     property onvolumechange
     property onwaiting
+    property onwebkitanimationend
+    property onwebkitanimationiteration
+    property onwebkitanimationstart
     property onwebkitfullscreenchange
     property onwebkitfullscreenerror
+    property onwebkittransitionend
     property onwheel
     property outerHTML
     property outerText
@@ -1241,7 +1246,7 @@ namespace http://www.w3.org/2000/svg
     property ariaControlsElements
     property ariaCurrent
     property ariaDescribedByElements
-    property ariaDetailsElement
+    property ariaDetailsElements
     property ariaDisabled
     property ariaErrorMessageElement
     property ariaExpanded
@@ -1357,6 +1362,7 @@ namespace http://www.w3.org/2000/svg
     property onbeforecopy
     property onbeforecut
     property onbeforepaste
+    property onbeforexrselect
     property onblur
     property oncancel
     property oncanplay
@@ -1442,8 +1448,12 @@ namespace http://www.w3.org/2000/svg
     property ontransitionend
     property onvolumechange
     property onwaiting
+    property onwebkitanimationend
+    property onwebkitanimationiteration
+    property onwebkitanimationstart
     property onwebkitfullscreenchange
     property onwebkitfullscreenerror
+    property onwebkittransitionend
     property onwheel
     property outerHTML
     property ownerDocument

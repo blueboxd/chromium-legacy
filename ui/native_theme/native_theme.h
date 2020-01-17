@@ -245,6 +245,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     bool draw_edges;
     int classic_state;  // Used on Windows when uxtheme is not available.
     bool has_border;
+    bool auto_complete_active;
   };
 
   struct TrackbarExtraParams {

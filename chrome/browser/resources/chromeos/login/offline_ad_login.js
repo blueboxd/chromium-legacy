@@ -172,13 +172,13 @@ Polymer({
   errorStateLocked_: false,
 
   /** @override */
-  ready: function() {
+  ready() {
     if (!this.isDomainJoin)
       return;
     this.setupEncList();
   },
 
-  setupEncList: function() {
+  setupEncList() {
     var list = /** @type {!EncryptionSelectListType}>} */
         (loadTimeData.getValue('encryptionTypesList'));
     for (var item of list) {
@@ -194,7 +194,7 @@ Polymer({
         loadTimeData.getString('adJoinErrorMachineNameInvalid');
   },
 
-  focus: function() {
+  focus() {
     if (this.unlockPasswordStep) {
       this.$.unlockPasswordInput.focus();
     } else if (this.isDomainJoin && !this.$.machineNameInput.value) {
@@ -206,7 +206,7 @@ Polymer({
     }
   },
 
-  errorStateObserver_: function() {
+  errorStateObserver_() {
     if (this.errorStateLocked_)
       return;
     // Prevent updateErrorStateOnInputInvalidStateChange_ from changing
@@ -228,18 +228,18 @@ Polymer({
     this.errorStateLocked_ = false;
   },
 
-  encryptionSubtitle_: function() {
+  encryptionSubtitle_() {
     return this.encryptionValueToSubtitleMap[this.encryptionValue_];
   },
 
-  isEncryptionStrong_: function() {
+  isEncryptionStrong_() {
     return this.encryptionValue_ == this.defaultEncryption;
   },
 
   /**
    * @param {Array<JoinConfigType>} options
    */
-  setJoinConfigurationOptions: function(options) {
+  setJoinConfigurationOptions(options) {
     this.$.backToUnlockButton.hidden = true;
     if (!options || options.length < 1) {
       this.$.joinConfig.hidden = true;
@@ -258,7 +258,7 @@ Polymer({
   },
 
   /** @private */
-  onSubmit_: function() {
+  onSubmit_() {
     if (this.disabled)
       return;
 
@@ -292,13 +292,13 @@ Polymer({
   },
 
   /** @private */
-  onBackButton_: function() {
+  onBackButton_() {
     this.$.passwordInput.value = '';
     this.fire('cancel');
   },
 
   /** @private */
-  onMoreOptionsClicked_: function() {
+  onMoreOptionsClicked_() {
     this.disabled = true;
     this.fire('dialogShown');
     this.storedOrgUnit_ = this.$.orgUnitInput.value;
@@ -308,19 +308,19 @@ Polymer({
   },
 
   /** @private */
-  onMoreOptionsConfirmTap_: function() {
+  onMoreOptionsConfirmTap_() {
     this.storedOrgUnit_ = null;
     this.storedEncryption_ = null;
     this.$.moreOptionsDlg.close();
   },
 
   /** @private */
-  onMoreOptionsCancelTap_: function() {
+  onMoreOptionsCancelTap_() {
     this.$.moreOptionsDlg.close();
   },
 
   /** @private */
-  onMoreOptionsClosed_: function() {
+  onMoreOptionsClosed_() {
     if (this.storedOrgUnit_ != null)
       this.$.orgUnitInput.value = this.storedOrgUnit_;
     if (this.storedEncryption_ != null) {
@@ -333,7 +333,7 @@ Polymer({
   },
 
   /** @private */
-  onUnlockPasswordEntered_: function() {
+  onUnlockPasswordEntered_() {
     var msg = {
       'unlock_password': this.$.unlockPasswordInput.value,
     };
@@ -341,13 +341,13 @@ Polymer({
   },
 
   /** @private */
-  onSkipClicked_: function() {
+  onSkipClicked_() {
     this.$.backToUnlockButton.hidden = false;
     this.unlockPasswordStep = false;
   },
 
   /** @private */
-  onBackToUnlock_: function() {
+  onBackToUnlock_() {
     if (this.disabled)
       return;
     this.unlockPasswordStep = true;
@@ -357,12 +357,12 @@ Polymer({
    * @private
    * @param {!string} value
    * */
-  onEncryptionSelected_: function(value) {
+  onEncryptionSelected_(value) {
     this.encryptionValue_ = value;
   },
 
   /** @private */
-  onJoinConfigSelected_: function(value) {
+  onJoinConfigSelected_(value) {
     if (this.selectedConfigOption_ == this.joinConfigOptions_[value])
       return;
     this.errorState = ACTIVE_DIRECTORY_ERROR_STATE.NONE;
@@ -384,7 +384,7 @@ Polymer({
    * @return {string} Regular expression.
    * @private
    */
-  getMachineNameInputPattern_: function(option) {
+  getMachineNameInputPattern_(option) {
     return option['computer_name_validation_regex'];
   },
 
@@ -393,7 +393,7 @@ Polymer({
    * @param {!JoinConfigType} option Value of this.selectedConfigOption_;
    * @private
    */
-  calculateUserInputValue_: function(option) {
+  calculateUserInputValue_(option) {
     this.userName =
         this.calculateInputValue_('userInput', 'ad_username', option);
   },
@@ -407,7 +407,7 @@ Polymer({
    * @return {string} New input value.
    * @private
    */
-  calculateInputValue_: function(inputElementId, key, option) {
+  calculateInputValue_(inputElementId, key, option) {
     if (option && key in option)
       return option[key];
 
@@ -427,7 +427,7 @@ Polymer({
    * @param {Object} option Value of this.selectedConfigOption_;
    * @private
    */
-  isInputDisabled_: function(key, option, disabledAll) {
+  isInputDisabled_(key, option, disabledAll) {
     return disabledAll || (key in option);
   },
 
@@ -435,11 +435,11 @@ Polymer({
    * Returns true if "Machine name is invalid" error should be displayed.
    * @param {ACTIVE_DIRECTORY_ERROR_STATE} errorState
    */
-  isMachineNameInvalid_: function(errorState) {
+  isMachineNameInvalid_(errorState) {
     return errorState != ACTIVE_DIRECTORY_ERROR_STATE.MACHINE_NAME_TOO_LONG;
   },
 
-  getMachineNameError_: function(locale, errorState) {
+  getMachineNameError_(locale, errorState) {
     if (errorState == ACTIVE_DIRECTORY_ERROR_STATE.MACHINE_NAME_TOO_LONG)
       return this.i18nDynamic(locale, 'adJoinErrorMachineNameTooLong');
     if (errorState == ACTIVE_DIRECTORY_ERROR_STATE.MACHINE_NAME_INVALID) {
@@ -450,12 +450,12 @@ Polymer({
     return this.i18nDynamic(locale, 'adJoinErrorMachineNameInvalid');
   },
 
-  i18nUpdateLocale: function() {
+  i18nUpdateLocale() {
     this.setupEncList();
     OobeI18nBehaviorImpl.i18nUpdateLocale.call(this);
   },
 
-  onKeydownUnlockPassword_: function(e) {
+  onKeydownUnlockPassword_(e) {
     if (e.key == 'Enter') {
       if (this.$.unlockPasswordInput.value.length == 0)
         this.onSkipClicked_();
@@ -465,7 +465,7 @@ Polymer({
     this.errorState = ACTIVE_DIRECTORY_ERROR_STATE.NONE;
   },
 
-  onKeydownMachineNameInput_: function(e) {
+  onKeydownMachineNameInput_(e) {
     this.errorState = ACTIVE_DIRECTORY_ERROR_STATE.NONE;
     if (e.key == 'Enter') {
       this.switchTo_('userInput') || this.switchTo_('passwordInput') ||
@@ -473,30 +473,30 @@ Polymer({
     }
   },
 
-  onKeydownUserInput_: function(e) {
+  onKeydownUserInput_(e) {
     this.errorState = ACTIVE_DIRECTORY_ERROR_STATE.NONE;
     if (e.key == 'Enter')
       this.switchTo_('passwordInput') || this.onSubmit_();
   },
 
-  userNameObserver_: function() {
+  userNameObserver_() {
     if (this.userRealm && this.userName &&
         this.userName.endsWith(this.userRealm)) {
       this.userName = this.userName.replace(this.userRealm, '');
     }
   },
 
-  domainHidden: function(userRealm, userName) {
+  domainHidden(userRealm, userName) {
     return !userRealm || (userName && userName.includes('@'));
   },
 
-  onKeydownAuthPasswordInput_: function(e) {
+  onKeydownAuthPasswordInput_(e) {
     this.errorState = ACTIVE_DIRECTORY_ERROR_STATE.NONE;
     if (e.key == 'Enter')
       this.onSubmit_();
   },
 
-  switchTo_: function(inputId) {
+  switchTo_(inputId) {
     if (!this.$[inputId].disabled && this.$[inputId].value.length == 0) {
       this.$[inputId].focus();
       return true;
@@ -504,26 +504,26 @@ Polymer({
     return false;
   },
 
-  machineNameInvalidObserver_: function(isInvalid) {
+  machineNameInvalidObserver_(isInvalid) {
     this.setErrorState_(
         isInvalid, ACTIVE_DIRECTORY_ERROR_STATE.MACHINE_NAME_INVALID);
   },
 
-  userInvalidObserver_: function(isInvalid) {
+  userInvalidObserver_(isInvalid) {
     this.setErrorState_(isInvalid, ACTIVE_DIRECTORY_ERROR_STATE.BAD_USERNAME);
   },
 
-  authPasswordInvalidObserver_: function(isInvalid) {
+  authPasswordInvalidObserver_(isInvalid) {
     this.setErrorState_(
         isInvalid, ACTIVE_DIRECTORY_ERROR_STATE.BAD_AUTH_PASSWORD);
   },
 
-  unlockPasswordInvalidObserver_: function(isInvalid) {
+  unlockPasswordInvalidObserver_(isInvalid) {
     this.setErrorState_(
         isInvalid, ACTIVE_DIRECTORY_ERROR_STATE.BAD_UNLOCK_PASSWORD);
   },
 
-  setErrorState_: function(isInvalid, error) {
+  setErrorState_(isInvalid, error) {
     if (this.errorStateLocked_)
       return;
     this.errorStateLocked_ = true;
@@ -534,7 +534,7 @@ Polymer({
     this.errorStateLocked_ = false;
   },
 
-  disabledObserver_: function(disabled) {
+  disabledObserver_(disabled) {
     if (disabled)
       this.$.credsStep.classList.add('full-disabled');
     else

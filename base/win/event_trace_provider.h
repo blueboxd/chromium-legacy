@@ -23,11 +23,11 @@
 namespace base {
 namespace win {
 
-typedef GUID EtwEventClass;
-typedef UCHAR EtwEventType;
-typedef UCHAR EtwEventLevel;
-typedef USHORT EtwEventVersion;
-typedef ULONG EtwEventFlags;
+using EtwEventClass = GUID;
+using EtwEventType = UCHAR;
+using EtwEventLevel = UCHAR;
+using EtwEventVersion = USHORT;
+using EtwEventFlags = ULONG;
 
 // Base class is a POD for correctness.
 template <size_t N>
@@ -40,7 +40,7 @@ struct EtwMofEventBase {
 template <size_t N>
 class EtwMofEvent : public EtwMofEventBase<N> {
  public:
-  typedef EtwMofEventBase<N> Super;
+  using Super = EtwMofEventBase<N>;
 
   // Clang and the C++ standard don't allow unqualified lookup into dependent
   // bases, hence these using decls to explicitly pull the names out.

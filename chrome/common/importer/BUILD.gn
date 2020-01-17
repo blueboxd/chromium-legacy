@@ -5,9 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
-  sources = [
-    "profile_import.mojom",
-  ]
+  sources = [ "profile_import.mojom" ]
 
   public_deps = [
     "//components/autofill/core/common/mojom:mojo_types",

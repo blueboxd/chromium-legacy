@@ -18,7 +18,11 @@
     CRBProtocolObservers<CRWWebViewScrollViewProxyObserver>* observers;
 
 // The underlying UIScrollView. It can change or become nil.
-@property(nonatomic, weak, readonly) UIScrollView* underlyingScrollView;
+//
+// This must be a strong reference to ensure that this proxy is aware of the
+// timing when this becomes nil. The proxy needs to save the properties of the
+// underlying scroll view when it happens.
+@property(nonatomic, readonly) UIScrollView* underlyingScrollView;
 
 @end
 

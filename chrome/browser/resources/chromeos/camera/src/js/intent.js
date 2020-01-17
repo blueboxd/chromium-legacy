@@ -171,6 +171,3 @@ export class Intent {
         getBool('shouldDownScale'), getBool('isSecure'));
   }
 }
-
-/** @const */
-cca.intent.Intent = Intent;

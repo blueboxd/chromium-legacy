@@ -192,14 +192,4 @@ TestInterfaceDocument* V8TestInterfaceDocument::ToImplWithTypeCheck(
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInterfaceDocument* NativeValueTraits<TestInterfaceDocument>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestInterfaceDocument* native_value = V8TestInterfaceDocument::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestInterfaceDocument"));
-  }
-  return native_value;
-}
-
 }  // namespace blink

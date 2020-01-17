@@ -15,11 +15,14 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_metrics.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -212,6 +215,45 @@ void TabStripUIHandler::OnJavascriptAllowed() {
 }
 
 // TabStripModelObserver:
+void TabStripUIHandler::OnTabGroupChanged(const TabGroupChange& change) {
+  switch (change.type) {
+    case TabGroupChange::kCreated:
+    case TabGroupChange::kContentsChanged: {
+      // TabGroupChange::kCreated events are unnecessary as the front-end will
+      // assume a group was created if there is a tab-group-state-changed event
+      // with a new group ID. TabGroupChange::kContentsChanged events are
+      // handled by TabGroupStateChanged.
+      break;
+    }
+
+    case TabGroupChange::kVisualsChanged: {
+      // TODO(johntlee): Send visuals to front-end.
+      break;
+    }
+
+    case TabGroupChange::kClosed: {
+      FireWebUIListener("tab-group-closed",
+                        base::Value(change.group.ToString()));
+      break;
+    }
+  }
+}
+
+void TabStripUIHandler::TabGroupedStateChanged(
+    base::Optional<tab_groups::TabGroupId> group,
+    int index) {
+  int tab_id = extensions::ExtensionTabUtil::GetTabId(
+      browser_->tab_strip_model()->GetWebContentsAt(index));
+  if (group.has_value()) {
+    FireWebUIListener("tab-group-state-changed", base::Value(tab_id),
+                      base::Value(index),
+                      base::Value(group.value().ToString()));
+  } else {
+    FireWebUIListener("tab-group-state-changed", base::Value(tab_id),
+                      base::Value(index));
+  }
+}
+
 void TabStripUIHandler::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
@@ -237,6 +279,31 @@ void TabStripUIHandler::OnTabStripModelChanged(
     }
     case TabStripModelChange::kMoved: {
       auto* move = change.GetMove();
+
+      base::Optional<tab_groups::TabGroupId> tab_group_id =
+          tab_strip_model->GetTabGroupForTab(move->to_index);
+      if (tab_group_id.has_value()) {
+        const std::vector<int> tabs_in_group =
+            tab_strip_model->group_model()
+                ->GetTabGroup(tab_group_id.value())
+                ->ListTabs();
+        if (tabs_in_group == selection.new_model.selected_indices()) {
+          // If the selection includes all the tabs within the changed tab's
+          // group, it is an indication that the entire group is being moved.
+          // To prevent sending multiple events for the same batch move, fire a
+          // separate single tab-group-moved event once all tabs have been
+          // moved. All tabs have moved only after all the indices in the group
+          // are in the correct continuous order.
+          if (tabs_in_group.back() - tabs_in_group.front() + 1 ==
+              static_cast<int>(tabs_in_group.size())) {
+            FireWebUIListener("tab-group-moved",
+                              base::Value(tab_group_id.value().ToString()),
+                              base::Value(tabs_in_group[0]));
+          }
+          break;
+        }
+      }
+
       FireWebUIListener(
           "tab-moved",
           base::Value(extensions::ExtensionTabUtil::GetTabId(move->contents)),
@@ -341,6 +408,12 @@ base::DictionaryValue TabStripUIHandler::GetTabData(
                       browser_->tab_strip_model()->active_index() == index);
   tab_data.SetInteger("id", extensions::ExtensionTabUtil::GetTabId(contents));
   tab_data.SetInteger("index", index);
+
+  const base::Optional<tab_groups::TabGroupId> group_id =
+      browser_->tab_strip_model()->GetTabGroupForTab(index);
+  if (group_id.has_value()) {
+    tab_data.SetString("groupId", group_id.value().ToString());
+  }
 
   TabRendererData tab_renderer_data =
       TabRendererData::FromTabInModel(browser_->tab_strip_model(), index);

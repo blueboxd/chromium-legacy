@@ -74,5 +74,10 @@ const base::Feature kDataReductionProxyAggressiveConfigFetch{
     "DataReductionProxyAggressiveConfigFetch",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Reports estimated data savings due to save-data request header and JS API, as
+// savings provided by DataSaver.
+const base::Feature kReportSaveDataSavings{"ReportSaveDataSavings",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace data_reduction_proxy

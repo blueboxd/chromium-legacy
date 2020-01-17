@@ -16,11 +16,11 @@ chrome.signin = chrome.signin || {};
 
 // TODO(vishwath): This function is identical to the one in sync_internals.js
 // Merge both if possible.
-// Accepts a DOM node and sets its highlighted attribute oldVal != newVal
+// Accepts a DOM node and sets its highlighted attribute oldVal !== newVal
 function highlightIfChanged(node, oldVal, newVal) {
   const oldStr = oldVal.toString();
   const newStr = newVal.toString();
-  if (oldStr != '' && oldStr != newStr) {
+  if (oldStr !== '' && oldStr !== newStr) {
     // Note the addListener function does not end up creating duplicate
     // listeners.  There can be only one listener per event at a time.
     // Reference: https://developer.mozilla.org/en/DOM/element.addEventListener
@@ -39,10 +39,10 @@ function highlightIfAnyChanged(node, oldToNewValList) {
 }
 
 function setClassFromValue(value) {
-  if (value == 0) {
+  if (value === 0) {
     return 'zero';
   }
-  if (value == 'Successful') {
+  if (value === 'Successful') {
     return 'ok';
   }
 
@@ -68,7 +68,7 @@ Event.prototype.addListener = function(listener) {
 // Remove a listener from the list.
 Event.prototype.removeListener = function(listener) {
   const i = this.findListener_(listener);
-  if (i == -1) {
+  if (i === -1) {
     return;
   }
   this.listeners_.splice(i, 1);
@@ -88,7 +88,7 @@ Event.prototype.hasListeners = function() {
 // Returns the index of the given listener, or -1 if not found.
 Event.prototype.findListener_ = function(listener) {
   for (let i = 0; i < this.listeners_.length; i++) {
-    if (this.listeners_[i] == listener) {
+    if (this.listeners_[i] === listener) {
       return i;
     }
   }

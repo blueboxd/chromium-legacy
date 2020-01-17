@@ -177,8 +177,6 @@ void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       policy_prefs::kUserPolicyRefreshRate,
       CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
-  registry->RegisterStringPref(
-      policy_prefs::kMachineLevelUserCloudPolicyEnrollmentToken, std::string());
   registry->RegisterBooleanPref(
       policy_prefs::kCloudManagementEnrollmentMandatory, false);
   registry->RegisterBooleanPref(

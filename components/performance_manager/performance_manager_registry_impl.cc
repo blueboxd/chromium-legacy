@@ -8,12 +8,16 @@
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/performance_manager_main_thread_observer.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/storage_partition.h"
 
 namespace performance_manager {
 
 namespace {
+
 PerformanceManagerRegistryImpl* g_instance = nullptr;
+
 }  // namespace
 
 PerformanceManagerRegistryImpl::PerformanceManagerRegistryImpl() {
@@ -84,6 +88,28 @@ void PerformanceManagerRegistryImpl::CreateProcessNodeForRenderProcessHost(
   }
 }
 
+void PerformanceManagerRegistryImpl::NotifyBrowserContextAdded(
+    content::BrowserContext* browser_context) {
+  std::unique_ptr<WorkerWatcher> worker_watcher =
+      std::make_unique<WorkerWatcher>(
+          browser_context->UniqueId(),
+          content::BrowserContext::GetDefaultStoragePartition(browser_context)
+              ->GetSharedWorkerService(),
+          &process_node_source_, &frame_node_source_);
+  auto result = browser_contexts_with_worker_watcher_.insert(
+      {browser_context->UniqueId(), std::move(worker_watcher)});
+  DCHECK(result.second);
+}
+
+void PerformanceManagerRegistryImpl::NotifyBrowserContextRemoved(
+    content::BrowserContext* browser_context) {
+  auto it =
+      browser_contexts_with_worker_watcher_.find(browser_context->UniqueId());
+  DCHECK(it != browser_contexts_with_worker_watcher_.end());
+  it->second->TearDown();
+  browser_contexts_with_worker_watcher_.erase(it);
+}
+
 void PerformanceManagerRegistryImpl::TearDown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -92,6 +118,14 @@ void PerformanceManagerRegistryImpl::TearDown() {
 
   // The registry should be torn down before the PerformanceManager.
   DCHECK(PerformanceManager::IsAvailable());
+
+  // Destroy WorkerNodes before ProcessNodes, because ProcessNode checks that it
+  // has no associated WorkerNode when torn down.
+  for (auto& browser_context_and_worker_watcher :
+       browser_contexts_with_worker_watcher_) {
+    browser_context_and_worker_watcher.second->TearDown();
+  }
+  browser_contexts_with_worker_watcher_.clear();
 
   for (auto* web_contents : web_contents_) {
     PerformanceManagerTabHelper* tab_helper =

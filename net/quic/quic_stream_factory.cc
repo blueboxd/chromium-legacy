@@ -953,7 +953,7 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
     UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ConnectAfterBroken", rv == OK);
 
   if (retry_on_alternate_network_before_handshake_ && session_ &&
-      !session_->IsCryptoHandshakeConfirmed() &&
+      !session_->OneRttKeysAvailable() &&
       network_ == factory_->default_network()) {
     if (session_->error() == quic::QUIC_NETWORK_IDLE_TIMEOUT ||
         session_->error() == quic::QUIC_HANDSHAKE_TIMEOUT ||
@@ -2195,7 +2195,7 @@ void QuicStreamFactory::ProcessGoingAwaySession(
     return;
   }
 
-  if (session->IsCryptoHandshakeConfirmed()) {
+  if (session->OneRttKeysAvailable()) {
     http_server_properties_->ConfirmAlternativeService(
         alternative_service,
         session->quic_session_key().network_isolation_key());

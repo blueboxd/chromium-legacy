@@ -40,6 +40,12 @@ AnsibleManagementService::~AnsibleManagementService() = default;
 
 void AnsibleManagementService::ConfigureDefaultContainer(
     base::OnceCallback<void(bool success)> callback) {
+  if (!ShouldConfigureDefaultContainer(profile_)) {
+    LOG(ERROR) << "Trying to configure default Crostini container when it "
+               << "should not be configured";
+    std::move(callback).Run(false);
+    return;
+  }
   DCHECK(!configuration_finished_callback_);
   configuration_finished_callback_ = std::move(callback);
 
@@ -86,15 +92,11 @@ void AnsibleManagementService::OnInstallLinuxPackageProgress(
 
   switch (status) {
     case InstallLinuxPackageProgressStatus::SUCCEEDED: {
-      CrostiniManager::GetForProfile(profile_)
-          ->RemoveLinuxPackageOperationProgressObserver(this);
       GetAnsiblePlaybookToApply();
       return;
     }
     case InstallLinuxPackageProgressStatus::FAILED:
       LOG(ERROR) << "Ansible installation failed";
-      CrostiniManager::GetForProfile(profile_)
-          ->RemoveLinuxPackageOperationProgressObserver(this);
       OnConfigurationFinished(false);
       return;
     // TODO(okalitova): Report Ansible downloading/installation progress.
@@ -176,6 +178,7 @@ void AnsibleManagementService::OnApplyAnsiblePlaybook(
 
   VLOG(1) << "Ansible playbook application has been started successfully";
   // Waiting for Ansible playbook application progress being reported.
+  // TODO(https://crbug.com/1043060): Add a timeout after which we stop waiting.
 }
 
 void AnsibleManagementService::OnApplyAnsiblePlaybookProgress(
@@ -216,6 +219,12 @@ void AnsibleManagementService::OnUninstallPackageProgress(
 
 void AnsibleManagementService::OnConfigurationFinished(bool success) {
   DCHECK(configuration_finished_callback_);
+  if (success) {
+    profile_->GetPrefs()->SetBoolean(prefs::kCrostiniDefaultContainerConfigured,
+                                     true);
+  }
+  CrostiniManager::GetForProfile(profile_)
+      ->RemoveLinuxPackageOperationProgressObserver(this);
   for (auto& observer : observers_) {
     observer.OnAnsibleSoftwareConfigurationFinished(success);
   }

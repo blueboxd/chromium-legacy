@@ -232,7 +232,8 @@ function mouseUpAt(xPosition, yPosition) {
       chrome.gpuBenchmarking.pointerActionSequence([
         {source: 'mouse',
          actions: [
-            { name: 'pointerUp', x: xPosition, y: yPosition },
+            { name: 'pointerMove', x: xPosition, y: yPosition },
+            { name: 'pointerUp' },
       ]}], resolve);
     } else {
       reject('This test requires chrome.gpuBenchmarking');

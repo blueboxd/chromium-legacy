@@ -9,16 +9,12 @@ assert(is_chromeos)
 assert(use_dbus)
 
 proto_library("mtp_file_entry_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/mtp_file_entry.proto",
-  ]
+  sources = [ "//third_party/cros_system_api/dbus/mtp_file_entry.proto" ]
   proto_out_dir = "services/device/media_transfer_protocol"
 }
 
 proto_library("mtp_storage_info_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/mtp_storage_info.proto",
-  ]
+  sources = [ "//third_party/cros_system_api/dbus/mtp_storage_info.proto" ]
   proto_out_dir = "services/device/media_transfer_protocol"
 }
 
@@ -30,9 +26,7 @@ source_set("media_transfer_protocol") {
     "mtp_device_manager.h",
   ]
 
-  public_deps = [
-    "//services/device/public/mojom",
-  ]
+  public_deps = [ "//services/device/public/mojom" ]
 
   deps = [
     ":mtp_file_entry_proto",

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -16,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
+#include "chrome/browser/permissions/crowd_deny_preload_data.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/permissions/notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -966,3 +968,57 @@ TEST_F(PermissionRequestManagerTest, TestWebKioskModeDifferentOrigin) {
   EXPECT_TRUE(request->granted());
 }
 #endif  // defined(OS_CHROMEOS)
+
+// TODO(andypaicu): re-enable ASAP. crbug.com/1042611
+TEST_F(PermissionRequestManagerTest, DISABLED_TestCrowdDenyHoldbackChance) {
+  const struct {
+    std::string holdback_chance;
+    bool enabled_in_prefs;
+    bool expect_quiet_ui;
+    bool expect_histogram_bucket;
+  } kTestCases[] = {
+      // 100% chance to holdback, the UI used should be the normal UI.
+      {"1.0", false, false, true},
+      // 0% chance to holdback, the UI used should be the quiet UI.
+      {"0.0", false, true, false},
+      // 100% chance to holdback but the quiet UI is enabled by the user in
+      // prefs, the UI used should be the quiet UI.
+      {"1.0", true, true, true},
+  };
+
+  GURL url("https://spammy.com");
+  CrowdDenyPreloadData::GetInstance()
+      ->set_origin_notification_user_experience_for_testing(
+          url::Origin::Create(url),
+          CrowdDenyPreloadData::SiteReputation::UNSOLICITED_PROMPTS);
+
+  for (const auto& test : kTestCases) {
+    base::HistogramTester histograms;
+
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        features::kQuietNotificationPrompts,
+        {{QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation,
+          "true"},
+         {QuietNotificationPermissionUiConfig::kEnableCrowdDenyTriggering,
+          "true"},
+         {QuietNotificationPermissionUiConfig::kCrowdDenyHoldBackChance,
+          test.holdback_chance}});
+
+    if (test.enabled_in_prefs)
+      QuietNotificationPermissionUiState::EnableQuietUiInPrefs(profile());
+
+    MockPermissionRequest request(
+        "request", PermissionRequestType::PERMISSION_NOTIFICATIONS, url);
+
+    manager_->AddRequest(&request);
+    WaitForBubbleToBeShown();
+    EXPECT_EQ(test.expect_quiet_ui, manager_->ShouldCurrentRequestUseQuietUI());
+    Closing();
+
+    histograms.ExpectBucketCount(
+        "Permissions.CrowdDeny.DidHoldbackQuietUi",
+        static_cast<base::HistogramBase::Sample>(test.expect_histogram_bucket),
+        1);
+  }
+}

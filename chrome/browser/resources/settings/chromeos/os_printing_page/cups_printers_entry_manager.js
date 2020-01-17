@@ -23,20 +23,6 @@ let PrintersListCallback;
 
 cr.define('settings.printing', function() {
   /**
-   * Finds the printers that are in |firstArr| but not in |secondArr|.
-   * @param {!Array<!PrinterListEntry>} firstArr
-   * @param {!Array<!PrinterListEntry>} secondArr
-   * @return {!Array<!PrinterListEntry>}
-   * @private
-   */
-  function findDifference_(firstArr, secondArr) {
-    return firstArr.filter((firstArrEntry) => {
-      return !secondArr.some(
-          p => p.printerInfo.printerId == firstArrEntry.printerInfo.printerId);
-    });
-  }
-
-  /**
    * Class for managing printer entries. Holds both Saved and Nearby printers
    * and notifies observers of any applicable changes to either printer lists.
    */
@@ -107,7 +93,8 @@ cr.define('settings.printing', function() {
      */
     setSavedPrintersList(printerList) {
       if (printerList.length > this.savedPrinters_.length) {
-        const diff = findDifference_(printerList, this.savedPrinters_);
+        const diff =
+            settings.printing.findDifference(printerList, this.savedPrinters_);
         this.savedPrinters_ = printerList;
         this.notifyOnSavedPrintersChangedListeners_(
             this.savedPrinters_, diff, [] /* printersRemoved */);
@@ -115,7 +102,8 @@ cr.define('settings.printing', function() {
       }
 
       if (printerList.length < this.savedPrinters_.length) {
-        const diff = findDifference_(this.savedPrinters_, printerList);
+        const diff =
+            settings.printing.findDifference(this.savedPrinters_, printerList);
         this.savedPrinters_ = printerList;
         this.notifyOnSavedPrintersChangedListeners_(
             this.savedPrinters_, [] /* printersAdded */, diff);

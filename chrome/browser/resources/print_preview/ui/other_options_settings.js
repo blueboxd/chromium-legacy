@@ -32,7 +32,7 @@ Polymer({
      */
     options_: {
       type: Array,
-      value: function() {
+      value() {
         return [
           {name: 'headerFooter', label: 'optionHeaderFooter'},
           {name: 'cssBackground', label: 'optionBackgroundColorsAndImages'},
@@ -69,7 +69,7 @@ Polymer({
    * @param {string} settingName The name of the setting to updated.
    * @param {boolean} newValue The new value for the setting.
    */
-  updateSettingWithTimeout_: function(settingName, newValue) {
+  updateSettingWithTimeout_(settingName, newValue) {
     const timeout = this.timeouts_.get(settingName);
     if (timeout !== null) {
       clearTimeout(timeout);
@@ -93,7 +93,7 @@ Polymer({
    * @param {number} index The index of the option to update.
    * @private
    */
-  updateOptionFromSetting_: function(index) {
+  updateOptionFromSetting_(index) {
     const setting = this.getSetting(this.options_[index].name);
     this.set(`options_.${index}.available`, setting.available);
     this.set(`options_.${index}.value`, setting.value);
@@ -112,27 +112,27 @@ Polymer({
    * @return {boolean} Whether the checkbox should be disabled.
    * @private
    */
-  getDisabled_: function(managed, disabled) {
+  getDisabled_(managed, disabled) {
     return managed || disabled;
   },
 
   /** @private */
-  onHeaderFooterSettingChange_: function() {
+  onHeaderFooterSettingChange_() {
     this.updateOptionFromSetting_(0);
   },
 
   /** @private */
-  onCssBackgroundSettingChange_: function() {
+  onCssBackgroundSettingChange_() {
     this.updateOptionFromSetting_(1);
   },
 
   /** @private */
-  onRasterizeSettingChange_: function() {
+  onRasterizeSettingChange_() {
     this.updateOptionFromSetting_(2);
   },
 
   /** @private */
-  onSelectionOnlySettingChange_: function() {
+  onSelectionOnlySettingChange_() {
     this.updateOptionFromSetting_(3);
   },
 
@@ -140,7 +140,7 @@ Polymer({
    * @param {!Event} e Contains the checkbox item that was checked.
    * @private
    */
-  onChange_: function(e) {
+  onChange_(e) {
     const name = e.model.item.name;
     this.updateSettingWithTimeout_(name, this.$$(`#${name}`).checked);
   },
@@ -151,7 +151,7 @@ Polymer({
    *     section is the first visible.
    * @private
    */
-  getClass_: function(index) {
+  getClass_(index) {
     return index === this.firstIndex_ ? 'first-visible' : '';
   },
 });

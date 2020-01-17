@@ -45,6 +45,10 @@ const char kEnableExperimentalAccessibilitySwitchAccessText[] =
 const char kEnableExperimentalAccessibilityChromeVoxLanguageSwitching[] =
     "enable-experimental-accessibility-chromevox-language-switching";
 
+// Enables search bar to search the ChromeVox menus.
+const char kEnableExperimentalAccessibilityChromeVoxSearchMenus[] =
+    "enable-experimental-accessibility-chromevox-search-menus";
+
 // Enables ChromeVox language switching at the inner node level. This feature
 // hasn't launched yet.
 const char kEnableExperimentalAccessibilityChromeVoxSubNodeLanguageSwitching[] =

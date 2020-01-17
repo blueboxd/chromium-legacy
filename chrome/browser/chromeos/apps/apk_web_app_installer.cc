@@ -114,8 +114,9 @@ void ApkWebAppInstaller::OnWebAppCreated(const GURL& app_url,
   // It is assumed that if |weak_owner_| is gone, |profile_| is gone too. The
   // web app will be automatically cleaned up by provider.
   if (!weak_owner_.get()) {
-    CompleteInstallation(web_app::AppId(),
-                         web_app::InstallResultCode::kProfileDestroyed);
+    CompleteInstallation(
+        web_app::AppId(),
+        web_app::InstallResultCode::kCancelledOnWebAppProviderShuttingDown);
     return;
   }
 
@@ -141,8 +142,9 @@ void ApkWebAppInstaller::OnImageDecoded(const SkBitmap& decoded_image) {
   if (!weak_owner_.get()) {
     // Assume |profile_| is no longer valid - destroy this object and
     // terminate.
-    CompleteInstallation(web_app::AppId(),
-                         web_app::InstallResultCode::kProfileDestroyed);
+    CompleteInstallation(
+        web_app::AppId(),
+        web_app::InstallResultCode::kCancelledOnWebAppProviderShuttingDown);
     return;
   }
   DoInstall();

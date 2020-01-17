@@ -111,7 +111,7 @@ Polymer({
    * @param {number} oldProgress
    * @private
    */
-  loadProgressChanged_: function(newProgress, oldProgress) {
+  loadProgressChanged_(newProgress, oldProgress) {
     const loaded = newProgress >= 100;
     const progressReset = newProgress < oldProgress;
     if (progressReset || loaded) {
@@ -122,19 +122,19 @@ Polymer({
     }
   },
 
-  hide: function() {
+  hide() {
     if (this.opened && !this.shouldKeepOpen()) {
       this.toggleVisibility();
     }
   },
 
-  show: function() {
+  show() {
     if (!this.opened) {
       this.toggleVisibility();
     }
   },
 
-  toggleVisibility: function() {
+  toggleVisibility() {
     this.opened = !this.opened;
 
     // We keep a handle on the animation in order to cancel the filling
@@ -160,18 +160,18 @@ Polymer({
     }
   },
 
-  selectPageNumber: function() {
+  selectPageNumber() {
     this.$.pageselector.select();
   },
 
   /** @return {boolean} Whether the toolbar should be kept open. */
-  shouldKeepOpen: function() {
+  shouldKeepOpen() {
     return this.$.bookmarks.dropdownOpen || this.loadProgress < 100 ||
         this.$.pageselector.isActive() || this.annotationMode;
   },
 
   /** @return {boolean} Whether a dropdown was open and was hidden. */
-  hideDropdowns: function() {
+  hideDropdowns() {
     let result = false;
     if (this.$.bookmarks.dropdownOpen) {
       this.$.bookmarks.toggleDropdown();
@@ -189,31 +189,31 @@ Polymer({
   },
 
   /** @param {number} lowerBound */
-  setDropdownLowerBound: function(lowerBound) {
+  setDropdownLowerBound(lowerBound) {
     this.$.bookmarks.lowerBound = lowerBound;
   },
 
-  rotateRight: function() {
+  rotateRight() {
     this.fire('rotate-right');
   },
 
-  download: function() {
+  download() {
     this.fire('save');
   },
 
-  print: function() {
+  print() {
     this.fire('print');
   },
 
-  undo: function() {
+  undo() {
     this.fire('undo');
   },
 
-  redo: function() {
+  redo() {
     this.fire('redo');
   },
 
-  toggleAnnotation: function() {
+  toggleAnnotation() {
     this.annotationMode = !this.annotationMode;
     if (this.annotationMode) {
       // Select pen tool when entering annotation mode.
@@ -230,7 +230,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  annotationToolClicked_: function(e) {
+  annotationToolClicked_(e) {
     this.updateAnnotationTool_(/** @type {!HTMLElement} */ (e.currentTarget));
   },
 
@@ -238,7 +238,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  annotationToolOptionChanged_: function(e) {
+  annotationToolOptionChanged_(e) {
     const element = e.currentTarget.parentElement;
     if (!this.annotationTool || element.id != this.annotationTool.tool) {
       return;
@@ -250,7 +250,7 @@ Polymer({
    * @param {!HTMLElement} element
    * @private
    */
-  updateAnnotationTool_: function(element) {
+  updateAnnotationTool_(element) {
     const tool = element.id;
     const options = element.querySelector('viewer-pen-options') || {
       selectedSize: 1,
@@ -274,7 +274,7 @@ Polymer({
    * @return {boolean} Whether the annotation tool is using tool |toolName|.
    * @private
    */
-  isAnnotationTool_: function(toolName) {
+  isAnnotationTool_(toolName) {
     return !!this.annotationTool && this.annotationTool.tool === toolName;
   },
 });

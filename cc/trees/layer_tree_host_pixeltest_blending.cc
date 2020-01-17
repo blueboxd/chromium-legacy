@@ -70,7 +70,9 @@ class LayerTreeHostBlendingPixelTest
           ::testing::tuple<PixelResourceTestCase, SkBlendMode>> {
  public:
   LayerTreeHostBlendingPixelTest()
-      : force_antialiasing_(false), force_blending_with_shaders_(false) {
+      : LayerTreeHostPixelResourceTest(resource_type()),
+        force_antialiasing_(false),
+        force_blending_with_shaders_(false) {
     pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
   }
 
@@ -209,13 +211,12 @@ class LayerTreeHostBlendingPixelTest
   void RunBlendingWithRenderPass(RenderPassOptions flags) {
     const int kRootWidth = 2;
     const int kRootHeight = kRootWidth * kCSSTestColorsCount;
-    InitializeFromTestCase(resource_type());
 
     // Force shaders only applies to gl renderer.
-    if (renderer_type() != RENDERER_GL && flags & kForceShaders)
+    if (renderer_type_ != RENDERER_GL && flags & kForceShaders)
       return;
 
-    SCOPED_TRACE(TestTypeToString(renderer_type()));
+    SCOPED_TRACE(TestTypeToString());
     SCOPED_TRACE(SkBlendMode_Name(current_blend_mode()));
 
     scoped_refptr<SolidColorLayer> root = CreateSolidColorLayer(
@@ -231,8 +232,8 @@ class LayerTreeHostBlendingPixelTest
     force_antialiasing_ = (flags & kUseAntialiasing);
     force_blending_with_shaders_ = (flags & kForceShaders);
 
-    if ((renderer_type() == RENDERER_GL && force_antialiasing_) ||
-        renderer_type() == RENDERER_SKIA_VK) {
+    if ((renderer_type_ == RENDERER_GL && force_antialiasing_) ||
+        renderer_type_ == RENDERER_SKIA_VK) {
       // Blending results might differ with one pixel.
       float percentage_pixels_error = 35.f;
       float percentage_pixels_small_error = 0.f;
@@ -273,7 +274,6 @@ INSTANTIATE_TEST_SUITE_P(B,
 TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRoot) {
   const int kRootWidth = 2;
   const int kRootHeight = 2;
-  InitializeFromTestCase(resource_type());
 
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(kRootWidth, kRootHeight), kCSSOrange);
@@ -300,7 +300,6 @@ TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRoot) {
 TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithBackdropFilter) {
   const int kRootWidth = 2;
   const int kRootHeight = 2;
-  InitializeFromTestCase(resource_type());
 
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(kRootWidth, kRootHeight), kCSSOrange);
@@ -340,7 +339,6 @@ TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithBackdropFilter) {
 TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithTransparent) {
   const int kRootWidth = 2;
   const int kRootHeight = 2;
-  InitializeFromTestCase(resource_type());
 
   // Intermediate layer here that should be ignored because of the isolated
   // group.

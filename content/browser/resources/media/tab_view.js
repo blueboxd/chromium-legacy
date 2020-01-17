@@ -82,7 +82,7 @@ var TabView = (function() {
           this.tabElements_[id].body);
 
       delete this.tabElements_[id];
-      if (this.activeTabId_ == id) {
+      if (this.activeTabId_ === id) {
         this.switchTab_(Object.keys(this.tabElements_)[0]);
       }
     },

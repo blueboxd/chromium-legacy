@@ -80,11 +80,11 @@ gfx::Rect GetLocationForFindBarView(gfx::Rect view_location,
 // FindBarHost, public:
 
 FindBarHost::FindBarHost(BrowserView* browser_view)
-    : DropdownBarHost(browser_view),
-      find_bar_controller_(NULL),
-      audible_alerts_(0) {
-  FindBarView* find_bar_view = new FindBarView(this);
-  Init(browser_view->find_bar_host_view(), find_bar_view, find_bar_view);
+    : DropdownBarHost(browser_view) {
+  auto find_bar_view = std::make_unique<FindBarView>(this);
+  DropdownBarHostDelegate* find_bar_delegate = find_bar_view.get();
+  Init(browser_view->find_bar_host_view(), std::move(find_bar_view),
+       find_bar_delegate);
 }
 
 FindBarHost::~FindBarHost() {

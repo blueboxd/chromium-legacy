@@ -114,12 +114,8 @@ if (is_linux) {
 set_sources_assignment_filter([])
 
 source_set("constants") {
-  sources = [
-    "base/trace_constants.h",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "base/trace_constants.h" ]
+  deps = [ "//base" ]
 }
 
 component("net") {
@@ -764,8 +760,6 @@ component("net") {
       "http2/platform/impl/http2_flags_impl.h",
       "http2/platform/impl/http2_logging_impl.h",
       "http2/platform/impl/http2_macros_impl.h",
-      "http2/platform/impl/http2_optional_impl.h",
-      "http2/platform/impl/http2_reconstruct_object_impl.h",
       "http2/platform/impl/http2_string_impl.h",
       "http2/platform/impl/http2_string_utils_impl.h",
       "log/file_net_log_observer.cc",
@@ -876,7 +870,6 @@ component("net") {
       "quic/platform/impl/quic_hostname_utils_impl.cc",
       "quic/platform/impl/quic_hostname_utils_impl.h",
       "quic/platform/impl/quic_iovec_impl.h",
-      "quic/platform/impl/quic_logging_impl.h",
       "quic/platform/impl/quic_macros_impl.h",
       "quic/platform/impl/quic_map_util_impl.h",
       "quic/platform/impl/quic_mem_slice_impl.cc",
@@ -948,6 +941,8 @@ component("net") {
       "quiche/common/platform/impl/quiche_endian_impl.h",
       "quiche/common/platform/impl/quiche_export_impl.h",
       "quiche/common/platform/impl/quiche_logging_impl.h",
+      "quiche/common/platform/impl/quiche_optional_impl.h",
+      "quiche/common/platform/impl/quiche_ptr_util_impl.h",
       "quiche/common/platform/impl/quiche_str_cat_impl.h",
       "quiche/common/platform/impl/quiche_string_piece_impl.h",
       "quiche/common/platform/impl/quiche_text_utils_impl.h",
@@ -1037,8 +1032,6 @@ component("net") {
       "spdy/platform/impl/spdy_map_util_impl.h",
       "spdy/platform/impl/spdy_mem_slice_impl.cc",
       "spdy/platform/impl/spdy_mem_slice_impl.h",
-      "spdy/platform/impl/spdy_ptr_util_impl.h",
-      "spdy/platform/impl/spdy_string_piece_impl.h",
       "spdy/platform/impl/spdy_string_utils_impl.cc",
       "spdy/platform/impl/spdy_string_utils_impl.h",
       "spdy/platform/impl/spdy_test_utils_prod_impl.h",
@@ -1080,10 +1073,16 @@ component("net") {
       "third_party/quiche/src/common/platform/api/quiche_endian.h",
       "third_party/quiche/src/common/platform/api/quiche_export.h",
       "third_party/quiche/src/common/platform/api/quiche_logging.h",
+      "third_party/quiche/src/common/platform/api/quiche_optional.h",
+      "third_party/quiche/src/common/platform/api/quiche_ptr_util.h",
       "third_party/quiche/src/common/platform/api/quiche_str_cat.h",
       "third_party/quiche/src/common/platform/api/quiche_string_piece.h",
       "third_party/quiche/src/common/platform/api/quiche_text_utils.h",
       "third_party/quiche/src/common/platform/api/quiche_unordered_containers.h",
+      "third_party/quiche/src/common/quiche_data_reader.cc",
+      "third_party/quiche/src/common/quiche_data_reader.h",
+      "third_party/quiche/src/common/quiche_data_writer.cc",
+      "third_party/quiche/src/common/quiche_data_writer.h",
       "third_party/quiche/src/common/simple_linked_hash_map.h",
       "third_party/quiche/src/http2/decoder/decode_buffer.cc",
       "third_party/quiche/src/http2/decoder/decode_buffer.h",
@@ -1176,8 +1175,6 @@ component("net") {
       "third_party/quiche/src/http2/platform/api/http2_flags.h",
       "third_party/quiche/src/http2/platform/api/http2_logging.h",
       "third_party/quiche/src/http2/platform/api/http2_macros.h",
-      "third_party/quiche/src/http2/platform/api/http2_optional.h",
-      "third_party/quiche/src/http2/platform/api/http2_reconstruct_object.h",
       "third_party/quiche/src/http2/platform/api/http2_string_utils.h",
       "third_party/quiche/src/quic/core/congestion_control/bandwidth_sampler.cc",
       "third_party/quiche/src/quic/core/congestion_control/bandwidth_sampler.h",
@@ -1470,6 +1467,8 @@ component("net") {
       "third_party/quiche/src/quic/core/quic_data_reader.h",
       "third_party/quiche/src/quic/core/quic_data_writer.cc",
       "third_party/quiche/src/quic/core/quic_data_writer.h",
+      "third_party/quiche/src/quic/core/quic_datagram_queue.cc",
+      "third_party/quiche/src/quic/core/quic_datagram_queue.h",
       "third_party/quiche/src/quic/core/quic_flow_controller.cc",
       "third_party/quiche/src/quic/core/quic_flow_controller.h",
       "third_party/quiche/src/quic/core/quic_framer.cc",
@@ -1650,8 +1649,6 @@ component("net") {
       "third_party/quiche/src/spdy/platform/api/spdy_macros.h",
       "third_party/quiche/src/spdy/platform/api/spdy_map_util.h",
       "third_party/quiche/src/spdy/platform/api/spdy_mem_slice.h",
-      "third_party/quiche/src/spdy/platform/api/spdy_ptr_util.h",
-      "third_party/quiche/src/spdy/platform/api/spdy_string_piece.h",
       "third_party/quiche/src/spdy/platform/api/spdy_string_utils.h",
       "url_request/redirect_info.cc",
       "url_request/redirect_info.h",
@@ -2234,9 +2231,7 @@ component("net") {
 # net_export.h has its own build target so that code (eg
 # net_nqe_proto) can use it without depending on the whole of //net.
 source_set("net_export_header") {
-  sources = [
-    "base/net_export.h",
-  ]
+  sources = [ "base/net_export.h" ]
 }
 
 # Private dependencies for the //net component and for any build targets (e.g.
@@ -2343,9 +2338,7 @@ source_set("net_public_deps") {
 
 if (is_android) {
   java_cpp_enum("effective_connection_type_java") {
-    sources = [
-      "//net/nqe/effective_connection_type.h",
-    ]
+    sources = [ "//net/nqe/effective_connection_type.h" ]
   }
 }
 
@@ -2360,16 +2353,12 @@ grit("net_resources") {
 proto_library("net_nqe_proto") {
   visibility = [ ":net_public_deps" ]
 
-  sources = [
-    "nqe/proto/network_id_proto.proto",
-  ]
+  sources = [ "nqe/proto/network_id_proto.proto" ]
   cc_generator_options = "dllexport_decl=NET_EXPORT_PRIVATE:"
   cc_include = "net/base/net_export.h"
   component_build_force_source_set = true
 
-  deps = [
-    ":net_export_header",
-  ]
+  deps = [ ":net_export_header" ]
 
   defines = [ "NET_IMPLEMENTATION" ]
 
@@ -2388,9 +2377,7 @@ proto_library("net_quic_proto") {
   cc_include = "net/base/net_export.h"
   component_build_force_source_set = true
 
-  deps = [
-    ":net_export_header",
-  ]
+  deps = [ ":net_export_header" ]
 
   defines = [ "NET_IMPLEMENTATION" ]
 
@@ -2407,9 +2394,7 @@ proto_library("net_quic_test_tools_proto") {
   cc_include = "net/base/net_export.h"
   component_build_force_source_set = true
 
-  deps = [
-    ":net_export_header",
-  ]
+  deps = [ ":net_export_header" ]
 
   defines = [ "NET_IMPLEMENTATION" ]
 
@@ -2445,9 +2430,7 @@ static_library("preload_decoder") {
     "extras/preload_data/decoder.cc",
     "extras/preload_data/decoder.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 if (!is_ios) {
@@ -2697,10 +2680,8 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/www.ahrn.com.pem",
     "data/ssl/certificates/x509_verify_results.chain.pem",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 static_library("test_support") {
@@ -2858,9 +2839,7 @@ static_library("test_support") {
 
   allow_circular_includes_from = [ "//net/dns:test_support" ]
 
-  data = [
-    "data/",
-  ]
+  data = [ "data/" ]
 
   if (is_mac) {
     libs = [ "Security.framework" ]
@@ -2968,9 +2947,7 @@ if (!is_ios && !is_android) {
 
   executable("crash_cache") {
     testonly = true
-    sources = [
-      "tools/crash_cache/crash_cache.cc",
-    ]
+    sources = [ "tools/crash_cache/crash_cache.cc" ]
 
     deps = [
       ":net",
@@ -2982,9 +2959,7 @@ if (!is_ios && !is_android) {
 
   executable("dns_fuzz_stub") {
     testonly = true
-    sources = [
-      "tools/dns_fuzz_stub/dns_fuzz_stub.cc",
-    ]
+    sources = [ "tools/dns_fuzz_stub/dns_fuzz_stub.cc" ]
 
     deps = [
       ":net",
@@ -2995,9 +2970,7 @@ if (!is_ios && !is_android) {
 
   executable("hpack_example_generator") {
     testonly = true
-    sources = [
-      "spdy/fuzzing/hpack_example_generator.cc",
-    ]
+    sources = [ "spdy/fuzzing/hpack_example_generator.cc" ]
 
     deps = [
       ":net",
@@ -3009,9 +2982,7 @@ if (!is_ios && !is_android) {
 
   executable("net_watcher") {
     testonly = true
-    sources = [
-      "tools/net_watcher/net_watcher.cc",
-    ]
+    sources = [ "tools/net_watcher/net_watcher.cc" ]
     deps = [
       ":net",
       "//base",
@@ -3021,9 +2992,7 @@ if (!is_ios && !is_android) {
 
   executable("run_testserver") {
     testonly = true
-    sources = [
-      "tools/testserver/run_testserver.cc",
-    ]
+    sources = [ "tools/testserver/run_testserver.cc" ]
     deps = [
       ":test_support",
       "//base",
@@ -3035,9 +3004,7 @@ if (!is_ios && !is_android) {
 
   executable("stress_cache") {
     testonly = true
-    sources = [
-      "tools/stress_cache/stress_cache.cc",
-    ]
+    sources = [ "tools/stress_cache/stress_cache.cc" ]
 
     deps = [
       ":net",
@@ -3048,9 +3015,7 @@ if (!is_ios && !is_android) {
   }
 
   executable("tld_cleanup") {
-    sources = [
-      "tools/tld_cleanup/tld_cleanup.cc",
-    ]
+    sources = [ "tools/tld_cleanup/tld_cleanup.cc" ]
 
     deps = [
       "//base",
@@ -3089,9 +3054,7 @@ if (use_external_gssapi) {
 if (is_linux || is_mac) {
   executable("cachetool") {
     testonly = true
-    sources = [
-      "tools/cachetool/cachetool.cc",
-    ]
+    sources = [ "tools/cachetool/cachetool.cc" ]
     deps = [
       ":net",
       ":test_support",
@@ -3148,6 +3111,7 @@ if (is_linux) {
       "quic/platform/impl/quic_socket_utils.cc",
       "quic/platform/impl/quic_socket_utils.h",
       "quic/platform/impl/quic_stream_buffer_allocator_impl.h",
+      "quic/platform/impl/quic_udp_socket_platform_impl.h",
       "third_party/quiche/src/quic/core/quic_default_packet_writer.cc",
       "third_party/quiche/src/quic/core/quic_default_packet_writer.h",
       "third_party/quiche/src/quic/core/quic_epoll_alarm_factory.cc",
@@ -3156,8 +3120,11 @@ if (is_linux) {
       "third_party/quiche/src/quic/core/quic_epoll_connection_helper.h",
       "third_party/quiche/src/quic/core/quic_packet_reader.cc",
       "third_party/quiche/src/quic/core/quic_packet_reader.h",
+      "third_party/quiche/src/quic/core/quic_udp_socket.h",
+      "third_party/quiche/src/quic/core/quic_udp_socket_posix.cc",
       "third_party/quiche/src/quic/platform/api/quic_epoll.h",
       "third_party/quiche/src/quic/platform/api/quic_stream_buffer_allocator.h",
+      "third_party/quiche/src/quic/platform/api/quic_udp_socket_platform_api.h",
       "third_party/quiche/src/quic/tools/quic_client.cc",
       "third_party/quiche/src/quic/tools/quic_client.h",
       "third_party/quiche/src/quic/tools/quic_client_epoll_network_helper.cc",
@@ -3215,9 +3182,8 @@ if (is_linux) {
 
   executable("quic_client_interop_test") {
     testonly = true
-    sources = [
-      "third_party/quiche/src/quic/tools/quic_client_interop_test_bin.cc",
-    ]
+    sources =
+        [ "third_party/quiche/src/quic/tools/quic_client_interop_test_bin.cc" ]
     deps = [
       ":epoll_quic_tools",
       ":net",
@@ -3261,9 +3227,7 @@ if (is_linux) {
   }
 
   executable("masque_client") {
-    sources = [
-      "third_party/quiche/src/quic/masque/masque_client_bin.cc",
-    ]
+    sources = [ "third_party/quiche/src/quic/masque/masque_client_bin.cc" ]
     deps = [
       ":epoll_quic_tools",
       ":masque_tools",
@@ -3275,9 +3239,7 @@ if (is_linux) {
   }
 
   executable("masque_server") {
-    sources = [
-      "third_party/quiche/src/quic/masque/masque_server_bin.cc",
-    ]
+    sources = [ "third_party/quiche/src/quic/masque/masque_server_bin.cc" ]
     deps = [
       ":epoll_quic_tools",
       ":masque_tools",
@@ -3322,9 +3284,7 @@ if (is_android) {
 if (is_android || is_linux) {
   executable("disk_cache_memory_test") {
     testonly = true
-    sources = [
-      "tools/disk_cache_memory_test/disk_cache_memory_test.cc",
-    ]
+    sources = [ "tools/disk_cache_memory_test/disk_cache_memory_test.cc" ]
     deps = [
       ":net",
       "//base",
@@ -3372,8 +3332,11 @@ source_set("quiche_test_tools") {
   sources = [
     "quiche/common/platform/impl/quiche_test_impl.h",
     "third_party/quiche/src/common/platform/api/quiche_test.h",
+    "third_party/quiche/src/common/test_tools/quiche_test_utils.cc",
+    "third_party/quiche/src/common/test_tools/quiche_test_utils.h",
   ]
   deps = [
+    ":net",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -3535,6 +3498,7 @@ source_set("quic_test_tools") {
   ]
   deps = [
     ":net",
+    ":quiche_test_tools",
     ":simple_quic_tools",
     ":test_support",
     "//base",
@@ -3690,9 +3654,7 @@ if (!is_ios) {
     ]
   }
   executable("quic_transport_simple_server") {
-    sources = [
-      "tools/quic/quic_transport_simple_server_bin.cc",
-    ]
+    sources = [ "tools/quic/quic_transport_simple_server_bin.cc" ]
     deps = [
       ":net",
       ":simple_quic_tools",
@@ -3703,9 +3665,7 @@ if (!is_ios) {
     ]
   }
   executable("quic_packet_printer") {
-    sources = [
-      "third_party/quiche/src/quic/tools/quic_packet_printer_bin.cc",
-    ]
+    sources = [ "third_party/quiche/src/quic/tools/quic_packet_printer_bin.cc" ]
     deps = [
       ":net",
       ":simple_quic_tools",
@@ -3757,9 +3717,7 @@ if (!is_ios) {
   }
 
   executable("crypto_message_printer") {
-    sources = [
-      "tools/quic/crypto_message_printer_bin.cc",
-    ]
+    sources = [ "tools/quic/crypto_message_printer_bin.cc" ]
     deps = [
       ":net",
       "//base",
@@ -5122,10 +5080,8 @@ bundle_data("net_unittests_bundle_data") {
     "third_party/nist-pkits/crls/requireExplicitPolicy7subsubCARE2RE4CRL.crl",
     "third_party/nist-pkits/crls/requireExplicitPolicy7subsubsubCARE2RE4CRL.crl",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 test("net_unittests") {
@@ -5431,6 +5387,7 @@ test("net_unittests") {
     "test/run_all_unittests.cc",
     "test/tcp_socket_proxy_unittest.cc",
     "third_party/nist-pkits/pkits_testcases-inl.h",
+    "third_party/quiche/src/common/quiche_data_writer_test.cc",
     "third_party/quiche/src/common/simple_linked_hash_map_test.cc",
     "third_party/quiche/src/http2/decoder/decode_buffer_test.cc",
     "third_party/quiche/src/http2/decoder/decode_http2_structures_test.cc",
@@ -5603,6 +5560,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/quic_crypto_server_stream_test.cc",
     "third_party/quiche/src/quic/core/quic_crypto_stream_test.cc",
     "third_party/quiche/src/quic/core/quic_data_writer_test.cc",
+    "third_party/quiche/src/quic/core/quic_datagram_queue_test.cc",
     "third_party/quiche/src/quic/core/quic_dispatcher_test.cc",
     "third_party/quiche/src/quic/core/quic_error_codes_test.cc",
     "third_party/quiche/src/quic/core/quic_flow_controller_test.cc",
@@ -5648,6 +5606,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/platform/api/quic_mem_slice_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_reference_counted_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_socket_address_test.cc",
+    "third_party/quiche/src/quic/platform/api/quic_string_utils_test.cc",
     "third_party/quiche/src/quic/quic_transport/quic_transport_client_session_test.cc",
     "third_party/quiche/src/quic/quic_transport/quic_transport_integration_test.cc",
     "third_party/quiche/src/quic/quic_transport/quic_transport_server_session_test.cc",
@@ -5685,6 +5644,7 @@ test("net_unittests") {
     "third_party/quiche/src/spdy/core/spdy_frame_reader_test.cc",
     "third_party/quiche/src/spdy/core/spdy_framer_test.cc",
     "third_party/quiche/src/spdy/core/spdy_header_block_test.cc",
+    "third_party/quiche/src/spdy/core/spdy_header_storage_test.cc",
     "third_party/quiche/src/spdy/core/spdy_intrusive_list_test.cc",
     "third_party/quiche/src/spdy/core/spdy_no_op_visitor.cc",
     "third_party/quiche/src/spdy/core/spdy_no_op_visitor.h",
@@ -5901,9 +5861,7 @@ test("net_unittests") {
   }
 
   data = []
-  data_deps = [
-    "third_party/nist-pkits/",
-  ]
+  data_deps = [ "third_party/nist-pkits/" ]
 
   if (is_linux || is_mac || is_win || is_fuchsia) {
     deps += [
@@ -5952,6 +5910,10 @@ test("net_unittests") {
       ":epoll_server",
       ":epoll_server_test_tools",
     ]
+
+    if (!is_chromeos) {
+      sources += [ "third_party/quiche/src/quic/core/quic_udp_socket_test.cc" ]
+    }
   }
 
   if (is_mac || is_ios) {
@@ -6263,15 +6225,11 @@ if (use_fuzzing_engine) {
 }
 
 proto_library("disk_cache_lpm_fuzzer_proto") {
-  sources = [
-    "disk_cache/disk_cache_fuzzer.proto",
-  ]
+  sources = [ "disk_cache/disk_cache_fuzzer.proto" ]
 }
 
 fuzzer_test("disk_cache_lpm_fuzzer") {
-  sources = [
-    "disk_cache/disk_cache_fuzzer.cc",
-  ]
+  sources = [ "disk_cache/disk_cache_fuzzer.cc" ]
   deps = [
     ":disk_cache_lpm_fuzzer_proto",
     ":test_support",
@@ -6282,9 +6240,7 @@ fuzzer_test("disk_cache_lpm_fuzzer") {
 }
 
 fuzzer_test("net_data_url_fuzzer") {
-  sources = [
-    "base/data_url_fuzzer.cc",
-  ]
+  sources = [ "base/data_url_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":test_support",
@@ -6298,9 +6254,7 @@ fuzzer_test("net_data_url_fuzzer") {
 }
 
 fuzzer_test("net_mime_sniffer_fuzzer") {
-  sources = [
-    "base/mime_sniffer_fuzzer.cc",
-  ]
+  sources = [ "base/mime_sniffer_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//base",
@@ -6310,9 +6264,7 @@ fuzzer_test("net_mime_sniffer_fuzzer") {
 }
 
 fuzzer_test("net_parse_proxy_list_pac_fuzzer") {
-  sources = [
-    "proxy_resolution/parse_proxy_list_pac_fuzzer.cc",
-  ]
+  sources = [ "proxy_resolution/parse_proxy_list_pac_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//net",
@@ -6320,9 +6272,7 @@ fuzzer_test("net_parse_proxy_list_pac_fuzzer") {
 }
 
 fuzzer_test("net_parse_proxy_list_fuzzer") {
-  sources = [
-    "proxy_resolution/parse_proxy_list_fuzzer.cc",
-  ]
+  sources = [ "proxy_resolution/parse_proxy_list_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//net",
@@ -6330,9 +6280,7 @@ fuzzer_test("net_parse_proxy_list_fuzzer") {
 }
 
 fuzzer_test("net_parse_proxy_bypass_rules_fuzzer") {
-  sources = [
-    "proxy_resolution/parse_proxy_bypass_rules_fuzzer.cc",
-  ]
+  sources = [ "proxy_resolution/parse_proxy_bypass_rules_fuzzer.cc" ]
 
   libfuzzer_options = [
     # The proxy bypass rules aren't very complicated, so this is more than
@@ -6348,9 +6296,7 @@ fuzzer_test("net_parse_proxy_bypass_rules_fuzzer") {
 }
 
 fuzzer_test("net_parse_proxy_rules_fuzzer") {
-  sources = [
-    "proxy_resolution/parse_proxy_rules_fuzzer.cc",
-  ]
+  sources = [ "proxy_resolution/parse_proxy_rules_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//net",
@@ -6359,9 +6305,7 @@ fuzzer_test("net_parse_proxy_rules_fuzzer") {
 }
 
 fuzzer_test("net_parse_ip_pattern_fuzzer") {
-  sources = [
-    "base/parse_ip_pattern_fuzzer.cc",
-  ]
+  sources = [ "base/parse_ip_pattern_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//net",
@@ -6369,9 +6313,8 @@ fuzzer_test("net_parse_ip_pattern_fuzzer") {
 }
 
 fuzzer_test("net_get_domain_and_registry_fuzzer") {
-  sources = [
-    "base/registry_controlled_domains/get_domain_and_registry_fuzzer.cc",
-  ]
+  sources =
+      [ "base/registry_controlled_domains/get_domain_and_registry_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//base",
@@ -6381,9 +6324,7 @@ fuzzer_test("net_get_domain_and_registry_fuzzer") {
 }
 
 fuzzer_test("net_cert_ct_decode_signed_certificate_timestamp_fuzzer") {
-  sources = [
-    "cert/decode_signed_certificate_timestamp_fuzzer.cc",
-  ]
+  sources = [ "cert/decode_signed_certificate_timestamp_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//base",
@@ -6392,9 +6333,7 @@ fuzzer_test("net_cert_ct_decode_signed_certificate_timestamp_fuzzer") {
 }
 
 fuzzer_test("net_cert_verify_name_match_fuzzer") {
-  sources = [
-    "cert/internal/verify_name_match_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/verify_name_match_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//base",
@@ -6403,9 +6342,7 @@ fuzzer_test("net_cert_verify_name_match_fuzzer") {
 }
 
 fuzzer_test("net_cert_normalize_name_fuzzer") {
-  sources = [
-    "cert/internal/verify_name_match_normalizename_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/verify_name_match_normalizename_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -6413,9 +6350,7 @@ fuzzer_test("net_cert_normalize_name_fuzzer") {
 }
 
 fuzzer_test("net_cert_verify_name_in_subtree_fuzzer") {
-  sources = [
-    "cert/internal/verify_name_match_verifynameinsubtree_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/verify_name_match_verifynameinsubtree_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//base",
@@ -6424,9 +6359,7 @@ fuzzer_test("net_cert_verify_name_in_subtree_fuzzer") {
 }
 
 fuzzer_test("net_cert_crl_parse_crl_certificatelist_fuzzer") {
-  sources = [
-    "cert/internal/crl_parse_crl_certificatelist_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/crl_parse_crl_certificatelist_fuzzer.cc" ]
   seed_corpus = "data/fuzzer_data/crl_parse_crl_certificatelist_fuzzer"
   deps = [
     "//base",
@@ -6435,9 +6368,7 @@ fuzzer_test("net_cert_crl_parse_crl_certificatelist_fuzzer") {
 }
 
 fuzzer_test("net_cert_crl_parse_crl_tbscertlist_fuzzer") {
-  sources = [
-    "cert/internal/crl_parse_crl_tbscertlist_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/crl_parse_crl_tbscertlist_fuzzer.cc" ]
   seed_corpus = "data/fuzzer_data/crl_parse_crl_tbscertlist_fuzzer"
   deps = [
     "//base",
@@ -6446,9 +6377,7 @@ fuzzer_test("net_cert_crl_parse_crl_tbscertlist_fuzzer") {
 }
 
 fuzzer_test("net_cert_crl_parse_issuing_distribution_point_fuzzer") {
-  sources = [
-    "cert/internal/crl_parse_issuing_distribution_point_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/crl_parse_issuing_distribution_point_fuzzer.cc" ]
   seed_corpus = "data/fuzzer_data/crl_parse_issuing_distribution_point_fuzzer"
   deps = [
     "//base",
@@ -6457,9 +6386,7 @@ fuzzer_test("net_cert_crl_parse_issuing_distribution_point_fuzzer") {
 }
 
 fuzzer_test("net_cert_crl_getcrlstatusforcert_fuzzer") {
-  sources = [
-    "cert/internal/crl_getcrlstatusforcert_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/crl_getcrlstatusforcert_fuzzer.cc" ]
   seed_corpus = "data/fuzzer_data/crl_getcrlstatusforcert_fuzzer"
   deps = [
     "//base",
@@ -6468,9 +6395,7 @@ fuzzer_test("net_cert_crl_getcrlstatusforcert_fuzzer") {
 }
 
 fuzzer_test("net_cert_ocsp_parse_ocsp_cert_id_fuzzer") {
-  sources = [
-    "cert/internal/ocsp_parse_ocsp_cert_id_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/ocsp_parse_ocsp_cert_id_fuzzer.cc" ]
   seed_corpus = "data/fuzzer_data/parse_ocsp_cert_id_fuzzer"
   deps = [
     "//base",
@@ -6479,9 +6404,7 @@ fuzzer_test("net_cert_ocsp_parse_ocsp_cert_id_fuzzer") {
 }
 
 fuzzer_test("net_cert_ocsp_parse_ocsp_single_response_fuzzer") {
-  sources = [
-    "cert/internal/ocsp_parse_ocsp_single_response_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/ocsp_parse_ocsp_single_response_fuzzer.cc" ]
   seed_corpus = "data/fuzzer_data/parse_ocsp_single_response_fuzzer"
   deps = [
     "//base",
@@ -6490,9 +6413,7 @@ fuzzer_test("net_cert_ocsp_parse_ocsp_single_response_fuzzer") {
 }
 
 fuzzer_test("net_cert_ocsp_parse_ocsp_response_data_fuzzer") {
-  sources = [
-    "cert/internal/ocsp_parse_ocsp_response_data_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/ocsp_parse_ocsp_response_data_fuzzer.cc" ]
   seed_corpus = "data/fuzzer_data/parse_ocsp_response_data_fuzzer"
   deps = [
     "//base",
@@ -6501,9 +6422,7 @@ fuzzer_test("net_cert_ocsp_parse_ocsp_response_data_fuzzer") {
 }
 
 fuzzer_test("net_cert_ocsp_parse_ocsp_response_fuzzer") {
-  sources = [
-    "cert/internal/ocsp_parse_ocsp_response_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/ocsp_parse_ocsp_response_fuzzer.cc" ]
   seed_corpus = "data/fuzzer_data/parse_ocsp_response_fuzzer"
   deps = [
     "//base",
@@ -6512,9 +6431,7 @@ fuzzer_test("net_cert_ocsp_parse_ocsp_response_fuzzer") {
 }
 
 fuzzer_test("net_cert_parse_authority_key_identifier_fuzzer") {
-  sources = [
-    "cert/internal/parse_authority_key_identifier_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/parse_authority_key_identifier_fuzzer.cc" ]
   seed_corpus = "data/fuzzer_data/parse_authority_key_identifier_fuzzer"
   deps = [
     "//base",
@@ -6523,9 +6440,7 @@ fuzzer_test("net_cert_parse_authority_key_identifier_fuzzer") {
 }
 
 fuzzer_test("net_cert_parse_certificate_fuzzer") {
-  sources = [
-    "cert/internal/parse_certificate_fuzzer.cc",
-  ]
+  sources = [ "cert/internal/parse_certificate_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -6533,9 +6448,7 @@ fuzzer_test("net_cert_parse_certificate_fuzzer") {
 }
 
 fuzzer_test("net_canonical_cookie_fuzzer") {
-  sources = [
-    "cookies/canonical_cookie_fuzzer.cc",
-  ]
+  sources = [ "cookies/canonical_cookie_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//net",
@@ -6544,9 +6457,7 @@ fuzzer_test("net_canonical_cookie_fuzzer") {
 }
 
 fuzzer_test("net_parse_cookie_line_fuzzer") {
-  sources = [
-    "cookies/parse_cookie_line_fuzzer.cc",
-  ]
+  sources = [ "cookies/parse_cookie_line_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//net",
@@ -6554,9 +6465,7 @@ fuzzer_test("net_parse_cookie_line_fuzzer") {
 }
 
 fuzzer_test("net_http_stream_parser_fuzzer") {
-  sources = [
-    "http/http_stream_parser_fuzzer.cc",
-  ]
+  sources = [ "http/http_stream_parser_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":test_support",
@@ -6585,9 +6494,7 @@ if (!is_win) {
 
 if (!disable_brotli_filter) {
   fuzzer_test("net_brotli_source_stream_fuzzer") {
-    sources = [
-      "filter/brotli_source_stream_fuzzer.cc",
-    ]
+    sources = [ "filter/brotli_source_stream_fuzzer.cc" ]
     deps = [
       ":net_fuzzer_test_support",
       ":test_support",
@@ -6598,9 +6505,7 @@ if (!disable_brotli_filter) {
 }
 
 fuzzer_test("net_gzip_source_stream_fuzzer") {
-  sources = [
-    "filter/gzip_source_stream_fuzzer.cc",
-  ]
+  sources = [ "filter/gzip_source_stream_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":test_support",
@@ -6610,9 +6515,7 @@ fuzzer_test("net_gzip_source_stream_fuzzer") {
 }
 
 fuzzer_test("net_crl_set_fuzzer") {
-  sources = [
-    "cert/crl_set_fuzzer.cc",
-  ]
+  sources = [ "cert/crl_set_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":test_support",
@@ -6624,9 +6527,7 @@ fuzzer_test("net_crl_set_fuzzer") {
 
 if (!disable_ftp_support) {
   fuzzer_test("net_ftp_ctrl_response_fuzzer") {
-    sources = [
-      "ftp/ftp_ctrl_response_fuzzer.cc",
-    ]
+    sources = [ "ftp/ftp_ctrl_response_fuzzer.cc" ]
     deps = [
       ":net_fuzzer_test_support",
       "//base",
@@ -6635,9 +6536,7 @@ if (!disable_ftp_support) {
   }
 
   fuzzer_test("net_ftp_directory_listing_fuzzer") {
-    sources = [
-      "ftp/ftp_directory_listing_fuzzer.cc",
-    ]
+    sources = [ "ftp/ftp_directory_listing_fuzzer.cc" ]
     deps = [
       ":net_fuzzer_test_support",
       "//base",
@@ -6650,9 +6549,7 @@ if (!disable_ftp_support) {
   }
 
   fuzzer_test("net_url_request_ftp_fuzzer") {
-    sources = [
-      "url_request/url_request_ftp_fuzzer.cc",
-    ]
+    sources = [ "url_request/url_request_ftp_fuzzer.cc" ]
     deps = [
       ":net_fuzzer_test_support",
       ":test_support",
@@ -6669,9 +6566,7 @@ if (!disable_ftp_support) {
 }
 
 fuzzer_test("net_unescape_url_component_fuzzer") {
-  sources = [
-    "base/unescape_url_component_fuzzer.cc",
-  ]
+  sources = [ "base/unescape_url_component_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//base",
@@ -6682,9 +6577,7 @@ fuzzer_test("net_unescape_url_component_fuzzer") {
 }
 
 fuzzer_test("net_websocket_deflate_stream_fuzzer") {
-  sources = [
-    "websockets/websocket_deflate_stream_fuzzer.cc",
-  ]
+  sources = [ "websockets/websocket_deflate_stream_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//net",
@@ -6694,9 +6587,7 @@ fuzzer_test("net_websocket_deflate_stream_fuzzer") {
 }
 
 fuzzer_test("net_websocket_extension_parser_fuzzer") {
-  sources = [
-    "websockets/websocket_extension_parser_fuzzer.cc",
-  ]
+  sources = [ "websockets/websocket_extension_parser_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//net",
@@ -6706,9 +6597,7 @@ fuzzer_test("net_websocket_extension_parser_fuzzer") {
 }
 
 fuzzer_test("net_websocket_frame_parser_fuzzer") {
-  sources = [
-    "websockets/websocket_frame_parser_fuzzer.cc",
-  ]
+  sources = [ "websockets/websocket_frame_parser_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//net",
@@ -6718,9 +6607,7 @@ fuzzer_test("net_websocket_frame_parser_fuzzer") {
 }
 
 fuzzer_test("net_http_chunked_decoder_fuzzer") {
-  sources = [
-    "http/http_chunked_decoder_fuzzer.cc",
-  ]
+  sources = [ "http/http_chunked_decoder_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//net",
@@ -6729,9 +6616,7 @@ fuzzer_test("net_http_chunked_decoder_fuzzer") {
 }
 
 fuzzer_test("net_http_auth_handler_basic_fuzzer") {
-  sources = [
-    "http/http_auth_handler_basic_fuzzer.cc",
-  ]
+  sources = [ "http/http_auth_handler_basic_fuzzer.cc" ]
   dict = "data/fuzzer_dictionaries/net_http_auth_handler_basic_fuzzer.dict"
   deps = [
     ":net_fuzzer_test_support",
@@ -6741,9 +6626,7 @@ fuzzer_test("net_http_auth_handler_basic_fuzzer") {
 }
 
 fuzzer_test("net_http_auth_handler_digest_fuzzer") {
-  sources = [
-    "http/http_auth_handler_digest_fuzzer.cc",
-  ]
+  sources = [ "http/http_auth_handler_digest_fuzzer.cc" ]
   dict = "data/fuzzer_dictionaries/net_http_auth_handler_digest_fuzzer.dict"
   deps = [
     ":net_fuzzer_test_support",
@@ -6753,9 +6636,7 @@ fuzzer_test("net_http_auth_handler_digest_fuzzer") {
 }
 
 fuzzer_test("net_http_content_disposition_fuzzer") {
-  sources = [
-    "http/http_content_disposition_fuzzer.cc",
-  ]
+  sources = [ "http/http_content_disposition_fuzzer.cc" ]
   dict = "data/fuzzer_dictionaries/net_http_content_disposition_fuzzer.dict"
   deps = [
     ":net_fuzzer_test_support",
@@ -6764,9 +6645,7 @@ fuzzer_test("net_http_content_disposition_fuzzer") {
 }
 
 fuzzer_test("net_http_proxy_client_socket_fuzzer") {
-  sources = [
-    "http/http_proxy_client_socket_fuzzer.cc",
-  ]
+  sources = [ "http/http_proxy_client_socket_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":test_support",
@@ -6777,9 +6656,7 @@ fuzzer_test("net_http_proxy_client_socket_fuzzer") {
 }
 
 fuzzer_test("net_parse_url_hostname_to_address_fuzzer") {
-  sources = [
-    "base/parse_url_hostname_to_address_fuzzer.cc",
-  ]
+  sources = [ "base/parse_url_hostname_to_address_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//base",
@@ -6790,9 +6667,7 @@ fuzzer_test("net_parse_url_hostname_to_address_fuzzer") {
 }
 
 fuzzer_test("net_quic_crypto_framer_parse_message_fuzzer") {
-  sources = [
-    "quic/quic_crypto_framer_parse_message_fuzzer.cc",
-  ]
+  sources = [ "quic/quic_crypto_framer_parse_message_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//base",
@@ -6801,9 +6676,7 @@ fuzzer_test("net_quic_crypto_framer_parse_message_fuzzer") {
 }
 
 fuzzer_test("net_quic_transport_parameters_fuzzer") {
-  sources = [
-    "quic/quic_transport_parameters_fuzzer.cc",
-  ]
+  sources = [ "quic/quic_transport_parameters_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//base",
@@ -6812,9 +6685,7 @@ fuzzer_test("net_quic_transport_parameters_fuzzer") {
 }
 
 fuzzer_test("net_socks_client_socket_fuzzer") {
-  sources = [
-    "socket/socks_client_socket_fuzzer.cc",
-  ]
+  sources = [ "socket/socks_client_socket_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":test_support",
@@ -6824,9 +6695,7 @@ fuzzer_test("net_socks_client_socket_fuzzer") {
 }
 
 fuzzer_test("net_socks5_client_socket_fuzzer") {
-  sources = [
-    "socket/socks5_client_socket_fuzzer.cc",
-  ]
+  sources = [ "socket/socks5_client_socket_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":test_support",
@@ -6836,9 +6705,7 @@ fuzzer_test("net_socks5_client_socket_fuzzer") {
 }
 
 fuzzer_test("net_url_request_fuzzer") {
-  sources = [
-    "url_request/url_request_fuzzer.cc",
-  ]
+  sources = [ "url_request/url_request_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":test_support",
@@ -6849,9 +6716,7 @@ fuzzer_test("net_url_request_fuzzer") {
 }
 
 fuzzer_test("net_auth_challenge_tokenizer_fuzzer") {
-  sources = [
-    "http/http_auth_challenge_tokenizer_fuzzer.cc",
-  ]
+  sources = [ "http/http_auth_challenge_tokenizer_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":test_support",
@@ -6861,9 +6726,7 @@ fuzzer_test("net_auth_challenge_tokenizer_fuzzer") {
 }
 
 fuzzer_test("net_http_security_headers_expect_ct_fuzzer") {
-  sources = [
-    "http/http_security_headers_expect_ct_fuzzer.cc",
-  ]
+  sources = [ "http/http_security_headers_expect_ct_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//base",
@@ -6875,9 +6738,7 @@ fuzzer_test("net_http_security_headers_expect_ct_fuzzer") {
 }
 
 fuzzer_test("net_http_security_headers_hsts_fuzzer") {
-  sources = [
-    "http/http_security_headers_hsts_fuzzer.cc",
-  ]
+  sources = [ "http/http_security_headers_hsts_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -6887,9 +6748,7 @@ fuzzer_test("net_http_security_headers_hsts_fuzzer") {
 }
 
 fuzzer_test("net_http_transport_security_state_static_fuzzer") {
-  sources = [
-    "http/transport_security_state_static_fuzzer.cc",
-  ]
+  sources = [ "http/transport_security_state_static_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//net",
@@ -6899,9 +6758,7 @@ fuzzer_test("net_http_transport_security_state_static_fuzzer") {
 }
 
 fuzzer_test("net_spdy_session_fuzzer") {
-  sources = [
-    "spdy/spdy_session_fuzzer.cc",
-  ]
+  sources = [ "spdy/spdy_session_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":test_support",
@@ -6914,9 +6771,7 @@ fuzzer_test("net_spdy_session_fuzzer") {
 }
 
 fuzzer_test("net_http2_frame_decoder_fuzzer") {
-  sources = [
-    "spdy/fuzzing/http2_frame_decoder_fuzzer.cc",
-  ]
+  sources = [ "spdy/fuzzing/http2_frame_decoder_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":test_support",
@@ -6926,9 +6781,7 @@ fuzzer_test("net_http2_frame_decoder_fuzzer") {
 }
 
 fuzzer_test("net_hpack_decoder_fuzzer") {
-  sources = [
-    "spdy/fuzzing/hpack_decoder_fuzzer.cc",
-  ]
+  sources = [ "spdy/fuzzing/hpack_decoder_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":test_support",
@@ -6938,17 +6791,13 @@ fuzzer_test("net_hpack_decoder_fuzzer") {
 }
 
 proto_library("reporting_policy_proto") {
-  import_dirs = [ "//testing/libfuzzer/proto/" ]
-  sources = [
-    "reporting/reporting_policy.proto",
-  ]
+  proto_in_dir = "//"
+  sources = [ "reporting/reporting_policy.proto" ]
   link_deps = [ "//testing/libfuzzer/proto:json_proto" ]
 }
 
 fuzzer_test("net_reporting_header_parser_fuzzer") {
-  sources = [
-    "reporting/reporting_header_parser_fuzzer.cc",
-  ]
+  sources = [ "reporting/reporting_header_parser_fuzzer.cc" ]
 
   deps = [
     ":net_fuzzer_test_support",
@@ -6963,9 +6812,7 @@ fuzzer_test("net_reporting_header_parser_fuzzer") {
 }
 
 fuzzer_test("net_quic_stream_factory_fuzzer") {
-  sources = [
-    "quic/quic_stream_factory_fuzzer.cc",
-  ]
+  sources = [ "quic/quic_stream_factory_fuzzer.cc" ]
 
   deps = [
     ":net_fuzzer_test_support",
@@ -6977,9 +6824,8 @@ fuzzer_test("net_quic_stream_factory_fuzzer") {
 }
 
 fuzzer_test("net_quic_framer_fuzzer") {
-  sources = [
-    "third_party/quiche/src/quic/test_tools/fuzzing/quic_framer_fuzzer.cc",
-  ]
+  sources =
+      [ "third_party/quiche/src/quic/test_tools/fuzzing/quic_framer_fuzzer.cc" ]
 
   deps = [
     ":net_fuzzer_test_support",
@@ -6991,9 +6837,7 @@ fuzzer_test("net_quic_framer_fuzzer") {
 }
 
 fuzzer_test("net_quic_framer_process_data_packet_fuzzer") {
-  sources = [
-    "third_party/quiche/src/quic/test_tools/fuzzing/quic_framer_process_data_packet_fuzzer.cc",
-  ]
+  sources = [ "third_party/quiche/src/quic/test_tools/fuzzing/quic_framer_process_data_packet_fuzzer.cc" ]
 
   deps = [
     ":net_fuzzer_test_support",
@@ -7005,9 +6849,7 @@ fuzzer_test("net_quic_framer_process_data_packet_fuzzer") {
 }
 
 fuzzer_test("net_uri_template_fuzzer") {
-  sources = [
-    "third_party/uri_template/uri_template_fuzzer.cc",
-  ]
+  sources = [ "third_party/uri_template/uri_template_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//base",
@@ -7031,9 +6873,7 @@ fuzzer_test("net_qpack_decoder_fuzzer") {
 }
 
 fuzzer_test("net_qpack_encoder_stream_receiver_fuzzer") {
-  sources = [
-    "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_encoder_stream_receiver_fuzzer.cc",
-  ]
+  sources = [ "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_encoder_stream_receiver_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     "//base",
@@ -7043,9 +6883,7 @@ fuzzer_test("net_qpack_encoder_stream_receiver_fuzzer") {
 }
 
 fuzzer_test("net_qpack_encoder_stream_sender_fuzzer") {
-  sources = [
-    "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_encoder_stream_sender_fuzzer.cc",
-  ]
+  sources = [ "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_encoder_stream_sender_fuzzer.cc" ]
   deps = [
     ":net_fuzzer_test_support",
     ":quic_test_tools",
@@ -7072,9 +6910,7 @@ fuzzer_test("net_qpack_round_trip_fuzzer") {
 
 if (is_linux) {
   fuzzer_test("net_base_address_tracker_linux_fuzzer") {
-    sources = [
-      "base/address_tracker_linux_fuzzer.cc",
-    ]
+    sources = [ "base/address_tracker_linux_fuzzer.cc" ]
     deps = [
       ":net_fuzzer_test_support",
       ":test_support",

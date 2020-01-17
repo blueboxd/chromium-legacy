@@ -3,9 +3,7 @@
 # found in the LICENSE file.
 
 executable("format_url") {
-  sources = [
-    "format_url.cc",
-  ]
+  sources = [ "format_url.cc" ]
   deps = [
     "//base",
     "//base:i18n",

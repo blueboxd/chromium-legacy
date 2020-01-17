@@ -21,3 +21,8 @@ InfoBarIOS* GetOverlayRequestInfobar(OverlayRequest* request) {
 InfobarType GetOverlayRequestInfobarType(OverlayRequest* request) {
   return request->GetConfig<InfobarOverlayRequestConfig>()->infobar_type();
 }
+
+InfobarOverlayType GetOverlayRequestInfobarOverlayType(
+    OverlayRequest* request) {
+  return request->GetConfig<InfobarOverlayRequestConfig>()->overlay_type();
+}

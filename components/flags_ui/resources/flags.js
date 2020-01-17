@@ -95,8 +95,8 @@ function renderTemplate(experimentalFeaturesData) {
     tabEls[i].addEventListener('click', function(e) {
       e.preventDefault();
       for (let j = 0; j < tabEls.length; ++j) {
-        tabEls[j].parentNode.classList.toggle('selected', tabEls[j] == this);
-        tabEls[j].setAttribute('aria-selected', tabEls[j] == this);
+        tabEls[j].parentNode.classList.toggle('selected', tabEls[j] === this);
+        tabEls[j].setAttribute('aria-selected', tabEls[j] === this);
       }
       FlagSearch.getInstance().announceSearchResults();
     });
@@ -126,7 +126,7 @@ function renderTemplate(experimentalFeaturesData) {
  */
 function registerFocusEvents(el) {
   el.addEventListener('keydown', function(e) {
-    if (lastChanged && e.key == 'Tab' && !e.shiftKey) {
+    if (lastChanged && e.key === 'Tab' && !e.shiftKey) {
       lastFocused = lastChanged;
       e.preventDefault();
       restartButton.focus();
@@ -313,8 +313,8 @@ function experimentChangesUiUpdates(node, index) {
   /** @suppress {missingProperties} */
   const experimentContainerEl = $(node.internal_name).firstElementChild;
   const isDefault =
-      ("default" in selected.dataset && selected.dataset.default == "1") ||
-      (!("default" in selected.dataset) && index === 0);
+      ('default' in selected.dataset && selected.dataset.default === '1') ||
+      (!('default' in selected.dataset) && index === 0);
   experimentContainerEl.classList.toggle('experiment-default', isDefault);
   experimentContainerEl.classList.toggle('experiment-switched', !isDefault);
 
@@ -428,7 +428,7 @@ FlagSearch.prototype = {
    * Initialises the in page search. Adding searchbox listeners and
    * collates the text elements used for string matching.
    */
-  init: function() {
+  init() {
     this.experiments_.link = /** @type {!NodeList<!HTMLElement>} */ (
         document.querySelectorAll('#tab-content-available .permalink'));
     this.experiments_.title = /** @type {!NodeList<!HTMLElement>} */ (
@@ -452,18 +452,18 @@ FlagSearch.prototype = {
           this.clearSearch.bind(this));
 
       window.addEventListener('keyup', function(e) {
-          if (document.activeElement.nodeName == "TEXTAREA") {
-            return;
-          }
-          switch(e.key) {
-            case '/':
-              this.searchBox_.focus();
-              break;
-            case 'Escape':
-            case 'Enter':
-              this.searchBox_.blur();
-              break;
-          }
+        if (document.activeElement.nodeName === 'TEXTAREA') {
+          return;
+        }
+        switch (e.key) {
+          case '/':
+            this.searchBox_.focus();
+            break;
+          case 'Escape':
+          case 'Enter':
+            this.searchBox_.blur();
+            break;
+        }
       }.bind(this));
       this.searchBox_.focus();
       this.initialized = true;
@@ -473,7 +473,7 @@ FlagSearch.prototype = {
   /**
    * Clears a search showing all experiments.
    */
-  clearSearch: function() {
+  clearSearch() {
     this.searchBox_.value = '';
     this.doSearch();
   },
@@ -483,7 +483,7 @@ FlagSearch.prototype = {
    * @param {HTMLElement} el The element to remove all highlighted mark up on.
    * @param {string} text Text to reset the element's textContent to.
    */
-  resetHighlights: function(el, text) {
+  resetHighlights(el, text) {
     if (el.children) {
       el.textContent = text;
     }
@@ -495,20 +495,20 @@ FlagSearch.prototype = {
    * @param {HTMLElement} el The node containing the text to match against.
    * @return {boolean} Whether there was a match.
    */
-  highlightMatchInElement: function(searchTerm, el) {
+  highlightMatchInElement(searchTerm, el) {
     // Experiment container.
     const parentEl = el.parentNode.parentNode.parentNode;
     const text = el.textContent;
     const match = text.toLowerCase().indexOf(searchTerm);
 
-    parentEl.classList.toggle('hidden', match == -1);
+    parentEl.classList.toggle('hidden', match === -1);
 
-    if (match == -1) {
+    if (match === -1) {
       this.resetHighlights(el, text);
       return false;
     }
 
-    if (searchTerm != '') {
+    if (searchTerm !== '') {
       // Clear all nodes.
       el.textContent = '';
 
@@ -543,7 +543,7 @@ FlagSearch.prototype = {
    * @param {string} searchTerm
    * @return {number} The number of matches found.
    */
-  highlightAllMatches: function(searchContent, searchTerm) {
+  highlightAllMatches(searchContent, searchTerm) {
     let matches = 0;
     for (let i = 0, j = searchContent.link.length; i < j; i++) {
       if (this.highlightMatchInElement(searchTerm, searchContent.title[i])) {
@@ -580,10 +580,10 @@ FlagSearch.prototype = {
   /**
    * Performs a search against the experiment title, description, permalink.
    */
-  doSearch: function() {
+  doSearch() {
     const searchTerm = this.searchBox_.value.trim().toLowerCase();
 
-    if (searchTerm || searchTerm == '') {
+    if (searchTerm || searchTerm === '') {
       document.body.classList.toggle('searching', searchTerm);
       // Available experiments
       this.noMatchMsg_[0].classList.toggle(
@@ -600,7 +600,7 @@ FlagSearch.prototype = {
     this.searchIntervalId_ = null;
   },
 
-  announceSearchResults: function() {
+  announceSearchResults() {
     const searchTerm = this.searchBox_.value.trim().toLowerCase();
     if (!searchTerm) {
       return;
@@ -610,7 +610,7 @@ FlagSearch.prototype = {
     const tabEls = document.getElementsByClassName('tab');
     for (let i = 0; i < tabEls.length; ++i) {
       if (tabEls[i].parentNode.classList.contains('selected')) {
-        tabAvailable = tabEls[i].id == 'tab-available';
+        tabAvailable = tabEls[i].id === 'tab-available';
       }
     }
     const seletedTabId =
@@ -618,9 +618,11 @@ FlagSearch.prototype = {
     const queryString = seletedTabId + ' .experiment:not(.hidden)';
     const total = document.querySelectorAll(queryString).length;
     if (total) {
-      announceStatus((total == 1) ?
-          loadTimeData.getStringF("searchResultsSingular", searchTerm) :
-          loadTimeData.getStringF("searchResultsPlural", total, searchTerm));
+      announceStatus(
+          total === 1 ?
+              loadTimeData.getStringF('searchResultsSingular', searchTerm) :
+              loadTimeData.getStringF(
+                  'searchResultsPlural', total, searchTerm));
     }
   },
 
@@ -628,7 +630,7 @@ FlagSearch.prototype = {
    * Debounces the search to improve performance and prevent too many searches
    * from being initiated.
    */
-  debounceSearch: function() {
+  debounceSearch() {
     if (this.searchIntervalId_) {
       clearTimeout(this.searchIntervalId_);
     }
@@ -643,7 +645,7 @@ FlagSearch.prototype = {
  */
 function setupRestartButton() {
   restartButton.addEventListener('keydown', function(e) {
-    if (e.shiftKey && e.key == 'Tab' && lastFocused) {
+    if (e.shiftKey && e.key === 'Tab' && lastFocused) {
       e.preventDefault();
       lastFocused.focus();
     }

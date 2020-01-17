@@ -12,13 +12,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/permissions/crowd_deny.pb.h"
+#include "url/origin.h"
 
 namespace base {
 class SequencedTaskRunner;
-}
-
-namespace url {
-class Origin;
 }
 
 namespace base {
@@ -53,6 +50,16 @@ class CrowdDenyPreloadData {
   // Parses a single instance of chrome_browser_crowd_deny::PreloadData message
   // in binary wire format from the file at |preload_data_path|.
   void LoadFromDisk(const base::FilePath& preload_data_path);
+
+  // Sets the notification UX for a particular origin. Only used for testing.
+  void set_origin_notification_user_experience_for_testing(
+      const url::Origin& origin,
+      chrome_browser_crowd_deny::
+          SiteReputation_NotificationUserExperienceQuality quality) {
+    domain_to_reputation_map_[origin.host()] = SiteReputation();
+    domain_to_reputation_map_[origin.host()].set_notification_ux_quality(
+        quality);
+  }
 
  private:
   void set_site_reputations(DomainToReputationMap map) {

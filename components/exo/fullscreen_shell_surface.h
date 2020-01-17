@@ -49,12 +49,10 @@ class FullscreenShellSurface : public SurfaceTreeHost,
   void SetSurface(Surface* surface);
 
   void Maximize();
-
   void Minimize();
-
   void Close();
 
-  // Overridden from SurfaceDelegate:
+  // SurfaceDelegate:
   void OnSurfaceCommit() override;
   bool IsInputEnabled(Surface* surface) const override;
   void OnSetFrame(SurfaceFrameType type) override;
@@ -62,30 +60,31 @@ class FullscreenShellSurface : public SurfaceTreeHost,
   void OnSetStartupId(const char* startup_id) override;
   void OnSetApplicationId(const char* application_id) override;
 
-  // Overridden from SurfaceObserver:
+  // SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
 
-  // Overridden from views::WidgetDelegate:
+  // views::WidgetDelegate:
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;
   bool ShouldShowWindowTitle() const override;
   void WindowClosing() override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
   views::View* GetContentsView() override;
   bool WidgetHasHitTestMask() const override;
   void GetWidgetHitTestMask(SkPath* mask) const override;
 
-  // Overridden from aura::WindowObserver:
+  // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
-  // Overridden from ui::View
+  // ui::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   void SetChildAxTreeId(ui::AXTreeID child_ax_tree_id);
 
  private:
+  // views::WidgetDelegate:
+  const views::Widget* GetWidgetImpl() const override;
+
   // Keep the bounds in sync with the root surface bounds.
   void UpdateHostWindowBounds() override;
 

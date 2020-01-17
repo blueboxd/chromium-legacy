@@ -37,14 +37,14 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  ignoreEnterKey_: function(event) {
+  ignoreEnterKey_(event) {
     if (event.key == 'Enter') {
       event.stopPropagation();
     }
   },
 
   /** @private */
-  tryConnect_: function() {
+  tryConnect_() {
     if (!this.isDisconnected_(this.device)) {
       return;
     }
@@ -56,7 +56,7 @@ Polymer({
   },
 
   /** @private */
-  onClick_: function() {
+  onClick_() {
     this.tryConnect_();
   },
 
@@ -64,7 +64,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyDown_: function(e) {
+  onKeyDown_(e) {
     if (e.key == 'Enter' || e.key == ' ') {
       this.tryConnect_();
       e.preventDefault();
@@ -75,7 +75,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onMenuButtonTap_: function(event) {
+  onMenuButtonTap_(event) {
     const button = /** @type {!HTMLElement} */ (event.target);
     const menu = /** @type {!CrActionMenuElement} */ (this.$.dotsMenu);
     menu.showAt(button);
@@ -83,7 +83,7 @@ Polymer({
   },
 
   /** @private */
-  onConnectActionTap_: function() {
+  onConnectActionTap_() {
     const action = this.isDisconnected_(this.device) ? 'connect' : 'disconnect';
     this.fire('device-event', {
       action: action,
@@ -93,7 +93,7 @@ Polymer({
   },
 
   /** @private */
-  onRemoveTap_: function() {
+  onRemoveTap_() {
     this.fire('device-event', {
       action: 'remove',
       device: this.device,
@@ -106,7 +106,7 @@ Polymer({
    * @return {string} The text to display for the connect/disconnect menu item.
    * @private
    */
-  getConnectActionText_: function(connected) {
+  getConnectActionText_(connected) {
     return this.i18n(connected ? 'bluetoothDisconnect' : 'bluetoothConnect');
   },
 
@@ -115,7 +115,7 @@ Polymer({
    * @return {string} The text to display for |device| in the device list.
    * @private
    */
-  getDeviceName_: function(device) {
+  getDeviceName_(device) {
     return device.name || device.address;
   },
 
@@ -125,7 +125,7 @@ Polymer({
    * device name and device type if known.
    * @private
    */
-  getAriaLabel_: function(device) {
+  getAriaLabel_(device) {
     // We need to turn the device name and type into a single localized string.
     // The possible device type enum values can be seen here:
     // https://developer.chrome.com/apps/bluetooth#type-Device.
@@ -143,7 +143,7 @@ Polymer({
    * @return {string} The text to display the connection status of |device|.
    * @private
    */
-  getConnectionStatusText_: function(device) {
+  getConnectionStatusText_(device) {
     if (!this.hasConnectionStatusText_(device)) {
       return '';
     }
@@ -164,7 +164,7 @@ Polymer({
    *     secondary text of the |device| in device list.
    * @private
    */
-  hasConnectionStatusText_: function(device) {
+  hasConnectionStatusText_(device) {
     return !!(device.paired || device.connecting);
   },
 
@@ -173,7 +173,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDisconnected_: function(device) {
+  isDisconnected_(device) {
     return !device.connected && !device.connecting;
   },
 
@@ -186,7 +186,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getDeviceIcon_: function(device) {
+  getDeviceIcon_(device) {
     switch (device.type) {
       case 'computer':
         return 'cr:computer';

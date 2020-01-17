@@ -148,8 +148,8 @@ void SetTaskActive(int task_id);
 // Closes the task.
 void CloseTask(int task_id);
 
-// Opens TalkBack settings window.
-void ShowTalkBackSettings();
+// Sets TouchMode in Android. Returns true if the intent was sent.
+bool SetTouchMode(bool enable);
 
 // Gets user selected package names.
 std::vector<std::string> GetSelectedPackagesFromPrefs(

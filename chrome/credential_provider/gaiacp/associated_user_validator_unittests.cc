@@ -141,10 +141,10 @@ TEST_F(AssociatedUserValidatorTest, CleanupStaleUsers) {
   // For all bad users, token handle should be valid since the assumption is
   // that if no user entry is found internally in the validator then it is an
   // unassociated user and thus always has a valid token handle.
-  EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2CW(sid_bad)));
-  EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2CW(sid_no_gaia_id)));
-  EXPECT_FALSE(
-      validator.IsTokenHandleValidForUser(OLE2CW(sid_no_token_handle)));
+  EXPECT_FALSE(validator.IsAuthEnforcedForUser(OLE2CW(sid_bad)));
+  EXPECT_FALSE(validator.IsAuthEnforcedForUser(OLE2CW(sid_no_gaia_id)));
+  EXPECT_TRUE(validator.IsAuthEnforcedForUser(OLE2CW(sid_no_token_handle)));
+  EXPECT_TRUE(validator.IsAuthEnforcedOnAssociatedUsers());
 
   // Expect deleted user and user with no gaia id to be deleted.
   EXPECT_NE(ERROR_SUCCESS, key.OpenKey(OLE2CW(sid_bad), KEY_READ));
@@ -163,8 +163,9 @@ TEST_F(AssociatedUserValidatorTest, NoTokenHandles) {
   validator.StartRefreshingTokenHandleValidity();
 
   // If there is no associated user then all token handles are valid.
-  EXPECT_TRUE(validator.IsTokenHandleValidForUser(
-      GetNewSidString(fake_os_user_manager())));
+  EXPECT_FALSE(
+      validator.IsAuthEnforcedForUser(GetNewSidString(fake_os_user_manager())));
+  EXPECT_FALSE(validator.IsAuthEnforcedOnAssociatedUsers());
   EXPECT_EQ(0u, fake_http_url_fetcher_factory()->requests_created());
 }
 
@@ -183,7 +184,8 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle) {
 
   validator.StartRefreshingTokenHandleValidity();
 
-  EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedOnAssociatedUsers());
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
 }
 
@@ -202,7 +204,8 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandle) {
 
   validator.StartRefreshingTokenHandleValidity();
 
-  EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_TRUE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_TRUE(validator.IsAuthEnforcedOnAssociatedUsers());
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
 }
 
@@ -217,7 +220,8 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandleNoInternet) {
                       L"gaia-id", base::string16(), &sid));
 
   validator.StartRefreshingTokenHandleValidity();
-  EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedOnAssociatedUsers());
   EXPECT_EQ(0u, fake_http_url_fetcher_factory()->requests_created());
 }
 
@@ -235,7 +239,8 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandleTimeout) {
       FakeWinHttpUrlFetcher::Headers(), "{}", http_fetcher_event.handle());
   validator.StartRefreshingTokenHandleValidity();
 
-  EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedOnAssociatedUsers());
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
 
   http_fetcher_event.Signal();
@@ -256,8 +261,9 @@ TEST_F(AssociatedUserValidatorTest, TokenHandleValidityStillFresh) {
 
   validator.StartRefreshingTokenHandleValidity();
 
-  EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
-  EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedOnAssociatedUsers());
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
 }
 
@@ -270,6 +276,9 @@ TEST_F(AssociatedUserValidatorTest, BlockDenyUserAccess) {
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
+
+  std::vector<base::string16> reauth_sids;
+  reauth_sids.push_back((BSTR)sid);
 
   // Invalid token fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
@@ -286,17 +295,18 @@ TEST_F(AssociatedUserValidatorTest, BlockDenyUserAccess) {
     {
       AssociatedUserValidator::ScopedBlockDenyAccessUpdate deny_blocker_inner(
           &validator);
-      EXPECT_FALSE(
-          validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+      EXPECT_FALSE(validator.DenySigninForUsersWithInvalidTokenHandles(
+          CPUS_LOGON, reauth_sids));
       EXPECT_FALSE(validator.IsUserAccessBlockedForTesting(OLE2W(sid)));
     }
 
-    EXPECT_FALSE(
-        validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+    EXPECT_FALSE(validator.DenySigninForUsersWithInvalidTokenHandles(
+        CPUS_LOGON, reauth_sids));
     EXPECT_FALSE(validator.IsUserAccessBlockedForTesting(OLE2W(sid)));
   }
   // Unblock deny access. User should not be blocked.
-  EXPECT_TRUE(validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_TRUE(validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON,
+                                                                  reauth_sids));
   EXPECT_TRUE(validator.IsUserAccessBlockedForTesting(OLE2W(sid)));
 
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
@@ -315,6 +325,8 @@ TEST_F(AssociatedUserValidatorTest,
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
+  std::vector<base::string16> reauth_sids;
+  reauth_sids.push_back((BSTR)sid);
 
   // Invalid token fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
@@ -322,8 +334,10 @@ TEST_F(AssociatedUserValidatorTest,
       FakeWinHttpUrlFetcher::Headers(), "{}");
 
   validator.StartRefreshingTokenHandleValidity();
-  EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
-  EXPECT_TRUE(validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_TRUE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_TRUE(validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON,
+                                                                  reauth_sids));
+  EXPECT_TRUE(validator.IsAuthEnforcedOnAssociatedUsers());
 }
 
 // Donot deny user access even when the gaia handle is invalidated for a
@@ -340,14 +354,19 @@ TEST_F(AssociatedUserValidatorTest,
                       L"username", L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), L"domain", &sid));
 
+  std::vector<base::string16> reauth_sids;
+  reauth_sids.push_back((BSTR)sid);
+
   // Invalid token fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(AssociatedUserValidator::kTokenInfoUrl),
       FakeWinHttpUrlFetcher::Headers(), "{}");
 
   validator.StartRefreshingTokenHandleValidity();
-  EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
-  EXPECT_FALSE(validator.DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_TRUE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.DenySigninForUsersWithInvalidTokenHandles(
+      CPUS_LOGON, reauth_sids));
+  EXPECT_TRUE(validator.IsAuthEnforcedOnAssociatedUsers());
 }
 
 // Tests various scenarios where user access is blocked.
@@ -355,15 +374,17 @@ TEST_F(AssociatedUserValidatorTest,
 // 1. CREDENTIAL_PROVIDER_USAGE_SCENARIO - Usage scenario.
 // 2. bool - User token handle is valid.
 // 3. bool - Mdm url is set.
-// 4. bool - Mdm enrollment is already done.
-// 5. bool - Internet is available.
-// 6. bool - Password Recovery is enabled.
-// 7. bool - Contains stored password.
-// 8. bool - Last online login is stale.
+// 4. bool - User association exists.
+// 5. bool - Mdm enrollment is already done.
+// 6. bool - Internet is available.
+// 7. bool - Password Recovery is enabled.
+// 8. bool - Contains stored password.
+// 9. bool - Last online login is stale.
 class AssociatedUserValidatorUserAccessBlockingTest
     : public AssociatedUserValidatorTest,
       public ::testing::WithParamInterface<
           std::tuple<CREDENTIAL_PROVIDER_USAGE_SCENARIO,
+                     bool,
                      bool,
                      bool,
                      bool,
@@ -387,12 +408,12 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   const CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus = std::get<0>(GetParam());
   const bool token_handle_valid = std::get<1>(GetParam());
   const bool mdm_url_set = std::get<2>(GetParam());
-  const bool mdm_enrolled = std::get<3>(GetParam());
-  const bool internet_available = std::get<4>(GetParam());
-  const bool password_recovery_enabled = std::get<5>(GetParam());
-  const bool contains_stored_password = std::get<6>(GetParam());
-  const bool is_last_login_stale = std::get<7>(GetParam());
-
+  const bool is_user_associated = std::get<3>(GetParam());
+  const bool mdm_enrolled = std::get<4>(GetParam());
+  const bool internet_available = std::get<5>(GetParam());
+  const bool password_recovery_enabled = std::get<6>(GetParam());
+  const bool contains_stored_password = std::get<7>(GetParam());
+  const bool is_last_login_stale = std::get<8>(GetParam());
   GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
 
   GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
@@ -422,6 +443,8 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       username, L"password", L"fullname", L"comment",
                       L"gaia-id", base::string16(), &sid));
+  std::vector<base::string16> reauth_sids;
+  reauth_sids.push_back((BSTR)sid);
 
   // Save the current time and then override the time clock to return a fake
   // time.
@@ -457,6 +480,11 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
     EXPECT_TRUE(policy->PrivateDataExists(store_key.c_str()));
   }
 
+  // Remove all user properties associated with the sid if the
+  // user isn't associated.
+  if (!is_user_associated)
+    RemoveAllUserProperties((BSTR)sid);
+
   // Token handle fetch result.
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(AssociatedUserValidator::kTokenInfoUrl),
@@ -464,23 +492,24 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
       token_handle_valid ? "{\"expires_in\":1}" : "{}");
 
   validator.StartRefreshingTokenHandleValidity();
-  validator.DenySigninForUsersWithInvalidTokenHandles(cpus);
+  validator.DenySigninForUsersWithInvalidTokenHandles(cpus, reauth_sids);
 
   DWORD reg_value = 0;
 
   bool is_get_auth_enforced =
-      (!internet_available && is_last_login_stale) ||
-      (internet_available &&
-       ((mdm_url_set && !mdm_enrolled) || !token_handle_valid ||
-        (password_recovery_enabled && !contains_stored_password)));
+      is_user_associated &&
+      ((!internet_available && is_last_login_stale) ||
+       (internet_available &&
+        ((mdm_url_set && !mdm_enrolled) || !token_handle_valid ||
+         (password_recovery_enabled && !contains_stored_password))));
 
   bool should_user_be_blocked =
       should_user_locking_be_enabled && is_get_auth_enforced;
 
   EXPECT_EQ(should_user_be_blocked,
             validator.IsUserAccessBlockedForTesting(OLE2W(sid)));
-  EXPECT_EQ(!is_get_auth_enforced,
-            validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_EQ(is_get_auth_enforced, validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_EQ(is_get_auth_enforced, validator.IsAuthEnforcedOnAssociatedUsers());
 
   // Unlock the user.
   validator.AllowSigninForUsersWithInvalidTokenHandles();
@@ -498,6 +527,7 @@ INSTANTIATE_TEST_SUITE_P(
                                          CPUS_UNLOCK_WORKSTATION,
                                          CPUS_CHANGE_PASSWORD,
                                          CPUS_CREDUI),
+                       ::testing::Bool(),
                        ::testing::Bool(),
                        ::testing::Bool(),
                        ::testing::Bool(),
@@ -527,7 +557,8 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_Refresh) {
 
   validator.StartRefreshingTokenHandleValidity();
 
-  EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedOnAssociatedUsers());
 
   // Make the next token fetch result invalid.
   fake_http_url_fetcher_factory()->SetFakeResponse(
@@ -536,7 +567,8 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_Refresh) {
 
   // If the lifetime of the validity has not expired, even if the token is
   // invalid, no new fetch will be performed yet.
-  EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedOnAssociatedUsers());
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
 
   // Advance the time so that a new fetch will be done and retrieve the
@@ -544,7 +576,8 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_Refresh) {
   TimeClockOverrideValue::current_time_ +=
       AssociatedUserValidator::kTokenHandleValidityLifetime +
       base::TimeDelta::FromMilliseconds(1);
-  EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_TRUE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_TRUE(validator.IsAuthEnforcedOnAssociatedUsers());
   EXPECT_EQ(2u, fake_http_url_fetcher_factory()->requests_created());
 }
 
@@ -574,7 +607,8 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandle_MissingPasswordLsaData) {
 
   validator.StartRefreshingTokenHandleValidity();
 
-  EXPECT_FALSE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_TRUE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_TRUE(validator.IsAuthEnforcedOnAssociatedUsers());
 }
 
 TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_PresentPasswordLsaData) {
@@ -605,7 +639,8 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_PresentPasswordLsaData) {
 
   validator.StartRefreshingTokenHandleValidity();
 
-  EXPECT_TRUE(validator.IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_FALSE(validator.IsAuthEnforcedOnAssociatedUsers());
 }
 
 }  // namespace testing

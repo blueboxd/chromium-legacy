@@ -41,7 +41,7 @@ Polymer({
      */
     allowDisableAcceleration_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('allowDisableMouseAcceleration');
       },
     },
@@ -58,27 +58,24 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSubsectionClass_: function(hasMouse, hasTouchpad) {
+  getSubsectionClass_(hasMouse, hasTouchpad) {
     return hasMouse && hasTouchpad ? 'subsection' : '';
   },
 
   /** @private */
-  onMouseSwapButtonsDown_: function() {
+  onMouseSwapButtonsDown_() {
     this.receivedMouseSwapButtonsDown_ = true;
   },
 
   /** @private */
-  onMouseSwapButtonsUp_: function() {
+  onMouseSwapButtonsUp_() {
     this.receivedMouseSwapButtonsDown_ = false;
     /** @type {!SettingsToggleButtonElement} */ (this.$.mouseSwapButton)
         .sendPrefChange();
   },
 
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  onMouseSwapButtonsChange_: function(event) {
+  /** @private */
+  onMouseSwapButtonsChange_() {
     if (!this.receivedMouseSwapButtonsDown_) {
       /** @type {!SettingsToggleButtonElement} */ (this.$.mouseSwapButton)
           .sendPrefChange();

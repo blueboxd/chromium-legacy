@@ -33,10 +33,10 @@ function FakeBluetoothBrailleDisplayManagerListener() {
 }
 
 FakeBluetoothBrailleDisplayManagerListener.prototype = {
-  onDisplayListChanged: function(displays) {
+  onDisplayListChanged(displays) {
     this.displays = displays;
   },
-  onPincodeRequested: function(displays) {
+  onPincodeRequested(displays) {
     this.wasPincodeRequested = true;
   },
 };

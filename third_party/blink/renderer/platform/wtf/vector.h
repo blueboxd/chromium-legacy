@@ -413,7 +413,7 @@ class VectorBufferBase {
 
   void AllocateBuffer(wtf_size_t new_capacity) {
     AllocateBufferNoBarrier(new_capacity);
-    Allocator::BackingWriteBarrier(buffer_);
+    Allocator::BackingWriteBarrier(&buffer_);
   }
 
   size_t AllocationSize(size_t capacity) const {
@@ -554,8 +554,8 @@ class VectorBuffer<T, 0, Allocator> : protected VectorBufferBase<T, Allocator> {
     std::swap(buffer_, other.buffer_);
     std::swap(capacity_, other.capacity_);
     std::swap(size_, other.size_);
-    Allocator::BackingWriteBarrier(buffer_);
-    Allocator::BackingWriteBarrier(other.buffer_);
+    Allocator::BackingWriteBarrier(&buffer_);
+    Allocator::BackingWriteBarrier(&other.buffer_);
   }
 
   using Base::AllocateBuffer;
@@ -694,8 +694,8 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
       std::swap(buffer_, other.buffer_);
       std::swap(capacity_, other.capacity_);
       std::swap(size_, other.size_);
-      Allocator::BackingWriteBarrier(buffer_);
-      Allocator::BackingWriteBarrier(other.buffer_);
+      Allocator::BackingWriteBarrier(&buffer_);
+      Allocator::BackingWriteBarrier(&other.buffer_);
       return;
     }
 
@@ -756,7 +756,7 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
       other.buffer_ = other.InlineBuffer();
       std::swap(size_, other.size_);
       ANNOTATE_NEW_BUFFER(other.buffer_, inlineCapacity, other.size_);
-      Allocator::BackingWriteBarrier(buffer_);
+      Allocator::BackingWriteBarrier(&buffer_);
     } else if (!this_source_begin &&
                other_source_begin) {  // Their buffer is inline, ours is not.
       DCHECK_NE(Buffer(), InlineBuffer());
@@ -766,7 +766,7 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
       buffer_ = InlineBuffer();
       std::swap(size_, other.size_);
       ANNOTATE_NEW_BUFFER(buffer_, inlineCapacity, size_);
-      Allocator::BackingWriteBarrier(other.buffer_);
+      Allocator::BackingWriteBarrier(&other.buffer_);
     } else {  // Both buffers are inline.
       DCHECK(this_source_begin);
       DCHECK(other_source_begin);
@@ -2035,7 +2035,7 @@ void Vector<T, inlineCapacity, Allocator>::ReallocateBuffer(
   ANNOTATE_DELETE_BUFFER(begin(), capacity(), size_);
   Base::DeallocateBuffer(begin());
   buffer.MoveBufferInto(*this);
-  Allocator::BackingWriteBarrier(begin());
+  Allocator::BackingWriteBarrier(Base::BufferSlot());
 }
 
 }  // namespace WTF

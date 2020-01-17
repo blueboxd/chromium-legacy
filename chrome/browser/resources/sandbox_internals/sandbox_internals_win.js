@@ -7,7 +7,8 @@
  *   processId: number,
  *   processType: string,
  *   name: string,
- *   metricsName: string
+ *   metricsName: string,
+ *   sandboxType: string
  * }}
  */
 let BrowserHostProcess;
@@ -58,16 +59,17 @@ function addRow(args) {
  * @param {number} pid
  * @param {string} type
  * @param {string} name
+ * @param {string} sandbox
  * @param {PolicyDiagnostic} policy
  */
-function addRowForProcess(pid, type, name, policy) {
+function addRowForProcess(pid, type, name, sandbox, policy) {
   if (policy) {
     addRow([
-      pid, type, name, policy.lockdownLevel, policy.desiredIntegrityLevel,
-      policy.platformMitigations
+      pid, type, name, sandbox, policy.lockdownLevel,
+      policy.desiredIntegrityLevel, policy.platformMitigations
     ]);
   } else {
-    addRow([pid, type, name, 'Not Sandboxed', '', '']);
+    addRow([pid, type, name, 'Not Sandboxed', '', '', '']);
   }
 }
 
@@ -83,19 +85,22 @@ function onGetSandboxDiagnostics(results) {
   }
 
   // Titles.
-  addRow(['Process', 'Type', 'Name', 'Sandbox', 'Integrity', 'Mitigations']);
+  addRow([
+    'Process', 'Type', 'Name', 'Sandbox', 'Lockdown', 'Integrity', 'Mitigations'
+  ]);
 
   // Browser Processes.
   for (const process of results.browser) {
     const pid = process.processId;
     const name = process.name || process.metricsName;
-    addRowForProcess(pid, process.processType, name, policies.get(pid));
+    addRowForProcess(
+        pid, process.processType, name, process.sandboxType, policies.get(pid));
   }
 
   // Renderer Processes.
   for (const process of results.renderer) {
     const pid = process.processId;
-    addRowForProcess(pid, 'Renderer', '', policies.get(pid));
+    addRowForProcess(pid, 'Renderer', '', 'Renderer', policies.get(pid));
   }
 
   // Raw Diagnostics.

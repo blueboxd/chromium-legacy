@@ -18,11 +18,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/db/v4_database.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/db/v4_test_util.h"
 #include "components/safe_browsing/core/features.h"
-#include "content/public/test/browser_task_environment.h"
 #include "crypto/sha2.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -323,6 +323,8 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
 
+    task_environment_ = CreateTestTaskEnvironment();
+
     test_shared_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
@@ -445,7 +447,7 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
   ExtendedReportingLevel extended_reporting_level_;
   ExtendedReportingLevelCallback erl_callback_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
   scoped_refptr<V4LocalDatabaseManager> v4_local_database_manager_;
 };
 

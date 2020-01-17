@@ -13,17 +13,17 @@ Polymer({
   },
 
   /** @private */
-  onBack_: function() {
+  onBack_() {
     this.fire('back');
   },
 
   /** @private */
-  onClose_: function() {
+  onClose_() {
     this.fire('close');
   },
 
   /** @private */
-  onRefresh_: function() {
+  onRefresh_() {
     this.fire('refresh');
   }
 });

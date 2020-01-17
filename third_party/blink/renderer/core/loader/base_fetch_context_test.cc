@@ -153,11 +153,11 @@ TEST_F(BaseFetchContextTest, CanRequest) {
   ContentSecurityPolicy* policy =
       execution_context_->GetContentSecurityPolicy();
   policy->DidReceiveHeader("script-src https://foo.test",
-                           kContentSecurityPolicyHeaderTypeEnforce,
-                           kContentSecurityPolicyHeaderSourceHTTP);
+                           network::mojom::ContentSecurityPolicyType::kEnforce,
+                           network::mojom::ContentSecurityPolicySource::kHTTP);
   policy->DidReceiveHeader("script-src https://bar.test",
-                           kContentSecurityPolicyHeaderTypeReport,
-                           kContentSecurityPolicyHeaderSourceHTTP);
+                           network::mojom::ContentSecurityPolicyType::kReport,
+                           network::mojom::ContentSecurityPolicySource::kHTTP);
 
   KURL url(NullURL(), "http://baz.test");
   ResourceRequest resource_request(url);
@@ -179,11 +179,11 @@ TEST_F(BaseFetchContextTest, CheckCSPForRequest) {
   ContentSecurityPolicy* policy =
       execution_context_->GetContentSecurityPolicy();
   policy->DidReceiveHeader("script-src https://foo.test",
-                           kContentSecurityPolicyHeaderTypeEnforce,
-                           kContentSecurityPolicyHeaderSourceHTTP);
+                           network::mojom::ContentSecurityPolicyType::kEnforce,
+                           network::mojom::ContentSecurityPolicySource::kHTTP);
   policy->DidReceiveHeader("script-src https://bar.test",
-                           kContentSecurityPolicyHeaderTypeReport,
-                           kContentSecurityPolicyHeaderSourceHTTP);
+                           network::mojom::ContentSecurityPolicyType::kReport,
+                           network::mojom::ContentSecurityPolicySource::kHTTP);
 
   KURL url(NullURL(), "http://baz.test");
 
@@ -294,8 +294,8 @@ TEST_F(BaseFetchContextTest, UACSSTest_BypassCSP) {
   ContentSecurityPolicy* policy =
       execution_context_->GetContentSecurityPolicy();
   policy->DidReceiveHeader("default-src 'self'",
-                           kContentSecurityPolicyHeaderTypeEnforce,
-                           kContentSecurityPolicyHeaderSourceHTTP);
+                           network::mojom::ContentSecurityPolicyType::kEnforce,
+                           network::mojom::ContentSecurityPolicySource::kHTTP);
 
   KURL data_url("data:image/png;base64,test");
 

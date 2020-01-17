@@ -61,11 +61,9 @@ const char kSuccessResult[] = "success";
 const char kUnsupportedResult[] =
     "Unsupported keySystem or supportedConfigurations.";
 const char kUnexpectedResult[] = "unexpected result";
-const char kTypeErrorResult[] = "TypeError";
 
 #define EXPECT_SUCCESS(test) EXPECT_EQ(kSuccessResult, test)
 #define EXPECT_UNSUPPORTED(test) EXPECT_EQ(kUnsupportedResult, test)
-#define EXPECT_TYPEERROR(test) EXPECT_EQ(kTypeErrorResult, test)
 
 // Any support is acceptable. This can be used around new CDM check-in time
 // where test expectations can change based on the new CDM's capability.
@@ -280,7 +278,6 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
                                         base::ASCIIToUTF16(kSuccessResult));
     title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kUnsupportedResult));
     title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kUnexpectedResult));
-    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kTypeErrorResult));
     EXPECT_TRUE(content::ExecuteScript(contents, command));
     base::string16 result = title_watcher.WaitAndGetTitle();
     return base::UTF16ToASCII(result);
@@ -722,17 +719,17 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest,
   EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kClearKey, nullptr));
   EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kClearKey, "cenc"));
   EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kClearKey, "cbcs"));
+  EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kClearKey, "cbcs-1-9"));
   EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kClearKey, nullptr));
   EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kClearKey, "cenc"));
   EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kClearKey, "cbcs"));
+  EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kClearKey, "cbcs-1-9"));
 
-  // Invalid encryption schemes will be rejected. However, invalid values
-  // generate a TypeError (The provided value '...' is not a valid enum value
-  // of type EncryptionScheme), which is not handled by the test page.
-  EXPECT_TYPEERROR(IsAudioEncryptionSchemeSupported(kClearKey, "Invalid"));
-  EXPECT_TYPEERROR(IsVideoEncryptionSchemeSupported(kClearKey, "Invalid"));
-  EXPECT_TYPEERROR(IsAudioEncryptionSchemeSupported(kClearKey, ""));
-  EXPECT_TYPEERROR(IsVideoEncryptionSchemeSupported(kClearKey, ""));
+  // Invalid encryption schemes will be rejected.
+  EXPECT_UNSUPPORTED(IsAudioEncryptionSchemeSupported(kClearKey, "Invalid"));
+  EXPECT_UNSUPPORTED(IsVideoEncryptionSchemeSupported(kClearKey, "Invalid"));
+  EXPECT_UNSUPPORTED(IsAudioEncryptionSchemeSupported(kClearKey, ""));
+  EXPECT_UNSUPPORTED(IsVideoEncryptionSchemeSupported(kClearKey, ""));
 }
 
 //
@@ -942,19 +939,21 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
   EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kExternalClearKey, nullptr));
   EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kExternalClearKey, "cenc"));
   EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kExternalClearKey, "cbcs"));
+  EXPECT_SUCCESS(
+      IsAudioEncryptionSchemeSupported(kExternalClearKey, "cbcs-1-9"));
   EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kExternalClearKey, nullptr));
   EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kExternalClearKey, "cenc"));
   EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kExternalClearKey, "cbcs"));
+  EXPECT_SUCCESS(
+      IsVideoEncryptionSchemeSupported(kExternalClearKey, "cbcs-1-9"));
 
-  // Invalid encryption schemes will be rejected. However, invalid values
-  // generate a TypeError (The provided value '...' is not a valid enum value
-  // of type EncryptionScheme), which is not handled by the test page.
-  EXPECT_TYPEERROR(
+  // Invalid encryption schemes will be rejected.
+  EXPECT_UNSUPPORTED(
       IsAudioEncryptionSchemeSupported(kExternalClearKey, "Invalid"));
-  EXPECT_TYPEERROR(
+  EXPECT_UNSUPPORTED(
       IsVideoEncryptionSchemeSupported(kExternalClearKey, "Invalid"));
-  EXPECT_TYPEERROR(IsAudioEncryptionSchemeSupported(kExternalClearKey, ""));
-  EXPECT_TYPEERROR(IsVideoEncryptionSchemeSupported(kExternalClearKey, ""));
+  EXPECT_UNSUPPORTED(IsAudioEncryptionSchemeSupported(kExternalClearKey, ""));
+  EXPECT_UNSUPPORTED(IsVideoEncryptionSchemeSupported(kExternalClearKey, ""));
 }
 
 // External Clear Key is disabled by default.
@@ -1199,17 +1198,17 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest,
   EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, nullptr));
   EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, "cenc"));
   EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, "cbcs"));
+  EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, "cbcs-1-9"));
   EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, nullptr));
   EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, "cenc"));
   EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, "cbcs"));
+  EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, "cbcs-1-9"));
 
-  // Invalid encryption schemes will be rejected. However, invalid values
-  // generate a TypeError (The provided value '...' is not a valid enum value
-  // of type EncryptionScheme), which is not handled by the test page.
-  EXPECT_TYPEERROR(IsAudioEncryptionSchemeSupported(kWidevine, "Invalid"));
-  EXPECT_TYPEERROR(IsVideoEncryptionSchemeSupported(kWidevine, "Invalid"));
-  EXPECT_TYPEERROR(IsAudioEncryptionSchemeSupported(kWidevine, ""));
-  EXPECT_TYPEERROR(IsVideoEncryptionSchemeSupported(kWidevine, ""));
+  // Invalid encryption schemes will be rejected.
+  EXPECT_UNSUPPORTED(IsAudioEncryptionSchemeSupported(kWidevine, "Invalid"));
+  EXPECT_UNSUPPORTED(IsVideoEncryptionSchemeSupported(kWidevine, "Invalid"));
+  EXPECT_UNSUPPORTED(IsAudioEncryptionSchemeSupported(kWidevine, ""));
+  EXPECT_UNSUPPORTED(IsVideoEncryptionSchemeSupported(kWidevine, ""));
 }
 
 //
@@ -1220,8 +1219,8 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest,
 // - Linux/Mac/Windows: Feature media::kHardwareSecureDecryption is enabled, and
 // command line switch kOverrideHardwareSecureCodecsForTesting is used to always
 // enable vp8 and vp9, and disable avc1; always enable 'cenc' and disable
-// 'cbcs', for HW_SECURE* robustness levels. With the switch, real hardware
-// capabilities are not checked for the stability of tests.
+// 'cbcs'/'cbcs-1-9', for HW_SECURE* robustness levels. With the switch, real
+// hardware capabilities are not checked for the stability of tests.
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineHwSecureTest,
                        Robustness) {
@@ -1297,8 +1296,10 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineHwSecureTest,
   // Both encryption schemes are supported when no robustness is specified.
   EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, "cenc"));
   EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, "cbcs"));
+  EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, "cbcs-1-9"));
   EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, "cenc"));
   EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, "cbcs"));
+  EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, "cbcs-1-9"));
 
   // Both encryption schemes are supported when SW_SECURE* robustness is
   // specified.
@@ -1306,10 +1307,14 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineHwSecureTest,
       IsAudioEncryptionSchemeSupported(kWidevine, "cenc", "SW_SECURE_CRYPTO"));
   EXPECT_WV_SUCCESS(
       IsAudioEncryptionSchemeSupported(kWidevine, "cbcs", "SW_SECURE_CRYPTO"));
+  EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, "cbcs-1-9",
+                                                     "SW_SECURE_CRYPTO"));
   EXPECT_WV_SUCCESS(
       IsVideoEncryptionSchemeSupported(kWidevine, "cenc", "SW_SECURE_DECODE"));
   EXPECT_WV_SUCCESS(
       IsVideoEncryptionSchemeSupported(kWidevine, "cbcs", "SW_SECURE_DECODE"));
+  EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, "cbcs-1-9",
+                                                     "SW_SECURE_DECODE"));
 
   // For HW_SECURE* robustness levels. 'cenc' is always supported. 'cbcs' is
   // supported on ChromeOS, but not on other platforms.
@@ -1320,13 +1325,21 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineHwSecureTest,
 #if defined(OS_CHROMEOS)
   EXPECT_WV_SUCCESS(
       IsAudioEncryptionSchemeSupported(kWidevine, "cbcs", "HW_SECURE_CRYPTO"));
+  EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, "cbcs-1-9",
+                                                     "HW_SECURE_CRYPTO"));
   EXPECT_WV_SUCCESS(
       IsVideoEncryptionSchemeSupported(kWidevine, "cbcs", "HW_SECURE_ALL"));
+  EXPECT_WV_SUCCESS(
+      IsVideoEncryptionSchemeSupported(kWidevine, "cbcs-1-9", "HW_SECURE_ALL"));
 #else
   EXPECT_UNSUPPORTED(
       IsAudioEncryptionSchemeSupported(kWidevine, "cbcs", "HW_SECURE_CRYPTO"));
+  EXPECT_UNSUPPORTED(IsAudioEncryptionSchemeSupported(kWidevine, "cbcs-1-9",
+                                                      "HW_SECURE_CRYPTO"));
   EXPECT_UNSUPPORTED(
       IsVideoEncryptionSchemeSupported(kWidevine, "cbcs", "HW_SECURE_ALL"));
+  EXPECT_UNSUPPORTED(
+      IsVideoEncryptionSchemeSupported(kWidevine, "cbcs-1-9", "HW_SECURE_ALL"));
 #endif
 }
 

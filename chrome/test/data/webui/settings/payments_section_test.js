@@ -42,7 +42,7 @@ cr.define('settings_payments_section', function() {
       // Override the PaymentsManagerImpl for testing.
       const paymentsManager = new TestPaymentsManager();
       paymentsManager.data.creditCards = creditCards;
-      PaymentsManagerImpl.instance_ = paymentsManager;
+      settings.PaymentsManagerImpl.instance_ = paymentsManager;
 
       const section = document.createElement('settings-payments-section');
       section.prefs = {autofill: prefValues};

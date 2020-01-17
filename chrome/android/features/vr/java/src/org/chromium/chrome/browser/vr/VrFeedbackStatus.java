@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.vr;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 /**
  * Gets and sets preferences related to the status of the Vr feedback infobar.

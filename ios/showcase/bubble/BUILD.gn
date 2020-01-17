@@ -22,9 +22,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "sc_bubble_egtest.mm",
-  ]
+  sources = [ "sc_bubble_egtest.mm" ]
   deps = [
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/showcase/test:eg2_test",
@@ -37,9 +35,7 @@ source_set("eg2_tests") {
 source_set("eg_tests") {
   testonly = true
   defines = [ "CHROME_EARL_GREY_1" ]
-  sources = [
-    "sc_bubble_egtest.mm",
-  ]
+  sources = [ "sc_bubble_egtest.mm" ]
   deps = [
     "//ios/chrome/browser/ui/bubble",
     "//ios/chrome/test/earl_grey:test_support",

@@ -1031,8 +1031,8 @@ TEST_F(NightLightTest, TestAmbientLightRemappingTemperature) {
             controller->ambient_temperature());
 
   // Simulate powerd sending multiple times an ambient temperature of 8000.
-  // The remapped ambient temperature should grow and eventually reach ~7350.
-  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+  // The remapped ambient temperature should grow and eventually reach ~7400.
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7400.0f);
 
   // If powerd sends the same temperature, the remapped temperature should not
   // change.
@@ -1040,8 +1040,8 @@ TEST_F(NightLightTest, TestAmbientLightRemappingTemperature) {
   EXPECT_EQ(ambient_temperature, controller->ambient_temperature());
 
   // Simulate powerd sending multiple times an ambient temperature of 2700.
-  // The remapped ambient temperature should grow and eventually reach 5700.
-  ambient_temperature = SimulateAmbientColorFromPowerd(2700, 5800.0f);
+  // The remapped ambient temperature should grow and eventually reach 4500.
+  ambient_temperature = SimulateAmbientColorFromPowerd(2700, 4500.0f);
 
   // Disabling ambient color should not affect the returned temperature.
   controller->SetAmbientColorEnabled(false);
@@ -1460,13 +1460,13 @@ TEST(AmbientTemperature, RemapAmbientColorTemperature) {
 
   // Warm color temperature
   temperature = NightLightControllerImpl::RemapAmbientColorTemperature(3000);
-  EXPECT_GT(temperature, 5700);
-  EXPECT_LT(temperature, 6000);
+  EXPECT_GT(temperature, 4500);
+  EXPECT_LT(temperature, 5000);
 
   // Daylight color temperature
   temperature = NightLightControllerImpl::RemapAmbientColorTemperature(7500);
-  EXPECT_GT(temperature, 6850);
-  EXPECT_LT(temperature, 7450);
+  EXPECT_GT(temperature, 6800);
+  EXPECT_LT(temperature, 7500);
 
   // Extremely high color temperature
   temperature = NightLightControllerImpl::RemapAmbientColorTemperature(20000);

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 
 #include <type_traits>
+
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
@@ -142,14 +143,14 @@ static_assert(
 
 static_assert(std::is_base_of<IDLBase, IDLNullable<IDLDouble>>::value,
               "IDLNullable should have IDLBase as a base class");
-static_assert(std::is_same<IDLNullable<IDLDouble>::ResultType,
+static_assert(std::is_same<IDLNullable<IDLDouble>::ImplType,
                            base::Optional<double>>::value,
               "double? corresponds to base::Optional<double>");
-static_assert(std::is_same<IDLNullable<Element>::ResultType, Element*>::value,
+static_assert(std::is_same<IDLNullable<Element>::ImplType, Element>::value,
               "Element? doesn't require a base::Optional<> wrapper");
-static_assert(std::is_same<IDLNullable<IDLString>::ResultType, String>::value,
+static_assert(std::is_same<IDLNullable<IDLString>::ImplType, String>::value,
               "DOMString? doesn't require a base::Optional<> wrapper");
-static_assert(std::is_same<IDLNullable<StringOrStringSequence>::ResultType,
+static_assert(std::is_same<IDLNullable<StringOrStringSequence>::ImplType,
                            StringOrStringSequence>::value,
               "(union type)? doesn't require a base::Optional<> wrapper");
 

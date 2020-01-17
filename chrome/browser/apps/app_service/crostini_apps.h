@@ -43,6 +43,9 @@ class CrostiniApps : public KeyedService,
       Profile* profile);
 
  private:
+  using GetMenuModelCallback =
+      base::OnceCallback<void(apps::mojom::MenuItemsPtr)>;
+
   enum class PublishAppIDType {
     kInstall,
     kUninstall,
@@ -76,6 +79,9 @@ class CrostiniApps : public KeyedService,
                  bool report_abuse) override;
   void PauseApp(const std::string& app_id) override;
   void UnpauseApps(const std::string& app_id) override;
+  void GetMenuModel(const std::string& app_id,
+                    apps::mojom::MenuType menu_type,
+                    GetMenuModelCallback callback);
   void OpenNativeSettings(const std::string& app_id) override;
   void OnPreferredAppSet(const std::string& app_id,
                          apps::mojom::IntentFilterPtr intent_filter,

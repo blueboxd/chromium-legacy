@@ -30,9 +30,7 @@ component("menu") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "menu_property_list_unittest.cc",
-  ]
+  sources = [ "menu_property_list_unittest.cc" ]
   deps = [
     ":menu",
     "//base",

@@ -74,12 +74,6 @@ ExtensionsToolbarContainer::~ExtensionsToolbarContainer() {
   // The widgets should close synchronously (resulting in OnWidgetClosing()),
   // so |anchored_widgets_| should now be empty.
   CHECK(anchored_widgets_.empty());
-
-  if (active_bubble_)
-    active_bubble_->GetWidget()->Close();
-  // We should synchronously receive the OnWidgetClosing() event, so we should
-  // always have cleared the active bubble by now.
-  DCHECK(!active_bubble_);
 }
 
 void ExtensionsToolbarContainer::UpdateAllIcons() {
@@ -108,6 +102,16 @@ void ExtensionsToolbarContainer::ShowWidgetForExtension(
       ->PostOrQueueAction(base::BindOnce(
           &ExtensionsToolbarContainer::AnchorAndShowWidgetImmediately,
           weak_ptr_factory_.GetWeakPtr(), widget));
+}
+
+views::Widget*
+ExtensionsToolbarContainer::GetAnchoredWidgetForExtensionForTesting(
+    const std::string& extension_id) {
+  auto iter = std::find_if(anchored_widgets_.begin(), anchored_widgets_.end(),
+                           [extension_id](const auto& info) {
+                             return info.extension_id == extension_id;
+                           });
+  return iter->widget;
 }
 
 void ExtensionsToolbarContainer::UpdateIconVisibility(
@@ -169,9 +173,7 @@ bool ExtensionsToolbarContainer::IsActionVisibleOnToolbar(
   }
 
   return model_->IsActionPinned(action->GetId()) ||
-         action == popped_out_action_ ||
-         (active_bubble_ &&
-          action->GetId() == active_bubble_->GetAnchorActionId());
+         action == popped_out_action_;
 }
 
 void ExtensionsToolbarContainer::UndoPopOut() {
@@ -233,27 +235,21 @@ bool ExtensionsToolbarContainer::ShowToolbarActionPopup(
 
 void ExtensionsToolbarContainer::ShowToolbarActionBubble(
     std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller) {
-  auto iter = icons_.find(controller->GetAnchorActionId());
+  const std::string extension_id = controller->GetAnchorActionId();
 
-  views::View* const anchor_view = iter != icons_.end()
-                                       ? static_cast<View*>(iter->second.get())
-                                       : extensions_button_;
+  views::View* const anchor_view = GetViewForId(extension_id);
 
-  anchor_view->SetVisible(true);
+  views::Widget* const widget = views::BubbleDialogDelegateView::CreateBubble(
+      new ToolbarActionsBarBubbleViews(
+          anchor_view ? anchor_view : extensions_button_,
+          anchor_view != nullptr, std::move(controller)));
 
-  static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
-      ->PostOrQueueAction(
-          base::BindOnce(&ExtensionsToolbarContainer::ShowActiveBubble,
-                         weak_ptr_factory_.GetWeakPtr(), anchor_view,
-                         base::Passed(std::move(controller))));
+  ShowWidgetForExtension(widget, extension_id);
 }
 
 void ExtensionsToolbarContainer::ShowToolbarActionBubbleAsync(
     std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ExtensionsToolbarContainer::ShowToolbarActionBubble,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(bubble)));
+  ShowToolbarActionBubble(std::move(bubble));
 }
 
 void ExtensionsToolbarContainer::OnTabStripModelChanged(
@@ -489,35 +485,15 @@ void ExtensionsToolbarContainer::OnWidgetClosing(views::Widget* widget) {
   auto iter = std::find_if(
       anchored_widgets_.begin(), anchored_widgets_.end(),
       [widget](const auto& info) { return info.widget == widget; });
-  if (iter != anchored_widgets_.end()) {
-    iter->widget->RemoveObserver(this);
-    const std::string extension_id = std::move(iter->extension_id);
-    anchored_widgets_.erase(iter);
-    UpdateIconVisibility(extension_id);
-  }
-
-  if (active_bubble_ && active_bubble_->GetWidget() == widget)
-    ClearActiveBubble(widget);
+  DCHECK(iter != anchored_widgets_.end());
+  iter->widget->RemoveObserver(this);
+  const std::string extension_id = std::move(iter->extension_id);
+  anchored_widgets_.erase(iter);
+  UpdateIconVisibility(extension_id);
 }
 
 void ExtensionsToolbarContainer::OnWidgetDestroying(views::Widget* widget) {
   OnWidgetClosing(widget);
-}
-
-void ExtensionsToolbarContainer::ClearActiveBubble(views::Widget* widget) {
-  DCHECK(active_bubble_);
-  DCHECK_EQ(active_bubble_->GetWidget(), widget);
-  ToolbarActionViewController* const action =
-      GetActionForId(active_bubble_->GetAnchorActionId());
-  // TODO(pbos): Note that this crashes if a bubble anchors to the menu and not
-  // to an extension that gets popped out. This should be fixed, but a test
-  // should first be added to make sure that it's covered.
-  CHECK(action);
-  active_bubble_ = nullptr;
-  widget->RemoveObserver(this);
-  // Note that we only hide this view if it's not visible for other reasons
-  // than displaying the bubble.
-  icons_[action->GetId()]->SetVisible(IsActionVisibleOnToolbar(action));
 }
 
 size_t ExtensionsToolbarContainer::WidthToIconCount(int x_offset) {
@@ -548,14 +524,4 @@ void ExtensionsToolbarContainer::SetExtensionIconVisibility(
   extension_view->SetImage(
       views::Button::STATE_NORMAL,
       visible ? GetExtensionIcon(extension_view) : gfx::ImageSkia());
-}
-
-void ExtensionsToolbarContainer::ShowActiveBubble(
-    views::View* anchor_view,
-    std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller) {
-  active_bubble_ = new ToolbarActionsBarBubbleViews(
-      anchor_view, anchor_view != extensions_button_, std::move(controller));
-  views::BubbleDialogDelegateView::CreateBubble(active_bubble_)
-      ->AddObserver(this);
-  active_bubble_->Show();
 }

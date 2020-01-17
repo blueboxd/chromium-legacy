@@ -54,9 +54,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   void EndPaint(const GrBackendSemaphore& semaphore) override;
   bool supports_alpha() { return true; }
 
-  gl::GLImage* GetOverlayImage() override;
-  // Creates and submits gpu fence
-  std::unique_ptr<gfx::GpuFence> SubmitOverlayGpuFence() override;
+  void SchedulePrimaryPlane(
+      const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane)
+      override;
   void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays) override;
 
   gl::GLSurface* gl_surface() { return gl_surface_.get(); }

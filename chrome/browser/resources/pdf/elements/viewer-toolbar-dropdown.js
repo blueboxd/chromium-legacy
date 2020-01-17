@@ -108,19 +108,19 @@ Polymer({
    * @return {string} Current icon for the dropdown.
    * @private
    */
-  computeIcon_: function(dropdownOpen, closedIcon, openIcon) {
+  computeIcon_(dropdownOpen, closedIcon, openIcon) {
     return dropdownOpen ? openIcon : closedIcon;
   },
 
   /** @private */
-  lowerBoundChanged_: function() {
+  lowerBoundChanged_() {
     this.maxHeightValid_ = false;
     if (this.dropdownOpen) {
       this.updateMaxHeight();
     }
   },
 
-  toggleDropdown: function() {
+  toggleDropdown() {
     if (!this.dropdownOpen && this.openAfterSelect && !this.selected) {
       // The dropdown has `openAfterSelect` set, but is not yet selected.
       return;
@@ -152,7 +152,7 @@ Polymer({
     this.playAnimation_(this.dropdownOpen);
   },
 
-  updateMaxHeight: function() {
+  updateMaxHeight() {
     const scrollContainer = this.$['scroll-container'];
     let height = this.lowerBound - scrollContainer.getBoundingClientRect().top -
         DROPDOWN_INNER_PADDING;
@@ -167,7 +167,7 @@ Polymer({
    * exit.
    * @private
    */
-  playAnimation_: function(isEntry) {
+  playAnimation_(isEntry) {
     this.animation_ = isEntry ? this.animateEntry_() : this.animateExit_();
     this.animation_.onfinish = () => {
       this.animation_ = null;
@@ -181,7 +181,7 @@ Polymer({
    * @return {!Object} Animation
    * @private
    */
-  animateEntry_: function() {
+  animateEntry_() {
     let maxHeight =
         this.$.dropdown.getBoundingClientRect().height - DROPDOWN_OUTER_PADDING;
 
@@ -210,7 +210,7 @@ Polymer({
    * @return {!Object} Animation
    * @private
    */
-  animateExit_: function() {
+  animateExit_() {
     return this.$.dropdown.animate(
         [
           {transform: 'translateY(0)', opacity: 1},

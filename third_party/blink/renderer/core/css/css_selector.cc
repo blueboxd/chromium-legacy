@@ -787,7 +787,7 @@ const CSSSelector* CSSSelector::SerializeCompound(
         case kPseudoLang:
         case kPseudoState:
           builder.Append('(');
-          builder.Append(simple_selector->Argument());
+          SerializeIdentifier(simple_selector->Argument(), builder);
           builder.Append(')');
           break;
         case kPseudoNot:
@@ -804,13 +804,19 @@ const CSSSelector* CSSSelector::SerializeCompound(
       }
     } else if (simple_selector->match_ == kPseudoElement) {
       builder.Append("::");
-      builder.Append(simple_selector->SerializingValue());
+      SerializeIdentifier(simple_selector->SerializingValue(), builder);
       switch (simple_selector->GetPseudoType()) {
-        case kPseudoPart:
-          builder.Append('(');
-          builder.Append(simple_selector->Argument());
+        case kPseudoPart: {
+          char separator = '(';
+          for (AtomicString part : *simple_selector->PartNames()) {
+            builder.Append(separator);
+            if (separator == '(')
+              separator = ' ';
+            SerializeIdentifier(part, builder);
+          }
           builder.Append(')');
           break;
+        }
         default:
           break;
       }
@@ -1209,6 +1215,12 @@ bool CSSSelector::RareData::MatchNth(unsigned unsigned_count) {
   if (count > NthBValue())
     return false;
   return (NthBValue() - count) % (-NthAValue()) == 0;
+}
+
+void CSSSelector::SetPartNames(
+    std::unique_ptr<Vector<AtomicString>> part_names) {
+  CreateRareData();
+  data_.rare_data_->part_names_ = std::move(part_names);
 }
 
 }  // namespace blink

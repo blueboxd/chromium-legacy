@@ -9,9 +9,7 @@ if (is_android) {
 
   static_library("ukm_utils_for_test") {
     testonly = true
-    sources = [
-      "ukm_utils_for_test.cc",
-    ]
+    sources = [ "ukm_utils_for_test.cc" ]
     deps = [
       "//chrome/browser",
       "//chrome/browser/android/metrics:jni_headers",
@@ -28,16 +26,13 @@ if (is_android) {
   android_library("ukm_java_test_support") {
     testonly = true
     sources = _jni_sources
-    deps = [
-      "//base:base_java",
-    ]
+    deps = [ "//base:base_java" ]
   }
 
   android_library("ukm_javatests") {
     testonly = true
-    sources = [
-      "javatests/src/org/chromium/chrome/browser/metrics/UkmTest.java",
-    ]
+    sources =
+        [ "javatests/src/org/chromium/chrome/browser/metrics/UkmTest.java" ]
 
     deps = [
       ":ukm_java_test_support",

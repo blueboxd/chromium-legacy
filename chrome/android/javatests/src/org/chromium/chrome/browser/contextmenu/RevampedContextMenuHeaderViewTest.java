@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextmenu;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
@@ -23,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -44,6 +46,7 @@ public class RevampedContextMenuHeaderViewTest extends DummyUiActivityTestCase {
     private View mTitleAndUrl;
     private ImageView mImage;
     private View mCircleBg;
+    private View mPerformanceInfo;
     private PropertyModel mModel;
     private PropertyModelChangeProcessor mMCP;
 
@@ -63,6 +66,7 @@ public class RevampedContextMenuHeaderViewTest extends DummyUiActivityTestCase {
             mTitleAndUrl = mHeaderView.findViewById(R.id.title_and_url);
             mImage = mHeaderView.findViewById(R.id.menu_header_image);
             mCircleBg = mHeaderView.findViewById(R.id.circle_background);
+            mPerformanceInfo = mHeaderView.findViewById(R.id.menu_header_performance_info);
         });
         mModel = new PropertyModel.Builder(RevampedContextMenuHeaderProperties.ALL_KEYS)
                          .with(RevampedContextMenuHeaderProperties.TITLE, "")
@@ -71,6 +75,8 @@ public class RevampedContextMenuHeaderViewTest extends DummyUiActivityTestCase {
                                  null)
                          .with(RevampedContextMenuHeaderProperties.IMAGE, null)
                          .with(RevampedContextMenuHeaderProperties.CIRCLE_BG_VISIBLE, false)
+                         .with(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS,
+                                 PerformanceClass.PERFORMANCE_UNKNOWN)
                          .build();
         mMCP = PropertyModelChangeProcessor.create(
                 mModel, mHeaderView, RevampedContextMenuHeaderViewBinder::bind);
@@ -190,5 +196,33 @@ public class RevampedContextMenuHeaderViewTest extends DummyUiActivityTestCase {
                 () -> mModel.set(RevampedContextMenuHeaderProperties.IMAGE, bitmap));
         assertThat("Incorrect thumbnail bitmap.",
                 ((BitmapDrawable) mImage.getDrawable()).getBitmap(), equalTo(bitmap));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void testPerformanceInfo() {
+        assertThat("Incorrect initial performance info visibility.",
+                mPerformanceInfo.getVisibility(), equalTo(View.GONE));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS,
+                    PerformanceClass.PERFORMANCE_FAST);
+        });
+
+        assertThat("Incorrect performance info visibility for FAST performance class.",
+                mPerformanceInfo.getVisibility(), equalTo(View.VISIBLE));
+
+        TextView performanceText = mHeaderView.findViewById(R.id.performance_info_text);
+        assertThat("Performance info text is empty.", performanceText.getText().length(),
+                greaterThan(0));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS,
+                    PerformanceClass.PERFORMANCE_SLOW);
+        });
+
+        assertThat("Incorrect performance info visibility for SLOW performance class.",
+                mPerformanceInfo.getVisibility(), equalTo(View.GONE));
     }
 }

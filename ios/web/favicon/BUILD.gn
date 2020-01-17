@@ -29,9 +29,7 @@ source_set("unittests") {
     "//ios/web/public/favicon",
     "//testing/gtest",
   ]
-  sources = [
-    "favicon_util_unittest.mm",
-  ]
+  sources = [ "favicon_util_unittest.mm" ]
 }
 
 source_set("inttests") {
@@ -44,7 +42,5 @@ source_set("inttests") {
     "//ios/web/public:web_state_observer",
     "//ios/web/public/test",
   ]
-  sources = [
-    "favicon_callbacks_inttest.mm",
-  ]
+  sources = [ "favicon_callbacks_inttest.mm" ]
 }

@@ -9,6 +9,8 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
@@ -202,6 +204,17 @@ class WebLocalFrame : public WebFrame {
                         bool animate,
                         base::OnceClosure on_finish) = 0;
 
+  // Sets an embedding token for the frame. This token is propagated to the
+  // remote parent of this frame (via the browser) such that it can uniquely
+  // refer to this frame.
+  virtual void SetEmbeddingToken(
+      const base::UnguessableToken& embedding_token) = 0;
+
+  // Returns the embedding token for this frame or nullopt if it isn't embedded.
+  // This is the token that the remote parent of this frame uses to uniquely
+  // identify it.
+  virtual const base::Optional<base::UnguessableToken>& GetEmbeddingToken() = 0;
+
   // Navigation Ping --------------------------------------------------------
 
   virtual void SendPings(const WebURL& destination_url) = 0;
@@ -248,10 +261,6 @@ class WebLocalFrame : public WebFrame {
   // * form submission
   virtual bool IsNavigationScheduledWithin(base::TimeDelta interval) const = 0;
 
-  // Reports a list of Blink features used, performed or encountered by the
-  // browser during the current page load happening on the frame.
-  virtual void BlinkFeatureUsageReport(
-      const std::set<blink::mojom::WebFeature>& features) = 0;
   virtual void BlinkFeatureUsageReport(blink::mojom::WebFeature feature) = 0;
 
   // Informs the renderer that mixed content was found externally regarding this
@@ -584,11 +593,7 @@ class WebLocalFrame : public WebFrame {
 
   // Copy to the clipboard the image located at a particular point in visual
   // viewport coordinates.
-  virtual void CopyImageAt(const WebPoint&) = 0;
-
-  // Save as the image located at a particular point in visual viewport
-  // coordinates.
-  virtual void SaveImageAt(const WebPoint&) = 0;
+  virtual void CopyImageAtForTesting(const WebPoint&) = 0;
 
   // Events --------------------------------------------------------------
 

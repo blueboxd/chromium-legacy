@@ -90,6 +90,10 @@ std::string AppServiceWrapper::GetAppName(const AppId& app_id) const {
   return app_name;
 }
 
+std::string AppServiceWrapper::GetAppServiceId(const AppId& app_id) const {
+  return AppServiceIdFromAppId(app_id, profile_);
+}
+
 void AppServiceWrapper::AddObserver(EventListener* listener) {
   DCHECK(listener);
   listeners_.AddObserver(listener);

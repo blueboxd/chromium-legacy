@@ -56,7 +56,7 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.browserProxy_ = settings.StartupUrlsPageBrowserProxyImpl.getInstance();
 
     if (this.model) {
@@ -77,7 +77,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasError_: function() {
+  hasError_() {
     return this.error_ != UrlInputError.NONE;
   },
 
@@ -87,17 +87,17 @@ Polymer({
    * @return {string}
    * @private
    */
-  errorMessage_: function(invalidUrl, tooLong) {
+  errorMessage_(invalidUrl, tooLong) {
     return ['', invalidUrl, tooLong][this.error_];
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.close();
   },
 
   /** @private */
-  onActionButtonTap_: function() {
+  onActionButtonTap_() {
     const whenDone = this.model ?
         this.browserProxy_.editStartupPage(this.model.modelIndex, this.url_) :
         this.browserProxy_.addStartupPage(this.url_);
@@ -112,7 +112,7 @@ Polymer({
   },
 
   /** @private */
-  validate_: function() {
+  validate_() {
     if (this.url_.length == 0) {
       this.$.actionButton.disabled = true;
       this.error_ = UrlInputError.NONE;

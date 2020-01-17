@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -75,13 +76,12 @@ class DeviceMotionEvent final : public Event {
   Member<const DeviceMotionData> device_motion_data_;
 };
 
-DEFINE_TYPE_CASTS(DeviceMotionEvent,
-                  Event,
-                  event,
-                  event->InterfaceName() ==
-                      event_interface_names::kDeviceMotionEvent,
-                  event.InterfaceName() ==
-                      event_interface_names::kDeviceMotionEvent);
+template <>
+struct DowncastTraits<DeviceMotionEvent> {
+  static bool AllowFrom(const Event& event) {
+    return event.InterfaceName() == event_interface_names::kDeviceMotionEvent;
+  }
+};
 
 }  // namespace blink
 

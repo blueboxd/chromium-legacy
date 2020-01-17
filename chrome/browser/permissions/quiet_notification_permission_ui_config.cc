@@ -16,6 +16,10 @@ const char QuietNotificationPermissionUiConfig::kEnableCrowdDenyTriggering[] =
     "enable_crowd_deny_triggering";
 
 // static
+const char QuietNotificationPermissionUiConfig::kCrowdDenyHoldBackChance[] =
+    "crowd_deny_hold_back_chance";
+
+// static
 bool QuietNotificationPermissionUiConfig::IsAdaptiveActivationEnabled() {
   if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
     return false;
@@ -33,4 +37,10 @@ bool QuietNotificationPermissionUiConfig::IsCrowdDenyTriggeringEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kQuietNotificationPrompts, kEnableCrowdDenyTriggering,
       false /* default */);
+}
+
+// static
+double QuietNotificationPermissionUiConfig::GetCrowdDenyHoldBackChance() {
+  return base::GetFieldTrialParamByFeatureAsDouble(
+      features::kQuietNotificationPrompts, kCrowdDenyHoldBackChance, 0);
 }

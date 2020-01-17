@@ -7,7 +7,6 @@
 
 # display / resources / quads / passes
 danakj@chromium.org
-enne@chromium.org
 ericrk@chromium.org
 vmpstr@chromium.org
 weiliangc@chromium.org
@@ -27,7 +26,6 @@ rjkroege@chromium.org
 sadrul@chromium.org
 
 # frame sinks / surfaces
-enne@chromium.org
 kylechar@chromium.org
 samans@chromium.org
 jonross@chromium.org
@@ -54,7 +52,6 @@ sunnyps@chromium.org
 
 # general
 danakj@chromium.org
-enne@chromium.org
 vmpstr@chromium.org
 
 # TEAM: graphics-dev@chromium.org

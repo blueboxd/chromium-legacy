@@ -20,7 +20,6 @@
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_host_frame_sink_client.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
-#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/embedded_frame_sink_impl.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
@@ -135,8 +134,8 @@ class EmbeddedFrameSinkProviderImplTest : public testing::Test {
     // The FrameSinkManagerImpl implementation is in-process here for tests.
     frame_sink_manager_ =
         std::make_unique<viz::FrameSinkManagerImpl>(&shared_bitmap_manager_);
-    surface_utils::ConnectWithLocalFrameSinkManager(
-        host_frame_sink_manager_.get(), frame_sink_manager_.get());
+    host_frame_sink_manager_->SetLocalManager(frame_sink_manager_.get());
+    frame_sink_manager_->SetLocalClient(host_frame_sink_manager_.get());
 
     provider_ = std::make_unique<EmbeddedFrameSinkProviderImpl>(
         host_frame_sink_manager_.get(), kRendererClientId);

@@ -46,8 +46,8 @@ struct NavigationEvent {
   std::vector<GURL> server_redirect_urls;
 
   // Which tab contains the frame with source_url. Tab ID is returned by
-  // SessionTabHelper::IdForTab. This ID is immutable for a given tab and unique
-  // across Chrome within the current session.
+  // sessions::SessionTabHelper::IdForTab. This ID is immutable for a given tab
+  // and unique across Chrome within the current session.
   SessionID source_tab_id;
 
   // Which tab this request url is targeting to.

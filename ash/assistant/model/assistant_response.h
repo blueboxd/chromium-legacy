@@ -9,12 +9,11 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "services/content/public/cpp/navigable_contents.h"
 
 namespace ash {
 
@@ -70,9 +69,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
 
   // Invoke to begin processing the response. Upon completion, |callback| will
   // be run to indicate success or failure.
-  void Process(
-      mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory,
-      ProcessingCallback callback);
+  void Process(ProcessingCallback callback);
 
  private:
   friend class base::RefCounted<AssistantResponse>;
@@ -83,7 +80,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
    public:
     Processor(
         AssistantResponse& response,
-        mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory,
         ProcessingCallback callback);
     ~Processor();
 
@@ -101,7 +97,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
     void TryFinishing();
 
     AssistantResponse& response_;
-    mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;
     ProcessingCallback callback_;
 
     int processing_count_ = 0;

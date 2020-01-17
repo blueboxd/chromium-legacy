@@ -25,9 +25,7 @@ jinja_template("cast_shell_manifest") {
 }
 
 java_cpp_template("cast_shell_build_config_gen") {
-  sources = [
-    "apk/templates/BuildConfig.template",
-  ]
+  sources = [ "apk/templates/BuildConfig.template" ]
   package_path = "org/chromium/chromecast/shell"
 
   defines = []
@@ -85,18 +83,15 @@ android_library("cast_audio_manager_java") {
 
 android_library("cast_intents_java") {
   java_src_dir = "//chromecast/browser/android/apk/src"
-  sources = [
-    "$java_src_dir/org/chromium/chromecast/shell/CastIntents.java",
-  ]
+  sources = [ "$java_src_dir/org/chromium/chromecast/shell/CastIntents.java" ]
 }
 android_aidl("logs_provider_aidl") {
   java_src_dir = "//chromecast/browser/android/apk/src"
   interface_file =
       "$java_src_dir/org/chromium/chromecast/shell/logs_provider_service.aidl"
 
-  sources = [
-    "$java_src_dir/org/chromium/chromecast/shell/IDeviceLogsProvider.aidl",
-  ]
+  sources =
+      [ "$java_src_dir/org/chromium/chromecast/shell/IDeviceLogsProvider.aidl" ]
 }
 
 android_library("reactive_android_java") {
@@ -192,9 +187,7 @@ android_library("cast_shell_java") {
 
 if (is_android_things_non_public && !build_for_android_things_n) {
   android_library("cast_shell_android_things_sys_info_java") {
-    sources = [
-      "//chromecast/browser/android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java",
-    ]
+    sources = [ "//chromecast/browser/android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java" ]
     deps = [
       "//base:base_java",
       "//chromecast/internal/android/prebuilt/things:support_lib_java",
@@ -202,12 +195,8 @@ if (is_android_things_non_public && !build_for_android_things_n) {
   }
 
   generate_jni("cast_shell_android_things_sys_info_jni_headers") {
-    sources = [
-      "//chromecast/browser/android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java",
-    ]
-    deps = [
-      "//chromecast/internal/android/prebuilt/things:support_lib_java",
-    ]
+    sources = [ "//chromecast/browser/android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java" ]
+    deps = [ "//chromecast/internal/android/prebuilt/things:support_lib_java" ]
   }
 }
 

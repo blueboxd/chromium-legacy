@@ -694,6 +694,7 @@
         "inset-block-start",
         "syntax",
         "render-subtree",
+        "origin-trial-test-property",
     ],
     "properties": {}
 }

@@ -40,8 +40,8 @@ class WebApkIconHasherRunner {
            const GURL& icon_url) {
     WebApkIconHasher::DownloadAndComputeMurmur2HashWithTimeout(
         url_loader_factory, url::Origin::Create(icon_url), icon_url, 300,
-        base::Bind(&WebApkIconHasherRunner::OnCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&WebApkIconHasherRunner::OnCompleted,
+                       base::Unretained(this)));
 
     base::RunLoop run_loop;
     on_completed_callback_ = run_loop.QuitClosure();

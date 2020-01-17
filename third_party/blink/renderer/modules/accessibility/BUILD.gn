@@ -64,9 +64,7 @@ blink_modules_sources("accessibility") {
     "inspector_type_builder_helper.h",
   ]
 
-  deps = [
-    "//ui/accessibility:ax_enums_mojo_blink",
-  ]
+  deps = [ "//ui/accessibility:ax_enums_mojo_blink" ]
 
   # The modules/accessibility/ depends closely on core/ --
   # include the core pch for faster Windows compilation times.

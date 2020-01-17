@@ -144,7 +144,8 @@ Tests ARIA 1.1 accessibility markup.
     {
       "name": "details",
       "value": {
-        "type": "idref",
+        "type": "idrefList",
+        "value": "d",
         "relatedNodes": [
           {
             "idref": "d",

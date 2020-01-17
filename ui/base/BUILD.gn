@@ -758,9 +758,7 @@ jumbo_static_library("test_support") {
     ]
   }
 
-  public_deps = [
-    ":base",
-  ]
+  public_deps = [ ":base" ]
   deps = [
     "//base",
     "//base/test:test_config",
@@ -837,21 +835,15 @@ if (is_android) {
   }
 
   java_cpp_enum("ui_base_cursor_type_java_enums_srcjar") {
-    sources = [
-      "./cursor/types/cursor_types.h",
-    ]
+    sources = [ "./cursor/types/cursor_types.h" ]
   }
 }
 
 bundle_data("ui_base_unittests_bundle_data") {
   testonly = true
-  sources = [
-    "test/data/data_pack_unittest/truncated-header.pak",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  sources = [ "test/data/data_pack_unittest/truncated-header.pak" ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 # The resource labels below should not end with "_resources" or the Android
@@ -867,15 +859,9 @@ grit("ui_base_test_resources_grit") {
 
 copy("ui_base_test_resources_pak") {
   testonly = true
-  sources = [
-    "$target_gen_dir/ui_base_test_resources.pak",
-  ]
-  outputs = [
-    "$root_out_dir/ui_base_test_resources.pak",
-  ]
-  public_deps = [
-    ":ui_base_test_resources_grit",
-  ]
+  sources = [ "$target_gen_dir/ui_base_test_resources.pak" ]
+  outputs = [ "$root_out_dir/ui_base_test_resources.pak" ]
+  public_deps = [ ":ui_base_test_resources_grit" ]
 }
 
 if (is_android) {
@@ -883,27 +869,17 @@ if (is_android) {
     testonly = true
 
     # Use $target_gen_dir so the associated .pak.info file is available.
-    sources = [
-      "$target_gen_dir/ui_base_test_resources.pak",
-    ]
-    deps = [
-      ":ui_base_test_resources_grit",
-    ]
+    sources = [ "$target_gen_dir/ui_base_test_resources.pak" ]
+    deps = [ ":ui_base_test_resources_grit" ]
   }
 }
 
 if (is_ios) {
   bundle_data("ui_base_test_bundle_data") {
     testonly = true
-    public_deps = [
-      ":ui_base_test_resources_grit",
-    ]
-    sources = [
-      "$target_gen_dir/ui_base_test_resources.pak",
-    ]
-    outputs = [
-      "{{bundle_resources_dir}}/{{source_file_part}}",
-    ]
+    public_deps = [ ":ui_base_test_resources_grit" ]
+    sources = [ "$target_gen_dir/ui_base_test_resources.pak" ]
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
   }
 }
 
@@ -1200,9 +1176,7 @@ if (is_mac) {
     testonly = true
     framework_version = "U"
     framework_contents = [ "Resources" ]
-    deps = [
-      "//ui/resources:ui_test_pak_bundle_data",
-    ]
+    deps = [ "//ui/resources:ui_test_pak_bundle_data" ]
     info_plist = "test/framework-Info.plist"
     extra_substitutions = [ "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id" ]
     output_name = "ui_unittests Framework"
@@ -1226,9 +1200,8 @@ if (is_win) {
 source_set("base_interactive_ui_tests") {
   testonly = true
   if (is_win) {
-    sources = [
-      "accelerators/global_media_keys_listener_win_interactive_test.cc",
-    ]
+    sources =
+        [ "accelerators/global_media_keys_listener_win_interactive_test.cc" ]
 
     deps = [
       ":base",

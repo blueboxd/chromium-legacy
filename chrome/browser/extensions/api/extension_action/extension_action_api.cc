@@ -23,13 +23,13 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/event_router.h"
@@ -188,7 +188,7 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
 void ExtensionActionAPI::ClearAllValuesForTab(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
-  const SessionID tab_id = SessionTabHelper::IdForTab(web_contents);
+  const SessionID tab_id = sessions::SessionTabHelper::IdForTab(web_contents);
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
   const ExtensionSet& enabled_extensions =
       ExtensionRegistry::Get(browser_context_)->enabled_extensions();

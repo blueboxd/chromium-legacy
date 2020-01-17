@@ -84,6 +84,7 @@ class FAKE_DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
     DisplayConnectionType type_ = DISPLAY_CONNECTION_TYPE_UNKNOWN;
     bool is_aspect_preserving_scaling_ = false;
     bool has_overscan_ = false;
+    bool has_privacy_screen_ = false;
     bool has_color_correction_matrix_ = false;
     bool color_correction_in_linear_space_ = false;
     std::string name_;
@@ -102,6 +103,7 @@ class FAKE_DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
                       DisplayConnectionType type,
                       bool is_aspect_preserving_scaling,
                       bool has_overscan,
+                      bool has_privacy_screen,
                       bool has_color_correction_matrix,
                       bool color_correction_in_linear_space,
                       std::string display_name,

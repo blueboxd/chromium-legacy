@@ -140,23 +140,15 @@ source_set("init_webrtc") {
 source_set("metrics") {
   # TODO(mbonadei): Migrate WebRTC deps to webrtc_component and uncomment.
   # visibility = [ ":*" ]
-  sources = [
-    "metrics.cc",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "metrics.cc" ]
+  deps = [ "//base" ]
 }
 
 source_set("field_trial") {
   # TODO(mbonadei): Migrate WebRTC deps to webrtc_component and uncomment.
   # visibility = [ ":*" ]
-  sources = [
-    "field_trial.cc",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "field_trial.cc" ]
+  deps = [ "//base" ]
 }
 
 source_set("task_queue_factory") {

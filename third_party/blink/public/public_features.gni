@@ -13,6 +13,9 @@ declare_args() {
 
   # Enables additional Oilpan heap verification instrumentation.
   enable_blink_heap_verification = false
+
+  # Enables young generation collections in Oilpan.
+  enable_blink_heap_young_generation = false
 }
 
 declare_args() {

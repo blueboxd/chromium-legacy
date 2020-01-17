@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "components/arc/intent_helper/control_camera_app_delegate.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "url/gurl.h"
 
 namespace arc {

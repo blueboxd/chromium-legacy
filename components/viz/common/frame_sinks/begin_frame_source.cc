@@ -386,11 +386,11 @@ void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
   DCHECK(!base::Contains(observers_, obs));
 
-  bool observers_was_empty = observers_.empty();
+  if (observers_.empty())
+    client_->OnNeedsBeginFrames(true);
+
   observers_.insert(obs);
   obs->OnBeginFrameSourcePausedChanged(paused_);
-  if (observers_was_empty)
-    client_->OnNeedsBeginFrames(true);
 
   // Send a MISSED begin frame if necessary.
   BeginFrameArgs missed_args = GetMissedBeginFrameArgs(obs);

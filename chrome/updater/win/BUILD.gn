@@ -7,9 +7,7 @@ import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
 
 midl("updater_idl_idl") {
-  sources = [
-    "com/updater_idl.idl",
-  ]
+  sources = [ "com/updater_idl.idl" ]
 
   writes_tlb = true
 }
@@ -55,18 +53,12 @@ executable("updater") {
 }
 
 copy("uninstall.cmd") {
-  sources = [
-    "setup/uninstall.cmd",
-  ]
-  outputs = [
-    "$target_gen_dir/uninstall.cmd",
-  ]
+  sources = [ "setup/uninstall.cmd" ]
+  outputs = [ "$target_gen_dir/uninstall.cmd" ]
 }
 
 process_version_rc_template("version_resources") {
-  sources = [
-    "updater.ver",
-  ]
+  sources = [ "updater.ver" ]
   output = "$target_gen_dir/updater_exe.rc"
 }
 
@@ -151,9 +143,7 @@ source_set("install_progress_observer") {
     "install_progress_observer.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 # This build target is defined to minimize the impact of -Wno-missing-braces

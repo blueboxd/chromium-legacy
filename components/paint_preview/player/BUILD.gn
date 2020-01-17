@@ -22,7 +22,6 @@ source_set("player") {
     "//url",
   ]
 
-  public_deps = [
-    "//components/services/paint_preview_compositor/public/mojom",
-  ]
+  public_deps =
+      [ "//components/services/paint_preview_compositor/public/mojom" ]
 }

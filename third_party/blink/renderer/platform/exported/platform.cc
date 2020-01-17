@@ -140,13 +140,6 @@ static Platform* g_platform = nullptr;
 
 static GCTaskRunner* g_gc_task_runner = nullptr;
 
-static void CallOnMainThreadFunction(WTF::MainThreadFunction function,
-                                     void* context) {
-  PostCrossThreadTask(
-      *Thread::MainThread()->GetTaskRunner(), FROM_HERE,
-      CrossThreadBindOnce(function, CrossThreadUnretained(context)));
-}
-
 Platform::Platform() {
   WTF::Partitions::Initialize();
 }
@@ -215,7 +208,7 @@ void Platform::CreateMainThreadAndInitialize(Platform* platform) {
 
 void Platform::InitializeCommon(Platform* platform,
                                 std::unique_ptr<Thread> main_thread) {
-  WTF::Initialize(CallOnMainThreadFunction);
+  WTF::Initialize();
 
   Thread::SetMainThread(std::move(main_thread));
 

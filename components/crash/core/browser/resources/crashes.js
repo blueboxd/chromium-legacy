@@ -44,17 +44,17 @@ function updateCrashList(
 
   for (let i = 0; i < crashes.length; i++) {
     const crash = crashes[i];
-    if (crash.local_id == '') {
+    if (crash.local_id === '') {
       crash.local_id = productName;
     }
 
     const crashBlock = document.createElement('div');
-    if (crash.state != 'uploaded') {
+    if (crash.state !== 'uploaded') {
       crashBlock.className = 'notUploaded';
     }
 
     const title = document.createElement('h3');
-    const uploaded = crash.state == 'uploaded';
+    const uploaded = crash.state === 'uploaded';
     if (uploaded) {
       const crashHeaderText = loadTimeData.getString('crashHeaderFormat');
       const pieces = loadTimeData
@@ -133,11 +133,11 @@ function updateCrashList(
       crashBlock.appendChild(linkBlock);
     } else {
       let textContentKey;
-      if (crash.state == 'pending_user_requested') {
+      if (crash.state === 'pending_user_requested') {
         textContentKey = 'crashUserRequested';
-      } else if (crash.state == 'pending') {
+      } else if (crash.state === 'pending') {
         textContentKey = 'crashPending';
-      } else if (crash.state == 'not_uploaded') {
+      } else if (crash.state === 'not_uploaded') {
         textContentKey = 'crashNotUploaded';
       } else {
         continue;
@@ -148,7 +148,7 @@ function updateCrashList(
                                                       crash.capture_time);
       crashBlock.appendChild(crashText);
 
-      if (crash.file_size != '') {
+      if (crash.file_size !== '') {
         const crashSizeText =  document.createElement('p');
         crashSizeText.textContent = loadTimeData.getStringF('crashSizeMessage',
                                                             crash.file_size);
@@ -156,7 +156,7 @@ function updateCrashList(
       }
 
       // Do not show "Send now" link for already requested crashes.
-      if (crash.state != 'pending_user_requested' && manualUploads) {
+      if (crash.state !== 'pending_user_requested' && manualUploads) {
         const uploadNowLinkBlock = document.createElement('p');
         const link = document.createElement('a');
         link.href = '';
@@ -174,7 +174,7 @@ function updateCrashList(
 
   // Reset the height, in order to accommodate for the new content.
   crashSection.style.height = "";
-  $('noCrashes').hidden = crashes.length != 0;
+  $('noCrashes').hidden = crashes.length !== 0;
 }
 
 /**

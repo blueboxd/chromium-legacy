@@ -26,8 +26,10 @@ static_library("core") {
   ]
 
   public_deps = [
+    ":feature_flags",
     "//skia",
   ]
+
   deps = [
     "//base",
     "//ui/base",
@@ -42,10 +44,17 @@ static_library("core") {
   }
 }
 
+source_set("feature_flags") {
+  sources = [
+    "infobar_feature.cc",
+    "infobar_feature.h",
+  ]
+
+  public_deps = [ "//base" ]
+}
+
 if (is_android) {
   java_cpp_enum("infobar_enums_java") {
-    sources = [
-      "infobar_delegate.h",
-    ]
+    sources = [ "infobar_delegate.h" ]
   }
 }

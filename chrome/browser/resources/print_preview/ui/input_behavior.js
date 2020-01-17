@@ -27,7 +27,7 @@ export const InputBehavior = {
   timeout_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.getInput().addEventListener('input', this.resetTimeout_.bind(this));
     this.getInput().addEventListener('keydown', this.onKeyDown_.bind(this));
   },
@@ -37,7 +37,7 @@ export const InputBehavior = {
    *     element the behavior should use. Should be overridden by elements
    *     using this behavior.
    */
-  getInput: function() {},
+  getInput() {},
 
   /**
    * @return {number} The delay to use for the timeout, in ms. Elements using
@@ -45,7 +45,7 @@ export const InputBehavior = {
    *     element returned by getInput().
    * @private
    */
-  getTimeoutDelayMs_: function() {
+  getTimeoutDelayMs_() {
     const delay = parseInt(
         /** @type {{timeoutDelay: number}} */ (this.getInput().dataset)
             .timeoutDelay,
@@ -59,7 +59,7 @@ export const InputBehavior = {
    * @param {!KeyboardEvent} event Contains the key that was pressed.
    * @private
    */
-  onKeyDown_: function(event) {
+  onKeyDown_(event) {
     if (event.code !== 'Enter' && event.code !== 'Tab') {
       return;
     }
@@ -72,7 +72,7 @@ export const InputBehavior = {
    * timeout.
    * @private
    */
-  resetTimeout_: function() {
+  resetTimeout_() {
     if (this.timeout_) {
       clearTimeout(this.timeout_);
     }
@@ -84,7 +84,7 @@ export const InputBehavior = {
    * Called after a timeout after user input into the textfield.
    * @private
    */
-  onTimeout_: function() {
+  onTimeout_() {
     this.timeout_ = null;
     const value = this.getInput().value;
     if (this.lastValue_ !== value) {
@@ -94,12 +94,12 @@ export const InputBehavior = {
   },
 
   // Resets the lastValue_ so that future inputs trigger a change event.
-  resetString: function() {
+  resetString() {
     this.lastValue_ = null;
   },
 
   // Called to clear the timeout and update the value.
-  resetAndUpdate: function() {
+  resetAndUpdate() {
     if (this.timeout_) {
       clearTimeout(this.timeout_);
     }

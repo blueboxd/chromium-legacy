@@ -17,15 +17,14 @@ BackgroundFetchRecord::BackgroundFetchRecord(Request* request,
   DCHECK(script_state_);
 
   response_ready_property_ = MakeGarbageCollected<ResponseReadyProperty>(
-      ExecutionContext::From(script_state), this,
-      ResponseReadyProperty::kResponseReady);
+      ExecutionContext::From(script_state));
 }
 
 BackgroundFetchRecord::~BackgroundFetchRecord() = default;
 
 void BackgroundFetchRecord::ResolveResponseReadyProperty(Response* response) {
   if (response_ready_property_->GetState() !=
-      ScriptPromisePropertyBase::State::kPending) {
+      ResponseReadyProperty::State::kPending) {
     return;
   }
 

@@ -6,12 +6,17 @@ package org.chromium.chrome.browser.contextmenu;
 
 import android.text.TextUtils;
 
+import androidx.annotation.IntDef;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink_public.common.ContextMenuDataMediaType;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.MenuSourceType;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 /**
  * A list of parameters that explain what kind of context menu to show the user.  This data is
  * generated from content/public/common/context_menu_params.h.
@@ -35,6 +40,17 @@ public class ContextMenuParams {
     private final int mTriggeringTouchYDp;
 
     private final int mSourceType;
+    private final @PerformanceClass int mPerformanceClass;
+
+    // From components/optimization_guide/proto/performance_hints_metadata.proto:PerformanceClass.
+    @IntDef({PerformanceClass.PERFORMANCE_UNKNOWN, PerformanceClass.PERFORMANCE_SLOW,
+            PerformanceClass.PERFORMANCE_FAST})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PerformanceClass {
+        int PERFORMANCE_UNKNOWN = 0;
+        int PERFORMANCE_SLOW = 1;
+        int PERFORMANCE_FAST = 2;
+    }
 
     /**
      * @return The URL associated with the main frame of the page that triggered the context menu.
@@ -145,6 +161,15 @@ public class ContextMenuParams {
     }
 
     /**
+     * @return An integer that signifies the expected performance of an anchor link.
+     *
+     * Set to PerformanceClass.PERFORMANCE_UNKNOWN for non-anchor links.
+     */
+    public @PerformanceClass int getPerformanceClass() {
+        return mPerformanceClass;
+    }
+
+    /**
      * @return The valid url of a ContextMenuParams.
      */
     public String getUrl() {
@@ -158,7 +183,8 @@ public class ContextMenuParams {
     public ContextMenuParams(@ContextMenuDataMediaType int mediaType, String pageUrl,
             String linkUrl, String linkText, String unfilteredLinkUrl, String srcUrl,
             String titleText, Referrer referrer, boolean canSaveMedia, int triggeringTouchXDp,
-            int triggeringTouchYDp, @MenuSourceType int sourceType) {
+            int triggeringTouchYDp, @MenuSourceType int sourceType,
+            @PerformanceClass int performanceClass) {
         mPageUrl = pageUrl;
         mLinkUrl = linkUrl;
         mLinkText = linkText;
@@ -174,17 +200,19 @@ public class ContextMenuParams {
         mTriggeringTouchXDp = triggeringTouchXDp;
         mTriggeringTouchYDp = triggeringTouchYDp;
         mSourceType = sourceType;
+        mPerformanceClass = performanceClass;
     }
 
     @CalledByNative
     private static ContextMenuParams create(@ContextMenuDataMediaType int mediaType, String pageUrl,
             String linkUrl, String linkText, String unfilteredLinkUrl, String srcUrl,
             String titleText, String sanitizedReferrer, int referrerPolicy, boolean canSaveMedia,
-            int triggeringTouchXDp, int triggeringTouchYDp, @MenuSourceType int sourceType) {
+            int triggeringTouchXDp, int triggeringTouchYDp, @MenuSourceType int sourceType,
+            @PerformanceClass int performanceClass) {
         Referrer referrer = TextUtils.isEmpty(sanitizedReferrer)
                 ? null : new Referrer(sanitizedReferrer, referrerPolicy);
         return new ContextMenuParams(mediaType, pageUrl, linkUrl, linkText, unfilteredLinkUrl,
                 srcUrl, titleText, referrer, canSaveMedia, triggeringTouchXDp, triggeringTouchYDp,
-                sourceType);
+                sourceType, performanceClass);
     }
 }

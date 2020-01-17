@@ -45,10 +45,10 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.device.mojom.NdefError;
 import org.chromium.device.mojom.NdefErrorType;
 import org.chromium.device.mojom.NdefMessage;
-import org.chromium.device.mojom.NdefPushOptions;
 import org.chromium.device.mojom.NdefRecord;
 import org.chromium.device.mojom.NdefRecordTypeCategory;
 import org.chromium.device.mojom.NdefScanOptions;
+import org.chromium.device.mojom.NdefWriteOptions;
 import org.chromium.device.mojom.Nfc.CancelAllWatchesResponse;
 import org.chromium.device.mojom.Nfc.CancelPushResponse;
 import org.chromium.device.mojom.Nfc.CancelWatchResponse;
@@ -578,21 +578,56 @@ public class NFCTest {
     @Test(expected = InvalidNdefMessageException.class)
     @Feature({"NFCTest"})
     public void testInvalidExternalRecordType() throws InvalidNdefMessageException {
+        NdefRecord extMojoNdefRecord = new NdefRecord();
+        extMojoNdefRecord.category = NdefRecordTypeCategory.EXTERNAL;
+        extMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
         {
-            NdefRecord extMojoNdefRecord = new NdefRecord();
-            extMojoNdefRecord.category = NdefRecordTypeCategory.EXTERNAL;
             // Must have a ':'.
             extMojoNdefRecord.recordType = "abc.com";
-            extMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
             NdefMessage extMojoNdefMessage = createMojoNdefMessage(extMojoNdefRecord);
             android.nfc.NdefMessage extNdefMessage =
                     NdefMessageUtils.toNdefMessage(extMojoNdefMessage);
             assertNull(extNdefMessage);
         }
         {
-            NdefRecord extMojoNdefRecord = new NdefRecord();
-            extMojoNdefRecord.category = NdefRecordTypeCategory.EXTERNAL;
-            extMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
+            // '-' is allowed in the domain part.
+            extMojoNdefRecord.recordType = "abc-123.com:xyz";
+            NdefMessage extMojoNdefMessage = createMojoNdefMessage(extMojoNdefRecord);
+            android.nfc.NdefMessage extNdefMessage =
+                    NdefMessageUtils.toNdefMessage(extMojoNdefMessage);
+            assertNotNull(extNdefMessage);
+            assertEquals(1, extNdefMessage.getRecords().length);
+            assertEquals(android.nfc.NdefRecord.TNF_EXTERNAL_TYPE,
+                    extNdefMessage.getRecords()[0].getTnf());
+            assertEquals("abc-1.com:xyz", new String(extNdefMessage.getRecords()[0].getType()));
+            assertEquals(DUMMY_RECORD_ID, new String(extNdefMessage.getRecords()[0].getId()));
+            assertEquals(TEST_TEXT, new String(extNdefMessage.getRecords()[0].getPayload()));
+        }
+        {
+            // '-' is not allowed in the type part.
+            extMojoNdefRecord.recordType = "abc.com:xyz-123";
+            NdefMessage extMojoNdefMessage = createMojoNdefMessage(extMojoNdefRecord);
+            android.nfc.NdefMessage extNdefMessage =
+                    NdefMessageUtils.toNdefMessage(extMojoNdefMessage);
+            assertNull(extNdefMessage);
+        }
+        {
+            // As the 2 cases above have proved that '-' is allowed in the domain part but not
+            // allowed in the type part, from this case we can say that the first occurrence of
+            // ':' is used to separate the domain part and the type part, i.e. "xyz-123:uvw" is
+            // separated as the type part and is treated as invalid due to the existence of '-'.
+            extMojoNdefRecord.recordType = "abc.com:xyz-123:uvw";
+            NdefMessage extMojoNdefMessage = createMojoNdefMessage(extMojoNdefRecord);
+            android.nfc.NdefMessage extNdefMessage =
+                    NdefMessageUtils.toNdefMessage(extMojoNdefMessage);
+            assertNull(extNdefMessage);
+        }
+        {
+            // |recordType| is a string mixed with ASCII/non-ASCII, FAIL.
+            extMojoNdefRecord.recordType = "example.com:hellö";
+            android.nfc.NdefMessage extNdefMessage_nonASCII =
+                    NdefMessageUtils.toNdefMessage(createMojoNdefMessage(extMojoNdefRecord));
+            assertNull(extNdefMessage_nonASCII);
 
             char[] chars = new char[251];
             Arrays.fill(chars, 'a');
@@ -611,11 +646,8 @@ public class NFCTest {
             assertNull(extNdefMessage_256);
         }
         {
-            NdefRecord extMojoNdefRecord = new NdefRecord();
-            extMojoNdefRecord.category = NdefRecordTypeCategory.EXTERNAL;
-            // '/' is not allowed.
+            // '/' is not allowed in the type part.
             extMojoNdefRecord.recordType = "abc.com:xyz/";
-            extMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
             NdefMessage extMojoNdefMessage = createMojoNdefMessage(extMojoNdefRecord);
             android.nfc.NdefMessage extNdefMessage =
                     NdefMessageUtils.toNdefMessage(extMojoNdefMessage);
@@ -632,7 +664,7 @@ public class NFCTest {
         TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
         mDelegate.invokeCallback();
         PushResponse mockCallback = mock(PushResponse.class);
-        nfc.push(new NdefMessage(), createNdefPushOptions(), mockCallback);
+        nfc.push(new NdefMessage(), createNdefWriteOptions(), mockCallback);
         nfc.processPendingOperationsForTesting(mNfcTagHandler);
         verify(mockCallback).call(mErrorCaptor.capture());
         assertEquals(NdefErrorType.INVALID_MESSAGE, mErrorCaptor.getValue().errorType);
@@ -682,7 +714,7 @@ public class NFCTest {
         TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
         mDelegate.invokeCallback();
         PushResponse mockCallback = mock(PushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback);
+        nfc.push(createMojoNdefMessage(), createNdefWriteOptions(), mockCallback);
         nfc.processPendingOperationsForTesting(mNfcTagHandler);
         verify(mockCallback).call(mErrorCaptor.capture());
         assertNull(mErrorCaptor.getValue());
@@ -698,7 +730,7 @@ public class NFCTest {
         mDelegate.invokeCallback();
         PushResponse mockPushCallback = mock(PushResponse.class);
         CancelPushResponse mockCancelPushCallback = mock(CancelPushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockPushCallback);
+        nfc.push(createMojoNdefMessage(), createNdefWriteOptions(), mockPushCallback);
         nfc.cancelPush(mockCancelPushCallback);
 
         // Check that push request was cancelled with OPERATION_CANCELLED.
@@ -998,7 +1030,7 @@ public class NFCTest {
         nfc.watch(createNdefScanOptions(), mNextWatchId, mockWatchCallback);
         // Start a push.
         PushResponse mockCallback = mock(PushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback);
+        nfc.push(createMojoNdefMessage(), createNdefWriteOptions(), mockCallback);
 
         // Pass null tag handler to simulate that the tag is not NDEF compatible.
         nfc.processPendingOperationsForTesting(null);
@@ -1081,7 +1113,7 @@ public class NFCTest {
         doThrow(IllegalStateException.class)
                 .when(mNfcTagHandler)
                 .write(any(android.nfc.NdefMessage.class));
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback);
+        nfc.push(createMojoNdefMessage(), createNdefWriteOptions(), mockCallback);
         nfc.processPendingOperationsForTesting(mNfcTagHandler);
         verify(mockCallback).call(mErrorCaptor.capture());
 
@@ -1101,8 +1133,8 @@ public class NFCTest {
 
         PushResponse mockCallback1 = mock(PushResponse.class);
         PushResponse mockCallback2 = mock(PushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback1);
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback2);
+        nfc.push(createMojoNdefMessage(), createNdefWriteOptions(), mockCallback1);
+        nfc.push(createMojoNdefMessage(), createNdefWriteOptions(), mockCallback2);
 
         verify(mNfcAdapter, times(1))
                 .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
@@ -1124,7 +1156,7 @@ public class NFCTest {
         mDelegate.invokeCallback();
         PushResponse mockCallback = mock(PushResponse.class);
 
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback);
+        nfc.push(createMojoNdefMessage(), createNdefWriteOptions(), mockCallback);
 
         verify(mNfcAdapter, times(1))
                 .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
@@ -1154,8 +1186,8 @@ public class NFCTest {
 
         PushResponse mockCallback1 = mock(PushResponse.class);
         PushResponse mockCallback2 = mock(PushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback1);
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback2);
+        nfc.push(createMojoNdefMessage(), createNdefWriteOptions(), mockCallback1);
+        nfc.push(createMojoNdefMessage(), createNdefWriteOptions(), mockCallback2);
 
         verify(mNfcAdapter, times(1))
                 .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
@@ -1192,7 +1224,7 @@ public class NFCTest {
         nfc.watch(createNdefScanOptions(), mNextWatchId, mockWatchCallback);
 
         PushResponse mockPushCallback = mock(PushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockPushCallback);
+        nfc.push(createMojoNdefMessage(), createNdefWriteOptions(), mockPushCallback);
 
         verify(mNfcAdapter, times(1))
                 .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
@@ -1235,17 +1267,17 @@ public class NFCTest {
         emptyNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_EMPTY;
         NdefMessage ndefMessage = createMojoNdefMessage(emptyNdefRecord);
 
-        nfc.push(ndefMessage, createNdefPushOptions(), mockCallback);
+        nfc.push(ndefMessage, createNdefWriteOptions(), mockCallback);
         nfc.processPendingOperationsForTesting(mNfcTagHandler);
         verify(mockCallback).call(mErrorCaptor.capture());
         assertNull(mErrorCaptor.getValue());
     }
 
     /**
-     * Creates NdefPushOptions with default values.
+     * Creates NdefWriteOptions with default values.
      */
-    private NdefPushOptions createNdefPushOptions() {
-        NdefPushOptions pushOptions = new NdefPushOptions();
+    private NdefWriteOptions createNdefWriteOptions() {
+        NdefWriteOptions pushOptions = new NdefWriteOptions();
         pushOptions.ignoreRead = false;
         return pushOptions;
     }

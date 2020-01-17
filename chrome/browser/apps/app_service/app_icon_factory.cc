@@ -314,13 +314,28 @@ void ApplyIconEffects(IconEffects icon_effects,
   }
 #endif
 
-  const bool apply_chrome_badge = icon_effects & IconEffects::kBadge;
-  const bool app_launchable = !(icon_effects & IconEffects::kGray);
   const bool from_bookmark = icon_effects & IconEffects::kRoundCorners;
 
+  bool app_launchable = true;
+  // Only one badge can be visible at a time.
+  // Priority in which badges are applied (from the highest): Blocked > Paused >
+  // Chrome. This means than when apps are disabled or paused app type
+  // distinction information (Chrome vs Android) is lost.
+  extensions::ChromeAppIcon::Badge badge_type =
+      extensions::ChromeAppIcon::Badge::kNone;
+  if (icon_effects & IconEffects::kBlocked) {
+    badge_type = extensions::ChromeAppIcon::Badge::kBlocked;
+    app_launchable = false;
+  } else if (icon_effects & IconEffects::kPaused) {
+    badge_type = extensions::ChromeAppIcon::Badge::kPaused;
+    app_launchable = false;
+  } else if (icon_effects & IconEffects::kChromeBadge) {
+    badge_type = extensions::ChromeAppIcon::Badge::kChrome;
+  }
+
   extensions::ChromeAppIcon::ApplyEffects(size_hint_in_dip, resize_function,
-                                          apply_chrome_badge, app_launchable,
-                                          from_bookmark, image_skia);
+                                          app_launchable, from_bookmark,
+                                          badge_type, image_skia);
 }
 
 void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,

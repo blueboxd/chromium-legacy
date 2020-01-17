@@ -98,8 +98,7 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
-  self = [super initWithTableViewStyle:style
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:style];
   if (self) {
     _personalDataManager = dataManager;
     _autofillProfile = profile;

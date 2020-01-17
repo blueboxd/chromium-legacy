@@ -465,8 +465,6 @@ void CryptAuthClientImpl::ShareGroupPrivateKey(
               error_callback, partial_traffic_annotation);
 }
 
-// TODO(https://crbug.com/953087): Populate the "sender" and "trigger" fields
-// when method is used in codebase.
 void CryptAuthClientImpl::BatchNotifyGroupDevices(
     const cryptauthv2::BatchNotifyGroupDevicesRequest& request,
     const BatchNotifyGroupDevicesCallback& callback,
@@ -477,11 +475,15 @@ void CryptAuthClientImpl::BatchNotifyGroupDevices(
           "oauth2_api_call_flow",
           R"(
       semantics {
-        sender: "TBD"
+        sender: "CryptAuth Device Notifier"
         description:
           "The client sends a list of the user's devices that it wants to "
           "tickle via a GCM message."
-        trigger: "TBD"
+        trigger:
+          "The DeviceSync service has a NotifyDevices() method that triggers "
+          "this API call. Currently, that method is only used by the "
+          "multi-device host verifier to alert the current multi-device host "
+          "that it needs to enable its individual multi-device features."
         data:
           "The list of device IDs to notify as well as a specification of the "
           "the CryptAuth service (Enrollment or DeviceSync) and feature "
@@ -542,8 +544,6 @@ void CryptAuthClientImpl::BatchGetFeatureStatuses(
       callback, error_callback, partial_traffic_annotation);
 }
 
-// TODO(https://crbug.com/953087): Populate the "sender" and "trigger" fields
-// when method is used in codebase.
 void CryptAuthClientImpl::BatchSetFeatureStatuses(
     const cryptauthv2::BatchSetFeatureStatusesRequest& request,
     const BatchSetFeatureStatusesCallback& callback,
@@ -554,11 +554,15 @@ void CryptAuthClientImpl::BatchSetFeatureStatuses(
           "oauth2_api_call_flow",
           R"(
       semantics {
-        sender: "TBD"
+        sender: "CryptAuth Feature Status Setter"
         description:
           "The client requests CryptAuth to set the state of various features "
           "for the user's devices."
-        trigger: "TBD"
+        trigger:
+          "The DeviceSync service has a SetFeatureStatus() method that "
+          "triggers this API call. Currently, that method is only used by the "
+          "multi-device host backend delegate to enable (disable) the "
+          "kBetterTogetherHost bit for the desired (current) multi-device host."
         data: "User device IDs and feature state specifications."
         destination: GOOGLE_OWNED_SERVICE
       }
@@ -578,8 +582,6 @@ void CryptAuthClientImpl::BatchSetFeatureStatuses(
               error_callback, partial_traffic_annotation);
 }
 
-// TODO(https://crbug.com/953087): Populate the "sender" and "trigger" fields
-// when method is used in codebase.
 void CryptAuthClientImpl::GetDevicesActivityStatus(
     const cryptauthv2::GetDevicesActivityStatusRequest& request,
     const GetDevicesActivityStatusCallback& callback,
@@ -590,11 +592,15 @@ void CryptAuthClientImpl::GetDevicesActivityStatus(
           "oauth2_api_call_flow",
           R"(
       semantics {
-        sender: "TBD"
+        sender: "CryptAuth Device Activity Getter"
         description:
-          "The client queries CryptAuth for the activity of status of the"
+          "The client queries CryptAuth for the activity of status of the "
           "user's devices."
-        trigger: "TBD"
+        trigger:
+          "The DeviceSync service has a GetDevicesActivityStatus() method that "
+          "triggers this API call. Currently, that method is only used by the "
+          "eligible-host-devices provider in order to better organize the "
+          "drop-down list used for multi-device setup."
         data: "User device ID."
         destination: GOOGLE_OWNED_SERVICE
       }

@@ -113,19 +113,19 @@ class DecodeVideoTask extends AsyncTask<List<Bitmap>> {
      * @param durationMs The duration in milliseconds.
      * @return The duration in human-readable form.
      */
-    private String formatDuration(String durationMs) {
+    public static String formatDuration(Long durationMs) {
         if (durationMs == null) return null;
 
-        long duration = Long.parseLong(durationMs) / 1000;
+        long duration = durationMs / 1000;
         long hours = duration / 3600;
         duration -= hours * 3600;
         long minutes = duration / 60;
         duration -= minutes * 60;
         long seconds = duration;
         if (hours > 0) {
-            return String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds);
+            return String.format(Locale.US, "%d:%02d:%02d", hours, minutes, seconds);
         } else {
-            return String.format(Locale.US, "%02d:%02d", minutes, seconds);
+            return String.format(Locale.US, "%d:%02d", minutes, seconds);
         }
     }
 
@@ -152,7 +152,7 @@ class DecodeVideoTask extends AsyncTask<List<Bitmap>> {
                 if (mFrames > 1 && mFrames * mIntervalMs > durationMs) {
                     mIntervalMs = durationMs / mFrames;
                 }
-                duration = formatDuration(duration);
+                duration = formatDuration(durationMs);
             }
             Pair<List<Bitmap>, Float> bitmaps = BitmapUtils.decodeVideoFromFileDescriptor(
                     retriever, afd.getFileDescriptor(), mSize, mFrames, mFullWidth, mIntervalMs);

@@ -42,15 +42,6 @@ namespace {
 constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult2";
 constexpr char kPrefetchLoadResultHistogram[] =
     "SignedExchange.Prefetch.LoadResult2";
-constexpr char kContentTypeOptionsHeaderName[] = "x-content-type-options";
-constexpr char kNoSniffHeaderValue[] = "nosniff";
-
-bool HasNoSniffHeader(const network::mojom::URLResponseHead& response) {
-  std::string content_type_options;
-  response.headers->EnumerateHeader(nullptr, kContentTypeOptionsHeaderName,
-                                    &content_type_options);
-  return base::LowerCaseEqualsASCII(content_type_options, kNoSniffHeaderValue);
-}
 
 SignedExchangeHandlerFactory* g_signed_exchange_factory_for_testing_ = nullptr;
 
@@ -163,7 +154,8 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
 
   signed_exchange_handler_ = std::make_unique<SignedExchangeHandler>(
       IsOriginSecure(outer_request_.url),
-      HasNoSniffHeader(*outer_response_head_), content_type_,
+      signed_exchange_utils::HasNoSniffHeader(*outer_response_head_),
+      content_type_,
       std::make_unique<network::DataPipeToSourceStream>(
           std::move(response_body)),
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,

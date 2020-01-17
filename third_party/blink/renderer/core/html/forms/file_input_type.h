@@ -88,6 +88,7 @@ class CORE_EXPORT FileInputType final : public InputType,
   bool ReceiveDroppedFiles(const DragData*) override;
   String DroppedFileSystemId() override;
   void CreateShadowSubtree() override;
+  HTMLInputElement* UploadButton() const override;
   void DisabledAttributeChanged() override;
   void MultipleAttributeChanged() override;
   String DefaultToolTip(const InputTypeView&) const override;

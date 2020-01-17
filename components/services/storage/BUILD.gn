@@ -121,9 +121,7 @@ source_set("tests") {
     "//testing/gtest",
   ]
 
-  data = [
-    "//components/services/storage/test_data/",
-  ]
+  data = [ "//components/services/storage/test_data/" ]
 }
 
 source_set("test_support") {

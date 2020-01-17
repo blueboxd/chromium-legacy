@@ -106,6 +106,7 @@
 <translation id="1659072772017912254">পৰীক্ষা কৰা হোৱা নাই</translation>
 <translation id="1669290819662866522">সপ্তাহ</translation>
 <translation id="1674262202423278359">ChromeVox নেভিগেশ্বন</translation>
+<translation id="16777221443363124">মেনু বাৰ</translation>
 <translation id="1680732992526857724"><ph name="NAME" />, ছুইচ্চ অন কৰা আছে</translation>
 <translation id="1686878109459149415">সোণালী</translation>
 <translation id="1692077714702418899">গঠনাত্মক ৰেখা</translation>
@@ -382,6 +383,7 @@
 <translation id="3622350485154495700">এটা আঙুলিৰে দুবাৰ টিপক</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{বেকটিক}one{#টা বেকটিক}other{#টা বেকটিক}}</translation>
 <translation id="3650317109285159359">চেকবক্স থকা মেনুৰ বস্তু</translation>
+<translation id="3655855170848725876">{COUNT,plural, =1{ডলাৰ}one{#টা ডলাৰ চিহ্ন}other{#টা ডলাৰ চিহ্ন}}</translation>
 <translation id="3659787053479271466">সতৰ্ক</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, তালিকাৰ বাকচ</translation>
 <translation id="3681531118904532409">পাপায়া হুইপ</translation>

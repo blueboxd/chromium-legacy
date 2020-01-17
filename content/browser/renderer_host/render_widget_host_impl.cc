@@ -600,7 +600,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
 }
 
 bool RenderWidgetHostImpl::Send(IPC::Message* msg) {
-  DCHECK(IPC_MESSAGE_ID_CLASS(msg->type()) != InputMsgStart);
   return process_->Send(msg);
 }
 
@@ -718,10 +717,10 @@ void RenderWidgetHostImpl::RemoveImeInputEventObserver(
 VisualProperties RenderWidgetHostImpl::GetInitialVisualProperties() {
   VisualProperties initial_props = GetVisualProperties();
 
-  old_visual_properties_ = nullptr;
-  visual_properties_ack_pending_ =
-      DoesVisualPropertiesNeedAck(old_visual_properties_, initial_props);
-  old_visual_properties_ = std::make_unique<VisualProperties>(initial_props);
+  // A RenderWidget being created in the renderer means the browser should
+  // reset any state that may be set for the previous RenderWidget but which
+  // will be incorrect with a fresh RenderWidget.
+  ResetStateForCreatedRenderWidget(initial_props);
 
   return initial_props;
 }
@@ -968,6 +967,9 @@ void RenderWidgetHostImpl::FlushForTesting() {
 
 void RenderWidgetHostImpl::SetPageFocus(bool focused) {
   is_focused_ = focused;
+
+  // Portals should never get page focus.
+  DCHECK(!delegate_ || !delegate_->IsPortal() || !focused);
 
   if (!focused) {
     // If there is a pending mouse lock request, we don't want to reject it at
@@ -1228,18 +1230,20 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
         false;
     is_in_touchpad_gesture_fling_ = false;
-    if (scroll_peak_gpu_mem_tracker_ &&
-        !view_->is_currently_scrolling_viewport()) {
-      // We start tracking peak gpu-memory usage when the initial scroll-begin
-      // is dispatched. However, it is possible that the scroll-begin did not
-      // trigger any scrolls (e.g. the page is not scrollable). In such cases,
-      // we do not want to report the peak-memory usage metric. So it is
-      // canceled here.
-      scroll_peak_gpu_mem_tracker_->Cancel();
+    if (view_) {
+      if (scroll_peak_gpu_mem_tracker_ &&
+          !view_->is_currently_scrolling_viewport()) {
+        // We start tracking peak gpu-memory usage when the initial scroll-begin
+        // is dispatched. However, it is possible that the scroll-begin did not
+        // trigger any scrolls (e.g. the page is not scrollable). In such cases,
+        // we do not want to report the peak-memory usage metric. So it is
+        // canceled here.
+        scroll_peak_gpu_mem_tracker_->Cancel();
+      }
+
+      view_->set_is_currently_scrolling_viewport(false);
     }
     scroll_peak_gpu_mem_tracker_ = nullptr;
-    if (view_)
-      view_->set_is_currently_scrolling_viewport(false);
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureFlingStart) {
     if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
@@ -1825,15 +1829,9 @@ void RenderWidgetHostImpl::RendererExited() {
   if (!renderer_initialized_)
     return;
 
-  // Clear this flag so that we can ask the next renderer for composition
-  // updates.
-  monitoring_composition_info_ = false;
-
   // Clearing this flag causes us to re-create the renderer when recovering
   // from a crashed renderer.
   renderer_initialized_ = false;
-
-  waiting_for_screen_rects_ack_ = false;
 
   // After the renderer crashes, the view is destroyed and so the
   // RenderWidgetHost cannot track its visibility anymore. We assume such
@@ -1854,20 +1852,17 @@ void RenderWidgetHostImpl::RendererExited() {
     view_->RenderProcessGone();
     SetView(nullptr);  // The View should be deleted by RenderProcessGone.
   }
-
-  ResetRenderWidgetState();
 }
 
-void RenderWidgetHostImpl::DidDestroyRenderWidget() {
-  if (owner_delegate_)
-    DCHECK(!owner_delegate_->IsMainFrameActive());
-  ResetRenderWidgetState();
-}
+void RenderWidgetHostImpl::ResetStateForCreatedRenderWidget(
+    const VisualProperties& initial_props) {
+  // When the RenderWidget was destroyed, the ack may never come back. Don't
+  // let that prevent us from speaking to the next RenderWidget.
+  waiting_for_screen_rects_ack_ = false;
 
-void RenderWidgetHostImpl::ResetRenderWidgetState() {
-  // Must reset these to ensure that keyboard events work with a new
-  // RenderWidget.
-  suppress_events_until_keydown_ = false;
+  visual_properties_ack_pending_ =
+      DoesVisualPropertiesNeedAck(nullptr, initial_props);
+  old_visual_properties_ = std::make_unique<VisualProperties>(initial_props);
 
   // Reconstruct the input router to ensure that it has fresh state for a new
   // RenderWidget. Otherwise it may be stuck waiting for the old renderer to ack
@@ -2917,17 +2912,6 @@ bool RenderWidgetHostImpl::HasGestureStopped() {
 }
 
 void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {
-  // In this case the RenderWidgetHostImpl is still here because it's the top
-  // level RenderWidgetHostImpl, but the renderer's RenderWidget no longer
-  // exists and this would clobber state that was reset in
-  // DidDestroyRenderWidget() with data from the destroyed RenderWidget.
-  if (owner_delegate_ && !owner_delegate_->IsMainFrameActive())
-    return;
-  // This is similar to the above but when the renderer process has crashed, so
-  // more objects are gone than the RenderWidget.
-  if (!renderer_initialized_)
-    return;
-
   frame_token_message_queue_->DidProcessFrame(frame_token);
 }
 
@@ -2949,6 +2933,8 @@ device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
 
 void RenderWidgetHostImpl::SetupInputRouter() {
   in_flight_event_count_ = 0;
+  suppress_events_until_keydown_ = false;
+  monitoring_composition_info_ = false;
   StopInputEventAckTimeout();
   associated_widget_input_handler_.reset();
   widget_input_handler_.reset();
@@ -2985,16 +2971,18 @@ void RenderWidgetHostImpl::SetInputTargetClient(
 
 void RenderWidgetHostImpl::SetWidget(
     mojo::PendingRemote<mojom::Widget> widget_remote) {
-  if (widget_remote) {
-    // If we have a bound handler ensure that we destroy the old input router.
-    if (widget_input_handler_.is_bound())
-      SetupInputRouter();
+  if (!widget_remote)
+    return;
 
-    mojo::Remote<mojom::Widget> widget(std::move(widget_remote));
-    widget->SetupWidgetInputHandler(
-        widget_input_handler_.BindNewPipeAndPassReceiver(),
-        input_router_->BindNewHost());
-  }
+  // If we have a bound handler ensure that we destroy the old input router
+  // while we reset the |widget_input_handler_|.
+  if (widget_input_handler_.is_bound())
+    SetupInputRouter();
+
+  mojo::Remote<mojom::Widget> widget(std::move(widget_remote));
+  widget->SetupWidgetInputHandler(
+      widget_input_handler_.BindNewPipeAndPassReceiver(),
+      input_router_->BindNewHost());
 }
 
 void RenderWidgetHostImpl::ProgressFlingIfNeeded(TimeTicks current_time) {
@@ -3160,7 +3148,15 @@ void RenderWidgetHostImpl::OnZoomToFindInPageRectInMainFrame(
 }
 
 gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {
+  if (!view_)
+    return gfx::Size();
+
+  // if |view_| is RWHVCF and |frame_connector_| is destroyed, then call to
+  // GetRootView will return null pointer.
   auto* root_view = view_->GetRootView();
+  if (!root_view)
+    return gfx::Size();
+
   return root_view->GetVisibleViewportSize();
 }
 

@@ -54,11 +54,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   ~BioEnrollmentHandler() override;
 
   // Enrolls a new fingerprint template. The user must provide the required
-  // number of samples by touching the authenticator's sensor repeatedly.
-  // After each sample, or a timeout, |sample_callback| is invoked with the
-  // remaining number of samples. Once all samples have been collected or
-  // the operation has been cancelled, |completion_callback| is invoked
-  // with the operation status.
+  // number of samples by touching the authenticator's sensor repeatedly. For
+  // each sample, |sample_callback| is invoked with a status and the remaining
+  // number of samples. Once all samples have been collected or the operation
+  // has been cancelled, |completion_callback| is invoked with the operation
+  // status.
   void EnrollTemplate(SampleCallback sample_callback,
                       CompletionCallback completion_callback);
 

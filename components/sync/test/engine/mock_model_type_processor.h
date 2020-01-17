@@ -45,8 +45,10 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   void DisconnectSync() override;
   void GetLocalChanges(size_t max_entries,
                        GetLocalChangesCallback callback) override;
-  void OnCommitCompleted(const sync_pb::ModelTypeState& type_state,
-                         const CommitResponseDataList& response_list) override;
+  void OnCommitCompleted(
+      const sync_pb::ModelTypeState& type_state,
+      const CommitResponseDataList& committed_response_list,
+      const FailedCommitResponseDataList& error_response_list) override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
                         UpdateResponseDataList response_list) override;
 
@@ -108,8 +110,10 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // Process a received commit response.
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
-  void OnCommitCompletedImpl(const sync_pb::ModelTypeState& type_state,
-                             const CommitResponseDataList& response_list);
+  void OnCommitCompletedImpl(
+      const sync_pb::ModelTypeState& type_state,
+      const CommitResponseDataList& committed_response_list,
+      const FailedCommitResponseDataList& error_response_list);
 
   // Process a received update response.
   //

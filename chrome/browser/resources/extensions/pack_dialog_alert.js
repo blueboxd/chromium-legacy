@@ -45,7 +45,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     // Initialize button label values for initial html binding.
     this.cancelLabel_ = null;
     this.confirmLabel_ = null;
@@ -71,7 +71,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.dialog.showModal();
   },
 
@@ -79,17 +79,17 @@ Polymer({
    * @return {string}
    * @private
    */
-  getCancelButtonClass_: function() {
+  getCancelButtonClass_() {
     return this.confirmLabel_ ? 'cancel-button' : 'action-button';
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.cancel();
   },
 
   /** @private */
-  onConfirmTap_: function() {
+  onConfirmTap_() {
     // The confirm button should only be available in WARNING state.
     assert(this.model.status === chrome.developerPrivate.PackStatus.WARNING);
     this.$.dialog.close();

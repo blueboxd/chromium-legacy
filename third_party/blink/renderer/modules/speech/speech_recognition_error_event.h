@@ -27,9 +27,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_ERROR_EVENT_H_
 
 #include "third_party/blink/public/mojom/speech/speech_recognition_error_code.mojom-blink-forward.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_speech_recognition_error_event_init.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/speech/speech_recognition_error_event_init.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {

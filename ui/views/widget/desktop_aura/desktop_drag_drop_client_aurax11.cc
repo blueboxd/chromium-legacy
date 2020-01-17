@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -25,6 +24,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_drag_context.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -55,18 +55,6 @@ using ui::OSExchangeData;
 
 namespace {
 
-// The lowest XDND protocol version that we understand.
-//
-// The XDND protocol specification says that we must support all versions
-// between 3 and the version we advertise in the XDndAware property.
-constexpr int kMinXdndVersion = 3;
-
-// The value used in the XdndAware property.
-//
-// The XDND protocol version used between two windows will be the minimum
-// between the two versions advertised in the XDndAware property.
-constexpr int kMaxXdndVersion = 5;
-
 constexpr int kWillAcceptDrop = 1;
 constexpr int kWantFurtherPosEvents = 2;
 
@@ -76,9 +64,6 @@ const char kXdndActionDirectSave[] = "XdndActionDirectSave";
 // Window property that contains the possible actions that will be presented to
 // the user when the drag and drop action is kXdndActionAsk.
 const char kXdndActionList[] = "XdndActionList";
-
-// Window property that tells other applications the window understands XDND.
-const char kXdndAware[] = "XdndAware";
 
 // Window property on the source window and message used by the XDS protocol.
 // This atom name intentionally includes the XDS protocol version (0).
@@ -93,33 +78,9 @@ const char kXdndAware[] = "XdndAware";
 // URL indicating the location where the source should save the file.
 const char kXdndDirectSave0[] = "XdndDirectSave0";
 
-// Window property pointing to a proxy window to receive XDND target messages.
-// The XDND source must check the proxy window must for the XdndAware property,
-// and must send all XDND messages to the proxy instead of the target. However,
-// the target field in the messages must still represent the original target
-// window (the window pointed to by the cursor).
-const char kXdndProxy[] = "XdndProxy";
-
-// Window property that holds the supported drag and drop data types.
-// This property is set on the XDND source window when the drag and drop data
-// can be converted to more than 3 types.
-const char kXdndTypeList[] = "XdndTypeList";
-
-// Message sent from an XDND source to the target when the user confirms the
-// drag and drop operation.
-const char kXdndDrop[] = "XdndDrop";
-
-// Message sent from an XDND source to the target to start the XDND protocol.
-// The target must wait for an XDndPosition event before querying the data.
-const char kXdndEnter[] = "XdndEnter";
-
 // Message sent from an XDND target to the source in respose to an XdndDrop.
 // The message must be sent whether the target acceepts the drop or not.
 const char kXdndFinished[] = "XdndFinished";
-
-// Message sent from an XDND source to the target when the user cancels the drag
-// and drop operation.
-const char kXdndLeave[] = "XdndLeave";
 
 // Message sent by the XDND source when the cursor position changes.
 // The source will also send an XdndPosition event right after the XdndEnter
@@ -176,10 +137,6 @@ constexpr uint32_t kMinAlpha = 32;
 // |drag_widget_|'s opacity.
 constexpr float kDragWidgetOpacity = .75f;
 
-static base::LazyInstance<
-    std::map<::Window, views::DesktopDragDropClientAuraX11*> >::Leaky
-        g_live_client_map = LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 namespace views {
@@ -197,15 +154,6 @@ DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
     : XDragDropClient(display, window),
       root_window_(root_window),
       cursor_manager_(cursor_manager) {
-  // Some tests change the DesktopDragDropClientAuraX11 associated with an
-  // |xwindow|.
-  g_live_client_map.Get()[xwindow()] = this;
-
-  // Mark that we are aware of drag and drop concepts.
-  unsigned long xdnd_version = kMaxXdndVersion;
-  XChangeProperty(xdisplay(), xwindow(), gfx::GetAtom(kXdndAware), XA_ATOM, 32,
-                  PropModeReplace,
-                  reinterpret_cast<unsigned char*>(&xdnd_version), 1);
 }
 
 DesktopDragDropClientAuraX11::~DesktopDragDropClientAuraX11() {
@@ -213,20 +161,7 @@ DesktopDragDropClientAuraX11::~DesktopDragDropClientAuraX11() {
   // operation is in progress.
   move_loop_->EndMoveLoop();
   NotifyDragLeave();
-
   ResetDragContext();
-
-  g_live_client_map.Get().erase(xwindow());
-}
-
-// static
-DesktopDragDropClientAuraX11* DesktopDragDropClientAuraX11::GetForWindow(
-    XID window) {
-  std::map<::Window, DesktopDragDropClientAuraX11*>::const_iterator it =
-      g_live_client_map.Get().find(window);
-  if (it == g_live_client_map.Get().end())
-    return nullptr;
-  return it->second;
 }
 
 void DesktopDragDropClientAuraX11::Init() {
@@ -235,43 +170,24 @@ void DesktopDragDropClientAuraX11::Init() {
 
 void DesktopDragDropClientAuraX11::OnXdndEnter(
     const XClientMessageEvent& event) {
-  int version = (event.data.l[1] & 0xff000000) >> 24;
-  DVLOG(1) << "OnXdndEnter, version " << version;
+  DVLOG(1) << "OnXdndEnter, version " << ((event.data.l[1] & 0xff000000) >> 24);
 
-  if (version < kMinXdndVersion) {
-    // This protocol version is not documented in the XDND standard (last
-    // revised in 1999), so we don't support it. Since don't understand the
-    // protocol spoken by the source, we can't tell it that we can't talk to it.
-    LOG(ERROR) << "XdndEnter message discarded because its version is too old.";
+  XDragDropClient::OnXdndEnter(event);
+  // If the XDragDropClient::OnXdndEnter had failed, we don't have the drag
+  // context and should quit.
+  if (!target_current_context())
     return;
-  }
-  if (version > kMaxXdndVersion) {
-    // The XDND version used should be the minimum between the versions
-    // advertised by the source and the target. We advertise kMaxXdndVersion, so
-    // this should never happen when talking to an XDND-compliant application.
-    LOG(ERROR) << "XdndEnter message discarded because its version is too new.";
-    return;
-  }
 
-  // Make sure that we've run ~X11DragContext() before creating another one.
-  ResetDragContext();
-  XID source_window = event.data.l[0];
-  auto* source_client = GetForWindow(source_window);
-  target_current_context_ = std::make_unique<ui::XDragContext>(
-      xwindow(), event, source_client,
-      (source_client ? source_client->GetFormatMap()
-                     : ui::SelectionFormatMap()));
-
-  if (!source_client) {
-    // The window doesn't have a DesktopDragDropClientAuraX11, that means it's
-    // created by some other process. Listen for messages on it.
+  if (!target_current_context()->source_client()) {
+    // The window doesn't have a DesktopDragDropClientAuraX11, which means it's
+    // created by some other process.  Listen for messages on it.
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
     source_window_events_ = std::make_unique<ui::XScopedEventSelector>(
-        source_window, PropertyChangeMask);
+        event.data.l[0], PropertyChangeMask);
   }
 
   // In the Windows implementation, we immediately call DesktopDropTargetWin::
-  // Translate(). The XDND specification demands that we wait until we receive
+  // Translate().  The XDND specification demands that we wait until we receive
   // an XdndPosition message before we use XConvertSelection or send an
   // XdndStatus message.
 }
@@ -279,28 +195,12 @@ void DesktopDragDropClientAuraX11::OnXdndEnter(
 void DesktopDragDropClientAuraX11::OnXdndLeave(
     const XClientMessageEvent& event) {
   DVLOG(1) << "OnXdndLeave";
+
   NotifyDragLeave();
-  ResetDragContext();
-}
 
-void DesktopDragDropClientAuraX11::OnXdndPosition(
-    const XClientMessageEvent& event) {
-  DVLOG(1) << "OnXdndPosition";
-
-  XID source_window = event.data.l[0];
-  int x_root_window = event.data.l[2] >> 16;
-  int y_root_window = event.data.l[2] & 0xffff;
-  ::Time time_stamp = event.data.l[3];
-  ::Atom suggested_action = event.data.l[4];
-
-  if (!target_current_context_.get()) {
-    NOTREACHED();
-    return;
-  }
-
-  target_current_context_->OnXdndPositionMessage(
-      this, suggested_action, source_window, time_stamp,
-      gfx::Point(x_root_window, y_root_window));
+  // XDragDropClient::OnXdndLeave will reset the drag context, so do that as the
+  // last thing.
+  XDragDropClient::OnXdndLeave(event);
 }
 
 void DesktopDragDropClientAuraX11::OnXdndStatus(
@@ -309,7 +209,7 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
 
   XID source_window = event.data.l[0];
 
-  if (source_window != source_current_window_)
+  if (source_window != source_current_window())
     return;
 
   if (source_state_ != SourceState::kPendingDrop &&
@@ -376,7 +276,7 @@ void DesktopDragDropClientAuraX11::OnXdndFinished(
     const XClientMessageEvent& event) {
   DVLOG(1) << "OnXdndFinished";
   XID source_window = event.data.l[0];
-  if (source_current_window_ != source_window)
+  if (source_current_window() != source_window)
     return;
 
   // Clear |negotiated_operation_| if the drag was rejected.
@@ -385,7 +285,7 @@ void DesktopDragDropClientAuraX11::OnXdndFinished(
 
   // Clear |source_current_window_| to avoid sending XdndLeave upon ending the
   // move loop.
-  source_current_window_ = x11::None;
+  set_source_current_window(x11::None);
   move_loop_->EndMoveLoop();
 }
 
@@ -402,15 +302,16 @@ void DesktopDragDropClientAuraX11::OnXdndDrop(
     if (delegate) {
       auto data(std::make_unique<ui::OSExchangeData>(
           std::make_unique<ui::OSExchangeDataProviderAuraX11>(
-              xwindow(), target_current_context_->fetched_targets())));
+              xwindow(), target_current_context()->fetched_targets())));
 
       ui::DropTargetEvent drop_event(
           *data.get(), gfx::PointF(target_window_location_),
           gfx::PointF(target_window_root_location_),
-          target_current_context_->GetDragOperation());
-      if (target_current_context_->source_client()) {
-        drop_event.set_flags(
-            target_current_context_->source_client()->current_modifier_state());
+          target_current_context()->GetDragOperation());
+      if (target_current_context()->source_client()) {
+        drop_event.set_flags(target_current_context()
+                                 ->source_client()
+                                 ->current_modifier_state());
       } else {
         drop_event.set_flags(XGetModifiers());
       }
@@ -435,8 +336,8 @@ void DesktopDragDropClientAuraX11::OnXdndDrop(
 void DesktopDragDropClientAuraX11::OnSelectionNotify(
     const XSelectionEvent& xselection) {
   DVLOG(1) << "OnSelectionNotify";
-  if (target_current_context_)
-    target_current_context_->OnSelectionNotify(xselection);
+  if (target_current_context())
+    target_current_context()->OnSelectionNotify(xselection);
 
   // ICCCM requires us to delete the property passed into SelectionNotify.
   if (xselection.property != x11::None)
@@ -453,7 +354,7 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Start", source,
                             ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
 
-  source_current_window_ = x11::None;
+  set_source_current_window(x11::None);
   DCHECK(!g_current_drag_drop_client);
   g_current_drag_drop_client = this;
   waiting_on_status_ = false;
@@ -546,15 +447,15 @@ void DesktopDragDropClientAuraX11::RemoveObserver(
 
 bool DesktopDragDropClientAuraX11::CanDispatchEvent(
     const ui::PlatformEvent& event) {
-  return target_current_context_.get() &&
-         event->xany.window == target_current_context_->source_window();
+  return target_current_context() &&
+         event->xany.window == target_current_context()->source_window();
 }
 
 uint32_t DesktopDragDropClientAuraX11::DispatchEvent(
     const ui::PlatformEvent& event) {
-  DCHECK(target_current_context_);
+  DCHECK(target_current_context());
 
-  if (target_current_context_->DispatchXEvent(event))
+  if (target_current_context()->DispatchXEvent(event))
     return ui::POST_DISPATCH_STOP_PROPAGATION;
   return ui::POST_DISPATCH_NONE;
 }
@@ -600,7 +501,7 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
     return;
   }
 
-  if (source_current_window_ != x11::None) {
+  if (source_current_window() != x11::None) {
     if (waiting_on_status_) {
       if (status_received_since_enter_) {
         // If we are waiting for an XdndStatus message, we need to wait for it
@@ -627,7 +528,7 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
 
       // We have negotiated an action with the other end.
       source_state_ = SourceState::kDropped;
-      SendXdndDrop(source_current_window_);
+      SendXdndDrop(source_current_window());
       return;
     }
   }
@@ -636,9 +537,9 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
 }
 
 void DesktopDragDropClientAuraX11::OnMoveLoopEnded() {
-  if (source_current_window_ != x11::None) {
-    SendXdndLeave(source_current_window_);
-    source_current_window_ = x11::None;
+  if (source_current_window() != x11::None) {
+    SendXdndLeave(source_current_window());
+    set_source_current_window(x11::None);
   }
   ResetDragContext();
   repeat_mouse_move_timer_.Stop();
@@ -650,72 +551,6 @@ std::unique_ptr<X11MoveLoop> DesktopDragDropClientAuraX11::CreateMoveLoop(
   return base::WrapUnique(new X11WholeScreenMoveLoop(this));
 }
 
-XID DesktopDragDropClientAuraX11::FindWindowFor(
-    const gfx::Point& screen_point) {
-  views::X11TopmostWindowFinder finder;
-  ::Window target = finder.FindWindowAt(screen_point);
-
-  if (target == x11::None)
-    return x11::None;
-
-  // TODO(crbug/651775): The proxy window should be reported separately from the
-  //     target window. XDND messages should be sent to the proxy, and their
-  //     window field should point to the target.
-
-  // Figure out which window we should test as XdndAware. If |target| has
-  // XdndProxy, it will set that proxy on target, and if not, |target|'s
-  // original value will remain.
-  ui::GetXIDProperty(target, kXdndProxy, &target);
-
-  int version;
-  if (ui::GetIntProperty(target, kXdndAware, &version) &&
-      version >= kMaxXdndVersion) {
-    return target;
-  }
-  return x11::None;
-}
-
-void DesktopDragDropClientAuraX11::SendXClientEvent(::Window xid,
-                                                    XEvent* xev) {
-  DCHECK_EQ(ClientMessage, xev->type);
-
-  // Don't send messages to the X11 message queue if we can help it.
-  DesktopDragDropClientAuraX11* short_circuit = GetForWindow(xid);
-  if (short_circuit) {
-    Atom message_type = xev->xclient.message_type;
-    if (message_type == gfx::GetAtom(kXdndEnter)) {
-      short_circuit->OnXdndEnter(xev->xclient);
-      return;
-    } else if (message_type == gfx::GetAtom(kXdndLeave)) {
-      short_circuit->OnXdndLeave(xev->xclient);
-      return;
-    } else if (message_type == gfx::GetAtom(kXdndPosition)) {
-      short_circuit->OnXdndPosition(xev->xclient);
-      return;
-    } else if (message_type == gfx::GetAtom(kXdndStatus)) {
-      short_circuit->OnXdndStatus(xev->xclient);
-      return;
-    } else if (message_type == gfx::GetAtom(kXdndFinished)) {
-      short_circuit->OnXdndFinished(xev->xclient);
-      return;
-    } else if (message_type == gfx::GetAtom(kXdndDrop)) {
-      short_circuit->OnXdndDrop(xev->xclient);
-      return;
-    }
-  }
-
-  // I don't understand why the GTK+ code is doing what it's doing here. It
-  // goes out of its way to send the XEvent so that it receives a callback on
-  // success or failure, and when it fails, it then sends an internal
-  // GdkEvent about the failed drag. (And sending this message doesn't appear
-  // to go through normal xlib machinery, but instead passes through the low
-  // level xProto (the x11 wire format) that I don't understand.
-  //
-  // I'm unsure if I have to jump through those hoops, or if XSendEvent is
-  // sufficient.
-  XSendEvent(xdisplay(), xid, x11::False, 0, xev);
-}
-
 void DesktopDragDropClientAuraX11::ProcessMouseMove(
     const gfx::Point& screen_point,
     unsigned long event_time) {
@@ -725,21 +560,24 @@ void DesktopDragDropClientAuraX11::ProcessMouseMove(
   // Find the current window the cursor is over.
   ::Window dest_window = FindWindowFor(screen_point);
 
-  if (source_current_window_ != dest_window) {
-    if (source_current_window_ != x11::None)
-      SendXdndLeave(source_current_window_);
+  if (source_current_window() != dest_window) {
+    if (source_current_window() != x11::None)
+      SendXdndLeave(source_current_window());
 
-    source_current_window_ = dest_window;
+    set_source_current_window(dest_window);
     waiting_on_status_ = false;
     next_position_message_.reset();
     status_received_since_enter_ = false;
     negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
 
-    if (source_current_window_ != x11::None)
-      SendXdndEnter(source_current_window_);
+    if (source_current_window() != x11::None) {
+      std::vector<Atom> targets;
+      source_provider_->RetrieveTargets(&targets);
+      SendXdndEnter(source_current_window(), targets);
+    }
   }
 
-  if (source_current_window_ != x11::None) {
+  if (source_current_window() != x11::None) {
     if (waiting_on_status_) {
       next_position_message_ =
           std::make_unique<std::pair<gfx::Point, unsigned long>>(screen_point,
@@ -786,14 +624,14 @@ void DesktopDragDropClientAuraX11::DragTranslate(
 
   *data = std::make_unique<OSExchangeData>(
       std::make_unique<ui::OSExchangeDataProviderAuraX11>(
-          xwindow(), target_current_context_->fetched_targets()));
+          xwindow(), target_current_context()->fetched_targets()));
   gfx::Point location = root_location;
   aura::Window::ConvertPointToTarget(root_window_, target_window_, &location);
 
   target_window_location_ = location;
   target_window_root_location_ = root_location;
 
-  int drag_op = target_current_context_->GetDragOperation();
+  int drag_op = target_current_context()->GetDragOperation();
   // KDE-based file browsers such as Dolphin change the drag operation depending
   // on whether alt/ctrl/shift was pressed. However once Chromium gets control
   // over the X11 events, the source application does no longer receive X11
@@ -808,9 +646,9 @@ void DesktopDragDropClientAuraX11::DragTranslate(
   *event = std::make_unique<ui::DropTargetEvent>(
       *(data->get()), gfx::PointF(location), gfx::PointF(root_location),
       drag_op);
-  if (target_current_context_->source_client()) {
+  if (target_current_context()->source_client()) {
     (*event)->set_flags(
-        target_current_context_->source_client()->current_modifier_state());
+        target_current_context()->source_client()->current_modifier_state());
   } else {
     (*event)->set_flags(XGetModifiers());
   }
@@ -860,30 +698,6 @@ void DesktopDragDropClientAuraX11::CompleteXdndPosition(
   SendXClientEvent(source_window, &xev);
 }
 
-void DesktopDragDropClientAuraX11::SendXdndEnter(::Window dest_window) {
-  XEvent xev = PrepareXdndClientMessage(kXdndEnter, dest_window);
-  xev.xclient.data.l[1] = (kMaxXdndVersion << 24);  // The version number.
-
-  std::vector<Atom> targets;
-  source_provider_->RetrieveTargets(&targets);
-
-  if (targets.size() > 3) {
-    xev.xclient.data.l[1] |= 1;
-    ui::SetAtomArrayProperty(xwindow(), kXdndTypeList, "ATOM", targets);
-  } else {
-    // Pack the targets into the enter message.
-    for (size_t i = 0; i < targets.size(); ++i)
-      xev.xclient.data.l[2 + i] = targets[i];
-  }
-
-  SendXClientEvent(dest_window, &xev);
-}
-
-void DesktopDragDropClientAuraX11::SendXdndLeave(::Window dest_window) {
-  XEvent xev = PrepareXdndClientMessage(kXdndLeave, dest_window);
-  SendXClientEvent(dest_window, &xev);
-}
-
 void DesktopDragDropClientAuraX11::SendXdndPosition(
     ::Window dest_window,
     const gfx::Point& screen_point,
@@ -903,12 +717,6 @@ void DesktopDragDropClientAuraX11::SendXdndPosition(
       FROM_HERE, base::TimeDelta::FromMilliseconds(350),
       base::BindOnce(&DesktopDragDropClientAuraX11::ProcessMouseMove,
                      base::Unretained(this), screen_point, event_time));
-}
-
-void DesktopDragDropClientAuraX11::SendXdndDrop(::Window dest_window) {
-  XEvent xev = PrepareXdndClientMessage(kXdndDrop, dest_window);
-  xev.xclient.data.l[2] = x11::CurrentTime;
-  SendXClientEvent(dest_window, &xev);
 }
 
 void DesktopDragDropClientAuraX11::CreateDragWidget(
@@ -965,12 +773,19 @@ bool DesktopDragDropClientAuraX11::IsValidDragImage(
 }
 
 void DesktopDragDropClientAuraX11::ResetDragContext() {
-  if (!target_current_context_)
+  if (!target_current_context())
     return;
-  if (!target_current_context_->source_client()) {
+  if (!target_current_context()->source_client()) {
     ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   }
-  target_current_context_.reset();
+
+  // XDragDropClient::ResetDragContext will reset target_current_context().
+  XDragDropClient::ResetDragContext();
+}
+
+std::unique_ptr<ui::XTopmostWindowFinder>
+DesktopDragDropClientAuraX11::CreateWindowFinder() {
+  return std::make_unique<X11TopmostWindowFinder>();
 }
 
 }  // namespace views

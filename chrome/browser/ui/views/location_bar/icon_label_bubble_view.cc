@@ -195,6 +195,11 @@ SkColor IconLabelBubbleView::GetForegroundColor() const {
   return delegate_->GetIconLabelBubbleSurroundingForegroundColor();
 }
 
+void IconLabelBubbleView::UpdateLabelColors() {
+  SetEnabledTextColors(GetForegroundColor());
+  label()->SetBackgroundColor(delegate_->GetIconLabelBubbleBackgroundColor());
+}
+
 bool IconLabelBubbleView::ShouldShowSeparator() const {
   return ShouldShowLabel();
 }
@@ -304,9 +309,7 @@ void IconLabelBubbleView::OnThemeChanged() {
   // under certain conditions. We don't want that, so unset the background.
   label()->SetBackground(nullptr);
 
-  SetEnabledTextColors(GetForegroundColor());
-  label()->SetBackgroundColor(delegate_->GetIconLabelBubbleBackgroundColor());
-  SchedulePaint();
+  UpdateLabelColors();
 }
 
 std::unique_ptr<views::InkDrop> IconLabelBubbleView::CreateInkDrop() {

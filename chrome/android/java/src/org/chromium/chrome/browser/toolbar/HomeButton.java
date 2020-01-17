@@ -151,7 +151,7 @@ public class HomeButton extends ChromeImageButton
      * @param tab The notifying {@link Tab} that might be selected soon, this is a hint that a tab
      *         change is likely.
      */
-    private void updateButtonEnabledState(Tab tab) {
+    public void updateButtonEnabledState(Tab tab) {
         // New tab page button takes precedence over homepage.
         final boolean isHomepageEnabled = HomepageManager.isHomepageEnabled();
 

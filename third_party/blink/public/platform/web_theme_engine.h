@@ -126,6 +126,7 @@ class WebThemeEngine {
     bool is_listbox;
     SkColor background_color;
     bool has_border;
+    bool auto_complete_active;
   };
 
   // Extra parameters for PartMenuList

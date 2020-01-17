@@ -44,9 +44,7 @@ source_set("credit_card_scanner") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "credit_card_scanner_string_util_unittest.mm",
-  ]
+  sources = [ "credit_card_scanner_string_util_unittest.mm" ]
   deps = [
     "//ios/chrome/browser/ui/settings/credit_card_scanner",
     "//testing/gtest",

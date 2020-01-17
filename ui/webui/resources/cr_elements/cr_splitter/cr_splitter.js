@@ -170,7 +170,7 @@ Polymer({
    */
   onTouchStart_(e) {
     e = /** @type {!TouchEvent} */ (e);
-    if (e.touches.length == 1) {
+    if (e.touches.length === 1) {
       this.startDrag(e.touches[0].clientX, true);
       e.preventDefault();
     }
@@ -191,7 +191,7 @@ Polymer({
    * @param {!TouchEvent} e The touch event.
    */
   handleTouchMove_(e) {
-    if (e.touches.length == 1) {
+    if (e.touches.length === 1) {
       this.handleMove_(e.touches[0].clientX);
     }
   },
@@ -259,7 +259,7 @@ Polymer({
     const doc = targetElement.ownerDocument;
     const computedWidth =
         parseFloat(doc.defaultView.getComputedStyle(targetElement).width);
-    if (this.startWidth_ != computedWidth) {
+    if (this.startWidth_ !== computedWidth) {
       this.dispatchEvent(new CustomEvent('resize'));
     }
 

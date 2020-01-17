@@ -23,7 +23,7 @@ Polymer({
      */
     externalStorages_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       }
     },
@@ -31,7 +31,7 @@ Polymer({
     /** @private {!chrome.settingsPrivate.PrefObject} */
     externalStorageVisiblePref_: {
       type: Object,
-      value: function() {
+      value() {
         return /** @type {!chrome.settingsPrivate.PrefObject} */ ({});
       },
     },
@@ -41,12 +41,12 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.DevicePageBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.browserProxy_.setExternalStoragesUpdatedCallback(
         this.handleExternalStoragesUpdated_.bind(this));
     this.browserProxy_.updateExternalStorages();
@@ -56,7 +56,7 @@ Polymer({
    * @param {Array<!settings.ExternalStorage>} storages
    * @private
    */
-  handleExternalStoragesUpdated_: function(storages) {
+  handleExternalStoragesUpdated_(storages) {
     this.externalStorages_ = storages;
   },
 
@@ -65,7 +65,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeStorageListHeader_: function(externalStorages) {
+  computeStorageListHeader_(externalStorages) {
     return this.i18n(
         !externalStorages || externalStorages.length == 0 ?
             'storageExternalStorageEmptyListHeader' :

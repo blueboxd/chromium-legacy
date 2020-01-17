@@ -36,6 +36,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
+#include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -70,13 +71,6 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
 
 }  // namespace
 
-ExtensionInstallPrompt::Prompt::InstallPromptPermissions::
-    InstallPromptPermissions() {
-}
-ExtensionInstallPrompt::Prompt::InstallPromptPermissions::
-    ~InstallPromptPermissions() {
-}
-
 ExtensionInstallPrompt::PromptType
 ExtensionInstallPrompt::g_last_prompt_type_for_tests =
     ExtensionInstallPrompt::UNSET_PROMPT_TYPE;
@@ -97,25 +91,16 @@ ExtensionInstallPrompt::Prompt::Prompt(PromptType type)
 ExtensionInstallPrompt::Prompt::~Prompt() {
 }
 
-void ExtensionInstallPrompt::Prompt::AddPermissions(
-    const PermissionMessages& permissions) {
-  for (const PermissionMessage& msg : permissions) {
-    prompt_permissions_.permissions.push_back(msg.message());
-    // Add a dash to the front of each permission detail.
-    base::string16 details;
-    if (!msg.submessages().empty()) {
-      std::vector<base::string16> detail_lines_with_bullets;
-      for (const auto& detail_line : msg.submessages()) {
-        detail_lines_with_bullets.push_back(base::ASCIIToUTF16("- ") +
-                                            detail_line);
-      }
+void ExtensionInstallPrompt::Prompt::AddPermissionSet(
+    const PermissionSet& permissions) {
+  Manifest::Type type =
+      extension_ ? extension_->GetType() : Manifest::TYPE_UNKNOWN;
+  prompt_permissions_.LoadFromPermissionSet(&permissions, type);
+}
 
-      details = base::JoinString(detail_lines_with_bullets,
-                                 base::ASCIIToUTF16("\n"));
-    }
-    prompt_permissions_.details.push_back(details);
-    prompt_permissions_.is_showing_details.push_back(false);
-  }
+void ExtensionInstallPrompt::Prompt::AddPermissionMessages(
+    const PermissionMessages& permissions) {
+  prompt_permissions_.AddPermissionMessages(permissions);
 }
 
 void ExtensionInstallPrompt::Prompt::SetIsShowingDetails(
@@ -610,41 +595,25 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
 }
 
 void ExtensionInstallPrompt::ShowConfirmation() {
-  std::unique_ptr<const PermissionSet> permissions_wrapper;
-  const PermissionSet* permissions_to_display = nullptr;
+  std::unique_ptr<const PermissionSet> permissions_to_display;
+
   if (custom_permissions_.get()) {
-    permissions_to_display = custom_permissions_.get();
+    permissions_to_display = custom_permissions_->Clone();
   } else if (extension_) {
-    // Initialize permissions if they have not already been set so that
-    // any transformations are correctly reflected in the install prompt.
-    extensions::PermissionsUpdater(
-        profile_, extensions::PermissionsUpdater::INIT_FLAG_TRANSIENT)
-        .InitializePermissions(extension_.get());
-    permissions_to_display =
-        &extension_->permissions_data()->active_permissions();
     // For delegated installs, all optional permissions are pre-approved by the
     // person who triggers the install, so add them to the list.
-    if (prompt_->type() == DELEGATED_PERMISSIONS_PROMPT) {
-      const PermissionSet& optional_permissions =
-          extensions::PermissionsParser::GetOptionalPermissions(
-              extension_.get());
-      permissions_wrapper = PermissionSet::CreateUnion(*permissions_to_display,
-                                                       optional_permissions);
-      permissions_to_display = permissions_wrapper.get();
-    }
-  }
-
-  if (permissions_to_display) {
-    Manifest::Type type =
-        extension_ ? extension_->GetType() : Manifest::TYPE_UNKNOWN;
-    const extensions::PermissionMessageProvider* message_provider =
-        extensions::PermissionMessageProvider::Get();
-
-    prompt_->AddPermissions(message_provider->GetPermissionMessages(
-        message_provider->GetAllPermissionIDs(*permissions_to_display, type)));
+    bool include_optional_permissions =
+        prompt_->type() == DELEGATED_PERMISSIONS_PROMPT;
+    permissions_to_display =
+        extensions::util::GetInstallPromptPermissionSetForExtension(
+            extension_.get(), profile_, include_optional_permissions);
   }
 
   prompt_->set_extension(extension_.get());
+  if (permissions_to_display) {
+    prompt_->AddPermissionSet(*permissions_to_display);
+  }
+
   prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
 
   if (show_params_->WasParentDestroyed()) {

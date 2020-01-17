@@ -13,4 +13,6 @@ interface IProfile {
           in IObjectWrapper completionCallback) = 1;
 
   String getName() = 2;
+
+  void setDownloadDirectory(String directory) = 3;
 }

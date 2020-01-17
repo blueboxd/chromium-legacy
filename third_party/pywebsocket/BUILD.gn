@@ -6,7 +6,5 @@
 # to run it in the test environment.
 group("pywebsocket") {
   # For now, depend on the mod_pywebsocket directory.
-  data = [
-    "//third_party/pywebsocket/src/mod_pywebsocket/",
-  ]
+  data = [ "//third_party/pywebsocket/src/mod_pywebsocket/" ]
 }

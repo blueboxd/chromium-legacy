@@ -228,9 +228,8 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     // a dangling pointer to the User.
     // TODO(nya): Consider removing all users from ProfileHelper in the
     // destructor of FakeChromeUserManager.
-    const AccountId account_id(AccountId::FromUserEmailGaiaId(
-        kFakeUserName, signin::GetTestGaiaIdForEmail(kFakeUserName)));
-    GetFakeUserManager()->RemoveUserFromList(account_id);
+    GetFakeUserManager()->RemoveUserFromList(
+        GetFakeUserManager()->GetActiveUser()->GetAccountId());
     // Since ArcServiceLauncher is (re-)set up with profile() in
     // SetUpOnMainThread() it is necessary to Shutdown() before the profile()
     // is destroyed. ArcServiceLauncher::Shutdown() will be called again on
@@ -255,8 +254,14 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   }
 
   void SetAccountAndProfile(const user_manager::UserType user_type) {
-    const AccountId account_id(AccountId::FromUserEmailGaiaId(
-        kFakeUserName, signin::GetTestGaiaIdForEmail(kFakeUserName)));
+    AccountId account_id;
+    if (user_type == user_manager::USER_TYPE_ACTIVE_DIRECTORY) {
+      account_id = AccountId::AdFromUserEmailObjGuid(
+          kFakeUserName, "fake-active-directory-guid");
+    } else {
+      account_id = AccountId::FromUserEmailGaiaId(
+          kFakeUserName, signin::GetTestGaiaIdForEmail(kFakeUserName));
+    }
     const user_manager::User* user = nullptr;
     switch (user_type) {
       case user_manager::USER_TYPE_CHILD:
@@ -267,6 +272,16 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         break;
       case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
         user = GetFakeUserManager()->AddPublicAccountUser(account_id);
+        break;
+      case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
+        user = GetFakeUserManager()->AddUserWithAffiliationAndTypeAndProfile(
+            account_id, true /*is_affiliated*/,
+            user_manager::USER_TYPE_ACTIVE_DIRECTORY, nullptr /*profile*/);
+        break;
+      case user_manager::USER_TYPE_ARC_KIOSK_APP:
+        user = GetFakeUserManager()->AddUserWithAffiliationAndTypeAndProfile(
+            account_id, false /*is_affiliated*/,
+            user_manager::USER_TYPE_ARC_KIOSK_APP, nullptr /*profile*/);
         break;
       default:
         ADD_FAILURE() << "Unexpected user type " << user_type;
@@ -294,7 +309,11 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     auto* identity_test_env =
         identity_test_environment_adaptor_->identity_test_env();
     identity_test_env->SetAutomaticIssueOfAccessTokens(true);
-    identity_test_env->MakePrimaryAccountAvailable(kFakeUserName);
+    if (user_type != user_manager::USER_TYPE_ACTIVE_DIRECTORY) {
+      // Identity service doesn't have a primary account for Active Directory
+      // sessions.
+      identity_test_env->MakePrimaryAccountAvailable(kFakeUserName);
+    }
 
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
     profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
@@ -325,6 +344,8 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     DCHECK(arc_bridge_service_);
     arc_bridge_service_->auth()->SetInstance(&auth_instance_);
     WaitForInstanceReady(arc_bridge_service_->auth());
+    // Waiting for users and profiles to be setup.
+    base::RunLoop().RunUntilIdle();
   }
 
   AccountInfo SeedAccountInfo(const std::string& email) {
@@ -369,6 +390,27 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 
   void WaitForGoogleAccountsInArcCallback() { run_loop_->RunUntilIdle(); }
 
+  std::pair<std::string, mojom::ChromeAccountType>
+  RequestPrimaryAccount() {
+    base::RunLoop run_loop;
+    std::string account_name;
+    mojom::ChromeAccountType account_type = mojom::ChromeAccountType::UNKNOWN;
+    base::OnceCallback<void(const std::string&, mojom::ChromeAccountType)>
+        callback = base::BindLambdaForTesting(
+            [&run_loop, &account_name, &account_type](
+                const std::string& returned_account_name,
+                mojom::ChromeAccountType returned_account_type) {
+              account_name = returned_account_name;
+              account_type = returned_account_type;
+              run_loop.Quit();
+            });
+
+    auth_service().RequestPrimaryAccount(std::move(callback));
+    run_loop.Run();
+
+    return std::make_pair(account_name, account_type);
+  }
+
   Profile* profile() { return profile_.get(); }
 
   void set_profile_name(const std::string& username) {
@@ -408,6 +450,53 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceTest);
 };
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, GetPrimaryAccountForGaiaAccounts) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  const std::pair<std::string, mojom::ChromeAccountType>
+      primary_account = RequestPrimaryAccount();
+  EXPECT_EQ(kFakeUserName, primary_account.first);
+  EXPECT_EQ(mojom::ChromeAccountType::USER_ACCOUNT, primary_account.second);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, GetPrimaryAccountForChildAccounts) {
+  SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
+  const std::pair<std::string, mojom::ChromeAccountType>
+      primary_account = RequestPrimaryAccount();
+  EXPECT_EQ(kFakeUserName, primary_account.first);
+  EXPECT_EQ(mojom::ChromeAccountType::CHILD_ACCOUNT, primary_account.second);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       GetPrimaryAccountForActiveDirectoryAccounts) {
+  SetAccountAndProfile(user_manager::USER_TYPE_ACTIVE_DIRECTORY);
+  const std::pair<std::string, mojom::ChromeAccountType>
+      primary_account = RequestPrimaryAccount();
+  EXPECT_EQ(std::string(), primary_account.first);
+  EXPECT_EQ(mojom::ChromeAccountType::ACTIVE_DIRECTORY_ACCOUNT,
+            primary_account.second);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, GetPrimaryAccountForPublicAccounts) {
+  SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  const std::pair<std::string, mojom::ChromeAccountType>
+      primary_account = RequestPrimaryAccount();
+  EXPECT_EQ(std::string(), primary_account.first);
+  EXPECT_EQ(mojom::ChromeAccountType::ROBOT_ACCOUNT, primary_account.second);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       GetPrimaryAccountForOfflineDemoAccounts) {
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOffline);
+  chromeos::DemoSession::StartIfInDemoMode();
+  SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+  const std::pair<std::string, mojom::ChromeAccountType>
+      primary_account = RequestPrimaryAccount();
+  EXPECT_EQ(std::string(), primary_account.first);
+  EXPECT_EQ(mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT,
+            primary_account.second);
+}
 
 // Tests that when ARC requests account info for a non-managed account, via
 // |RequestAccountInfoDeprecated| API, Chrome supplies the info configured in

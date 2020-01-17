@@ -576,3 +576,46 @@ TEST_F(OmniboxEditModelTest, KeywordModePreservesTemporaryText) {
   EXPECT_EQ(base::UTF8ToUTF16("match text"), view()->GetText());
   EXPECT_TRUE(view()->IsSelectAll());
 }
+
+TEST_F(OmniboxEditModelTest, CtrlEnterNavigatesToDesiredTLD) {
+  // Set the edit model into an inline autocomplete state.
+  view()->SetUserText(base::UTF8ToUTF16("foo"));
+  model()->StartAutocomplete(false, false);
+  view()->OnInlineAutocompleteTextMaybeChanged(base::UTF8ToUTF16("foobar"), 3);
+
+  model()->OnControlKeyChanged(true);
+  model()->AcceptInput(WindowOpenDisposition::UNKNOWN);
+  OmniboxEditModel::State state = model()->GetStateForTabSwitch();
+  EXPECT_EQ(GURL("http://www.foo.com/"),
+            state.autocomplete_input.canonicalized_url());
+}
+
+TEST_F(OmniboxEditModelTest, CtrlEnterNavigatesToDesiredTLDTemporaryText) {
+  // But if it's the temporary text, the View text should be used.
+  view()->SetUserText(base::UTF8ToUTF16("foo"));
+  model()->StartAutocomplete(false, false);
+  model()->OnPopupDataChanged(base::ASCIIToUTF16("foobar"),
+                              /*is_temporary_text=*/true, base::string16(),
+                              false);
+
+  model()->OnControlKeyChanged(true);
+  model()->AcceptInput(WindowOpenDisposition::UNKNOWN);
+  OmniboxEditModel::State state = model()->GetStateForTabSwitch();
+  EXPECT_EQ(GURL("http://www.foobar.com/"),
+            state.autocomplete_input.canonicalized_url());
+}
+
+TEST_F(OmniboxEditModelTest,
+       CtrlEnterNavigatesToDesiredTLDSteadyStateElisions) {
+  location_bar_model()->set_url(GURL("https://www.example.com/"));
+  location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
+
+  EXPECT_TRUE(model()->ResetDisplayTexts());
+  model()->Revert();
+
+  model()->OnControlKeyChanged(true);
+  model()->AcceptInput(WindowOpenDisposition::UNKNOWN);
+  OmniboxEditModel::State state = model()->GetStateForTabSwitch();
+  EXPECT_EQ(GURL("https://www.example.com/"),
+            state.autocomplete_input.canonicalized_url());
+}

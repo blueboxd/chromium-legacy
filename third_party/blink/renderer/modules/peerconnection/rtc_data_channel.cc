@@ -222,6 +222,7 @@ RTCDataChannel::RTCDataChannel(
       buffered_amount_low_threshold_(0U),
       buffered_amount_(0U),
       stopped_(false),
+      closed_from_owner_(false),
       observer_(base::MakeRefCounted<Observer>(
           context->GetTaskRunner(TaskType::kNetworking),
           this,
@@ -427,6 +428,7 @@ void RTCDataChannel::send(Blob* data, ExceptionState& exception_state) {
 
 void RTCDataChannel::close() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  closed_from_owner_ = true;
   if (observer_)
     channel()->Close();
   // Note that even though Close() will run synchronously, the readyState has
@@ -459,9 +461,10 @@ bool RTCDataChannel::HasPendingActivity() const {
 
   // A RTCDataChannel object must not be garbage collected if its
   // * readyState is connecting and at least one event listener is registered
-  //   for open events, message events, error events, or close events.
+  //   for open events, message events, error events, closing events
+  //   or close events.
   // * readyState is open and at least one event listener is registered for
-  //   message events, error events, or close events.
+  //   message events, error events, closing events, or close events.
   // * readyState is closing and at least one event listener is registered for
   //   error events, or close events.
   // * underlying data transport is established and data is queued to be
@@ -472,7 +475,8 @@ bool RTCDataChannel::HasPendingActivity() const {
       has_valid_listeners |= HasEventListeners(event_type_names::kOpen);
       FALLTHROUGH;
     case webrtc::DataChannelInterface::kOpen:
-      has_valid_listeners |= HasEventListeners(event_type_names::kMessage);
+      has_valid_listeners |= HasEventListeners(event_type_names::kMessage) ||
+                             HasEventListeners(event_type_names::kClosing);
       FALLTHROUGH;
     case webrtc::DataChannelInterface::kClosing:
       has_valid_listeners |= HasEventListeners(event_type_names::kError) ||
@@ -508,6 +512,11 @@ void RTCDataChannel::OnStateChange(
     case webrtc::DataChannelInterface::kOpen:
       IncrementCounter(DataChannelCounters::kOpened);
       ScheduleDispatchEvent(Event::Create(event_type_names::kOpen));
+      break;
+    case webrtc::DataChannelInterface::kClosing:
+      if (!closed_from_owner_) {
+        ScheduleDispatchEvent(Event::Create(event_type_names::kClosing));
+      }
       break;
     case webrtc::DataChannelInterface::kClosed:
       if (!channel()->error().ok()) {

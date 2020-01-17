@@ -8,6 +8,7 @@ PASS history.scrollRestoration == "LEFTOVER" is false
 PASS history.state == "LEFTOVER" is false
 PASS location.ancestorOrigins == "LEFTOVER" is false
 PASS location.assign == "LEFTOVER" is false
+PASS location.fragmentDirective == "LEFTOVER" is false
 PASS location.hash == "LEFTOVER" is false
 PASS location.host == "LEFTOVER" is false
 PASS location.hostname == "LEFTOVER" is false

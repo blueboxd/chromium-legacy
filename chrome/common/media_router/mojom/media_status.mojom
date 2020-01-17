@@ -31,6 +31,11 @@ struct MediaStatus {
   // For a Presentation API route, it is the presentation page title.
   string title;
 
+  // The secondary label for the currently playing media. For example, this may
+  // be the artist name for a video or a song. It may be empty for mirroring or
+  // non-Cast-SDK Presentation API routes.
+  string secondary_title;
+
   // If this is true, the media can be played and paused through its
   // MediaController.
   bool can_play_pause;

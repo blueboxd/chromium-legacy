@@ -267,7 +267,7 @@ void MediaControlsOrientationLockDelegate::Invoke(
         event->InterfaceName() ==
             event_interface_names::kDeviceOrientationEvent) {
       MaybeLockToAnyIfDeviceOrientationMatchesVideo(
-          ToDeviceOrientationEvent(event));
+          To<DeviceOrientationEvent>(event));
     }
 
     return;

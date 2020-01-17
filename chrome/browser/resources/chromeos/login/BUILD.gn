@@ -69,9 +69,7 @@ js2gtest("login_unitjs_tests") {
 
 source_set("browser_tests") {
   testonly = true
-  deps = [
-    ":login_unitjs_tests",
-  ]
+  deps = [ ":login_unitjs_tests" ]
 }
 
 ###############################
@@ -99,9 +97,7 @@ js_library("login_screen_behavior") {
 }
 
 js_library("oobe_i18n_behavior") {
-  deps = [
-    "//ui/webui/resources/js:i18n_behavior",
-  ]
+  deps = [ "//ui/webui/resources/js:i18n_behavior" ]
 }
 
 js_library("oobe_dialog_host_behavior") {
@@ -139,9 +135,7 @@ js_library("multidevice_setup_first_run") {
 }
 
 js_library("active_directory_password_change") {
-  deps = [
-    ":oobe_i18n_behavior",
-  ]
+  deps = [ ":oobe_i18n_behavior" ]
 }
 
 js_library("app_downloading") {
@@ -205,9 +199,7 @@ js_library("gaia_input") {
 }
 
 js_library("gaia_password_changed") {
-  deps = [
-    ":oobe_i18n_behavior",
-  ]
+  deps = [ ":oobe_i18n_behavior" ]
 }
 
 js_library("hd-iron-icon") {
@@ -250,9 +242,7 @@ js_library("oobe_buttons") {
 }
 
 js_library("oobe_dialog") {
-  deps = [
-    "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
-  ]
+  deps = [ "//ui/webui/resources/cr_elements:cr_scrollable_behavior" ]
 }
 
 js_library("oobe_enable_kiosk") {
@@ -271,9 +261,7 @@ js_library("oobe_eula") {
 }
 
 js_library("oobe_i18n_dropdown") {
-  deps = [
-    ":oobe_types",
-  ]
+  deps = [ ":oobe_types" ]
 }
 
 js_library("oobe_network") {
@@ -284,9 +272,7 @@ js_library("oobe_network") {
 }
 
 js_library("oobe_reset_confirmation_overlay") {
-  deps = [
-    ":oobe_i18n_behavior",
-  ]
+  deps = [ ":oobe_i18n_behavior" ]
 }
 
 js_library("oobe_reset") {
@@ -318,9 +304,7 @@ js_library("recommend_apps") {
 }
 
 js_library("saml_confirm_password") {
-  deps = [
-    ":oobe_i18n_behavior",
-  ]
+  deps = [ ":oobe_i18n_behavior" ]
 }
 
 js_library("sync_consent") {

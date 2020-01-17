@@ -71,6 +71,27 @@ base::Optional<DOVIDecoderConfigurationRecord> ParseDOVIConfig(
 }
 #endif  // BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 
+// Read color coordinate value as defined in the MasteringDisplayColorVolume
+// ('mdcv') box.  Each coordinate is a float encoded in uint16_t, with upper
+// bound set to 50000.
+bool ReadMdcvColorCoordinate(BoxReader* reader,
+                             float* normalized_value_in_float) {
+  const float kColorCoordinateUpperBound = 50000.;
+
+  uint16_t value_in_uint16;
+  RCHECK(reader->Read2(&value_in_uint16));
+
+  float value_in_float = static_cast<float>(value_in_uint16);
+
+  if (value_in_float >= kColorCoordinateUpperBound) {
+    *normalized_value_in_float = 1.f;
+    return true;
+  }
+
+  *normalized_value_in_float = value_in_float / kColorCoordinateUpperBound;
+  return true;
+}
+
 }  // namespace
 
 FileType::FileType() = default;
@@ -783,9 +804,75 @@ PixelAspectRatioBox::~PixelAspectRatioBox() = default;
 FourCC PixelAspectRatioBox::BoxType() const { return FOURCC_PASP; }
 
 bool PixelAspectRatioBox::Parse(BoxReader* reader) {
-  RCHECK(reader->Read4(&h_spacing) &&
-         reader->Read4(&v_spacing));
+  RCHECK(reader->Read4(&h_spacing) && reader->Read4(&v_spacing));
   return true;
+}
+
+ColorParameterInformation::ColorParameterInformation() = default;
+ColorParameterInformation::ColorParameterInformation(
+    const ColorParameterInformation& other) = default;
+ColorParameterInformation::~ColorParameterInformation() = default;
+FourCC ColorParameterInformation::BoxType() const {
+  return FOURCC_COLR;
+}
+
+bool ColorParameterInformation::Parse(BoxReader* reader) {
+  FourCC type;
+  RCHECK(reader->ReadFourCC(&type));
+  // TODO: Support 'nclc', 'rICC', and 'prof'.
+  RCHECK(type == FOURCC_NCLX);
+
+  uint8_t full_range_byte;
+  RCHECK(reader->Read2(&colour_primaries) &&
+         reader->Read2(&transfer_characteristics) &&
+         reader->Read2(&matrix_coefficients) &&
+         reader->Read1(&full_range_byte));
+  full_range = full_range_byte & 0x80;
+
+  return true;
+}
+
+MasteringDisplayColorVolume::MasteringDisplayColorVolume() = default;
+MasteringDisplayColorVolume::MasteringDisplayColorVolume(
+    const MasteringDisplayColorVolume& other) = default;
+MasteringDisplayColorVolume::~MasteringDisplayColorVolume() = default;
+
+FourCC MasteringDisplayColorVolume::BoxType() const {
+  return FOURCC_MDCV;
+}
+
+bool MasteringDisplayColorVolume::Parse(BoxReader* reader) {
+  // Technically the color coordinates may be in any order.  The spec recommends
+  // GBR and it is assumed that the color coordinates are in such order.
+  RCHECK(ReadMdcvColorCoordinate(reader, &display_primaries_gx) &&
+         ReadMdcvColorCoordinate(reader, &display_primaries_gy) &&
+         ReadMdcvColorCoordinate(reader, &display_primaries_bx) &&
+         ReadMdcvColorCoordinate(reader, &display_primaries_by) &&
+         ReadMdcvColorCoordinate(reader, &display_primaries_rx) &&
+         ReadMdcvColorCoordinate(reader, &display_primaries_ry) &&
+         ReadMdcvColorCoordinate(reader, &white_point_x) &&
+         ReadMdcvColorCoordinate(reader, &white_point_y) &&
+         reader->Read4(&max_display_mastering_luminance) &&
+         reader->Read4(&min_display_mastering_luminance));
+
+  const uint32_t kUnitOfMasteringLuminance = 10000;
+  max_display_mastering_luminance /= kUnitOfMasteringLuminance;
+  min_display_mastering_luminance /= kUnitOfMasteringLuminance;
+
+  return true;
+}
+
+ContentLightLevelInformation::ContentLightLevelInformation() = default;
+ContentLightLevelInformation::ContentLightLevelInformation(
+    const ContentLightLevelInformation& other) = default;
+ContentLightLevelInformation::~ContentLightLevelInformation() = default;
+FourCC ContentLightLevelInformation::BoxType() const {
+  return FOURCC_CLLI;
+}
+
+bool ContentLightLevelInformation::Parse(BoxReader* reader) {
+  return reader->Read2(&max_content_light_level) &&
+         reader->Read2(&max_pic_average_light_level);
 }
 
 VideoSampleEntry::VideoSampleEntry()
@@ -937,6 +1024,24 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       frame_bitstream_converter = nullptr;
       video_codec = kCodecAV1;
       video_codec_profile = av1_config.profile;
+
+      ColorParameterInformation color_parameter_information;
+      if (reader->HasChild(&color_parameter_information)) {
+        RCHECK(reader->ReadChild(&color_parameter_information));
+        this->color_parameter_information = color_parameter_information;
+      }
+
+      MasteringDisplayColorVolume mastering_display_color_volume;
+      if (reader->HasChild(&mastering_display_color_volume)) {
+        RCHECK(reader->ReadChild(&mastering_display_color_volume));
+        this->mastering_display_color_volume = mastering_display_color_volume;
+      }
+
+      ContentLightLevelInformation content_light_level_information;
+      if (reader->HasChild(&content_light_level_information)) {
+        RCHECK(reader->ReadChild(&content_light_level_information));
+        this->content_light_level_information = content_light_level_information;
+      }
       break;
     }
 #endif

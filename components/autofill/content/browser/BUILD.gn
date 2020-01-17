@@ -59,9 +59,7 @@ jumbo_static_library("browser") {
 }
 
 proto_library("risk_proto") {
-  sources = [
-    "risk/proto/fingerprint.proto",
-  ]
+  sources = [ "risk/proto/fingerprint.proto" ]
   proto_out_dir = "components/autofill/content/browser/risk/proto"
 }
 

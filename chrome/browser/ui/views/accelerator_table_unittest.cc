@@ -42,7 +42,8 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
         << "Duplicated accelerator: " << entry.keycode << ", "
         << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
         << (entry.modifiers & ui::EF_CONTROL_DOWN) << ", "
-        << (entry.modifiers & ui::EF_ALT_DOWN);
+        << (entry.modifiers & ui::EF_ALT_DOWN) << ", "
+        << (entry.modifiers & ui::EF_ALTGR_DOWN);
   }
 }
 
@@ -98,7 +99,8 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
         << "Duplicated accelerator: " << entry.keycode << ", "
         << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
         << (entry.modifiers & ui::EF_CONTROL_DOWN) << ", "
-        << (entry.modifiers & ui::EF_ALT_DOWN) << ", action "
+        << (entry.modifiers & ui::EF_ALT_DOWN) << ", "
+        << (entry.modifiers & ui::EF_ALTGR_DOWN) << ", action "
         << (ash_entry.action);
   }
 }

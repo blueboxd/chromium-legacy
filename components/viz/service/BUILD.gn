@@ -60,6 +60,8 @@ viz_component("service") {
     "display/overlay_candidate.h",
     "display/overlay_processor_interface.cc",
     "display/overlay_processor_interface.h",
+    "display/overlay_processor_on_gpu.cc",
+    "display/overlay_processor_on_gpu.h",
     "display/overlay_processor_stub.cc",
     "display/overlay_processor_stub.h",
     "display/program_binding.cc",
@@ -92,8 +94,6 @@ viz_component("service") {
     "display/texture_deleter.h",
     "display_embedder/buffer_queue.cc",
     "display_embedder/buffer_queue.h",
-    "display_embedder/compositing_mode_reporter_impl.cc",
-    "display_embedder/compositing_mode_reporter_impl.h",
     "display_embedder/direct_context_provider.cc",
     "display_embedder/direct_context_provider.h",
     "display_embedder/gl_output_surface.cc",
@@ -181,7 +181,6 @@ viz_component("service") {
     "//cc/base",
     "//cc/paint",
     "//components/crash/core/common:crash_key",
-    "//components/viz/common",
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:raster",
@@ -207,6 +206,7 @@ viz_component("service") {
     "//base",
     "//cc",
     "//cc/debug",
+    "//components/viz/common",
     "//gpu/command_buffer/client:gles2_interface",
     "//services/viz/privileged/mojom/compositing",
     "//services/viz/public/mojom",
@@ -571,9 +571,7 @@ viz_source_set("perf_tests") {
 }
 
 fuzzer_test("hit_test_manager_fuzzer") {
-  sources = [
-    "hit_test/hit_test_manager_fuzzer.cc",
-  ]
+  sources = [ "hit_test/hit_test_manager_fuzzer.cc" ]
 
   libfuzzer_options = [ "max_len=81920" ]
 

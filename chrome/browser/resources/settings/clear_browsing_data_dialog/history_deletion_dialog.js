@@ -12,7 +12,7 @@ Polymer({
   is: 'settings-history-deletion-dialog',
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.dialog.showModal();
   },
 
@@ -20,7 +20,7 @@ Polymer({
    * Tap handler for the "OK" button.
    * @private
    */
-  onOkTap_: function() {
+  onOkTap_() {
     this.$.dialog.close();
   },
 });

@@ -28,9 +28,7 @@ static_library("cpp") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "switches_unittest.cc",
-  ]
+  sources = [ "switches_unittest.cc" ]
   deps = [
     ":cpp",
     "//base",

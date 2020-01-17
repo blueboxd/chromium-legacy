@@ -28,9 +28,7 @@ source_set("feed_content") {
 
 source_set("content_unit_tests") {
   testonly = true
-  sources = [
-    "feed_offline_host_unittest.cc",
-  ]
+  sources = [ "feed_offline_host_unittest.cc" ]
 
   deps = [
     ":feed_content",

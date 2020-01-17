@@ -47,6 +47,7 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
+#include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
@@ -63,6 +64,10 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+}
+
+namespace gfx {
+class Point;
 }
 
 namespace service_manager {
@@ -459,6 +464,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetPrescientNetworkingForTesting(
       std::unique_ptr<WebPrescientNetworking> prescient_networking);
 
+  void SetEmbeddingToken(const base::UnguessableToken& embedding_token);
+  const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const;
+
+  void CopyImageAtViewportPoint(const IntPoint& viewport_point);
+
   // blink::mojom::LocalFrame overrides:
   void GetTextSurroundingSelection(
       uint32_t max_length,
@@ -472,6 +482,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void EnableViewSourceMode() final;
   void Focus() final;
   void ClearFocusedElement() final;
+  void CopyImageAt(const gfx::Point& window_point) final;
+  void SaveImageAt(const gfx::Point& window_point) final;
+  void ReportBlinkFeatureUsage(const Vector<mojom::blink::WebFeature>&) final;
+
+  SystemClipboard* GetSystemClipboard();
 
  private:
   friend class FrameNavigationDisabler;
@@ -522,6 +537,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void UnpauseContext();
 
   void EvictFromBackForwardCache();
+
+  HitTestResult HitTestResultForVisualViewportPos(
+      const IntPoint& pos_in_viewport);
 
   static void BindToReceiver(
       blink::LocalFrame* frame,
@@ -606,6 +624,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   std::unique_ptr<FrameOverlay> frame_color_overlay_;
 
+  base::Optional<base::UnguessableToken> embedding_token_;
+
   mojom::FrameLifecycleState lifecycle_state_;
   base::Optional<mojom::FrameLifecycleState> pending_lifecycle_state_;
 
@@ -613,6 +633,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   mojo::AssociatedRemote<mojom::blink::LocalFrameHost> local_frame_host_remote_;
   mojo::AssociatedReceiver<mojom::blink::LocalFrame> receiver_{this};
+
+  // Access to the global system clipboard.
+  Member<SystemClipboard> system_clipboard_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

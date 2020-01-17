@@ -40,8 +40,8 @@
 #include "services/service_manager/sandbox/linux/bpf_cros_arm_gpu_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_gpu_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_network_policy_linux.h"
-#include "services/service_manager/sandbox/linux/bpf_pdf_compositor_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_ppapi_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_print_compositor_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_renderer_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_soda_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_utility_policy_linux.h"
@@ -167,8 +167,8 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
       return std::make_unique<UtilityProcessPolicy>();
     case SandboxType::kCdm:
       return std::make_unique<CdmProcessPolicy>();
-    case SandboxType::kPdfCompositor:
-      return std::make_unique<PdfCompositorProcessPolicy>();
+    case SandboxType::kPrintCompositor:
+      return std::make_unique<PrintCompositorProcessPolicy>();
     case SandboxType::kNetwork:
       return std::make_unique<NetworkProcessPolicy>();
     case SandboxType::kAudio:
@@ -194,7 +194,7 @@ void SandboxSeccompBPF::RunSandboxSanityChecks(
     case SandboxType::kRenderer:
     case SandboxType::kGpu:
     case SandboxType::kPpapi:
-    case SandboxType::kPdfCompositor:
+    case SandboxType::kPrintCompositor:
     case SandboxType::kCdm: {
       int syscall_ret;
       errno = 0;

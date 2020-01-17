@@ -27,7 +27,7 @@ AnimationEvent::AnimationEvent(int timeline_id,
       // Also initializing keyframe_id with 0 which in its case is a valid
       // value. However this is safe since keyframe_id and model_id are not used
       // when routing a TIME_UPDATED event.
-      uid({timeline_id, animation_id, 0, 0}),
+      uid({timeline_id, animation_id, 0}),
       group_id(),
       target_property(),
       monotonic_time(),

@@ -11,13 +11,13 @@
 
 namespace content {
 
-#if defined(NCTEST_BROWSER_TASK_TRAITS_NO_THREAD)  // [r"Either content::BrowserThread::ID or base::CurrentThread must be set, but not both"]
-constexpr base::TaskTraits traits = {BrowserTaskType::kNavigation};
-#elif defined(NCTEST_BROWSER_TASK_TRAITS_MULTIPLE_THREADS)  // [r"The traits bag contains multiple traits of the same type."]
+#if defined(NCTEST_BROWSER_TASK_TRAITS_MULTIPLE_THREADS)  // [r"The traits bag contains multiple traits of the same type."]
 constexpr base::TaskTraits traits = {BrowserThread::UI,
                                      BrowserThread::IO};
-#elif defined(NCTEST_BROWSER_TASK_TRAITS_BROWSER_THREAD_AND_CURRENT_THREAD)  // [r"Either content::BrowserThread::ID or base::CurrentThread must be set, but not both"]
-constexpr base::TaskTraits traits = {BrowserThread::UI, base::CurrentThread()};
+#elif defined(NCTEST_BROWSER_TASK_TRAITS_MULTIPLE_TASK_TYPES)  // [r"The traits bag contains multiple traits of the same type."]
+constexpr base::TaskTraits traits = {BrowserTaskType::kNavigation,
+                                     BrowserTaskType::kBootstrap};
 #endif
+
 
 }  // namespace content

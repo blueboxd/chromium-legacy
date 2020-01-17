@@ -170,7 +170,9 @@ SharedImageRepresentationOverlay::BeginScopedReadAccess(bool needs_gl_image) {
     return nullptr;
   }
 
-  BeginReadAccess();
+  if (!BeginReadAccess())
+    return nullptr;
+
   return std::make_unique<ScopedReadAccess>(
       util::PassKey<SharedImageRepresentationOverlay>(), this,
       needs_gl_image ? GetGLImage() : nullptr);

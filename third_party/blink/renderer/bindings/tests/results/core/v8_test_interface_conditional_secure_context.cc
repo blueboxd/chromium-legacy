@@ -459,16 +459,6 @@ TestInterfaceConditionalSecureContext* V8TestInterfaceConditionalSecureContext::
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInterfaceConditionalSecureContext* NativeValueTraits<TestInterfaceConditionalSecureContext>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestInterfaceConditionalSecureContext* native_value = V8TestInterfaceConditionalSecureContext::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestInterfaceConditionalSecureContext"));
-  }
-  return native_value;
-}
-
 void V8TestInterfaceConditionalSecureContext::InstallConditionalFeatures(
     v8::Local<v8::Context> context,
     const DOMWrapperWorld& world,

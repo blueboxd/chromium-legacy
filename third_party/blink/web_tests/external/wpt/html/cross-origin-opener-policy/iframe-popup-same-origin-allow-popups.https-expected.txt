@@ -1,0 +1,30 @@
+This is a testharness.js-based test.
+FAIL same-origin-allow-popups with SAME_ORIGIN iframe opening popup a SAME_ORIGIN with COOP: same-origin assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with SAME_SITE iframe opening popup a SAME_ORIGIN with COOP: same-origin assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with CROSS_ORIGIN iframe opening popup a SAME_ORIGIN with COOP: same-origin assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with SAME_ORIGIN iframe opening popup a SAME_SITE with COOP: same-origin assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with SAME_SITE iframe opening popup a SAME_SITE with COOP: same-origin assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with CROSS_ORIGIN iframe opening popup a SAME_SITE with COOP: same-origin assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with SAME_ORIGIN iframe opening popup a CROSS_ORIGIN with COOP: same-origin assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with SAME_SITE iframe opening popup a CROSS_ORIGIN with COOP: same-origin assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with CROSS_ORIGIN iframe opening popup a CROSS_ORIGIN with COOP: same-origin assert_equals: opener expected false but got true
+PASS same-origin-allow-popups with SAME_ORIGIN iframe opening popup a SAME_ORIGIN with COOP: same-origin-allow-popups
+FAIL same-origin-allow-popups with SAME_SITE iframe opening popup a SAME_ORIGIN with COOP: same-origin-allow-popups assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with CROSS_ORIGIN iframe opening popup a SAME_ORIGIN with COOP: same-origin-allow-popups assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with SAME_ORIGIN iframe opening popup a SAME_SITE with COOP: same-origin-allow-popups assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with SAME_SITE iframe opening popup a SAME_SITE with COOP: same-origin-allow-popups assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with CROSS_ORIGIN iframe opening popup a SAME_SITE with COOP: same-origin-allow-popups assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with SAME_ORIGIN iframe opening popup a CROSS_ORIGIN with COOP: same-origin-allow-popups assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with SAME_SITE iframe opening popup a CROSS_ORIGIN with COOP: same-origin-allow-popups assert_equals: opener expected false but got true
+FAIL same-origin-allow-popups with CROSS_ORIGIN iframe opening popup a CROSS_ORIGIN with COOP: same-origin-allow-popups assert_equals: opener expected false but got true
+PASS same-origin-allow-popups with SAME_ORIGIN iframe opening popup a SAME_ORIGIN with COOP: 
+PASS same-origin-allow-popups with SAME_SITE iframe opening popup a SAME_ORIGIN with COOP: 
+PASS same-origin-allow-popups with CROSS_ORIGIN iframe opening popup a SAME_ORIGIN with COOP: 
+PASS same-origin-allow-popups with SAME_ORIGIN iframe opening popup a SAME_SITE with COOP: 
+PASS same-origin-allow-popups with SAME_SITE iframe opening popup a SAME_SITE with COOP: 
+PASS same-origin-allow-popups with CROSS_ORIGIN iframe opening popup a SAME_SITE with COOP: 
+PASS same-origin-allow-popups with SAME_ORIGIN iframe opening popup a CROSS_ORIGIN with COOP: 
+PASS same-origin-allow-popups with SAME_SITE iframe opening popup a CROSS_ORIGIN with COOP: 
+PASS same-origin-allow-popups with CROSS_ORIGIN iframe opening popup a CROSS_ORIGIN with COOP: 
+Harness: the test ran to completion.
+

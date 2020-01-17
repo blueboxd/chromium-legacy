@@ -4523,12 +4523,27 @@ TEST_F(DisplayManagerTest, DPSizeTest) {
   display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
   UpdateDisplay("3840x2160*2.66666");
-  EXPECT_EQ(gfx::Size(1440, 810),
-            display::Screen::GetScreen()->GetPrimaryDisplay().size());
+  {
+    gfx::Size expected(1440, 810);
+    EXPECT_EQ(expected,
+              display::Screen::GetScreen()->GetPrimaryDisplay().size());
+    EXPECT_EQ(expected, Shell::GetPrimaryRootWindow()->bounds().size());
+  }
 
   UpdateDisplay("1920x1200*1.77777");
-  EXPECT_EQ(gfx::Size(1080, 675),
-            display::Screen::GetScreen()->GetPrimaryDisplay().size());
+  {
+    gfx::Size expected(1080, 675);
+    EXPECT_EQ(expected,
+              display::Screen::GetScreen()->GetPrimaryDisplay().size());
+    EXPECT_EQ(expected, Shell::GetPrimaryRootWindow()->bounds().size());
+  }
+  UpdateDisplay("3000x2000*2.25");
+  {
+    gfx::Size expected(1333, 888);
+    EXPECT_EQ(expected,
+              display::Screen::GetScreen()->GetPrimaryDisplay().size());
+    EXPECT_EQ(expected, Shell::GetPrimaryRootWindow()->bounds().size());
+  }
 }
 
 TEST_F(DisplayManagerTest, PanelOrientation) {

@@ -27,7 +27,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/ssl_status.h"
-#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_web_contents_factory.h"
@@ -196,7 +195,6 @@ class PageInfoBubbleViewTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    content::BrowserSideNavigationSetUp();
     views_helper_.test_views_delegate()->set_layout_provider(
         ChromeLayoutProvider::CreateLayoutProvider());
     views::Widget::InitParams parent_params;
@@ -213,7 +211,6 @@ class PageInfoBubbleViewTest : public testing::Test {
 
   void TearDown() override {
     parent_window_->CloseNow();
-    content::BrowserSideNavigationTearDown();
   }
 
  protected:

@@ -105,9 +105,7 @@ source_set("vpx_codec") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  public_deps = [
-    "//third_party/libvpx",
-  ]
+  public_deps = [ "//third_party/libvpx" ]
 
   deps = [
     "//base/third_party/dynamic_annotations",

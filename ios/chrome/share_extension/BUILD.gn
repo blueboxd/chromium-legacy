@@ -13,9 +13,7 @@ import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 
 group("resources") {
-  deps = [
-    "//ios/chrome/share_extension/strings",
-  ]
+  deps = [ "//ios/chrome/share_extension/strings" ]
 }
 
 extension_repack_all_locales("packed_resources") {
@@ -84,7 +82,5 @@ generate_localizable_strings("system_strings") {
   datapack_dir = get_label_info(_packed_resources_target, "target_gen_dir")
   packed_locales = ios_packed_locales_as_mac_outputs
   output_filenames = [ "Localizable.strings" ]
-  deps = [
-    _packed_resources_target,
-  ]
+  deps = [ _packed_resources_target ]
 }

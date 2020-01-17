@@ -33,9 +33,7 @@ source_set("common") {
     "reg_utils.h",
   ]
   public_configs = [ ":common_config" ]
-  public_deps = [
-    "//chrome/credential_provider/common:common_constants",
-  ]
+  public_deps = [ "//chrome/credential_provider/common:common_constants" ]
   deps = [
     ":string_resources",
     "//base",
@@ -106,9 +104,7 @@ source_set("gaiacp_lib") {
     "win_http_url_fetcher.h",
   ]
   public_configs = [ ":gaiacp_config" ]
-  public_deps = [
-    ":common",
-  ]
+  public_deps = [ ":common" ]
   deps = [
     ":gaia_credential_provider_idl",
     ":static_resources",
@@ -171,12 +167,8 @@ if (is_chrome_branded) {
 action("generate_credential_provider_idl_file") {
   script = "//build/util/version.py"
 
-  inputs = [
-    "gaia_credential_provider_idl.templ",
-  ]
-  outputs = [
-    "$target_gen_dir/gaia_credential_provider.idl",
-  ]
+  inputs = [ "gaia_credential_provider_idl.templ" ]
+  outputs = [ "$target_gen_dir/gaia_credential_provider.idl" ]
 
   args = [
     "-e",
@@ -188,9 +180,7 @@ action("generate_credential_provider_idl_file") {
 
 midl("gaia_credential_provider_idl") {
   dynamic_guid = gaia_credential_provider_clsid
-  deps = [
-    ":generate_credential_provider_idl_file",
-  ]
+  deps = [ ":generate_credential_provider_idl_file" ]
   header_file = "gaia_credential_provider_i.h"
   sources = get_target_outputs(":generate_credential_provider_idl_file")
 }
@@ -247,7 +237,5 @@ generate_embedded_i18n("generate_strings") {
 # Compile the generated .rc file.
 source_set("string_resources") {
   sources = get_target_outputs(":generate_strings")
-  public_deps = [
-    ":generate_strings",
-  ]
+  public_deps = [ ":generate_strings" ]
 }

@@ -744,7 +744,8 @@ public class FindToolbar extends LinearLayout {
                 && mCurrentTab.getWebContents() != null) {
             assert mFindInPageBridge != null;
 
-            mResultBar = new FindResultBar(getContext(), mCurrentTab, mFindInPageBridge);
+            mResultBar = new FindResultBar(
+                    getContext(), mCurrentTab.getContentView(), mFindInPageBridge);
         } else if (!visibility) {
             if (mResultBar != null) {
                 mResultBar.dismiss();

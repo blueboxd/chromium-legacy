@@ -83,20 +83,20 @@ interface AutofillDriver {
 interface PasswordManagerDriver {
   // Notification that password forms have been seen that are candidates for
   // filling/submitting by the password manager.
-  PasswordFormsParsed(array<PasswordForm> forms);
+  PasswordFormsParsed(array<FormData> forms_data);
 
   // Notification that initial layout has occurred and the following password
   // forms are visible on the page (e.g. not set to display:none.), and whether
   // all frames in the page have been rendered.
-  PasswordFormsRendered(array<PasswordForm> visible_forms,
+  PasswordFormsRendered(array<FormData> visible_forms_data,
                         bool did_stop_loading);
 
   // Notification that this password form was submitted by the user.
-  PasswordFormSubmitted(PasswordForm password_form);
+  PasswordFormSubmitted(FormData form_data);
 
   // Notification that a user starts typing in password fields and the omnibox
   // icon with anchored save/update prompt should be available.
-  ShowManualFallbackForSaving(PasswordForm password_form);
+  ShowManualFallbackForSaving(FormData form_data);
 
   // Notification that there is no user input in password fields and the
   // save/update prompt anchored to the omnibox icon should be removed.

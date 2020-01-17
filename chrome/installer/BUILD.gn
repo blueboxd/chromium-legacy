@@ -14,14 +14,10 @@ declare_args() {
 # Meta-target that forwards to the installer of the correct type (if any).
 group("installer") {
   if (enable_linux_installer) {
-    deps = [
-      "//chrome/installer/linux",
-    ]
+    deps = [ "//chrome/installer/linux" ]
   }
 
   if (is_mac) {
-    deps = [
-      "//chrome/installer/mac",
-    ]
+    deps = [ "//chrome/installer/mac" ]
   }
 }

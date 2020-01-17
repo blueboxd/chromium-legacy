@@ -1,0 +1,18 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("sqlite_proto") {
+  sources = [
+    "loading_predictor_key_value_data.h",
+    "loading_predictor_key_value_table.cc",
+    "loading_predictor_key_value_table.h",
+    "predictor_table_base.cc",
+    "predictor_table_base.h",
+  ]
+  deps = [
+    "//base",
+    "//sql",
+    "//third_party/protobuf:protobuf_lite",
+  ]
+}

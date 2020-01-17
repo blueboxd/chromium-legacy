@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
+#import "ios/chrome/browser/ui/find_bar/find_bar_mediator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_view_controller.h"
 #include "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
@@ -27,6 +28,8 @@
 // Command handler for |BrowserCommand|s.
 @property(nonatomic, readonly) id<BrowserCommands> browserCommandHandler;
 
+@property(nonatomic, strong) FindBarMediator* mediator;
+
 @end
 
 @implementation FindBarCoordinator
@@ -39,6 +42,12 @@
     self.findBarController.commandHandler = self.browserCommandHandler;
   }
   self.presenter.delegate = self;
+
+  self.mediator = [[FindBarMediator alloc]
+      initWithWebStateList:self.browser->GetWebStateList()
+            commandHandler:HandlerForProtocol(
+                               self.browser->GetCommandDispatcher(),
+                               BrowserCommands)];
 
   DCHECK(self.currentWebState);
   FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);

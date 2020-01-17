@@ -116,24 +116,11 @@ class VideoRendererAlgorithmTest : public testing::Test {
     if (!is_using_cadence())
       return false;
 
-    size_t size = algorithm_.cadence_estimator_.cadence_size_for_testing();
-    for (size_t i = 0; i < size; ++i) {
-      if (!algorithm_.cadence_estimator_.GetCadenceForFrame(i))
-        return true;
-    }
-
-    return false;
+    return algorithm_.cadence_estimator_.avg_cadence_for_testing() < 1.0;
   }
 
   double CadenceValue() const {
-    int num_render_intervals = 0;
-    size_t size = algorithm_.cadence_estimator_.cadence_size_for_testing();
-    for (size_t i = 0; i < size; ++i) {
-      num_render_intervals +=
-          algorithm_.cadence_estimator_.GetCadenceForFrame(i);
-    }
-
-    return (num_render_intervals + 0.0) / size;
+    return algorithm_.cadence_estimator_.avg_cadence_for_testing();
   }
 
   size_t frames_queued() const { return algorithm_.frame_queue_.size(); }

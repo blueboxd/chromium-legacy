@@ -48,9 +48,7 @@ source_set("activity_services") {
     "//ui/base",
     "//url",
   ]
-  public_deps = [
-    "//ios/third_party/material_components_ios",
-  ]
+  public_deps = [ "//ios/third_party/material_components_ios" ]
   libs = [
     "MobileCoreServices.framework",
     "UIKit.framework",
@@ -127,9 +125,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "activity_service_controller_egtest.mm",
-  ]
+  sources = [ "activity_service_controller_egtest.mm" ]
   deps = [
     "//base",
     "//components/strings",
@@ -155,9 +151,7 @@ source_set("eg2_tests") {
   ]
   testonly = true
 
-  sources = [
-    "activity_service_controller_egtest.mm",
-  ]
+  sources = [ "activity_service_controller_egtest.mm" ]
 
   deps = [
     "//components/strings",

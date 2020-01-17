@@ -55,18 +55,52 @@ class ArcSmartCardManagerBridge : public KeyedService,
   // SmartCardManagerHost overrides.
   void Refresh(RefreshCallback callback) override;
 
+  // Returns a real SPKI for a dummy SPKI |dummy_spki|.
+  // Returns empty string if the key is unknown.
+  std::string GetRealSpkiForDummySpki(const std::string& dummy_spki);
+
   std::vector<std::string> get_required_cert_names() const {
-    return std::vector<std::string>(required_cert_names_.begin(),
-                                    required_cert_names_.end());
+    return certificate_cache_.get_required_cert_names();
   }
 
   void set_required_cert_names_for_testing(
       const std::vector<std::string>& cert_names) {
-    required_cert_names_ =
-        std::set<std::string>(cert_names.begin(), cert_names.end());
+    certificate_cache_.set_required_cert_names_for_testing(
+        std::set<std::string>(cert_names.begin(), cert_names.end()));
   }
 
  private:
+  class CertificateCache {
+   public:
+    CertificateCache();
+    ~CertificateCache();
+
+    std::vector<net::ScopedCERTCertificate> Update(
+        net::ClientCertIdentityList cert_identities);
+    void Update(std::map<std::string, std::string> dummy_spki_by_name);
+    std::string GetRealSpkiForDummySpki(const std::string& dummy_spki);
+
+    bool need_policy_update() { return need_policy_update_; }
+    void clear_need_policy_update() { need_policy_update_ = false; }
+    std::vector<std::string> get_required_cert_names() const {
+      return std::vector<std::string>(required_cert_names_.begin(),
+                                      required_cert_names_.end());
+    }
+    void set_required_cert_names_for_testing(std::set<std::string> cert_names) {
+      required_cert_names_ = std::move(cert_names);
+    }
+
+   private:
+    bool need_policy_update_ = false;
+    std::set<std::string> required_cert_names_;
+    // Map dummy SPKI to real SPKI.
+    std::map<std::string, std::string> real_spki_by_dummy_spki_cache_;
+    // Map cert name to dummy SPKI.
+    std::map<std::string, std::string> dummy_spki_by_name_cache_;
+    // Intermediate map name to real SPKI.
+    std::map<std::string, std::string> real_spki_by_name_cache_;
+  };
+
   void DidGetCerts(RefreshCallback callback,
                    net::ClientCertIdentityList cert_identities);
 
@@ -75,8 +109,7 @@ class ArcSmartCardManagerBridge : public KeyedService,
 
   std::unique_ptr<chromeos::CertificateProvider> certificate_provider_;
   std::unique_ptr<ArcCertInstaller> installer_;
-
-  std::set<std::string> required_cert_names_;
+  CertificateCache certificate_cache_;
 
   base::WeakPtrFactory<ArcSmartCardManagerBridge> weak_ptr_factory_;
 

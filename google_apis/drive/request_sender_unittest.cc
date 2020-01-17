@@ -34,7 +34,7 @@ class TestAuthService : public DummyAuthService {
  public:
   TestAuthService() : auth_try_count_(0) {}
 
-  void StartAuthentication(const AuthStatusCallback& callback) override {
+  void StartAuthentication(AuthStatusCallback callback) override {
     // RequestSender should clear the rejected access token before starting
     // to request another one.
     EXPECT_FALSE(HasAccessToken());
@@ -45,10 +45,10 @@ class TestAuthService : public DummyAuthService {
       const std::string token =
           kTestAccessToken + base::NumberToString(auth_try_count_);
       set_access_token(token);
-      callback.Run(HTTP_SUCCESS, token);
+      std::move(callback).Run(HTTP_SUCCESS, token);
     } else {
       set_access_token("");
-      callback.Run(HTTP_UNAUTHORIZED, "");
+      std::move(callback).Run(HTTP_UNAUTHORIZED, "");
     }
   }
 

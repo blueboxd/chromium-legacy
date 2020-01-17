@@ -21,7 +21,5 @@ js_library("notifications_internals") {
 }
 
 js_library("notifications_internals_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }

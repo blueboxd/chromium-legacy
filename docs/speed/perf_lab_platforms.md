@@ -9,7 +9,6 @@
  * [android-go-perf](https://ci.chromium.org/p/chrome/builders/ci/android-go-perf): Android O (gobo).
  * [android-go_webview-perf](https://ci.chromium.org/p/chrome/builders/ci/android-go_webview-perf): Android OPM1.171019.021 (gobo).
  * [Android Nexus5 Perf](https://ci.chromium.org/p/chrome/builders/ci/Android%20Nexus5%20Perf): Android KOT49H.
- * [android-nexus5x-perf](https://ci.chromium.org/p/chrome/builders/ci/android-nexus5x-perf): Android MMB29Q.
  * [Android Nexus5X WebView Perf](https://ci.chromium.org/p/chrome/builders/ci/Android%20Nexus5X%20WebView%20Perf): Android AOSP MOB30K.
  * [Android Nexus6 WebView Perf](https://ci.chromium.org/p/chrome/builders/ci/Android%20Nexus6%20WebView%20Perf): Android AOSP MOB30K.
  * [android-pixel2-perf](https://ci.chromium.org/p/chrome/builders/ci/android-pixel2-perf): Android OPM1.171019.021.

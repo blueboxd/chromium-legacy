@@ -106,9 +106,7 @@ source_set("badges_popup_menu") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "badge_mediator_unittest.mm",
-  ]
+  sources = [ "badge_mediator_unittest.mm" ]
   deps = [
     ":badges",
     ":public",

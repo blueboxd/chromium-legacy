@@ -7,6 +7,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/infobars/core/infobar_feature.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/confirm_infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
@@ -17,7 +18,6 @@
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_confirm_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_password_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #import "ios/chrome/browser/ui/infobars/test/test_infobar_password_delegate.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
@@ -70,8 +70,8 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
             std::make_unique<WebStateList>(&web_state_list_delegate_)),
         base_view_controller_([[FakeBaseViewController alloc] init]),
         positioner_([[TestContainerCoordinatorPositioner alloc] init]) {
-    // Enable kInfobarUIReboot flag.
-    feature_list_.InitAndEnableFeature(kInfobarUIReboot);
+    // Enable kIOSInfobarUIReboot flag.
+    feature_list_.InitAndEnableFeature(kIOSInfobarUIReboot);
 
     // Setup WebstateList, Webstate and NavigationManager (Needed for
     // InfobarManager).

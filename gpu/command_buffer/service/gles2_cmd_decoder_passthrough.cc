@@ -925,6 +925,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
         gl::GetRequestableGLExtensionsFromCurrentContext());
 
     static constexpr const char* kRequiredFunctionalityExtensions[] = {
+      "GL_ANGLE_framebuffer_blit",
       "GL_ANGLE_memory_size",
       "GL_ANGLE_native_id",
       "GL_ANGLE_texture_storage_external",
@@ -951,7 +952,6 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
     if (request_optional_extensions_) {
       static constexpr const char* kOptionalFunctionalityExtensions[] = {
           "GL_ANGLE_depth_texture",
-          "GL_ANGLE_framebuffer_blit",
           "GL_ANGLE_framebuffer_multisample",
           "GL_ANGLE_instanced_arrays",
           "GL_ANGLE_pack_reverse_row_order",

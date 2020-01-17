@@ -27,9 +27,9 @@ class LayerTreeHostScrollbarsPixelTest
     : public LayerTreePixelTest,
       public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
  protected:
-  LayerTreeHostScrollbarsPixelTest() = default;
+  LayerTreeHostScrollbarsPixelTest() : LayerTreePixelTest(renderer_type()) {}
 
-  RendererType renderer_type() { return GetParam(); }
+  RendererType renderer_type() const { return GetParam(); }
 
   void SetupTree() override {
     SetInitialDeviceScaleFactor(device_scale_factor_);
@@ -99,8 +99,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, NoScale) {
   layer->SetBounds(gfx::Size(200, 200));
   background->AddChild(layer);
 
-  RunPixelTest(renderer_type(), background,
-               base::FilePath(FILE_PATH_LITERAL("spiral.png")));
+  RunPixelTest(background, base::FilePath(FILE_PATH_LITERAL("spiral.png")));
 }
 
 TEST_P(LayerTreeHostScrollbarsPixelTest, DeviceScaleFactor) {
@@ -118,7 +117,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, DeviceScaleFactor) {
   layer->SetBounds(gfx::Size(100, 100));
   background->AddChild(layer);
 
-  RunPixelTest(renderer_type(), background,
+  RunPixelTest(background,
                base::FilePath(FILE_PATH_LITERAL("spiral_double_scale.png")));
 }
 
@@ -139,7 +138,7 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, TransformScale) {
   scale_transform.Scale(2.0, 2.0);
   layer->SetTransform(scale_transform);
 
-  RunPixelTest(renderer_type(), background,
+  RunPixelTest(background,
                base::FilePath(FILE_PATH_LITERAL("spiral_double_scale.png")));
 }
 
@@ -183,12 +182,13 @@ TEST_P(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   scale_transform.Scale(scale, scale);
   layer->SetTransform(scale_transform);
 
-  if (renderer_type() == RENDERER_SKIA_GL ||
-      renderer_type() == RENDERER_SKIA_VK)
+  if (renderer_type_ == RENDERER_SKIA_GL)
     pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 
-  RunPixelTest(renderer_type(), background,
-               base::FilePath(FILE_PATH_LITERAL("spiral_64_scale.png")));
+  RunPixelTest(background,
+               use_vulkan()
+                   ? base::FilePath(FILE_PATH_LITERAL("spiral_64_scale_vk.png"))
+                   : base::FilePath(FILE_PATH_LITERAL("spiral_64_scale.png")));
 }
 
 class LayerTreeHostOverlayScrollbarsPixelTest
@@ -279,7 +279,7 @@ TEST_P(LayerTreeHostOverlayScrollbarsPixelTest, NinePatchScrollbarScaledUp) {
   layer->SetPosition(gfx::PointF(185, 10));
 
   RunPixelTest(
-      renderer_type(), background,
+      background,
       base::FilePath(FILE_PATH_LITERAL("overlay_scrollbar_scaled_up.png")));
 }
 
@@ -303,7 +303,7 @@ TEST_P(LayerTreeHostOverlayScrollbarsPixelTest, NinePatchScrollbarScaledDown) {
   layer->SetPosition(gfx::PointF(185, 10));
 
   RunPixelTest(
-      renderer_type(), background,
+      background,
       base::FilePath(FILE_PATH_LITERAL("overlay_scrollbar_scaled_down.png")));
 }
 

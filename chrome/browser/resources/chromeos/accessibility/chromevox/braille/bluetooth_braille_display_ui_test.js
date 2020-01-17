@@ -50,7 +50,7 @@ ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype = {
   isAsync: true,
 
   /** @override */
-  setUp: function() {
+  setUp() {
     Msgs = TestMsgs;
   },
 
@@ -63,7 +63,7 @@ ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype = {
    * @param {string} controls The expected controls block.
    * @return {string} The final expectation.
    */
-  buildUIExpectation: function(controls) {
+  buildUIExpectation(controls) {
     return `
       <div>
         <h2>Bluetooth Braille Display</h2>

@@ -15,17 +15,15 @@ namespace storage {
 std::unique_ptr<FileStreamWriter> FileStreamWriter::CreateForMemoryFile(
     base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util,
     const base::FilePath& file_path,
-    int64_t initial_offset,
-    OpenOrCreate open_or_create) {
+    int64_t initial_offset) {
   return base::WrapUnique(new MemoryFileStreamWriter(
-      std::move(memory_file_util), file_path, initial_offset, open_or_create));
+      std::move(memory_file_util), file_path, initial_offset));
 }
 
 MemoryFileStreamWriter::MemoryFileStreamWriter(
     base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util,
     const base::FilePath& file_path,
-    int64_t initial_offset,
-    OpenOrCreate open_or_create)
+    int64_t initial_offset)
     : memory_file_util_(std::move(memory_file_util)),
       file_path_(file_path),
       offset_(initial_offset) {

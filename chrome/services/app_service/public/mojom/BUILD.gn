@@ -5,19 +5,13 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "app_service.mojom",
-  ]
+  sources = [ "app_service.mojom" ]
 
-  public_deps = [
-    ":types",
-  ]
+  public_deps = [ ":types" ]
 }
 
 mojom("types") {
-  sources = [
-    "types.mojom",
-  ]
+  sources = [ "types.mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",

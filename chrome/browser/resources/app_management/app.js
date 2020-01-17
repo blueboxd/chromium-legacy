@@ -27,7 +27,7 @@ Polymer({
   /**
    * @override
    */
-  attached: function() {
+  attached() {
     this.watch('searchTerm_', function(state) {
       return state.search.term;
     });
@@ -43,7 +43,7 @@ Polymer({
 
 
   /** @private */
-  onSearchTermChanged_: function() {
+  onSearchTermChanged_() {
     this.searchField.setValue(this.searchTerm_ || '');
   },
 
@@ -51,7 +51,7 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onSearchChanged_: function(e) {
+  onSearchChanged_(e) {
     const searchTerm = /** @type {string} */ (e.detail);
     if (searchTerm != this.searchTerm_) {
       this.dispatch(app_management.actions.setSearchTerm(searchTerm));
@@ -63,7 +63,7 @@ Polymer({
    * @param {String} searchTerm
    * @private
    */
-  selectedRouteId_: function(currentPage, searchTerm) {
+  selectedRouteId_(currentPage, searchTerm) {
     if (searchTerm) {
       return 'search-view';
     }

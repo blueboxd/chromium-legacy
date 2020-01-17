@@ -155,6 +155,10 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // The maximum number of run loop modes that can be monitored.
   static constexpr int kNumModes = 4;
 
+  // All sources of delayed work scheduling converge to this, using TimeDelta
+  // avoids querying Now() for key callers.
+  void ScheduleDelayedWorkImpl(TimeDelta delta);
+
   // Marking timers as invalid at the right time helps significantly reduce
   // power use (see the comment in RunDelayedWorkTimer()), however there is no
   // public API for doing so. CFRuntime.h states that CFRuntimeBase, upon which
@@ -175,33 +179,32 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   void SetDelayedWorkTimerValid(bool valid);
 
   // Timer callback scheduled by ScheduleDelayedWork.  This does not do any
-  // work, but it signals work_source_ so that delayed work can be performed
+  // work, but it signals |work_source_| so that delayed work can be performed
   // within the appropriate priority constraints.
   static void RunDelayedWorkTimer(CFRunLoopTimerRef timer, void* info);
 
-  // Perform highest-priority work.  This is associated with work_source_
+  // Perform highest-priority work.  This is associated with |work_source_|
   // signalled by ScheduleWork or RunDelayedWorkTimer.  The static method calls
   // the instance method; the instance method returns true if it resignalled
-  // work_source_ to be called again from the loop.
+  // |work_source_| to be called again from the loop.
   static void RunWorkSource(void* info);
   bool RunWork();
 
   // Perform idle-priority work.  This is normally called by PreWaitObserver,
-  // but is also associated with idle_work_source_.  When this function
+  // but is also associated with |idle_work_source_|.  When this function
   // actually does perform idle work, it will resignal that source.  The
-  // static method calls the instance method; the instance method returns
-  // true if idle work was done.
+  // static method calls the instance method.
   static void RunIdleWorkSource(void* info);
-  bool RunIdleWork();
+  void RunIdleWork();
 
   // Perform work that may have been deferred because it was not runnable
   // within a nested run loop.  This is associated with
-  // nesting_deferred_work_source_ and is signalled by
+  // |nesting_deferred_work_source_| and is signalled by
   // MaybeScheduleNestingDeferredWork when returning from a nested loop,
   // so that an outer loop will be able to perform the necessary tasks if it
   // permits nestable tasks.
   static void RunNestingDeferredWorkSource(void* info);
-  bool RunNestingDeferredWork();
+  void RunNestingDeferredWork();
 
   // Schedules possible nesting-deferred work to be processed before the run
   // loop goes to sleep, exits, or begins processing sources at the top of its
@@ -211,24 +214,24 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   void MaybeScheduleNestingDeferredWork();
 
   // Observer callback responsible for performing idle-priority work, before
-  // the run loop goes to sleep.  Associated with idle_work_observer_.
+  // the run loop goes to sleep.  Associated with |pre_wait_observer_|.
   static void PreWaitObserver(CFRunLoopObserverRef observer,
                               CFRunLoopActivity activity, void* info);
 
   // Observer callback called before the run loop processes any sources.
-  // Associated with pre_source_observer_.
+  // Associated with |pre_source_observer_|.
   static void PreSourceObserver(CFRunLoopObserverRef observer,
                                 CFRunLoopActivity activity, void* info);
 
   // Observer callback called when the run loop starts and stops, at the
   // beginning and end of calls to CFRunLoopRun.  This is used to maintain
-  // nesting_level_.  Associated with enter_exit_observer_.
+  // |nesting_level_|.  Associated with |enter_exit_observer_|.
   static void EnterExitObserver(CFRunLoopObserverRef observer,
                                 CFRunLoopActivity activity, void* info);
 
-  // Called by EnterExitObserver after performing maintenance on nesting_level_.
-  // This allows subclasses an opportunity to perform additional processing on
-  // the basis of run loops starting and stopping.
+  // Called by EnterExitObserver after performing maintenance on
+  // |nesting_level_|. This allows subclasses an opportunity to perform
+  // additional processing on the basis of run loops starting and stopping.
   virtual void EnterExitRunLoop(CFRunLoopActivity activity);
 
   // The thread's run loop.
@@ -250,12 +253,6 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // (weak) Delegate passed as an argument to the innermost Run call.
   Delegate* delegate_;
 
-  // The time that delayed_work_timer_ is scheduled to fire.  This is tracked
-  // independently of CFRunLoopTimerGetNextFireDate(delayed_work_timer_)
-  // to be able to reset the timer properly after waking from system sleep.
-  // See PowerStateNotification.
-  CFAbsoluteTime delayed_work_fire_time_;
-
   base::TimerSlack timer_slack_;
 
   // The recursion depth of the currently-executing CFRunLoopRun loop on the
@@ -263,7 +260,7 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // the object was created in.
   int nesting_level_;
 
-  // The recursion depth (calculated in the same way as nesting_level_) of the
+  // The recursion depth (calculated in the same way as |nesting_level_|) of the
   // innermost executing CFRunLoopRun loop started by a call to Run.
   int run_nesting_level_;
 
@@ -306,8 +303,8 @@ class BASE_EXPORT MessagePumpCFRunLoop : public MessagePumpCFRunLoopBase {
   void EnterExitRunLoop(CFRunLoopActivity activity) override;
 
   // True if Quit is called to stop the innermost MessagePump
-  // (innermost_quittable_) but some other CFRunLoopRun loop (nesting_level_)
-  // is running inside the MessagePump's innermost Run call.
+  // (|innermost_quittable_|) but some other CFRunLoopRun loop
+  // (|nesting_level_|) is running inside the MessagePump's innermost Run call.
   bool quit_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpCFRunLoop);

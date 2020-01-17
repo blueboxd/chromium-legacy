@@ -33,6 +33,3 @@ export class ResultSaver {
    */
   async finishSaveVideo(video, name) {}
 }
-
-/** @const */
-cca.models.ResultSaver = ResultSaver;

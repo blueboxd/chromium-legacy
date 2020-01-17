@@ -394,6 +394,9 @@ id<GREYMatcher> SettingsCreditCardMatcher();
 // views.
 id<GREYMatcher> SettingsBottomToolbarDeleteButton();
 
+// Returns a matcher for the search engine button in the main settings view.
+id<GREYMatcher> SettingsSearchEngineButton();
+
 // Returns a matcher for an autofill suggestion view.
 id<GREYMatcher> AutofillSuggestionViewMatcher();
 

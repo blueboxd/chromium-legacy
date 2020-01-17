@@ -167,6 +167,9 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   bool dictation_active() const { return dictation_active_; }
 
+  // Returns true if accessibility shortcuts have been disabled.
+  bool accessibility_shortcuts_enabled() const { return shortcuts_enabled_; }
+
   // Triggers an accessibility alert to give the user feedback.
   void TriggerAccessibilityAlert(AccessibilityAlert alert);
 
@@ -292,6 +295,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void UpdateSwitchAccessAutoScanKeyboardSpeedFromPref();
   void UpdateVirtualKeyboardFromPref();
   void UpdateAccessibilityHighlightingFromPrefs();
+  void UpdateShortcutsEnabledFromPref();
 
   void MaybeCreateSelectToSpeakEventHandler();
   void MaybeCreateSwitchAccessEventHandler();
@@ -321,6 +325,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   bool switch_access_enabled_ = false;
   bool virtual_keyboard_enabled_ = false;
   bool dictation_active_ = false;
+  bool shortcuts_enabled_ = true;
 
   SelectToSpeakState select_to_speak_state_ =
       SelectToSpeakState::kSelectToSpeakStateInactive;

@@ -92,7 +92,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // content::PushMessagingService implementation:
   void SubscribeFromDocument(const GURL& requesting_origin,
                              int64_t service_worker_registration_id,
-                             int renderer_id,
+                             int render_process_id,
                              int render_frame_id,
                              blink::mojom::PushSubscriptionOptionsPtr options,
                              bool user_gesture,
@@ -168,6 +168,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void DoSubscribe(const PushMessagingAppIdentifier& app_identifier,
                    blink::mojom::PushSubscriptionOptionsPtr options,
                    RegisterCallback callback,
+                   int render_process_id,
+                   int render_frame_id,
                    ContentSetting permission_status);
 
   void SubscribeEnd(RegisterCallback callback,

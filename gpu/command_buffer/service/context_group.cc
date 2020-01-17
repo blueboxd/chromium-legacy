@@ -126,7 +126,8 @@ ContextGroup::ContextGroup(
       shared_image_representation_factory_(
           std::make_unique<SharedImageRepresentationFactory>(
               shared_image_manager,
-              memory_tracker_.get())) {
+              memory_tracker_.get())),
+      shared_image_manager_(shared_image_manager) {
   DCHECK(discardable_manager);
   DCHECK(feature_info_);
   DCHECK(mailbox_manager_);

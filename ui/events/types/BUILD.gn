@@ -3,7 +3,5 @@
 # found in the LICENSE file.
 
 source_set("headers") {
-  sources = [
-    "scroll_types.h",
-  ]
+  sources = [ "scroll_types.h" ]
 }

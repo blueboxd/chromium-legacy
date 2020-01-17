@@ -48,7 +48,7 @@ Polymer({
    * @private
    * @return {string}
    */
-  getExplanationText_: function() {
+  getExplanationText_() {
     if (this.isTriggered_) {
       return loadTimeData.getStringF(
           'triggeredResetPageExplanation', this.triggeredResetToolName_);
@@ -60,7 +60,7 @@ Polymer({
    * @private
    * @return {string}
    */
-  getPageTitle_: function() {
+  getPageTitle_() {
     if (this.isTriggered_) {
       return loadTimeData.getStringF(
           'triggeredResetPageTitle', this.triggeredResetToolName_);
@@ -69,7 +69,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = settings.ResetBrowserProxyImpl.getInstance();
 
     this.addEventListener('cancel', () => {
@@ -81,16 +81,16 @@ Polymer({
   },
 
   /** @private */
-  showDialog_: function() {
+  showDialog_() {
     if (!this.$.dialog.open) {
       this.$.dialog.showModal();
     }
     this.browserProxy_.onShowResetProfileDialog();
   },
 
-  show: function() {
-    this.isTriggered_ =
-        settings.getCurrentRoute() == settings.routes.TRIGGERED_RESET_DIALOG;
+  show() {
+    this.isTriggered_ = settings.Router.getInstance().getCurrentRoute() ==
+        settings.routes.TRIGGERED_RESET_DIALOG;
     if (this.isTriggered_) {
       this.browserProxy_.getTriggeredResetToolName().then(name => {
         this.resetRequestOrigin_ = 'triggeredreset';
@@ -103,25 +103,25 @@ Polymer({
       // with the startup URL chrome://settings/resetProfileSettings#cct.
       const origin = window.location.hash.slice(1).toLowerCase() == 'cct' ?
           'cct' :
-          settings.getQueryParameters().get('origin');
+          settings.Router.getInstance().getQueryParameters().get('origin');
       this.resetRequestOrigin_ = origin || '';
       this.showDialog_();
     }
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.cancel();
   },
 
-  cancel: function() {
+  cancel() {
     if (this.$.dialog.open) {
       this.$.dialog.cancel();
     }
   },
 
   /** @private */
-  onResetTap_: function() {
+  onResetTap_() {
     this.clearingInProgress_ = true;
     this.browserProxy_
         .performResetProfileSettings(
@@ -140,7 +140,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onShowReportedSettingsTap_: function(e) {
+  onShowReportedSettingsTap_(e) {
     this.browserProxy_.showReportedSettings();
     e.stopPropagation();
   },

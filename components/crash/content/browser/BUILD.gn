@@ -63,9 +63,7 @@ source_set("browser") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "crash_metrics_reporter_android_unittest.cc",
-  ]
+  sources = [ "crash_metrics_reporter_android_unittest.cc" ]
   deps = [
     ":browser",
     "//base/test:test_support",

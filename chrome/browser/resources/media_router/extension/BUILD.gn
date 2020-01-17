@@ -14,9 +14,7 @@ if (enable_media_router_jscompile) {
                "src/externs.js",
                "src/mojo_externs.js",
              ]
-    outputs = [
-      target_gen_dir + "/$target_name.stamp",
-    ]
+    outputs = [ target_gen_dir + "/$target_name.stamp" ]
     args = [
              "--out_file",
              rebase_path(outputs[0], root_build_dir),
@@ -47,12 +45,8 @@ action("media_router_modules") {
 }
 
 copy("copy_prelude") {
-  sources = [
-    "prelude.js",
-  ]
-  outputs = [
-    "${target_gen_dir}/prelude.js",
-  ]
+  sources = [ "prelude.js" ]
+  outputs = [ "${target_gen_dir}/prelude.js" ]
 }
 
 # Produce the Media Router extension.  At present, the extension isn't
@@ -60,12 +54,8 @@ copy("copy_prelude") {
 # Chromium for testing.
 action("media_router") {
   script = "generate_manifest.py"
-  inputs = [
-    "manifest.yaml",
-  ]
-  outputs = [
-    "$target_gen_dir/manifest.json",
-  ]
+  inputs = [ "manifest.yaml" ]
+  outputs = [ "$target_gen_dir/manifest.json" ]
   data_deps = [
     ":copy_prelude",
     ":media_router_modules",

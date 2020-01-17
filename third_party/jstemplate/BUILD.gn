@@ -8,13 +8,9 @@ js_library("util") {
 }
 
 js_library("jsevalcontext") {
-  deps = [
-    ":util",
-  ]
+  deps = [ ":util" ]
 }
 
 js_library("jstemplate") {
-  deps = [
-    ":jsevalcontext",
-  ]
+  deps = [ ":jsevalcontext" ]
 }

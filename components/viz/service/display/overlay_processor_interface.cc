@@ -77,7 +77,9 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     SkiaOutputSurface* skia_output_surface,
     gpu::SurfaceHandle surface_handle,
     const OutputSurface::Capabilities& capabilities,
-    const RendererSettings& renderer_settings) {
+    const RendererSettings& renderer_settings,
+    scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
+    gpu::SharedImageInterface* shared_image_interface) {
 #if defined(OS_MACOSX)
   bool could_overlay = surface_handle != gpu::kNullSurfaceHandle;
   could_overlay &= capabilities.supports_surfaceless;
@@ -104,23 +106,22 @@ OverlayProcessorInterface::CreateOverlayProcessor(
   }
   return std::make_unique<OverlayProcessorOzone>(
       overlay_enabled, std::move(overlay_candidates),
-      std::move(renderer_settings.overlay_strategies));
+      std::move(renderer_settings.overlay_strategies), shared_image_interface);
 #elif defined(OS_ANDROID)
+  bool overlay_enabled = surface_handle != gpu::kNullSurfaceHandle;
   if (capabilities.supports_surfaceless) {
     // This is for Android SurfaceControl case.
-    bool overlay_enabled = surface_handle != gpu::kNullSurfaceHandle;
     return std::make_unique<OverlayProcessorSurfaceControl>(overlay_enabled);
   } else {
-    bool overlay_enabled = surface_handle != gpu::kNullSurfaceHandle;
-    // When SurfaceControl is enabled, any resource backed by an
-    // AHardwareBuffer can be marked as an overlay candidate but it requires
+    // When SurfaceControl is enabled, any resource backed by
+    // an AHardwareBuffer can be marked as an overlay candidate but it requires
     // that we use a SurfaceControl backed GLSurface. If we're creating a
     // native window backed GLSurface, the overlay processing code will
     // incorrectly assume these resources can be overlaid. So we disable all
     // overlay processing for this OutputSurface.
     overlay_enabled &= !capabilities.android_surface_control_feature_enabled;
-    return std::make_unique<OverlayProcessorAndroid>(skia_output_surface,
-                                                     overlay_enabled);
+    return std::make_unique<OverlayProcessorAndroid>(
+        skia_output_surface, gpu_task_scheduler, overlay_enabled);
   }
 #else  // Default
   return std::make_unique<OverlayProcessorStub>();
@@ -150,5 +151,8 @@ OverlayProcessorInterface::ProcessOutputSurfaceAsOverlay(
 #endif
   return overlay_plane;
 }
+
+void OverlayProcessorInterface::ScheduleOverlays(
+    DisplayResourceProvider* display_resource_provider) {}
 
 }  // namespace viz

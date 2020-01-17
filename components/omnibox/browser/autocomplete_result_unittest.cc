@@ -1797,8 +1797,7 @@ TEST_F(AutocompleteResultTest, PedalSuggestionsRemainUnique) {
 
   FakeAutocompleteProviderClient client;
   result.AppendDedicatedPedalMatches(&client, input);
-  result.DeduplicateMatches(metrics::OmniboxEventProto::OTHER,
-                            &result.matches_);
+  result.DeduplicateMatches(&result.matches_);
 
   // Exactly 2 (not 3) unique Pedals should be added with relevance close to max
   // of the triggering suggestions.
@@ -1813,8 +1812,7 @@ TEST_F(AutocompleteResultTest, PedalSuggestionsRemainUnique) {
   // no duplicates are added, but the existing Pedal suggestion is updated.
   result.match_at(3)->contents = base::UTF8ToUTF16("open incognito tab");
   result.AppendDedicatedPedalMatches(&client, input);
-  result.DeduplicateMatches(metrics::OmniboxEventProto::OTHER,
-                            &result.matches_);
+  result.DeduplicateMatches(&result.matches_);
   EXPECT_EQ(result.size(), 6u);
   EXPECT_NE(result.match_at(4)->pedal, nullptr);
   EXPECT_NE(result.match_at(5)->pedal, nullptr);

@@ -26,6 +26,7 @@ namespace device {
 class BluetoothAdapterWinrt;
 class BluetoothGattDiscovererWinrt;
 class BluetoothPairingWinrt;
+class BluetoothUUID;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
  public:
@@ -94,7 +95,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
 
  protected:
   // BluetoothDevice:
-  void CreateGattConnectionImpl() override;
+  void CreateGattConnectionImpl(
+      base::Optional<BluetoothUUID> service_uuid) override;
+  void UpgradeToFullDiscovery() override;
   void DisconnectGatt() override;
 
   // This is declared virtual so that they can be overridden by tests.
@@ -122,6 +125,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
       ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice* ble_device,
       IInspectable* object);
 
+  void StartGattDiscovery();
   void OnGattDiscoveryComplete(bool success);
 
   void ClearGattServices();
@@ -135,6 +139,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
 
   std::unique_ptr<BluetoothPairingWinrt> pairing_;
 
+  bool pending_on_from_bluetooth_address_ = false;
+  base::Optional<BluetoothUUID> target_uuid_;
   std::unique_ptr<BluetoothGattDiscovererWinrt> gatt_discoverer_;
 
   base::Optional<EventRegistrationToken> connection_changed_token_;

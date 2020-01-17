@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Resolution,
-        ResolutionList,  // eslint-disable-line no-unused-vars
+import {
+  FpsRangeList,  // eslint-disable-line no-unused-vars
+  Resolution,
+  ResolutionList,  // eslint-disable-line no-unused-vars
+  VideoConfig,     // eslint-disable-line no-unused-vars
 } from '../type.js';
 
 /**
@@ -161,7 +164,7 @@ export class DeviceOperator {
    * Gets supported video configurations for specific camera.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @return {!Promise<!Array<cca.VideoConfig>>} Promise of supported video
+   * @return {!Promise<!Array<VideoConfig>>} Promise of supported video
    *     configurations.
    * @throws {Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
@@ -217,7 +220,7 @@ export class DeviceOperator {
    * Gets supported fps ranges for specific camera.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @return {!Promise<!cca.FpsRangeList>} Promise of supported fps ranges.
+   * @return {!Promise<!FpsRangeList>} Promise of supported fps ranges.
    *     Each range is represented as [min, max].
    * @throws {Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
@@ -239,7 +242,7 @@ export class DeviceOperator {
       throw new Error('Unexpected length of available fps range configs');
     }
 
-    const /** !cca.FpsRangeList */ supportedFpsRanges = [];
+    const /** !FpsRangeList */ supportedFpsRanges = [];
     for (let i = 0; i < availableFpsRanges.length; i += numElementPerEntry) {
       const [minFps, maxFps] =
           availableFpsRanges.slice(i, i + numElementPerEntry);
@@ -433,7 +436,7 @@ export class DeviceOperator {
   async setReprocessOption(deviceId, effect) {
     const device = await this.getDevice_(deviceId);
     const {status, blob} = await device.setReprocessOption(effect);
-    if (blob === null) {
+    if (blob === null || status !== 0) {
       throw new Error('Set reprocess failed: ' + status);
     }
     return blob;
@@ -462,8 +465,3 @@ export class DeviceOperator {
     return await this.getInstance() !== null;
   }
 }
-
-/** @const */
-cca.mojo.DeviceOperator = DeviceOperator;
-/** @const */
-cca.mojo.parseMetadata = parseMetadata;

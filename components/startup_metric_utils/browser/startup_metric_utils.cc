@@ -17,7 +17,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -233,30 +232,6 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count) {
         g_startup_temperature);                                               \
   } while (0)
 
-// Returns the system uptime on process launch.
-base::TimeDelta GetSystemUptimeOnProcessLaunch() {
-  // Process launch time is not available on Android.
-  if (g_process_creation_ticks.is_null())
-    return base::TimeDelta();
-
-  // base::SysInfo::Uptime returns the time elapsed between system boot and now.
-  // Substract the time elapsed between process launch and now to get the time
-  // elapsed between system boot and process launch.
-  return base::SysInfo::Uptime() -
-         (base::TimeTicks::Now() - g_process_creation_ticks);
-}
-
-void RecordSystemUptimeHistogram() {
-  const base::TimeDelta system_uptime_on_process_launch =
-      GetSystemUptimeOnProcessLaunch();
-  if (system_uptime_on_process_launch.is_zero())
-    return;
-
-  UMA_HISTOGRAM_WITH_TEMPERATURE(UMA_HISTOGRAM_LONG_TIMES_100,
-                                 "Startup.SystemUptime",
-                                 GetSystemUptimeOnProcessLaunch());
-}
-
 // On Windows, records the number of hard-faults that have occurred in the
 // current chrome.exe process since it was started. This is a nop on other
 // platforms.
@@ -416,7 +391,6 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   }
 
   AddStartupEventsForTelemetry();
-  RecordSystemUptimeHistogram();
 
   // Record values stored prior to startup temperature evaluation.
   if (ShouldLogStartupHistogram()) {

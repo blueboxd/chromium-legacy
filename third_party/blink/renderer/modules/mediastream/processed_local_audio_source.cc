@@ -20,9 +20,10 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_audio_processor.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/audio_service_audio_processor_proxy.h"
@@ -98,7 +99,7 @@ std::string GetAudioProcesingPropertiesLogString(
 }  // namespace
 
 ProcessedLocalAudioSource::ProcessedLocalAudioSource(
-    WebLocalFrame* web_frame,
+    LocalFrame* frame,
     const blink::MediaStreamDevice& device,
     bool disable_local_echo,
     const blink::AudioProcessingProperties& audio_processing_properties,
@@ -107,8 +108,7 @@ ProcessedLocalAudioSource::ProcessedLocalAudioSource(
     : blink::MediaStreamAudioSource(std::move(task_runner),
                                     true /* is_local_source */,
                                     disable_local_echo),
-      internal_consumer_frame_(
-          std::make_unique<MediaStreamInternalFrameWrapper>(web_frame)),
+      consumer_frame_(frame),
       audio_processing_properties_(audio_processing_properties),
       started_callback_(std::move(started_callback)),
       volume_(0),
@@ -156,8 +156,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
 
   // Sanity-check that the consuming RenderFrame still exists. This is required
   // to initialize the audio source.
-  if (!allow_invalid_render_frame_id_for_testing_ &&
-      !internal_consumer_frame_->frame()) {
+  if (!allow_invalid_render_frame_id_for_testing_ && !consumer_frame_) {
     SendLogMessageWithSessionId(
         "EnsureSourceIsStarted() => (ERROR: "
         " render frame does not exist)");
@@ -312,9 +311,10 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
       "input_parameters=[%s], output_parameters=[%s])",
       params.AsHumanReadableString().c_str(),
       GetAudioParameters().AsHumanReadableString().c_str()));
+  auto* web_frame =
+      static_cast<WebLocalFrame*>(WebFrame::FromFrame(consumer_frame_));
   scoped_refptr<media::AudioCapturerSource> new_source =
-      Platform::Current()->NewAudioCapturerSource(
-          internal_consumer_frame_->web_frame(), source_params);
+      Platform::Current()->NewAudioCapturerSource(web_frame, source_params);
   new_source->Initialize(params, this);
   // We need to set the AGC control before starting the stream.
   new_source->SetAutomaticGainControl(true);

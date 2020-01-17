@@ -635,8 +635,8 @@ void WebApkInstaller::OnHaveSufficientSpaceForInstall() {
       GetURLLoaderFactory(browser_context_),
       url::Origin::Create(install_shortcut_info_->url),
       install_shortcut_info_->best_primary_icon_url,
-      base::Bind(&WebApkInstaller::OnGotPrimaryIconMurmur2Hash,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&WebApkInstaller::OnGotPrimaryIconMurmur2Hash,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebApkInstaller::OnGotPrimaryIconMurmur2Hash(
@@ -654,8 +654,9 @@ void WebApkInstaller::OnGotPrimaryIconMurmur2Hash(
         GetURLLoaderFactory(browser_context_),
         url::Origin::Create(install_shortcut_info_->url),
         install_shortcut_info_->best_badge_icon_url,
-        base::Bind(&WebApkInstaller::OnGotBadgeIconMurmur2Hash,
-                   weak_ptr_factory_.GetWeakPtr(), true, primary_icon_hash));
+        base::BindOnce(&WebApkInstaller::OnGotBadgeIconMurmur2Hash,
+                       weak_ptr_factory_.GetWeakPtr(), true,
+                       primary_icon_hash));
   } else {
     OnGotBadgeIconMurmur2Hash(false, primary_icon_hash, "");
   }

@@ -61,13 +61,13 @@ AssistantCardElementView::AssistantCardElementView(
     : delegate_(delegate), card_element_(card_element) {
   InitLayout(card_element);
 
-  // We observe contents() to receive events pertaining to the underlying web
-  // contents including auto-resize and suppressed navigation events.
-  contents()->AddObserver(this);
+  // We observe contents_view() to receive events pertaining to the underlying
+  // WebContents including focus change and suppressed navigation events.
+  contents_view()->AddObserver(this);
 }
 
 AssistantCardElementView::~AssistantCardElementView() {
-  contents()->RemoveObserver(this);
+  contents_view()->RemoveObserver(this);
 }
 
 const char* AssistantCardElementView::GetClassName() const {
@@ -100,17 +100,6 @@ void AssistantCardElementView::AddedToWidget() {
 
 void AssistantCardElementView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
-}
-
-void AssistantCardElementView::AboutToRequestFocusFromTabTraversal(
-    bool reverse) {
-  // Focus in the web contents will be reset in FocusThroughTabTraversal().
-  focused_node_rect_ = gfx::Rect();
-  contents()->FocusThroughTabTraversal(reverse);
-}
-
-void AssistantCardElementView::OnFocus() {
-  contents()->Focus();
 }
 
 void AssistantCardElementView::OnGestureEvent(ui::GestureEvent* event) {
@@ -174,10 +163,6 @@ void AssistantCardElementView::ScrollRectToVisible(const gfx::Rect& rect) {
   views::View::ScrollRectToVisible(focused_node_rect_);
 }
 
-void AssistantCardElementView::DidAutoResizeView(const gfx::Size& new_size) {
-  contents()->GetView()->view()->SetPreferredSize(new_size);
-}
-
 void AssistantCardElementView::DidSuppressNavigation(
     const GURL& url,
     WindowOpenDisposition disposition,
@@ -205,8 +190,7 @@ void AssistantCardElementView::DidSuppressNavigation(
   delegate_->OpenUrlFromView(url);
 }
 
-void AssistantCardElementView::FocusedNodeChanged(
-    bool is_editable_node,
+void AssistantCardElementView::DidChangeFocusedNode(
     const gfx::Rect& node_bounds_in_screen) {
   // TODO(b/143985066): Card has element with empty bounds, e.g. the line break.
   if (node_bounds_in_screen.IsEmpty())
@@ -224,14 +208,14 @@ void AssistantCardElementView::InitLayout(
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Contents view.
-  AddChildView(contents()->GetView()->view());
+  AddChildView(contents_view());
 
   // OverrideDescription() doesn't work. Only names are read automatically.
   GetViewAccessibility().OverrideName(card_element->fallback());
 }
 
-content::NavigableContents* AssistantCardElementView::contents() {
-  return const_cast<content::NavigableContents*>(card_element_->contents());
+AssistantWebView2* AssistantCardElementView::contents_view() {
+  return const_cast<AssistantWebView2*>(card_element_->contents_view());
 }
 
 }  // namespace ash

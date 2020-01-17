@@ -186,12 +186,8 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     cardholder_name_label_row->AddChildView(cardholder_name_label.release());
 
     // Prepare the prefilled cardholder name.
-    base::string16 prefilled_name;
-    if (!base::FeatureList::IsEnabled(
-            features::kAutofillUpstreamBlankCardholderNameField)) {
-      prefilled_name =
-          base::UTF8ToUTF16(controller()->GetAccountInfo().full_name);
-    }
+    base::string16 prefilled_name =
+        base::UTF8ToUTF16(controller()->GetAccountInfo().full_name);
 
     // Set up cardholder name label tooltip ONLY if the cardholder name
     // textfield will be prefilled and sync transport for Wallet data is not

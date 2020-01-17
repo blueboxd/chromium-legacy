@@ -264,7 +264,8 @@ void BluetoothDeviceAndroid::CreateGattRemoteService(
 BluetoothDeviceAndroid::BluetoothDeviceAndroid(BluetoothAdapterAndroid* adapter)
     : BluetoothDevice(adapter) {}
 
-void BluetoothDeviceAndroid::CreateGattConnectionImpl() {
+void BluetoothDeviceAndroid::CreateGattConnectionImpl(
+    base::Optional<device::BluetoothUUID> service_uuid) {
   Java_ChromeBluetoothDevice_createGattConnectionImpl(AttachCurrentThread(),
                                                       j_device_);
 }

@@ -31,9 +31,7 @@ component("power") {
 
 source_set("test_support") {
   testonly = true
-  public_deps = [
-    ":power",
-  ]
+  public_deps = [ ":power" ]
   deps = [
     ":power_manager_proto",
     "//base",

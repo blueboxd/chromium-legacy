@@ -51,7 +51,7 @@
                 android:ellipsize="none"
                 android:singleLine="true"
                 android:textAppearance="@style/TextAppearance.BlackTitle2"/>
-            <org.chromium.chrome.browser.ui.widget.RoundedCornerImageView
+            <org.chromium.components.browser_ui.widget.RoundedCornerImageView
                 android:id="@+id/tab_thumbnail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

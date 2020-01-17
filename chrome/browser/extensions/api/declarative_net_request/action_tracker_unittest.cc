@@ -49,7 +49,8 @@ class ActionTrackerTest : public DNRTestBase {
   // Helper to load an extension. |has_feedback_permission| specifies whether
   // the extension will have the declarativeNetRequestFeedback permission.
   void LoadExtension(const std::string& extension_dirname,
-                     bool has_feedback_permission) {
+                     bool has_feedback_permission,
+                     bool has_active_tab_permission) {
     base::FilePath extension_dir =
         temp_dir().GetPath().AppendASCII(extension_dirname);
 
@@ -59,7 +60,8 @@ class ActionTrackerTest : public DNRTestBase {
         extension_dir, kJSONRulesetFilepath, kJSONRulesFilename,
         std::vector<TestRule>(),
         std::vector<std::string>({URLPattern::kAllUrlsPattern}),
-        false /* has_background_script */, has_feedback_permission);
+        false /* has_background_script */, has_feedback_permission,
+        has_active_tab_permission);
 
     last_loaded_extension_ =
         CreateExtensionLoader()->LoadExtension(extension_dir);
@@ -106,27 +108,46 @@ class ActionTrackerTest : public DNRTestBase {
   std::unique_ptr<ActionTracker> action_tracker_;
 };
 
-// Test that rules matched will only be recorded for extensions with the
-// declarativeNetRequestFeedback permission.
+// Test that rules matched will be recorded for extensions with the
+// declarativeNetRequestFeedback or activeTab permission.
 TEST_P(ActionTrackerTest, GetMatchedRulesNoPermission) {
   // Load an extension with the declarativeNetRequestFeedback permission.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadExtension("test_extension", true /* has_feedback_permission */));
+  ASSERT_NO_FATAL_FAILURE(LoadExtension("test_extension",
+                                        true /* has_feedback_permission */,
+                                        false /* has_active_tab_permission */));
   const Extension* extension_1 = last_loaded_extension();
+
+  // Load an extension without the declarativeNetRequestFeedback permission.
+  ASSERT_NO_FATAL_FAILURE(LoadExtension("test_extension_2",
+                                        false /* has_feedback_permission */,
+                                        false /* has_active_tab_permission */));
+  const Extension* extension_2 = last_loaded_extension();
+
+  // Load an extension without the declarativeNetRequestFeedback permission but
+  // with the activeTab permission.
+  ASSERT_NO_FATAL_FAILURE(LoadExtension("test_extension_3",
+                                        false /* has_feedback_permission */,
+                                        true /* has_active_tab_permission */));
+  const Extension* extension_3 = last_loaded_extension();
 
   const int tab_id = 1;
 
   // Record a rule match for a main-frame navigation request.
   WebRequestInfo request_1(GetRequestParamsForURL(
       "http://one.com", content::ResourceType::kMainFrame, tab_id));
-  action_tracker()->OnRuleMatched(CreateRequestAction(extension_1->id()),
-                                  request_1);
 
   // Record a rule match for a non-navigation request.
   WebRequestInfo request_2(GetRequestParamsForURL(
       "http://one.com", content::ResourceType::kSubResource, tab_id));
-  action_tracker()->OnRuleMatched(CreateRequestAction(extension_1->id()),
-                                  request_2);
+
+  // Assume a rule is matched for |request_1| and |request_2| for all three
+  // extensions.
+  for (const Extension* extension : {extension_1, extension_2, extension_3}) {
+    action_tracker()->OnRuleMatched(CreateRequestAction(extension->id()),
+                                    request_1);
+    action_tracker()->OnRuleMatched(CreateRequestAction(extension->id()),
+                                    request_2);
+  }
 
   // For |extension_1|, one rule match should be recorded for |rules_tracked_|
   // and one for |pending_navigation_actions_|.
@@ -135,22 +156,18 @@ TEST_P(ActionTrackerTest, GetMatchedRulesNoPermission) {
   EXPECT_EQ(1, action_tracker()->GetPendingRuleCountForTest(extension_1->id(),
                                                             kNavigationId));
 
-  // Load an extension without the declarativeNetRequestFeedback permission.
-  ASSERT_NO_FATAL_FAILURE(
-      LoadExtension("test_extension_2", false /* has_feedback_permission */));
-  const Extension* extension_2 = last_loaded_extension();
-
-  // The same requests are matched for |extension_2|.
-  action_tracker()->OnRuleMatched(CreateRequestAction(extension_2->id()),
-                                  request_1);
-  action_tracker()->OnRuleMatched(CreateRequestAction(extension_2->id()),
-                                  request_2);
-
   // Since |extension_2| does not have the feedback permission, no rule matches
   // should be recorded.
   EXPECT_EQ(0, action_tracker()->GetMatchedRuleCountForTest(extension_2->id(),
                                                             tab_id));
   EXPECT_EQ(0, action_tracker()->GetPendingRuleCountForTest(extension_2->id(),
+                                                            kNavigationId));
+
+  // While |extension_3| does not have the feedback permission, it does have the
+  // activeTab permission and therefore rule matches should be recorded.
+  EXPECT_EQ(1, action_tracker()->GetMatchedRuleCountForTest(extension_3->id(),
+                                                            tab_id));
+  EXPECT_EQ(1, action_tracker()->GetPendingRuleCountForTest(extension_3->id(),
                                                             kNavigationId));
 
   // Clean up the internal state of |action_tracker_|.

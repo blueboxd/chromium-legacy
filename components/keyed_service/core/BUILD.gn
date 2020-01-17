@@ -47,9 +47,7 @@ component("core") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "dependency_graph_unittest.cc",
-  ]
+  sources = [ "dependency_graph_unittest.cc" ]
   deps = [
     ":core",
     "//base",

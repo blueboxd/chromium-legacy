@@ -8,7 +8,7 @@ import android.content.Context;
 import android.view.View;
 
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.NavigationHistory;
 
@@ -40,13 +40,11 @@ public interface NavigationSheet {
      * @param rootView Root view whose dimension is used for the sheet.
      * @param context {@link Context} used to retrieve resources.
      * @param bottomSheetController {@link BottomSheetController} object.
-     * @param delegate Delegate used by navigation sheet to perform actions.
      * @return NavigationSheet object.
      */
-    public static NavigationSheet create(View rootView, Context context,
-            Supplier<BottomSheetController> bottomSheetController,
-            NavigationSheet.Delegate delegate) {
-        return new NavigationSheetCoordinator(rootView, context, bottomSheetController, delegate);
+    public static NavigationSheet create(
+            View rootView, Context context, Supplier<BottomSheetController> bottomSheetController) {
+        return new NavigationSheetCoordinator(rootView, context, bottomSheetController);
     }
 
     /**
@@ -72,6 +70,9 @@ public interface NavigationSheet {
      * Dummy object that does nothing. Saves lots of null checks.
      */
     static final NavigationSheet DUMMY = new NavigationSheet() {
+        @Override
+        public void setDelegate(Delegate delegate) {}
+
         @Override
         public void start(boolean forward, boolean showCloseIndicator) {}
 
@@ -99,6 +100,12 @@ public interface NavigationSheet {
             return false;
         }
     };
+
+    /**
+     * Set a new {@link Delegate} object whenever the dependency is updated.
+     * @param delegate Delegate used by navigation sheet to perform actions.
+     */
+    void setDelegate(Delegate delegate);
 
     /**
      * Get the navigation sheet ready as the gesture starts.

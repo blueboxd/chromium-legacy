@@ -151,7 +151,7 @@
         Failed to copy to the clipboard
       </message>
       <message name="IDS_URL_COPIED" desc="Notification telling the user that the url has been copied to clipboard. [CHAR-LIMIT=32]">
-        URL copied.
+        URL copied
       </message>
     </messages>
   </release>

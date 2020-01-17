@@ -13,9 +13,9 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
+#include "components/optimization_guide/memory_hint.h"
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/optimization_guide/url_keyed_hint.h"
 
 class GURL;
 
@@ -128,10 +128,10 @@ class HintCache {
  private:
   using HostKeyedHintCache =
       base::HashingMRUCache<OptimizationGuideStore::EntryKey,
-                            std::unique_ptr<proto::Hint>>;
+                            std::unique_ptr<MemoryHint>>;
 
   using URLKeyedHintCache =
-      base::HashingMRUCache<std::string, std::unique_ptr<URLKeyedHint>>;
+      base::HashingMRUCache<std::string, std::unique_ptr<MemoryHint>>;
 
   // The callback run after the store finishes initialization. This then runs
   // the callback initially provided by the Initialize() call.
@@ -144,7 +144,7 @@ class HintCache {
   void OnLoadStoreHint(
       HintLoadedCallback callback,
       const OptimizationGuideStore::EntryKey& store_hint_entry_key,
-      std::unique_ptr<proto::Hint> hint);
+      std::unique_ptr<MemoryHint> hint);
 
   // The backing store used with this hint cache. Set during construction.
   const std::unique_ptr<OptimizationGuideStore> optimization_guide_store_;

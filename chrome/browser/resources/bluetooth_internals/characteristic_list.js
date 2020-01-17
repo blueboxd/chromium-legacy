@@ -73,7 +73,7 @@ cr.define('characteristic_list', function() {
      * two fieldsets for displaying property values.
      * @override
      */
-    decorate: function() {
+    decorate() {
       this.classList.add('characteristic-list-item');
 
       /** @private {!object_fieldset.ObjectFieldSet} */
@@ -187,7 +187,7 @@ cr.define('characteristic_list', function() {
     },
 
     /** @override */
-    onExpandInternal: function(expanded) {
+    onExpandInternal(expanded) {
       this.descriptorList_.load(
           this.deviceAddress_, this.serviceId_, this.info.id);
     },
@@ -204,7 +204,7 @@ cr.define('characteristic_list', function() {
     __proto__: ExpandableList.prototype,
 
     /** @override */
-    decorate: function() {
+    decorate() {
       ExpandableList.prototype.decorate.call(this);
 
       /** @private {?string} */
@@ -218,7 +218,7 @@ cr.define('characteristic_list', function() {
       this.setEmptyMessage('No Characteristics Found');
     },
 
-    createItem: function(data) {
+    createItem(data) {
       return new CharacteristicListItem(
           data, assert(this.deviceAddress_), assert(this.serviceId_));
     },
@@ -230,7 +230,7 @@ cr.define('characteristic_list', function() {
      * @param {string} deviceAddress
      * @param {string} serviceId
      */
-    load: function(deviceAddress, serviceId) {
+    load(deviceAddress, serviceId) {
       if (this.characteristicsRequested_ || !this.isSpinnerShowing()) {
         return;
       }

@@ -192,9 +192,7 @@ static_library("test_support") {
     "test_sync_user_settings.h",
   ]
 
-  public_deps = [
-    "//components/sync/base:test_support",
-  ]
+  public_deps = [ "//components/sync/base:test_support" ]
 
   deps = [
     "//components/invalidation/impl:test_support",

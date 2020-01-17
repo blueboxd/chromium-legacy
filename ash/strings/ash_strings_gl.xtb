@@ -46,7 +46,7 @@
 <translation id="1460620680449458626">O volume está silenciado.</translation>
 <translation id="1467432559032391204">Esquerda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Opción activada</translation>
+<translation id="1508507608940204251">Si</translation>
 <translation id="1516740043221086139">Está activado o modo Non molestar.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostrar a configuración de notificacións. Están desactivadas para unha aplicación}other{Mostrar a configuración de notificacións. Están desactivadas para # aplicacións}}</translation>
 <translation id="1525508553941733066">IGNORAR</translation>
@@ -71,7 +71,7 @@
 <translation id="1836215606488044471">Asistente (cargando...)</translation>
 <translation id="1838895407229022812">A función Luz nocturna está desactivada.</translation>
 <translation id="1850504506766569011">A wifi está desactivada.</translation>
-<translation id="1859889070386344428">Opción desactivada</translation>
+<translation id="1859889070386344428">Non</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porto posterior)</translation>
 <translation id="1882897271359938046">Proxectando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Desbloquear coa impresión dixital</translation>
@@ -124,7 +124,7 @@
 <translation id="2501920221385095727">Teclas presas</translation>
 <translation id="2509468283778169019">Bloqueo de maiúsculas activado</translation>
 <translation id="2517825809102302935">Desactivar esta noite</translation>
-<translation id="2519465031217098801">Opción activada</translation>
+<translation id="2519465031217098801">Si</translation>
 <translation id="2542089167727451762">Toca a imaxe do teu perfil</translation>
 <translation id="255671100581129685">O Asistente de Google non está dispoñible cando se utiliza unha sesión pública.</translation>
 <translation id="256712445991462162">a lupa ancorada</translation>
@@ -229,7 +229,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="3901991538546252627">Conectando con <ph name="NAME" /></translation>
 <translation id="394485226368336402">Configuración do audio</translation>
 <translation id="3962859241508114581">Pista anterior</translation>
-<translation id="3965097803111112935">Opción desactivada</translation>
+<translation id="3965097803111112935">Non</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3977512764614765090">Nivel de batería: <ph name="PERCENTAGE" /> % (cargando).</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porto dereito posterior)</translation>
@@ -312,7 +312,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="5207949376430453814">Destacar o cursor de texto</translation>
 <translation id="5222676887888702881">Pechar sesión</translation>
 <translation id="523505283826916779">Configuración de accesibilidade</translation>
-<translation id="5250225880026334010">Opción desactivada</translation>
+<translation id="5250225880026334010">Non</translation>
 <translation id="5260676007519551770">Escritorio 4</translation>
 <translation id="5283198616748585639">Engadir 1 min</translation>
 <translation id="5286194356314741248">Buscando</translation>
@@ -414,7 +414,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Introduce esta clave de acceso nese dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Contrasinal</translation>
 <translation id="6665545700722362599">Conceder permiso aos sitios web, as aplicacións e as extensións para utilizar funcións como os servizos de localización, o micrófono do dispositivo ou a cámara.</translation>
-<translation id="6669268301501499730">Opción activada</translation>
+<translation id="6669268301501499730">Si</translation>
 <translation id="6670153871843998651">Escritorio 3</translation>
 <translation id="6691659475504239918">Buscar+Maiúsculas+H</translation>
 <translation id="6696025732084565524">É necesario instalar unha actualización esencial do teclado extraíble</translation>

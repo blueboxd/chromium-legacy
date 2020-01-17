@@ -82,9 +82,7 @@ js_unittest("volume_manager_types_unittest") {
 }
 
 js_test_gen_html("js_test_gen_html") {
-  deps = [
-    ":volume_manager_types_unittest",
-  ]
+  deps = [ ":volume_manager_types_unittest" ]
 }
 
 js_library("mediasession_types") {

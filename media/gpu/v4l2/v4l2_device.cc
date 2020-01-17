@@ -1051,7 +1051,9 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
     switch (errno) {
       case EAGAIN:
       case EPIPE:
-        // This is not an error but won't provide a buffer either.
+        // This is not an error so we'll need to continue polling but won't
+        // provide a buffer.
+        device_->SchedulePoll();
         return std::make_pair(true, nullptr);
       default:
         VPQLOGF(1) << "VIDIOC_DQBUF failed";
@@ -1941,6 +1943,15 @@ V4L2RequestsQueue* V4L2Device::GetRequestsQueue() {
   requests_queue_ = std::move(requests_queue);
 
   return requests_queue_.get();
+}
+
+bool V4L2Device::IsCtrlExposed(uint32_t ctrl_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  struct v4l2_queryctrl query_ctrl {};
+  query_ctrl.id = ctrl_id;
+
+  return Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) == 0;
 }
 
 class V4L2Request {

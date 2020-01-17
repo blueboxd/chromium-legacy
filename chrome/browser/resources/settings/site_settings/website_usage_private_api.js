@@ -2,55 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
-
-Polymer({
-  is: 'website-usage-private-api',
-
-  properties: {
-    /**
-     * The amount of data used by the given website.
-     */
-    websiteDataUsage: {
-      type: String,
-      notify: true,
-    },
-
-    /**
-     * The number of cookies used by the given website.
-     */
-    websiteCookieUsage: {
-      type: String,
-      notify: true,
-    },
-  },
-
-  /** @override */
-  attached: function() {
-    settings.WebsiteUsagePrivateApi.websiteUsagePolymerInstance = this;
-  },
-
-  /** @param {string} host */
-  fetchUsageTotal: function(host) {
-    settings.WebsiteUsagePrivateApi.fetchUsageTotal(host);
-  },
-
-  /**
-   * @param {string} origin
-   */
-  clearUsage: function(origin) {
-    settings.WebsiteUsagePrivateApi.clearUsage(origin);
-  },
-
-  /** @param {string} origin */
-  notifyUsageDeleted: function(origin) {
-    this.fire('usage-deleted', {origin: origin});
-  },
-});
-})();
-
 cr.define('settings.WebsiteUsagePrivateApi', function() {
+  Polymer({
+    is: 'website-usage-private-api',
+
+    properties: {
+      /**
+       * The amount of data used by the given website.
+       */
+      websiteDataUsage: {
+        type: String,
+        notify: true,
+      },
+
+      /**
+       * The number of cookies used by the given website.
+       */
+      websiteCookieUsage: {
+        type: String,
+        notify: true,
+      },
+    },
+
+    /** @override */
+    attached() {
+      settings.WebsiteUsagePrivateApi.websiteUsagePolymerInstance = this;
+    },
+
+    /** @param {string} host */
+    fetchUsageTotal(host) {
+      settings.WebsiteUsagePrivateApi.fetchUsageTotal(host);
+    },
+
+    /**
+     * @param {string} origin
+     */
+    clearUsage(origin) {
+      settings.WebsiteUsagePrivateApi.clearUsage(origin);
+    },
+
+    /** @param {string} origin */
+    notifyUsageDeleted(origin) {
+      this.fire('usage-deleted', {origin: origin});
+    },
+  });
+
   /**
    * @type {Object} An instance of the polymer object defined above.
    * All data will be set here.

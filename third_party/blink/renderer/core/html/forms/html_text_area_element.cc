@@ -445,6 +445,10 @@ void HTMLTextAreaElement::SetValueCommon(
       DispatchFormControlChangeEvent();
       break;
 
+    case TextFieldEventBehavior::kDispatchInputEvent:
+      DispatchInputEvent();
+      break;
+
     case TextFieldEventBehavior::kDispatchInputAndChangeEvent:
       DispatchInputEvent();
       DispatchFormControlChangeEvent();
@@ -507,7 +511,10 @@ bool HTMLTextAreaElement::ValueMissing() const {
 }
 
 bool HTMLTextAreaElement::ValueMissing(const String* value) const {
-  return IsRequiredFormControl() && (value ? *value : this->value()).IsEmpty();
+  // For textarea elements, the value is missing only if it is mutable.
+  // https://html.spec.whatwg.org/multipage/form-elements.html#attr-textarea-required
+  return IsRequiredFormControl() && !IsDisabledOrReadOnly() &&
+         (value ? *value : this->value()).IsEmpty();
 }
 
 bool HTMLTextAreaElement::TooLong() const {

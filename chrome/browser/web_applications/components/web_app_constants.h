@@ -55,8 +55,6 @@ enum class InstallResultCode {
   kWriteDataFailed = 6,
   // A user rejected installation prompt.
   kUserInstallDeclined = 7,
-  // A whole user profile was destroyed during installation.
-  kProfileDestroyed = 8,
   // |require_manifest| was specified but the app had no valid manifest.
   kNotValidManifestForWebApp = 10,
   // We have terminated the installation pipeline and intented to the Play
@@ -84,9 +82,9 @@ enum class InstallResultCode {
   kApkWebAppInstallFailed = 20,
   // App managers are shutting down. For example, when user logs out immediately
   // after login.
-  kFailedShuttingDown = 21,
+  kCancelledOnWebAppProviderShuttingDown = 21,
 
-  kMaxValue = kFailedShuttingDown
+  kMaxValue = kCancelledOnWebAppProviderShuttingDown
 };
 
 // Checks if InstallResultCode is not a failure.

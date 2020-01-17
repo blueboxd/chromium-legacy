@@ -97,6 +97,8 @@ class AppInstallEventLogManager : public AppInstallEventLogger::Delegate,
   void Add(
       const std::set<std::string>& packages,
       const enterprise_management::AppInstallReportLogEvent& event) override;
+  void GetAndroidId(
+      AppInstallEventLogger::Delegate::AndroidIdCallback) const override;
 
   // AppInstallEventLogUploader::Delegate:
   void SerializeForUpload(

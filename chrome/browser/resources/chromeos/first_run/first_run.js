@@ -80,7 +80,7 @@ cr.define('cr.FirstRun', function() {
     /**
      * Initializes internal structures and preparing steps.
      */
-    initialize: function() {
+    initialize() {
       disableTextSelectAndDrag();
       this.transitionsEnabled_ = loadTimeData.getBoolean('transitionsEnabled');
 
@@ -108,7 +108,7 @@ cr.define('cr.FirstRun', function() {
     /**
      * Hides all elements and background.
      */
-    finalize: function() {
+    finalize() {
       // At first we hide holes (job 1) and current step (job 2) simultaneously,
       // then background.
       var jobsLeft = 2;
@@ -135,7 +135,7 @@ cr.define('cr.FirstRun', function() {
      * @param {number} widht Width of hole.
      * @param {number} height Height of hole.
      */
-    addRectangularHole: function(x, y, width, height) {
+    addRectangularHole(x, y, width, height) {
       var hole = this.rectangularHolePattern_.cloneNode();
       hole.setAttribute('x', x);
       hole.setAttribute('y', y);
@@ -153,7 +153,7 @@ cr.define('cr.FirstRun', function() {
      * @param {number} y Y coordinate of circle center.
      * @param {number} radius Radius of circle.
      */
-    addRoundHole: function(x, y, radius) {
+    addRoundHole(x, y, radius) {
       var hole = this.roundHolePattern_.cloneNode();
       hole.setAttribute('cx', x);
       hole.setAttribute('cy', y);
@@ -169,7 +169,7 @@ cr.define('cr.FirstRun', function() {
      * @param {function=} opt_onHolesRemoved Called after all holes have been
      *     hidden.
      */
-    removeHoles: function(opt_onHolesRemoved) {
+    removeHoles(opt_onHolesRemoved) {
       var mask = this.mask_;
       var holes =
           Array.prototype.slice.call(mask.getElementsByClassName('hole'));
@@ -194,7 +194,7 @@ cr.define('cr.FirstRun', function() {
      * Hides currently active step and notifies chrome after step has been
      * hidden.
      */
-    hideCurrentStep: function() {
+    hideCurrentStep() {
       assert(this.currentStep_);
       this.doHideCurrentStep_(function(name) {
         chrome.send('stepHidden', [name]);
@@ -206,7 +206,7 @@ cr.define('cr.FirstRun', function() {
      * @param {function(string)=} opt_onStepHidden Called after step has been
      *     hidden.
      */
-    doHideCurrentStep_: function(opt_onStepHidden) {
+    doHideCurrentStep_(opt_onStepHidden) {
       if (!this.currentStep_) {
         if (opt_onStepHidden)
           opt_onStepHidden();
@@ -232,7 +232,7 @@ cr.define('cr.FirstRun', function() {
      * |assistantEnabled|: Optional boolean value to indicate if Google
      *     Assistant is enabled.
      */
-    showStep: function(stepParams) {
+    showStep(stepParams) {
       assert(!this.currentStep_);
       if (!this.steps_.hasOwnProperty(stepParams.name))
         throw Error('Step "' + stepParams.name + '" not found.');
@@ -259,7 +259,7 @@ cr.define('cr.FirstRun', function() {
      * @param {function()=} opt_onCompletion Called after visibility has
      *     changed.
      */
-    setBackgroundVisible: function(visible, opt_onCompletion) {
+    setBackgroundVisible(visible, opt_onCompletion) {
       changeVisibility(
           this.backgroundContainer_, visible,
           this.getBackgroundTransitionDuration(), opt_onCompletion);
@@ -268,14 +268,14 @@ cr.define('cr.FirstRun', function() {
     /**
      * Returns default duration of animated transitions, in ms.
      */
-    getDefaultTransitionDuration: function() {
+    getDefaultTransitionDuration() {
       return this.transitionsEnabled_ ? DEFAULT_TRANSITION_DURATION_MS : 0;
     },
 
     /**
      * Returns duration of transitions of background shield, in ms.
      */
-    getBackgroundTransitionDuration: function() {
+    getBackgroundTransitionDuration() {
       return this.transitionsEnabled_ ? BG_TRANSITION_DURATION_MS : 0;
     }
   };

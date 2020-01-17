@@ -94,9 +94,7 @@ if (!use_system_minigbm) {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
-    deps = [
-      "//build/config/linux/libdrm",
-    ]
+    deps = [ "//build/config/linux/libdrm" ]
     public_configs = [ ":minigbm_config" ]
 
     if (use_exynos_minigbm) {
@@ -111,9 +109,7 @@ if (!use_system_minigbm) {
   # This target is used for Chromecast build, which expects the resulting lib
   # to have a name <GN target name> + .so
   group("libminigbm") {
-    deps = [
-      ":minigbm",
-    ]
+    deps = [ ":minigbm" ]
   }
 }
 

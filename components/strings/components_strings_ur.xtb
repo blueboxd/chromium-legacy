@@ -89,6 +89,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">اندراج ڈومین:</translation>
 <translation id="1340482604681802745">پک اپ پتہ</translation>
+<translation id="1346748346194534595">دائیں</translation>
 <translation id="1348198688976932919">آگے کی سائٹ خطرناک ایپس پر مشتمل ہے</translation>
 <translation id="1348779747280417563">نام کی توثیق کریں</translation>
 <translation id="1357195169723583938">حال ہی میں یہ آلہ کس نے اور کب استعمال کیا تھا</translation>
@@ -113,6 +114,7 @@
 <translation id="1455413310270022028">صافی</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1467432559032391204">بائیں</translation>
 <translation id="1472675084647422956">مزید دکھائیں</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
@@ -259,6 +261,7 @@
 <translation id="2148613324460538318">کارڈ شامل کریں</translation>
 <translation id="2154054054215849342">مطابقت پذیری آپ کے ڈومین کیلئے دستیاب نہیں ہے</translation>
 <translation id="2154484045852737596">کارڈ میں ترمیم کریں</translation>
+<translation id="2161656808144014275">متن</translation>
 <translation id="2166049586286450108">منتظم کیلئے مکمل رسائی</translation>
 <translation id="2166378884831602661">یہ سائٹ ایک محفوظ کنکشن فراہم نہیں کر سکتی ہے</translation>
 <translation id="2169984857010174799">Kaku2 ‎(Envelope‎)‎</translation>
@@ -347,6 +350,7 @@
 <translation id="254947805923345898">پالیسی کی قدر درست نہیں ہے۔</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> نے ایک غلط جواب بھیجا۔</translation>
 <translation id="2556876185419854533">ترمیم کریں کو &amp;کالعدم کریں</translation>
+<translation id="257674075312929031">گروپ</translation>
 <translation id="2586657967955657006">کلپ بورڈ</translation>
 <translation id="2587730715158995865">منجانب <ph name="ARTICLE_PUBLISHER" />۔ یہ اور <ph name="OTHER_ARTICLE_COUNT" /> دوسری کہانیاں پڑھیں۔</translation>
 <translation id="2587841377698384444">‏ڈائرکٹری API ID:</translation>
@@ -365,6 +369,7 @@
 ایک ایسی پالیسی ڈیلیور کرنے میں ناکام ہو گئی ہے
 جو براؤزر کو <ph name="SITE" /> کیلئے کی گئی آپ کی درخواست کو پورا کرنے سے روکتی ہے۔ کسی سائٹ کی خاطر سیکیورٹی اور دیگر پراپرٹیز کو ترتیب دینے کے لیے سائٹ آپریٹرز کے ذریعے اصل پالیسیوں کا استعمال کیا جا سکتا ہے۔</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{کوئی نہیں}=1{(<ph name="DOMAIN_LIST" /> کے لیے) 1 پاس ورڈ}=2{(<ph name="DOMAIN_LIST" /> کے لیے) 2 پاس ورڈز}other{(<ph name="DOMAIN_LIST" /> کے لیے) # پاس ورڈز}}</translation>
+<translation id="2666092431469916601">سرفہرست</translation>
 <translation id="2666117266261740852">دیگر ٹیبز یا ایپس کو بند کریں</translation>
 <translation id="2674170444375937751">کیا آپ واقعی ان صفحات کو اپنی سرگزشت سے حذف کرنا چاہتے ہیں؟</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
@@ -449,6 +454,7 @@
 <translation id="3061707000357573562">پیچ سروس</translation>
 <translation id="3064966200440839136">کسی خارجی ایپلیکیشن کے ذریعے ادائیگی کرنے کیلئے پوشیدگی وضع کو چھوڑ رہے ہیں۔ جاری رکھیں؟</translation>
 <translation id="3086579638707268289">ویب پر کی جانے والی آپ کی سرگرمی کو مانیٹر کیا جا رہا ہے</translation>
+<translation id="3087734570205094154">نیچے</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">پک اپ کا پتہ شامل کریں</translation>
 <translation id="3105172416063519923">‏اثاثہ ID:</translation>
@@ -494,6 +500,7 @@
 <translation id="3303855915957856445">تلاش کے کوئی نتائج نہیں ملے</translation>
 <translation id="3320021301628644560">بلنگ پتہ شامل کریں</translation>
 <translation id="3324983252691184275">قرمزی</translation>
+<translation id="3329013043687509092">سیرابی</translation>
 <translation id="3338095232262050444">محفوظ</translation>
 <translation id="3355823806454867987">پراکسی ترتیبات تبدیل کریں…</translation>
 <translation id="3360103848165129075">ادائیگی ہینڈلر کی شیٹ</translation>
@@ -530,6 +537,7 @@
 <translation id="3495081129428749620"><ph name="PAGE_TITLE" />
 صفحے میں تلاش کریں</translation>
 <translation id="3512163584740124171">اسی پالیسی گروپ کی طرف سے آنے والی دوسری پالیسی میں ایک اعلی ترجیح ہونے کی وجہ سے یہ پالیسی نظر انداز کی جاتی ہے۔</translation>
+<translation id="3513704683820682405">افزودہ حقیقت</translation>
 <translation id="3528171143076753409">سرور کا سرٹیفکیٹ بھروسہ مند نہیں ہے۔</translation>
 <translation id="3528485271872257980">گہرا بھورا</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{مطابقت پذیر آلات پر کم از کم 1 آئٹم}=1{1 آئٹم (اور مطابقت پذیر آلات پر مزید)}other{# آئٹمز (اور مطابقت پذیر آلات پر مزید)}}</translation>
@@ -571,6 +579,7 @@
 <translation id="3704609568417268905">‎<ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" />‎</translation>
 <translation id="370665806235115550">لوڈ ہو رہے ہیں…</translation>
 <translation id="3709599264800900598">آپ کا کاپی کردہ متن</translation>
+<translation id="3711895659073496551">معطل</translation>
 <translation id="3712624925041724820">لائسنسز ختم ہوگئے</translation>
 <translation id="3714780639079136834">‏موبائل ڈیٹا یا Wi-Fi آن ہو رہا ہے</translation>
 <translation id="3715597595485130451">‏Wi-Fi سے منسلک ہوں</translation>
@@ -764,6 +773,7 @@
 <translation id="4594403342090139922">حذف کو کالعدم کریں</translation>
 <translation id="4597348597567598915">سائز 8</translation>
 <translation id="4600854749408232102">C6/C5 ‎(Envelope‎)‎</translation>
+<translation id="4628948037717959914">تصویر</translation>
 <translation id="4635654612248442824">اس سائٹ <ph name="ORIGIN" /> نے درخواست کی ہے کہ ایک اصل پالیسی اس کی سبھی درخواست پر لاگو ہوگی، لیکن فی الحال اس پالیسی کو لاگو نہیں کیا جا سکتا۔</translation>
 <translation id="464342062220857295">خصوصیات تلاش کریں</translation>
 <translation id="4646534391647090355">اب مجھے وہاں لے چلیں</translation>
@@ -819,6 +829,7 @@
 <translation id="4926049483395192435">متعین ہونا ضروری ہے۔</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> کے مطابق</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943703118917034429">ورچوئل رئیلٹی</translation>
 <translation id="4943872375798546930">کوئی نتائج نہیں ہیں</translation>
 <translation id="4950898438188848926">‏ٹیب پر سوئچ کرنے کا بٹن، کھلے ہوئے ٹیب پر سوئچ کرنے کے لیے Enter دبائیں، <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">کارروائیاں</translation>
@@ -986,6 +997,7 @@
 <translation id="5689199277474810259">‏JSON فارمیٹ میں برآمد کریں</translation>
 <translation id="5689516760719285838">مقام</translation>
 <translation id="569000877158168851">‏DnsOverHttpsTemplates قدر متعلقہ نہیں ہے اور استعمال نہیں کی جائے گی الاؐ DnsOverHttpsMode پالیسی یا تو <ph name="SECURE_DNS_MODE_AUTOMATIC" /> یا <ph name="SECURE_DNS_MODE_SECURE" /> پر سیٹ ہو۔</translation>
+<translation id="5701381305118179107">مرکز</translation>
 <translation id="570530837424789914">نظم کریں…</translation>
 <translation id="57094364128775171">مضبوط پاس ورڈ تجویز کریں…</translation>
 <translation id="5710435578057952990">اس ویب سائٹ کی شناخت کی توثیق نہیں ہوئی ہے۔</translation>
@@ -1018,7 +1030,6 @@
 <translation id="5855253129151731373">‏اس سائٹ کے میزبان کا نام <ph name="LOOKALIKE_DOMAIN" /> سے مماثل لگتا ہے۔ بعض اوقات حملہ آور ڈومین کے نام میں چھوٹی، مشکل سے نظر آنے والی تبدیلیاں کر کے سائٹس کی نقل کرتے ہیں۔
 
     اگر آپ کو لگتا ہے کہ یہ غلطی سے دکھایا جا رہا ہے تو https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals ملاحظہ کریں۔</translation>
-<translation id="5860033963881614850">آف</translation>
 <translation id="5863847714970149516">آگے کا صفحہ آپ سے رقم چارج کرنے کی کوشش کر سکتا ہے</translation>
 <translation id="5866257070973731571">فون نمبر شامل کریں</translation>
 <translation id="5866898949289125849">آپ ڈیولپر ٹولز کا صفحہ ملاحظہ کر رہے ہیں</translation>
@@ -1030,13 +1041,11 @@
 <translation id="5901630391730855834">پیلا</translation>
 <translation id="5905445707201418379"><ph name="ORIGIN" /> کی اصل پالیسی کے مطابق مسدود کردہ۔</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (مطابقت پذیری کردہ)</translation>
-<translation id="5916664084637901428">آن</translation>
 <translation id="59174027418879706">فعال</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">‏کارڈ کو Google اکاؤنٹ میں محفوظ کریں؟</translation>
 <translation id="5922853866070715753">تقریباً مکمل ہو گیا</translation>
 <translation id="5932224571077948991">سائٹ دخل انداز یا گمراہ کن اشتہارات دکھاتی ہے</translation>
-<translation id="5939847200023027600">‏PDF کمپوزیٹر سروس</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> کھل رہی ہے…</translation>
 <translation id="5951495562196540101">صارف اکاؤنٹ کے ذریعے اندراج نہیں کر سکتے (پیکیج شدہ لائسنس دستیاب ہے)۔</translation>
 <translation id="5967592137238574583">رابطے کی معلومات میں ترمیم کریں</translation>
@@ -1076,6 +1085,7 @@
 <translation id="6080696365213338172">آپ نے ایک منتظم کا فراہم کردہ سرٹیفکیٹ استعمال کرکے مواد تک رسائی حاصل کی ہے۔ <ph name="DOMAIN" /> کو آپ جو ڈیٹا فراہم کرتے ہیں اسے منتظم کے ذریعے روکا جا سکتا ہے۔</translation>
 <translation id="6094273045989040137">تشریح کریں</translation>
 <translation id="6104072995492677441">JIS B6</translation>
+<translation id="6106989379647458772">ممکن ہے <ph name="PAGE" /> پر موجود ویب صفحہ عارضی طور پر ڈاؤن ہو یا ممکن ہے یہ مستقل طور پر ایک نئے ویب پتہ پر منتقل ہوگیا ہو۔</translation>
 <translation id="610911394827799129">‏ممکن ہے کہ ‎<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />‎ پر آپ کے Google اکاؤنٹ میں براؤزنگ کی سرگزشت کی دیگر شکلیں موجود ہوں</translation>
 <translation id="6120179357481664955">‏آپ کی UPI ID یاد رکھیں؟</translation>
 <translation id="6132597952260690497">انسٹال کردہ ایکسٹینشنز اور پلگ انز کے بارے میں معلومات</translation>
@@ -1116,6 +1126,7 @@
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">‏Chrome میں Google اسسٹنٹ موقوف کی جا ر ہی ہے</translation>
 <translation id="6305205051461490394"><ph name="URL" /> ناقابل رسائی ہے۔</translation>
+<translation id="6312113039770857350">ویب صفحہ دستیاب نہیں ہے</translation>
 <translation id="6321917430147971392">‏اپنی DNS ترتیبات چیک کریں</translation>
 <translation id="6322182122604171028">‏Windows Hello کا استعمال نہیں کیا جا سکا</translation>
 <translation id="6328639280570009161">نیٹ ورک کی پیشین گوئی غیر فعال کرنے کی کوشش کریں</translation>
@@ -1142,6 +1153,7 @@
 <translation id="6410264514553301377">‏<ph name="CREDIT_CARD" /> کی اختتامی تاریخ اور CVC درج کریں</translation>
 <translation id="6415778972515849510">‏Chromium آپ کی اپنا Google اکاؤنٹ محفوظ اور پاس ورڈ تبدیل کرنے میں مدد کر سکتا ہے۔</translation>
 <translation id="6423385022588644828">‏اب سے Touch ID کے استعمال سے تیزی سے اپنے کارڈز کی تصدیق کریں</translation>
+<translation id="6425092077175753609">مٹیریل</translation>
 <translation id="6427730057873428458">گیٹ فولڈ</translation>
 <translation id="6433490469411711332">رابطہ کی معلومات میں ترمیم کریں</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> نے منسلک ہونے سے منع کر دیا۔</translation>
@@ -1409,6 +1421,7 @@
 <translation id="7716147886133743102">آپ کے منتظم کی جانب سے مسدود کردہ</translation>
 <translation id="7716424297397655342">اس سائٹ کو کیش سے لوڈ نہیں کیا جا سکتا ہے</translation>
 <translation id="7723047071702270851">کارڈ میں ترمیم کریں</translation>
+<translation id="7740996059027112821">معیاری</translation>
 <translation id="774634243536837715">خطرناک مواد مسدود ہے۔</translation>
 <translation id="7752995774971033316">غیر نظم کردہ</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
@@ -1514,6 +1527,7 @@
 <translation id="8241707690549784388">آپ جو صفحہ تلاش کر رہے ہیں اس نے آپ کی درج کردہ معلومات کا استعمال کیا۔ اس صفحہ پر واپس جانا کسی ایسی کارروائی کا سبب بن سکتا ہے جسے آپ نے دہرائے جانے کیلئے کیا۔ کیا آپ جاری رکھنا چاہتے ہیں؟</translation>
 <translation id="8241712895048303527">اس سائٹ پر مسدود کریں</translation>
 <translation id="8242426110754782860">آگے بڑھیں</translation>
+<translation id="8249296373107784235">منسوخ کریں</translation>
 <translation id="8249320324621329438">آخری بازیابی:</translation>
 <translation id="8253091569723639551">بلنگ پتہ درکار ہے</translation>
 <translation id="825929999321470778">سبھی 'محفوظ پاسورڈز' دکھائيں</translation>
@@ -1583,6 +1597,7 @@
 <translation id="8647750283161643317">سب کو ڈيفالٹ پر دوبارہ ترتیب دیں</translation>
 <translation id="8663226718884576429">آرڈر کا خلاصہ، <ph name="TOTAL_LABEL" />، مزید تفصیلات</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />، جواب، <ph name="ANSWER" /></translation>
+<translation id="8681531050781943054"><ph name="PAGE" /> پر موجود ویب صفحہ لوڈ نہیں ہو سکا کیوںکہ:</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">دستیاب</translation>
 <translation id="869891660844655955">میعاد ختم ہونے کی تاریخ</translation>
@@ -1633,6 +1648,7 @@
 <translation id="8943282376843390568">لائم</translation>
 <translation id="8957210676456822347">کیپٹو پورٹل اجازت دہندگی</translation>
 <translation id="8962950042226115166">مشکوک سائٹ</translation>
+<translation id="8963213021028234748"><ph name="MARKUP_1" />تجاویز:<ph name="MARKUP_2" />یقینی بنائیں کہ آپ کے پاس ڈیٹا کنکشن ہے<ph name="MARKUP_3" />یہ ویب صفحہ بعد میں دوبارہ لوڈ کریں<ph name="MARKUP_4" />اپنا درج کردہ پتہ چيک کریں<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">کارڈ کو محفوظ کریں</translation>
 <translation id="8971063699422889582">سرور کے سرٹیفکیٹ کی میعاد ختم ہوگئی۔</translation>
 <translation id="8975012916872825179">اس میں فون نمبرز، ای میل پتے اور ترسیل کے پتے جیسی معلومات شامل ہیں</translation>
@@ -1710,6 +1726,7 @@
 <translation id="985199708454569384">‏&lt;p&gt;اگر آپ کے کمپیوٹر یا موبائل آلے کی تاریخ اور وقت غلط ہے، تو آپ کو یہ خرابی دکھائی دے گی۔&lt;/p&gt;
     &lt;p&gt;خرابی ٹھیک کرنے کیلئے، اپنے آلے کا کلاک کھولیں۔ یقینی بنائیں کہ وقت اور تاریخ درست ہے۔&lt;/p&gt;</translation>
 <translation id="985956168329721395">Prc-32K</translation>
+<translation id="987264212798334818">عمومی</translation>
 <translation id="988159990683914416">ڈیولپر بلڈ</translation>
 <translation id="989988560359834682">پتہ میں ترمیم کریں</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

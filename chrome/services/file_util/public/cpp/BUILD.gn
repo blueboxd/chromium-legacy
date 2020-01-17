@@ -6,9 +6,7 @@ import("//build/config/features.gni")
 import("//components/safe_browsing/buildflags.gni")
 
 source_set("cpp") {
-  public_deps = [
-    "//chrome/services/file_util/public/mojom",
-  ]
+  public_deps = [ "//chrome/services/file_util/public/mojom" ]
 
   if (safe_browsing_mode == 1) {
     sources = [
@@ -56,9 +54,7 @@ if (is_chromeos) {
   source_set("browser_tests") {
     testonly = true
 
-    sources = [
-      "zip_file_creator_browsertest.cc",
-    ]
+    sources = [ "zip_file_creator_browsertest.cc" ]
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
     deps = [

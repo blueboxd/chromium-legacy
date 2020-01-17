@@ -70,9 +70,7 @@ shared_library("browser_switcher_bho") {
       "resource.h",
     ]
   }
-  deps = [
-    ":ie_bho_idl",
-  ]
+  deps = [ ":ie_bho_idl" ]
 }
 
 test("browser_switcher_bho_unittests") {
@@ -113,16 +111,12 @@ copy("copy_browser_switcher_binaries") {
 
   cross_build_out_dir = get_label_info(cross_build_label, "root_out_dir")
 
-  sources = [
-    "$cross_build_out_dir/$cross_build_dll",
-  ]
+  sources = [ "$cross_build_out_dir/$cross_build_dll" ]
   if (symbol_level > 0) {
     sources += [ "$cross_build_out_dir/$cross_build_dll.pdb" ]
   }
 
-  outputs = [
-    "$root_out_dir/{{source_file_part}}",
-  ]
+  outputs = [ "$root_out_dir/{{source_file_part}}" ]
   deps = [
     browser_switcher_x64_label,
     browser_switcher_x86_label,
@@ -139,9 +133,7 @@ group("browser_switcher_dlls") {
 }
 
 midl("ie_bho_idl") {
-  sources = [
-    "ie_bho_idl.idl",
-  ]
+  sources = [ "ie_bho_idl.idl" ]
 
   # We have a custom output directory (that excludes the toolchain details).
   generated_dir =

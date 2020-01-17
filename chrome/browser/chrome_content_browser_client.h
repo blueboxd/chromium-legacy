@@ -641,6 +641,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       base::OnceCallback<void(base::Optional<std::string>)> callback) override;
 #endif
 
+  void IsClipboardPasteAllowed(
+      content::WebContents* web_contents,
+      const GURL& url,
+      const ui::ClipboardFormatType& data_type,
+      const std::string& data,
+      IsClipboardPasteAllowedCallback callback) override;
+
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
   static bool HandleWebUIReverse(GURL* url,

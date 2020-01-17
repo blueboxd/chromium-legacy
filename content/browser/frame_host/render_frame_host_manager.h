@@ -23,7 +23,8 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/referrer.h"
-#include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "services/network/public/mojom/content_security_policy.mojom-forward.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
 
@@ -41,7 +42,6 @@ class RenderViewHost;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 class TestWebContents;
-struct ContentSecurityPolicyHeader;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
 
@@ -342,7 +342,7 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Sends the newly added Content Security Policy headers to all the proxies.
   void OnDidAddContentSecurityPolicies(
-      const std::vector<ContentSecurityPolicyHeader>& headers);
+      std::vector<network::mojom::ContentSecurityPolicyHeaderPtr> headers);
 
   // Resets Content Security Policy in all the proxies.
   void OnDidResetContentSecurityPolicy();
@@ -454,7 +454,8 @@ class CONTENT_EXPORT RenderFrameHostManager
 
   // Updates the user activation state in all proxies of this frame.  For
   // more details, see the comment on FrameTreeNode::user_activation_state_.
-  void UpdateUserActivationState(blink::UserActivationUpdateType update_type);
+  void UpdateUserActivationState(
+      blink::mojom::UserActivationUpdateType update_type);
 
   // When a frame transfers user activation to another frame via postMessage,
   // this is used to inform proxies of the target frame (via IPC) about the
@@ -502,6 +503,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   void set_attach_complete() {
     attach_to_inner_delegate_state_ = AttachToInnerDelegateState::ATTACHED;
   }
+
+  // Sets an embedding token to track the relationship of a frame to its parent.
+  void SetEmbeddingToken(const base::UnguessableToken& embedding_token);
 
  private:
   friend class NavigatorTest;

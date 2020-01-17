@@ -57,7 +57,6 @@
 <translation id="328888136576916638">Google API သော့များ ရှာမရပါ။ Chromium ၏ အချို့ လုပ်ကိုင်နိုင်စွမ်းများ ပိတ်ခံကြရမည်။</translation>
 <translation id="3296368748942286671">Chromium ကို ပိတ်လိုက်သည့်အခါ နောက်ခံအက်ပ်များကို ဆက်လက် ဖွင့်ထားပါ။</translation>
 <translation id="331951419404882060">လက်မှတ်ထိုး ဝင်စဉ် အမှား တစ်ခုကြောင့် Chromium OS သည် သင်၏ ဒေတာကို စင့်က် လုပ်မပေးနိုင်ပါ။</translation>
-<translation id="3340978935015468852">ဆက်တင်များ</translation>
 <translation id="3474745554856756813">၎င်းသည် ဤစက်ပစ္စည်းမှ အကြောင်းအရာ <ph name="ITEMS_COUNT" /> ခုကို ဖျက်လိုက်ပါမည်။ သင့်ဒေတာကို နောက်မှ ပြန်ယူရန် Chromium သို့ <ph name="USER_EMAIL" /> အဖြစ် လက်မှတ်ထိုးဝင်ပါ။</translation>
 <translation id="3509308970982693815">ကျေးဇူးပြု၍ Chromium ၐင်းဒိုးများကို ပိတ်ပြီး ထပ်စမ်းပါ။</translation>
 <translation id="3575459661164320785">သင့်ကွန်ပျူတာတွင် အန္တရာယ်ရှိသောဆော့ဖ်ဝဲ ရှိနေသည်။ Chromium သည် ၎င်းကို ဖယ်ရှားခြင်း၊ သင်၏ ဆက်တင်များ ပြန်ယူခြင်းနှင့် ဘရောင်ဇာ ပုံမှန်အတိုင်း ပြန်လည်အသုံးပြုနိုင်ရန် နောက်ဆက်တွဲများ ပိတ်ခြင်းတို့ကို ပြုလုပ်နိုင်ပါသည်။</translation>
@@ -207,7 +206,6 @@ Chromium သည်သင့်ကြိုတင်ချိန်ညှိခ�
     Chromium ဘရောင်ဇာ ဆက်တင်များ<ph name="LINK_END" /> တွင် ကြည့်ပါ</translation>
 <translation id="8697124171261953979">It also controls what page is shown when you start Chromium or search from the Omnibox.</translation>
 <translation id="8704119203788522458">ဒါဟာ သင်၏ Chromium ပါ</translation>
-<translation id="8739167630197873875">Chromium မှထွက်သည့်အခါ ကွတ်ကီးများကို သင်ရှင်းလင်းထားသည်။ ဆက်လက်၍ စင့်ခ်လုပ်ရန် <ph name="COOKIE_SETTINGS_LINK" /> ကို ပြောင်းပါ။</translation>
 <translation id="8796602469536043152">ဤဝဘ်ဆိုက်အတွက် Chromium သည် သင်၏ကင်မရာနှင့် မိုက်ခရိုဖုန်းကို အသုံးပြုခွင့်ရရန် လိုအပ်ပါသည်</translation>
 <translation id="8803635938069941624">Chromium OS စည်းကမ်းချက်များ</translation>
 <translation id="8821041990367117597">သင်၏ အကောင့် လက်မှတ်ထိုး ဝင်ရေး အသေးစိတ်များမှာ  ဟောင်းသွားကြပြီ ဖြစ်၍ Chromium သည် သင်၏ ဒေတာကို စင့်က် လုပ်မပေးနိုင်ခဲ့ပါ။</translation>

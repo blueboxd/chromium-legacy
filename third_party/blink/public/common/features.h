@@ -133,13 +133,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirect;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSetLowPriorityForBeacon;
 
-BLINK_COMMON_EXPORT extern const base::Feature
-    kSetDetachedWindowReasonByNavigation;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kSetDetachedWindowReasonByClosing;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kSetDetachedWindowReasonByOtherReason;
-
 BLINK_COMMON_EXPORT extern const base::Feature kCacheStorageCodeCacheHintHeader;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kCacheStorageCodeCacheHintHeaderName;

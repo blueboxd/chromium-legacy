@@ -39,8 +39,7 @@ class BrowsingDataHelperTest : public testing::Test {
 
   bool IsExtensionScheme(const std::string& scheme) {
     GURL test(scheme + "://example.com");
-    return (BrowsingDataHelper::HasExtensionScheme(test) &&
-            BrowsingDataHelper::IsExtensionScheme(scheme));
+    return (BrowsingDataHelper::IsExtensionScheme(scheme));
   }
 
  private:

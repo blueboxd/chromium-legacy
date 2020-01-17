@@ -231,10 +231,12 @@ void PasswordStoreDefault::AddCompromisedCredentialsImpl(
 
 void PasswordStoreDefault::RemoveCompromisedCredentialsImpl(
     const GURL& url,
-    const base::string16& username) {
+    const base::string16& username,
+    RemoveCompromisedCredentialsReason reason) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
-  if (login_db_)
-    login_db_->compromised_credentials_table().RemoveRow(url, username);
+  if (login_db_) {
+    login_db_->compromised_credentials_table().RemoveRow(url, username, reason);
+  }
 }
 
 std::vector<CompromisedCredentials>

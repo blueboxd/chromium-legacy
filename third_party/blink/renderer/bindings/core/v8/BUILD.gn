@@ -42,6 +42,7 @@ idl_compiler("generate_bindings_core_v8_interfaces") {
             generated_webcore_testing_idl_files
   if (use_v8_bind_gen_for_dictionary) {
     sources -= core_dictionary_idl_files
+    sources -= core_testing_dictionary_idl_files
   }
   output_dir = bindings_core_v8_output_dir
   output_name_suffix = ""
@@ -53,13 +54,9 @@ aggregate_generated_bindings("generate_bindings_core_v8_all_interfaces") {
   if (use_v8_bind_gen_for_dictionary) {
     sources -= core_dictionary_idl_files
   }
-  outputs = [
-    "$bindings_core_v8_output_dir/v8_generated_core_bindings.cc",
-  ]
+  outputs = [ "$bindings_core_v8_output_dir/v8_generated_core_bindings.cc" ]
   component = "core"
-  public_deps = [
-    ":generate_bindings_core_v8_interfaces",
-  ]
+  public_deps = [ ":generate_bindings_core_v8_interfaces" ]
 }
 
 idl_impl("bindings_core_impl_generated") {
@@ -117,9 +114,7 @@ jumbo_source_set("testing") {
 }
 
 fuzzer_test("v8_serialized_script_value_fuzzer") {
-  sources = [
-    "serialization/serialized_script_value_fuzzer.cc",
-  ]
+  sources = [ "serialization/serialized_script_value_fuzzer.cc" ]
   seed_corpus = "serialization/fuzz_corpus"
   deps = [
     "//third_party/blink/renderer/core",

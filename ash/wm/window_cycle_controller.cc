@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -33,11 +34,18 @@ aura::Window* GetActiveWindow(const WindowCycleList::WindowList& window_list) {
 void ReportPossibleDesksSwitchStats(int active_desk_container_id_before_cycle) {
   // Report only for users who have 2 or more desks, since we're only interested
   // in seeing how users of Virtual Desks use window cycling.
-  if (DesksController::Get()->desks().size() < 2)
+  auto* desks_controller = DesksController::Get();
+  if (!desks_controller)
     return;
 
+  if (desks_controller->desks().size() < 2)
+    return;
+
+  // Note that this functions is called while a potential desk switch animation
+  // is starting, in this case we want the target active desk (i.e. the soon-to-
+  // be active desk after the animation finishes).
   const int active_desk_container_id_after_cycle =
-      desks_util::GetActiveDeskContainerId();
+      desks_controller->GetTargetActiveDesk()->container_id();
   DCHECK_NE(active_desk_container_id_before_cycle, kShellWindowId_Invalid);
   DCHECK_NE(active_desk_container_id_after_cycle, kShellWindowId_Invalid);
 
@@ -119,8 +127,12 @@ void WindowCycleController::Step(Direction direction) {
 void WindowCycleController::StopCycling() {
   window_cycle_list_.reset();
 
-  aura::Window* active_window_after_window_cycle = GetActiveWindow(
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
+  // We can't use the MRU window list here to get the active window, since
+  // cycling can activate a window on a different desk, leading to a desk-switch
+  // animation launching. Getting the MRU window list for the active desk now
+  // will always be for the current active desk, not the target active desk.
+  aura::Window* active_window_after_window_cycle =
+      window_util::GetActiveWindow();
 
   // Remove our key event filter.
   event_filter_.reset();

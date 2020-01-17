@@ -81,6 +81,10 @@ class PressStory(page_module.Page):
   def GetMeasurements(self):
     return self._measurements
 
+  def Run(self, shared_state):
+    self._measurements = []
+    super(PressStory, self).Run(shared_state)
+
   def ExecuteTest(self, action_runner):
     pass
 

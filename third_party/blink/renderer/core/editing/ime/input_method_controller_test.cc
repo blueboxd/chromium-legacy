@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 
 using ui::mojom::ImeTextSpanThickness;
+using ui::mojom::ImeTextSpanUnderlineStyle;
 
 namespace blink {
 
@@ -169,9 +170,9 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingText) {
       "<div id='sample' contenteditable>hello world</div>", "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetCompositionFromExistingText(ime_text_spans, 0, 5);
 
   Range* range = GetCompositionRange();
@@ -189,9 +190,9 @@ TEST_F(InputMethodControllerTest, SetCompositionAfterEmoji) {
       "<div id='sample' contenteditable>&#x1f3c6</div>", "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 2,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 2, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   GetDocument().UpdateStyleAndLayout();
   Controller().SetEditableSelectionOffsets(PlainTextRange(2, 2));
@@ -217,9 +218,9 @@ TEST_F(InputMethodControllerTest, SetCompositionWithGraphemeCluster) {
   InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 6, 6,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 6, 6, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   GetDocument().UpdateStyleAndLayout();
 
   // UTF16 = 0x0939 0x0947 0x0932 0x0932. Note that 0x0932 0x0932 is a grapheme
@@ -245,9 +246,9 @@ TEST_F(InputMethodControllerTest,
       InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 12, 12,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 12, 12, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   GetDocument().UpdateStyleAndLayout();
 
   // UTF16 = 0x0939 0x0947 0x0932 0x094D 0x0932 0x094B. 0x0939 0x0947 0x0932 is
@@ -281,9 +282,9 @@ TEST_F(InputMethodControllerTest, SetCompositionKeepingStyle) {
       "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 3, 12,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 3, 12, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetCompositionFromExistingText(ime_text_spans, 3, 12);
 
   // Subtract a character.
@@ -312,9 +313,9 @@ TEST_F(InputMethodControllerTest, SetCompositionWithEmojiKeepingStyle) {
       "<div id='sample' contenteditable><b>&#x1f3e0</b></div>", "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 2,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 2, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   Controller().SetCompositionFromExistingText(ime_text_spans, 0, 2);
 
@@ -338,9 +339,9 @@ TEST_F(InputMethodControllerTest,
       "<div id='sample' contenteditable><b>&#xc03</b></div>", "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 2,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 2, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetCompositionFromExistingText(ime_text_spans, 0, 1);
 
   // 0xE0 0xB0 0x83 0xE0 0xB0 0x83, a telugu character with 2 code points in
@@ -361,9 +362,9 @@ TEST_F(InputMethodControllerTest, FinishComposingTextKeepingStyle) {
       "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 3, 12,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 3, 12, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetCompositionFromExistingText(ime_text_spans, 3, 12);
 
   Controller().SetComposition(String("123hello789"), ime_text_spans, 11, 11);
@@ -380,9 +381,9 @@ TEST_F(InputMethodControllerTest, CommitTextKeepingStyle) {
       "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 3, 12,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 3, 12, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetCompositionFromExistingText(ime_text_spans, 3, 12);
 
   Controller().CommitText(String("123789"), ime_text_spans, 0);
@@ -393,9 +394,9 @@ TEST_F(InputMethodControllerTest, InsertTextWithNewLine) {
   Element* div =
       InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 11,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 11, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   Controller().CommitText(String("hello\nworld"), ime_text_spans, 0);
   EXPECT_EQ("hello<div>world</div>", div->InnerHTMLAsString());
@@ -419,9 +420,9 @@ TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
                     "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetCompositionFromExistingText(ime_text_spans, 0, 5);
 
   Controller().FinishComposingText(InputMethodController::kKeepSelection);
@@ -456,9 +457,9 @@ TEST_F(InputMethodControllerTest, DeleteBySettingEmptyComposition) {
   EXPECT_EQ("foo", input->value());
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 3,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 3, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetCompositionFromExistingText(ime_text_spans, 0, 3);
 
   Controller().SetComposition(String(""), ime_text_spans, 0, 3);
@@ -474,9 +475,9 @@ TEST_F(InputMethodControllerTest,
       "<div id='sample' contenteditable>\nhello world</div>", "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetCompositionFromExistingText(ime_text_spans, 0, 5);
 
   Range* range = GetCompositionRange();
@@ -493,9 +494,9 @@ TEST_F(InputMethodControllerTest,
   InsertHTMLElement("<div id='sample' contenteditable>test</div>", "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 7, 8,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 7, 8, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetCompositionFromExistingText(ime_text_spans, 7, 8);
 
   EXPECT_FALSE(GetCompositionRange());
@@ -506,9 +507,9 @@ TEST_F(InputMethodControllerTest, ConfirmPasswordComposition) {
       "<input id='sample' type='password' size='24'>", "sample"));
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetComposition("foo", ime_text_spans, 0, 3);
   Controller().FinishComposingText(InputMethodController::kKeepSelection);
 
@@ -947,9 +948,9 @@ TEST_F(InputMethodControllerTest, SetCompositionForInputWithNewCaretPositions) {
   EXPECT_EQ(2u, Controller().GetSelectionOffsets().End());
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 2,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 2, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   // The caret exceeds left boundary.
   // "*heABllo", where * stands for caret.
@@ -1013,9 +1014,9 @@ TEST_F(InputMethodControllerTest,
   EXPECT_EQ(17u, Controller().GetSelectionOffsets().End());
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 2,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 2, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   // The caret exceeds left boundary.
   // "*hello\nworld\n\n01234AB56789", where * stands for caret.
@@ -1105,13 +1106,13 @@ TEST_F(InputMethodControllerTest, SetCompositionWithEmptyText) {
   EXPECT_EQ(2u, Controller().GetSelectionOffsets().End());
 
   Vector<ImeTextSpan> ime_text_spans0;
-  ime_text_spans0.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 0,
-                                        Color(255, 0, 0),
-                                        ImeTextSpanThickness::kThin, 0));
+  ime_text_spans0.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 0, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Vector<ImeTextSpan> ime_text_spans2;
-  ime_text_spans2.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 2,
-                                        Color(255, 0, 0),
-                                        ImeTextSpanThickness::kThin, 0));
+  ime_text_spans2.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 2, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   Controller().SetComposition("AB", ime_text_spans2, 2, 2);
   // With previous composition.
@@ -1132,9 +1133,9 @@ TEST_F(InputMethodControllerTest, InsertLineBreakWhileComposingText) {
       InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetComposition("hello", ime_text_spans, 5, 5);
   EXPECT_EQ("hello", div->innerText());
   EXPECT_EQ(5u, Controller().GetSelectionOffsets().Start());
@@ -1151,9 +1152,9 @@ TEST_F(InputMethodControllerTest, InsertLineBreakAfterConfirmingText) {
       InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 2,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 2, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().CommitText("hello", ime_text_spans, 0);
   EXPECT_EQ("hello", div->innerText());
 
@@ -1184,9 +1185,9 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
 
   // Simulate composition in the |contentEditable|.
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   editable->focus();
 
   GetDocument().setTitle(g_empty_string);
@@ -1206,9 +1207,9 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForReplace) {
 
   // Simulate composition in the |contentEditable|.
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   GetDocument().setTitle(g_empty_string);
   Controller().SetComposition("hell", ime_text_spans, 4, 4);
@@ -1225,9 +1226,9 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForConfirm) {
 
   // Simulate composition in the |contentEditable|.
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   GetDocument().setTitle(g_empty_string);
   Controller().SetComposition("hello", ime_text_spans, 5, 5);
@@ -1244,9 +1245,9 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForDelete) {
 
   // Simulate composition in the |contentEditable|.
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   GetDocument().setTitle(g_empty_string);
   Controller().SetComposition("hello", ime_text_spans, 5, 5);
@@ -1264,9 +1265,9 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsert) {
 
   // Simulate composition in the |contentEditable|.
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   // Insert new text without previous composition.
   GetDocument().setTitle(g_empty_string);
@@ -1292,9 +1293,9 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsertEmptyText) {
 
   // Simulate composition in the |contentEditable|.
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   // Insert empty text without previous composition.
   GetDocument().setTitle(g_empty_string);
@@ -1319,9 +1320,9 @@ TEST_F(InputMethodControllerTest, CompositionEndEventWithNoSelection) {
 
   // Simulate composition in the |contentEditable|.
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   Controller().SetComposition("hello", ime_text_spans, 1, 1);
   GetDocument().UpdateStyleAndLayout();
@@ -1374,9 +1375,9 @@ TEST_F(InputMethodControllerTest, SetCompositionPlainTextWithIme_Text_Span) {
   InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 1,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 1, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   Controller().SetComposition(" ", ime_text_spans, 1, 1);
 
@@ -1394,9 +1395,9 @@ TEST_F(InputMethodControllerTest, CommitPlainTextWithIme_Text_SpanInsert) {
 
   Controller().SetEditableSelectionOffsets(PlainTextRange(8, 8));
 
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 1, 11,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 1, 11, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   Controller().CommitText(String("ime_text_spand"), ime_text_spans, 0);
 
@@ -1414,9 +1415,9 @@ TEST_F(InputMethodControllerTest, CommitPlainTextWithIme_Text_SpanReplace) {
 
   Controller().SetCompositionFromExistingText(ime_text_spans, 8, 12);
 
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 1, 11,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 1, 11, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
 
   Controller().CommitText(String("string"), ime_text_spans, 0);
 
@@ -1437,9 +1438,9 @@ TEST_F(InputMethodControllerTest, ImeTextSpanAppearsCorrectlyAfterNewline) {
 
   Controller().SetCompositionFromExistingText(ime_text_spans, 8, 8);
 
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetComposition(String("world"), ime_text_spans, 0, 0);
   ASSERT_EQ(1u, GetDocument().Markers().Markers().size());
 
@@ -1473,9 +1474,9 @@ TEST_F(InputMethodControllerTest, SelectionWhenFocusChangeFinishesComposition) {
 
   // Simulate composition in the |contentEditable|.
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 5,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetComposition("foo", ime_text_spans, 3, 3);
 
   EXPECT_TRUE(Controller().HasComposition());
@@ -1520,9 +1521,9 @@ TEST_F(InputMethodControllerTest, SetEmptyCompositionShouldNotMoveCaret) {
   Controller().SetEditableSelectionOffsets(PlainTextRange(4, 4));
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 3,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 3, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetComposition(String("def"), ime_text_spans, 0, 3);
   Controller().SetComposition(String(""), ime_text_spans, 0, 3);
   Controller().CommitText(String("def"), ime_text_spans, 0);
@@ -1585,7 +1586,8 @@ TEST_F(InputMethodControllerTest,
   // persist across editing operations)
   EphemeralRange marker_range = PlainTextRange(8, 12).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
   // Delete "Initial"
   Vector<ImeTextSpan> empty_ime_text_spans;
   Controller().SetCompositionFromExistingText(empty_ime_text_spans, 0, 7);
@@ -1613,7 +1615,8 @@ TEST_F(InputMethodControllerTest,
   // persist across editing operations)
   EphemeralRange marker_range = PlainTextRange(7, 12).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
   // Delete "Initial"
   Vector<ImeTextSpan> empty_ime_text_spans;
   Controller().SetCompositionFromExistingText(empty_ime_text_spans, 0, 7);
@@ -1640,7 +1643,8 @@ TEST_F(InputMethodControllerTest,
   // persist across editing operations)
   EphemeralRange marker_range = PlainTextRange(8, 13).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
   // Delete "Initial"
   Vector<ImeTextSpan> empty_ime_text_spans;
   Controller().SetCompositionFromExistingText(empty_ime_text_spans, 0, 7);
@@ -1668,7 +1672,8 @@ TEST_F(
   // persist across editing operations)
   EphemeralRange marker_range = PlainTextRange(7, 13).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   // Delete "Initial"
   Vector<ImeTextSpan> empty_ime_text_spans;
@@ -1713,7 +1718,8 @@ TEST_F(InputMethodControllerTest,
   // Add marker under "Initial text"
   EphemeralRange marker_range = PlainTextRange(0, 12).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   // Replace "Initial" with "Original"
   Vector<ImeTextSpan> empty_ime_text_spans;
@@ -1756,7 +1762,8 @@ TEST_F(InputMethodControllerTest,
   // Add marker under "initial text"
   EphemeralRange marker_range = PlainTextRange(13, 25).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   // Replace "some initial" with "boring"
   Vector<ImeTextSpan> empty_ime_text_spans;
@@ -1794,7 +1801,8 @@ TEST_F(InputMethodControllerTest, ContentIndependentMarker_ReplaceEndOfMarker) {
   // Add marker under "Initial text"
   EphemeralRange marker_range = PlainTextRange(0, 12).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   // Replace "text" with "string"
   Vector<ImeTextSpan> empty_ime_text_spans;
@@ -1839,7 +1847,8 @@ TEST_F(InputMethodControllerTest,
   // Add marker under "some initial"
   EphemeralRange marker_range = PlainTextRange(8, 20).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   // Replace "initial text" with "content"
   Vector<ImeTextSpan> empty_ime_text_spans;
@@ -1880,7 +1889,8 @@ TEST_F(InputMethodControllerTest,
   // Add marker under "text"
   EphemeralRange marker_range = PlainTextRange(8, 12).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   // Replace "text" with "string"
   Vector<ImeTextSpan> empty_ime_text_spans;
@@ -1923,7 +1933,8 @@ TEST_F(InputMethodControllerTest,
   // Add marker under "Initial"
   EphemeralRange marker_range = PlainTextRange(0, 7).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 
@@ -1965,7 +1976,8 @@ TEST_F(InputMethodControllerTest,
   // Add marker under "text"
   EphemeralRange marker_range = PlainTextRange(8, 12).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 
@@ -2027,23 +2039,28 @@ TEST_F(InputMethodControllerTest, ContentIndependentMarker_Deletions) {
 
   EphemeralRange marker_range = PlainTextRange(0, 5).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   marker_range = PlainTextRange(5, 10).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   marker_range = PlainTextRange(10, 15).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   marker_range = PlainTextRange(15, 20).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   marker_range = PlainTextRange(20, 25).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, Color::kBlack, Color::kBlack);
 
   EXPECT_EQ(5u, GetDocument().Markers().Markers().size());
 
@@ -2095,7 +2112,8 @@ TEST_F(InputMethodControllerTest,
 
   EphemeralRange marker_range = PlainTextRange(5, 10).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, 0, Color::kBlack);
 
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 
@@ -2132,7 +2150,8 @@ TEST_F(InputMethodControllerTest,
 
   EphemeralRange marker_range = PlainTextRange(5, 10).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, 0, Color::kBlack);
 
   // Delete middle of marker
   Vector<ImeTextSpan> empty_ime_text_spans;
@@ -2187,15 +2206,18 @@ TEST_F(InputMethodControllerTest,
 
   EphemeralRange marker_range = PlainTextRange(0, 5).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, 0, Color::kBlack);
 
   marker_range = PlainTextRange(5, 10).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, 0, Color::kBlack);
 
   marker_range = PlainTextRange(10, 15).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, 0, Color::kBlack);
 
   EXPECT_EQ(3u, GetDocument().Markers().Markers().size());
 
@@ -2259,15 +2281,18 @@ TEST_F(InputMethodControllerTest,
 
   EphemeralRange marker_range = PlainTextRange(0, 5).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, 0, Color::kBlack);
 
   marker_range = PlainTextRange(5, 15).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, 0, Color::kBlack);
 
   marker_range = PlainTextRange(15, 20).CreateRange(*div);
   GetDocument().Markers().AddActiveSuggestionMarker(
-      marker_range, Color::kBlack, ImeTextSpanThickness::kThin, Color::kBlack);
+      marker_range, Color::kBlack, ImeTextSpanThickness::kThin,
+      ImeTextSpanUnderlineStyle::kSolid, 0, Color::kBlack);
 
   EXPECT_EQ(3u, GetDocument().Markers().Markers().size());
 
@@ -2297,7 +2322,8 @@ TEST_F(InputMethodControllerTest,
   // Try to commit a non-misspelling suggestion marker.
   ime_text_spans.push_back(
       ImeTextSpan(ImeTextSpan::Type::kSuggestion, 0, 5, Color::kTransparent,
-                  ImeTextSpanThickness::kNone, Color::kTransparent));
+                  ImeTextSpanThickness::kNone, ImeTextSpanUnderlineStyle::kNone,
+                  Color::kTransparent, Color::kTransparent));
   Controller().CommitText("hello", ime_text_spans, 1);
 
   // The marker should have been added.
@@ -2314,7 +2340,8 @@ TEST_F(InputMethodControllerTest,
   // Try to commit a non-misspelling suggestion marker.
   ime_text_spans.push_back(ImeTextSpan(
       ImeTextSpan::Type::kMisspellingSuggestion, 0, 5, Color::kTransparent,
-      ImeTextSpanThickness::kNone, Color::kTransparent));
+      ImeTextSpanThickness::kNone, ImeTextSpanUnderlineStyle::kNone,
+      Color::kTransparent, Color::kTransparent));
   Controller().CommitText("hello", ime_text_spans, 1);
 
   // The marker should not have been added since the div has spell checking
@@ -2330,7 +2357,8 @@ TEST_F(InputMethodControllerTest, RemoveSuggestionMarkerInRangeOnFinish) {
   Vector<ImeTextSpan> ime_text_spans;
   ime_text_spans.push_back(ImeTextSpan(
       ImeTextSpan::Type::kMisspellingSuggestion, 0, 5, Color::kTransparent,
-      ImeTextSpanThickness::kNone, Color::kTransparent, Color ::kTransparent,
+      ImeTextSpanThickness::kNone, ImeTextSpanUnderlineStyle::kNone,
+      Color::kTransparent, Color::kTransparent, Color ::kTransparent,
       /* remove_on_finish_composing */ true));
 
   // Case 1: SetComposition() -> FinishComposingText() removes the suggestion
@@ -2402,9 +2430,9 @@ TEST_F(InputMethodControllerTest, CompositionUnderlineSpansMultipleNodes) {
   Element* div = InsertHTMLElement(
       "<div id='sample' contenteditable><b>t</b>est</div>", "sample");
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 4,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 4, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 0, 4);
   Controller().SetComposition("test", ime_text_spans, 0, 4);
 
@@ -2483,9 +2511,9 @@ TEST_F(InputMethodControllerTest,
   InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 
   Vector<ImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(ImeTextSpan(ImeTextSpan::Type::kComposition, 0, 1,
-                                       Color(255, 0, 0),
-                                       ImeTextSpanThickness::kThin, 0));
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 1, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
   Controller().CommitText(" ", ime_text_spans, 0);
   // Add character U+094D: 'DEVANAGARI SIGN VIRAMA'
   Controller().SetComposition(String::FromUTF8("\xE0\xA5\x8D"), ime_text_spans,

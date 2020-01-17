@@ -139,10 +139,6 @@ void* GLSurface::GetConfig() {
   return NULL;
 }
 
-unsigned long GLSurface::GetCompatibilityKey() {
-  return 0;
-}
-
 gfx::VSyncProvider* GLSurface::GetVSyncProvider() {
   return NULL;
 }
@@ -416,10 +412,6 @@ void* GLSurfaceAdapter::GetDisplay() {
 
 void* GLSurfaceAdapter::GetConfig() {
   return surface_->GetConfig();
-}
-
-unsigned long GLSurfaceAdapter::GetCompatibilityKey() {
-  return surface_->GetCompatibilityKey();
 }
 
 GLSurfaceFormat GLSurfaceAdapter::GetFormat() {

@@ -226,17 +226,8 @@ DocumentPolicy::FeatureState DocumentPolicy::MergeFeatureState(
 bool DocumentPolicy::IsFeatureEnabled(
     mojom::FeaturePolicyFeature feature) const {
   mojom::PolicyValueType feature_type = GetFeatureDefaults().at(feature).Type();
-  // TODO(iclelland): Generate this switch block
-  switch (feature) {
-    case mojom::FeaturePolicyFeature::kFontDisplay:
-      return font_display_;
-    case mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages:
-      return PolicyValue(unoptimized_lossless_images_) >=
-             PolicyValue::CreateMaxPolicyValue(feature_type);
-    default:
-      NOTREACHED();
-      return true;
-  }
+  return IsFeatureEnabled(feature,
+                          PolicyValue::CreateMaxPolicyValue(feature_type));
 }
 
 bool DocumentPolicy::IsFeatureEnabled(
@@ -247,16 +238,7 @@ bool DocumentPolicy::IsFeatureEnabled(
 
 PolicyValue DocumentPolicy::GetFeatureValue(
     mojom::FeaturePolicyFeature feature) const {
-  // TODO(iclelland): Generate this switch block
-  switch (feature) {
-    case mojom::FeaturePolicyFeature::kFontDisplay:
-      return PolicyValue(font_display_);
-    case mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages:
-      return PolicyValue(unoptimized_lossless_images_);
-    default:
-      NOTREACHED();
-      return PolicyValue(false);
-  }
+  return internal_feature_state_[static_cast<size_t>(feature)];
 }
 
 bool DocumentPolicy::IsFeatureSupported(
@@ -273,28 +255,9 @@ bool DocumentPolicy::IsFeatureSupported(
 
 void DocumentPolicy::UpdateFeatureState(const FeatureState& feature_state) {
   for (const auto& feature_and_value : feature_state) {
-    // TODO(iclelland): Generate this switch block
-    switch (feature_and_value.first) {
-      case mojom::FeaturePolicyFeature::kFontDisplay:
-        font_display_ = feature_and_value.second.BoolValue();
-        break;
-      case mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages:
-        unoptimized_lossless_images_ = feature_and_value.second.DoubleValue();
-        break;
-      default:
-        NOTREACHED();
-    }
+    internal_feature_state_[static_cast<size_t>(feature_and_value.first)] =
+        feature_and_value.second;
   }
-}
-
-DocumentPolicy::FeatureState DocumentPolicy::GetFeatureState() const {
-  FeatureState feature_state;
-  // TODO(iclelland): Generate this block
-  feature_state[mojom::FeaturePolicyFeature::kFontDisplay] =
-      PolicyValue(font_display_);
-  feature_state[mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages] =
-      PolicyValue(unoptimized_lossless_images_);
-  return feature_state;
 }
 
 DocumentPolicy::DocumentPolicy(const FeatureState& defaults) {

@@ -92,6 +92,3 @@ export class Camera3DeviceInfo {
         deviceInfo, facing, photoResolution, videoConfigs, supportedFpsRanges);
   }
 }
-
-/** @const */
-cca.device.Camera3DeviceInfo = Camera3DeviceInfo;

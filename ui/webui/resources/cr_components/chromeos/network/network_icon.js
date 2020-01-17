@@ -83,30 +83,30 @@ Polymer({
     }
     const mojom = chromeos.networkConfig.mojom;
     const type = this.networkState.type;
-    if (type == mojom.NetworkType.kEthernet) {
+    if (type === mojom.NetworkType.kEthernet) {
       return 'ethernet';
     }
-    if (type == mojom.NetworkType.kVPN) {
+    if (type === mojom.NetworkType.kVPN) {
       return 'vpn';
     }
 
     const prefix = OncMojo.networkTypeIsMobile(type) ? 'cellular-' : 'wifi-';
     if (!this.isListItem && !this.networkState.guid) {
       const device = this.deviceState;
-      if (!device || device.deviceState == mojom.DeviceStateType.kEnabled ||
-          device.deviceState == mojom.DeviceStateType.kEnabling) {
+      if (!device || device.deviceState === mojom.DeviceStateType.kEnabled ||
+          device.deviceState === mojom.DeviceStateType.kEnabling) {
         return prefix + 'no-network';
       }
       return prefix + 'off';
     }
 
     const connectionState = this.networkState.connectionState;
-    if (connectionState == mojom.ConnectionStateType.kConnecting) {
+    if (connectionState === mojom.ConnectionStateType.kConnecting) {
       return prefix + 'connecting';
     }
 
     if (!this.isListItem &&
-        connectionState == mojom.ConnectionStateType.kNotConnected) {
+        connectionState === mojom.ConnectionStateType.kNotConnected) {
       return prefix + 'not-connected';
     }
 
@@ -154,9 +154,9 @@ Polymer({
       networkTypeString = this.i18nDynamic(locale, 'OncTypeWiFi');
     }
 
-    // When isListItem == true, we want to describe the network and signal
+    // When isListItem === true, we want to describe the network and signal
     // strength regardless of connection state (i.e. when picking a Wi-Fi
-    // network to connect to. If isListItem == false we try to describe the
+    // network to connect to. If isListItem === false we try to describe the
     // current connection state and describe signal strength only if connected.
 
     if (!this.isListItem && !this.networkState.guid) {
@@ -216,7 +216,7 @@ Polymer({
    * @private
    */
   showTechnology_() {
-    return this.getTechnology_() != '' && this.showTechnologyBadge;
+    return this.getTechnology_() !== '' && this.showTechnologyBadge;
   },
 
   /**
@@ -227,11 +227,11 @@ Polymer({
     if (!this.networkState) {
       return '';
     }
-    if (this.networkState.type ==
+    if (this.networkState.type ===
         chromeos.networkConfig.mojom.NetworkType.kCellular) {
       const technology = this.getTechnologyId_(
           this.networkState.typeState.cellular.networkTechnology);
-      if (technology != '') {
+      if (technology !== '') {
         return 'network:' + technology;
       }
     }
@@ -278,11 +278,11 @@ Polymer({
     }
     const mojom = chromeos.networkConfig.mojom;
     if (!this.isListItem &&
-        this.networkState.connectionState ==
+        this.networkState.connectionState ===
             mojom.ConnectionStateType.kNotConnected) {
       return false;
     }
-    return this.networkState.type == mojom.NetworkType.kWiFi &&
-        this.networkState.typeState.wifi.security != mojom.SecurityType.kNone;
+    return this.networkState.type === mojom.NetworkType.kWiFi &&
+        this.networkState.typeState.wifi.security !== mojom.SecurityType.kNone;
   },
 });

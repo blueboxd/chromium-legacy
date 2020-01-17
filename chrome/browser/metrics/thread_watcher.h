@@ -48,6 +48,7 @@
 #include "base/command_line.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -184,6 +185,8 @@ class ThreadWatcher {
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, ThreadNotResponding);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, MultipleThreadsResponding);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, MultipleThreadsNotResponding);
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTestWithMockTime,
+                           MemoryPressureCrashKey);
 
   // Post constructor initialization.
   void Initialize();
@@ -200,6 +203,9 @@ class ThreadWatcher {
   // This method records watched thread is not responding to the ping message.
   // It increments |unresponsive_count_| by 1.
   void GotNoResponse();
+
+  // Sets a crash key with the time since last critical memory pressure signal.
+  void SetTimeSinceLastCriticalMemoryPressureCrashKey();
 
   // This method returns true if the watched thread has not responded with a
   // pong message for |unresponsive_threshold_| number of ping messages.
@@ -280,6 +286,10 @@ class ThreadWatcher {
   // responsive.
   bool crash_on_hang_;
 
+  // The last time at which a critical memory pressure signal was received, or
+  // null if no signal was ever received. Maintained by ThreadWatcherList.
+  base::TimeTicks last_critical_memory_pressure_;
+
   // We use this factory to create callback tasks for ThreadWatcher object. We
   // use this during ping-pong messaging between WatchDog thread and watched
   // thread.
@@ -358,6 +368,7 @@ class ThreadWatcherList {
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherListTest, Restart);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, ThreadNamesOnlyArgs);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, CrashOnHangThreadsAllArgs);
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherCrashKeyTest, MemoryPressureCrashKey);
 
   // This singleton holds the global list of registered ThreadWatchers.
   ThreadWatcherList();
@@ -410,6 +421,10 @@ class ThreadWatcherList {
   // |StopWatchingAll|.
   static void SetStopped(bool stopped);
 
+  // Invoked on memory pressure signal.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
   // The singleton of this class and is used to keep track of information about
   // threads that are being watched.
   static ThreadWatcherList* g_thread_watcher_list_;
@@ -431,6 +446,9 @@ class ThreadWatcherList {
   // Default value for the delay until |InitializeAndStartWatching| is called.
   // Non-const for tests.
   static int g_initialize_delay_seconds;
+
+  // Registration to receive memory pressure signals.
+  base::MemoryPressureListener memory_pressure_listener_;
 
   // Map of all registered watched threads, from thread_id to ThreadWatcher.
   RegistrationList registered_;

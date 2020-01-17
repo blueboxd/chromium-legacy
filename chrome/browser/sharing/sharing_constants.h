@@ -14,12 +14,6 @@ extern const char kSharingFCMAppID[];
 // Sender ID for Sharing.
 extern const char kSharingSenderID[];
 
-// Amount of time before a message is considered timeout if no ack is received.
-extern const base::TimeDelta kSendMessageTimeout;
-
-// Amount of time before an ack message is expired.
-extern const base::TimeDelta kAckTimeToLive;
-
 // Amount of time before FCM registration should happen again.
 extern const base::TimeDelta kRegistrationExpiration;
 

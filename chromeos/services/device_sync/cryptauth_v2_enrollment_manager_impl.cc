@@ -475,8 +475,6 @@ void CryptAuthV2EnrollmentManagerImpl::SetState(State state) {
   if (state_ != State::kWaitingForClientAppMetadata)
     return;
 
-  // TODO(https://crbug.com/936273): Add metrics to track failure rates due to
-  // async timeouts.
   timer_->Start(FROM_HERE, kWaitingForClientAppMetadataTimeout,
                 base::BindOnce(&CryptAuthV2EnrollmentManagerImpl::OnTimeout,
                                callback_weak_ptr_factory_.GetWeakPtr()));

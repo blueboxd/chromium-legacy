@@ -5,12 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_REMOTE_FRAME_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_REMOTE_FRAME_IMPL_H_
 
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
 #include "third_party/blink/public/web/web_remote_frame_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace cc {
 class Layer;
@@ -90,11 +92,11 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) override;
   void SetReplicatedInsecureNavigationsSet(const WebVector<unsigned>&) override;
   void ForwardResourceTimingToParent(const WebResourceTimingInfo&) override;
-  void SetNeedsOcclusionTracking(bool) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
   bool IsIgnoredForHitTest() const override;
-  void UpdateUserActivationState(UserActivationUpdateType) override;
+  void UpdateUserActivationState(
+      mojom::blink::UserActivationUpdateType) override;
   void TransferUserActivationFrom(blink::WebRemoteFrame* source_frame) override;
   void ScrollRectToVisible(const WebRect&,
                            const WebScrollIntoViewParams&) override;
@@ -142,11 +144,12 @@ class CORE_EXPORT WebRemoteFrameImpl final
   SelfKeepAlive<WebRemoteFrameImpl> self_keep_alive_;
 };
 
-DEFINE_TYPE_CASTS(WebRemoteFrameImpl,
-                  WebFrame,
-                  frame,
-                  frame->IsWebRemoteFrame(),
-                  frame.IsWebRemoteFrame());
+template <>
+struct DowncastTraits<WebRemoteFrameImpl> {
+  static bool AllowFrom(const WebFrame& frame) {
+    return frame.IsWebRemoteFrame();
+  }
+};
 
 }  // namespace blink
 

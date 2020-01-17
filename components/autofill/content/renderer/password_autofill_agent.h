@@ -221,6 +221,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   std::unique_ptr<PasswordForm> GetSimplifiedPasswordFormFromWebForm(
       const blink::WebFormElement& web_form);
 
+  std::unique_ptr<FormData> GetFormDataFromWebForm(
+      const blink::WebFormElement& web_form);
+
   // Creates a |PasswordForm| of fields that are not enclosed in any <form> tag.
   std::unique_ptr<PasswordForm> GetPasswordFormFromUnownedInputElements();
 
@@ -228,6 +231,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // flags, for fields that are not enclosed in any <form> tag.
   std::unique_ptr<PasswordForm>
   GetSimplifiedPasswordFormFromUnownedInputElements();
+
+  std::unique_ptr<FormData> GetFormDataFromUnownedInputElements();
 
   bool logging_state_active() const { return logging_state_active_; }
 

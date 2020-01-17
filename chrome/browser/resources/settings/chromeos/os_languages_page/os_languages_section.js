@@ -25,7 +25,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.LANGUAGES_DETAILS) {
           map.set(
@@ -38,9 +38,9 @@ Polymer({
   },
 
   /** @private */
-  onLanguagesTap_: function() {
+  onLanguagesTap_() {
     // TODO(crbug.com/950007): Add UMA metric for opening language details.
-    settings.navigateTo(settings.routes.LANGUAGES_DETAILS);
+    settings.Router.getInstance().navigateTo(settings.routes.LANGUAGES_DETAILS);
   },
 
   /**
@@ -50,7 +50,7 @@ Polymer({
    * @return {string} A sublabel for the 'Languages and input' row
    * @private
    */
-  getSubLabel_: function(uiLanguage, id) {
+  getSubLabel_(uiLanguage, id) {
     const languageDisplayName =
         this.languageHelper.getLanguage(uiLanguage).displayName;
     const inputMethod =

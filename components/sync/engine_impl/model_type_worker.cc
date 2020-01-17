@@ -397,7 +397,9 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   DCHECK(response.size() <= max_entries);
   return std::make_unique<NonBlockingTypeCommitContribution>(
       GetModelType(), model_type_state_.type_context(), std::move(response),
-      this, cryptographer_.get(), passphrase_type_, debug_info_emitter_,
+      base::BindOnce(&ModelTypeWorker::OnCommitResponse,
+                     weak_ptr_factory_.GetWeakPtr()),
+      cryptographer_.get(), passphrase_type_, debug_info_emitter_,
       CommitOnlyTypes().Has(GetModelType()));
 }
 
@@ -405,13 +407,16 @@ bool ModelTypeWorker::HasLocalChangesForTest() const {
   return has_local_changes_;
 }
 
-void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
+void ModelTypeWorker::OnCommitResponse(
+    const CommitResponseDataList& committed_response_list,
+    const FailedCommitResponseDataList& error_response_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Send the responses back to the model thread. It needs to know which
-  // items have been successfully committed so it can save that information in
-  // permanent storage.
-  model_type_processor_->OnCommitCompleted(model_type_state_, *response_list);
+  // items have been successfully committed (it can save that information in
+  // permanent storage) and which failed (it can e.g. notify the user).
+  model_type_processor_->OnCommitCompleted(
+      model_type_state_, committed_response_list, error_response_list);
 }
 
 void ModelTypeWorker::AbortMigration() {

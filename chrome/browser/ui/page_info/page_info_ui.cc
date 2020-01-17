@@ -184,6 +184,8 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
     {ContentSettingsType::BLUETOOTH_SCANNING,
      IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING},
     {ContentSettingsType::NFC, IDS_PAGE_INFO_TYPE_NFC},
+    {ContentSettingsType::VR, IDS_PAGE_INFO_TYPE_VR},
+    {ContentSettingsType::AR, IDS_PAGE_INFO_TYPE_AR},
   };
   return kPermissionsUIInfo;
 }
@@ -624,6 +626,10 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
       break;
     case ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD:
       icon = &kSaveOriginalFileIcon;
+      break;
+    case ContentSettingsType::VR:
+    case ContentSettingsType::AR:
+      icon = &kVrHeadsetIcon;
       break;
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are

@@ -40,7 +40,7 @@ ScopedSVGPaintState::~ScopedSVGPaintState() {
         SVGResourcesCache::CachedResourcesForLayoutObject(object_)->Filter() ==
         filter_);
     DCHECK(filter_recording_context_);
-    SVGFilterPainter(*filter_).FinishEffect(object_,
+    SVGFilterPainter(*filter_).FinishEffect(object_, display_item_client_,
                                             *filter_recording_context_);
 
     // Reset the paint info after the filter effect has been completed.
@@ -52,20 +52,16 @@ ScopedSVGPaintState::~ScopedSVGPaintState() {
     DCHECK(
         SVGResourcesCache::CachedResourcesForLayoutObject(object_)->Masker() ==
         masker_);
-    SVGMaskPainter(*masker_).FinishEffect(object_, GetPaintInfo().context);
+    SVGMaskPainter(*masker_).FinishEffect(object_, display_item_client_,
+                                          GetPaintInfo().context);
   }
 }
 
-bool ScopedSVGPaintState::ApplyClipMaskAndFilterIfNecessary() {
+bool ScopedSVGPaintState::ApplyEffects() {
 #if DCHECK_IS_ON()
   DCHECK(!apply_clip_mask_and_filter_if_necessary_called_);
   apply_clip_mask_and_filter_if_necessary_called_ = true;
 #endif
-  // In CAP we should early exit once the paint property state has been
-  // applied, because all meta (non-drawing) display items are ignored in
-  // CAP. However we can't simply omit them because there are still
-  // non-composited painting (e.g. SVG filters in particular) that rely on
-  // these meta display items.
   ApplyPaintPropertyState();
 
   // When rendering clip paths as masks, only geometric operations should be
@@ -129,21 +125,21 @@ void ScopedSVGPaintState::ApplyPaintPropertyState() {
   else if (const auto* clip_path_clip = properties->ClipPathClip())
     state.SetClip(*clip_path_clip);
   scoped_paint_chunk_properties_.emplace(
-      paint_controller, state, object_,
+      paint_controller, state, display_item_client_,
       DisplayItem::PaintPhaseToSVGEffectType(GetPaintInfo().phase));
 }
 
 void ScopedSVGPaintState::ApplyClipIfNecessary() {
   if (object_.StyleRef().ClipPath()) {
     clip_path_clipper_.emplace(GetPaintInfo().context, object_,
-                               PhysicalOffset());
+                               display_item_client_, PhysicalOffset());
   }
 }
 
 bool ScopedSVGPaintState::ApplyMaskIfNecessary(SVGResources* resources) {
   if (LayoutSVGResourceMasker* masker =
           resources ? resources->Masker() : nullptr) {
-    if (!SVGMaskPainter(*masker).PrepareEffect(object_, GetPaintInfo().context))
+    if (!SVGMaskPainter(*masker).PrepareEffect(GetPaintInfo().context))
       return false;
     masker_ = masker;
   }

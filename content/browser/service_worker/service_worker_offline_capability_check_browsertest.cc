@@ -72,7 +72,8 @@ class FetchEventTestHelper {
       scoped_refptr<ServiceWorkerVersion> version) {
     ASSERT_TRUE(
         BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId()));
-    ASSERT_EQ(ServiceWorkerVersion::ACTIVATED, version->status());
+    ASSERT_TRUE(version->status() == ServiceWorkerVersion::ACTIVATING ||
+                version->status() == ServiceWorkerVersion::ACTIVATED);
 
     for (FetchEventDispatch& fetch_event_dispatch : fetch_event_dispatches_) {
       FetchOnCoreThread(done_barrier_closure_on_ui, embedded_test_server,
@@ -223,7 +224,7 @@ class ServiceWorkerOfflineCapabilityCheckBrowserTest
   void SetupFetchEventDispatchTargetVersionOnCoreThread(
       base::OnceClosure done) {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-    wrapper()->context()->storage()->FindRegistrationForScope(
+    wrapper()->context()->registry()->FindRegistrationForScope(
         embedded_test_server()->GetURL("/service_worker/"),
         base::BindOnce(&ServiceWorkerOfflineCapabilityCheckBrowserTest::
                            DidFindRegistration,
@@ -644,7 +645,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
                                 "/service_worker/create_service_worker.html")));
   EXPECT_EQ("DONE", EvalJs(shell(), "register('maybe_offline_support.js')"));
 
-  // At this point, a service worker's status is ACTIVATED because
+  // At this point, a service worker's status is ACTIVATING or ACTIVATED because
   // register() awaits navigator.serviceWorker.ready promise.
 
   EXPECT_EQ(OfflineCapability::kUnsupported,

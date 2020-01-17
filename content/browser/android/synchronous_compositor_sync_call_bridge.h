@@ -90,7 +90,7 @@ class SynchronousCompositorSyncCallBridge
 
   // Schedule a callback for when vsync finishes and wait for the
   // BeginFrameResponse callback.
-  bool WaitAfterVSyncOnUIThread(ui::WindowAndroid* window_android);
+  bool WaitAfterVSyncOnUIThread();
 
   // Store a FrameFuture for a later ReceiveFrame callback. Return if the
   // future was stored for further handling.

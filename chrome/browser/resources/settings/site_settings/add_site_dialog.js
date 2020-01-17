@@ -45,7 +45,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     assert(this.category);
     assert(this.contentSetting);
     assert(typeof this.hasIncognito != 'undefined');
@@ -57,7 +57,7 @@ Polymer({
    * Validates that the pattern entered is valid.
    * @private
    */
-  validate_: function() {
+  validate_() {
     // If input is empty, disable the action button, but don't show the red
     // invalid message.
     if (this.$.site.value.trim() == '') {
@@ -75,7 +75,7 @@ Polymer({
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.cancel();
   },
 
@@ -84,7 +84,7 @@ Polymer({
    * the dialog).
    * @private
    */
-  onSubmit_: function() {
+  onSubmit_() {
     assert(!this.$.add.disabled);
     let primaryPattern = this.site_;
     let secondaryPattern = settings.SITE_EXCEPTION_WILDCARD;
@@ -102,13 +102,13 @@ Polymer({
   },
 
   /** @private */
-  showIncognitoSessionOnly_: function() {
+  showIncognitoSessionOnly_() {
     return this.hasIncognito && !loadTimeData.getBoolean('isGuest') &&
         this.contentSetting != settings.ContentSetting.SESSION_ONLY;
   },
 
   /** @private */
-  hasIncognitoChanged_: function() {
+  hasIncognitoChanged_() {
     if (!this.hasIncognito) {
       this.$.incognito.checked = false;
     }
@@ -118,7 +118,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldHideThirdPartyCookieCheckbox_: function() {
+  shouldHideThirdPartyCookieCheckbox_() {
     return this.category !== settings.ContentSettingsTypes.COOKIES ||
         !loadTimeData.getBoolean('showImprovedCookieControlsForThirdParties');
   },

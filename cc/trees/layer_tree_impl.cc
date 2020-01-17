@@ -259,13 +259,9 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
     if (is_viewport_scrollbar) {
       gfx::SizeF viewport_bounds(bounds_size);
       if (scroll_node->scrolls_inner_viewport) {
-        // TODO(bokan): Temporarily make these CHECKs to debug
-        // crbug.com/1037759.
-        CHECK_EQ(scroll_node, InnerViewportScrollNode());
+        DCHECK_EQ(scroll_node, InnerViewportScrollNode());
         auto* outer_scroll_node = OuterViewportScrollNode();
-        CHECK_NE(viewport_property_ids_.outer_scroll,
-                 ScrollTree::kInvalidNodeId);
-        CHECK(outer_scroll_node);
+        DCHECK(outer_scroll_node);
 
         // Add offset and bounds contribution of outer viewport.
         current_offset +=
@@ -1020,9 +1016,10 @@ void LayerTreeImpl::SetBrowserControlsParams(
   browser_controls_params_ = params;
   UpdateViewportContainerSizes();
 
-  if (IsActiveTree())
+  if (IsActiveTree()) {
     host_impl_->browser_controls_manager()->OnBrowserControlsParamsChanged(
         params.animate_browser_controls_height_changes);
+  }
 }
 
 void LayerTreeImpl::set_overscroll_behavior(
@@ -1032,14 +1029,28 @@ void LayerTreeImpl::set_overscroll_behavior(
 
 bool LayerTreeImpl::ClampTopControlsShownRatio() {
   float ratio = top_controls_shown_ratio_->Current(true);
+  auto range = std::make_pair(0.f, 1.f);
+  if (IsActiveTree()) {
+    // BCOM might need to set ratios outside the [0, 1] range (e.g. animation
+    // running). So, use the values it provides instead of clamping to [0, 1].
+    range =
+        host_impl_->browser_controls_manager()->TopControlsShownRatioRange();
+  }
   return top_controls_shown_ratio_->SetCurrent(
-      base::ClampToRange(ratio, 0.f, 1.f));
+      base::ClampToRange(ratio, range.first, range.second));
 }
 
 bool LayerTreeImpl::ClampBottomControlsShownRatio() {
   float ratio = bottom_controls_shown_ratio_->Current(true);
+  auto range = std::make_pair(0.f, 1.f);
+  if (IsActiveTree()) {
+    // BCOM might need to set ratios outside the [0, 1] range (e.g. animation
+    // running). So, use the values it provides instead of clamping to [0, 1].
+    range =
+        host_impl_->browser_controls_manager()->BottomControlsShownRatioRange();
+  }
   return bottom_controls_shown_ratio_->SetCurrent(
-      base::ClampToRange(ratio, 0.f, 1.f));
+      base::ClampToRange(ratio, range.first, range.second));
 }
 
 bool LayerTreeImpl::SetCurrentBrowserControlsShownRatio(float top_ratio,

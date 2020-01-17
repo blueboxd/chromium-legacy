@@ -22,6 +22,7 @@
 namespace browser_watcher {
 
 using ActivitySnapshot = base::debug::ThreadActivityAnalyzer::Snapshot;
+using base::PersistentMemoryAllocator;
 using base::debug::ActivityUserData;
 using base::debug::GlobalActivityAnalyzer;
 using base::debug::GlobalActivityTracker;
@@ -293,15 +294,12 @@ void CollectProcess(int64_t pid,
 
 }  // namespace
 
-CollectionStatus Extract(const base::FilePath& stability_file,
-                         StabilityReport* report) {
+CollectionStatus Extract(
+    std::unique_ptr<GlobalActivityAnalyzer> global_analyzer,
+    StabilityReport* report) {
+  DCHECK(global_analyzer);
   DCHECK(report);
 
-  // Create a global analyzer.
-  std::unique_ptr<GlobalActivityAnalyzer> global_analyzer =
-      GlobalActivityAnalyzer::CreateWithFile(stability_file);
-  if (!global_analyzer)
-    return ANALYZER_CREATION_FAILED;
   report->set_is_complete(global_analyzer->IsDataComplete());
 
   // Collect process data.

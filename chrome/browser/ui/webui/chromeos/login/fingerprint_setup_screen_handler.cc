@@ -92,6 +92,7 @@ void FingerprintSetupScreenHandler::DeclareLocalizedValues(
       description_id =
           IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_POWER_BUTTON_DESCRIPTION;
       break;
+    case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_LEFT:
     case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
     case quick_unlock::FingerprintLocation::KEYBOARD_TOP_RIGHT:
       description_id =

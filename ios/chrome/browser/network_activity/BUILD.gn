@@ -8,9 +8,7 @@ source_set("network_activity") {
     "network_activity_indicator_manager.h",
     "network_activity_indicator_manager.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("tab_helper") {

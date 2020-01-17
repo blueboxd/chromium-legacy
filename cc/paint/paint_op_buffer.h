@@ -155,7 +155,6 @@ class CC_PAINT_EXPORT PaintOp {
                      bool can_use_lcd_text,
                      bool context_supports_distance_field_text,
                      int max_texture_size,
-                     size_t max_texture_bytes,
                      const SkMatrix& original_ctm);
     SerializeOptions(const SerializeOptions&);
     SerializeOptions& operator=(const SerializeOptions&);
@@ -171,7 +170,6 @@ class CC_PAINT_EXPORT PaintOp {
     bool can_use_lcd_text = false;
     bool context_supports_distance_field_text = true;
     int max_texture_size = 0;
-    size_t max_texture_bytes = 0.f;
     SkMatrix original_ctm = SkMatrix::I();
 
     // Optional.
@@ -226,6 +224,13 @@ class CC_PAINT_EXPORT PaintOp {
   // For draw ops, returns true if a conservative bounding rect can be provided
   // for the op.
   static bool GetBounds(const PaintOp* op, SkRect* rect);
+
+  // Returns the minimum conservative bounding rect that |op| draws to on a
+  // canvas. |clip_rect| and |ctm| are the current clip rect and transform on
+  // this canvas.
+  static gfx::Rect ComputePaintRect(const PaintOp* op,
+                                    const SkRect& clip_rect,
+                                    const SkMatrix& ctm);
 
   // Returns true if the op lies outside the current clip and should be skipped.
   // Should only be used with draw ops.

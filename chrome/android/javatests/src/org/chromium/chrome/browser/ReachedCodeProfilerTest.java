@@ -15,6 +15,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.ReachedCodeProfiler;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.test.ChromeActivityTestRule;

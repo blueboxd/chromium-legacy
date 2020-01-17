@@ -370,7 +370,7 @@ class SafeBrowsingBlockingPageBrowserTest
     base::test::ScopedFeatureList::FeatureAndParams tag_and_attribute(
         safe_browsing::kThreatDomDetailsTagAndAttributeFeature, parameters);
     // Test with and without committed interstitials.
-    if (testing::get<1>(GetParam())) {
+    if (testing::get<2>(GetParam())) {
       std::vector<base::test::ScopedFeatureList::FeatureAndParams>
           enabled_features = {tag_and_attribute,
                               base::test::ScopedFeatureList::FeatureAndParams(

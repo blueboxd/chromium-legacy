@@ -230,27 +230,27 @@ TEST(SequenceCheckerMacroTest, Macros) {
       SequenceToken::Create());
   SEQUENCE_CHECKER(my_sequence_checker);
 
-  // Don't expect a DCHECK death when a SequenceChecker is used on the right
-  // sequence.
-  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker) << "Error message.";
-
+  {
+    // Don't expect a DCHECK death when a SequenceChecker is used on the right
+    // sequence.
+    DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker);
+  }
   scope.reset();
 
 #if DCHECK_IS_ON()
   // Expect DCHECK death when used on a different sequence.
-  EXPECT_DCHECK_DEATH({
-    DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker) << "Error message.";
-  });
+  EXPECT_DCHECK_DEATH(
+      { DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker); });
 #else
     // Happily no-ops on non-dcheck builds.
-    DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker) << "Error message.";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker);
 #endif
 
   DETACH_FROM_SEQUENCE(my_sequence_checker);
 
   // Don't expect a DCHECK death when a SequenceChecker is used for the first
   // time after having been detached.
-  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker) << "Error message.";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker);
 }
 
 // Owns a SequenceCheckerImpl, and asserts that CalledOnValidSequence() is valid

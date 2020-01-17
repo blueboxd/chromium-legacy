@@ -24,7 +24,7 @@
  */
 
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_rotation_rate.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_rotation_rate_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_device_motion_event_rotation_rate_init.h"
 
 namespace blink {
 

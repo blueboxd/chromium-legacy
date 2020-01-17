@@ -26,7 +26,7 @@ class DummyAuthService : public AuthServiceInterface {
   // AuthServiceInterface overrides.
   void AddObserver(AuthServiceObserver* observer) override;
   void RemoveObserver(AuthServiceObserver* observer) override;
-  void StartAuthentication(const AuthStatusCallback& callback) override;
+  void StartAuthentication(AuthStatusCallback callback) override;
   bool HasAccessToken() const override;
   bool HasRefreshToken() const override;
   const std::string& access_token() const override;

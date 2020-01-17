@@ -220,6 +220,7 @@ gfx::Rect DrmCursor::GetCursorConfinedBounds() {
 
 void DrmCursor::InitializeOnEvdev() {
   DCHECK(evdev_thread_checker_.CalledOnValidThread());
+  base::AutoLock lock(lock_);
   proxy_->InitializeOnEvdevIfNecessary();
 }
 

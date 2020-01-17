@@ -62,7 +62,7 @@ class BlobRegistryImplTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     context_ = std::make_unique<BlobStorageContext>(
-        data_dir_.GetPath(),
+        data_dir_.GetPath(), data_dir_.GetPath(),
         base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()}));
     auto storage_policy =
         base::MakeRefCounted<content::MockSpecialStoragePolicy>();

@@ -32,8 +32,8 @@ cr.define('indexeddb', function() {
     const links = document.querySelectorAll(selector);
     for (let i = 0; i < links.length; ++i) {
       const link = links[i];
-      if (partition_path == link.idb_partition_path &&
-          origin_url == link.idb_origin_url) {
+      if (partition_path === link.idb_partition_path &&
+          origin_url === link.idb_origin_url) {
         callback(link);
       }
     }

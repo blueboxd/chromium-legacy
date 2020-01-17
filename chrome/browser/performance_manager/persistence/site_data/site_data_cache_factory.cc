@@ -142,11 +142,10 @@ void SiteDataCacheFactory::ReplaceCacheForTesting(
 
   DCHECK(base::Contains(data_cache_map_, browser_context_id));
   data_cache_map_.erase(browser_context_id);
-  data_cache_map_.emplace(std::make_pair(browser_context_id, std::move(cache)));
+  data_cache_map_.emplace(browser_context_id, std::move(cache));
 
   DCHECK(!base::Contains(data_cache_inspector_map_, browser_context_id));
-  data_cache_inspector_map_.emplace(std::make_pair(
-      browser_context_id, static_cast<SiteDataCacheInspector*>(cache_raw)));
+  data_cache_inspector_map_.emplace(browser_context_id, cache_raw);
 }
 
 void SiteDataCacheFactory::OnBrowserContextCreated(
@@ -165,14 +164,14 @@ void SiteDataCacheFactory::OnBrowserContextCreated(
     SiteDataCache* data_cache_for_readers =
         data_cache_map_[parent_context_id.value()].get();
     DCHECK(data_cache_for_readers);
-    data_cache_map_.emplace(std::make_pair(
+    data_cache_map_.emplace(
         std::move(browser_context_id),
         std::make_unique<NonRecordingSiteDataCache>(
-            browser_context_id, parent_debug, data_cache_for_readers)));
+            browser_context_id, parent_debug, data_cache_for_readers));
   } else {
-    data_cache_map_.emplace(std::make_pair(
+    data_cache_map_.emplace(
         std::move(browser_context_id),
-        std::make_unique<SiteDataCacheImpl>(browser_context_id, context_path)));
+        std::make_unique<SiteDataCacheImpl>(browser_context_id, context_path));
   }
 }
 

@@ -15,9 +15,7 @@ generate_jni("jni_headers") {
 }
 
 java_cpp_enum("java_enums_srcjar") {
-  sources = [
-    "crash_keys_android.h",
-  ]
+  sources = [ "crash_keys_android.h" ]
 }
 
 android_library("java") {
@@ -44,9 +42,7 @@ source_set("crash_android") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "crash_keys_android_unittest.cc",
-  ]
+  sources = [ "crash_keys_android_unittest.cc" ]
   deps = [
     ":crash_android",
     "//components/crash/core/common:crash_key",
@@ -71,9 +67,7 @@ android_library("handler_java") {
 }
 
 static_library("crashpad_main") {
-  sources = [
-    "crashpad_main.cc",
-  ]
+  sources = [ "crashpad_main.cc" ]
 
   deps = [
     ":java_handler_jni_headers",

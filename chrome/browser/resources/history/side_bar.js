@@ -67,14 +67,14 @@ Polymer({
    * @param {!CustomEvent<{keyboardEvent: !KeyboardEvent}>} e
    * @private
    */
-  onSpacePressed_: function(e) {
+  onSpacePressed_(e) {
     e.detail.keyboardEvent.path[0].click();
   },
 
   /**
    * @private
    */
-  onSelectorActivate_: function() {
+  onSelectorActivate_() {
     this.fire('history-close-drawer');
   },
 
@@ -83,7 +83,7 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onClearBrowsingDataTap_: function(e) {
+  onClearBrowsingDataTap_(e) {
     const browserService = BrowserService.getInstance();
     browserService.recordAction('InitClearBrowsingData');
     browserService.openClearBrowsingData();
@@ -95,7 +95,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeClearBrowsingDataTabIndex_: function() {
+  computeClearBrowsingDataTabIndex_() {
     return this.guestSession_ ? '-1' : '';
   },
 
@@ -104,7 +104,7 @@ Polymer({
    * accessibility purposes, taps are handled separately by <iron-selector>.
    * @private
    */
-  onItemClick_: function(e) {
+  onItemClick_(e) {
     e.preventDefault();
   },
 
@@ -112,7 +112,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShowFooter_: function(includeOtherFormsOfBrowsingHistory, managed) {
+  computeShowFooter_(includeOtherFormsOfBrowsingHistory, managed) {
     return includeOtherFormsOfBrowsingHistory || managed;
   },
 });

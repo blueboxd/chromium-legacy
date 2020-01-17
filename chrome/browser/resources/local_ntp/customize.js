@@ -329,10 +329,6 @@ customize.setMenuVisibility = function() {
   $(customize.IDS.UPLOAD_IMAGE).hidden = false;
   $(customize.IDS.RESTORE_DEFAULT).hidden = false;
   $(customize.IDS.EDIT_BG_DIVIDER).hidden = false;
-  $(customize.IDS.COLORS_BUTTON).hidden = !configData.chromeColors;
-  $(customize.IDS.COLOR_PICKER_CONTAINER)
-      .classList.toggle(
-          customize.CLASSES.VISIBLE, configData.chromeColorsCustomColorPicker);
 };
 
 /**
@@ -2282,12 +2278,6 @@ customize.loadColorsMenu = function() {
 customize.loadColorMenuTiles = function() {
   const colorsColl = ntpApiHandle.getColorsInfo();
   for (let i = 0; i < colorsColl.length; ++i) {
-    // After 4 color tiles create an empty tile to take the place of the color
-    // picker. This is done so that the rest of the colors don't move if color
-    // picker is not present.
-    if (!configData.chromeColorsCustomColorPicker && i == 4) {
-      $(customize.IDS.COLORS_MENU).appendChild(document.createElement('div'));
-    }
     const id = 'color_' + i;
     const imageUrl = colorsColl[i].icon;
     const dataset = {'color': colorsColl[i].color, 'id': colorsColl[i].id};
@@ -2311,26 +2301,19 @@ customize.loadColorMenuTiles = function() {
   $(customize.IDS.COLORS_MENU).onkeydown = function(event) {
     if (document.activeElement === $(customize.IDS.COLORS_MENU) &&
         customize.arrowKeys.includes(event.keyCode)) {
-      if (configData.chromeColorsCustomColorPicker) {
-        $(customize.IDS.COLOR_PICKER_TILE).focus();
-      } else {
-        $(customize.IDS.COLORS_DEFAULT_ICON).focus();
-      }
+      $(customize.IDS.COLOR_PICKER_TILE).focus();
       event.preventDefault();
     }
   };
 
   // Configure custom color picker.
-  if (configData.chromeColorsCustomColorPicker) {
-    $(customize.IDS.COLOR_PICKER_TILE).onclick = function(event) {
-      $(customize.IDS.COLOR_PICKER).value = customize.customColorPicked;
-      $(customize.IDS.COLOR_PICKER).click();
-    };
-    $(customize.IDS.COLOR_PICKER_TILE).onkeydown =
-        customize.tileOnKeyDownInteraction;
-    $(customize.IDS.COLOR_PICKER).onchange =
-        customize.colorPickerTileInteraction;
-  }
+  $(customize.IDS.COLOR_PICKER_TILE).onclick = function(event) {
+    $(customize.IDS.COLOR_PICKER).value = customize.customColorPicked;
+    $(customize.IDS.COLOR_PICKER).click();
+  };
+  $(customize.IDS.COLOR_PICKER_TILE).onkeydown =
+      customize.tileOnKeyDownInteraction;
+  $(customize.IDS.COLOR_PICKER).onchange = customize.colorPickerTileInteraction;
 };
 
 /**
@@ -2386,8 +2369,7 @@ customize.colorsMenuPreselectTile = function() {
       }
     }
   } else if (
-      configData.chromeColorsCustomColorPicker && ntpTheme.colorDark &&
-      ntpTheme.colorLight && ntpTheme.colorPicked) {
+      ntpTheme.colorDark && ntpTheme.colorLight && ntpTheme.colorPicked) {
     // Custom color is selected.
     tile = $(customize.IDS.COLOR_PICKER_TILE);
 

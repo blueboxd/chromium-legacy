@@ -90,7 +90,7 @@ void NFCProxy::AddWriter(NDEFWriter* writer) {
 }
 
 void NFCProxy::Push(device::mojom::blink::NDEFMessagePtr message,
-                    device::mojom::blink::NDEFPushOptionsPtr options,
+                    device::mojom::blink::NDEFWriteOptionsPtr options,
                     device::mojom::blink::NFC::PushCallback cb) {
   EnsureMojoConnection();
   nfc_remote_->Push(std::move(message), std::move(options), std::move(cb));

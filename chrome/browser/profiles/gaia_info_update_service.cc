@@ -176,6 +176,5 @@ void GAIAInfoUpdateService::OnExtendedAccountInfoUpdated(
 
 bool GAIAInfoUpdateService::ShouldUpdate() {
   return identity_manager_->HasPrimaryAccount() ||
-         (identity_manager_->HasUnconsentedPrimaryAccount() &&
-          base::FeatureList::IsEnabled(kPersistUPAInProfileInfoCache));
+         identity_manager_->HasUnconsentedPrimaryAccount();
 }

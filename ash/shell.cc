@@ -127,6 +127,7 @@
 #include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/event_client_impl.h"
+#include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
 #include "ash/wm/immersive_context_ash.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -613,6 +614,8 @@ Shell::~Shell() {
 
   RemovePreTargetHandler(accelerator_filter_.get());
   RemovePreTargetHandler(event_transformation_handler_.get());
+  if (back_gesture_event_handler_)
+    RemovePreTargetHandler(back_gesture_event_handler_.get());
   RemovePreTargetHandler(toplevel_window_event_handler_.get());
   RemovePostTargetHandler(toplevel_window_event_handler_.get());
   RemovePreTargetHandler(system_gesture_filter_.get());
@@ -991,6 +994,11 @@ void Shell::Init(
 
   event_transformation_handler_.reset(new EventTransformationHandler);
   AddPreTargetHandler(event_transformation_handler_.get());
+
+  if (features::IsSwipingFromLeftEdgeToGoBackEnabled()) {
+    back_gesture_event_handler_ = std::make_unique<BackGestureEventHandler>();
+    AddPreTargetHandler(back_gesture_event_handler_.get());
+  }
 
   toplevel_window_event_handler_ =
       std::make_unique<ToplevelWindowEventHandler>();

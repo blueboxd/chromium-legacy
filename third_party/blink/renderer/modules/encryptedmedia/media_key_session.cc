@@ -352,9 +352,7 @@ MediaKeySession::MediaKeySession(ScriptState* script_state,
       is_callable_(false),
       is_closing_or_closed_(false),
       closed_promise_(MakeGarbageCollected<ClosedPromise>(
-          ExecutionContext::From(script_state),
-          this,
-          ClosedPromise::kClosed)),
+          ExecutionContext::From(script_state))),
       action_timer_(ExecutionContext::From(script_state)
                         ->GetTaskRunner(TaskType::kMiscPlatformAPI),
                     this,
@@ -913,7 +911,7 @@ void MediaKeySession::Close() {
   // 1. Let session be the associated MediaKeySession object.
   // 2. Let promise be the session's closed attribute.
   // 3. If promise is resolved, abort these steps.
-  if (closed_promise_->GetState() == ScriptPromisePropertyBase::kResolved)
+  if (closed_promise_->GetState() == ClosedPromise::kResolved)
     return;
 
   // 4. Set the session's closing or closed value to true.

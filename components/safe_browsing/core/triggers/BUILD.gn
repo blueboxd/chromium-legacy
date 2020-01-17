@@ -23,6 +23,7 @@ source_set("triggers") {
     "//components/safe_browsing/core:features",
     "//components/safe_browsing/core/browser:browser",
     "//components/safe_browsing/core/browser:referrer_chain_provider",
+    "//components/safe_browsing/core/common:thread_utils",
     "//net:net",
   ]
 }
@@ -55,6 +56,7 @@ source_set("unit_tests") {
     "//components/safe_browsing/content/browser",
     "//components/safe_browsing/core:features",
     "//components/safe_browsing/core/browser:browser",
+    "//components/safe_browsing/core/common:test_support",
     "//content/public/browser:browser",
     "//content/test:test_support",
     "//testing/gmock",

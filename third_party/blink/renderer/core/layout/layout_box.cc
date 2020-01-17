@@ -848,7 +848,7 @@ LayoutUnit LayoutBox::ConstrainLogicalWidthByMinMax(
     LayoutUnit available_width,
     const LayoutBlock* cb) const {
   const ComputedStyle& style_to_use = StyleRef();
-  if (!style_to_use.LogicalMaxWidth().IsMaxSizeNone())
+  if (!style_to_use.LogicalMaxWidth().IsNone())
     logical_width = std::min(
         logical_width,
         ComputeLogicalWidthUsing(kMaxSize, style_to_use.LogicalMaxWidth(),
@@ -864,8 +864,7 @@ LayoutUnit LayoutBox::ConstrainLogicalHeightByMinMax(
   // Note that the values 'min-content', 'max-content' and 'fit-content' should
   // behave as the initial value if specified in the block direction.
   const Length& logical_max_height = StyleRef().LogicalMaxHeight();
-  if (!logical_max_height.IsMaxSizeNone() &&
-      !logical_max_height.IsMinContent() &&
+  if (!logical_max_height.IsNone() && !logical_max_height.IsMinContent() &&
       !logical_max_height.IsMaxContent() &&
       !logical_max_height.IsFitContent()) {
     LayoutUnit max_h = ComputeLogicalHeightUsing(kMaxSize, logical_max_height,
@@ -889,7 +888,7 @@ LayoutUnit LayoutBox::ConstrainContentBoxLogicalHeightByMinMax(
   // advantage of already knowing the current resolved percentage height
   // to avoid recursing up through our containing blocks again to determine it.
   const ComputedStyle& style_to_use = StyleRef();
-  if (!style_to_use.LogicalMaxHeight().IsMaxSizeNone()) {
+  if (!style_to_use.LogicalMaxHeight().IsNone()) {
     if (style_to_use.LogicalMaxHeight().IsPercent() &&
         style_to_use.LogicalHeight().IsPercent()) {
       LayoutUnit available_logical_height(
@@ -3923,7 +3922,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthRespectingMinMaxWidth(
   LayoutUnit max_logical_width =
       (should_compute_preferred == kComputePreferred &&
        StyleRef().LogicalMaxWidth().IsPercentOrCalc()) ||
-              StyleRef().LogicalMaxWidth().IsMaxSizeNone()
+              StyleRef().LogicalMaxWidth().IsNone()
           ? logical_width
           : ComputeReplacedLogicalWidthUsing(kMaxSize,
                                              StyleRef().LogicalMaxWidth());
@@ -3980,7 +3979,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthUsing(
       return LayoutUnit();
     }
     case Length::kAuto:
-    case Length::kMaxSizeNone:
+    case Length::kNone:
       return IntrinsicLogicalWidth();
     case Length::kExtendToZoom:
     case Length::kDeviceWidth:
@@ -4575,7 +4574,7 @@ void LayoutBox::ComputePositionedLogicalWidth(
       margin_logical_right, computed_values);
 
   // Calculate constraint equation values for 'max-width' case.
-  if (!StyleRef().LogicalMaxWidth().IsMaxSizeNone()) {
+  if (!StyleRef().LogicalMaxWidth().IsNone()) {
     LogicalExtentComputedValues max_values;
 
     ComputePositionedLogicalWidthUsing(
@@ -4988,8 +4987,7 @@ void LayoutBox::ComputePositionedLogicalHeight(
 
   // Calculate constraint equation values for 'max-height' case.
   const Length& logical_max_height = style_to_use.LogicalMaxHeight();
-  if (!logical_max_height.IsMaxSizeNone() &&
-      !logical_max_height.IsMinContent() &&
+  if (!logical_max_height.IsNone() && !logical_max_height.IsMinContent() &&
       !logical_max_height.IsMaxContent() &&
       !logical_max_height.IsFitContent()) {
     LogicalExtentComputedValues max_values;
@@ -5805,7 +5803,7 @@ bool LayoutBox::HasUnsplittableScrollingOverflow() const {
   // world and is what we used to do in the old model anyway.
   return !StyleRef().LogicalHeight().IsIntrinsicOrAuto() ||
          (!StyleRef().LogicalMaxHeight().IsIntrinsicOrAuto() &&
-          !StyleRef().LogicalMaxHeight().IsMaxSizeNone() &&
+          !StyleRef().LogicalMaxHeight().IsNone() &&
           (!StyleRef().LogicalMaxHeight().IsPercentOrCalc() ||
            PercentageLogicalHeightIsResolvable())) ||
          (!StyleRef().LogicalMinHeight().IsIntrinsicOrAuto() &&

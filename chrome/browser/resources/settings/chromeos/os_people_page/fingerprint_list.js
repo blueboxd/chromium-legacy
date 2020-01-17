@@ -36,7 +36,7 @@ Polymer({
      */
     fingerprints_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       }
     },
@@ -59,7 +59,7 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'on-fingerprint-attempt-received', this.onAttemptReceived_.bind(this));
     this.addWebUIListener('on-screen-locked', this.onScreenLocked_.bind(this));
@@ -69,7 +69,7 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.browserProxy_.endCurrentAuthentication();
   },
 
@@ -79,7 +79,7 @@ Polymer({
    * @param {!settings.Route} oldRoute
    * @protected
    */
-  currentRouteChanged: function(newRoute, oldRoute) {
+  currentRouteChanged(newRoute, oldRoute) {
     if (newRoute != settings.routes.FINGERPRINT) {
       if (this.browserProxy_) {
         this.browserProxy_.endCurrentAuthentication();
@@ -96,7 +96,7 @@ Polymer({
    * @param {!settings.FingerprintAttempt} fingerprintAttempt
    * @private
    */
-  onAttemptReceived_: function(fingerprintAttempt) {
+  onAttemptReceived_(fingerprintAttempt) {
     /** @type {NodeList<!HTMLElement>} */ const listItems =
         this.$.fingerprintsList.querySelectorAll('.list-item');
     /** @type {Array<number>} */ const filteredIndexes =
@@ -126,7 +126,7 @@ Polymer({
   },
 
   /** @private */
-  updateFingerprintsList_: function() {
+  updateFingerprintsList_() {
     this.browserProxy_.getFingerprintsList().then(
         this.onFingerprintsChanged_.bind(this));
   },
@@ -135,7 +135,7 @@ Polymer({
    * @param {!settings.FingerprintInfo} fingerprintInfo
    * @private
    */
-  onFingerprintsChanged_: function(fingerprintInfo) {
+  onFingerprintsChanged_(fingerprintInfo) {
     // Update iron-list.
     this.fingerprints_ = fingerprintInfo.fingerprintsList.slice();
     this.$$('.action-button').disabled = fingerprintInfo.isMaxed;
@@ -147,7 +147,7 @@ Polymer({
    * @param {!{model: !{index: !number}}} e
    * @private
    */
-  onFingerprintDeleteTapped_: function(e) {
+  onFingerprintDeleteTapped_(e) {
     this.browserProxy_.removeEnrollment(e.model.index).then(success => {
       if (success) {
         this.updateFingerprintsList_();
@@ -159,7 +159,7 @@ Polymer({
    * @param {!{model: !{index: !number, item: !string}}} e
    * @private
    */
-  onFingerprintLabelChanged_: function(e) {
+  onFingerprintLabelChanged_(e) {
     this.browserProxy_.changeEnrollmentLabel(e.model.index, e.model.item)
         .then(success => {
           if (success) {
@@ -172,12 +172,12 @@ Polymer({
    * Opens the setup fingerprint dialog.
    * @private
    */
-  openAddFingerprintDialog_: function() {
+  openAddFingerprintDialog_() {
     this.showSetupFingerprintDialog_ = true;
   },
 
   /** @private */
-  onSetupFingerprintDialogClose_: function() {
+  onSetupFingerprintDialogClose_() {
     this.showSetupFingerprintDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$$('#addFingerprint')));
     this.browserProxy_.startAuthentication();
@@ -188,9 +188,10 @@ Polymer({
    * @param {boolean} screenIsLocked
    * @private
    */
-  onScreenLocked_: function(screenIsLocked) {
+  onScreenLocked_(screenIsLocked) {
     if (!screenIsLocked &&
-        settings.getCurrentRoute() == settings.routes.FINGERPRINT) {
+        settings.Router.getInstance().getCurrentRoute() ==
+            settings.routes.FINGERPRINT) {
       this.onSetupFingerprintDialogClose_();
     }
   },
@@ -200,7 +201,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getButtonAriaLabel_: function(item) {
+  getButtonAriaLabel_(item) {
     return this.i18n('lockScreenDeleteFingerprintLabel', item);
   },
 });

@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_INPUT_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_INPUT_EVENT_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_input_event_init.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/static_range.h"
-#include "third_party/blink/renderer/core/events/input_event_init.h"
 #include "third_party/blink/renderer/core/events/ui_event.h"
 
 namespace blink {

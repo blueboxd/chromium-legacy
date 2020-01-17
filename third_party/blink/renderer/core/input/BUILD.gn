@@ -39,7 +39,5 @@ blink_core_sources("input") {
     "touch_list.cc",
     "touch_list.h",
   ]
-  deps = [
-    "//third_party/blink/public:buildflags",
-  ]
+  deps = [ "//third_party/blink/public:buildflags" ]
 }

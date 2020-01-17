@@ -13,6 +13,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -43,7 +44,8 @@ FirstRunHelperImpl::~FirstRunHelperImpl() {
 
 gfx::Rect FirstRunHelperImpl::GetAppListButtonBounds() {
   Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
-  HomeButton* home_button = shelf->shelf_widget()->GetHomeButton();
+  HomeButton* home_button =
+      shelf->shelf_widget()->navigation_widget()->GetHomeButton();
   return home_button->GetBoundsInScreen();
 }
 

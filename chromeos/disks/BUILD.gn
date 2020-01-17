@@ -29,9 +29,7 @@ component("disks") {
 
 source_set("test_support") {
   testonly = true
-  public_deps = [
-    ":disks",
-  ]
+  public_deps = [ ":disks" ]
   deps = [
     "//base",
     "//base/test:test_support",

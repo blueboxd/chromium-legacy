@@ -372,12 +372,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Cette règle sera supprimée dans Chrome 88.
 
       Pour en savoir plus, consultez l'article https://www.chromestatus.com/feature/5989473649164288.</translation>
-<translation id="1559980755219453326">Cette règle détermine si les informations des extensions et des plug-ins doivent être enregistrées.
-
-      Si cette règle n'est pas définie, ou si elle est définie sur "True", les données des extensions et des plug-ins sont collectées.
-      Si cette règle est définie sur "False", les données des extensions et des plug-ins ne sont pas collectées.
-
-      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1560205870554624777">Permet d'activer ou non la fonctionnalité Kerberos. Kerberos est un protocole d'authentification (auprès d'applications Web ou en vue de partager des fichiers, par exemple).
 
           Si cette règle est activée, la fonctionnalité Kerberos l'est également. Des comptes Kerberos peuvent être ajoutés à l'aide de la règle KerberosAccounts ou en accédant aux paramètres de comptes Kerberos disponibles sur la page "Paramètres relatifs aux personnes".
@@ -737,12 +731,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
 
       Si cette règle n'est pas configurée, la fonctionnalité sera activée, conformément à la description ci-dessus.</translation>
 <translation id="2113068765175018713">Limiter le temps de fonctionnement de l'appareil en redémarrant automatiquement</translation>
-<translation id="2116790137063002724">Cette règle détermine si les informations pouvant être utilisées pour identifier les utilisateurs, telles que la connexion à l'OS, la connexion au profil <ph name="PRODUCT_NAME" />, le nom du profil <ph name="PRODUCT_NAME" />, le chemin d'accès au profil <ph name="PRODUCT_NAME" /> et le chemin d'accès exécutable <ph name="PRODUCT_NAME" /> doivent être enregistrées.
-
-      Lorsque cette règle n'est pas définie ou est définie sur True, les informations pouvant être utilisées pour identifier les utilisateurs sont collectées.
-      Lorsque cette règle est définie sur False, les informations pouvant être utilisées pour identifier les utilisateurs ne sont pas collectées.
-
-      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activé et que l'ordinateur est enregistré pour suivre la règle "<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />".</translation>
 <translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
 <translation id="2131902621292742709">Délai d'assombrissement de l'écran (batterie)</translation>
 <translation id="2134437727173969994">Autoriser le verrouillage de l'écran</translation>
@@ -3074,9 +3062,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
         Si la règle est définie sur "false", les utilisateurs ne peuvent pas envoyer de commentaires à Google.
 
         Si la règle est définie sur "true" ou n'est pas configurée, les utilisateurs peuvent envoyer des commentaires à Google via Menu &gt; Aide &gt; Signaler un problème ou via un raccourci clavier.</translation>
-<translation id="5581292529942108810">Configurez les règles relatives à Chrome Reporting Extension.
-
-      Ces règles ne sont effectives que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5583806683960333345">Si ce paramètre est activé, les utilisateurs seront autorisés à utiliser le partage de connexion instantané, qui permet à leur téléphone Google de partager ses données mobiles avec leur appareil.
 
       Si ce paramètre est désactivé, les utilisateurs ne sont pas autorisés à utiliser le partage de connexion instantané.
@@ -3727,12 +3712,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
       Spécifie les indicateurs à appliquer à <ph name="PRODUCT_NAME" /> au démarrage. Ceux-ci ne sont appliqués que sur l'écran de connexion. Les indicateurs définis par cette règle ne sont pas répercutés dans les sessions utilisateur.</translation>
 <translation id="685769593149966548">Appliquer le mode restreint strict sur YouTube</translation>
-<translation id="6857824281777105940">Cette règle détermine si les informations de la navigation sécurisée, y compris le nombre d'avertissements de navigation sécurisée et le nombre de clics sur les avertissements de navigation sécurisée, doivent être enregistrées.
-
-      Si cette règle n'est pas définie, ou si elle est définie sur "True", les données de navigation sécurisée sont collectées.
-      Si cette règle est définie sur "False", les données de navigation sécurisée ne sont pas collectées.
-
-      Cette règle n'est effective que lorsque la règle <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="686079137349561371">Microsoft Windows 7 ou version ultérieure</translation>
 <translation id="6864244339257535116">Autoriser l'importation et le téléchargement de fichiers protégés par un mot de passe</translation>
 <translation id="687046793986382807">Cette règle a été supprimée de la version 35 de <ph name="PRODUCT_NAME" />.
@@ -4081,12 +4060,6 @@ Ces règles sont ignorées, sauf si l'hôte Bureau à distance Chrome est instal
 <translation id="7311458740754205918">Si cette règle est définie sur "True" ou n'est pas définie, la page "Nouvel onglet" peut proposer des recommandations de contenus en fonction de l'historique de navigation, des centres d'intérêt ou de la position de l'utilisateur.
 
       Si cette règle est définie sur "False", aucune recommandation de contenus générée automatiquement ne s'affiche sur la page "Nouvel onglet".</translation>
-<translation id="7313793931637495417">Cette règle détermine si les informations de version doivent être enregistrées. Cela concerne notamment la version, la plate-forme et l'architecture de l'OS, la version de <ph name="PRODUCT_NAME" /> et le canal de <ph name="PRODUCT_NAME" />.
-
-      Lorsque cette règle n'est pas définie ou est définie sur True, les informations de version sont collectées.
-      Lorsque cette règle est définie sur False, les informations de version ne sont pas collectées.
-
-      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Paramètres de ligne de commande supplémentaires pour <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Semblable à l'option "Nettoyer" (valeur 2), celle-ci essaie de conserver les jetons de connexion pour éviter à l'utilisateur de devoir se reconnecter.</translation>
 <translation id="7329968046053403405">Indique le type des comptes fournis par l'application d'authentification Android compatible avec l'authentification <ph name="HTTP_NEGOTIATE" /> (authentification Kerberos, par exemple). Ces informations devraient être disponibles auprès du fournisseur de l'application d'authentification. Pour en savoir plus, consultez le site https://goo.gl/hajyfN.
@@ -4109,12 +4082,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7339315111520512972">Forcer le code réseau à s'exécuter dans le processus du navigateur</translation>
 <translation id="7340034977315324840">Indiquer les périodes d'activité de l'appareil</translation>
 <translation id="7343497214039883642">Fichier de configuration des imprimantes d'entreprise pour des appareils</translation>
-<translation id="735902178936442460">Cette règle détermine si les informations pouvant être utilisées pour identifier les ordinateurs, telles que le nom de l'ordinateur et les adresses réseau doivent être enregistrées.
-
-      Lorsque cette règle n'est pas définie ou est définie sur True, les informations pouvant être utilisées pour identifier les ordinateurs sont collectées.
-      Lorsque cette règle est définie sur False, les informations pouvant être utilisées pour identifier les ordinateurs ne sont pas collectées.
-
-      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7359307926583593395">
       Cette règle s'applique à l'écran de connexion. Veuillez également consulter celle applicable à la session utilisateur (<ph name="SITE_PER_PROCESS_POLICY_NAME" />). Nous vous recommandons d'attribuer la même valeur à ces deux règles. Si les valeurs ne sont pas identiques, la règle relative aux utilisateurs s'applique. Cela peut ralentir l'ouverture de la session utilisateur.
       </translation>
@@ -4530,12 +4497,6 @@ Ces favoris sont placés dans un dossier qui ne peut pas être modifié par l'ut
       Si cette règle est activée ou si elle n'est pas configurée, les sites Web sont autorisés à vérifier si l'utilisateur possède des modes de paiement enregistrés.</translation>
 <translation id="8118665053362250806">Définir la taille du cache disque de support</translation>
 <translation id="8124468781472887384">Règle d'accès à la configuration des imprimantes d'appareils.</translation>
-<translation id="8138009212169037227">Cette règle détermine si les données de la règle et l'heure de récupération de la règle doivent être enregistrées.
-
-      Lorsque cette règle n'est pas définie ou est définie sur True, les données de la règle et l'heure de récupération de la règle sont collectées.
-      Lorsque cette règle est définie sur False, les données de la règle et l'heure de récupération de la règle ne sont pas collectées.
-
-      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Générer une liste des interfaces réseau, ainsi que leurs types et leurs adresses matérielles sur le serveur.
 
       Si la règle est définie sur "False", aucune liste d'interfaces n'est générée.</translation>

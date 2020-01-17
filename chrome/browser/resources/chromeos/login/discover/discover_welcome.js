@@ -22,25 +22,25 @@ Polymer({
     },
   },
 
-  updateLocalizedContent: function() {
+  updateLocalizedContent() {
     this.i18nUpdateLocale();
   },
 
-  show: function() {
+  show() {
     // TODO(alemate)
   },
 
   /*
    * @private
    */
-  onCloseButton_: function() {
+  onCloseButton_() {
     this.fire('module-skip');
   },
 
   /*
    * @private
    */
-  onContinueButton_: function() {
+  onContinueButton_() {
     this.fire('module-continue');
   },
 });

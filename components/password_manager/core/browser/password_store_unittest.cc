@@ -1407,8 +1407,9 @@ TEST_F(PasswordStoreTest, GetAllCompromisedCredentials) {
   WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&consumer);
 
-  store->RemoveCompromisedCredentials(compromised_credentials.url,
-                                      compromised_credentials.username);
+  store->RemoveCompromisedCredentials(
+      compromised_credentials.url, compromised_credentials.username,
+      RemoveCompromisedCredentialsReason::kRemove);
   EXPECT_CALL(consumer, OnGetCompromisedCredentials(
                             UnorderedElementsAre(compromised_credentials2)));
   store->GetAllCompromisedCredentials(&consumer);

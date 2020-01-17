@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/component_export.h"
+#include "ui/events/event.h"
 #include "ui/events/events_export.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -37,6 +38,9 @@ EVENTS_EXPORT std::unique_ptr<MouseWheelEvent> BuildMouseWheelEventFromXEvent(
 // Convenience function that translates XEvent into ui::TouchEvent
 EVENTS_EXPORT std::unique_ptr<TouchEvent> BuildTouchEventFromXEvent(
     const XEvent& xev);
+
+EVENTS_EXPORT Event::Properties GetEventPropertiesFromXEvent(EventType type,
+                                                             const XEvent& xev);
 
 }  // namespace ui
 

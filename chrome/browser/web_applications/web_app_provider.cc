@@ -147,6 +147,7 @@ SystemWebAppManager& WebAppProvider::system_web_app_manager() {
 }
 
 void WebAppProvider::Shutdown() {
+  shortcut_manager_->Shutdown();
   pending_app_manager_->Shutdown();
   install_manager_->Shutdown();
   manifest_update_manager_->Shutdown();
@@ -191,7 +192,8 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
       profile, sync_bridge.get(), icon_manager.get());
   file_handler_manager_ = std::make_unique<WebAppFileHandlerManager>(profile);
-  shortcut_manager_ = std::make_unique<WebAppShortcutManager>(profile);
+  shortcut_manager_ = std::make_unique<WebAppShortcutManager>(
+      profile, icon_manager.get(), file_handler_manager_.get());
 
   // Upcast to unified subsystem types:
   registrar_ = std::move(registrar);
@@ -246,6 +248,7 @@ void WebAppProvider::OnRegistryControllerReady() {
   external_web_app_manager_->Start();
   web_app_policy_manager_->Start();
   system_web_app_manager_->Start();
+  shortcut_manager_->Start();
   manifest_update_manager_->Start();
   file_handler_manager_->Start();
 

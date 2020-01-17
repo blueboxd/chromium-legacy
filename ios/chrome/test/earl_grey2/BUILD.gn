@@ -26,17 +26,13 @@ chrome_ios_eg2_test_app_host("ios_chrome_eg2tests") {
 chrome_ios_eg2_test("ios_chrome_autofill_automation_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
-  deps = [
-    "//ios/chrome/browser/autofill/automation:eg2_tests",
-  ]
+  deps = [ "//ios/chrome/browser/autofill/automation:eg2_tests" ]
 }
 
 chrome_ios_eg2_test("ios_chrome_bookmarks_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
-  deps = [
-    "//ios/chrome/browser/ui/bookmarks:eg2_tests",
-  ]
+  deps = [ "//ios/chrome/browser/ui/bookmarks:eg2_tests" ]
 }
 
 chrome_ios_eg2_test("ios_chrome_integration_eg2tests_module") {
@@ -63,9 +59,7 @@ chrome_ios_eg2_test("ios_chrome_integration_eg2tests_module") {
 chrome_ios_eg2_test("ios_chrome_smoke_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
-  deps = [
-    "//ios/chrome/test/earl_grey2:eg2_tests",
-  ]
+  deps = [ "//ios/chrome/test/earl_grey2:eg2_tests" ]
 }
 
 chrome_ios_eg2_test("ios_chrome_settings_eg2tests_module") {
@@ -119,9 +113,7 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
 chrome_ios_eg2_test("ios_chrome_web_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
-  deps = [
-    "//ios/chrome/browser/web:eg2_tests",
-  ]
+  deps = [ "//ios/chrome/browser/web:eg2_tests" ]
 }
 
 source_set("eg2_tests") {
@@ -132,9 +124,7 @@ source_set("eg2_tests") {
   ]
   testonly = true
 
-  sources = [
-    "smoke_egtest.mm",
-  ]
+  sources = [ "smoke_egtest.mm" ]
 
   deps = [
     "//ios/chrome/app/strings",

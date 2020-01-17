@@ -23,9 +23,7 @@ jumbo_component("init") {
     "//ui/gfx:native_widget_types",
   ]
 
-  deps = [
-    "//ui/base",
-  ]
+  deps = [ "//ui/base" ]
 
   if (is_win) {
     deps += [ "//ui/base/ime/win" ]

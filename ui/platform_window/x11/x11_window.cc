@@ -248,13 +248,14 @@ void X11Window::ToggleFullscreen() {
   // about state changes asynchronously, which leads to a wrong return value in
   // DesktopWindowTreeHostPlatform::IsFullscreen, for example, and media
   // files can never be set to fullscreen. Wayland does the same.
+  auto new_state = PlatformWindowState::kNormal;
   if (fullscreen)
-    state_ = PlatformWindowState::kFullScreen;
+    new_state = PlatformWindowState::kFullScreen;
   else if (IsMaximized())
-    state_ = PlatformWindowState::kMaximized;
-  else
-    state_ = PlatformWindowState::kNormal;
+    new_state = PlatformWindowState::kMaximized;
 
+  bool was_fullscreen = IsFullscreen();
+  state_ = new_state;
   SetFullscreen(fullscreen);
 
   if (unmaximize_and_remaximize)
@@ -273,7 +274,15 @@ void X11Window::ToggleFullscreen() {
     SetRestoredBoundsInPixels(bounds_in_pixels);
     bounds_in_pixels = display.bounds();
   } else {
-    bounds_in_pixels = GetRestoredBoundsInPixels();
+    // Exiting "browser fullscreen mode", but the X11 window is not necessarily
+    // in fullscreen state (e.g: a WM keybinding might have been used to toggle
+    // fullscreen state). So check whether the window is in fullscreen state
+    // before trying to restore its bounds (saved before entering in browser
+    // fullscreen mode).
+    if (was_fullscreen)
+      bounds_in_pixels = GetRestoredBoundsInPixels();
+    else
+      SetRestoredBoundsInPixels({});
   }
   // Do not go through SetBounds as long as it adjusts bounds and sets them to X
   // Server. Instead, we just store the bounds and notify the client that the
@@ -525,21 +534,43 @@ void X11Window::OnXWindowCreated() {
 }
 
 void X11Window::OnXWindowStateChanged() {
-  // Propagate the window state information to the client. Note that the order
-  // of checks is important here, because window can have several properties
-  // at the same time.
-  PlatformWindowState old_state = state_;
-  if (IsMinimized()) {
-    state_ = PlatformWindowState::kMinimized;
-  } else if (IsFullscreen()) {
-    state_ = PlatformWindowState::kFullScreen;
-  } else if (IsMaximized()) {
-    state_ = PlatformWindowState::kMaximized;
-  } else {
-    state_ = PlatformWindowState::kNormal;
-  }
+  // Determine the new window state information to be propagated to the client.
+  // Note that the order of checks is important here, because window can have
+  // several properties at the same time.
+  auto new_state = PlatformWindowState::kNormal;
+  if (IsMinimized())
+    new_state = PlatformWindowState::kMinimized;
+  else if (IsFullscreen())
+    new_state = PlatformWindowState::kFullScreen;
+  else if (IsMaximized())
+    new_state = PlatformWindowState::kMaximized;
 
-  if (restored_bounds_in_pixels_.IsEmpty()) {
+  // fullscreen state is set syschronously at ToggleFullscreen() and must be
+  // kept and propagated to the client only when explicitly requested by upper
+  // layers, as it means we are in "browser fullscreen mode" (where
+  // decorations, omnibar, buttons, etc are hidden), which is different from
+  // the case where the request comes from the window manager (or any other
+  // process), handled by this method. In this case, we follow EWMH guidelines:
+  // Optimize the whole application for fullscreen usage. Window decorations
+  // (e.g. borders) should be hidden, but the functionalily of the application
+  // should not change. Further details:
+  // https://specifications.freedesktop.org/wm-spec/wm-spec-1.3.html
+  bool browser_fullscreen_mode = state_ == PlatformWindowState::kFullScreen;
+  bool window_fullscreen_mode = new_state == PlatformWindowState::kFullScreen;
+  // So, we ignore fullscreen state transitions in 2 cases:
+  // 1. If |new_state| is kFullScreen but |state_| is not, which means the
+  // fullscreen request is coming from an external process. So the browser
+  // window must occupies the entire screen but not transitioning to browser
+  // fullscreen mode.
+  // 2. if |state_| is kFullScreen but |new_state| is not, we have been
+  // requested to exit fullscreen by other process (e.g: via WM keybinding),
+  // in this case we must keep on "browser fullscreen mode" bug the platform
+  // window gets back to its previous state (e.g: unmaximized, tiled in TWMs,
+  // etc).
+  if (window_fullscreen_mode != browser_fullscreen_mode)
+    return;
+
+  if (GetRestoredBoundsInPixels().IsEmpty()) {
     if (IsMaximized()) {
       // The request that we become maximized originated from a different
       // process. |bounds_in_pixels_| already contains our maximized bounds. Do
@@ -554,8 +585,10 @@ void X11Window::OnXWindowStateChanged() {
     SetRestoredBoundsInPixels(gfx::Rect());
   }
 
-  if (old_state != state_)
+  if (new_state != state_) {
+    state_ = new_state;
     platform_window_delegate_->OnWindowStateChanged(state_);
+  }
 }
 
 void X11Window::OnXWindowDamageEvent(const gfx::Rect& damage_rect) {

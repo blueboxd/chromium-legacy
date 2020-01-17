@@ -389,7 +389,7 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
   // If they are keepalive request && their responses are not observable to web
   // content, we can have them survive without breaking web content when the
   // page is put into BackForwardCache.
-  auto request = resource_->GetResourceRequest();
+  auto& request = resource_->GetResourceRequest();
   if (!RequestContextObserveResponse(request.GetRequestContext())) {
     if (FrameScheduler* frame_scheduler = fetcher->GetFrameScheduler()) {
       feature_handle_for_scheduler_ = frame_scheduler->RegisterFeature(
@@ -570,7 +570,8 @@ void ResourceLoader::StartWith(const ResourceRequest& request) {
   if (is_cache_aware_loading_activated_) {
     // Override cache policy for cache-aware loading. If this request fails, a
     // reload with original request will be triggered in DidFail().
-    ResourceRequest cache_aware_request(request);
+    ResourceRequest cache_aware_request;
+    cache_aware_request.CopyFrom(request);
     cache_aware_request.SetCacheMode(
         mojom::FetchCacheMode::kUnspecifiedOnlyIfCachedStrict);
     RequestAsynchronously(cache_aware_request);
@@ -962,7 +963,8 @@ void ResourceLoader::DidReceiveResponseInternal(
             kEnableCorsHandlingByResourceFetcher &&
         request_mode == network::mojom::RequestMode::kCors &&
         response.WasFallbackRequiredByServiceWorker()) {
-      ResourceRequest last_request = resource_->LastResourceRequest();
+      ResourceRequest last_request;
+      last_request.CopyFrom(resource_->LastResourceRequest());
       DCHECK(!last_request.GetSkipServiceWorker());
       // This code handles the case when a controlling service worker doesn't
       // handle a cross origin request.

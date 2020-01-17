@@ -50,6 +50,10 @@ void ResetCrashKeyStorageForTesting() {
 }
 
 void CrashKeyStringImpl::Set(base::StringPiece value) {
+  // This check cannot be in the constructor because it is constexpr. Use _LT
+  // rather than _LE to account for the terminating \0.
+  DCHECK_LT(strlen(name_), kCrashKeyStorageKeySize);
+
   const size_t kValueMaxLength = index_array_count_ * kCrashKeyStorageValueSize;
 
   TransitionalCrashKeyStorage* storage = GetCrashKeyStorage();

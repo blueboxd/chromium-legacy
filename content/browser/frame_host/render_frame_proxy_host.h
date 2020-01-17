@@ -145,6 +145,9 @@ class RenderFrameProxyHost : public IPC::Listener,
   void DidFocusFrame() override;
   void CheckCompleted() override;
 
+  CONTENT_EXPORT blink::AssociatedInterfaceProvider*
+  GetRemoteAssociatedInterfacesTesting();
+
  private:
   // IPC Message handlers.
   void OnDetach();

@@ -178,7 +178,7 @@ cr.define('cr.ui', function() {
      */
     handleTouchStart_(e) {
       e = /** @type {!TouchEvent} */ (e);
-      if (e.touches.length == 1) {
+      if (e.touches.length === 1) {
         this.startDrag(e.touches[0].clientX, true);
         e.preventDefault();
       }
@@ -199,7 +199,7 @@ cr.define('cr.ui', function() {
      * @param {!TouchEvent} e The touch event.
      */
     handleTouchMove_(e) {
-      if (e.touches.length == 1) {
+      if (e.touches.length === 1) {
         this.handleMove_(e.touches[0].clientX);
       }
     },
@@ -212,7 +212,7 @@ cr.define('cr.ui', function() {
      */
     handleMove_(clientX) {
       const rtl =
-          this.ownerDocument.defaultView.getComputedStyle(this).direction ==
+          this.ownerDocument.defaultView.getComputedStyle(this).direction ===
           'rtl';
       const dirMultiplier = rtl ? -1 : 1;
       const deltaX = dirMultiplier * (clientX - this.startX_);
@@ -266,7 +266,7 @@ cr.define('cr.ui', function() {
       const doc = targetElement.ownerDocument;
       const computedWidth =
           parseFloat(doc.defaultView.getComputedStyle(targetElement).width);
-      if (this.startWidth_ != computedWidth) {
+      if (this.startWidth_ !== computedWidth) {
         cr.dispatchSimpleEvent(this, 'resize');
       }
 

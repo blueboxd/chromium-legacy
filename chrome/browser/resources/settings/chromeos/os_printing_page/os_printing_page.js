@@ -20,7 +20,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.CUPS_PRINTERS) {
           map.set(settings.routes.CUPS_PRINTERS.path, '#cupsPrinters');
@@ -31,7 +31,7 @@ Polymer({
   },
 
   /** @private */
-  onTapCupsPrinters_: function() {
-    settings.navigateTo(settings.routes.CUPS_PRINTERS);
+  onTapCupsPrinters_() {
+    settings.Router.getInstance().navigateTo(settings.routes.CUPS_PRINTERS);
   },
 });

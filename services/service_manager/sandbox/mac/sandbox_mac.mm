@@ -45,8 +45,8 @@
 #include "services/service_manager/sandbox/mac/gpu_v2.sb.h"
 #include "services/service_manager/sandbox/mac/nacl_loader.sb.h"
 #include "services/service_manager/sandbox/mac/network.sb.h"
-#include "services/service_manager/sandbox/mac/pdf_compositor.sb.h"
 #include "services/service_manager/sandbox/mac/ppapi.sb.h"
+#include "services/service_manager/sandbox/mac/print_compositor.sb.h"
 #include "services/service_manager/sandbox/mac/renderer.sb.h"
 #include "services/service_manager/sandbox/mac/utility.sb.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -248,11 +248,11 @@ std::string SandboxMac::GetSandboxProfile(SandboxType sandbox_type) {
     case service_manager::SandboxType::kNetwork:
       profile += service_manager::kSeatbeltPolicyString_network;
       break;
-    case service_manager::SandboxType::kPdfCompositor:
-      profile += service_manager::kSeatbeltPolicyString_pdf_compositor;
-      break;
     case service_manager::SandboxType::kPpapi:
       profile += service_manager::kSeatbeltPolicyString_ppapi;
+      break;
+    case service_manager::SandboxType::kPrintCompositor:
+      profile += service_manager::kSeatbeltPolicyString_print_compositor;
       break;
     case service_manager::SandboxType::kUtility:
       profile += service_manager::kSeatbeltPolicyString_utility;

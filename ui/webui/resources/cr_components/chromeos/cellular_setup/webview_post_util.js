@@ -37,9 +37,9 @@ cr.define('webviewPost.util', function() {
       '  var pairs = postData.split(\'&\');' +
       '  pairs.forEach(pairStr => {' +
       '    var pair = pairStr.split(\'=\');' +
-      '    if (pair.length == 2)' +
+      '    if (pair.length === 2)' +
       '      addInputElement(form, pair[0], pair[1]);' +
-      '    else if (pair.length == 1)' +
+      '    else if (pair.length === 1)' +
       '      addInputElement(form, pair[0], true);' +
       '  });' +
       '}' +
@@ -76,7 +76,7 @@ cr.define('webviewPost.util', function() {
    */
   function initializeWebviewRedirectForm(
       webview, paymentUrl, postData, webviewSrc, commitEvent) {
-    if (!commitEvent.isTopLevel || commitEvent.url != webviewSrc) {
+    if (!commitEvent.isTopLevel || commitEvent.url !== webviewSrc) {
       return;
     }
 

@@ -30,6 +30,9 @@ class LayoutNGCustom final : public LayoutNGBlockFlow {
 
   bool IsLoaded() { return state_ != kUnloaded; }
 
+  void AddChild(LayoutObject* new_child, LayoutObject* before_child) override;
+  void RemoveChild(LayoutObject* child) override;
+
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
  private:

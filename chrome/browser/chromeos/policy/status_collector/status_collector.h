@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_STATUS_COLLECTOR_STATUS_COLLECTOR_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/optional.h"
@@ -64,6 +65,17 @@ using StatusCollectorCallback =
 // Defines the API for a status collector.
 class StatusCollector {
  public:
+  // Passed into asynchronous mojo interface for communicating with Android.
+  using AndroidStatusReceiver =
+      base::Callback<void(const std::string&, const std::string&)>;
+  // Calls the enterprise reporting mojo interface, passing over the
+  // AndroidStatusReceiver. Returns false if the mojo interface isn't available,
+  // in which case no asynchronous query is emitted and the android status query
+  // fails synchronously. The |AndroidStatusReceiver| is not called in this
+  // case.
+  using AndroidStatusFetcher =
+      base::Callback<bool(const AndroidStatusReceiver&)>;
+
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Simplifies filling the boot mode for any of the relevant status report

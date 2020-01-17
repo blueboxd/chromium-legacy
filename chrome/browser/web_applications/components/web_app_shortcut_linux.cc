@@ -170,7 +170,31 @@ bool CreateShortcutInApplicationsMenu(const base::FilePath& shortcut_filename,
   argv.push_back(temp_file_path.value());
   int exit_code;
   shell_integration_linux::LaunchXdgUtility(argv, &exit_code);
-  return exit_code == 0;
+
+  if (exit_code != 0)
+    return false;
+
+  // Some Linux file managers (Nautilus and Nemo) depend on an up to date
+  // mimeinfo.cache file to detect whether applications can open files, so
+  // manually run update-desktop-database on the user applications folder.
+  // See this bug on xdg desktop-file-utils
+  // https://gitlab.freedesktop.org/xdg/desktop-file-utils/issues/54
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  base::FilePath user_applications_dir =
+      shell_integration_linux::GetDataWriteLocation(env.get()).Append(
+          "applications");
+  argv.clear();
+  argv.push_back("update-desktop-database");
+  argv.push_back(user_applications_dir.value());
+
+  // Ignore the exit code of update-desktop-database, if it fails it isn't
+  // important (the shortcut is created and usable when xdg-desktop-menu install
+  // completes). Failure means the file type associations for this desktop entry
+  // may not show up in some file managers, but this is non-critical.
+  int ignored_exit_code = 0;
+  shell_integration_linux::LaunchXdgUtility(argv, &ignored_exit_code);
+
+  return true;
 }
 
 }  // namespace

@@ -30,7 +30,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
@@ -47,6 +46,7 @@ import org.chromium.chrome.browser.customtabs.features.CustomTabNavigationBarCon
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
@@ -77,17 +77,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     private DynamicModuleCoordinator mDynamicModuleCoordinator;
 
     private CustomTabNightModeStateController mNightModeStateController;
-
-    /**
-     * Return true when the activity has been launched in a separate task. The default behavior is
-     * to reuse the same task and put the activity on top of the previous one (i.e hiding it). A
-     * separate task creates a new entry in the Android recent screen.
-     **/
-    private boolean useSeparateTask() {
-        final int separateTaskFlags =
-                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
-        return (getIntent().getFlags() & separateTaskFlags) != 0;
-    }
 
     private CustomTabActivityTabProvider.Observer mTabChangeObserver =
             new CustomTabActivityTabProvider.Observer() {
@@ -218,7 +207,7 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         // We start the Autofill Assistant after the call to super.finishNativeInitialization() as
         // this will initialize the BottomSheet that is used to embed the Autofill Assistant bottom
         // bar.
-        if (isAutofillAssistantEnabled()) {
+        if (AutofillAssistantFacade.isAutofillAssistantEnabled(getInitialIntent())) {
             AutofillAssistantFacade.start(this);
         }
     }
@@ -271,43 +260,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     public String getPackageName() {
         if (mShouldOverridePackage) return mIntentDataProvider.getClientPackageName();
         return super.getPackageName();
-    }
-
-    @Override
-    public void finish() {
-        super.finish();
-        if (mIntentDataProvider != null && mIntentDataProvider.shouldAnimateOnFinish()) {
-            mShouldOverridePackage = true;
-            overridePendingTransition(mIntentDataProvider.getAnimationEnterRes(),
-                    mIntentDataProvider.getAnimationExitRes());
-            mShouldOverridePackage = false;
-        } else if (mIntentDataProvider != null && mIntentDataProvider.isOpenedByChrome()) {
-            overridePendingTransition(R.anim.no_anim, R.anim.activity_close_exit);
-        }
-    }
-
-    /**
-     * Internal implementation that finishes the activity and removes the references from Android
-     * recents.
-     */
-    protected void handleFinishAndClose() {
-        Runnable defaultBehavior = () -> {
-            if (useSeparateTask()) {
-                ApiCompatibilityUtils.finishAndRemoveTask(this);
-            } else {
-                finish();
-            }
-        };
-        if (mIntentDataProvider.isTrustedWebActivity()) {
-            // TODO(pshmakov): extract all finishing logic from CustomTabActivity.
-            // In addition to TwaFinishHandler, create DefaultFinishHandler, PaymentsFinishHandler,
-            // and SeparateTaskActivityFinishHandler, all implementing
-            // CustomTabActivityNavigationController#FinishHandler. Pass the mode enum into
-            // CustomTabActivityModule, so that it can provide the correct implementation.
-            getComponent().resolveTwaFinishHandler().onFinish(defaultBehavior);
-        } else {
-            defaultBehavior.run();
-        }
     }
 
     @Override
@@ -460,10 +412,5 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         }
 
         return component;
-    }
-
-    private boolean isAutofillAssistantEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
-                && AutofillAssistantFacade.isConfigured(getInitialIntent().getExtras());
     }
 }

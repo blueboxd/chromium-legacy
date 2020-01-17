@@ -12,6 +12,13 @@ XRSessionEvent::XRSessionEvent(const AtomicString& type, XRSession* session)
     : Event(type, Bubbles::kNo, Cancelable::kYes), session_(session) {}
 
 XRSessionEvent::XRSessionEvent(const AtomicString& type,
+                               XRSession* session,
+                               Event::Bubbles bubbles,
+                               Event::Cancelable cancelable,
+                               Event::ComposedMode composed)
+    : Event(type, bubbles, cancelable, composed), session_(session) {}
+
+XRSessionEvent::XRSessionEvent(const AtomicString& type,
                                const XRSessionEventInit* initializer)
     : Event(type, initializer) {
   if (initializer->hasSession())

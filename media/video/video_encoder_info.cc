@@ -9,6 +9,7 @@ namespace media {
 ScalingSettings::ScalingSettings() = default;
 ScalingSettings::ScalingSettings(int min_qp, int max_qp)
     : min_qp(min_qp), max_qp(max_qp) {}
+ScalingSettings::ScalingSettings(const ScalingSettings&) = default;
 ScalingSettings::~ScalingSettings() = default;
 
 ResolutionBitrateLimit::ResolutionBitrateLimit() = default;

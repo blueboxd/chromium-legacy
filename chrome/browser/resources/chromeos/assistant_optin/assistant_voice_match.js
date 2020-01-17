@@ -34,7 +34,7 @@ Polymer({
    * Overrides the default delay for sending voice-match-done action.
    * @param {number} delay The delay to be used in tests.
    */
-  setDoneActionDelayForTesting: function(delay) {
+  setDoneActionDelayForTesting(delay) {
     this.doneActionDelayMs_ = delay;
   },
 
@@ -43,7 +43,7 @@ Polymer({
    *
    * @private
    */
-  onSkipTap_: function() {
+  onSkipTap_() {
     chrome.send(
         'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
         ['skip-pressed']);
@@ -56,7 +56,7 @@ Polymer({
    *
    * @private
    */
-  onAgreeTap_: function() {
+  onAgreeTap_() {
     this.removeClass_('intro');
     this.addClass_('recording');
     this.fire('loading');
@@ -71,7 +71,7 @@ Polymer({
    *
    * @private
    */
-  addClass_: function(className) {
+  addClass_(className) {
     this.$['voice-match-dialog'].classList.add(className);
   },
 
@@ -81,14 +81,14 @@ Polymer({
    *
    * @private
    */
-  removeClass_: function(className) {
+  removeClass_(className) {
     this.$['voice-match-dialog'].classList.remove(className);
   },
 
   /**
    * Reloads voice match flow.
    */
-  reloadPage: function() {
+  reloadPage() {
     this.removeClass_('recording');
     this.removeClass_('already-setup');
     this.removeClass_('completed');
@@ -100,7 +100,7 @@ Polymer({
   /**
    * Called when the server is ready to listening for hotword.
    */
-  listenForHotword: function() {
+  listenForHotword() {
     if (this.currentIndex_ == 0) {
       this.fire('loaded');
       announceAccessibleMessage(
@@ -115,7 +115,7 @@ Polymer({
   /**
    * Called when the server has detected and processing hotword.
    */
-  processingHotword: function() {
+  processingHotword() {
     var currentEntry = this.$['voice-entry-' + this.currentIndex_];
     currentEntry.removeAttribute('active');
     currentEntry.setAttribute('completed', true);
@@ -132,7 +132,7 @@ Polymer({
     }
   },
 
-  voiceMatchDone: function() {
+  voiceMatchDone() {
     this.removeClass_('recording');
     this.fire('loaded');
     announceAccessibleMessage(
@@ -157,7 +157,7 @@ Polymer({
   /**
    * Signal from host to show the screen.
    */
-  onShow: function() {
+  onShow() {
     chrome.send('login.AssistantOptInFlowScreen.VoiceMatchScreen.screenShown');
     this.$['voice-match-lottie'].setPlay(true);
     this.$['already-setup-lottie'].setPlay(true);

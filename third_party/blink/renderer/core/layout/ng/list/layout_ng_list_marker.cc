@@ -12,12 +12,6 @@ namespace blink {
 LayoutNGListMarker::LayoutNGListMarker(Element* element)
     : LayoutNGBlockFlowMixin<LayoutBlockFlow>(element) {}
 
-LayoutNGListMarker* LayoutNGListMarker::CreateAnonymous(Document* document) {
-  LayoutNGListMarker* object = new LayoutNGListMarker(nullptr);
-  object->SetDocumentForAnonymous(document);
-  return object;
-}
-
 bool LayoutNGListMarker::IsOfType(LayoutObjectType type) const {
   return type == kLayoutObjectNGListMarker ||
          LayoutNGMixin<LayoutBlockFlow>::IsOfType(type);

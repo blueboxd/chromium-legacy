@@ -121,6 +121,44 @@ Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
 
 }  // namespace
 
+class BubbleDialogDelegateView::AnchorViewObserver : public ViewObserver {
+ public:
+  AnchorViewObserver(BubbleDialogDelegateView* parent, View* anchor_view)
+      : parent_(parent), anchor_view_(anchor_view) {
+    anchor_view_->AddObserver(this);
+  }
+
+  AnchorViewObserver(const AnchorViewObserver&) = delete;
+  AnchorViewObserver& operator=(const AnchorViewObserver&) = delete;
+
+  ~AnchorViewObserver() override { anchor_view_->RemoveObserver(this); }
+
+  View* anchor_view() const { return anchor_view_; }
+
+  // ViewObserver:
+  void OnViewIsDeleting(View* observed_view) override {
+    // The anchor is being deleted, make sure the parent bubble no longer
+    // observes it.
+    DCHECK_EQ(anchor_view_, observed_view);
+    parent_->SetAnchorView(nullptr);
+  }
+
+  void OnViewBoundsChanged(View* observed_view) override {
+    // This code really wants to know the anchor bounds in screen coordinates
+    // have changed. There isn't a good way to detect this outside of the view.
+    // Observing View bounds changing catches some cases but not all of them.
+    DCHECK_EQ(anchor_view_, observed_view);
+    parent_->OnAnchorBoundsChanged();
+  }
+
+  // TODO(pbos): Consider observing View visibility changes and only updating
+  // view bounds when the anchor is visible.
+
+ private:
+  BubbleDialogDelegateView* const parent_;
+  View* const anchor_view_;
+};
+
 BubbleDialogDelegateView::~BubbleDialogDelegateView() {
   if (GetWidget())
     GetWidget()->RemoveObserver(this);
@@ -252,7 +290,9 @@ BubbleBorder::Shadow BubbleDialogDelegateView::GetShadow() const {
 }
 
 View* BubbleDialogDelegateView::GetAnchorView() const {
-  return anchor_view_tracker_->view();
+  if (!anchor_view_observer_)
+    return nullptr;
+  return anchor_view_observer_->anchor_view();
 }
 
 void BubbleDialogDelegateView::SetHighlightedButton(
@@ -311,6 +351,10 @@ void BubbleDialogDelegateView::UseCompactMargins() {
 }
 
 void BubbleDialogDelegateView::OnAnchorBoundsChanged() {
+  if (!GetWidget())
+    return;
+  // TODO(pbos): Reconsider whether to update the anchor when the view isn't
+  // drawn.
   SizeToContents();
 }
 
@@ -321,7 +365,6 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
                                                    BubbleBorder::Arrow arrow,
                                                    BubbleBorder::Shadow shadow)
     : close_on_deactivate_(true),
-      anchor_view_tracker_(std::make_unique<ViewTracker>()),
       anchor_widget_(nullptr),
       shadow_(shadow),
       color_explicitly_set_(false),
@@ -398,8 +441,10 @@ void BubbleDialogDelegateView::OnThemeChanged() {
 void BubbleDialogDelegateView::Init() {}
 
 void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
-  if (GetAnchorView())
+  if (GetAnchorView()) {
     GetAnchorView()->ClearProperty(kAnchoredDialogKey);
+    anchor_view_observer_.reset();
+  }
 
   // When the anchor view gets set the associated anchor widget might
   // change as well.
@@ -428,9 +473,9 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
     }
   }
 
-  anchor_view_tracker_->SetView(anchor_view);
-
-  if (anchor_view && GetWidget()) {
+  if (anchor_view) {
+    anchor_view_observer_ =
+        std::make_unique<AnchorViewObserver>(this, anchor_view);
     // Do not update anchoring for NULL views; this could indicate
     // that our NativeWindow is being destroyed, so it would be
     // dangerous for us to update our anchor bounds at that
@@ -511,7 +556,7 @@ void BubbleDialogDelegateView::OnDeactivate() {
 
 void BubbleDialogDelegateView::UpdateHighlightedButton(bool highlighted) {
   Button* button = Button::AsButton(highlighted_button_tracker_.view());
-  button = button ? button : Button::AsButton(anchor_view_tracker_->view());
+  button = button ? button : Button::AsButton(GetAnchorView());
   if (button && highlight_button_when_shown_)
     button->SetHighlighted(highlighted);
 }

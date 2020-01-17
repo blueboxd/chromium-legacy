@@ -120,7 +120,5 @@ source_set("unit_tests") {
     "//ipc:test_support",
     "//testing/gtest",
   ]
-  public_deps = [
-    "//components/subresource_filter/content/mojom",
-  ]
+  public_deps = [ "//components/subresource_filter/content/mojom" ]
 }

@@ -17,7 +17,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.settings.MainPreferences;
+import org.chromium.chrome.browser.settings.autofill.AutofillEditorBase;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -160,7 +160,7 @@ public class PersonalDataManager {
          * locale. All other fields are empty strings, because JNI does not handle null strings.
          */
         public AutofillProfile() {
-            this("" /* guid */, MainPreferences.SETTINGS_ORIGIN /* origin */, true /* isLocal */,
+            this("" /* guid */, AutofillEditorBase.SETTINGS_ORIGIN /* origin */, true /* isLocal */,
                     "" /* fullName */, "" /* companyName */, "" /* streetAddress */,
                     "" /* region */, "" /* locality */, "" /* dependentLocality */,
                     "" /* postalCode */, "" /* sortingCode */,
@@ -406,7 +406,7 @@ public class PersonalDataManager {
         }
 
         public CreditCard() {
-            this("" /* guid */, MainPreferences.SETTINGS_ORIGIN /*origin */, true /* isLocal */,
+            this("" /* guid */, AutofillEditorBase.SETTINGS_ORIGIN /*origin */, true /* isLocal */,
                     false /* isCached */, "" /* name */, "" /* number */, "" /* obfuscatedNumber */,
                     "" /* month */, "" /* year */, "" /* basicCardIssuerNetwork */,
                     0 /* issuerIconDrawableId */, CardType.UNKNOWN, "" /* billingAddressId */,

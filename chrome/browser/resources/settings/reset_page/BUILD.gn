@@ -8,6 +8,7 @@ js_type_check("closure_compile") {
   deps = [
     ":reset_browser_proxy",
     ":reset_page",
+    ":reset_profile_banner",
     ":reset_profile_dialog",
   ]
 }
@@ -16,6 +17,7 @@ js_library("reset_page") {
   deps = [
     ":reset_profile_dialog",
     "..:route",
+    "..:router",
     "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
@@ -25,9 +27,7 @@ js_library("reset_page") {
 }
 
 js_library("reset_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
@@ -35,6 +35,16 @@ js_library("reset_profile_dialog") {
   deps = [
     ":reset_browser_proxy",
     "..:route",
+    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
+  ]
+}
+
+js_library("reset_profile_banner") {
+  deps = [
+    ":reset_browser_proxy",
+    "..:route",
+    "..:router",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]

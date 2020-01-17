@@ -12,7 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.View;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.MaterialProgressBar;
+import org.chromium.components.browser_ui.widget.MaterialProgressBar;
 
 /**
  * Shows the dialog that informs the user about the progress of preparing passwords for export and

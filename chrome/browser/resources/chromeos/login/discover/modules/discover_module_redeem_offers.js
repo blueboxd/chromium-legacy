@@ -7,7 +7,7 @@ Polymer({
 
   behaviors: [DiscoverModuleBehavior],
 
-  onClick_: function() {
+  onClick_() {
     window.open('http://www.google.com/chromebook/offers/', '_blank');
   },
 });

@@ -72,9 +72,7 @@ template("process_version") {
       inputs += [ invoker.template_file ]
     }
 
-    outputs = [
-      invoker.output,
-    ]
+    outputs = [ invoker.output ]
 
     args = []
 
@@ -118,9 +116,7 @@ template("process_version") {
     source_set(source_set_name) {
       forward_variables_from(invoker, [ "visibility" ])
       sources = get_target_outputs(":$action_name")
-      public_deps = [
-        ":$action_name",
-      ]
+      public_deps = [ ":$action_name" ]
     }
   }
 }

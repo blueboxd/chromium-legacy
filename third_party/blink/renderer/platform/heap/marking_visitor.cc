@@ -214,6 +214,20 @@ void MarkingVisitor::DynamicallyMarkAddress(Address address) {
   }
 }
 
+void MarkingVisitor::VisitMarkedHeader(HeapObjectHeader* header) {
+  // This is currently only called for remembered set visitation. The design of
+  // young generation requires collections to be executed at the top level (with
+  // the guarantee that no objects are currently being in construction). This
+  // can be ensured by running young GCs from safe points or by reintroducing
+  // nested allocation scopes that avoid finalization.
+  DCHECK(header->IsMarked());
+  DCHECK(!IsInConstruction(header));
+  const GCInfo* gc_info =
+      GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
+  marking_worklist_.Push(
+      {reinterpret_cast<void*>(header->Payload()), gc_info->trace});
+}
+
 void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
                                                Address address) {
 #if DCHECK_IS_ON()
@@ -266,8 +280,9 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
   AccountMarkedBytes(header);
 }
 
-void MarkingVisitor::FlushMarkingWorklist() {
+void MarkingVisitor::FlushMarkingWorklists() {
   marking_worklist_.FlushToGlobal();
+  write_barrier_worklist_.FlushToGlobal();
 }
 
 ConcurrentMarkingVisitor::ConcurrentMarkingVisitor(ThreadState* state,

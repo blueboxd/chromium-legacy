@@ -70,7 +70,7 @@ BrailleTranslatorManager.prototype = {
    * translator(s) returned by other methods of this instance.
    * @param {function()} listener The listener.
    */
-  addChangeListener: function(listener) {
+  addChangeListener(listener) {
     this.changeListeners_.push(listener);
   },
 
@@ -82,7 +82,7 @@ BrailleTranslatorManager.prototype = {
    * @param {string=} opt_brailleTable8 Optionally specify an uncontracted
    * table.
    */
-  refresh: function(brailleTable, opt_brailleTable8) {
+  refresh(brailleTable, opt_brailleTable8) {
     if (brailleTable && brailleTable === this.defaultTableId_) {
       return;
     }
@@ -162,7 +162,7 @@ BrailleTranslatorManager.prototype = {
    * @return {ExpandingBrailleTranslator} The current expanding braille
    *     translator, or {@code null} if none is available.
    */
-  getExpandingTranslator: function() {
+  getExpandingTranslator() {
     return this.expandingTranslator_;
   },
 
@@ -170,7 +170,7 @@ BrailleTranslatorManager.prototype = {
    * @return {LibLouis.Translator} The current braille translator to use
    *     by default, or {@code null} if none is available.
    */
-  getDefaultTranslator: function() {
+  getDefaultTranslator() {
     return this.defaultTranslator_;
   },
 
@@ -179,7 +179,7 @@ BrailleTranslatorManager.prototype = {
    *     translator, or {@code null} if it is the same as the default
    *     translator.
    */
-  getUncontractedTranslator: function() {
+  getUncontractedTranslator() {
     return this.uncontractedTranslator_;
   },
 
@@ -188,7 +188,7 @@ BrailleTranslatorManager.prototype = {
    * translators when done.
    * @private
    */
-  fetchTables_: function() {
+  fetchTables_() {
     BrailleTable.getAll(function(tables) {
       this.tables_ = tables;
 
@@ -201,14 +201,14 @@ BrailleTranslatorManager.prototype = {
    * Loads the liblouis instance by attaching it to the document.
    * @private
    */
-  loadLiblouis_: function() {
+  loadLiblouis_() {
     this.fetchTables_();
   },
 
   /**
    * @return {!LibLouis} The liblouis instance used by this object.
    */
-  getLibLouisForTest: function() {
+  getLibLouisForTest() {
     return this.liblouis_;
   },
 
@@ -216,7 +216,7 @@ BrailleTranslatorManager.prototype = {
    * @return {!Array<BrailleTable.Table>} The currently loaded braille
    *     tables, or an empty array if they are not yet loaded.
    */
-  getTablesForTest: function() {
+  getTablesForTest() {
     return this.tables_;
   }
 };

@@ -9,6 +9,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/buffering_state.h"
 #include "media/base/media_serializers_base.h"
 #include "media/base/video_decoder_config.h"
 #include "ui/gfx/geometry/size.h"
@@ -115,6 +116,14 @@ template <>
 struct MediaSerializer<gfx::Rect> {
   static inline base::Value Serialize(const gfx::Rect& value) {
     return base::Value(value.ToString());
+  }
+};
+
+// enum (simple)
+template <>
+struct MediaSerializer<base::TimeDelta> {
+  static inline base::Value Serialize(const base::TimeDelta value) {
+    return MediaSerializer<double>::Serialize(value.InSecondsF());
   }
 };
 
@@ -268,6 +277,60 @@ struct MediaSerializer<media::VideoDecoderConfig> {
     FIELD_SERIALIZE("orientation", value.video_transformation());
     FIELD_SERIALIZE("color space", value.color_space_info());
     FIELD_SERIALIZE("hdr metadata", value.hdr_metadata());
+    return result;
+  }
+};
+
+// enum (simple)
+template <>
+struct MediaSerializer<media::BufferingState> {
+  static inline base::Value Serialize(const media::BufferingState value) {
+    return base::Value(value == media::BufferingState::BUFFERING_HAVE_ENOUGH
+                           ? "BUFFERING_HAVE_ENOUGH"
+                           : "BUFFERING_HAVE_NOTHING");
+  }
+};
+
+// enum (complex)
+template <>
+struct MediaSerializer<media::BufferingStateChangeReason> {
+  static base::Value Serialize(const media::BufferingStateChangeReason value) {
+    switch (value) {
+      case DEMUXER_UNDERFLOW:
+        return base::Value("DEMUXER_UNDERFLOW");
+      case DECODER_UNDERFLOW:
+        return base::Value("DECODER_UNDERFLOW");
+      case REMOTING_NETWORK_CONGESTION:
+        return base::Value("REMOTING_NETWORK_CONGESTION");
+      case BUFFERING_CHANGE_REASON_UNKNOWN:
+        return base::Value("BUFFERING_CHANGE_REASON_UNKNOWN");
+    }
+  }
+};
+
+// Class (complex)
+template <media::SerializableBufferingStateType T>
+struct MediaSerializer<media::SerializableBufferingState<T>> {
+  static base::Value Serialize(
+      const media::SerializableBufferingState<T>& value) {
+    base::Value result(base::Value::Type::DICTIONARY);
+    FIELD_SERIALIZE("state", value.state);
+
+    switch (value.reason) {
+      case DEMUXER_UNDERFLOW:
+      case DECODER_UNDERFLOW:
+      case REMOTING_NETWORK_CONGESTION:
+        FIELD_SERIALIZE("reason", value.reason);
+        break;
+
+      // Don't write anything here if the reason is unknown.
+      case BUFFERING_CHANGE_REASON_UNKNOWN:
+        break;
+    }
+
+    if (T == SerializableBufferingStateType::kPipeline)
+      result.SetBoolKey("for_suspended_start", value.suspended_start);
+
     return result;
   }
 };

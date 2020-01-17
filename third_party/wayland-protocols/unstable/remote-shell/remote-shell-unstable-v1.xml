@@ -1044,13 +1044,13 @@
     </request>
 
     <!-- Version 26 additions -->
-    <request name="set_pip_original_window" since="25">
+    <request name="set_pip_original_window" since="26">
       <description summary="set the pip original window">
         Set this surface the original window for the current PIP window.
       </description>
     </request>
 
-    <request name="unset_pip_original_window" since="25">
+    <request name="unset_pip_original_window" since="26">
       <description summary="unset the pip original window">
         Unset this surface the original window for the current PIP window.
       </description>

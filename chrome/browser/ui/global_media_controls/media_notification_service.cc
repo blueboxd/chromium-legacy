@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,8 +26,22 @@
 
 namespace {
 
-constexpr base::TimeDelta kInactiveTimerDelay =
-    base::TimeDelta::FromMinutes(60);
+constexpr int kAutoDismissTimerInMinutesDefault = 60;  // minutes
+
+constexpr const char kAutoDismissTimerInMinutesParamName[] = "timer_in_minutes";
+
+// Returns the time value to be used for the auto-dismissing of the
+// notifications after they are inactive.
+// If the feature (auto-dismiss) is disabled, the returned value will be
+// TimeDelta::Max() which is the largest int64 possible.
+base::TimeDelta GetAutoDismissTimerValue() {
+  if (!base::FeatureList::IsEnabled(media::kGlobalMediaControlsAutoDismiss))
+    return base::TimeDelta::Max();
+
+  return base::TimeDelta::FromMinutes(base::GetFieldTrialParamByFeatureAsInt(
+      media::kGlobalMediaControlsAutoDismiss,
+      kAutoDismissTimerInMinutesParamName, kAutoDismissTimerInMinutesDefault));
+}
 
 // Here we check to see if the WebContents is focused. Note that since Session
 // is a WebContentsObserver, we could in theory listen for
@@ -178,8 +193,10 @@ void MediaNotificationService::Session::StartInactiveTimer() {
 
   // Using |base::Unretained()| here is okay since |this| owns
   // |inactive_timer_|.
+  // If the feature is disabled, the timer will run forever, in order for the
+  // rest of the code to continue running as expected.
   inactive_timer_.Start(
-      FROM_HERE, kInactiveTimerDelay,
+      FROM_HERE, GetAutoDismissTimerValue(),
       base::BindOnce(&MediaNotificationService::Session::OnInactiveTimerFired,
                      base::Unretained(this)));
 }

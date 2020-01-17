@@ -59,6 +59,8 @@ const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
      key::kShowAccessibilityOptionsInSystemTrayMenu},
     {key::kDeviceLoginScreenPrimaryMouseButtonSwitch,
      key::kPrimaryMouseButtonSwitch},
+    {key::kDeviceLoginScreenAccessibilityShortcutsEnabled,
+     key::kAccessibilityShortcutsEnabled},
 };
 
 const DevicePolicyToUserPolicyMapEntry kRecommendedDevicePoliciesMap[] = {

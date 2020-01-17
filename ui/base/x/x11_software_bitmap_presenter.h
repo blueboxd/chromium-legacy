@@ -56,6 +56,8 @@ class COMPONENT_EXPORT(UI_BASE_X) X11SoftwareBitmapPresenter {
 
   bool ShmPoolReady() const;
 
+  void FlushAfterPutImage();
+
   gfx::AcceleratedWidget widget_;
   XDisplay* display_;
   GC gc_;
@@ -69,6 +71,7 @@ class COMPONENT_EXPORT(UI_BASE_X) X11SoftwareBitmapPresenter {
   bool needs_swap_ = false;
 
   scoped_refptr<base::SequencedTaskRunner> host_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> event_task_runner_;
   sk_sp<SkSurface> surface_;
 
   gfx::Size viewport_pixel_size_;

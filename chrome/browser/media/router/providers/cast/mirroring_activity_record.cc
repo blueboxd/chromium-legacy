@@ -51,10 +51,11 @@ const std::string GetMirroringNamespace(const base::Value& message) {
   if (type_value &&
       type_value->GetString() ==
           cast_util::EnumToString<cast_channel::CastMessageType,
-                                  cast_channel::CastMessageType::kRpc>())
-    return mirroring::mojom::kWebRtcNamespace;
-  else
+                                  cast_channel::CastMessageType::kRpc>()) {
     return mirroring::mojom::kRemotingNamespace;
+  } else {
+    return mirroring::mojom::kWebRtcNamespace;
+  }
 }
 
 }  // namespace

@@ -381,7 +381,8 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   EXPECT_CALL(*reporting_proxy_, DidTerminateWorkerThread()).Times(1);
 
   Vector<CSPHeaderAndType> headers{
-      {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
+      {"contentSecurityPolicy",
+       network::mojom::ContentSecurityPolicyType::kReport}};
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(

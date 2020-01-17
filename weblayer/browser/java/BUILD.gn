@@ -17,6 +17,7 @@ generate_product_config_srcjar("weblayer_product_config") {
 
 java_cpp_enum("generated_enums") {
   sources = [
+    "//weblayer/public/download.h",
     "//weblayer/public/navigation.h",
     "//weblayer/public/new_tab_delegate.h",
     "//weblayer/public/profile.h",
@@ -34,6 +35,7 @@ android_library("java") {
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/CrashReporterControllerImpl.java",
     "org/chromium/weblayer_private/DownloadCallbackProxy.java",
+    "org/chromium/weblayer_private/DownloadImpl.java",
     "org/chromium/weblayer_private/ErrorPageCallbackProxy.java",
     "org/chromium/weblayer_private/ExternalNavigationHandler.java",
     "org/chromium/weblayer_private/FragmentAndroidPermissionDelegate.java",
@@ -63,8 +65,10 @@ android_library("java") {
     ":weblayer_resources",
     "//base:base_java",
     "//base:jni_java",
+    "//components/autofill/android:provider_java",
     "//components/crash/android:handler_java",
     "//components/crash/android:java",
+    "//components/download/internal/common:internal_java",
     "//components/embedder_support/android:application_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/minidump_uploader:minidump_uploader_java",
@@ -89,12 +93,8 @@ android_library("java") {
 
 android_library("test_java") {
   testonly = true
-  sources = [
-    "org/chromium/weblayer_private/test/TestWebLayerImpl.java",
-  ]
-  deps = [
-    "//net/android:net_java",
-  ]
+  sources = [ "org/chromium/weblayer_private/test/TestWebLayerImpl.java" ]
+  deps = [ "//net/android:net_java" ]
   srcjar_deps = [ ":test_aidl" ]
 }
 
@@ -102,6 +102,7 @@ generate_jni("jni") {
   sources = [
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/DownloadCallbackProxy.java",
+    "org/chromium/weblayer_private/DownloadImpl.java",
     "org/chromium/weblayer_private/ErrorPageCallbackProxy.java",
     "org/chromium/weblayer_private/ExternalNavigationHandler.java",
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
@@ -123,6 +124,8 @@ android_library("interfaces_java") {
     "org/chromium/weblayer_private/interfaces/APICallException.java",
     "org/chromium/weblayer_private/interfaces/BrowserFragmentArgs.java",
     "org/chromium/weblayer_private/interfaces/BrowsingDataType.java",
+    "org/chromium/weblayer_private/interfaces/DownloadError.java",
+    "org/chromium/weblayer_private/interfaces/DownloadState.java",
     "org/chromium/weblayer_private/interfaces/LoadError.java",
     "org/chromium/weblayer_private/interfaces/NavigationState.java",
     "org/chromium/weblayer_private/interfaces/NewTabType.java",
@@ -130,9 +133,7 @@ android_library("interfaces_java") {
     "org/chromium/weblayer_private/interfaces/StrictModeWorkaround.java",
   ]
 
-  deps = [
-    "//third_party/android_deps:androidx_annotation_annotation_java",
-  ]
+  deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
 
   srcjar_deps = [ ":aidl" ]
 }
@@ -146,9 +147,7 @@ android_library("gms_bridge_java") {
     "org/chromium/weblayer_private/GmsBridgeImpl.java",
   ]
 
-  deps = [
-    "//base:base_java",
-  ]
+  deps = [ "//base:base_java" ]
 
   # The appropriate .class file will be loaded via a dependency to a library
   # like :gms_bridge_upstream_impl_java below.
@@ -157,12 +156,8 @@ android_library("gms_bridge_java") {
 
 # This target compiles the implementation of GmsBridge for public targets.
 android_library("gms_bridge_upstream_impl_java") {
-  sources = [
-    "org/chromium/weblayer_private/GmsBridgeImpl.java",
-  ]
-  deps = [
-    ":gms_bridge_java",
-  ]
+  sources = [ "org/chromium/weblayer_private/GmsBridgeImpl.java" ]
+  deps = [ ":gms_bridge_java" ]
 }
 
 android_aidl("aidl") {
@@ -172,9 +167,11 @@ android_aidl("aidl") {
     "org/chromium/weblayer_private/interfaces/IBrowserClient.aidl",
     "org/chromium/weblayer_private/interfaces/IBrowserFragment.aidl",
     "org/chromium/weblayer_private/interfaces/IChildProcessService.aidl",
+    "org/chromium/weblayer_private/interfaces/IClientDownload.aidl",
     "org/chromium/weblayer_private/interfaces/IClientNavigation.aidl",
     "org/chromium/weblayer_private/interfaces/ICrashReporterController.aidl",
     "org/chromium/weblayer_private/interfaces/ICrashReporterControllerClient.aidl",
+    "org/chromium/weblayer_private/interfaces/IDownload.aidl",
     "org/chromium/weblayer_private/interfaces/IDownloadCallbackClient.aidl",
     "org/chromium/weblayer_private/interfaces/IErrorPageCallbackClient.aidl",
     "org/chromium/weblayer_private/interfaces/IFullscreenCallbackClient.aidl",
@@ -195,7 +192,6 @@ android_aidl("aidl") {
 android_aidl("test_aidl") {
   import_include = [ "." ]
   testonly = true
-  sources = [
-    "org/chromium/weblayer_private/test_interfaces/ITestWebLayer.aidl",
-  ]
+  sources =
+      [ "org/chromium/weblayer_private/test_interfaces/ITestWebLayer.aidl" ]
 }

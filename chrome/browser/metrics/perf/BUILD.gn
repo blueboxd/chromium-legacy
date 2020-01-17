@@ -6,9 +6,7 @@ import("//build/config/ui.gni")
 import("//testing/test.gni")
 
 test("profile_provider_unittest") {
-  sources = [
-    "profile_provider_unittest_main.cc",
-  ]
+  sources = [ "profile_provider_unittest_main.cc" ]
   deps = [
     "//base",
     "//base/test:test_support",

@@ -14,7 +14,6 @@
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "components/viz/client/frame_eviction_manager.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"

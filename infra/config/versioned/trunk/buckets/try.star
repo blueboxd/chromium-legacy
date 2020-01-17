@@ -145,7 +145,6 @@ def chromiumos_builder(*, name, **kwargs):
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-rel',
-    goma_enable_ats = True,
     tryjob = tryjob(),
 )
 
@@ -239,7 +238,6 @@ def win_builder(*, name, builderless=True, os=os.WINDOWS_DEFAULT, **kwargs):
       name = name,
       builderless = builderless,
       goma_backend = goma.backend.RBE_PROD,
-      goma_enable_ats = True,
       mastername = 'tryserver.chromium.win',
       os = os,
       **kwargs

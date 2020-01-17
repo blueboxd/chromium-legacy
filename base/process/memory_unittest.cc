@@ -9,9 +9,11 @@
 #include <stddef.h>
 
 #include <limits>
+#include <vector>
 
 #include "base/allocator/allocator_check.h"
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/memory/aligned_memory.h"
@@ -496,6 +498,66 @@ TEST_F(OutOfMemoryTest, TerminateBecauseOutOfMemoryReportsAllocSize) {
   }
 }
 #endif  // OS_WIN
+
+#if defined(ARCH_CPU_32_BITS) && (defined(OS_WIN) || defined(OS_LINUX))
+
+void TestAllocationsReleaseReservation(void* (*alloc_fn)(size_t),
+                                       void (*free_fn)(void*)) {
+  base::ReleaseReservation();
+  base::EnableTerminationOnOutOfMemory();
+
+  constexpr size_t kMiB = 1 << 20;
+  constexpr size_t kReservationSize = 512 * kMiB;  // MiB.
+
+  size_t reservation_size = kReservationSize;
+  while (!base::ReserveAddressSpace(reservation_size)) {
+    reservation_size -= 16 * kMiB;
+  }
+  ASSERT_TRUE(base::HasReservationForTesting());
+  ASSERT_GT(reservation_size, 0u);
+
+  // Allocate a large area at a time to bump into address space exhaustion
+  // before other limits. It is important not to do a larger allocation, to
+  // verify that we can allocate without removing the reservation. On the other
+  // hand, must be large enough to make the underlying implementation call
+  // mmap()/VirtualAlloc().
+  size_t allocation_size = reservation_size / 2;
+
+  std::vector<void*> areas;
+  // Pre-reserve the vector to make sure that we don't hit the address space
+  // limit while resizing the array.
+  areas.reserve(((2 * 4096 * kMiB) / allocation_size) + 1);
+
+  while (true) {
+    void* area = alloc_fn(allocation_size / 2);
+    ASSERT_TRUE(area);
+    areas.push_back(area);
+
+    // Working as intended, the allocation was successful, and the reservation
+    // was dropped instead of crashing.
+    //
+    // Meaning that the test is either successful, or crashes.
+    if (!base::HasReservationForTesting())
+      break;
+  }
+
+  EXPECT_GE(areas.size(), 2u)
+      << "Should be able to allocate without releasing the reservation";
+
+  for (void* ptr : areas)
+    free_fn(ptr);
+}
+
+TEST_F(OutOfMemoryHandledTest, MallocReleasesReservation) {
+  TestAllocationsReleaseReservation(malloc, free);
+}
+
+TEST_F(OutOfMemoryHandledTest, NewReleasesReservation) {
+  TestAllocationsReleaseReservation(
+      [](size_t size) { return static_cast<void*>(new char[size]); },
+      [](void* ptr) { delete[] static_cast<char*>(ptr); });
+}
+#endif  // defined(ARCH_CPU_32_BITS) && (defined(OS_WIN) || defined(OS_LINUX))
 
 // TODO(b.kelemen): make UncheckedMalloc and UncheckedCalloc work
 // on Windows as well.

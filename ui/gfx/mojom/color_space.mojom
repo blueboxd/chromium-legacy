@@ -50,7 +50,8 @@ enum ColorSpaceTransferID {
   IEC61966_2_1_HDR,
   LINEAR_HDR,
   CUSTOM,
-  CUSTOM_HDR
+  CUSTOM_HDR,
+  PIECEWISE_HDR
 };
 
 enum ColorSpaceMatrixID {

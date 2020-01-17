@@ -190,10 +190,20 @@ void VersionInfoUpdater::OnStoreError(policy::CloudPolicyStore* store) {
 void VersionInfoUpdater::OnQueryAdbSideload(
     SessionManagerClient::AdbSideloadResponseCode response_code,
     bool enabled) {
-  if (response_code != SessionManagerClient::AdbSideloadResponseCode::SUCCESS) {
-    LOG(WARNING) << "Failed to query adb sideload status";
-    // Pretend to be enabled to show warning at login screen conservatively.
-    enabled = true;
+  switch (response_code) {
+    case SessionManagerClient::AdbSideloadResponseCode::SUCCESS:
+      break;
+    case SessionManagerClient::AdbSideloadResponseCode::FAILED:
+      // Pretend to be enabled to show warning at login screen conservatively.
+      LOG(WARNING) << "Failed to query adb sideload status";
+      enabled = true;
+      break;
+    case SessionManagerClient::AdbSideloadResponseCode::NEED_POWERWASH:
+      // This can only happen on device initialized before M74, i.e. not
+      // powerwashed since then. Treat it as powerwash disabled to not show the
+      // message.
+      enabled = false;
+      break;
   }
 
   if (delegate_)

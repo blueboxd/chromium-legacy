@@ -41,8 +41,7 @@ class VP9Encoder : public AcceleratedVideoEncoder {
     unsigned int cpb_size_bits;
 
     int initial_qp;
-    int min_qp;
-    int max_qp;
+    ScalingSettings scaling_settings;
 
     bool error_resilient_mode;
   };
@@ -83,6 +82,7 @@ class VP9Encoder : public AcceleratedVideoEncoder {
                    uint32_t framerate) override;
   gfx::Size GetCodedSize() const override;
   size_t GetMaxNumOfRefFrames() const override;
+  ScalingSettings GetScalingSettings() const override;
   bool PrepareEncodeJob(EncodeJob* encode_job) override;
 
  private:

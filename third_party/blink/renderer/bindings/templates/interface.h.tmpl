@@ -309,12 +309,6 @@ class {{v8_class}} {
 };
 
 template <>
-struct NativeValueTraits<{{cpp_class}}> : public NativeValueTraitsBase<{{cpp_class}}> {
-  {{exported}}static {{cpp_class}}* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  {{exported}}static {{cpp_class}}* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<{{cpp_class}}> {
   typedef {{v8_class}} Type;
 };

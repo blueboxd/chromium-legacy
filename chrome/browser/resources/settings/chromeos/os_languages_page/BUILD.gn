@@ -29,6 +29,7 @@ js_library("os_languages_section") {
     ":manage_input_methods_page",
     ":os_languages_page",
     "../..:route",
+    "../..:router",
     "../../languages_page:languages",
     "../../languages_page:languages_types",
     "../../settings_page:settings_animated_pages",
@@ -44,6 +45,7 @@ js_library("os_languages_page") {
   deps = [
     "../..:lifetime_browser_proxy",
     "../..:route",
+    "../..:router",
     "../../languages_page:languages_types",
     "../../settings_page:settings_animated_pages",
     "../localized_link:localized_link",

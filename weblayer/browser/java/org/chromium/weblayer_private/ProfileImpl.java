@@ -60,6 +60,12 @@ public final class ProfileImpl extends IProfile.Stub {
                 mNativeProfile, mapBrowsingDataTypes(dataTypes), fromMillis, toMillis, callback);
     }
 
+    @Override
+    public void setDownloadDirectory(String directory) {
+        StrictModeWorkaround.apply();
+        ProfileImplJni.get().setDownloadDirectory(mNativeProfile, directory);
+    }
+
     private static @ImplBrowsingDataType int[] mapBrowsingDataTypes(
             @NonNull @BrowsingDataType int[] dataTypes) {
         // Convert data types coming from aidl to the ones accepted by C++ (ImplBrowsingDataType is
@@ -90,5 +96,6 @@ public final class ProfileImpl extends IProfile.Stub {
         void deleteProfile(long profile);
         void clearBrowsingData(long nativeProfileImpl, @ImplBrowsingDataType int[] dataTypes,
                 long fromMillis, long toMillis, Runnable callback);
+        void setDownloadDirectory(long nativeProfileImpl, String directory);
     }
 }

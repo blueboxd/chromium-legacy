@@ -66,7 +66,6 @@ const char kRestoreNavigationTime[] = "IOS.RestoreNavigationTime";
 
 WKBasedNavigationManagerImpl::WKBasedNavigationManagerImpl()
     : pending_item_index_(-1),
-      previous_item_index_(-1),
       last_committed_item_index_(-1),
       web_view_cache_(this) {}
 
@@ -231,8 +230,17 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
     NavigationItemImpl* current_item =
         GetNavigationItemFromWKItem(current_wk_item);
     if (!current_item) {
+      current_item = pending_item_.get();
       SetNavigationItemInWKItem(current_wk_item, std::move(pending_item_));
     }
+    if (user_agent_override_option == UserAgentOverrideOption::DESKTOP) {
+      current_item->SetUserAgentType(UserAgentType::DESKTOP,
+                                     /*update_inherited_user_agent =*/true);
+    } else if (user_agent_override_option == UserAgentOverrideOption::MOBILE) {
+      current_item->SetUserAgentType(UserAgentType::MOBILE,
+                                     /*update_inherited_user_agent =*/true);
+    }
+
     pending_item_.reset();
   }
 }
@@ -249,9 +257,6 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
     empty_window_open_item_.reset();
     return;
   }
-
-  bool last_committed_item_was_empty_window_open_item =
-      empty_window_open_item_ != nullptr;
 
   if (pending_item_index_ == -1) {
     pending_item_->ResetForCommit();
@@ -285,11 +290,6 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
 
   pending_item_index_ = -1;
   pending_item_.reset();
-  // If the last committed item is the empty window open item, then don't update
-  // previous item because the new commit replaces the last committed item.
-  if (!last_committed_item_was_empty_window_open_item) {
-    previous_item_index_ = last_committed_item_index_;
-  }
   // If the newly committed item is the empty window open item, fake an index of
   // 0 because WKBackForwardList is empty at this point.
   last_committed_item_index_ =
@@ -310,9 +310,6 @@ void WKBasedNavigationManagerImpl::CommitPendingItem(
   // pending item.
   if (!item)
     return;
-
-  bool last_committed_item_was_empty_window_open_item =
-      empty_window_open_item_ != nullptr;
 
   item->ResetForCommit();
   item->SetTimestamp(time_smoother_.GetSmoothedTime(base::Time::Now()));
@@ -366,11 +363,6 @@ void WKBasedNavigationManagerImpl::CommitPendingItem(
     }
   }
 
-  // If the last committed item is the empty window open item, then don't update
-  // previous item because the new commit replaces the last committed item.
-  if (!last_committed_item_was_empty_window_open_item) {
-    previous_item_index_ = last_committed_item_index_;
-  }
   // If the newly committed item is the empty window open item, fake an index of
   // 0 because WKBackForwardList is empty at this point.
   last_committed_item_index_ =
@@ -402,16 +394,6 @@ WKBasedNavigationManagerImpl::ReleasePendingItem() {
 void WKBasedNavigationManagerImpl::SetPendingItem(
     std::unique_ptr<web::NavigationItemImpl> item) {
   pending_item_ = std::move(item);
-}
-
-int WKBasedNavigationManagerImpl::GetPreviousItemIndex() const {
-  return previous_item_index_;
-}
-
-void WKBasedNavigationManagerImpl::SetPreviousItemIndex(
-    int previous_item_index) {
-  DCHECK(web_view_cache_.IsAttachedToWebView());
-  previous_item_index_ = previous_item_index;
 }
 
 void WKBasedNavigationManagerImpl::AddPushStateItemIfNecessary(
@@ -703,7 +685,6 @@ void WKBasedNavigationManagerImpl::Restore(
   }
   DCHECK_EQ(0, GetItemCount());
   DCHECK_EQ(-1, pending_item_index_);
-  previous_item_index_ = -1;
   last_committed_item_index_ = -1;
 
   UnsafeRestore(last_committed_item_index, std::move(items));

@@ -710,7 +710,7 @@ void CompositorTimingHistory::WillBeginImplFrame(
   viz::BeginFrameArgs::BeginFrameArgsType frame_type = args.type;
   base::TimeTicks frame_time = args.frame_time;
 
-  compositor_frame_reporting_controller_->WillBeginImplFrame();
+  compositor_frame_reporting_controller_->WillBeginImplFrame(args.frame_id);
 
   // The check for whether a BeginMainFrame was sent anytime between two
   // BeginImplFrames protects us from not detecting a fast main thread that
@@ -729,11 +729,12 @@ void CompositorTimingHistory::WillBeginImplFrame(
   did_send_begin_main_frame_ = false;
 }
 
-void CompositorTimingHistory::WillFinishImplFrame(bool needs_redraw) {
+void CompositorTimingHistory::WillFinishImplFrame(bool needs_redraw,
+                                                  const viz::BeginFrameId& id) {
   if (!needs_redraw)
     SetCompositorDrawingContinuously(false);
 
-  compositor_frame_reporting_controller_->OnFinishImplFrame();
+  compositor_frame_reporting_controller_->OnFinishImplFrame(id);
 }
 
 void CompositorTimingHistory::BeginImplFrameNotExpectedSoon() {
@@ -743,16 +744,15 @@ void CompositorTimingHistory::BeginImplFrameNotExpectedSoon() {
 }
 
 void CompositorTimingHistory::WillBeginMainFrame(
-    bool on_critical_path,
-    base::TimeTicks main_frame_time) {
+    const viz::BeginFrameArgs& args) {
   DCHECK_EQ(base::TimeTicks(), begin_main_frame_sent_time_);
   DCHECK_EQ(base::TimeTicks(), begin_main_frame_frame_time_);
 
-  compositor_frame_reporting_controller_->WillBeginMainFrame();
+  compositor_frame_reporting_controller_->WillBeginMainFrame(args.frame_id);
 
-  begin_main_frame_on_critical_path_ = on_critical_path;
+  begin_main_frame_on_critical_path_ = args.on_critical_path;
   begin_main_frame_sent_time_ = Now();
-  begin_main_frame_frame_time_ = main_frame_time;
+  begin_main_frame_frame_time_ = args.frame_time;
 
   did_send_begin_main_frame_ = true;
   SetBeginMainFrameNeededContinuously(true);
@@ -765,8 +765,9 @@ void CompositorTimingHistory::BeginMainFrameStarted(
   begin_main_frame_start_time_ = main_thread_start_time;
 }
 
-void CompositorTimingHistory::BeginMainFrameAborted() {
-  compositor_frame_reporting_controller_->BeginMainFrameAborted();
+void CompositorTimingHistory::BeginMainFrameAborted(
+    const viz::BeginFrameId& id) {
+  compositor_frame_reporting_controller_->BeginMainFrameAborted(id);
   SetBeginMainFrameCommittingContinuously(false);
   base::TimeTicks begin_main_frame_end_time = Now();
   DidBeginMainFrame(begin_main_frame_end_time);
@@ -1064,9 +1065,13 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
   draw_start_time_ = base::TimeTicks();
 }
 
-void CompositorTimingHistory::DidSubmitCompositorFrame(uint32_t frame_token) {
+void CompositorTimingHistory::DidSubmitCompositorFrame(
+    uint32_t frame_token,
+    const viz::BeginFrameId& current_frame_id,
+    const viz::BeginFrameId& last_activated_frame_id) {
   DCHECK_EQ(base::TimeTicks(), submit_start_time_);
-  compositor_frame_reporting_controller_->DidSubmitCompositorFrame(frame_token);
+  compositor_frame_reporting_controller_->DidSubmitCompositorFrame(
+      frame_token, current_frame_id, last_activated_frame_id);
   submit_start_time_ = Now();
 }
 

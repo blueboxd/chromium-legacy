@@ -210,10 +210,14 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
       RecordLatchingUmaMetric(client_->IsWheelScrollInProgress());
 
     bool synthetic = event_sent_for_gesture_ack_->event.has_synthetic_phase;
-    if (event_sent_for_gesture_ack_->event.phase ==
-        blink::WebMouseWheelEvent::kPhaseBegan) {
-      // Wheel event with phaseBegan must have non-zero deltas.
-      DCHECK(needs_update);
+
+    // Generally, there should always be a non-zero delta with kPhaseBegan
+    // events. However, sometimes this is not the case and the delta in both
+    // directions is 0. When this occurs, don't call SendScrollBegin because
+    // scroll direction is necessary in order to determine the correct scroller
+    // to target and latch to.
+    if (needs_update && event_sent_for_gesture_ack_->event.phase ==
+                            blink::WebMouseWheelEvent::kPhaseBegan) {
       send_wheel_events_async_ = true;
 
       if (!client_->IsWheelScrollInProgress())

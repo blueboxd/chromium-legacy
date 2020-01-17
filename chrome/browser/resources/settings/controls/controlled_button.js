@@ -40,14 +40,14 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     if (this.classList.contains('action-button')) {
       this.actionClass_ = 'action-button';
     }
   },
 
   /** Focus on the inner cr-button. */
-  focus: function() {
+  focus() {
     this.$$('cr-button').focus();
   },
 
@@ -55,7 +55,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onIndicatorTap_: function(e) {
+  onIndicatorTap_(e) {
     // Disallow <controlled-button on-click="..."> when controlled.
     e.preventDefault();
     e.stopPropagation();

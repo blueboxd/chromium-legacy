@@ -37,15 +37,18 @@ class ChooserDialogView : public views::DialogDelegateView,
 
   // views::DialogDelegateView:
   views::View* GetContentsView() override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
 
   // views::TableViewObserver:
   void OnSelectionChanged() override;
 
-  DeviceChooserContentView* device_chooser_content_view_for_test() const;
+  DeviceChooserContentView* device_chooser_content_view_for_test() const {
+    return device_chooser_content_view_;
+  }
 
  private:
+  // views::DialogDelegateView:
+  const views::Widget* GetWidgetImpl() const override;
+
   DeviceChooserContentView* device_chooser_content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserDialogView);

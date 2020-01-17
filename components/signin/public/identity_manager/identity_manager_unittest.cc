@@ -356,7 +356,8 @@ class IdentityManagerTest : public testing::Test {
     }
 
     auto accounts_cookie_mutator = std::make_unique<AccountsCookieMutatorImpl>(
-        gaia_cookie_manager_service.get(), account_tracker_service.get());
+        &signin_client_, token_service.get(), gaia_cookie_manager_service.get(),
+        account_tracker_service.get());
 
     auto diagnostics_provider = std::make_unique<DiagnosticsProviderImpl>(
         token_service.get(), gaia_cookie_manager_service.get());

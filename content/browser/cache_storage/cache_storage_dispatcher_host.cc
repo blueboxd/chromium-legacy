@@ -685,8 +685,12 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
     }
 
     CacheStorageSchedulerPriority priority =
-        in_related_fetch_event ? CacheStorageSchedulerPriority::kHigh
-                               : CacheStorageSchedulerPriority::kNormal;
+        CacheStorageSchedulerPriority::kNormal;
+    if (in_related_fetch_event &&
+        base::FeatureList::IsEnabled(
+            features::kCacheStorageHighPriorityMatch)) {
+      priority = CacheStorageSchedulerPriority::kHigh;
+    }
 
     if (!match_options->cache_name) {
       cache_storage->MatchAllCaches(std::move(request),

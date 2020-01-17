@@ -1920,7 +1920,7 @@ TEST_F(AXPlatformNodeWinTest, DISABLED_TestRelationTargetsOfType) {
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kRootWebArea;
-  root.AddIntAttribute(ax::mojom::IntAttribute::kDetailsId, 2);
+  root.AddIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds, {2});
 
   AXNodeData child1;
   child1.id = 2;
@@ -1940,7 +1940,7 @@ TEST_F(AXPlatformNodeWinTest, DISABLED_TestRelationTargetsOfType) {
   AXNodeData child3;
   child3.id = 4;
   child3.role = ax::mojom::Role::kStaticText;
-  child3.AddIntAttribute(ax::mojom::IntAttribute::kDetailsId, 2);
+  child3.AddIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds, {2});
 
   root.child_ids.push_back(4);
 
@@ -6036,6 +6036,7 @@ TEST_F(AXPlatformNodeWinTest, TestIValueProvider_GetValue) {
   AXNodeData child2;
   child2.id = 3;
   child2.role = ax::mojom::Role::kTextField;
+  child2.AddState(ax::mojom::State::kEditable);
   child2.AddStringAttribute(ax::mojom::StringAttribute::kValue, "test");
   root.child_ids.push_back(child2.id);
 
@@ -6111,9 +6112,9 @@ TEST_F(AXPlatformNodeWinTest, TestIValueProvider_SetValue) {
   // Note: TestAXNodeWrapper::AccessibilityPerformAction will
   // modify the value when the kSetValue action is fired.
 
-  EXPECT_HRESULT_SUCCEEDED(provider1->SetValue(L"2"));
+  EXPECT_UIA_ELEMENTNOTENABLED(provider1->SetValue(L"2"));
   EXPECT_HRESULT_SUCCEEDED(provider1->get_Value(bstr_value.Receive()));
-  EXPECT_STREQ(L"2", bstr_value);
+  EXPECT_STREQ(L"3", bstr_value);
   bstr_value.Reset();
 
   EXPECT_HRESULT_SUCCEEDED(provider2->SetValue(L"changed"));
@@ -6135,6 +6136,7 @@ TEST_F(AXPlatformNodeWinTest, TestIValueProvider_IsReadOnly) {
   AXNodeData child1;
   child1.id = 2;
   child1.role = ax::mojom::Role::kTextField;
+  child1.AddState(ax::mojom::State::kEditable);
   root.child_ids.push_back(child1.id);
 
   AXNodeData child2;
@@ -6151,7 +6153,12 @@ TEST_F(AXPlatformNodeWinTest, TestIValueProvider_IsReadOnly) {
                          static_cast<int>(ax::mojom::Restriction::kDisabled));
   root.child_ids.push_back(child3.id);
 
-  Init(root, child1, child2, child3);
+  AXNodeData child4;
+  child4.id = 5;
+  child4.role = ax::mojom::Role::kLink;
+  root.child_ids.push_back(child4.id);
+
+  Init(root, child1, child2, child3, child4);
 
   BOOL is_readonly = false;
 
@@ -6167,6 +6174,11 @@ TEST_F(AXPlatformNodeWinTest, TestIValueProvider_IsReadOnly) {
 
   EXPECT_HRESULT_SUCCEEDED(
       QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[2])
+          ->get_IsReadOnly(&is_readonly));
+  EXPECT_TRUE(is_readonly);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[3])
           ->get_IsReadOnly(&is_readonly));
   EXPECT_TRUE(is_readonly);
 }

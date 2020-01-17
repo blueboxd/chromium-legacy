@@ -63,12 +63,6 @@ class V8TestSpecialOperations {
 };
 
 template <>
-struct NativeValueTraits<TestSpecialOperations> : public NativeValueTraitsBase<TestSpecialOperations> {
-  CORE_EXPORT static TestSpecialOperations* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestSpecialOperations* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestSpecialOperations> {
   typedef V8TestSpecialOperations Type;
 };

@@ -42,8 +42,6 @@ class SearchInputType final : public BaseTextInputType {
 
  private:
   void CountUsage() override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&,
-                                   LegacyLayout) const override;
   const AtomicString& FormControlType() const override;
   bool NeedsContainer() const override;
   void CreateShadowSubtree() override;

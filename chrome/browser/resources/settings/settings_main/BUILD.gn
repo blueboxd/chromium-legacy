@@ -5,15 +5,14 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":settings_main",
-  ]
+  deps = [ ":settings_main" ]
 }
 
 js_library("settings_main") {
   deps = [
     "..:page_visibility",
     "..:route",
+    "..:router",
     "..:search_settings",
     "../about_page",
     "../basic_page:basic_page",

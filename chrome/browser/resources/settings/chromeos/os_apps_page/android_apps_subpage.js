@@ -31,7 +31,7 @@ Polymer({
     /** @private */
     dialogBody_: {
       type: String,
-      value: function() {
+      value() {
         return this.i18nAdvanced(
             'androidAppsDisableDialogMessage',
             {substitutions: [], tags: ['br']});
@@ -40,10 +40,11 @@ Polymer({
   },
 
   /** @private */
-  onPlayStoreEnabledChanged_: function(enabled) {
+  onPlayStoreEnabledChanged_(enabled) {
     if (!enabled &&
-        settings.getCurrentRoute() == settings.routes.ANDROID_APPS_DETAILS) {
-      settings.navigateToPreviousRoute();
+        settings.Router.getInstance().getCurrentRoute() ==
+            settings.routes.ANDROID_APPS_DETAILS) {
+      settings.Router.getInstance().navigateToPreviousRoute();
     }
   },
 
@@ -51,7 +52,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computePlayStoreEnabled_: function() {
+  computePlayStoreEnabled_() {
     return this.androidAppsInfo.playStoreEnabled;
   },
 
@@ -59,7 +60,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  allowRemove_: function() {
+  allowRemove_() {
     return this.prefs.arc.enabled.enforcement !=
         chrome.settingsPrivate.Enforcement.ENFORCED;
   },
@@ -69,7 +70,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onRemoveTap_: function(event) {
+  onRemoveTap_(event) {
     this.$.confirmDisableDialog.showModal();
   },
 
@@ -77,7 +78,7 @@ Polymer({
    * Handles the shared proxy confirmation dialog 'Confirm' button.
    * @private
    */
-  onConfirmDisableDialogConfirm_: function() {
+  onConfirmDisableDialogConfirm_() {
     this.setPrefValue('arc.enabled', false);
     this.$.confirmDisableDialog.close();
     // Sub-page will be closed in onAndroidAppsInfoUpdate_ call.
@@ -88,12 +89,12 @@ Polymer({
    * event.
    * @private
    */
-  onConfirmDisableDialogCancel_: function() {
+  onConfirmDisableDialogCancel_() {
     this.$.confirmDisableDialog.close();
   },
 
   /** @private */
-  onConfirmDisableDialogClose_: function() {
+  onConfirmDisableDialogClose_() {
     cr.ui.focusWithoutInk(assert(this.$$('#remove')));
   },
 
@@ -101,7 +102,7 @@ Polymer({
    * @param {!MouseEvent} event
    * @private
    */
-  onManageAndroidAppsTap_: function(event) {
+  onManageAndroidAppsTap_(event) {
     // |event.detail| is the click count. Keyboard events will have 0 clicks.
     const isKeyboardAction = event.detail == 0;
     settings.AndroidAppsBrowserProxyImpl.getInstance().showAndroidAppsSettings(

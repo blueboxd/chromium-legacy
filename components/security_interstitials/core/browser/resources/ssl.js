@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function setupSSLDebuggingInfo() {
-  if (loadTimeData.getString('type') != 'SSL') {
+  if (loadTimeData.getString('type') !== 'SSL') {
     return;
   }
 

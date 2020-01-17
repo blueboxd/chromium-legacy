@@ -148,7 +148,7 @@ var ClientRenderer = (function() {
       this.redrawAudioComponentList_(componentType, components);
 
       // Redraw the component if it's currently selected.
-      if (this.selectedAudioComponentType == componentType &&
+      if (this.selectedAudioComponentType === componentType &&
           this.selectedAudioComponentId &&
           this.selectedAudioComponentId in components) {
         // TODO(chcunningham): This path is used both for adding and updating
@@ -232,7 +232,7 @@ var ClientRenderer = (function() {
     },
 
     createVideoCaptureFormatTable: function(formats) {
-      if (!formats || formats.length == 0) {
+      if (!formats || formats.length === 0) {
         return document.createTextNode('No formats');
       }
 
@@ -277,11 +277,11 @@ var ClientRenderer = (function() {
           var value = device[keys[i]];
           var tableCell = document.createElement('td');
           var cellElement;
-          if ((typeof value) == (typeof[])) {
+          if ((typeof value) === (typeof[])) {
             cellElement = this.createVideoCaptureFormatTable(value);
           } else {
             cellElement = document.createTextNode(
-                ((typeof value) == 'undefined') ? 'n/a' : value);
+                ((typeof value) === 'undefined') ? 'n/a' : value);
           }
           tableCell.appendChild(cellElement);
           tableRow.appendChild(tableCell);
@@ -356,7 +356,7 @@ var ClientRenderer = (function() {
       listElement.appendChild(fragment);
 
       if (this.selectedAudioComponentType &&
-          this.selectedAudioComponentType == componentType &&
+          this.selectedAudioComponentType === componentType &&
           this.selectedAudioComponentId in components) {
         // Re-select the selected component since the button was just recreated.
         selectSelectableButton(this.selectedAudioComponentId);
@@ -563,7 +563,7 @@ var ClientRenderer = (function() {
       this.filterFunction = function(text) {
         text = text.toLowerCase();
         return parts.length === 0 || parts.some(function(part) {
-          return text.indexOf(part) != -1;
+          return text.indexOf(part) !== -1;
         });
       };
 

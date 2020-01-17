@@ -37,7 +37,7 @@ cr.define('settings', function() {
     },
 
     /** @override */
-    attached: function() {
+    attached() {
       // All elements with this behavior must specify their route.
       assert(this.route_ instanceof settings.Route);
     },
@@ -48,10 +48,10 @@ cr.define('settings', function() {
      * @param {!settings.Route} oldRoute
      * @protected
      */
-    currentRouteChanged: function(newRoute, oldRoute) {
+    currentRouteChanged(newRoute, oldRoute) {
       // Don't attempt to focus any anchor element, unless last navigation was a
       // 'pop' (backwards) navigation.
-      if (!settings.lastRouteChangeWasPopstate()) {
+      if (!settings.Router.getInstance().lastRouteChangeWasPopstate()) {
         return;
       }
       const focusSelector = this.focusConfig_.get(oldRoute.path);

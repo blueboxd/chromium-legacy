@@ -18,9 +18,7 @@ component("embedder") {
 
   defines = [ "IS_MOJO_CORE_EMBEDDER_IMPL" ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 
   deps = [
     "//mojo/core:embedder_internal",

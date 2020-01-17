@@ -29,7 +29,6 @@ constexpr const char* kStartupMetrics[] = {
     "Startup.LoadTime.ExeMainToDllMain2",
     "Startup.LoadTime.ProcessCreateToDllMain2",
     "Startup.LoadTime.ProcessCreateToExeMain2",
-    "Startup.SystemUptime",
 
 #if defined(OS_WIN)
     "Startup.BrowserMessageLoopStartHardFaultCount",

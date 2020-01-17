@@ -6,9 +6,7 @@
 action("gcp_installer") {
   script = "build/make_setup.py"
 
-  outputs = [
-    "$root_out_dir/gcp_installer.exe",
-  ]
+  outputs = [ "$root_out_dir/gcp_installer.exe" ]
 
   args = [
     rebase_path("//", root_build_dir),
@@ -26,7 +24,5 @@ action("gcp_installer") {
 }
 
 group("credential_provider") {
-  deps = [
-    ":gcp_installer",
-  ]
+  deps = [ ":gcp_installer" ]
 }

@@ -678,37 +678,6 @@ void AssistantManagerServiceImpl::OnShowContextualQueryFallback() {
   // Show fallback text.
   OnShowText(l10n_util::GetStringUTF8(
       IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_TEXT));
-
-  // Construct a fallback card.
-  std::stringstream html;
-  html << R"(
-       <html>
-         <head><meta CHARSET='utf-8'></head>
-         <body>
-           <style>
-             * {
-               cursor: default;
-               font-family: Google Sans, sans-serif;
-               user-select: none;
-             }
-             html, body { margin: 0; padding: 0; }
-             div {
-               border: 1px solid rgba(32, 33, 36, 0.08);
-               border-radius: 12px;
-               color: #5F6368;
-               font-size: 13px;
-               margin: 1px;
-               padding: 16px;
-               text-align: center;
-             }
-         </style>
-         <div>)"
-       << l10n_util::GetStringUTF8(
-              IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_CARD)
-       << "</div></body></html>";
-
-  // Show fallback card.
-  OnShowHtml(html.str(), /*fallback=*/"");
 }
 
 void AssistantManagerServiceImpl::OnShowHtml(const std::string& html,

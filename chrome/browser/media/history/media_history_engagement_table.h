@@ -14,6 +14,8 @@ namespace media_history {
 
 class MediaHistoryEngagementTable : public MediaHistoryTableBase {
  public:
+  static const char kTableName[];
+
   struct MediaEngagementScore {
     MediaEngagementScore();
 

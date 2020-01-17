@@ -11,16 +11,29 @@
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace chromeos {
 namespace cros_healthd {
 
-class FakeCrosHealthdService final : public mojom::CrosHealthdService {
+// This class serves as a fake for all three of cros_healthd's mojo interfaces.
+// The factory methods bind to receivers held within FakeCrosHealtdService, and
+// all requests on each of the interfaces are fulfilled by
+// FakeCrosHealthdService.
+class FakeCrosHealthdService final
+    : public mojom::CrosHealthdServiceFactory,
+      public mojom::CrosHealthdDiagnosticsService,
+      public mojom::CrosHealthdProbeService {
  public:
   FakeCrosHealthdService();
   ~FakeCrosHealthdService() override;
 
-  // CrosHealthdService overrides:
+  // CrosHealthdServiceFactory overrides:
+  void GetProbeService(mojom::CrosHealthdProbeServiceRequest service) override;
+  void GetDiagnosticsService(
+      mojom::CrosHealthdDiagnosticsServiceRequest service) override;
+
+  // CrosHealthdDiagnosticsService overrides:
   void GetAvailableRoutines(GetAvailableRoutinesCallback callback) override;
   void GetRoutineUpdate(int32_t id,
                         mojom::DiagnosticRoutineCommandEnum command,
@@ -38,6 +51,8 @@ class FakeCrosHealthdService final : public mojom::CrosHealthdService {
       RunBatteryHealthRoutineCallback callback) override;
   void RunSmartctlCheckRoutine(
       RunSmartctlCheckRoutineCallback callback) override;
+
+  // CrosHealthdProbeService overrides:
   void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories,
       ProbeTelemetryInfoCallback callback) override;
@@ -70,6 +85,11 @@ class FakeCrosHealthdService final : public mojom::CrosHealthdService {
   mojom::RoutineUpdatePtr routine_update_response_{mojom::RoutineUpdate::New()};
   // Used as the response to any ProbeTelemetryInfo IPCs received.
   mojom::TelemetryInfoPtr telemetry_response_info_{mojom::TelemetryInfo::New()};
+
+  // Allows the remote end to call the probe and diagnostics service methods.
+  mojo::ReceiverSet<mojom::CrosHealthdProbeService> probe_receiver_set_;
+  mojo::ReceiverSet<mojom::CrosHealthdDiagnosticsService>
+      diagnostics_receiver_set_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCrosHealthdService);
 };

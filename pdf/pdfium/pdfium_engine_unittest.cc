@@ -24,6 +24,10 @@ MATCHER_P2(LayoutWithSize, width, height, "") {
   return arg.size() == pp::Size(width, height);
 }
 
+MATCHER_P(LayoutWithOptions, options, "") {
+  return arg.options() == options;
+}
+
 class MockTestClient : public TestClient {
  public:
   MockTestClient() {
@@ -71,6 +75,29 @@ TEST_F(PDFiumEngineTest, InitializeWithRectanglesMultiPagesPdf) {
   ExpectPageRect(engine.get(), 2, {38, 630, 266, 333});
   ExpectPageRect(engine.get(), 3, {38, 977, 266, 333});
   ExpectPageRect(engine.get(), 4, {38, 1324, 266, 333});
+}
+
+TEST_F(PDFiumEngineTest, InitializeWithRectanglesMultiPagesPdfInTwoUpView) {
+  NiceMock<MockTestClient> client;
+  std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
+      &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
+  ASSERT_TRUE(engine);
+
+  DocumentLayout::Options options;
+  options.set_two_up_view_enabled(true);
+  EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithOptions(options)))
+      .WillOnce(Return());
+  engine->SetTwoUpView(true);
+
+  engine->ApplyDocumentLayout(options);
+
+  ASSERT_EQ(5, engine->GetNumberOfPages());
+
+  ExpectPageRect(engine.get(), 0, {72, 3, 266, 333});
+  ExpectPageRect(engine.get(), 1, {340, 3, 333, 266});
+  ExpectPageRect(engine.get(), 2, {72, 346, 266, 333});
+  ExpectPageRect(engine.get(), 3, {340, 346, 266, 333});
+  ExpectPageRect(engine.get(), 4, {68, 689, 266, 333});
 }
 
 TEST_F(PDFiumEngineTest, AppendBlankPagesWithFewerPages) {

@@ -69,9 +69,7 @@ if (is_android) {
   }
 
   java_cpp_enum("data_reduction_proxy_savings_cleared_enum_java") {
-    sources = [
-      "data_reduction_proxy_compression_stats.h",
-    ]
+    sources = [ "data_reduction_proxy_compression_stats.h" ]
   }
 }
 
@@ -126,9 +124,7 @@ static_library("test_support") {
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-  public_deps = [
-    ":browser",
-  ]
+  public_deps = [ ":browser" ]
   deps = [
     "//base",
     "//components/data_reduction_proxy/core/common",
@@ -156,10 +152,8 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/data_reduction_proxy/proxy/noblock.html",
     "//components/test/data/data_reduction_proxy/proxy/noblock.html.mock-http-headers",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 source_set("unit_tests") {

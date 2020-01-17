@@ -117,9 +117,7 @@ source_set("dns") {
     }
   }
 
-  deps = [
-    "//net:net_deps",
-  ]
+  deps = [ "//net:net_deps" ]
 
   public_deps = [
     ":dns_client",
@@ -208,9 +206,7 @@ source_set("host_resolver") {
     "//net:net_deps",
     "//net/dns/public",
   ]
-  public_deps = [
-    "//net:net_public_deps",
-  ]
+  public_deps = [ "//net:net_public_deps" ]
 }
 
 # Shared mostly-global handler of HostResolver requests.
@@ -256,9 +252,7 @@ source_set("host_resolver_manager") {
     "//net:net_deps",
     "//net/dns/public",
   ]
-  public_deps = [
-    "//net:net_public_deps",
-  ]
+  public_deps = [ "//net:net_public_deps" ]
 }
 
 # DnsClient interfaces. Primarily intended as part of the implementation of the
@@ -370,9 +364,7 @@ source_set("mdns_client") {
     ":host_resolver",
     "//net:net_deps",
   ]
-  public_deps = [
-    "//net:net_public_deps",
-  ]
+  public_deps = [ "//net:net_public_deps" ]
 }
 
 source_set("tests") {
@@ -481,9 +473,7 @@ if (use_fuzzing_engine) {
 }
 
 fuzzer_test("net_dns_hosts_parse_fuzzer") {
-  sources = [
-    "dns_hosts_parse_fuzzer.cc",
-  ]
+  sources = [ "dns_hosts_parse_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -493,9 +483,7 @@ fuzzer_test("net_dns_hosts_parse_fuzzer") {
 }
 
 fuzzer_test("net_dns_record_fuzzer") {
-  sources = [
-    "dns_record_fuzzer.cc",
-  ]
+  sources = [ "dns_record_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -505,9 +493,7 @@ fuzzer_test("net_dns_record_fuzzer") {
 }
 
 fuzzer_test("net_dns_query_parse_fuzzer") {
-  sources = [
-    "dns_query_parse_fuzzer.cc",
-  ]
+  sources = [ "dns_query_parse_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -517,9 +503,7 @@ fuzzer_test("net_dns_query_parse_fuzzer") {
 }
 
 fuzzer_test("net_dns_response_fuzzer") {
-  sources = [
-    "dns_response_fuzzer.cc",
-  ]
+  sources = [ "dns_response_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -529,9 +513,7 @@ fuzzer_test("net_dns_response_fuzzer") {
 }
 
 fuzzer_test("net_host_resolver_manager_fuzzer") {
-  sources = [
-    "host_resolver_manager_fuzzer.cc",
-  ]
+  sources = [ "host_resolver_manager_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",
@@ -543,9 +525,7 @@ fuzzer_test("net_host_resolver_manager_fuzzer") {
 
 if (is_win) {
   fuzzer_test("net_dns_parse_domain_ascii_win_fuzzer") {
-    sources = [
-      "dns_parse_domain_ascii_win_fuzzer.cc",
-    ]
+    sources = [ "dns_parse_domain_ascii_win_fuzzer.cc" ]
     deps = [
       "//base",
       "//net",

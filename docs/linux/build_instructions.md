@@ -1,7 +1,7 @@
 # Checking out and building Chromium on Linux
 
 There are instructions for other platforms linked from the
-[get the code](get_the_code.md) page.
+[get the code](../get_the_code.md) page.
 
 ## Instructions for Google Employees
 
@@ -331,7 +331,7 @@ other settings):
 
 ### More links
 
-*   Information about [building with Clang](clang.md).
+*   Information about [building with Clang](../clang.md).
 *   You may want to [use a chroot](using_a_chroot.md) to
     isolate yourself from versioning or packaging conflicts.
 *   Cross-compiling for ARM? See [LinuxChromiumArm](chromium_arm.md).

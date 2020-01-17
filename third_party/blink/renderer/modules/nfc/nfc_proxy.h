@@ -51,7 +51,7 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
   void StopReading(NDEFReader*);
   bool IsReading(const NDEFReader*);
   void Push(device::mojom::blink::NDEFMessagePtr,
-            device::mojom::blink::NDEFPushOptionsPtr,
+            device::mojom::blink::NDEFWriteOptionsPtr,
             device::mojom::blink::NFC::PushCallback);
   void CancelPush(device::mojom::blink::NFC::CancelPushCallback);
 

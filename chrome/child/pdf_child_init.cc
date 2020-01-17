@@ -72,7 +72,7 @@ void InitializePDF() {
     std::string service_sandbox_type = command_line.GetSwitchValueASCII(
         service_manager::switches::kServiceSandboxType);
     needs_gdi32_patching = service_sandbox_type ==
-                           service_manager::switches::kPdfCompositorSandbox;
+                           service_manager::switches::kPrintCompositorSandbox;
   }
 
   if (!needs_gdi32_patching)

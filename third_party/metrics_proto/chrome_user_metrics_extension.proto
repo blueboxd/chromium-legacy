@@ -39,6 +39,9 @@ message ChromeUserMetricsExtension {
 
     // Cast receivers, e.g. Chromecast
     CAST = 35;
+
+    // UMA metrics from Android WebLayer.
+    ANDROID_WEBLAYER = 56;
   }
   // The product corresponding to this log. The field type is int32 instead of
   // Product so that downstream users of the Chromium metrics component can

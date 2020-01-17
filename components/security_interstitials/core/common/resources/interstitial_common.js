@@ -126,10 +126,10 @@ function sendCommand(cmd) {
 function preventDefaultOnPoundLinkClicks() {
   document.addEventListener('click', function(e) {
     const anchor = findAncestor(/** @type {Node} */ (e.target), function(el) {
-      return el.tagName == 'A';
+      return el.tagName === 'A';
     });
     // Use getAttribute() to prevent URL normalization.
-    if (anchor && anchor.getAttribute('href') == '#') {
+    if (anchor && anchor.getAttribute('href') === '#') {
       e.preventDefault();
     }
   });

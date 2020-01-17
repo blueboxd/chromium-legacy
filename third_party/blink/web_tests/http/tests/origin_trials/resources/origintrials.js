@@ -52,6 +52,20 @@ expect_static_member = (member_name, get_value_func) => {
     'Static member should return boolean value');
 }
 
+// Verify that the given member exists in element styles.
+expect_style_member = (member_name) => {
+  var testObject = document.createElement('div');
+  var testInterface = testObject.style;
+  assert_own_property(testInterface, member_name);
+}
+
+// Verify that the CSS supports return true for given member and value, and
+// style declarations in @supports are applied.
+expect_css_supports = (member_name, member_css_name, member_value, element, computed_style) => {
+  assert_true(CSS.supports(member_css_name, member_value));
+  assert_equals(getComputedStyle(element)[member_name], computed_style);
+}
+
 // Verify that the given constant exists, and returns the expected value, and
 // is not modifiable.
 expect_constant = (constant_name, constant_value, get_value_func) => {
@@ -112,6 +126,22 @@ expect_static_member_fails = (member_name) => {
   assert_equals(testInterface[member_name], undefined);
 }
 
+// Verify that the given member does not exist in element style, and does not
+// provide a value (i.e. is undefined).
+expect_style_member_fails = (member_name) => {
+  var testObject = document.createElement('div');
+  var testInterface = testObject.style;
+  assert_false(member_name in testInterface);
+  assert_equals(testInterface[member_name], undefined);
+}
+
+// Verify that the CSS supports return false for given member and value, and
+// style declarations in @supports are ignored
+expect_css_supports_fails = (member_name, member_css_name, member_value, element) => {
+  assert_false(CSS.supports(member_css_name, member_value));
+  assert_equals(getComputedStyle(element)[member_name], undefined);
+}
+
 // These tests verify that any gated parts of the API are not available.
 expect_failure = (skip_worker) => {
 
@@ -133,6 +163,19 @@ expect_failure = (skip_worker) => {
   if (!skip_worker) {
     fetch_tests_from_worker(new Worker('resources/disabled-worker.js'));
   }
+};
+
+// These tests verify that gated css properties are not available.
+expect_failure_css = (element) => {
+
+  test(() => {
+    expect_style_member_fails('originTrialTestProperty');
+  }, 'CSS property should not exist in style, with trial disabled');
+
+  test(() => {
+      expect_css_supports_fails('originTrialTestProperty',
+        'origin-trial-test-property', 'initial', element);
+    }, 'CSS @supports should fail for property, with trial disabled');
 };
 
 // These tests verify that any gated parts of the API are not available for a
@@ -196,6 +239,20 @@ expect_success = () => {
     }, 'Constant should exist on interface and return value');
 
   fetch_tests_from_worker(new Worker('resources/enabled-worker.js'));
+};
+
+
+// These tests verify that css properties functions correctly with an enabled trial.
+expect_success_css = (element, computed_style) => {
+
+  test(() => {
+    expect_style_member('originTrialTestProperty');
+  }, 'CSS property should exist in style');
+
+  test(() => {
+      expect_css_supports('originTrialTestProperty',
+        'origin-trial-test-property', 'initial', element, computed_style);
+    }, 'CSS @supports should pass for property and rules are correctly applied');
 };
 
 // These tests verify that the API functions correctly with a deprecation trial

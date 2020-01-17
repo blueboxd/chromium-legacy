@@ -205,19 +205,21 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
                  wtf_size_t first_chunk_index,
                  bool requires_own_layer);
 
-    // Merge another pending layer into this one, appending all its paint
-    // chunks after chunks in this layer, with appropriate space conversion
-    // applied to both this layer and the guest layer from their original
-    // property tree state to |merged_state|.
-    void Merge(const PendingLayer& guest,
-               const PropertyTreeState& merged_state);
-    // If the guest layer can be merged into this layer, returns the property
-    // tree state of the merged layer. |guest_state| is for cases that we want
-    // to check if we can merge |guest| if it has |guest_state| in the future
-    // (which may be different from its current state).
-    base::Optional<PropertyTreeState> CanMerge(
-        const PendingLayer& guest,
-        const PropertyTreeState& guest_state) const;
+    // Merges |guest| into |this| if it can, by appending chunks of |guest|
+    // after chunks of |this|, with appropriate space conversion applied to
+    // both layers from their original property tree states to |merged_state|.
+    // Returns whether the merge is successful.
+    bool Merge(const PendingLayer& guest);
+
+    // Returns true if |guest| can be merged into |this|, and sets the output
+    // paramsters with the property tree state and bounds of the merged layer.
+    // |guest_state| is for cases that we want to check if we can merge |guest|
+    // if it has |guest_state| in the future (which may be different from its
+    // current state).
+    bool CanMerge(const PendingLayer& guest,
+                  const PropertyTreeState& guest_state,
+                  PropertyTreeState* merged_state = nullptr,
+                  FloatRect* merged_bounds = nullptr) const;
 
     // Mutate this layer's property tree state to a more general (shallower)
     // state, thus the name "upcast". The concrete effect of this is to
@@ -227,6 +229,11 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     void Upcast(const PropertyTreeState&);
 
     const PaintChunk& FirstPaintChunk(const PaintArtifact&) const;
+
+    // Returns the largest rect known to be opaque given two opaque rects.
+    static FloatRect UniteRectsKnownToBeOpaque(const FloatRect&,
+                                               const FloatRect&);
+    FloatRect MapRectKnownToBeOpaque(const PropertyTreeState&) const;
 
     // The rects are in the space of property_tree_state.
     FloatRect bounds;

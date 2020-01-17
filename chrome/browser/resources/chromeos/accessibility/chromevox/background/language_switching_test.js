@@ -19,7 +19,7 @@ ChromeVoxLanguageSwitchingTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
   /** @override */
-  testGenCppIncludes: function() {
+  testGenCppIncludes() {
     GEN(`
 // The following includes are copy-pasted from chromevox_e2e_test_base.js.
 #include "ash/accessibility/accessibility_delegate.h"
@@ -38,7 +38,7 @@ ChromeVoxLanguageSwitchingTest.prototype = {
   },
 
   /** @override */
-  testGenPreamble: function() {
+  testGenPreamble() {
     GEN(`
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
     ::switches::kEnableExperimentalAccessibilityLanguageDetection);
@@ -59,7 +59,7 @@ ChromeVoxLanguageSwitchingTest.prototype = {
   },
 
   /** @override */
-  setUp: function() {
+  setUp() {
     window.doCmd = this.doCmd;
     // Mock this api to return a predefined set of voices.
     chrome.tts.getVoices = function(callback) {
@@ -76,7 +76,7 @@ ChromeVoxLanguageSwitchingTest.prototype = {
   /**
    * @return {!MockFeedback}
    */
-  createMockFeedback: function() {
+  createMockFeedback() {
     var mockFeedback =
         new MockFeedback(this.newCallback(), this.newCallback.bind(this));
 
@@ -89,7 +89,7 @@ ChromeVoxLanguageSwitchingTest.prototype = {
    * @param {string} cmd
    * @return {function(): void}
    */
-  doCmd: function(cmd) {
+  doCmd(cmd) {
     return function() {
       CommandHandler.onCommand(cmd);
     };
@@ -99,7 +99,7 @@ ChromeVoxLanguageSwitchingTest.prototype = {
    * Calls mock version of chrome.tts.getVoices() to populate
    * LanguageSwitching's available voice list with a specific set of voices.
    */
-  setAvailableVoices: function() {
+  setAvailableVoices() {
     chrome.tts.getVoices(function(voices) {
       LanguageSwitching.availableVoices_ = voices;
     });

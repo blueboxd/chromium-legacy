@@ -247,13 +247,22 @@ void MockModelTypeWorker::AckOnePendingCommit(int64_t version_offset) {
     list.push_back(SuccessfulCommitResponse(*data, version_offset));
   }
   pending_commits_.pop_front();
-  processor_->OnCommitCompleted(model_type_state_, list);
+  processor_->OnCommitCompleted(
+      model_type_state_, list,
+      /*error_response_list=*/FailedCommitResponseDataList());
 }
 
 void MockModelTypeWorker::FailOneCommit() {
+  FailedCommitResponseDataList list;
   ASSERT_FALSE(pending_commits_.empty());
+  for (const std::unique_ptr<CommitRequestData>& data :
+       pending_commits_.front()) {
+    list.push_back(FailedCommitResponse(*data));
+  }
   pending_commits_.pop_front();
-  processor_->OnCommitCompleted(model_type_state_, CommitResponseDataList());
+  processor_->OnCommitCompleted(
+      model_type_state_,
+      /*committed_response_list=*/CommitResponseDataList(), list);
 }
 
 CommitResponseData MockModelTypeWorker::SuccessfulCommitResponse(
@@ -283,6 +292,19 @@ CommitResponseData MockModelTypeWorker::SuccessfulCommitResponse(
     SetServerVersion(client_tag_hash, new_version);
   }
   response_data.response_version = new_version;
+
+  return response_data;
+}
+
+FailedCommitResponseData MockModelTypeWorker::FailedCommitResponse(
+    const CommitRequestData& request_data) {
+  const EntityData& entity = *request_data.entity;
+
+  FailedCommitResponseData response_data;
+  // We reuse the |client_tag_hash| from the request.
+  response_data.client_tag_hash = entity.client_tag_hash;
+
+  response_data.response_type = sync_pb::CommitResponse::TRANSIENT_ERROR;
 
   return response_data;
 }

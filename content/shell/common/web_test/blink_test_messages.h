@@ -15,25 +15,12 @@
 
 #define IPC_MESSAGE_START BlinkTestMsgStart
 
-// Tells the renderer to reset all test runners.
-IPC_MESSAGE_ROUTED0(BlinkTestMsg_Reset)
-
-// Tells the main window that a secondary renderer in a different process asked
-// to finish the test.
-IPC_MESSAGE_ROUTED0(BlinkTestMsg_TestFinishedInSecondaryRenderer)
-
-// Notifies BlinkTestRunner that the layout dump has completed
-// (and that it can proceed with finishing up the test).
-IPC_MESSAGE_ROUTED1(BlinkTestMsg_LayoutDumpCompleted,
-                    std::string /* completed/stitched layout dump */)
-
-IPC_MESSAGE_ROUTED1(BlinkTestMsg_ReplyBluetoothManualChooserEvents,
-                    std::vector<std::string> /* events */)
-
 // Asks the browser process to perform a layout dump spanning all the
 // (potentially cross-process) frames.  This goes through multiple
 // WebTestControl.DumpFrameLayout calls and ends with sending of
-// BlinkTestMsg_LayoutDumpCompleted.
+// LayoutDumpCompleted.
+// TODO(crbug.com/1039247): LayoutDumpCompleted call should be removed and the
+// callback should happen part of LayoutDump call on the host interface.
 IPC_MESSAGE_ROUTED0(BlinkTestHostMsg_InitiateLayoutDump)
 
 IPC_MESSAGE_ROUTED0(BlinkTestHostMsg_ResetDone)

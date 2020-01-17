@@ -36,6 +36,7 @@ class FakePageHandler {
       'deleteMostVisitedTile',
       'reorderMostVisitedTile',
       'restoreMostVisitedDefaults',
+      'setMostVisitedSettings',
       'undoMostVisitedTileAction',
       'updateMostVisitedInfo',
       'updateMostVisitedTile',
@@ -83,6 +84,12 @@ class FakePageHandler {
   /** @override */
   restoreMostVisitedDefaults() {
     this.callTracker_.methodCalled('restoreMostVisitedDefaults');
+  }
+
+  /** @override */
+  setMostVisitedSettings(customLinksEnabled, visible) {
+    this.callTracker_.methodCalled(
+        'setMostVisitedSettings', [customLinksEnabled, visible]);
   }
 
   /** @override */

@@ -31,6 +31,9 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
   static bool SetHideSettingsAppForTesting(bool hide);
 
  private:
+  using GetMenuModelCallback =
+      base::OnceCallback<void(::apps::mojom::MenuItemsPtr)>;
+
   void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
 
   // apps::mojom::Publisher overrides.
@@ -58,6 +61,9 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
                  bool report_abuse) override;
   void PauseApp(const std::string& app_id) override;
   void UnpauseApps(const std::string& app_id) override;
+  void GetMenuModel(const std::string& app_id,
+                    apps::mojom::MenuType menu_type,
+                    GetMenuModelCallback callback);
   void OpenNativeSettings(const std::string& app_id) override;
   void OnPreferredAppSet(const std::string& app_id,
                          apps::mojom::IntentFilterPtr intent_filter,

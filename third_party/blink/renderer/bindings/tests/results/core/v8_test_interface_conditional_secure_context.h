@@ -80,12 +80,6 @@ class V8TestInterfaceConditionalSecureContext {
 };
 
 template <>
-struct NativeValueTraits<TestInterfaceConditionalSecureContext> : public NativeValueTraitsBase<TestInterfaceConditionalSecureContext> {
-  CORE_EXPORT static TestInterfaceConditionalSecureContext* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestInterfaceConditionalSecureContext* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestInterfaceConditionalSecureContext> {
   typedef V8TestInterfaceConditionalSecureContext Type;
 };

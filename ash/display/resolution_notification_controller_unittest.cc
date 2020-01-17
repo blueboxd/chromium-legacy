@@ -4,6 +4,7 @@
 
 #include "ash/display/resolution_notification_controller.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -13,6 +14,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/gfx/geometry/size.h"
@@ -22,7 +24,9 @@
 
 namespace ash {
 
-class ResolutionNotificationControllerTest : public AshTestBase {
+class ResolutionNotificationControllerTest
+    : public AshTestBase,
+      public ::testing::WithParamInterface<bool> {
  public:
   ResolutionNotificationControllerTest() : accept_count_(0) {}
 
@@ -49,6 +53,11 @@ class ResolutionNotificationControllerTest : public AshTestBase {
 
  protected:
   void SetUp() override {
+    if (GetParam())
+      scoped_feature_list_.InitAndEnableFeature(features::kDisplayChangeModal);
+    else
+      scoped_feature_list_.InitAndDisableFeature(features::kDisplayChangeModal);
+
     AshTestBase::SetUp();
     ResolutionNotificationController::SuppressTimerForTest();
   }
@@ -151,11 +160,13 @@ class ResolutionNotificationControllerTest : public AshTestBase {
 
   int accept_count_;
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(ResolutionNotificationControllerTest);
 };
 
 // Basic behaviors and verifies it doesn't cause crashes.
-TEST_F(ResolutionNotificationControllerTest, Basic) {
+TEST_P(ResolutionNotificationControllerTest, Basic) {
   UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   ASSERT_EQ(0, accept_count());
@@ -186,7 +197,7 @@ TEST_F(ResolutionNotificationControllerTest, Basic) {
 }
 
 // Check that notification is not shown when changes are forced by policy.
-TEST_F(ResolutionNotificationControllerTest, ForcedByPolicy) {
+TEST_P(ResolutionNotificationControllerTest, ForcedByPolicy) {
   UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   ASSERT_EQ(0, accept_count());
@@ -204,7 +215,7 @@ TEST_F(ResolutionNotificationControllerTest, ForcedByPolicy) {
   EXPECT_EQ(60.0, mode.refresh_rate());
 }
 
-TEST_F(ResolutionNotificationControllerTest, ClickMeansAccept) {
+TEST_P(ResolutionNotificationControllerTest, ClickMeansAccept) {
   UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   ASSERT_EQ(0, accept_count());
@@ -232,7 +243,7 @@ TEST_F(ResolutionNotificationControllerTest, ClickMeansAccept) {
   EXPECT_EQ(60.0, mode.refresh_rate());
 }
 
-TEST_F(ResolutionNotificationControllerTest, AcceptButton) {
+TEST_P(ResolutionNotificationControllerTest, AcceptButton) {
   UpdateDisplay("300x300#300x300%59|200x200%60");
   const display::Display& display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -272,7 +283,7 @@ TEST_F(ResolutionNotificationControllerTest, AcceptButton) {
   EXPECT_EQ(59.0f, mode.refresh_rate());
 }
 
-TEST_F(ResolutionNotificationControllerTest, Close) {
+TEST_P(ResolutionNotificationControllerTest, Close) {
   UpdateDisplay("100x100,150x150#150x150%59|200x200%60");
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   ASSERT_EQ(0, accept_count());
@@ -298,7 +309,7 @@ TEST_F(ResolutionNotificationControllerTest, Close) {
   EXPECT_EQ(1, accept_count());
 }
 
-TEST_F(ResolutionNotificationControllerTest, Timeout) {
+TEST_P(ResolutionNotificationControllerTest, Timeout) {
   UpdateDisplay("300x300#300x300%59|200x200%60");
   const display::Display& display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -320,7 +331,7 @@ TEST_F(ResolutionNotificationControllerTest, Timeout) {
   EXPECT_EQ(59.0f, mode.refresh_rate());
 }
 
-TEST_F(ResolutionNotificationControllerTest, DisplayDisconnected) {
+TEST_P(ResolutionNotificationControllerTest, DisplayDisconnected) {
   UpdateDisplay(
       "300x300#300x300%56|200x200%57,"
       "200x200#250x250%58|200x200%59|100x100%60");
@@ -342,7 +353,7 @@ TEST_F(ResolutionNotificationControllerTest, DisplayDisconnected) {
 }
 
 // See http://crbug.com/869401 for details.
-TEST_F(ResolutionNotificationControllerTest, MultipleResolutionChange) {
+TEST_P(ResolutionNotificationControllerTest, MultipleResolutionChange) {
   UpdateDisplay(
       "300x300#300x300%56|200x200%57,"
       "250x250#250x250%58|200x200%59");
@@ -380,7 +391,7 @@ TEST_F(ResolutionNotificationControllerTest, MultipleResolutionChange) {
   EXPECT_EQ(58.0f, mode.refresh_rate());
 }
 
-TEST_F(ResolutionNotificationControllerTest, Fallback) {
+TEST_P(ResolutionNotificationControllerTest, Fallback) {
   UpdateDisplay(
       "300x300#300x300%56|200x200%57,"
       "250x250#250x250%58|220x220%59|200x200%60");
@@ -415,7 +426,7 @@ TEST_F(ResolutionNotificationControllerTest, Fallback) {
   EXPECT_EQ(58.0f, mode.refresh_rate());
 }
 
-TEST_F(ResolutionNotificationControllerTest, NoTimeoutInKioskMode) {
+TEST_P(ResolutionNotificationControllerTest, NoTimeoutInKioskMode) {
   // Login in as kiosk app.
   UserSession session;
   session.session_id = 1u;
@@ -433,5 +444,11 @@ TEST_F(ResolutionNotificationControllerTest, NoTimeoutInKioskMode) {
   SetDisplayResolutionAndNotify(display, gfx::Size(200, 200));
   EXPECT_FALSE(controller()->DoesNotificationTimeout());
 }
+
+// Parametrizes all tests to run with features::kDisplayChangeModal enabled and
+// disabled.
+INSTANTIATE_TEST_SUITE_P(All,
+                         ResolutionNotificationControllerTest,
+                         ::testing::Bool());
 
 }  // namespace ash

@@ -52,6 +52,9 @@ cr.define('settings', function() {
     // TODO(tommycli): Find a way to refactor these repetitive category
     // routes.
     r.SITE_SETTINGS_ADS = r.SITE_SETTINGS.createChild('ads');
+    if (loadTimeData.getBoolean('enableWebXrContentSetting')) {
+      r.SITE_SETTINGS_AR = r.SITE_SETTINGS.createChild('ar');
+    }
     r.SITE_SETTINGS_AUTOMATIC_DOWNLOADS =
         r.SITE_SETTINGS.createChild('automaticDownloads');
     r.SITE_SETTINGS_BACKGROUND_SYNC =
@@ -89,6 +92,9 @@ cr.define('settings', function() {
     if (loadTimeData.getBoolean('enablePaymentHandlerContentSetting')) {
       r.SITE_SETTINGS_PAYMENT_HANDLER =
           r.SITE_SETTINGS.createChild('paymentHandler');
+    }
+    if (loadTimeData.getBoolean('enableWebXrContentSetting')) {
+      r.SITE_SETTINGS_VR = r.SITE_SETTINGS.createChild('vr');
     }
     if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {
       r.SITE_SETTINGS_BLUETOOTH_SCANNING =
@@ -363,35 +369,12 @@ cr.define('settings', function() {
     // </if>
     return new settings.Router(availableRoutes);
   }
-  const routerInstance = buildRouter();
 
-  /** @polymerBehavior */
-  const RouteObserverBehavior = {
-    /** @override */
-    attached: function() {
-      routerInstance.addObserver(this);
-
-      // Emulating Polymer data bindings, the observer is called when the
-      // element starts observing the route.
-      this.currentRouteChanged(routerInstance.currentRoute, undefined);
-    },
-
-    /** @override */
-    detached: function() {
-      routerInstance.removeObserver(this);
-    },
-
-    /**
-     * @param {!settings.Route|undefined} opt_newRoute
-     * @param {!settings.Route|undefined} opt_oldRoute
-     */
-    currentRouteChanged: function(opt_newRoute, opt_oldRoute) {
-      assertNotReached();
-    },
-  };
+  settings.Router.setInstance(buildRouter());
 
   window.addEventListener('popstate', function(event) {
     // On pop state, do not push the state onto the window.history again.
+    const routerInstance = settings.Router.getInstance();
     routerInstance.setCurrentRoute(
         /** @type {!settings.Route} */ (
             routerInstance.getRouteForPath(window.location.pathname) ||
@@ -401,36 +384,10 @@ cr.define('settings', function() {
 
   // TODO(dpapad): Change to 'get routes() {}' in export when we fix a bug in
   // ChromePass that limits the syntax of what can be returned from cr.define().
-  const routes = routerInstance.getRoutes();
-
-  // TODO(dpapad): Stop exposing all those methods directly on settings.*,
-  // and instead update all clients to use the singleton instance directly
-  const getCurrentRoute = routerInstance.getCurrentRoute.bind(routerInstance);
-  const getRouteForPath = routerInstance.getRouteForPath.bind(routerInstance);
-  const initializeRouteFromUrl =
-      routerInstance.initializeRouteFromUrl.bind(routerInstance);
-  const resetRouteForTesting =
-      routerInstance.resetRouteForTesting.bind(routerInstance);
-  const getQueryParameters =
-      routerInstance.getQueryParameters.bind(routerInstance);
-  const lastRouteChangeWasPopstate =
-      routerInstance.lastRouteChangeWasPopstate.bind(routerInstance);
-  const navigateTo = routerInstance.navigateTo.bind(routerInstance);
-  const navigateToPreviousRoute =
-      routerInstance.navigateToPreviousRoute.bind(routerInstance);
+  const routes = settings.Router.getInstance().getRoutes();
 
   return {
-    router: routerInstance,  // the singleton.
     buildRouterForTesting: buildRouter,
     routes: routes,
-    RouteObserverBehavior: RouteObserverBehavior,
-    getRouteForPath: getRouteForPath,
-    initializeRouteFromUrl: initializeRouteFromUrl,
-    resetRouteForTesting: resetRouteForTesting,
-    getCurrentRoute: getCurrentRoute,
-    getQueryParameters: getQueryParameters,
-    lastRouteChangeWasPopstate: lastRouteChangeWasPopstate,
-    navigateTo: navigateTo,
-    navigateToPreviousRoute: navigateToPreviousRoute,
   };
 });

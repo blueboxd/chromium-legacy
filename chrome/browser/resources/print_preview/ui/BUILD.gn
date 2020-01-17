@@ -318,9 +318,7 @@ js_library("settings_behavior") {
 }
 
 js_library("input_behavior") {
-  deps = [
-    "//ui/webui/resources/js:assert.m",
-  ]
+  deps = [ "//ui/webui/resources/js:assert.m" ]
 }
 
 js_library("select_behavior") {

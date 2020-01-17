@@ -158,22 +158,12 @@ void BookmarkAppInstallFinalizer::FinalizeUpdate(
 }
 
 void BookmarkAppInstallFinalizer::UninstallExternalWebApp(
-    const GURL& app_url,
+    const web_app::AppId& app_id,
     web_app::ExternalInstallSource external_install_source,
     UninstallWebAppCallback callback) {
   // Bookmark apps don't support app installation from different sources.
   // |external_install_source| is ignored here.
-  base::Optional<web_app::AppId> app_id =
-      externally_installed_app_prefs_.LookupAppId(app_url);
-  if (!app_id.has_value()) {
-    LOG(WARNING) << "Couldn't uninstall app with url " << app_url
-                 << "; No corresponding extension for url.";
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false));
-    return;
-  }
-
-  UninstallExtension(*app_id, std::move(callback));
+  UninstallExtension(app_id, std::move(callback));
 }
 
 bool BookmarkAppInstallFinalizer::CanUserUninstallFromSync(

@@ -28,16 +28,12 @@ android_aar_prebuilt("gvr_common_java") {
     "proguard-gvr-chromium.txt",
   ]
   ignore_native_libraries = true
-  deps = [
-    "//third_party/android_protobuf:protobuf_nano_javalib",
-  ]
+  deps = [ "//third_party/android_protobuf:protobuf_nano_javalib" ]
 }
 
 android_aar_prebuilt("gvr_controller_java") {
   aar_path = "src/libraries/sdk-controller-1.130.0.aar"
-  deps = [
-    ":gvr_common_java",
-  ]
+  deps = [ ":gvr_common_java" ]
 }
 
 config("libgvr_config") {
@@ -50,9 +46,7 @@ component("gvr_shim") {
     "log",
   ]
   if (enable_chrome_android_internal && !is_official_build) {
-    deps = [
-      "//clank/third_party/gvr_shim",
-    ]
+    deps = [ "//clank/third_party/gvr_shim" ]
   } else {
     if (is_component_build) {
       cxx_abi_version = "Cr"

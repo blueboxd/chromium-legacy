@@ -94,9 +94,7 @@ FetchEvent::FetchEvent(ScriptState* script_state,
       ContextClient(ExecutionContext::From(script_state)),
       observer_(respond_with_observer),
       preload_response_property_(MakeGarbageCollected<PreloadResponseProperty>(
-          ExecutionContext::From(script_state),
-          this,
-          PreloadResponseProperty::kPreloadResponse)),
+          ExecutionContext::From(script_state))),
       worker_timing_remote_(std::move(worker_timing_remote)) {
   if (!navigation_preload_sent)
     preload_response_property_->ResolveWithUndefined();

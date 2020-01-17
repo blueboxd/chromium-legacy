@@ -54,7 +54,8 @@ class CompromisedCredentialsTableTest : public testing::Test {
     EXPECT_THAT(db()->GetAllRows(), ElementsAre(test_data()));
     EXPECT_THAT(db()->GetRows(test_data().url, test_data().username),
                 ElementsAre(test_data()));
-    EXPECT_TRUE(db()->RemoveRow(test_data().url, test_data().username));
+    EXPECT_TRUE(db()->RemoveRow(test_data().url, test_data().username,
+                                RemoveCompromisedCredentialsReason::kRemove));
     EXPECT_THAT(db()->GetAllRows(), IsEmpty());
     EXPECT_THAT(db()->GetRows(test_data().url, test_data().username),
                 IsEmpty());
@@ -105,7 +106,8 @@ TEST_F(CompromisedCredentialsTableTest, ExperimentOff) {
   EXPECT_THAT(db()->GetAllRows(), IsEmpty());
   EXPECT_THAT(db()->GetRows(test_data().url, test_data().username),
               ElementsAre());
-  EXPECT_FALSE(db()->RemoveRow(test_data().url, test_data().username));
+  EXPECT_FALSE(db()->RemoveRow(test_data().url, test_data().username,
+                               RemoveCompromisedCredentialsReason::kRemove));
   EXPECT_TRUE(db()->AddRow(test_data()));
 }
 
@@ -286,14 +288,16 @@ TEST_F(CompromisedCredentialsTableTest, BadURL) {
   test_data().url = GURL("bad");
   EXPECT_FALSE(db()->AddRow(test_data()));
   EXPECT_THAT(db()->GetAllRows(), IsEmpty());
-  EXPECT_FALSE(db()->RemoveRow(test_data().url, test_data().username));
+  EXPECT_FALSE(db()->RemoveRow(test_data().url, test_data().username,
+                               RemoveCompromisedCredentialsReason::kRemove));
 }
 
 TEST_F(CompromisedCredentialsTableTest, EmptyURL) {
   test_data().url = GURL();
   EXPECT_FALSE(db()->AddRow(test_data()));
   EXPECT_THAT(db()->GetAllRows(), IsEmpty());
-  EXPECT_FALSE(db()->RemoveRow(test_data().url, test_data().username));
+  EXPECT_FALSE(db()->RemoveRow(test_data().url, test_data().username,
+                               RemoveCompromisedCredentialsReason::kRemove));
 }
 
 }  // namespace

@@ -1672,16 +1672,18 @@ ContentSecurityPolicy* FrameLoader::CreateCSP(
     // already been passed down.
     if (origin_policy.has_value() &&
         !csp->HasPolicyFromSource(
-            kContentSecurityPolicyHeaderSourceOriginPolicy)) {
+            network::mojom::ContentSecurityPolicySource::kOriginPolicy)) {
       for (const auto& policy : origin_policy->content_security_policies) {
-        csp->DidReceiveHeader(policy, kContentSecurityPolicyHeaderTypeEnforce,
-                              kContentSecurityPolicyHeaderSourceOriginPolicy);
+        csp->DidReceiveHeader(
+            policy, network::mojom::ContentSecurityPolicyType::kEnforce,
+            network::mojom::ContentSecurityPolicySource::kOriginPolicy);
       }
 
       for (const auto& policy :
            origin_policy->content_security_policies_report_only) {
-        csp->DidReceiveHeader(policy, kContentSecurityPolicyHeaderTypeReport,
-                              kContentSecurityPolicyHeaderSourceOriginPolicy);
+        csp->DidReceiveHeader(
+            policy, network::mojom::ContentSecurityPolicyType::kReport,
+            network::mojom::ContentSecurityPolicySource::kOriginPolicy);
       }
     }
   }
@@ -1698,14 +1700,14 @@ ContentSecurityPolicy* FrameLoader::CreateCSP(
     if (parent_security_origin &&
         ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
             response, parent_security_origin)) {
-      csp->AddPolicyFromHeaderValue(RequiredCSP(),
-                                    kContentSecurityPolicyHeaderTypeEnforce,
-                                    kContentSecurityPolicyHeaderSourceHTTP);
+      csp->AddPolicyFromHeaderValue(
+          RequiredCSP(), network::mojom::ContentSecurityPolicyType::kEnforce,
+          network::mojom::ContentSecurityPolicySource::kHTTP);
     } else {
       auto* required_csp = MakeGarbageCollected<ContentSecurityPolicy>();
       required_csp->AddPolicyFromHeaderValue(
-          RequiredCSP(), kContentSecurityPolicyHeaderTypeEnforce,
-          kContentSecurityPolicyHeaderSourceHTTP);
+          RequiredCSP(), network::mojom::ContentSecurityPolicyType::kEnforce,
+          network::mojom::ContentSecurityPolicySource::kHTTP);
       if (!required_csp->Subsumes(*csp))
         return nullptr;
     }

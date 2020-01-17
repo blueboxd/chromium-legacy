@@ -11,6 +11,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
+#include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -294,6 +296,88 @@ TEST(VideoCadenceEstimatorTest, CadenceHystersisPreventsOscillation) {
       estimator->UpdateCadenceEstimate(render_interval, frame_interval * 0.75,
                                        base::TimeDelta(), acceptable_drift));
   EXPECT_FALSE(estimator->has_cadence());
+}
+
+void VerifyCadenceSequence(VideoCadenceEstimator* estimator,
+                           double frame_rate,
+                           double display_rate,
+                           std::vector<int> expected_cadence) {
+  SCOPED_TRACE(base::StringPrintf("Checking %.03f fps into %0.03f", frame_rate,
+                                  display_rate));
+
+  const base::TimeDelta render_interval = Interval(display_rate);
+  const base::TimeDelta frame_interval = Interval(frame_rate);
+  const base::TimeDelta acceptable_drift =
+      frame_interval < render_interval ? render_interval : frame_interval;
+  const base::TimeDelta test_runtime = base::TimeDelta::FromSeconds(10 * 60);
+  const int test_frames = test_runtime / frame_interval;
+
+  estimator->Reset();
+  EXPECT_TRUE(estimator->UpdateCadenceEstimate(
+      render_interval, frame_interval, base::TimeDelta(), acceptable_drift));
+  EXPECT_TRUE(estimator->has_cadence());
+  for (auto i = 0u; i < expected_cadence.size(); i++) {
+    ASSERT_EQ(expected_cadence[i], estimator->GetCadenceForFrame(i))
+        << " i=" << i;
+  }
+
+  int total_display_cycles = 0;
+  for (int i = 0; i < test_frames; i++) {
+    total_display_cycles += estimator->GetCadenceForFrame(i);
+    base::TimeDelta drift =
+        (total_display_cycles * render_interval) - ((i + 1) * frame_interval);
+    EXPECT_LE(drift.magnitude(), acceptable_drift)
+        << " i=" << i << " time=" << (total_display_cycles * render_interval);
+    if (drift.magnitude() > acceptable_drift)
+      break;
+  }
+}
+
+TEST(VideoCadenceEstimatorTest, BresenhamTest) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(media::kBresenhamCadence);
+  VideoCadenceEstimator estimator(base::TimeDelta::FromSeconds(1));
+  estimator.set_cadence_hysteresis_threshold_for_testing(base::TimeDelta());
+
+  VerifyCadenceSequence(&estimator, 30, 60,
+                        {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2});
+  VerifyCadenceSequence(&estimator, NTSC(30), 60,
+                        {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2});
+  VerifyCadenceSequence(&estimator, 30, NTSC(60),
+                        {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2});
+
+  VerifyCadenceSequence(&estimator, 25, 60, {2, 3, 2, 3, 2, 2, 3, 2});
+
+  VerifyCadenceSequence(&estimator, 24, 60, {3, 2, 3, 2, 3, 2, 3, 2});
+  VerifyCadenceSequence(&estimator, NTSC(24), 60, {3, 2, 3, 2, 3, 2, 3, 2});
+  VerifyCadenceSequence(&estimator, 24, NTSC(60), {2, 3, 2, 3, 2, 3, 2, 3, 2});
+
+  VerifyCadenceSequence(&estimator, 24, 50,
+                        {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2});
+  VerifyCadenceSequence(&estimator, NTSC(24), 50,
+                        {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2});
+
+  VerifyCadenceSequence(&estimator, 30, 50, {2, 1, 2, 2, 1, 2, 2});
+  VerifyCadenceSequence(&estimator, NTSC(30), 50, {2, 2, 1, 2, 2});
+  VerifyCadenceSequence(&estimator, 120, 24, {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+  VerifyCadenceSequence(&estimator, 60, 50, {1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0});
+  VerifyCadenceSequence(&estimator, 25, 50, {2, 2, 2, 2, 2, 2, 2, 2, 2});
+
+  VerifyCadenceSequence(&estimator, 50, 25, {1, 0, 1, 0, 1, 0, 1, 0});
+  VerifyCadenceSequence(&estimator, 120, 60, {1, 0, 1, 0, 1, 0, 1, 0});
+
+  // Frame rate deviation is too high, refuse to provide cadence.
+  EXPECT_TRUE(estimator.UpdateCadenceEstimate(
+      Interval(60), Interval(30), base::TimeDelta::FromMilliseconds(20),
+      base::TimeDelta::FromSeconds(100)));
+  EXPECT_FALSE(estimator.has_cadence());
+
+  // No cadence change for neglegable rate changes
+  EXPECT_TRUE(estimator.UpdateCadenceEstimate(
+      Interval(60), Interval(30), base::TimeDelta(), base::TimeDelta()));
+  EXPECT_FALSE(estimator.UpdateCadenceEstimate(Interval(60 * 1.0001),
+                                               Interval(30), base::TimeDelta(),
+                                               base::TimeDelta()));
 }
 
 }  // namespace media

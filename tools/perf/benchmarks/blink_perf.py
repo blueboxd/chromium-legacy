@@ -321,6 +321,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     if self._is_tracing:
       trace_data = tab.browser.platform.tracing_controller.StopTracing()
       results.AddTraces(trace_data)
+      self._is_tracing = False
 
       trace_events_to_measure = tab.EvaluateJavaScript(
           'window.testRunner.traceEventsToMeasure')

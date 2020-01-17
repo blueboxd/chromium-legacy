@@ -237,7 +237,10 @@ group("gn_all") {
   } else if (is_fuchsia) {
     deps += [
       ":d8_fuchsia",
-      "//build/fuchsia/fidlgen_js:fidlgen_js_unittests",
+
+      # TODO(https://bugs.fuchsia.dev/44191): Fix the build and re-instate this
+      # target.
+      # "//build/fuchsia/fidlgen_js:fidlgen_js_unittests",
       "//fuchsia:gn_all",
       "//headless:headless_non_renderer",
     ]
@@ -985,9 +988,7 @@ if (!is_ios) {
   # third_party/blink/tools/run_web_tests.py
   group("run_web_tests") {
     testonly = true
-    deps = [
-      ":blink_web_tests",
-    ]
+    deps = [ ":blink_web_tests" ]
   }
 
   if (!is_chromeos && !is_ios && !is_fuchsia && !is_android) {
@@ -1018,23 +1019,15 @@ if (!is_ios) {
         "//chrome:chrome",
         "//chrome/test/chromedriver",
       ]
-      deps = [
-        "//third_party/blink/tools:wpt_tests_isolate",
-      ]
+      deps = [ "//third_party/blink/tools:wpt_tests_isolate" ]
     }
   }
 
   group("devtools_web_tests") {
     testonly = true
-    deps = [
-      ":blink_web_tests",
-    ]
-    data_deps = [
-      ":blink_web_tests",
-    ]
-    data = [
-      "//third_party/devtools-frontend/src/test/webtests/",
-    ]
+    deps = [ ":blink_web_tests" ]
+    data_deps = [ ":blink_web_tests" ]
+    data = [ "//third_party/devtools-frontend/src/test/webtests/" ]
   }
 
   # https://www.chromium.org/developers/testing/webkit-layout-tests
@@ -1111,10 +1104,7 @@ if (!is_ios) {
     }
 
     if (is_fuchsia) {
-      data_deps += [
-        "//build/fuchsia/layout_test_proxy:layout_test_proxy_runner",
-        "//content/shell:content_shell_fuchsia",
-      ]
+      data_deps += [ "//content/shell:content_shell_fuchsia" ]
     }
 
     data = [
@@ -1149,33 +1139,24 @@ if (!is_ios) {
   copy("layout_test_data_mojo_bindings") {
     testonly = true
 
-    sources = [
-      "$root_gen_dir/mojo/public/js/mojo_bindings.js",
-    ]
+    sources = [ "$root_gen_dir/mojo/public/js/mojo_bindings.js" ]
 
-    outputs = [
-      "$root_gen_dir/layout_test_data/mojo/public/js/mojo_bindings.js",
-    ]
+    outputs =
+        [ "$root_gen_dir/layout_test_data/mojo/public/js/mojo_bindings.js" ]
 
-    deps = [
-      "//mojo/public/js:bindings",
-    ]
+    deps = [ "//mojo/public/js:bindings" ]
   }
 
   copy("layout_test_data_mojo_bindings_lite") {
     testonly = true
 
-    sources = [
-      "$root_gen_dir/mojo/public/js/mojo_bindings_lite.js",
-    ]
+    sources = [ "$root_gen_dir/mojo/public/js/mojo_bindings_lite.js" ]
 
     outputs = [
       "$root_gen_dir/layout_test_data/mojo/public/js/mojo_bindings_lite.js",
     ]
 
-    deps = [
-      "//mojo/public/js:bindings_lite",
-    ]
+    deps = [ "//mojo/public/js:bindings_lite" ]
   }
 
   group("blink_python_tests") {

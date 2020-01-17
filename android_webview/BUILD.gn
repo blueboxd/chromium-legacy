@@ -26,7 +26,7 @@ if (enable_resource_whitelist_generation) {
 
 if (public_android_sdk) {
   template("standalone_system_webview_apk_tmpl") {
-    system_webview_apk_tmpl(target_name) {
+    system_webview_apk_or_module_tmpl(target_name) {
       forward_variables_from(invoker, "*")
       android_manifest = system_webview_android_manifest
       android_manifest_dep =
@@ -336,6 +336,7 @@ generate_jni("browser_jni_headers") {
     "java/src/org/chromium/android_webview/gfx/AwGLFunctor.java",
     "java/src/org/chromium/android_webview/gfx/AwPicture.java",
     "java/src/org/chromium/android_webview/gfx/JavaBrowserViewRendererHelper.java",
+    "java/src/org/chromium/android_webview/gfx/RootBeginFrameSourceWebView.java",
     "java/src/org/chromium/android_webview/metrics/AwMetricsLogUploader.java",
     "java/src/org/chromium/android_webview/metrics/AwMetricsServiceClient.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
@@ -430,6 +431,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/gfx/AwGLFunctor.java",
     "java/src/org/chromium/android_webview/gfx/AwPicture.java",
     "java/src/org/chromium/android_webview/gfx/JavaBrowserViewRendererHelper.java",
+    "java/src/org/chromium/android_webview/gfx/RootBeginFrameSourceWebView.java",
     "java/src/org/chromium/android_webview/metrics/AwMetricsLogUploader.java",
     "java/src/org/chromium/android_webview/metrics/AwMetricsServiceClient.java",
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",

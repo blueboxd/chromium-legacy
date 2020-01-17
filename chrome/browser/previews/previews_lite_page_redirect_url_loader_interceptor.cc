@@ -237,7 +237,6 @@ PreviewsLitePageRedirectURLLoaderInterceptor::GetOrCreateServerLitePageInfo(
 
   previews::PreviewsUserData::ServerLitePageInfo* info =
       previews_data->server_lite_page_info();
-  info->original_navigation_start = navigation_handle->NavigationStart();
   if (session_id.has_value())
     info->drp_session_key = session_id.value();
 

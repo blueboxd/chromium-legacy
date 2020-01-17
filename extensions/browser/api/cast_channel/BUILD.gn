@@ -25,7 +25,5 @@ source_set("cast_channel") {
     "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

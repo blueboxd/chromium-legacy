@@ -23,9 +23,7 @@ js_library("cr_toolbar_selection_overlay") {
 }
 
 js_library("cr_toolbar") {
-  deps = [
-    ":cr_toolbar_search_field",
-  ]
+  deps = [ ":cr_toolbar_search_field" ]
 }
 
 polymer_modulizer("cr_toolbar") {
@@ -72,9 +70,7 @@ js_library("cr_toolbar.m") {
 }
 
 js_library("cr_toolbar_search_field.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_toolbar/cr_toolbar_search_field.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_toolbar/cr_toolbar_search_field.m.js" ]
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field_behavior.m",
@@ -83,9 +79,7 @@ js_library("cr_toolbar_search_field.m") {
 }
 
 js_library("cr_toolbar_selection_overlay.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.m.js" ]
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]

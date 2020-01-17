@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
@@ -34,14 +35,25 @@ constexpr base::TimeDelta kWaitingForBatchNotifyGroupDevicesResponseTimeout =
 
 void RecordClientAppMetadataFetchMetrics(const base::TimeDelta& execution_time,
                                          CryptAuthAsyncTaskResult result) {
-  // TODO(https://crbug.com/933656, https://crbug.com/936273): Add metrics to
-  // track async execution times and failure rates due to async timeouts.
+  base::UmaHistogramCustomTimes(
+      "CryptAuth.DeviceSyncV2.DeviceNotifier.ExecutionTime."
+      "ClientAppMetadataFetch",
+      execution_time, base::TimeDelta::FromSeconds(1) /* min */,
+      kWaitingForClientAppMetadataTimeout /* max */, 100 /* buckets */);
+  LogCryptAuthAsyncTaskSuccessMetric(
+      "CryptAuth.DeviceSyncV2.DeviceNotifier.AsyncTaskResult."
+      "ClientAppMetadataFetch",
+      result);
 }
 
 void RecordBatchNotifyGroupDevicesMetrics(const base::TimeDelta& execution_time,
                                           CryptAuthApiCallResult result) {
-  // TODO(https://crbug.com/933656, https://crbug.com/936273): Add metrics to
-  // track async execution times and failure rates due to async timeouts.
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.DeviceSyncV2.DeviceNotifier.ExecutionTime.NotifyGroupDevices",
+      execution_time);
+  LogCryptAuthApiCallSuccessMetric(
+      "CryptAuth.DeviceSyncV2.DeviceNotifier.ApiCallResult.NotifyGroupDevices",
+      result);
 }
 
 }  // namespace
@@ -252,14 +264,24 @@ void CryptAuthDeviceNotifierImpl::OnClientAppMetadataFetched(
 void CryptAuthDeviceNotifierImpl::OnBatchNotifyGroupDevicesSuccess(
     const cryptauthv2::BatchNotifyGroupDevicesResponse& response) {
   DCHECK_EQ(State::kWaitingForBatchNotifyGroupDevicesResponse, state_);
+
+  RecordBatchNotifyGroupDevicesMetrics(
+      base::TimeTicks::Now() - last_state_change_timestamp_,
+      CryptAuthApiCallResult::kSuccess);
+
   FinishAttempt(base::nullopt /* error */);
 }
 
 void CryptAuthDeviceNotifierImpl::OnBatchNotifyGroupDevicesFailure(
     NetworkRequestError error) {
   DCHECK_EQ(State::kWaitingForBatchNotifyGroupDevicesResponse, state_);
+
+  RecordBatchNotifyGroupDevicesMetrics(
+      base::TimeTicks::Now() - last_state_change_timestamp_,
+      CryptAuthApiCallResultFromNetworkRequestError(error));
   PA_LOG(ERROR) << "BatchNotifyGroupDevices call failed with error " << error
                 << ".";
+
   FinishAttempt(error);
 }
 

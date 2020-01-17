@@ -23,6 +23,7 @@ source_set("passwords") {
     "//components/password_manager/core/browser",
     "//components/strings:components_strings_grit",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/util",

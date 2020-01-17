@@ -18,12 +18,24 @@ namespace ui {
 namespace {
 
 // Maximum number of overlay configurations to keep in MRU cache.
-constexpr size_t kMaxCacheSize = 10;
+constexpr size_t kMaxCacheSize = 100;
 
 // How many times an overlay configuration needs to be requested before sending
 // a query to display controller to see if the request will work. The overlay
 // configuration will be rejected until a query is sent and response received.
 constexpr int kThrottleRequestSize = 3;
+
+// Returns |candidates| but with all NativePixmap pointers removed in order to
+// avoid keeping them alive.
+std::vector<OverlaySurfaceCandidate> ToCacheKey(
+    const std::vector<OverlaySurfaceCandidate>& candidates) {
+  std::vector<OverlaySurfaceCandidate> result = candidates;
+  for (auto& candidate : result) {
+    // Make sure the cache entry does not keep the NativePixmap alive.
+    candidate.native_pixmap = nullptr;
+  }
+  return result;
+}
 
 }  // namespace
 
@@ -72,7 +84,9 @@ void DrmOverlayManager::CheckOverlaySupport(
         widget_cache_map_.emplace(widget, kMaxCacheSize).first;
   }
   OverlayCandidatesListCache& cache = widget_cache_map_it->second;
-  auto iter = cache.Get(result_candidates);
+  std::vector<OverlaySurfaceCandidate> cache_key =
+      ToCacheKey(result_candidates);
+  auto iter = cache.Get(cache_key);
   if (iter == cache.end()) {
     // We can skip GPU side validation in case all candidates are invalid.
     bool needs_gpu_validation = std::any_of(
@@ -82,7 +96,7 @@ void DrmOverlayManager::CheckOverlaySupport(
     value.status.resize(result_candidates.size(), needs_gpu_validation
                                                       ? OVERLAY_STATUS_PENDING
                                                       : OVERLAY_STATUS_NOT);
-    iter = cache.Put(result_candidates, std::move(value));
+    iter = cache.Put(cache_key, std::move(value));
   }
 
   bool cache_hit = false;
@@ -140,7 +154,7 @@ void DrmOverlayManager::UpdateCacheForOverlayCandidates(
     return;
 
   OverlayCandidatesListCache& cache = widget_cache_map_it->second;
-  auto iter = cache.Peek(candidates);
+  auto iter = cache.Peek(ToCacheKey(candidates));
   if (iter != cache.end())
     iter->second.status = status;
 }

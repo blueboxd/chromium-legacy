@@ -22,9 +22,10 @@ class SharedWorkerInstanceTest : public testing::Test {
                                       const std::string& name,
                                       const url::Origin& constructor_origin) {
     return SharedWorkerInstance(
-        next_service_worker_instance_id_++, script_url, name,
-        constructor_origin, std::string(),
-        network::mojom::ContentSecurityPolicyType::kReport,
+        next_service_worker_instance_id_++, script_url,
+        blink::mojom::ScriptType::kClassic,
+        network::mojom::CredentialsMode::kSameOrigin, name, constructor_origin,
+        std::string(), network::mojom::ContentSecurityPolicyType::kReport,
         network::mojom::IPAddressSpace::kPublic,
         blink::mojom::SharedWorkerCreationContextType::kNonsecure);
   }
@@ -272,7 +273,8 @@ TEST_F(SharedWorkerInstanceTest, AddressSpace) {
       network::mojom::IPAddressSpace::kPublic};
   for (auto address_space : kAddressSpaces) {
     SharedWorkerInstance instance(
-        0, GURL("http://example.com/w.js"), "name",
+        0, GURL("http://example.com/w.js"), blink::mojom::ScriptType::kClassic,
+        network::mojom::CredentialsMode::kSameOrigin, "name",
         url::Origin::Create(GURL("http://example.com/")), std::string(),
         network::mojom::ContentSecurityPolicyType::kReport, address_space,
         blink::mojom::SharedWorkerCreationContextType::kNonsecure);

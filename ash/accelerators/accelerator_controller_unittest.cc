@@ -2108,6 +2108,108 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleDockedMagnifier) {
   RemoveAllNotifications();
 }
 
+class AccessibilityAcceleratorTester : public MagnifiersAcceleratorsTester {
+ public:
+  AccessibilityAcceleratorTester() = default;
+  ~AccessibilityAcceleratorTester() override = default;
+
+  AccessibilityAcceleratorTester(const AccessibilityAcceleratorTester&) =
+      delete;
+  AccessibilityAcceleratorTester& operator=(
+      const AccessibilityAcceleratorTester&) = delete;
+
+  bool ContainsAccessibilityNotification(
+      const std::string& notification_id) const {
+    return nullptr !=
+           message_center()->FindVisibleNotificationById(notification_id);
+  }
+
+  void TestAccessibilityAcceleratorControlledByPref(
+      const std::string& pref_name,
+      const char* notification_id,
+      const ui::Accelerator& accelerator) {
+    // Verify that the initial state for the accessibility feature will be
+    // disabled, and for accessibility accelerators controller pref
+    // |kAccessibilityShortcutsEnabled| is enabled. And neither of that
+    // accessibility feature notification id, nor its confirmation dialog have
+    // appeared.
+    EXPECT_FALSE(user_pref_service()->GetBoolean(pref_name));
+    EXPECT_TRUE(
+        user_pref_service()->GetBoolean(prefs::kAccessibilityShortcutsEnabled));
+    EXPECT_FALSE(IsConfirmationDialogOpen());
+    if (notification_id)
+      EXPECT_FALSE(ContainsAccessibilityNotification(notification_id));
+
+    // Verify that after disabling the accessibility accelerators, the
+    // confirmation dialog won't appear for that accessibility feature. And its
+    // corresponding pref won't be enabled. But a notification should appear,
+    // which shows that the shortcut for that feature has been disabled.
+    user_pref_service()->SetBoolean(prefs::kAccessibilityShortcutsEnabled,
+                                    false);
+    EXPECT_TRUE(ProcessInController(accelerator));
+    EXPECT_FALSE(IsConfirmationDialogOpen());
+    if (notification_id)
+      EXPECT_TRUE(ContainsAccessibilityNotification(notification_id));
+    EXPECT_FALSE(user_pref_service()->GetBoolean(pref_name));
+
+    // Verify that if the accessibility accelerators are enabled, then
+    // it will show the confirmation dialog for the first time only when
+    // toggling its value. And the coressponding pref will be chanaged
+    // accordingly.
+    user_pref_service()->SetBoolean(prefs::kAccessibilityShortcutsEnabled,
+                                    true);
+    EXPECT_TRUE(ProcessInController(accelerator));
+    if (notification_id)
+      AcceptConfirmationDialog();
+    base::RunLoop().RunUntilIdle();
+    message_center::NotificationList::Notifications notifications =
+        message_center()->GetVisibleNotifications();
+    ASSERT_EQ(1u, notifications.size());
+    EXPECT_TRUE(user_pref_service()->GetBoolean(pref_name));
+    if (notification_id)
+      EXPECT_TRUE(ContainsAccessibilityNotification(notification_id));
+
+    // Verify that the notification id, won't be shown if the accessibility
+    // feature is going to be disabled.
+    EXPECT_TRUE(ProcessInController(accelerator));
+    if (notification_id)
+      EXPECT_FALSE(ContainsAccessibilityNotification(notification_id));
+    EXPECT_FALSE(user_pref_service()->GetBoolean(pref_name));
+
+    // Remove all the current notifications, to get the initial state again.
+    RemoveAllNotifications();
+  }
+};
+
+TEST_F(AccessibilityAcceleratorTester, DisableAccessibilityAccelerators) {
+  struct PrefToAcceleratorEntry {
+    const char* pref_name;
+    // If |notification_id| has been set to nullptr, then no notification is
+    // expected.
+    const char* notification_id;
+    const ui::Accelerator accelerator;
+  };
+  const PrefToAcceleratorEntry kAccessibilityAcceleratorMap[] = {
+      {prefs::kAccessibilityHighContrastEnabled,
+       kHighContrastToggleAccelNotificationId,
+       ui::Accelerator(ui::VKEY_H, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN)},
+      {prefs::kDockedMagnifierEnabled,
+       kDockedMagnifierToggleAccelNotificationId,
+       ui::Accelerator(ui::VKEY_D, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN)},
+      {prefs::kAccessibilitySpokenFeedbackEnabled, nullptr,
+       ui::Accelerator(ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)},
+      {prefs::kAccessibilityScreenMagnifierEnabled,
+       kFullscreenMagnifierToggleAccelNotificationId,
+       ui::Accelerator(ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN)},
+  };
+  FakeMagnificationManager manager;
+  manager.SetPrefs(user_pref_service());
+  for (const auto& test_data : kAccessibilityAcceleratorMap) {
+    TestAccessibilityAcceleratorControlledByPref(
+        test_data.pref_name, test_data.notification_id, test_data.accelerator);
+  }
+}
+
 namespace {
 
 struct MediaSessionAcceleratorTestConfig {

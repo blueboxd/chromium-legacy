@@ -200,7 +200,7 @@ Polymer({
     settings: {
       type: Object,
       notify: true,
-      value: function() {
+      value() {
         return {
           pages: {
             value: [1],
@@ -508,14 +508,14 @@ Polymer({
   lastDestinationCapabilities_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     assert(!instance);
     instance = this;
     whenReadyResolver.resolve();
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     instance = null;
     whenReadyResolver = new PromiseResolver();
   },
@@ -524,7 +524,7 @@ Polymer({
    * @param {string} settingName Name of the setting to get.
    * @return {Setting} The setting object.
    */
-  getSetting: function(settingName) {
+  getSetting(settingName) {
     const setting =
         /** @type {Setting} */ (this.get(settingName, this.settings));
     assert(setting, 'Setting is missing: ' + settingName);
@@ -535,7 +535,7 @@ Polymer({
    * @param {string} settingName Name of the setting to get the value for.
    * @return {*} The value of the setting, accounting for availability.
    */
-  getSettingValue: function(settingName) {
+  getSettingValue(settingName) {
     const setting = this.getSetting(settingName);
     return setting.available ? setting.value : setting.unavailableValue;
   },
@@ -548,7 +548,7 @@ Polymer({
    * @param {*} value value to set.
    * @private
    */
-  setSettingPath_: function(settingPath, value) {
+  setSettingPath_(settingPath, value) {
     const settingName = settingPath.split('.')[0];
     const setting = this.getSetting(settingName);
     const oldValue = this.getSettingValue(settingName);
@@ -569,7 +569,7 @@ Polymer({
    * @param {boolean=} noSticky Whether to avoid stickying the setting. Defaults
    *     to false.
    */
-  setSetting: function(settingName, value, noSticky) {
+  setSetting(settingName, value, noSticky) {
     const setting = this.getSetting(settingName);
     if (setting.setByPolicy) {
       return;
@@ -592,7 +592,7 @@ Polymer({
    * @param {boolean=} noSticky Whether to avoid stickying the setting. Defaults
    *     to false.
    */
-  setSettingSplice: function(settingName, start, end, newValue, noSticky) {
+  setSettingSplice(settingName, start, end, newValue, noSticky) {
     const setting = this.getSetting(settingName);
     if (setting.setByPolicy) {
       return;
@@ -616,7 +616,7 @@ Polymer({
    * @param {string} settingName Name of the setting to set
    * @param {boolean} valid Whether the setting value is currently valid.
    */
-  setSettingValid: function(settingName, valid) {
+  setSettingValid(settingName, valid) {
     const setting = this.getSetting(settingName);
     // Should not set the setting to invalid if it is not available, as there
     // is no way for the user to change the value in this case.
@@ -635,7 +635,7 @@ Polymer({
    *     media size settings based on the destination capabilities.
    * @private
    */
-  updateSettingsFromDestination_: function() {
+  updateSettingsFromDestination_() {
     if (!this.destination || !this.settings) {
       return;
     }
@@ -662,7 +662,7 @@ Polymer({
    * @param {?CddCapabilities} caps The printer capabilities.
    * @private
    */
-  updateSettingsAvailabilityFromDestination_: function(caps) {
+  updateSettingsAvailabilityFromDestination_(caps) {
     this.setSettingPath_('copies.available', !!caps && !!caps.copies);
     this.setSettingPath_('collate.available', !!caps && !!caps.collate);
     this.setSettingPath_(
@@ -696,7 +696,7 @@ Polymer({
   },
 
   /** @private */
-  updateSettingsAvailabilityFromDestinationAndDocumentSettings_: function() {
+  updateSettingsAvailabilityFromDestinationAndDocumentSettings_() {
     const isSaveAsPDF =
         this.destination.id === Destination.GooglePromotedId.SAVE_AS_PDF;
     const knownSizeToSaveAsPdf = isSaveAsPDF &&
@@ -726,7 +726,7 @@ Polymer({
   },
 
   /** @private */
-  updateSettingsAvailabilityFromDocumentSettings_: function() {
+  updateSettingsAvailabilityFromDocumentSettings_() {
     if (!this.settings) {
       return;
     }
@@ -770,7 +770,7 @@ Polymer({
   },
 
   /** @private */
-  updateHeaderFooterAvailable_: function() {
+  updateHeaderFooterAvailable_() {
     if (this.documentSettings === undefined) {
       return;
     }
@@ -783,7 +783,7 @@ Polymer({
    * @return {boolean} Whether the header/footer setting should be available.
    * @private
    */
-  isHeaderFooterAvailable_: function() {
+  isHeaderFooterAvailable_() {
     // Always unavailable for PDFs.
     if (!this.documentSettings.isModifiable) {
       return false;
@@ -826,7 +826,7 @@ Polymer({
    * @param {?CddCapabilities} caps The printer capabilities.
    * @private
    */
-  isLayoutAvailable_: function(caps) {
+  isLayoutAvailable_(caps) {
     if (!caps || !caps.page_orientation || !caps.page_orientation.option ||
         (!this.documentSettings.isModifiable &&
          !this.documentSettings.isFromArc) ||
@@ -847,7 +847,7 @@ Polymer({
    * @param {?CddCapabilities} caps The printer capabilities.
    * @private
    */
-  updateSettingsValues_: function(caps) {
+  updateSettingsValues_(caps) {
     if (this.settings.mediaSize.available) {
       const defaultOption = caps.media_size.option.find(o => !!o.is_default) ||
           caps.media_size.option[0];
@@ -978,7 +978,7 @@ Polymer({
    * settings will be applied when destinaton capabilities have been retrieved.
    * @param {?string} savedSettingsStr The sticky settings from native layer
    */
-  setStickySettings: function(savedSettingsStr) {
+  setStickySettings(savedSettingsStr) {
     assert(!this.stickySettings_);
 
     if (!savedSettingsStr) {
@@ -1016,7 +1016,7 @@ Polymer({
    * @param {boolean} managed Flag showing whether value of setting is managed.
    * @private
    */
-  setPolicySetting_: function(settingName, value, managed) {
+  setPolicySetting_(settingName, value, managed) {
     if (!this.policySettings_) {
       this.policySettings_ = {};
     }
@@ -1034,7 +1034,7 @@ Polymer({
    * @param {*} defaultMode Policy value of default mode.
    * @private
    */
-  configurePolicySetting_: function(settingName, allowedMode, defaultMode) {
+  configurePolicySetting_(settingName, allowedMode, defaultMode) {
     switch (settingName) {
       case 'headerFooter': {
         const value = allowedMode !== undefined ? allowedMode : defaultMode;
@@ -1062,7 +1062,7 @@ Polymer({
    * those settings from being changed via other means.
    * @param {Policies} policies Value of policies.
    */
-  setPolicySettings: function(policies) {
+  setPolicySettings(policies) {
     if (policies === undefined) {
       return;
     }
@@ -1076,7 +1076,7 @@ Polymer({
     });
   },
 
-  applyStickySettings: function() {
+  applyStickySettings() {
     if (this.stickySettings_) {
       STICKY_SETTING_NAMES.forEach(settingName => {
         const setting = this.get(settingName, this.settings);
@@ -1102,7 +1102,7 @@ Polymer({
    * @param {string} settingName Name of the setting being applied.
    * @private
    */
-  applyScalingStickySettings_: function(settingName) {
+  applyScalingStickySettings_(settingName) {
     // TODO(dhoss): Remove checks for 'customScaling' and 'fitToPage'
     if (settingName === 'scalingType' &&
         'customScaling' in this.stickySettings_) {
@@ -1126,7 +1126,7 @@ Polymer({
   },
 
   /** @private */
-  applyPolicySettings_: function() {
+  applyPolicySettings_() {
     if (this.policySettings_) {
       for (const [settingName, policy] of Object.entries(
                this.policySettings_)) {
@@ -1145,7 +1145,7 @@ Polymer({
    * Restricts settings and applies defaults as defined by policy applicable to
    * current destination.
    */
-  applyDestinationSpecificPolicies: function() {
+  applyDestinationSpecificPolicies() {
     const colorPolicy = this.destination.colorPolicy;
     const colorValue =
         colorPolicy ? colorPolicy : this.destination.defaultColorPolicy;
@@ -1194,7 +1194,7 @@ Polymer({
   // </if>
 
   /** @private */
-  updateManaged_: function() {
+  updateManaged_() {
     let managedSettings = ['cssBackground', 'headerFooter'];
     // <if expr="chromeos">
     managedSettings =
@@ -1207,7 +1207,7 @@ Polymer({
   },
 
   /** @return {boolean} Whether the model has been initialized. */
-  initialized: function() {
+  initialized() {
     return this.initialized_;
   },
 
@@ -1215,7 +1215,7 @@ Polymer({
    * @return {string} The current serialized settings.
    * @private
    */
-  getStickySettings_: function() {
+  getStickySettings_() {
     const serialization = {
       version: 2,
     };
@@ -1234,7 +1234,7 @@ Polymer({
    * @return {!DuplexMode} The duplex mode selected.
    * @private
    */
-  getDuplexMode_: function() {
+  getDuplexMode_() {
     if (!this.getSettingValue('duplex')) {
       return DuplexMode.SIMPLEX;
     }
@@ -1247,7 +1247,7 @@ Polymer({
    * @return {!DuplexType} The duplex type selected.
    * @private
    */
-  getCddDuplexType_: function() {
+  getCddDuplexType_() {
     if (!this.getSettingValue('duplex')) {
       return DuplexType.NO_DUPLEX;
     }
@@ -1265,7 +1265,7 @@ Polymer({
    *     the system dialog.
    * @return {string} Serialized print ticket.
    */
-  createPrintTicket: function(destination, openPdfInPreview, showSystemDialog) {
+  createPrintTicket(destination, openPdfInPreview, showSystemDialog) {
     const dpi =
         /**
            @type {{horizontal_dpi: (number | undefined),
@@ -1345,7 +1345,7 @@ Polymer({
    * @param {!Destination} destination Destination to print to.
    * @return {string} Google Cloud Print print ticket.
    */
-  createCloudJobTicket: function(destination) {
+  createCloudJobTicket(destination) {
     assert(
         !destination.isLocal || destination.isPrivet || destination.isExtension,
         'Trying to create a Google Cloud Print print ticket for a local ' +

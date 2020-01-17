@@ -31,7 +31,5 @@ source_set("file_handlers") {
     "//storage/browser",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

@@ -25,6 +25,7 @@ _typemap_imports = [
   "//device/bluetooth/public/mojom/typemaps.gni",
   "//device/bluetooth/public/mojom/test/typemaps.gni",
   "//device/gamepad/public/cpp/typemaps.gni",
+  "//device/vr/public/mojom/typemaps.gni",
   "//fuchsia/mojom/test_typemaps.gni",
   "//gpu/ipc/common/typemaps.gni",
   "//ipc/typemaps.gni",

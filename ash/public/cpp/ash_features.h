@@ -21,6 +21,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kAllowAmbientEQ;
 // certain devices.
 ASH_PUBLIC_EXPORT extern const base::Feature kAutoNightLight;
 
+// Enables a modal dialog when resolution or refresh rate change.
+ASH_PUBLIC_EXPORT extern const base::Feature kDisplayChangeModal;
+
 // Enables the docked (a.k.a. picture-in-picture) magnifier.
 // TODO(afakhry): Remove this after the feature is fully launched.
 // https://crbug.com/709824.
@@ -135,6 +138,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSwipingFromLeftEdgeToGoBack;
 // launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kDragFromShelfToHomeOrOverview;
 
+// When enabled, shelf navigation controls and the overview tray item will be
+// removed from the shelf in tablet mode (unless otherwise specified by user
+// preferences, or policy).
+ASH_PUBLIC_EXPORT extern const base::Feature kHideShelfControlsInTabletMode;
+
 ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAutoNightLightEnabled();
@@ -178,6 +186,10 @@ ASH_PUBLIC_EXPORT bool IsSwipingFromLeftEdgeToGoBackEnabled();
 ASH_PUBLIC_EXPORT bool IsDragFromShelfToHomeOrOverviewEnabled();
 
 ASH_PUBLIC_EXPORT bool IsReduceDisplayNotificationsEnabled();
+
+ASH_PUBLIC_EXPORT bool IsHideShelfControlsInTabletModeEnabled();
+
+ASH_PUBLIC_EXPORT bool IsDisplayChangeModalEnabled();
 
 }  // namespace features
 }  // namespace ash

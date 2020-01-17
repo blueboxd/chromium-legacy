@@ -70,12 +70,15 @@ class PLATFORM_EXPORT ResourceRequest final {
   explicit ResourceRequest(const String& url_string);
   explicit ResourceRequest(const KURL&);
 
-  // TODO(toyoshim): Use std::unique_ptr as much as possible, and hopefully
-  // make ResourceRequest DISALLOW_COPY_AND_ASSIGN. See crbug.com/787704.
-  ResourceRequest(const ResourceRequest&);
-  ResourceRequest& operator=(const ResourceRequest&);
+  ResourceRequest(const ResourceRequest&) = delete;
+  ResourceRequest(ResourceRequest&&);
+  ResourceRequest& operator=(ResourceRequest&&);
 
   ~ResourceRequest();
+
+  // TODO(yoichio): Use move semantics as much as possible.
+  // See crbug.com/787704.
+  void CopyFrom(const ResourceRequest&);
 
   // Constructs a new ResourceRequest for a redirect from this instance.
   std::unique_ptr<ResourceRequest> CreateRedirectRequest(
@@ -456,6 +459,8 @@ class PLATFORM_EXPORT ResourceRequest final {
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
+
+  ResourceRequest& operator=(const ResourceRequest&);
 
   const CacheControlHeader& GetCacheControlHeader() const;
 

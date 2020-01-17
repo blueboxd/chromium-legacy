@@ -10,8 +10,6 @@
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
-#include "android_webview/grit/aw_resources.h"
-#include "android_webview/grit/aw_strings.h"
 #include "android_webview/renderer/aw_content_settings_client.h"
 #include "android_webview/renderer/aw_key_systems.h"
 #include "android_webview/renderer/aw_print_render_frame_helper_delegate.h"
@@ -22,12 +20,11 @@
 #include "android_webview/renderer/aw_websocket_handshake_throttle_provider.h"
 #include "android_webview/renderer/browser_exposed_renderer_interfaces.h"
 #include "android_webview/renderer/js_java_interaction/js_java_configurator.h"
-#include "android_webview/renderer/print_render_frame_observer.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
+#include "components/android_system_error_page/error_page_populator.h"
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "components/printing/renderer/print_render_frame_helper.h"
 #include "components/visitedlink/renderer/visitedlink_reader.h"
@@ -38,18 +35,13 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
-#include "net/base/escape.h"
-#include "net/base/net_errors.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_security_policy.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -61,12 +53,6 @@
 using content::RenderThread;
 
 namespace android_webview {
-
-namespace {
-constexpr char kThrottledErrorDescription[] =
-    "Request throttled. Visit http://dev.chromium.org/throttling for more "
-    "information.";
-}  // namespace
 
 AwContentRendererClient::AwContentRendererClient() = default;
 
@@ -161,7 +147,6 @@ bool AwContentRendererClient::HandleNavigation(
 void AwContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   new AwContentSettingsClient(render_frame);
-  new PrintRenderFrameObserver(render_frame);
   new printing::PrintRenderFrameHelper(
       render_frame, std::make_unique<AwPrintRenderFrameHelperDelegate>());
   new AwRenderFrameExt(render_frame);
@@ -217,45 +202,7 @@ void AwContentRendererClient::PrepareErrorPage(
   AwSafeBrowsingErrorPageControllerDelegateImpl::Get(render_frame)
       ->PrepareForErrorPage();
 
-  std::string err;
-  if (error.reason() == net::ERR_TEMPORARILY_THROTTLED)
-    err = kThrottledErrorDescription;
-  else
-    err = net::ErrorToString(error.reason());
-
-  if (!error_html)
-    return;
-
-  // Create the error page based on the error reason.
-  GURL gurl(error.url());
-  std::string url_string = gurl.possibly_invalid_spec();
-  int reason_id = IDS_AW_WEBPAGE_CAN_NOT_BE_LOADED;
-
-  if (err.empty())
-    reason_id = IDS_AW_WEBPAGE_TEMPORARILY_DOWN;
-
-  std::string escaped_url = net::EscapeForHTML(url_string);
-  std::vector<std::string> replacements;
-  replacements.push_back(
-      l10n_util::GetStringUTF8(IDS_AW_WEBPAGE_NOT_AVAILABLE));
-  replacements.push_back(
-      l10n_util::GetStringFUTF8(reason_id, base::UTF8ToUTF16(escaped_url)));
-
-  // Having chosen the base reason, chose what extra information to add.
-  if (reason_id == IDS_AW_WEBPAGE_TEMPORARILY_DOWN) {
-    replacements.push_back(
-        l10n_util::GetStringUTF8(IDS_AW_WEBPAGE_TEMPORARILY_DOWN_SUGGESTIONS));
-  } else {
-    replacements.push_back(err);
-  }
-  if (base::i18n::IsRTL())
-    replacements.push_back("direction: rtl;");
-  else
-    replacements.push_back("");
-  *error_html = base::ReplaceStringPlaceholders(
-      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-          IDR_AW_LOAD_ERROR_HTML),
-      replacements, nullptr);
+  android_system_error_page::PopulateErrorPageHtml(error, error_html);
 }
 
 uint64_t AwContentRendererClient::VisitedLinkHash(const char* canonical_url,

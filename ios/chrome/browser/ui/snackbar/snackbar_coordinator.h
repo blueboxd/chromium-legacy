@@ -9,13 +9,18 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-@class CommandDispatcher;
-
 // Coordinator that handles commands to show snackbars.
 @interface SnackbarCoordinator : ChromeCoordinator
 
-// The dispatcher used to register commands.
-@property(nonatomic, weak) CommandDispatcher* dispatcher;
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 @end
 

@@ -20,7 +20,7 @@
     attribute AccessibleNodeList? controls;
     attribute DOMString? current;
     attribute AccessibleNodeList? describedBy;
-    attribute AccessibleNode? details;
+    attribute AccessibleNodeList? details;
     attribute boolean? disabled;
     attribute AccessibleNode? errorMessage;
     attribute boolean? expanded;

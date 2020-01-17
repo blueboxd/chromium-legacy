@@ -892,11 +892,9 @@ class RTCPeerConnectionHandler::Observer
   // When an RTC event log is sent back from PeerConnection, it arrives here.
   void OnWebRtcEventLogWrite(const WTF::Vector<uint8_t>& output) override {
     if (!main_thread_->BelongsToCurrentThread()) {
-      // TODO(crbug.com/787254): Convert this call to PostCrossThreadTask,
-      // after crrev.com/c/1976250 lands.
-      main_thread_->PostTask(
-          FROM_HERE,
-          base::BindOnce(
+      PostCrossThreadTask(
+          *main_thread_.get(), FROM_HERE,
+          CrossThreadBindOnce(
               &RTCPeerConnectionHandler::Observer::OnWebRtcEventLogWrite,
               WrapCrossThreadPersistent(this), output));
     } else if (handler_) {
@@ -992,7 +990,8 @@ class RTCPeerConnectionHandler::Observer
             candidate->candidate().address().family()));
   }
 
-  void OnIceCandidateError(const std::string& host_candidate,
+  void OnIceCandidateError(const std::string& address,
+                           int port,
                            const std::string& url,
                            int error_code,
                            const std::string& error_text) override {
@@ -1000,7 +999,10 @@ class RTCPeerConnectionHandler::Observer
         *main_thread_.get(), FROM_HERE,
         CrossThreadBindOnce(
             &RTCPeerConnectionHandler::Observer::OnIceCandidateErrorImpl,
-            WrapCrossThreadPersistent(this), String::FromUTF8(host_candidate),
+            WrapCrossThreadPersistent(this),
+            port ? String::FromUTF8(address) : String(),
+            static_cast<uint16_t>(port),
+            String::Format("%s:%d", address.c_str(), port),
             String::FromUTF8(url), error_code, String::FromUTF8(error_text)));
   }
 
@@ -1022,14 +1024,19 @@ class RTCPeerConnectionHandler::Observer
     }
   }
 
-  void OnIceCandidateErrorImpl(const String& host_candidate,
+  void OnIceCandidateErrorImpl(const String& address,
+                               int port,
+                               const String& host_candidate,
                                const String& url,
                                int error_code,
                                const String& error_text) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     if (handler_) {
-      handler_->OnIceCandidateError(host_candidate, url, error_code,
-                                    error_text);
+      handler_->OnIceCandidateError(
+          address,
+          port ? base::Optional<uint16_t>(static_cast<uint16_t>(port))
+               : base::nullopt,
+          host_candidate, url, error_code, error_text);
     }
   }
 
@@ -1084,18 +1091,14 @@ RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
                              num_data_channels_created_);
 }
 
-void RTCPeerConnectionHandler::AssociateWithFrame(blink::WebLocalFrame* frame) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(frame);
-  frame_ = frame;
-}
-
 bool RTCPeerConnectionHandler::Initialize(
     const webrtc::PeerConnectionInterface::RTCConfiguration&
         server_configuration,
-    const MediaConstraints& options) {
+    const MediaConstraints& options,
+    WebLocalFrame* frame) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(frame_);
+  DCHECK(frame);
+  frame_ = frame;
 
   CHECK(!initialize_called_);
   initialize_called_ = true;
@@ -2470,19 +2473,23 @@ void RTCPeerConnectionHandler::OnIceCandidate(const String& sdp,
     client_->DidGenerateICECandidate(platform_candidate);
 }
 
-void RTCPeerConnectionHandler::OnIceCandidateError(const String& host_candidate,
-                                                   const String& url,
-                                                   int error_code,
-                                                   const String& error_text) {
+void RTCPeerConnectionHandler::OnIceCandidateError(
+    const String& address,
+    base::Optional<uint16_t> port,
+    const String& host_candidate,
+    const String& url,
+    int error_code,
+    const String& error_text) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceCandidateError");
 
   if (peer_connection_tracker_) {
-    peer_connection_tracker_->TrackIceCandidateError(this, host_candidate, url,
-                                                     error_code, error_text);
+    peer_connection_tracker_->TrackIceCandidateError(
+        this, address, port, host_candidate, url, error_code, error_text);
   }
   if (!is_closed_) {
-    client_->DidFailICECandidate(host_candidate, url, error_code, error_text);
+    client_->DidFailICECandidate(address, port, host_candidate, url, error_code,
+                                 error_text);
   }
 }
 

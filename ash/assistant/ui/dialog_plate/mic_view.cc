@@ -72,9 +72,8 @@ void MicView::InitLayout() {
       views::BoxLayout::MainAxisAlignment::kCenter);
 
   // Logo view.
-  logo_view_ = LogoView::Create();
+  logo_view_ = logo_view_container->AddChildView(LogoView::Create());
   logo_view_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  logo_view_container->AddChildView(logo_view_);
 
   // Initialize state.
   UpdateState(/*animate=*/false);

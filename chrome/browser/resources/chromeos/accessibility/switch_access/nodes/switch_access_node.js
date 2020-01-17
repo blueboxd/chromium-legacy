@@ -111,7 +111,7 @@ class SAChildNode {
   }
 
   /**
-   * @param {!chrome.automation.AutomationNode} node
+   * @param {!chrome.automation.AutomationNode|!SAChildNode|!SARootNode} node
    * @return {boolean}
    * @abstract
    */
@@ -123,6 +123,14 @@ class SAChildNode {
    * @abstract
    */
   isGroup() {}
+
+  /**
+   * Returns whether this node is still both valid and visible onscreen (e.g.
+   *    not hidden, not offscreen, not invisible)
+   * @return {boolean}
+   * @abstract
+   */
+  isValidAndVisible() {}
 
   /**
    * Called when this node becomes the primary highlighted node.
@@ -259,19 +267,32 @@ class SARootNode {
   }
 
   /**
-   * @param {chrome.automation.AutomationNode} automationNode
+   * @param {chrome.automation.AutomationNode|!SARootNode|!SAChildNode} node
    * @return {boolean}
    */
-  isEquivalentTo(automationNode) {
+  isEquivalentTo(node) {
+    if (node instanceof SARootNode) {
+      return this.equals(node);
+    }
+    if (node instanceof SAChildNode) {
+      return node.isEquivalentTo(this);
+    }
     return false;
   }
 
   /** @return {boolean} */
-  isValid() {
-    return true;
+  isValidGroup() {
+    return this.children_.filter((child) => child.isValidAndVisible()).length >=
+        1;
   }
 
-  /** Called when a group is exiting. */
+  /** Called when a group is set as the current group. */
+  onFocus() {}
+
+  /** Called when a group is no longer the current group. */
+  onUnfocus() {}
+
+  /** Called when a group is explicitly exited. */
   onExit() {}
 
   // ================= Debug methods =================

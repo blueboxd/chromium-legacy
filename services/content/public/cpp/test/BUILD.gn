@@ -24,9 +24,7 @@ source_set("test_support") {
 source_set("tests") {
   testonly = true
 
-  sources = [
-    "fake_navigable_contents_factory_unittest.cc",
-  ]
+  sources = [ "fake_navigable_contents_factory_unittest.cc" ]
 
   deps = [
     ":test_support",

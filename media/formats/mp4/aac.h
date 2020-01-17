@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "media/base/audio_codecs.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
@@ -55,6 +56,9 @@ class MEDIA_EXPORT AAC {
   // in the buffer. The function returns false on failure and leaves the buffer
   // unchanged.
   bool ConvertEsdsToADTS(std::vector<uint8_t>* buffer) const;
+
+  // If known, returns the AudioCodecProfile.
+  AudioCodecProfile GetProfile() const;
 
 #if defined(OS_ANDROID)
   // Returns the codec specific data needed by android MediaCodec.

@@ -93,15 +93,11 @@ if (!is_android) {
     if (optimize_webui) {
       source = "bookmarks/bookmarks_resources_vulcanized.grd"
 
-      deps = [
-        "//chrome/browser/resources/bookmarks:build",
-      ]
+      deps = [ "//chrome/browser/resources/bookmarks:build" ]
     } else {
       source = "bookmarks/bookmarks_resources.grd"
 
-      deps = [
-        "//chrome/browser/resources/bookmarks:polymer3_elements",
-      ]
+      deps = [ "//chrome/browser/resources/bookmarks:polymer3_elements" ]
     }
 
     defines = chrome_grit_defines
@@ -124,9 +120,7 @@ if (!is_android) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
-    deps = [
-      "//chrome/browser/resources/pdf/elements:polymer3_elements",
-    ]
+    deps = [ "//chrome/browser/resources/pdf/elements:polymer3_elements" ]
 
     defines = chrome_grit_defines
     if (enable_hangout_services_extension) {
@@ -153,15 +147,11 @@ if (!is_android) {
     if (optimize_webui) {
       source = "history/history_resources_vulcanized.grd"
 
-      deps = [
-        "//chrome/browser/resources/history:build",
-      ]
+      deps = [ "//chrome/browser/resources/history:build" ]
     } else {
       source = "history/history_resources.grd"
 
-      deps = [
-        "//chrome/browser/resources/history:polymer3_elements",
-      ]
+      deps = [ "//chrome/browser/resources/history:polymer3_elements" ]
     }
 
     defines = chrome_grit_defines
@@ -218,9 +208,7 @@ if (!is_android) {
       # The .grd contains references to generated files.
       source_is_generated = true
 
-      deps = [
-        "//chrome/browser/resources/settings:build",
-      ]
+      deps = [ "//chrome/browser/resources/settings:build" ]
       grit_flags = [
         "-E",
         "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -243,9 +231,7 @@ if (!is_android) {
     if (optimize_webui) {
       source = "downloads/downloads_resources_vulcanized.grd"
 
-      deps = [
-        "//chrome/browser/resources/downloads:build",
-      ]
+      deps = [ "//chrome/browser/resources/downloads:build" ]
     } else {
       source = "downloads/downloads_resources.grd"
 
@@ -282,9 +268,7 @@ if (is_chromeos) {
       # The .grd contains references to generated files.
       source_is_generated = true
 
-      deps = [
-        "//chrome/browser/resources/settings/chromeos:build",
-      ]
+      deps = [ "//chrome/browser/resources/settings/chromeos:build" ]
 
       grit_flags = [
         "-E",
@@ -312,9 +296,7 @@ if (!is_android && !is_chromeos) {
     # The .grd contains references to generated files.
     source_is_generated = true
 
-    deps = [
-      "//chrome/browser/resources/welcome:polymer3_elements",
-    ]
+    deps = [ "//chrome/browser/resources/welcome:polymer3_elements" ]
     grit_flags = [
       "-E",
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
@@ -343,15 +325,11 @@ if (enable_extensions) {
     if (optimize_webui) {
       source = "extensions/extensions_resources_vulcanized.grd"
 
-      deps = [
-        "//chrome/browser/resources/extensions:build",
-      ]
+      deps = [ "//chrome/browser/resources/extensions:build" ]
     } else {
       source = "extensions/extensions_resources.grd"
 
-      deps = [
-        "//chrome/browser/resources/extensions:polymer3_elements",
-      ]
+      deps = [ "//chrome/browser/resources/extensions:polymer3_elements" ]
     }
 
     defines = chrome_grit_defines
@@ -389,14 +367,10 @@ if (enable_print_preview) {
     if (optimize_webui) {
       source = "print_preview/print_preview_resources_vulcanized.grd"
 
-      deps = [
-        "//chrome/browser/resources/print_preview:build",
-      ]
+      deps = [ "//chrome/browser/resources/print_preview:build" ]
     } else {
       source = "print_preview/print_preview_resources.grd"
-      deps = [
-        "//chrome/browser/resources/print_preview/ui:polymer3_elements",
-      ]
+      deps = [ "//chrome/browser/resources/print_preview/ui:polymer3_elements" ]
     }
 
     defines = chrome_grit_defines
@@ -414,9 +388,7 @@ if (enable_webui_tab_strip) {
   grit("tab_strip_resources") {
     source = "tab_strip/tab_strip_resources.grd"
     defines = chrome_grit_defines
-    deps = [
-      "tab_strip:tab_strip_modules",
-    ]
+    deps = [ "tab_strip:tab_strip_modules" ]
     source_is_generated = true
     outputs = [
       "grit/tab_strip_resources.h",
@@ -472,9 +444,7 @@ repack("dev_ui_paks") {
 
 js2gtest("resources_unitjs_tests") {
   test_type = "webui"
-  sources = [
-    "gaia_auth_host/password_change_authenticator_test.unitjs",
-  ]
+  sources = [ "gaia_auth_host/password_change_authenticator_test.unitjs" ]
 
   # This has to be a gen_include, so it doesn't collide with other js2gtests
   gen_include_files = [ "//ui/webui/resources/js/cr.js" ]
@@ -490,7 +460,5 @@ js2gtest("resources_unitjs_tests") {
 
 source_set("browser_tests_js") {
   testonly = true
-  deps = [
-    ":resources_unitjs_tests",
-  ]
+  deps = [ ":resources_unitjs_tests" ]
 }

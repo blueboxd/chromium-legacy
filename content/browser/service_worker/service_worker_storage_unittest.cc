@@ -274,6 +274,7 @@ class ServiceWorkerStorageTest : public testing::Test {
   }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
+  ServiceWorkerRegistry* registry() { return context()->registry(); }
   ServiceWorkerStorage* storage() { return context()->storage(); }
   ServiceWorkerDatabase* database() { return storage()->database_.get(); }
 
@@ -477,7 +478,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       scoped_refptr<ServiceWorkerRegistration>* registration) {
     base::Optional<blink::ServiceWorkerStatusCode> result;
     base::RunLoop loop;
-    storage()->FindRegistrationForClientUrl(
+    registry()->FindRegistrationForClientUrl(
         document_url, base::BindOnce(&FindCallback, loop.QuitClosure(), &result,
                                      registration));
     loop.Run();
@@ -489,7 +490,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       scoped_refptr<ServiceWorkerRegistration>* registration) {
     base::Optional<blink::ServiceWorkerStatusCode> result;
     base::RunLoop loop;
-    storage()->FindRegistrationForScope(
+    registry()->FindRegistrationForScope(
         scope, base::BindOnce(&FindCallback, loop.QuitClosure(), &result,
                               registration));
     EXPECT_FALSE(result);  // always async
@@ -503,7 +504,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       scoped_refptr<ServiceWorkerRegistration>* registration) {
     base::Optional<blink::ServiceWorkerStatusCode> result;
     base::RunLoop loop;
-    storage()->FindRegistrationForId(
+    registry()->FindRegistrationForId(
         registration_id, origin,
         base::BindOnce(&FindCallback, loop.QuitClosure(), &result,
                        registration));
@@ -516,7 +517,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       scoped_refptr<ServiceWorkerRegistration>* registration) {
     base::Optional<blink::ServiceWorkerStatusCode> result;
     base::RunLoop loop;
-    storage()->FindRegistrationForIdOnly(
+    registry()->FindRegistrationForIdOnly(
         registration_id, base::BindOnce(&FindCallback, loop.QuitClosure(),
                                         &result, registration));
     loop.Run();
@@ -604,7 +605,7 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
                                   &found_registration));
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort,
             FindRegistrationForIdOnly(kRegistrationId, &found_registration));
-  EXPECT_FALSE(storage()->GetUninstallingRegistration(kScope.GetOrigin()));
+  EXPECT_FALSE(registry()->GetUninstallingRegistration(kScope.GetOrigin()));
 
   std::vector<scoped_refptr<ServiceWorkerRegistration>> found_registrations;
   EXPECT_EQ(
@@ -911,7 +912,7 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   EXPECT_TRUE(registrations_for_origin.empty());
 
   // Notify storage of it being installed.
-  storage()->NotifyInstallingRegistration(live_registration.get());
+  registry()->NotifyInstallingRegistration(live_registration.get());
 
   // Now should be findable.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
@@ -953,7 +954,7 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   EXPECT_TRUE(registrations_for_origin.empty());
 
   // Notify storage of installation no longer happening.
-  storage()->NotifyDoneInstallingRegistration(
+  registry()->NotifyDoneInstallingRegistration(
       live_registration.get(), nullptr, blink::ServiceWorkerStatusCode::kOk);
 
   // Once again, should not be findable.
@@ -1211,7 +1212,7 @@ TEST_F(ServiceWorkerStorageTest, GetAllRegistrationsInfosFields) {
   registration->EnableNavigationPreload(true);
   registration->SetNavigationPreloadHeader("header");
 
-  storage()->NotifyInstallingRegistration(registration.get());
+  registry()->NotifyInstallingRegistration(registration.get());
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             StoreRegistration(registration, registration->waiting_version()));
   std::vector<ServiceWorkerRegistrationInfo> all_registrations;
@@ -1258,7 +1259,7 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
         ResourceRecord(resource_id1_, script_, resource_id1_size_));
     resources.push_back(
         ResourceRecord(resource_id2_, import_, resource_id2_size_));
-    registration_ = storage()->GetOrCreateRegistration(data, resources);
+    registration_ = registry()->GetOrCreateRegistration(data, resources);
     registration_->waiting_version()->SetStatus(ServiceWorkerVersion::NEW);
 
     // Add the resources ids to the uncommitted list.
@@ -1694,9 +1695,9 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
       CreateServiceWorkerRegistrationAndVersion(context(), kScope3, kScript3);
 
   // Notify storage of them being installed.
-  storage()->NotifyInstallingRegistration(live_registration1.get());
-  storage()->NotifyInstallingRegistration(live_registration2.get());
-  storage()->NotifyInstallingRegistration(live_registration3.get());
+  registry()->NotifyInstallingRegistration(live_registration1.get());
+  registry()->NotifyInstallingRegistration(live_registration2.get());
+  registry()->NotifyInstallingRegistration(live_registration3.get());
 
   // Find a registration among installing ones.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
@@ -1716,11 +1717,11 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
                               live_registration3->waiting_version()));
 
   // Notify storage of installations no longer happening.
-  storage()->NotifyDoneInstallingRegistration(
+  registry()->NotifyDoneInstallingRegistration(
       live_registration1.get(), nullptr, blink::ServiceWorkerStatusCode::kOk);
-  storage()->NotifyDoneInstallingRegistration(
+  registry()->NotifyDoneInstallingRegistration(
       live_registration2.get(), nullptr, blink::ServiceWorkerStatusCode::kOk);
-  storage()->NotifyDoneInstallingRegistration(
+  registry()->NotifyDoneInstallingRegistration(
       live_registration3.get(), nullptr, blink::ServiceWorkerStatusCode::kOk);
 
   // Find a registration among installed ones.

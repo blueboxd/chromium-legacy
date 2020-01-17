@@ -19,7 +19,6 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/keyframe_effect.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/scroll_offset_animations.h"
 #include "cc/animation/scroll_offset_animations_impl.h"
@@ -172,11 +171,10 @@ void AnimationHost::UnregisterElementId(ElementId element_id,
     element_animations->ElementIdUnregistered(element_id, list_type);
 }
 
-void AnimationHost::RegisterKeyframeEffectForElement(
-    ElementId element_id,
-    KeyframeEffect* keyframe_effect) {
+void AnimationHost::RegisterAnimationForElement(ElementId element_id,
+                                                Animation* animation) {
   DCHECK(element_id);
-  DCHECK(keyframe_effect);
+  DCHECK(animation);
 
   scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForElementId(element_id);
@@ -188,14 +186,13 @@ void AnimationHost::RegisterKeyframeEffectForElement(
 
   DCHECK(element_animations->AnimationHostIs(this));
 
-  element_animations->AddKeyframeEffect(keyframe_effect);
+  element_animations->AddKeyframeEffect(animation->keyframe_effect());
 }
 
-void AnimationHost::UnregisterKeyframeEffectForElement(
-    ElementId element_id,
-    KeyframeEffect* keyframe_effect) {
+void AnimationHost::UnregisterAnimationForElement(ElementId element_id,
+                                                  Animation* animation) {
   DCHECK(element_id);
-  DCHECK(keyframe_effect);
+  DCHECK(animation);
 
   scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForElementId(element_id);
@@ -207,13 +204,15 @@ void AnimationHost::UnregisterKeyframeEffectForElement(
   PropertyToElementIdMap element_id_map =
       element_animations->GetPropertyToElementIdMap();
 
-  element_animations->RemoveKeyframeEffect(keyframe_effect);
+  element_animations->RemoveKeyframeEffect(animation->keyframe_effect());
 
   if (element_animations->IsEmpty()) {
     element_animations->ClearAffectedElementTypes(element_id_map);
     element_to_animations_map_.erase(element_animations->element_id());
     element_animations->ClearAnimationHost();
   }
+
+  RemoveFromTicking(animation);
 }
 
 void AnimationHost::SetMutatorHostClient(MutatorHostClient* client) {
@@ -379,7 +378,7 @@ bool AnimationHost::ActivateAnimations(MutatorEvents* mutator_events) {
   TRACE_EVENT0("cc", "AnimationHost::ActivateAnimations");
   AnimationsList ticking_animations_copy = ticking_animations_;
   for (auto& it : ticking_animations_copy) {
-    it->ActivateKeyframeEffects();
+    it->ActivateKeyframeModels();
     // Finish animations which no longer affect active or pending elements.
     it->UpdateState(false, animation_events);
   }
@@ -485,6 +484,7 @@ std::unique_ptr<MutatorEvents> AnimationHost::CreateEvents() {
 
 void AnimationHost::SetAnimationEvents(
     std::unique_ptr<MutatorEvents> mutator_events) {
+  DCHECK_EQ(thread_instance_, ThreadInstance::MAIN);
   auto events =
       base::WrapUnique(static_cast<AnimationEvents*>(mutator_events.release()));
 

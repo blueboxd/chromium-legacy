@@ -130,12 +130,6 @@ class NavigationManagerImpl : public NavigationManager {
   // moved from CRWWebController to NavigationManagerImpl.
   virtual int GetIndexForOffset(int offset) const = 0;
 
-  // Returns the index of the previous item. Only used by SessionStorageBuilder.
-  virtual int GetPreviousItemIndex() const = 0;
-
-  // Sets the index of the previous item. Only used by SessionStorageBuilder.
-  virtual void SetPreviousItemIndex(int previous_item_index) = 0;
-
   // Updates navigation history (if applicable) after pushState.
   // TODO(crbug.com/783382): This is a legacy method to maintain backward
   // compatibility for PageLoad stat. Remove this method once PageLoad no longer

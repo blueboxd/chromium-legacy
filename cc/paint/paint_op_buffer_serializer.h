@@ -28,8 +28,7 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
                           sk_sp<SkColorSpace> color_space,
                           bool can_use_lcd_text,
                           bool context_supports_distance_field_text,
-                          int max_texture_size,
-                          size_t max_texture_bytes);
+                          int max_texture_size);
   virtual ~PaintOpBufferSerializer();
 
   struct Preamble {
@@ -114,7 +113,6 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
   bool can_use_lcd_text_;
   bool context_supports_distance_field_text_;
   int max_texture_size_;
-  size_t max_texture_bytes_;
 
   SkTextBlobCacheDiffCanvas text_blob_canvas_;
   bool valid_ = true;
@@ -132,8 +130,7 @@ class CC_PAINT_EXPORT SimpleBufferSerializer : public PaintOpBufferSerializer {
                          sk_sp<SkColorSpace> color_space,
                          bool can_use_lcd_text,
                          bool context_supports_distance_field_text,
-                         int max_texture_size,
-                         size_t max_texture_bytes);
+                         int max_texture_size);
   ~SimpleBufferSerializer() override;
 
   size_t written() const { return written_; }

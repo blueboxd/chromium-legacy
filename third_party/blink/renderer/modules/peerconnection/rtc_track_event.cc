@@ -4,11 +4,11 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_track_event.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_track_event_init.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_track_event_init.h"
 
 namespace blink {
 

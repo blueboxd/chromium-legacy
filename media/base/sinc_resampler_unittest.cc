@@ -408,4 +408,46 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(96000, 192000, kResamplingRMSError, -73.52),
         std::make_tuple(192000, 192000, kResamplingRMSError, -73.52)));
 
+// Verify the resampler properly reports the max number of input frames it would
+// request.
+TEST(SincResamplerTest, GetMaxInputFramesRequestedTest) {
+  SincResampler resampler(kSampleRateRatio, SincResampler::kDefaultRequestSize,
+                          SincResampler::ReadCB());
+
+  EXPECT_EQ(SincResampler::kDefaultRequestSize,
+            resampler.GetMaxInputFramesRequested(resampler.ChunkSize()));
+
+  // Request sizes smaller than ChunkSize should still trigger 1 read.
+  EXPECT_EQ(SincResampler::kDefaultRequestSize,
+            resampler.GetMaxInputFramesRequested(resampler.ChunkSize() - 10));
+
+  // Request sizes bigger than ChunkSize can trigger multiple reads.
+  EXPECT_EQ(2 * SincResampler::kDefaultRequestSize,
+            resampler.GetMaxInputFramesRequested(resampler.ChunkSize() + 10));
+
+  // The number of input frames requested should grow proportionally to the
+  // output frames requested.
+  EXPECT_EQ(
+      5 * SincResampler::kDefaultRequestSize,
+      resampler.GetMaxInputFramesRequested(4 * resampler.ChunkSize() + 10));
+
+  const int kCustomRequestSize = SincResampler::kDefaultRequestSize + 128;
+  SincResampler custom_size_resampler(kSampleRateRatio, kCustomRequestSize,
+                                      SincResampler::ReadCB());
+
+  // The input frames requested should be a multiple of the request size.
+  EXPECT_EQ(2 * kCustomRequestSize,
+            custom_size_resampler.GetMaxInputFramesRequested(
+                custom_size_resampler.ChunkSize() + 10));
+
+  // Verify we get results with both downsampling and upsampling ratios.
+  SincResampler inverse_ratio_resampler(1.0 / kSampleRateRatio,
+                                        SincResampler::kDefaultRequestSize,
+                                        SincResampler::ReadCB());
+
+  EXPECT_EQ(2 * SincResampler::kDefaultRequestSize,
+            inverse_ratio_resampler.GetMaxInputFramesRequested(
+                inverse_ratio_resampler.ChunkSize() + 10));
+}
+
 }  // namespace media

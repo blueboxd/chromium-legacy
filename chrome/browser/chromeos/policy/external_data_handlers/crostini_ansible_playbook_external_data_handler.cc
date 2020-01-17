@@ -39,6 +39,8 @@ void CrostiniAnsiblePlaybookExternalDataHandler::OnExternalDataCleared(
   }
   profile->GetPrefs()->ClearPref(
       crostini::prefs::kCrostiniAnsiblePlaybookFilePath);
+  profile->GetPrefs()->ClearPref(
+      crostini::prefs::kCrostiniDefaultContainerConfigured);
 }
 
 void CrostiniAnsiblePlaybookExternalDataHandler::OnExternalDataFetched(
@@ -54,6 +56,8 @@ void CrostiniAnsiblePlaybookExternalDataHandler::OnExternalDataFetched(
   }
   profile->GetPrefs()->SetFilePath(
       crostini::prefs::kCrostiniAnsiblePlaybookFilePath, file_path);
+  profile->GetPrefs()->SetBoolean(
+      crostini::prefs::kCrostiniDefaultContainerConfigured, false);
 }
 
 void CrostiniAnsiblePlaybookExternalDataHandler::RemoveForAccountId(
@@ -66,6 +70,8 @@ void CrostiniAnsiblePlaybookExternalDataHandler::RemoveForAccountId(
   }
   profile->GetPrefs()->ClearPref(
       crostini::prefs::kCrostiniAnsiblePlaybookFilePath);
+  profile->GetPrefs()->ClearPref(
+      crostini::prefs::kCrostiniDefaultContainerConfigured);
 }
 
 }  // namespace policy

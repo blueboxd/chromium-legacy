@@ -129,6 +129,7 @@ jumbo_source_set("browser_sources") {
     "cors_exempt_headers.h",
     "cors_origin_pattern_setter.cc",
     "cors_origin_pattern_setter.h",
+    "dedicated_worker_service.h",
     "desktop_capture.cc",
     "desktop_capture.h",
     "desktop_media_id.cc",
@@ -208,6 +209,7 @@ jumbo_source_set("browser_sources") {
     "media_session_service.h",
     "media_stream_request.cc",
     "media_stream_request.h",
+    "message_port.h",
     "message_port_provider.h",
     "mhtml_extra_parts.h",
     "mhtml_generation_result.cc",
@@ -458,6 +460,7 @@ jumbo_source_set("browser_sources") {
     "//services/service_manager/embedder:embedder_result_codes",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/base/clipboard",
     "//ui/events",
     "//ui/gl",
     "//ui/shell_dialogs",
@@ -469,6 +472,10 @@ jumbo_source_set("browser_sources") {
     # include headers from each other.
     "//content/browser",
   ]
+
+  if (is_chromeos || is_android || is_chromecast || is_fuchsia) {
+    defines = [ "ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION" ]
+  }
 
   if (is_posix || is_fuchsia) {
     sources += [ "posix_file_descriptor_info.h" ]

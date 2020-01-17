@@ -7,18 +7,24 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/tab_switching.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/main/scene_controller_guts.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
+#import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 
 @protocol MainControllerGuts;
 
 // The controller object for a scene. Reacts to scene state changes.
-@interface SceneController : NSObject <SceneStateObserver,
+@interface SceneController : NSObject <AppURLLoadingServiceDelegate,
+                                       SceneStateObserver,
                                        ApplicationCommands,
                                        TabSwitcherDelegate,
-                                       TabSwitching>
+                                       TabSwitching,
+                                       SceneControllerGuts,
+                                       TabOpening>
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithSceneState:(SceneState*)sceneState

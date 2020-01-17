@@ -4,8 +4,8 @@
 
 import("//build/config/compiler/compiler.gni")
 import("//build/config/sysroot.gni")
-import("//build/toolchain/gcc_toolchain.gni")
 import("//build/toolchain/cros_toolchain.gni")
+import("//build/toolchain/gcc_toolchain.gni")
 
 # This is the normal toolchain for most targets.
 gcc_toolchain("target") {
@@ -18,7 +18,8 @@ gcc_toolchain("target") {
   if (cc != get_path_info(cc, "file") && string_replace(cc, " ", "") == cc) {
     cc = rebase_path(cc, root_build_dir)
   }
-  if (cxx != get_path_info(cxx, "file") && string_replace(cxx, " ", "") == cxx) {
+  if (cxx != get_path_info(cxx, "file") &&
+      string_replace(cxx, " ", "") == cxx) {
     cxx = rebase_path(cxx, root_build_dir)
   }
 
@@ -63,7 +64,8 @@ gcc_toolchain("nacl_bootstrap") {
   if (cc != get_path_info(cc, "file") && string_replace(cc, " ", "") == cc) {
     cc = rebase_path(cc, root_build_dir)
   }
-  if (cxx != get_path_info(cxx, "file") && string_replace(cxx, " ", "") == cxx) {
+  if (cxx != get_path_info(cxx, "file") &&
+      string_replace(cxx, " ", "") == cxx) {
     cxx = rebase_path(cxx, root_build_dir)
   }
   ld = cxx
@@ -104,7 +106,8 @@ gcc_toolchain("host") {
   if (cc != get_path_info(cc, "file") && string_replace(cc, " ", "") == cc) {
     cc = rebase_path(cc, root_build_dir)
   }
-  if (cxx != get_path_info(cxx, "file") && string_replace(cxx, " ", "") == cxx) {
+  if (cxx != get_path_info(cxx, "file") &&
+      string_replace(cxx, " ", "") == cxx) {
     cxx = rebase_path(cxx, root_build_dir)
   }
   if (ar != get_path_info(ar, "file") && string_replace(ar, " ", "") == ar) {
@@ -146,7 +149,8 @@ gcc_toolchain("v8_snapshot") {
   if (cc != get_path_info(cc, "file") && string_replace(cc, " ", "") == cc) {
     cc = rebase_path(cc, root_build_dir)
   }
-  if (cxx != get_path_info(cxx, "file") && string_replace(cxx, " ", "") == cxx) {
+  if (cxx != get_path_info(cxx, "file") &&
+      string_replace(cxx, " ", "") == cxx) {
     cxx = rebase_path(cxx, root_build_dir)
   }
   if (ar != get_path_info(ar, "file") && string_replace(ar, " ", "") == ar) {

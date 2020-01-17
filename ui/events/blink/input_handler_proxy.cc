@@ -338,7 +338,8 @@ void InputHandlerProxy::DispatchSingleInputEvent(
   current_overscroll_params_.reset();
 
   InputHandlerProxy::EventDisposition disposition = RouteToTypeSpecificHandler(
-      event_with_callback->event(), original_latency_info);
+      event_with_callback->event(), event_with_callback.get(),
+      original_latency_info);
 
   blink::WebGestureEvent::Type type = event_with_callback->event().GetType();
   switch (type) {
@@ -472,7 +473,8 @@ bool HasModifier(const WebInputEvent& event) {
 
 InputHandlerProxy::EventDisposition
 InputHandlerProxy::RouteToTypeSpecificHandler(
-    const WebInputEvent& event,
+    const blink::WebInputEvent& event,
+    EventWithCallback* event_with_callback,
     const LatencyInfo& original_latency_info) {
   DCHECK(input_handler_);
 
@@ -574,10 +576,11 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
                 original_latency_info, mouse_event.TimeStamp());
           }
 
-          // Drop the mousedown for now as the gesture event equivalent for this
-          // has already been added to the CompositorThreadEventQueue and will
-          // be dispatched at the vsync boundary.
-          return DROP_EVENT;
+          // Mark this event as being handled on the compositor thread.
+          if (event_with_callback) {
+            event_with_callback
+                ->SetScrollbarManipulationHandledOnCompositorThread();
+          }
         }
       }
 
@@ -599,10 +602,11 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
                                        pointer_result, original_latency_info,
                                        mouse_event.TimeStamp());
 
-          // Drop the mouseup for now as the gesture event equivalent for this
-          // has already been added to the CompositorThreadEventQueue and will
-          // be dispatched at the vsync boundary.
-          return DROP_EVENT;
+          // Mark this event as being handled on the compositor thread.
+          if (event_with_callback) {
+            event_with_callback
+                ->SetScrollbarManipulationHandledOnCompositorThread();
+          }
         }
       }
       return DID_NOT_HANDLE;
@@ -624,10 +628,11 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
                                      pointer_result, original_latency_info,
                                      mouse_event.TimeStamp());
 
-        // Drop the mousemove for now as the gesture event equivalent for this
-        // has already been added to the CompositorThreadEventQueue and will
-        // be dispatched at the vsync boundary.
-        return DROP_EVENT;
+        // Mark this event as being handled on the compositor thread.
+        if (event_with_callback) {
+          event_with_callback
+              ->SetScrollbarManipulationHandledOnCompositorThread();
+        }
       }
       return DID_NOT_HANDLE;
     }

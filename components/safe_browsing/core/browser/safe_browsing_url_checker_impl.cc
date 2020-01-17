@@ -12,13 +12,12 @@
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
+#include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/load_flags.h"
@@ -116,7 +115,7 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       cache_manager_on_ui_(cache_manager_on_ui) {}
 
 SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
 
   if (state_ == STATE_CHECKING_URL) {
     database_manager_->CancelCheck(this);
@@ -207,7 +206,7 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
       base::BindRepeating(&SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete,
                           weak_factory_.GetWeakPtr());
   resource.callback_thread =
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
+      base::CreateSingleThreadTaskRunner(CreateTaskTraits(ThreadID::IO));
   resource.web_contents_getter = web_contents_getter_;
   resource.threat_source = database_manager_->GetThreatSource();
 
@@ -232,7 +231,7 @@ void SafeBrowsingUrlCheckerImpl::OnTimeout() {
 void SafeBrowsingUrlCheckerImpl::CheckUrlImpl(const GURL& url,
                                               const std::string& method,
                                               Notifier notifier) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
 
   DVLOG(1) << "SafeBrowsingUrlCheckerImpl checks URL: " << url;
   urls_.emplace_back(url, method, std::move(notifier));
@@ -241,7 +240,7 @@ void SafeBrowsingUrlCheckerImpl::CheckUrlImpl(const GURL& url,
 }
 
 void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   DCHECK_NE(STATE_BLOCKED, state_);
 
   if (state_ == STATE_CHECKING_URL ||
@@ -286,7 +285,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
                                url.spec());
 
       base::PostTask(
-          FROM_HERE, {content::BrowserThread::IO},
+          FROM_HERE, CreateTaskTraits(ThreadID::IO),
           base::BindOnce(&SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult,
                          weak_factory_.GetWeakPtr(), url, threat_type,
                          ThreatMetadata()));
@@ -319,7 +318,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
           // |OnCheckUrlForHighConfidenceAllowlist| to trigger the hash-based
           // checking.
           base::PostTask(
-              FROM_HERE, {content::BrowserThread::IO},
+              FROM_HERE, CreateTaskTraits(ThreadID::IO),
               base::BindOnce(&SafeBrowsingUrlCheckerImpl::
                                  OnCheckUrlForHighConfidenceAllowlist,
                              weak_factory_.GetWeakPtr(),
@@ -330,7 +329,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
           // |OnCheckUrlForHighConfidenceAllowlist| to perform the full URL
           // lookup.
           base::PostTask(
-              FROM_HERE, {content::BrowserThread::IO},
+              FROM_HERE, CreateTaskTraits(ThreadID::IO),
               base::BindOnce(&SafeBrowsingUrlCheckerImpl::
                                  OnCheckUrlForHighConfidenceAllowlist,
                              weak_factory_.GetWeakPtr(),
@@ -433,7 +432,7 @@ bool SafeBrowsingUrlCheckerImpl::RunNextCallback(bool proceed,
 
 void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
     bool did_match_allowlist) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   DCHECK_EQ(content::ResourceType::kMainFrame, resource_type_);
 
   const GURL& url = urls_[next_index_].url;
@@ -450,7 +449,7 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
   }
 
   base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+      FROM_HERE, CreateTaskTraits(ThreadID::UI),
       base::BindOnce(
           &SafeBrowsingUrlCheckerImpl::StartGetCachedRealTimeUrlVerdictOnUI,
           weak_factory_.GetWeakPtr(), cache_manager_on_ui_, url,
@@ -463,7 +462,7 @@ void SafeBrowsingUrlCheckerImpl::StartGetCachedRealTimeUrlVerdictOnUI(
     base::WeakPtr<VerdictCacheManager> cache_manager_on_ui,
     const GURL& url,
     base::TimeTicks get_cache_start_time) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
 
   std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info =
       std::make_unique<RTLookupResponse::ThreatInfo>();
@@ -477,7 +476,7 @@ void SafeBrowsingUrlCheckerImpl::StartGetCachedRealTimeUrlVerdictOnUI(
                 url, cached_threat_info.get())
           : RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED;
   base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+      FROM_HERE, CreateTaskTraits(ThreadID::IO),
       base::BindOnce(
           &SafeBrowsingUrlCheckerImpl::OnGetCachedRealTimeUrlVerdictDoneOnIO,
           weak_checker_on_io, verdict_type, std::move(cached_threat_info), url,
@@ -489,7 +488,7 @@ void SafeBrowsingUrlCheckerImpl::OnGetCachedRealTimeUrlVerdictDoneOnIO(
     std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info,
     const GURL& url,
     base::TimeTicks get_cache_start_time) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
 
   base::UmaHistogramSparse("SafeBrowsing.RT.GetCacheResult", verdict_type);
   UMA_HISTOGRAM_TIMES("SafeBrowsing.RT.GetCache.Time",
@@ -521,12 +520,12 @@ void SafeBrowsingUrlCheckerImpl::OnGetCachedRealTimeUrlVerdictDoneOnIO(
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
     std::unique_ptr<RTLookupRequest> request) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
 
   // The following is to log this RTLookupRequest on any open
   // chrome://safe-browsing pages.
   base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::UI},
+      FROM_HERE, CreateTaskTraits(ThreadID::UI),
       base::BindOnce(&WebUIInfoSingleton::AddToRTLookupPings,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),
                      *request),
@@ -536,14 +535,14 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
     std::unique_ptr<RTLookupResponse> response) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   DCHECK_EQ(content::ResourceType::kMainFrame, resource_type_);
 
   if (url_web_ui_token_ != -1) {
     // The following is to log this RTLookupResponse on any open
     // chrome://safe-browsing pages.
     base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+        FROM_HERE, CreateTaskTraits(ThreadID::UI),
         base::BindOnce(&WebUIInfoSingleton::AddToRTLookupResponses,
                        base::Unretained(WebUIInfoSingleton::GetInstance()),
                        url_web_ui_token_, *response));
@@ -553,7 +552,7 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
 
   SBThreatType sb_threat_type = SB_THREAT_TYPE_SAFE;
   if (response && (response->threat_info_size() > 0)) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::UI),
                    base::BindOnce(&VerdictCacheManager::CacheRealTimeUrlVerdict,
                                   cache_manager_on_ui_, url, *response,
                                   base::Time::Now()));

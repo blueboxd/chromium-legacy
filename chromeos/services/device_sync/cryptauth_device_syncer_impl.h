@@ -51,7 +51,9 @@ class CryptAuthKeyRegistry;
 // devices that have a valid device ID, device name, device public key, and
 // feature states. If device metadata cannot be decrypted due to an error or
 // because the group private key was not returned by CryptAuth, the device is
-// still added to the registry without the decrypted metadata.
+// still added to the registry without the new decrypted metadata. Any existing
+// decrypted metadata from the device registry will remain there until the new
+// metadata can be decrypted.
 class CryptAuthDeviceSyncerImpl : public CryptAuthDeviceSyncer {
  public:
   class Factory {

@@ -6,5 +6,6 @@
 // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md
 dictionary XRWorldTrackingStateInit {
    XRPlaneDetectionStateInit planeDetectionState;
+   XRLightEstimationStateInit lightEstimationState;
 };
 

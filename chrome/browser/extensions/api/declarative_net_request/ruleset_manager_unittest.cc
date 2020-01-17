@@ -73,7 +73,8 @@ class RulesetManagerTest : public DNRTestBase {
     WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
                             kJSONRulesFilename, rules, host_permissions,
                             has_background_script,
-                            false /* has_feedback_permission */);
+                            false /* has_feedback_permission */,
+                            false /* has_active_tab_permission */);
 
     last_loaded_extension_ =
         CreateExtensionLoader()->LoadExtension(extension_dir);

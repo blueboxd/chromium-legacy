@@ -511,7 +511,7 @@ external/wpt/web-animations/interfaces/KeyframeEffect/setKeyframes.html [ Failur
 external/wpt/web-animations/interfaces/KeyframeEffect/style-change-events.html [ Failure ]
 external/wpt/web-locks/clientids.tentative.https.html [ Failure ]
 external/wpt/web-locks/query-ordering.tentative.https.html [ Pass Failure ]
-external/wpt/web-nfc/NDEFWriter_push.https.html [ Failure Timeout ]
+external/wpt/web-nfc/NDEFWriter_write.https.html [ Failure Timeout ]
 external/wpt/webaudio/the-audio-api/the-audioworklet-interface/audioworkletnode-output-channel-count.https.html [ Pass Failure ]
 external/wpt/webauthn/createcredential-extensions.https.html [ Timeout ]
 external/wpt/webauthn/createcredential-timeout.https.html [ Failure ]

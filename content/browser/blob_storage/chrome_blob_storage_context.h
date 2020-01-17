@@ -57,7 +57,8 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   static mojo::PendingRemote<storage::mojom::BlobStorageContext> GetRemoteFor(
       BrowserContext* browser_context);
 
-  void InitializeOnIOThread(base::FilePath blob_storage_dir,
+  void InitializeOnIOThread(const base::FilePath& profile_dir,
+                            const base::FilePath& blob_storage_dir,
                             scoped_refptr<base::TaskRunner> file_task_runner);
 
   storage::BlobStorageContext* context() const;

@@ -11,7 +11,7 @@ import android.util.AttributeSet;
 import android.widget.RadioGroup;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription;
+import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 
 /**
  * A 3-state Allowed/Ask/Blocked radio group Preference used for SiteSettings.

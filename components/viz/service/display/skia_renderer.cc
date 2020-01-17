@@ -672,9 +672,13 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
 SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
                            OutputSurface* output_surface,
                            DisplayResourceProvider* resource_provider,
+                           OverlayProcessorInterface* overlay_processor,
                            SkiaOutputSurface* skia_output_surface,
                            DrawMode mode)
-    : DirectRenderer(settings, output_surface, resource_provider),
+    : DirectRenderer(settings,
+                     output_surface,
+                     resource_provider,
+                     overlay_processor),
       draw_mode_(mode),
       skia_output_surface_(skia_output_surface) {
   switch (draw_mode_) {
@@ -2044,15 +2048,39 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   // Invalid or unspecified color spaces should be treated as REC709.
   if (!src_color_space.IsValid())
     src_color_space = gfx::ColorSpace::CreateREC709();
-  gfx::ColorSpace dst_color_space =
+
+  // We might modify |dst_color_space| to be something other than the
+  // destination color space for the frame. The generated SkColorFilter does the
+  // real color space adjustment. To avoid having skia also try to adjust the
+  // color space we lie and say the SkImage destination color space is always
+  // the same as the rest of the frame. Otherwise the two color space
+  // adjustments combined will produce the wrong result.
+  const gfx::ColorSpace& frame_color_space =
       current_frame()->current_render_pass->color_space;
+  gfx::ColorSpace dst_color_space = frame_color_space;
+
+#if defined(OS_WIN)
+  // Force sRGB output on Windows for overlay candidate video quads to match
+  // DirectComposition behavior in case these switch between overlays and
+  // compositing. See https://crbug.com/811118 for details.
+  // Currently if HDR is supported, OverlayProcessor doesn't promote HDR video
+  // frame as overlay candidate. So it's unnecessary to worry about the
+  // compositing-overlay switch here. In addition drawing a HDR video using sRGB
+  // can cancel the advantages of HDR.
+  if (supports_dc_layers_ && !src_color_space.IsHDR() &&
+      resource_provider_->IsOverlayCandidate(quad->y_plane_resource_id())) {
+    DCHECK(resource_provider_->IsOverlayCandidate(quad->u_plane_resource_id()));
+    dst_color_space = gfx::ColorSpace::CreateSRGB();
+  }
+#endif
+
   sk_sp<SkColorFilter> color_filter =
       GetColorFilter(src_color_space, dst_color_space, quad->resource_offset,
                      quad->resource_multiplier);
 
   DCHECK(resource_provider_);
-  ScopedYUVSkImageBuilder builder(this, quad, dst_color_space.ToSkColorSpace(),
-                                  !!color_filter);
+  ScopedYUVSkImageBuilder builder(
+      this, quad, frame_color_space.ToSkColorSpace(), !!color_filter);
   const SkImage* image = builder.sk_image();
   if (!image)
     return;

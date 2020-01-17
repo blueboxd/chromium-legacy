@@ -318,7 +318,7 @@
             {
               "cipd_package": "chromium/chrome/test/chromedriver/cipd",
               "location": "chrome/test/chromedriver/cipd",
-              "revision": "tLMjWvOcbQX4nMo5WnMsKWn0aaVludzuSX9yiVFUCoUC"
+              "revision": "JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C"
             }
           ],
           "dimension_sets": [
@@ -352,7 +352,7 @@
             {
               "cipd_package": "chromium/chrome/test/chromedriver/cipd",
               "location": "chrome/test/chromedriver/cipd",
-              "revision": "tLMjWvOcbQX4nMo5WnMsKWn0aaVludzuSX9yiVFUCoUC"
+              "revision": "JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C"
             }
           ],
           "dimension_sets": [
@@ -386,7 +386,7 @@
             {
               "cipd_package": "chromium/chrome/test/chromedriver/cipd",
               "location": "chrome/test/chromedriver/cipd",
-              "revision": "tLMjWvOcbQX4nMo5WnMsKWn0aaVludzuSX9yiVFUCoUC"
+              "revision": "JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C"
             }
           ],
           "dimension_sets": [
@@ -472,7 +472,7 @@
             {
               "cipd_package": "chromium/chrome/test/chromedriver/cipd",
               "location": "chrome/test/chromedriver/cipd",
-              "revision": "tLMjWvOcbQX4nMo5WnMsKWn0aaVludzuSX9yiVFUCoUC"
+              "revision": "JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C"
             }
           ],
           "dimension_sets": [
@@ -503,7 +503,7 @@
             {
               "cipd_package": "chromium/chrome/test/chromedriver/cipd",
               "location": "chrome/test/chromedriver/cipd",
-              "revision": "tLMjWvOcbQX4nMo5WnMsKWn0aaVludzuSX9yiVFUCoUC"
+              "revision": "JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C"
             }
           ],
           "dimension_sets": [
@@ -534,7 +534,7 @@
             {
               "cipd_package": "chromium/chrome/test/chromedriver/cipd",
               "location": "chrome/test/chromedriver/cipd",
-              "revision": "tLMjWvOcbQX4nMo5WnMsKWn0aaVludzuSX9yiVFUCoUC"
+              "revision": "JvTGvPUc-qPtmBqyJhvc-1i28yILiGeTjqGi-BvjiN4C"
             }
           ],
           "dimension_sets": [
@@ -1730,7 +1730,8 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.cc_unittests.filter"
         ],
         "merge": {
           "args": [
@@ -4592,9 +4593,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
-        ],
-        "flags": [
+          "--avd-config=../../tools/android/avd/proto/generic_android23.textpb",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter"
         ],
         "merge": {
@@ -6031,7 +6030,8 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.cc_unittests.filter"
         ],
         "merge": {
           "args": [
@@ -9009,9 +9009,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
-        ],
-        "flags": [
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter"
         ],
         "merge": {

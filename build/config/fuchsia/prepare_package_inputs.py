@@ -85,7 +85,7 @@ def _WriteBuildIdsTxt(binary_paths, ids_txt_path):
 
 def BuildManifest(args):
   binaries = []
-  with open(args.package_manifest_path, 'w') as manifest, \
+  with open(args.package_manifest_path, 'w') as package_manifest, \
        open(args.depfile_path, 'w') as depfile:
     # Process the runtime deps file for file paths, recursively walking
     # directories as needed.
@@ -124,7 +124,7 @@ def BuildManifest(args):
         excluded_files_set.remove(in_package_path)
         continue
 
-      manifest.write('%s=%s\n' % (in_package_path, current_file))
+      package_manifest.write('%s=%s\n' % (in_package_path, current_file))
 
     if len(excluded_files_set) > 0:
       raise Exception('Some files were excluded with --exclude-file, but '
@@ -138,8 +138,8 @@ def BuildManifest(args):
     with open(os.path.join(os.path.dirname(args.package_manifest_path),
                            'package'), 'w') as package_json:
       json.dump({'version': '0', 'name': args.app_name}, package_json)
-      manifest.write('meta/package=%s\n' %
-                   os.path.relpath(package_json.name, args.out_dir))
+      package_manifest.write('meta/package=%s\n' % os.path.relpath(
+          package_json.name, args.out_dir))
 
     # Write component manifest file.
     with open(args.component_manifest_path, 'w') as component_manifest_file:
@@ -149,15 +149,15 @@ def BuildManifest(args):
       })
       json.dump(component_manifest, component_manifest_file)
 
-      manifest.write('meta/%s=%s\n' %
-                     (os.path.basename(component_manifest_file.name),
-                      os.path.relpath(args.component_manifest_path,
-                                      args.out_dir)))
+      package_manifest.write(
+          'meta/%s=%s\n' % (os.path.basename(component_manifest_file.name),
+                            os.path.relpath(args.component_manifest_path,
+                                            args.out_dir)))
 
-    for manifest in args.additional_manifest:
-      manifest.write('meta/%s=%s\n' %
-                     (os.path.basename(manifest),
-                      os.path.relpath(manifest, args.out_dir)))
+    for component_manifest in args.additional_manifest:
+      package_manifest.write(
+          'meta/%s=%s\n' % (os.path.basename(component_manifest),
+                            os.path.relpath(component_manifest, args.out_dir)))
 
     depfile.write(
         "%s: %s" % (os.path.relpath(args.package_manifest_path, args.out_dir),

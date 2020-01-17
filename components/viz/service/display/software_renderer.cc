@@ -72,8 +72,12 @@ class AnimatedImagesProvider : public cc::ImageProvider {
 
 SoftwareRenderer::SoftwareRenderer(const RendererSettings* settings,
                                    OutputSurface* output_surface,
-                                   DisplayResourceProvider* resource_provider)
-    : DirectRenderer(settings, output_surface, resource_provider),
+                                   DisplayResourceProvider* resource_provider,
+                                   OverlayProcessorInterface* overlay_processor)
+    : DirectRenderer(settings,
+                     output_surface,
+                     resource_provider,
+                     overlay_processor),
       output_device_(output_surface->software_device()) {}
 
 SoftwareRenderer::~SoftwareRenderer() {}

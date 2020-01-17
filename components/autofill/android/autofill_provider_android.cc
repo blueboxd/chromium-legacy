@@ -34,10 +34,27 @@ AutofillProviderAndroid::AutofillProviderAndroid(
     const JavaRef<jobject>& jcaller,
     content::WebContents* web_contents)
     : id_(kNoQueryId), web_contents_(web_contents), check_submission_(false) {
-  JNIEnv* env = AttachCurrentThread();
+  OnJavaAutofillProviderChanged(AttachCurrentThread(), jcaller);
+}
+
+void AutofillProviderAndroid::OnJavaAutofillProviderChanged(
+    JNIEnv* env,
+    const JavaRef<jobject>& jcaller) {
+  // If the current Java object isn't null (e.g., because it hasn't been
+  // garbage-collected yet), clear its reference to this object.
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (!obj.is_null()) {
+    Java_AutofillProvider_setNativeAutofillProvider(env, obj, 0);
+  }
+
   java_ref_ = JavaObjectWeakGlobalRef(env, jcaller);
-  Java_AutofillProvider_setNativeAutofillProvider(
-      env, jcaller, reinterpret_cast<jlong>(this));
+
+  // If the new Java object isn't null, set its native object to |this|.
+  obj = java_ref_.get(env);
+  if (!obj.is_null()) {
+    Java_AutofillProvider_setNativeAutofillProvider(
+        env, obj, reinterpret_cast<jlong>(this));
+  }
 }
 
 AutofillProviderAndroid::~AutofillProviderAndroid() {

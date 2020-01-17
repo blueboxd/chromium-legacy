@@ -13,16 +13,18 @@ namespace content {
 
 gfx::NativeCursor WebCursor::GetNativeCursor() {
   if (info_.type == ui::CursorType::kCustom) {
-    ui::Cursor cursor(ui::CursorType::kCustom);
-    SkBitmap bitmap;
-    gfx::Point hotspot;
-    float scale;
-    CreateScaledBitmapAndHotspotFromCustomData(&bitmap, &hotspot, &scale);
-    cursor.set_custom_bitmap(bitmap);
-    cursor.set_custom_hotspot(hotspot);
-    cursor.set_device_scale_factor(scale);
-    cursor.SetPlatformCursor(GetPlatformCursor(cursor));
-    return cursor;
+    if (!custom_cursor_) {
+      custom_cursor_.emplace(ui::CursorType::kCustom);
+      SkBitmap bitmap;
+      gfx::Point hotspot;
+      float scale;
+      CreateScaledBitmapAndHotspotFromCustomData(&bitmap, &hotspot, &scale);
+      custom_cursor_->set_custom_bitmap(bitmap);
+      custom_cursor_->set_custom_hotspot(hotspot);
+      custom_cursor_->set_device_scale_factor(scale);
+      custom_cursor_->SetPlatformCursor(GetPlatformCursor(*custom_cursor_));
+    }
+    return *custom_cursor_;
   }
   return info_.type;
 }

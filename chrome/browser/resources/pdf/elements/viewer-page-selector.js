@@ -35,7 +35,7 @@ Polymer({
     return /** @type {!CrInputElement} */ (this.$.pageselector);
   },
 
-  pageNoCommitted: function() {
+  pageNoCommitted() {
     const page = parseInt(this.pageSelector.value, 10);
 
     if (!isNaN(page) && page <= this.docLength && page > 0) {
@@ -47,19 +47,19 @@ Polymer({
   },
 
   /** @private */
-  docLengthChanged_: function() {
+  docLengthChanged_() {
     const numDigits = this.docLength.toString().length;
     this.style.setProperty('--page-length-digits', `${numDigits}`);
   },
 
-  select: function() {
+  select() {
     this.pageSelector.select();
   },
 
   /**
    * @return {boolean} True if the selector input field is currently focused.
    */
-  isActive: function() {
+  isActive() {
     return this.shadowRoot.activeElement == this.pageSelector;
   },
 
@@ -67,7 +67,7 @@ Polymer({
    * Immediately remove any non-digit characters.
    * @private
    */
-  onInputValueChange_: function() {
+  onInputValueChange_() {
     this.pageSelector.value = this.pageSelector.value.replace(/[^\d]/, '');
   },
 });

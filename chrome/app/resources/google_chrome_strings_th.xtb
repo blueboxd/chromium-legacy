@@ -20,7 +20,6 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> เป็นอันตราย Chromium จึงบล็อกไว้</translation>
 <translation id="1619887657840448962">เพื่อให้ Chrome ปลอดภัยขึ้น เราได้ปิดส่วนขยายต่อไปนี้ซึ่งไม่ได้แสดงอยู่ใน <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> และอาจมีการเพิ่มเข้ามาโดยที่คุณไม่รู้ตัว</translation>
 <translation id="1628000112320670027">รับความช่วยเหลือเกี่ยวกับ Chrome</translation>
-<translation id="1635734105302489219">คุณจะล้างคุ้กกี้เมื่อปิด Chrome หากต้องการซิงค์ต่อไป ให้เปลี่ยน<ph name="COOKIE_SETTINGS_LINK" />นี้</translation>
 <translation id="1662639173275167396">Chrome OS เกิดขึ้นได้ด้วยการสนับสนุนจาก<ph name="BEGIN_LINK_CROS_OSS" />ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_CROS_OSS" />เพิ่มเติม เช่นเดียวกับ <ph name="BEGIN_LINK_LINUX_OSS" />Linux (เบต้า)<ph name="END_LINK_LINUX_OSS" /></translation>
 <translation id="1666409074978194368">ใกล้จะอัปเดตเสร็จแล้ว เปิด Google Chrome อีกครั้งเพื่อให้การอัปเดตเสร็จสมบูรณ์ หน้าต่างที่ไม่ระบุตัวตนจะไม่เปิดให้อีก</translation>
 <translation id="1674870198290878346">เปิดลิงก์ในหน้าต่างที่ไม่ระบุตัวตนของ Chrome</translation>
@@ -72,7 +71,6 @@
 <translation id="3089968997497233615">Google Chrome มีรุ่นใหม่ที่ปลอดภัยกว่าให้ใช้งานแล้ว</translation>
 <translation id="3149510190863420837">แอป Chrome</translation>
 <translation id="3282568296779691940">ลงชื่อเข้าใช้ Chrome</translation>
-<translation id="3340978935015468852">การตั้งค่า</translation>
 <translation id="3360895254066713204">ตัวช่วยเหลือของ Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome จะเปิดขึ้นมาใหม่ตอนนี้}=1{Chrome จะเปิดขึ้นมาใหม่ใน 1 วินาที}other{Chrome จะเปิดขึ้นมาใหม่ใน # วินาที}}</translation>
 <translation id="3395323229510056640">รับความช่วยเหลือเกี่ยวกับ Chrome OS</translation>

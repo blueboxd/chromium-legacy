@@ -53,7 +53,7 @@ Polymer({
    * @param {boolean} isFolder
    * @param {string} parentId
    */
-  showAddDialog: function(isFolder, parentId) {
+  showAddDialog(isFolder, parentId) {
     this.reset_();
     this.isEdit_ = false;
     this.isFolder_ = isFolder;
@@ -66,7 +66,7 @@ Polymer({
    * Show the edit dialog for |editItem|.
    * @param {BookmarkNode} editItem
    */
-  showEditDialog: function(editItem) {
+  showEditDialog(editItem) {
     this.reset_();
     this.isEdit_ = true;
     this.isFolder_ = !editItem.url;
@@ -84,7 +84,7 @@ Polymer({
    * Clear out existing values from the dialog, allowing it to be reused.
    * @private
    */
-  reset_: function() {
+  reset_() {
     this.editItem_ = null;
     this.parentId_ = null;
     this.$.url.invalid = false;
@@ -98,7 +98,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getDialogTitle_: function(isFolder, isEdit) {
+  getDialogTitle_(isFolder, isEdit) {
     let title;
     if (isEdit) {
       title = isFolder ? 'renameFolderTitle' : 'editBookmarkTitle';
@@ -115,7 +115,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  validateUrl_: function() {
+  validateUrl_() {
     const urlInput = /** @type {CrInputElement} */ (this.$.url);
     const originalValue = this.urlValue_;
 
@@ -134,7 +134,7 @@ Polymer({
   },
 
   /** @private */
-  onSaveButtonTap_: function() {
+  onSaveButtonTap_() {
     const edit = {'title': this.titleValue_};
     if (!this.isFolder_) {
       if (!this.validateUrl_()) {
@@ -155,7 +155,7 @@ Polymer({
   },
 
   /** @private */
-  onCancelButtonTap_: function() {
+  onCancelButtonTap_() {
     this.$.dialog.cancel();
   },
 });

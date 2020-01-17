@@ -11,7 +11,7 @@ login.createScreen('TPMErrorMessageScreen', 'tpm-error-message', function() {
     EXTERNAL_API: ['show'],
 
     /** @override */
-    decorate: function() {
+    decorate() {
       $('tpm-restart-button').addEventListener('click', function(e) {
         chrome.send('rebootSystem');
       });
@@ -20,7 +20,7 @@ login.createScreen('TPMErrorMessageScreen', 'tpm-error-message', function() {
     /**
      * Show TPM screen.
      */
-    show: function() {
+    show() {
       Oobe.showScreen({id: SCREEN_TPM_ERROR});
     }
   };

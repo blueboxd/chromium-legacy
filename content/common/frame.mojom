@@ -358,12 +358,14 @@ interface FrameHost {
   // Sent by the renderer process to request the creation of a new portal.
   // |portal| is the pipe to be used for the Portal object, |client| is the pipe
   // used to communicate back with the caller. Returns |proxy_routing_id|, which
-  // is the routing id of the RenderFrameProxy and |portal_token|, which is the
-  // unique identifier for the portal.
+  // is the routing id of the RenderFrameProxy, |initial_replicated_state|, the
+  // replicated state associated with that RenderFrameProxy, and |portal_token|,
+  // which is the unique identifier for the portal.
   [Sync] CreatePortal(
       pending_associated_receiver<blink.mojom.Portal> portal,
       pending_associated_remote<blink.mojom.PortalClient> client)
       => (int32 proxy_routing_id,
+          FrameReplicationState initial_replicated_state,
           mojo_base.mojom.UnguessableToken portal_token,
           mojo_base.mojom.UnguessableToken devtools_frame_token);
 

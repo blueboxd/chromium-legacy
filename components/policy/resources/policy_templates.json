@@ -643,6 +643,7 @@
         'CursorHighlightEnabled',
         'CaretHighlightEnabled',
         'MonoAudioEnabled',
+        'AccessibilityShortcutsEnabled',
         'AutoclickEnabled',
         'DeviceLoginScreenDefaultLargeCursorEnabled',
         'DeviceLoginScreenDefaultSpokenFeedbackEnabled',
@@ -663,6 +664,7 @@
         'DeviceLoginScreenKeyboardFocusHighlightEnabled',
         'DeviceLoginScreenScreenMagnifierType',
         'DeviceLoginScreenShowOptionsInSystemTrayMenu',
+        'DeviceLoginScreenAccessibilityShortcutsEnabled',
       ],
     },
     {
@@ -759,7 +761,7 @@
       'caption': '''Chrome Reporting Extension''',
       'desc': '''Configure Chrome Reporting Extension related policies.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.''',
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.''',
       'policies': [
         'ReportVersionData',
         'ReportPolicyData',
@@ -846,6 +848,7 @@
         'ReportDeviceNetworkInterfaces',
         'ReportDeviceHardwareStatus',
         'ReportDeviceSessionStatus',
+        'ReportDeviceGraphicsStatus',
         'ReportDeviceOsUpdateStatus',
         'ReportDeviceBoardStatus',
         'ReportDeviceCpuInfo',
@@ -7657,6 +7660,29 @@
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
+      'name': 'ReportDeviceGraphicsStatus',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:81-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': False,
+      'id': 660,
+      'caption': '''Report display and graphics statuses''',
+      'tags': ['admin-sharing'],
+      'desc': '''Report information related to display, such as refresh rate, and
+      information related to graphics, such as driver version.
+
+      If the policy is set to false or left unset, the display and graphics
+      statuses will not be reported. If set to true, display and graphics
+      statuses will be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
       'name': 'ReportDeviceOsUpdateStatus',
       'owners': ['anqing@chromium.org'],
       'type': 'main',
@@ -10300,6 +10326,56 @@
           If you set this policy, users cannot change or override it.
 
           If this policy is left unset, high contrast mode is disabled initially but can be enabled by the user anytime.'''
+    },
+    {
+      'name': 'DeviceLoginScreenAccessibilityShortcutsEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:81-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 661,
+      'caption': '''Enable accessibility features shortcuts on the login screen''',
+      'tags': [],
+      'desc': '''Enable accessibility features shortcuts on the login screen.
+
+          If this policy is set to true, accessibility features shortcuts will always be enabled on the login screen.
+
+          If this policy is set to false, accessibility features shortcuts will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, accessibility features shortcuts will be enabled by default on the login screen.'''
+    },
+    {
+      'name': 'AccessibilityShortcutsEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:81-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 659,
+      'caption': '''Enable accessibility features shortcuts''',
+      'tags': [],
+      'desc': '''Enable accessibility features shortcuts.
+
+          If this policy is set to true, accessibility features shortcuts will always be enabled.
+
+          If this policy is set to false, accessibility features shortcuts will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, accessibility features shortcuts will be enabled by default.'''
     },
     {
       'name': 'VirtualKeyboardEnabled',
@@ -15326,7 +15402,7 @@
       'owners': ['zmin@chromium.org', 'pastarmovj@chromium.org', 'rogerta@chromium.org'],
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:66-'],
+      'supported_on': ['chrome.*:66-80'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -16374,7 +16450,7 @@
       When this policy is left unset or set to True, version information is gathered.
       When this policy is set to False, version information is not gathered.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.'''
     },
     {
       'id': 471,
@@ -16396,7 +16472,7 @@
       When this policy is left unset or set to True, policy data and time of policy fetch are gathered.
       When this policy is set to False, policy data and time of policy fetch are not gathered.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.'''
     },
     {
       'id': 472,
@@ -16418,7 +16494,7 @@
       When this policy is left unset or set to True, information that can be used to identify machines is gathered.
       When this policy is set to False, information that can be used to identify machines is not gathered.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.'''
     },
     {
       'id': 473,
@@ -16440,7 +16516,7 @@
       When this policy is left unset or set to True, information that can be used to identify users is gathered.
       When this policy is set to False, information that can be used to identify users is not gathered.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.'''
     },
     {
       'id': 499,
@@ -16462,7 +16538,7 @@
       When this policy is left unset or set to True, extension and plugins data are gathered.
       When this policy is set to False, extensions and plugins data are not gathered.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.'''
     },
     {
       'id': 500,
@@ -16484,7 +16560,7 @@
       When this policy is left unset or set to True, Safe Browsing data are gathered.
       When this policy is set to False, Safe Browsing data are not gathered.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
+      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.'''
     },
     {
       'id': 608,
@@ -18665,7 +18741,7 @@
         'per_profile': False,
       },
       'id': 600,
-      'supported_on': ['chrome.*:78-'],
+      'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
       'future': True,
       'caption': '''URL patterns to check uploaded content for malware''',
       'tags': [],
@@ -19416,6 +19492,22 @@
         Add an application with its |app_id| and |app_type| to |app_list| to whitelist the application.
        '''
     },
+    {
+      'name': 'LocalDiscoveryEnabled',
+      'owners': ['file://cloud_print/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:81-', 'chrome_os:81-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 662,
+      'caption': '''Enable <ph name="CHROME_DEVICES_LINK">chrome://devices</ph>''',
+      'tags': [],
+      'desc': '''This policy controls access to controllable features in the local discovery UI (<ph name="CHROME_DEVICES_LINK">chrome://devices</ph>) which shows discoverable devices near the user as well as cloud devices registered to them. On all operating systems except for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, the local discovery UI also allows users to add classic printers connected to their computers to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>.''',
+    },
   ],
 
   'messages': {
@@ -19718,6 +19810,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenDefaultSpokenFeedbackEnabled': 'accessibility_settings.login_screen_default_spoken_feedback_enabled',
     'DeviceLoginScreenDefaultHighContrastEnabled': 'accessibility_settings.login_screen_default_high_contrast_enabled',
     'DeviceLoginScreenHighContrastEnabled': 'accessibility_settings.login_screen_high_contrast_enabled',
+    'DeviceLoginScreenAccessibilityShortcutsEnabled': 'accessibility_settings.login_screen_shortcuts_enabled',
     'DeviceLoginScreenDefaultScreenMagnifierType': 'accessibility_settings.login_screen_default_screen_magnifier_type',
     'DeviceLoginScreenScreenMagnifierType': 'accessibility_settings.login_screen_screen_magnifier_type',
     'DeviceLoginScreenDefaultVirtualKeyboardEnabled': 'accessibility_settings.login_screen_default_virtual_keyboard_enabled',
@@ -19742,6 +19835,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceUsers': 'device_reporting.report_users',
     'ReportDeviceHardwareStatus': 'device_reporting.report_hardware_status',
     'ReportDeviceSessionStatus': 'device_reporting.report_session_status',
+    'ReportDeviceGraphicsStatus': 'device_reporting.report_graphics_status',
     'ReportDeviceOsUpdateStatus': 'device_reporting.report_os_update_status',
     'ReportDeviceVersionInfo': 'device_reporting.report_version_info',
     'ReportUploadFrequency': 'device_reporting.device_status_frequency',
@@ -20167,6 +20261,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDeviceNetworkInterfaces',
         'ReportDeviceHardwareStatus',
         'ReportDeviceSessionStatus',
+        'ReportDeviceGraphicsStatus',
         'ReportDeviceOsUpdateStatus',
         'ReportDeviceBoardStatus',
         'ReportDeviceCpuInfo',
@@ -20243,6 +20338,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 658,
+  'highest_id_currently_used': 662,
   'highest_atomic_group_id_currently_used': 38
 }

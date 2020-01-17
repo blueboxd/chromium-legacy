@@ -84,6 +84,7 @@ class MultipleFieldsTemporalInputTypeView final
   void PickerIndicatorChooseValue(double) final;
   Element& PickerOwnerElement() const final;
   bool SetupDateTimeChooserParameters(DateTimeChooserParameters&) final;
+  void DidEndChooser() final;
 
   // ClearButtonElement::ClearButtonOwner functions.
   void FocusAndSelectClearButtonOwner() override;

@@ -238,8 +238,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       content::NavigationHandle* navigation_handle);
   void FailedProvisionalLoad(content::NavigationHandle* navigation_handle,
                              base::TimeTicks failed_load_time);
-  void WebContentsHidden();
-  void WebContentsShown();
+  void PageHidden();
+  void PageShown();
   void FrameDeleted(content::RenderFrameHost* rfh);
 
   void OnInputEvent(const blink::WebInputEvent& event);

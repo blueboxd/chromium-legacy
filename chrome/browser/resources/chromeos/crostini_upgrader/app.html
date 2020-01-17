@@ -86,9 +86,14 @@
       <paper-progress class="progress-bar" value="[[backupProgress_]]">
       </paper-progress>
     </div>
-    <div id="upgrader-progress-bar"
+    <div id="restore-progress-bar"
+        hidden="[[!isState_(state_, State.RESTORE)]]">
+      <paper-progress class="progress-bar" value="[[restoreProgress_]]">
+      </paper-progress>
+    </div>
+    <div id="upgrade-progress-bar"
         hidden="[[!isState_(state_, State.UPGRADING)]]">
-      <paper-progress class="progress-bar" value="[[upgraderProgress_]]">
+      <paper-progress class="progress-bar" value="[[upgradeProgress_]]">
       </paper-progress>
     </div>
     <div id="canceling-progress-bar"

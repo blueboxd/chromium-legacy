@@ -64,14 +64,14 @@ Polymer({
      */
     writeUma_: {
       type: Object,
-      value: function() {
+      value() {
         return settings.recordLockScreenProgress;
       }
     },
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.writeUma_(LockScreenProgress.START_SCREEN_LOCK);
   },
 
@@ -81,7 +81,7 @@ Polymer({
    * @param {String} authToken
    * @private
    */
-  authTokenChanged_: function(authToken) {
+  authTokenChanged_(authToken) {
     if (!this.authToken) {
       this.setModes = null;
       return;
@@ -110,7 +110,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  selectPasswordPromptEnterPasswordString_: function(hasPinLogin) {
+  selectPasswordPromptEnterPasswordString_(hasPinLogin) {
     if (hasPinLogin) {
       return this.i18n('passwordPromptEnterPasswordLoginLock');
     }

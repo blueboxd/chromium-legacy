@@ -89,6 +89,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">भर्ती डोमेन:</translation>
 <translation id="1340482604681802745">पिकअपको ठेगाना</translation>
+<translation id="1346748346194534595">दायाँ</translation>
 <translation id="1348198688976932919">अगाडिको साइटमा खतरनाक अनुप्रयोगहरू समावेश छन्‌</translation>
 <translation id="1348779747280417563">नाम सही भएको निश्चित गर्नुहोस्</translation>
 <translation id="1357195169723583938">हालासालै यन्त्र प्रयोग गर्ने व्यक्ति र प्रयोग गरिएको समय</translation>
@@ -113,6 +114,7 @@
 <translation id="1455413310270022028">मेट्ने साधन</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1467432559032391204">बाँया</translation>
 <translation id="1472675084647422956">थप देखाउनुहोस्</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
@@ -258,6 +260,7 @@
 <translation id="2148613324460538318">कार्ड थप्नुहोस्</translation>
 <translation id="2154054054215849342">तपाईंको डोमेनको लागि सिंंक उपलब्ध छैन</translation>
 <translation id="2154484045852737596">कार्ड सम्पादन गर्नुहोस्</translation>
+<translation id="2161656808144014275">पाठ</translation>
 <translation id="2166049586286450108">पूर्ण प्रशासक पहुँच</translation>
 <translation id="2166378884831602661">यो साइटले सुरक्षित जडान प्रदान गर्न सक्दैन</translation>
 <translation id="2169984857010174799">Kaku2 (Envelope)</translation>
@@ -346,6 +349,7 @@
 <translation id="254947805923345898">नीतिको मान मान्य छैन।</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ले अमान्य प्रतिक्रिया पठायो।</translation>
 <translation id="2556876185419854533">सम्पादन &amp;पूर्ववत गर्नुहोस्</translation>
+<translation id="257674075312929031">समूह</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
 <translation id="2587730715158995865"><ph name="ARTICLE_PUBLISHER" /> बाट। यो र <ph name="OTHER_ARTICLE_COUNT" /> अन्य कथाहरू पढ्नुहोस्।</translation>
 <translation id="2587841377698384444">डाइरेक्ट्री API ID:</translation>
@@ -362,6 +366,7 @@
 <translation id="2653659639078652383">पेश गर्नुहोस्</translation>
 <translation id="2660650542324841986">तपाईंले पहुँच राख्न आँट्नुभएको सर्भर <ph name="ORIGIN" /> ले यसमा गरिने सबै अनुरोधहरूमा कुनै मूल नीति लागू गरिने कुरा अनुरोध गरेको छ। तर यसले अहिले नीति डेलिभर गर्न सकेको छैन। परिणाम स्वरूप ब्राउजरलाई तपाईंले <ph name="SITE" /> का लागि गर्नुभएको अनुरोध पूरा गर्नबाट रोक्छ। साइटका सञ्चालकहरूले सुरक्षाका साथै साइटका अन्य विशेषता कन्फिगर गर्ने प्रयोजनका लागि मूल नीतिहरू प्रयोग गर्न सक्छन्।</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{कुनै पनि होइन}=1{<ph name="DOMAIN_LIST" /> को १ पासवर्ड}=2{<ph name="DOMAIN_LIST" /> का २ पासवर्डहरू}other{<ph name="DOMAIN_LIST" /> का # पासवर्डहरू}}</translation>
+<translation id="2666092431469916601">शीर्ष</translation>
 <translation id="2666117266261740852">अन्य ट्याब वा अनुप्रयोगहरू बन्द गर्नुहोस्</translation>
 <translation id="2674170444375937751">तपाईं आफ्नो इतिहासबाट यी पृष्ठहरू मेटाउन चाहनुहुन्छ भन्ने कुरामा सुनिश्चित हुनुहुन्छ?</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
@@ -445,6 +450,7 @@
 <translation id="3061707000357573562">प्याचसम्बन्धी सेवा</translation>
 <translation id="3064966200440839136">कुनै बाह्य अनुप्रयोगमार्फत भुक्तानी गर्नका लागि इन्कोग्निटो मोडलाई छाडिँदै । जारी राख्ने हो?</translation>
 <translation id="3086579638707268289">वेबको तपाईंको क्रियाकलापको निगरानी गरिँदै छ</translation>
+<translation id="3087734570205094154">तल</translation>
 <translation id="3095940652251934233">वक्तव्य</translation>
 <translation id="3096100844101284527">पिकअप गर्ने ठेगाना थप्नुहोस्</translation>
 <translation id="3105172416063519923">सम्पत्ति ID:</translation>
@@ -486,6 +492,7 @@
 <translation id="3303855915957856445">खोजका परिणाम फेला परेनन्</translation>
 <translation id="3320021301628644560">बिल पठाउने ठेगाना थप्नुहोस्</translation>
 <translation id="3324983252691184275">गाढा रातो</translation>
+<translation id="3329013043687509092">संतृप्तीकरण</translation>
 <translation id="3338095232262050444">सुरक्षित छ</translation>
 <translation id="3355823806454867987">प्रोक्सी सेटिङहरू परिवर्तन गर्नुहोस्...</translation>
 <translation id="3360103848165129075">भुक्तानी ह्यान्ड्लरसम्बन्धी पाना</translation>
@@ -522,6 +529,7 @@
 <translation id="3495081129428749620"><ph name="PAGE_TITLE" />
     पृष्ठमा फेला पार्नुहोस्</translation>
 <translation id="3512163584740124171">यसै नीति समूहको अर्को नीतिको प्राथमिकता यो नीतिको भन्दा उच्च भएका कारण यस नीतिको बेवास्ता गरिन्छ।</translation>
+<translation id="3513704683820682405">अग्मेन्टेड रियालिटी</translation>
 <translation id="3528171143076753409">सर्भरको प्रमाणपत्र विश्वसनीय छैन ।</translation>
 <translation id="3528485271872257980">गाढा खैरो</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{सिंक गरिएका यन्त्रहरूमा रहेको कम्तीमा १ वस्तु}=1{१ वस्तु (र सिंक गरिएका यन्त्रहरूमा रहेका थप वस्तुहरू)}other{# वस्तुहरू (र सिंक गरिएका यन्त्रहरूमा रहेका थप वस्तुहरू)}}</translation>
@@ -563,6 +571,7 @@
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">लोड गर्दै...</translation>
 <translation id="3709599264800900598">तपाईंले प्रतिलिपि गर्नुभएको पाठ</translation>
+<translation id="3711895659073496551">निलम्बन</translation>
 <translation id="3712624925041724820">इजाजतपत्र निकास</translation>
 <translation id="3714780639079136834">मोबाइल डेटा वा Wi-Fi लाई सक्रिय गर्नुहोस्</translation>
 <translation id="3715597595485130451">Wi-Fi मा जडान गर्नुहोस्</translation>
@@ -756,6 +765,7 @@
 <translation id="4594403342090139922">मेटाइलाई &amp;पूर्ववत गर्नुहोस्</translation>
 <translation id="4597348597567598915">आकार ८</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="4628948037717959914">तस्बिर</translation>
 <translation id="4635654612248442824">यो साइट <ph name="ORIGIN" /> ले यसका सबै अनुरोधहरूमा कुनै मूल नीति लागू हुने कुराको अनुरोध गरेको छ तर यो नीति हाल लागू गर्न सकिँदैन।</translation>
 <translation id="464342062220857295">खोजसम्बन्धी सुविधाहरू</translation>
 <translation id="4646534391647090355">मलाई अहिले नै त्यहाँ लैजानुहोस्</translation>
@@ -811,6 +821,7 @@
 <translation id="4926049483395192435">निर्दिष्ट हुनु पर्छ।</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> यसो भन्छ</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943703118917034429">भर्चुअल रियालिटी</translation>
 <translation id="4943872375798546930">कुनै नतिजा छैन</translation>
 <translation id="4950898438188848926">ट्याब बदल्ने बटन, खुला रहेको ट्याबमा जान Enter थिच्नुहोस्, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">कार्यहरू</translation>
@@ -978,6 +989,7 @@
 <translation id="5689199277474810259">JSON ढाँचामा निर्यात गर्नुहोस्</translation>
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="569000877158168851">DnsOverHttpsTemplates को यो मान सान्दर्भिक नभएकाले DnsOverHttpsMode नीति सेट गरेर <ph name="SECURE_DNS_MODE_AUTOMATIC" /> वा <ph name="SECURE_DNS_MODE_SECURE" /> नबनाइँदासम्म यसको प्रयोग गरिने छैन।</translation>
+<translation id="5701381305118179107">केन्द्र</translation>
 <translation id="570530837424789914">व्यवस्थित गर्नुहोस्...</translation>
 <translation id="57094364128775171">भरपर्दो पासवर्ड सिफारिस गर्नुहोस्…</translation>
 <translation id="5710435578057952990">यो वेबसाइटको पहिचानलाई प्रमाणित गरिएको छैन।</translation>
@@ -1010,7 +1022,6 @@
 <translation id="5855253129151731373">यो साइटको होस्टनाम <ph name="LOOKALIKE_DOMAIN" /> जस्तै देखिन्छ। आक्रमणकारीहरूले कहिलेकाहीँ डोमेनको नाममा ससाना, स्पष्ट नदेखिने परिवर्तनहरू गरी नक्कली साइट सिर्जना गर्न सक्छन्।
 
     तपाईंलाई यो त्रुटिवश देखाइएको हो जस्तो लाग्छ भने कृपया https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals मा जानुहोस्।</translation>
-<translation id="5860033963881614850">बन्द</translation>
 <translation id="5863847714970149516">अगाडि आउने पृष्ठले तपाईंलाई पैसा तिराउने प्रयास गर्न सक्छ</translation>
 <translation id="5866257070973731571">फोन नम्बर थप्नुहोस्</translation>
 <translation id="5866898949289125849">तपाईं विकासकर्ताका उपकरणसम्बन्धी पृष्ठ हेर्दै हुनुहुन्छ</translation>
@@ -1022,13 +1033,11 @@
 <translation id="5901630391730855834">पहेँलो</translation>
 <translation id="5905445707201418379"><ph name="ORIGIN" /> को मूल नीतिका आधारमा रोक लगाइयो।</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (सिंक गरिएको)</translation>
-<translation id="5916664084637901428">खुल्ला</translation>
 <translation id="59174027418879706">सक्षम गरिएको</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">कार्डलाई Google खातामा सुरक्षित गर्ने हो?</translation>
 <translation id="5922853866070715753">लगभग सकियो</translation>
 <translation id="5932224571077948991">यो साइटले हस्तक्षेपकारी वा भ्रामक विज्ञापनहरू देखाउँछ</translation>
-<translation id="5939847200023027600">PDF कम्पोजिटर सेवा</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> खोलिँदै…</translation>
 <translation id="5951495562196540101">उपभोक्ताको खातामार्फत दर्ता गर्न सकिँदैन (प्याकेजसहितको इजाजतपत्र उपलब्ध छ)।</translation>
 <translation id="5967592137238574583">सम्पर्कसम्बन्धी जानकारी सम्पादन गर्नुहोस्</translation>
@@ -1068,6 +1077,7 @@
 <translation id="6080696365213338172">तपाइँले प्रशासक-प्रदान गरिएको प्रमाणपत्र प्रयोग गर्दै सामग्री पहुँच गर्नुभएको छ। तपाइँले <ph name="DOMAIN" /> लाई उपलब्ध गर्नुभएको लगत तपाइँको प्रशासकद्वारा अन्तर्खण्ड गर्न सकिन्छ।</translation>
 <translation id="6094273045989040137">एनोटेसन गर्नुहोस्</translation>
 <translation id="6104072995492677441">JIS B6</translation>
+<translation id="6106989379647458772"><ph name="PAGE" /> को वेबपृष्ठ अस्थायी रूपमा बन्द भएको हुन सक्छ वा त्यो स्थायी रूपमा एउटा नयाँ वेब ठेगानामा सरेको हुन सक्छ।</translation>
 <translation id="610911394827799129">तपाईंको Google खाताको <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> मा ब्राउजिङ इतिहासका अन्य ढाँचाहरू रहेका हुनसक्छन्।</translation>
 <translation id="6120179357481664955">आफ्नो UPI ID सम्झने हो?</translation>
 <translation id="6132597952260690497">स्थापना गरिएका विस्तार र प्लगइनहरूसम्बन्धी जानकारी</translation>
@@ -1107,6 +1117,7 @@
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">Chrome को Google सहायक रोकिँदै छ</translation>
 <translation id="6305205051461490394"><ph name="URL" /> पहुँच गर्न सकिँदैन।</translation>
+<translation id="6312113039770857350">वेबपृष्ठ उपलब्ध छैन</translation>
 <translation id="6321917430147971392">तपाइँको डिएनएस सेटिङहरू हेर्नुहोस्</translation>
 <translation id="6322182122604171028">Windows Hello प्रयोग गर्न सकिएन</translation>
 <translation id="6328639280570009161">सञ्जाल भविष्यवाणि असक्षम गर्नुहोस्</translation>
@@ -1133,6 +1144,7 @@
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> को म्याद सकिने मिति र CVC प्रविष्टि गर्नुहोस्</translation>
 <translation id="6415778972515849510">Chromium ले तपाईंलाई आफ्नो Google खाता सुरक्षित गर्न र पासवर्ड बदल्न मद्दत गर्न सक्छ।</translation>
 <translation id="6423385022588644828">अब उप्रान्त Touch ID प्रयोग गरेर आफ्ना कार्डहरू अझ छिटो पुष्टि गर्नुहोस्</translation>
+<translation id="6425092077175753609">वस्तु</translation>
 <translation id="6427730057873428458">गेट फोल्ड</translation>
 <translation id="6433490469411711332">सम्पर्क सम्बन्धी जानकारीलाई सम्पादन गर्नुहोस्</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ले जडान गर्न अस्वीकार गर्यो।</translation>
@@ -1400,6 +1412,7 @@
 <translation id="7716147886133743102">तपाईंका प्रशासकले रोक लगाउनुभएको</translation>
 <translation id="7716424297397655342">यो साइट क्यासबाट लोड गर्न सकिँदैन</translation>
 <translation id="7723047071702270851">कार्ड सम्पादन गर्नुहोस्</translation>
+<translation id="7740996059027112821">मानक</translation>
 <translation id="774634243536837715">खतरनाक सामग्रीमाथि रोक लगाइयो।</translation>
 <translation id="7752995774971033316">अव्यवस्थित</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
@@ -1505,6 +1518,7 @@
 <translation id="8241707690549784388">तपाईंले खोजिरहनुभएको पृष्ठले तपाईंले प्रविष्ट गर्नुभएको जानकारी प्रयोग गर्‍यो। त्यस पृष्ठमा फर्किनाले तपाईंले दोहोरिनका लागि लिनुभएको कुनैपनि  प्रवेश कि प्रयोग जानकारी खोज्दै हुनुहुन्छ पृष्ठ कि। कि पृष्ठ फर्केपछि तिमी ले कुनै पनि काम नदोहोरिने गर्न लगाउँछ। तपाईं जारी राख्न चाहनुहुन्छ?</translation>
 <translation id="8241712895048303527">यस साइटमा रोक लगाउनुहोस्</translation>
 <translation id="8242426110754782860">अगाडि बढ्नुहोस्</translation>
+<translation id="8249296373107784235">रद्द गर्नुहोस्</translation>
 <translation id="8249320324621329438">पछिल्लो पटक ल्याइएको:</translation>
 <translation id="8253091569723639551">बिल पठाउने ठेगाना आवश्यक छ</translation>
 <translation id="825929999321470778">सुरक्षित गरिएका सबै पासवर्डहरू देखाउनुहोस्</translation>
@@ -1574,6 +1588,7 @@
 <translation id="8647750283161643317">सबैलाई पुर्वनिर्धारितमा रिसेट गर्नुहोस्</translation>
 <translation id="8663226718884576429">अर्डरको सारांश, <ph name="TOTAL_LABEL" />, थप विवरण</translation>
 <translation id="8680536109547170164"><ph name="QUERY" /> , उत्तर, <ph name="ANSWER" /></translation>
+<translation id="8681531050781943054"><ph name="PAGE" /> मा भएको वेबपृष्ठ लोड गर्न सकिएन किनभने:</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">उपलब्ध</translation>
 <translation id="869891660844655955">समाप्ति मिति</translation>
@@ -1624,6 +1639,7 @@
 <translation id="8943282376843390568">हल्का पहेँलो</translation>
 <translation id="8957210676456822347">क्याप्टिभ पोर्टल प्राधिकरण</translation>
 <translation id="8962950042226115166">शङ्कास्पद साइट</translation>
+<translation id="8963213021028234748"><ph name="MARKUP_1" />सुझावहरू:<ph name="MARKUP_2" />तपाईँसँग डेटा जडान रहेको निश्चित गर्नुहोस्<ph name="MARKUP_3" />यो वेबपृष्ठ पछि पुन:लोड गर्नुहोस्<ph name="MARKUP_4" />तपाईँले प्रविष्ट गर्नुभएको ठेगानाको जाँच गर्नुहोस्<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">कार्ड सुरक्षित गर्नुहोस्</translation>
 <translation id="8971063699422889582">सर्भरको प्रमाणपत्रको म्याद सकिएको छ।</translation>
 <translation id="8975012916872825179">फोन नम्बर, इमेल ठेगाना र ढुवानी गर्नु पर्ने ठेगाना जस्ता जानकारी समावेश हुन्छ</translation>
@@ -1700,6 +1716,7 @@
 <translation id="985199708454569384">&lt;p&gt;तपाईंको कम्प्युटर वा मोबाइल यन्त्रको मिति र समय नमिलेको बेला तपाईंले यो त्रुटि देख्नुहुन्छ।&lt;/p&gt;
     &lt;p&gt;यो त्रुटिको समाधान गर्न आफ्नो यन्त्रको घडी खोल्नुहोस्‌। समय र मिति सही छ भनेर सुनिश्चित गर्नुहोस्।&lt;/p&gt;</translation>
 <translation id="985956168329721395">Prc-32K</translation>
+<translation id="987264212798334818">सामान्य</translation>
 <translation id="988159990683914416">विकासकर्ताद्वारा निर्मित</translation>
 <translation id="989988560359834682">इमेल ठेगाना</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

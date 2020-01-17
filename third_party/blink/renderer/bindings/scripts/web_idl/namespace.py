@@ -60,6 +60,7 @@ class Namespace(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             WithDebugInfo.__init__(self, debug_info)
 
             self.is_partial = is_partial
+            self.is_mixin = False
             self.attributes = list(attributes)
             self.constants = list(constants)
             self.constructors = []

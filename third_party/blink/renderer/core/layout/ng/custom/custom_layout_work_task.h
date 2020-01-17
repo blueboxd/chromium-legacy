@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_CUSTOM_CUSTOM_LAYOUT_WORK_TASK_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_CUSTOM_CUSTOM_LAYOUT_WORK_TASK_H_
 
-#include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_constraints_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_layout_constraints_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 

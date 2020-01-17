@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/passwords/password_breach_coordinator.h"
 
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_learn_more_view_controller.h"
@@ -37,9 +38,13 @@
   // To start, a mediator and view controller should be ready.
   DCHECK(self.viewController);
   DCHECK(self.mediator);
+  DCHECK(self.browser);
   [self.baseViewController presentViewController:self.viewController
                                         animated:YES
                                       completion:nil];
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  [dispatcher startDispatchingToTarget:self
+                           forProtocol:@protocol(PasswordBreachCommands)];
 }
 
 - (void)stop {
@@ -50,18 +55,8 @@
                          completion:nil];
   self.viewController = nil;
   [super stop];
-}
-
-#pragma mark - Setters
-
-- (void)setDispatcher:(CommandDispatcher*)dispatcher {
-  if (_dispatcher == dispatcher) {
-    return;
-  }
-  [_dispatcher stopDispatchingToTarget:self];
-  [dispatcher startDispatchingToTarget:self
-                           forProtocol:@protocol(PasswordBreachCommands)];
-  _dispatcher = dispatcher;
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  [dispatcher stopDispatchingToTarget:self];
 }
 
 #pragma mark - PasswordBreachCommands
@@ -73,8 +68,8 @@
   if (@available(iOS 13, *)) {
     self.viewController.modalInPresentation = YES;
   }
-  id<ApplicationCommands> dispatcher =
-      static_cast<id<ApplicationCommands>>(self.dispatcher);
+  id<ApplicationCommands> dispatcher = static_cast<id<ApplicationCommands>>(
+      self.browser->GetCommandDispatcher());
   self.mediator =
       [[PasswordBreachMediator alloc] initWithConsumer:self.viewController
                                              presenter:self

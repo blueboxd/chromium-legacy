@@ -6,7 +6,8 @@
 
 #include <utility>
 
-#include "chrome/browser/sharing/sharing_constants.h"
+#include "base/time/time.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/sharing/sharing_dialog_data.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -177,7 +178,8 @@ void SharingUiController::SendMessageToDevice(
   UpdateIcon();
 
   sharing_service_->SendMessageToDevice(
-      device, kSendMessageTimeout, std::move(sharing_message),
+      device, base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get()),
+      std::move(sharing_message),
       base::Bind(&SharingUiController::OnMessageSentToDevice,
                  weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
 }

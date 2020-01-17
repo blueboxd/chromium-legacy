@@ -22,7 +22,7 @@ ChromeVoxBrailleTranslatorManagerTest.prototype = {
   __proto__: ChromeVoxE2ETest.prototype,
 
   /** @override */
-  setUp: function() {
+  setUp() {
     this.liblouis = new FakeLibLouis();
     this.manager = new BrailleTranslatorManager(this.liblouis);
     this.liblouis.translatorManager = this.manager;
@@ -31,7 +31,7 @@ ChromeVoxBrailleTranslatorManagerTest.prototype = {
     this.manager.loadLiblouis_();
   },
 
-  addChangeListener: function(callback) {
+  addChangeListener(callback) {
     return this.manager.addChangeListener(callOnce(this.newCallback(callback)));
   },
 };
@@ -41,10 +41,10 @@ function FakeLibLouis() {}
 
 FakeLibLouis.prototype = {
   /** @override */
-  attachToElement: function() {},
+  attachToElement() {},
 
   /** @override */
-  getTranslator: function(fileNames, callback) {
+  getTranslator(fileNames, callback) {
     var tables = this.translatorManager.getTablesForTest();
     var result = null;
     if (tables != null) {

@@ -14,9 +14,7 @@ source_set("tabs") {
     "tab_parenting_global_observer.h",
     "tab_title_util.h",
   ]
-  public_deps = [
-    "//ios/web",
-  ]
+  public_deps = [ "//ios/web" ]
   deps = [
     "//components/sessions",
     "//components/sync_sessions",

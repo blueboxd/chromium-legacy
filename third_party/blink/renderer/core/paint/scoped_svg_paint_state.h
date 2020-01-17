@@ -81,8 +81,14 @@ class ScopedSVGPaintState {
 
  public:
   ScopedSVGPaintState(const LayoutObject& object, const PaintInfo& paint_info)
+      : ScopedSVGPaintState(object, paint_info, object) {}
+
+  ScopedSVGPaintState(const LayoutObject& object,
+                      const PaintInfo& paint_info,
+                      const DisplayItemClient& display_item_client)
       : object_(object),
         paint_info_(paint_info),
+        display_item_client_(display_item_client),
         filter_(nullptr),
         masker_(nullptr) {}
 
@@ -94,7 +100,7 @@ class ScopedSVGPaintState {
 
   // Return true if these operations aren't necessary or if they are
   // successfully applied.
-  bool ApplyClipMaskAndFilterIfNecessary();
+  bool ApplyEffects();
 
  private:
   void ApplyPaintPropertyState();
@@ -110,6 +116,7 @@ class ScopedSVGPaintState {
 
   const LayoutObject& object_;
   PaintInfo paint_info_;
+  const DisplayItemClient& display_item_client_;
   std::unique_ptr<PaintInfo> filter_paint_info_;
   LayoutSVGResourceFilter* filter_;
   LayoutSVGResourceMasker* masker_;

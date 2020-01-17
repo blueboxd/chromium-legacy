@@ -84,7 +84,11 @@ media::EncryptionScheme ConvertEncryptionScheme(
     case EncryptionScheme::kCenc:
       return media::EncryptionScheme::kCenc;
     case EncryptionScheme::kCbcs:
+    case EncryptionScheme::kCbcs_1_9:
       return media::EncryptionScheme::kCbcs;
+    case EncryptionScheme::kUnrecognized:
+      // Not used in these tests.
+      break;
   }
 
   NOTREACHED();

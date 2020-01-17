@@ -690,6 +690,9 @@ class MEDIA_GPU_EXPORT V4L2Device
   // the queue creation failed or if requests are not supported.
   V4L2RequestsQueue* GetRequestsQueue();
 
+  // Check whether the V4L2 control with specified |ctrl_id| is supported.
+  bool IsCtrlExposed(uint32_t ctrl_id);
+
  protected:
   friend class base::RefCountedThreadSafe<V4L2Device>;
   V4L2Device();

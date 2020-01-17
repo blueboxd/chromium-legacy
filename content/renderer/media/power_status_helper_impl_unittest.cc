@@ -124,7 +124,7 @@ class PowerStatusHelperImplTest : public testing::Test {
         std::vector<uint8_t>(), /* extra_data */
         media::EncryptionScheme::kUnencrypted);
     helper_->SetMetadata(metadata);
-    helper_->SetAverageDuration(base::TimeDelta::FromSecondsD(1. / 60));
+    helper_->SetAverageFrameRate(60);
     // Use |alternate| to set fullscreen state, since that should still be
     // recordable but in a different bucket.
     helper_->SetIsFullscreen(alternate);
@@ -317,6 +317,19 @@ TEST_F(PowerStatusHelperImplTest, UnbucketedVideoStopsRecording) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(PowerStatusHelperImplTest, UnbucketedFrameRateStopsRecording) {
+  // If we switch to an unbucketed frame rate, then it should stop recording.
+  EXPECT_CALL(monitor_, DidGetBatteryMonitor()).Times(1);
+  EXPECT_CALL(monitor_, DidQueryNextStatus()).Times(1);
+  MakeRecordable();
+
+  // Should disconnect when we send bad params.
+  EXPECT_CALL(monitor_, DidDisconnect()).Times(1);
+  EXPECT_CALL(monitor_, DidQueryNextStatus()).Times(0);
+  helper_->SetAverageFrameRate({});
+  base::RunLoop().RunUntilIdle();
+}
+
 using PlaybackParamsTuple =
     std::tuple<bool,                        /* is_playing */
                bool,                        /* has_video */
@@ -335,10 +348,10 @@ class PowerStatusHelperImplBucketTest
                                 media::VideoCodecProfile profile,
                                 gfx::Size coded_size,
                                 bool is_fullscreen,
-                                base::TimeDelta average_duration) {
+                                base::Optional<int> average_fps) {
     return PowerStatusHelperImpl::BucketFor(is_playing, has_video, codec,
                                             profile, coded_size, is_fullscreen,
-                                            average_duration);
+                                            average_fps);
   }
 };
 
@@ -387,13 +400,13 @@ TEST_P(PowerStatusHelperImplBucketTest, TestBucket) {
   }
 
   auto fps = std::get<4>(GetParam());
-  base::TimeDelta average_duration;
+  base::Optional<int> average_fps;
   if (fps == PowerStatusHelperImpl::Bits::kFrameRate30) {
-    average_duration = base::TimeDelta::FromSecondsD(1. / 30);
+    average_fps = 30;
   } else if (fps == PowerStatusHelperImpl::Bits::kFrameRate60) {
-    average_duration = base::TimeDelta::FromSecondsD(1. / 60);
+    average_fps = 60;
   } else {
-    average_duration = base::TimeDelta::FromSecondsD(1. / 90);
+    average_fps = 90;
     expect_bucket = false;
   }
 
@@ -401,7 +414,7 @@ TEST_P(PowerStatusHelperImplBucketTest, TestBucket) {
       (std::get<5>(GetParam()) == PowerStatusHelperImpl::Bits::kFullScreenYes);
 
   auto bucket = BucketFor(is_playing, has_video, codec, profile, coded_size,
-                          is_fullscreen, average_duration);
+                          is_fullscreen, average_fps);
   if (!expect_bucket) {
     EXPECT_FALSE(bucket);
   } else {

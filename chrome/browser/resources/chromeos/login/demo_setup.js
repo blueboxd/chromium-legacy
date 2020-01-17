@@ -29,25 +29,25 @@ Polymer({
     screens_: {
       type: Array,
       readonly: true,
-      value: function() {
+      value() {
         return ['demoSetupProgressDialog', 'demoSetupErrorDialog'];
       },
     },
   },
 
   /** Resets demo setup flow to the initial screen and starts setup. */
-  reset: function() {
+  reset() {
     this.showScreen_('demoSetupProgressDialog');
     chrome.send('login.DemoSetupScreen.userActed', ['start-setup']);
   },
 
   /** Called after resources are updated. */
-  updateLocalizedContent: function() {
+  updateLocalizedContent() {
     this.i18nUpdateLocale();
   },
 
   /** Called when demo mode setup succeeded. */
-  onSetupSucceeded: function() {
+  onSetupSucceeded() {
     this.errorMessage_ = '';
   },
 
@@ -57,7 +57,7 @@ Polymer({
    * @param {boolean} isPowerwashRequired Whether powerwash is required to
    *     recover from the error.
    */
-  onSetupFailed: function(message, isPowerwashRequired) {
+  onSetupFailed(message, isPowerwashRequired) {
     this.errorMessage_ = message;
     this.isPowerwashRequired_ = isPowerwashRequired;
     this.showScreen_('demoSetupErrorDialog');
@@ -67,7 +67,7 @@ Polymer({
    * Shows screen with the given id. Method exposed for testing environment.
    * @param {string} id Screen id.
    */
-  showScreenForTesting: function(id) {
+  showScreenForTesting(id) {
     this.showScreen_(id);
   },
 
@@ -76,7 +76,7 @@ Polymer({
    * @param {string} id Screen id.
    * @private
    */
-  showScreen_: function(id) {
+  showScreen_(id) {
     this.hideScreens_();
 
     var screen = this.$[id];
@@ -89,7 +89,7 @@ Polymer({
    * Hides all screens to help switching from one screen to another.
    * @private
    */
-  hideScreens_: function() {
+  hideScreens_() {
     for (let id of this.screens_) {
       var screen = this.$[id];
       assert(screen);
@@ -101,7 +101,7 @@ Polymer({
    * Retry button click handler.
    * @private
    */
-  onRetryClicked_: function() {
+  onRetryClicked_() {
     this.reset();
   },
 
@@ -109,7 +109,7 @@ Polymer({
    * Powerwash button click handler.
    * @private
    */
-  onPowerwashClicked_: function() {
+  onPowerwashClicked_() {
     chrome.send('login.DemoSetupScreen.userActed', ['powerwash']);
   },
 
@@ -117,7 +117,7 @@ Polymer({
    * Close button click handler.
    * @private
    */
-  onCloseClicked_: function() {
+  onCloseClicked_() {
     // TODO(wzang): Remove this after crbug.com/900640 is fixed.
     if (this.isPowerwashRequired_)
       return;

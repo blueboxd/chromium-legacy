@@ -6,13 +6,17 @@
 
 #import <PassKit/PassKit.h>
 
+#import <memory>
+
 #import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/task_environment.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "ios/chrome/browser/download/download_test_util.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#include "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/fakes/fake_pass_kit_tab_helper_delegate.h"
@@ -35,8 +39,10 @@ class PassKitCoordinatorTest : public PlatformTest {
  protected:
   PassKitCoordinatorTest()
       : base_view_controller_([[UIViewController alloc] init]),
+        browser_(std::make_unique<TestBrowser>()),
         coordinator_([[PassKitCoordinator alloc]
-            initWithBaseViewController:base_view_controller_]),
+            initWithBaseViewController:base_view_controller_
+                               browser:browser_.get()]),
         web_state_(std::make_unique<web::TestWebState>()),
         delegate_([[FakePassKitTabHelperDelegate alloc]
             initWithWebState:web_state_.get()]),
@@ -52,7 +58,10 @@ class PassKitCoordinatorTest : public PlatformTest {
     return PassKitTabHelper::FromWebState(web_state_.get());
   }
 
+  base::test::TaskEnvironment task_environment_;
+
   UIViewController* base_view_controller_;
+  std::unique_ptr<Browser> browser_;
   PassKitCoordinator* coordinator_;
   std::unique_ptr<web::TestWebState> web_state_;
   FakePassKitTabHelperDelegate* delegate_;

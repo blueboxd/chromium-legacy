@@ -314,11 +314,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SetFrameDepth(unsigned int depth);
   void SetIntersectsViewport(bool intersects);
   void UpdatePriority();
-  // If there is no local main frame, then the RenderWidget in the renderer
-  // has been destroyed, and a new one will be created when a main frame
-  // exists again. This notifies that the renderer-side RenderWidget has been
-  // destroyed.
-  void DidDestroyRenderWidget();
 
   // Tells the renderer to die and optionally delete |this|.
   void ShutdownAndDestroyWidget(bool also_delete);
@@ -607,6 +602,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // getting VisualProperties that will be sent in order to create a
   // RenderWidget, since the creation acts as the initial
   // SynchronizeVisualProperties().
+  //
+  // This has the side effect of resetting state that should match a newly
+  // created RenderWidget in the renderer.
   VisualProperties GetInitialVisualProperties();
 
   // Pushes updated visual properties to the renderer as well as whether the
@@ -864,9 +862,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                          const gfx::Rect& rect_to_zoom);
   void OnZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom);
 
-  // When the RenderWidget is destroyed, this resets states in the browser
-  // to be ready for a replacement RenderWidget with a clean start.
-  void ResetRenderWidgetState();
+  // When the RenderWidget is destroyed and recreated, this resets states in the
+  // browser to match the clean start for the renderer side.
+  void ResetStateForCreatedRenderWidget(const VisualProperties& initial_props);
 
   // Generates a filled in VisualProperties struct representing the current
   // properties of this widget.

@@ -5,9 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "accelerator.mojom",
-  ]
+  sources = [ "accelerator.mojom" ]
   public_deps = [
     "//mojo/public/mojom/base",
     "//ui/events/mojom",
@@ -15,9 +13,7 @@ mojom("mojom") {
 }
 
 source_set("mojom_traits") {
-  sources = [
-    "accelerator_mojom_traits.h",
-  ]
+  sources = [ "accelerator_mojom_traits.h" ]
   public_deps = [
     ":mojom_shared_cpp_sources",
     "//mojo/public/mojom/base",
@@ -28,9 +24,7 @@ source_set("mojom_traits") {
 
 source_set("unittests") {
   testonly = true
-  sources = [
-    "accelerator_mojom_traits_unittest.cc",
-  ]
+  sources = [ "accelerator_mojom_traits_unittest.cc" ]
   deps = [
     ":mojom",
     ":mojom_traits",

@@ -14,8 +14,7 @@
 
 namespace blink {
 
-bool SVGMaskPainter::PrepareEffect(const LayoutObject& object,
-                                   GraphicsContext& context) {
+bool SVGMaskPainter::PrepareEffect(GraphicsContext& context) {
   DCHECK(mask_.Style());
   SECURITY_DCHECK(!mask_.NeedsLayout());
 
@@ -24,6 +23,7 @@ bool SVGMaskPainter::PrepareEffect(const LayoutObject& object,
 }
 
 void SVGMaskPainter::FinishEffect(const LayoutObject& object,
+                                  const DisplayItemClient& display_item_client,
                                   GraphicsContext& context) {
   DCHECK(mask_.Style());
   SECURITY_DCHECK(!mask_.NeedsLayout());
@@ -34,20 +34,20 @@ void SVGMaskPainter::FinishEffect(const LayoutObject& object,
   // we may paint the object for filters during PrePaint before the
   // properties are ready.
   if (properties && properties->Mask()) {
-    scoped_paint_chunk_properties.emplace(context.GetPaintController(),
-                                          *properties->Mask(), object,
-                                          DisplayItem::kSVGMask);
+    scoped_paint_chunk_properties.emplace(
+        context.GetPaintController(), *properties->Mask(), display_item_client,
+        DisplayItem::kSVGMask);
   }
 
   AffineTransform content_transformation;
   sk_sp<const PaintRecord> record = mask_.CreatePaintRecord(
       content_transformation, object.ObjectBoundingBox(), context);
 
-  if (DrawingRecorder::UseCachedDrawingIfPossible(context, object,
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, display_item_client,
                                                   DisplayItem::kSVGMask))
     return;
 
-  DrawingRecorder recorder(context, object, DisplayItem::kSVGMask);
+  DrawingRecorder recorder(context, display_item_client, DisplayItem::kSVGMask);
   context.Save();
   context.ConcatCTM(content_transformation);
   context.DrawRecord(std::move(record));

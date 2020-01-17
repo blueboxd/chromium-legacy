@@ -41,10 +41,10 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -540,9 +540,9 @@ void ConvertToBaseValueList(base::Value::ListStorage* list,
 // string literals. |args| can be a mix of different types.
 template <typename... Args>
 base::ListValue ListValueOf(Args&&... args) {
-  base::ListValue result;
-  ConvertToBaseValueList(&result.GetList(), std::forward<Args>(args)...);
-  return result;
+  base::Value::ListStorage values;
+  ConvertToBaseValueList(&values, std::forward<Args>(args)...);
+  return base::ListValue(std::move(values));
 }
 
 // Replaces $1, $2, $3, etc in |script_template| with JS literal values
@@ -1655,6 +1655,11 @@ class PwnMessageHelper {
                         bool privileged,
                         bool request_unadjusted_movement);
 
+  // Sends FrameHostMsg_OpenURL
+  static void OpenURL(RenderProcessHost* process,
+                      int routing_id,
+                      const GURL& url);
+
  private:
   PwnMessageHelper();  // Not instantiable.
 
@@ -1706,7 +1711,7 @@ class UpdateUserActivationStateMsgWaiter : public BrowserMessageFilter {
  private:
   ~UpdateUserActivationStateMsgWaiter() override = default;
 
-  void OnUpdateUserActivationState(blink::UserActivationUpdateType);
+  void OnUpdateUserActivationState(blink::mojom::UserActivationUpdateType);
 
   bool received_ = false;
   base::RunLoop run_loop_;

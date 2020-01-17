@@ -587,19 +587,17 @@ WebSocketChannelImpl::State WebSocketChannelImpl::GetState() const {
 void WebSocketChannelImpl::SendInternal(
     network::mojom::blink::WebSocketMessageType message_type,
     const char* data,
-    wtf_size_t total_size,
+    size_t total_size,
     uint64_t* consumed_buffered_amount) {
   network::mojom::blink::WebSocketMessageType frame_type =
       sent_size_of_top_message_
           ? network::mojom::blink::WebSocketMessageType::CONTINUATION
           : message_type;
   DCHECK_GE(total_size, sent_size_of_top_message_);
-  // The first cast is safe since the result of min() never exceeds
-  // the range of wtf_size_t. The second cast is necessary to compile
-  // min() on ILP32.
-  wtf_size_t size = static_cast<wtf_size_t>(
-      std::min(sending_quota_,
-               static_cast<uint64_t>(total_size - sent_size_of_top_message_)));
+  // The cast is safe since the result of min() never exceeds the range of
+  // size_t.
+  size_t size = static_cast<size_t>(std::min<uint64_t>(
+      sending_quota_, total_size - sent_size_of_top_message_));
   bool final = (sent_size_of_top_message_ + size == total_size);
 
   SendAndAdjustQuota(final, frame_type,
@@ -658,8 +656,7 @@ void WebSocketChannelImpl::ProcessSendQueue() {
     switch (message->type) {
       case kMessageTypeText:
         SendInternal(network::mojom::blink::WebSocketMessageType::TEXT,
-                     message->text.data(),
-                     static_cast<wtf_size_t>(message->text.length()),
+                     message->text.data(), message->text.length(),
                      &consumed_buffered_amount);
         break;
       case kMessageTypeBlob:
@@ -673,7 +670,7 @@ void WebSocketChannelImpl::ProcessSendQueue() {
         CHECK(message->array_buffer);
         SendInternal(network::mojom::blink::WebSocketMessageType::BINARY,
                      static_cast<const char*>(message->array_buffer->Data()),
-                     message->array_buffer->DeprecatedByteLengthAsUnsigned(),
+                     message->array_buffer->ByteLengthAsSizeT(),
                      &consumed_buffered_amount);
         break;
       case kMessageTypeClose: {

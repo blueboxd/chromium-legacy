@@ -10,13 +10,9 @@ import("//gpu/vulkan/features.gni")
 
 group("config") {
   if (is_component_build) {
-    public_deps = [
-      "//gpu",
-    ]
+    public_deps = [ "//gpu" ]
   } else {
-    public_deps = [
-      ":config_sources",
-    ]
+    public_deps = [ ":config_sources" ]
   }
 }
 
@@ -63,9 +59,7 @@ action("process_json") {
     args += [ "linux" ]
   }
 
-  public_deps = [
-    ":workaround_list",
-  ]
+  public_deps = [ ":workaround_list" ]
 }
 
 action("workaround_list") {
@@ -77,9 +71,7 @@ action("workaround_list") {
     skia_workaround_list,
   ]
 
-  outputs = [
-    "$target_gen_dir/gpu_driver_bug_workaround_autogen.h",
-  ]
+  outputs = [ "$target_gen_dir/gpu_driver_bug_workaround_autogen.h" ]
 
   args = [
     "--output-file",
@@ -99,9 +91,7 @@ if (enable_vulkan) {
 
     configs += [ "//gpu:gpu_implementation" ]
 
-    deps = [
-      "//gpu/ipc/common:vulkan_interface",
-    ]
+    deps = [ "//gpu/ipc/common:vulkan_interface" ]
 
     all_dependent_configs = [ "//third_party/vulkan:vulkan_config" ]
 
@@ -176,9 +166,7 @@ jumbo_source_set("config_sources") {
 
   configs += [ "//gpu:gpu_implementation" ]
 
-  public_deps = [
-    "//components/crash/core/common:crash_key",
-  ]
+  public_deps = [ "//components/crash/core/common:crash_key" ]
 
   if (enable_vulkan) {
     public_deps += [ ":vulkan_info" ]

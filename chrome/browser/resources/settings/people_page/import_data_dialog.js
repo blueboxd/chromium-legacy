@@ -51,7 +51,7 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.browserProxy_ = settings.ImportDataBrowserProxyImpl.getInstance();
     this.browserProxy_.initializeImportDialog().then(data => {
       this.browserProfiles_ = data;
@@ -71,7 +71,7 @@ Polymer({
   },
 
   /** @private */
-  prefsChanged_: function() {
+  prefsChanged_() {
     if (this.selected_ == undefined || this.prefs == undefined) {
       return;
     }
@@ -94,12 +94,12 @@ Polymer({
    * @return {boolean} Whether |status| is the current status.
    * @private
    */
-  hasImportStatus_: function(status) {
+  hasImportStatus_(status) {
     return this.importStatus_ == status;
   },
 
   /** @private */
-  isImportFromFileSelected_: function() {
+  isImportFromFileSelected_() {
     // The last entry in |browserProfiles_| always refers to dummy profile for
     // importing from a bookmarks file.
     return this.selected_.index == this.browserProfiles_.length - 1;
@@ -109,27 +109,33 @@ Polymer({
    * @return {string}
    * @private
    */
-  getActionButtonText_: function() {
+  getActionButtonText_() {
     return this.i18n(
         this.isImportFromFileSelected_() ? 'importChooseFile' : 'importCommit');
   },
 
   /** @private */
-  onBrowserProfileSelectionChange_: function() {
+  onBrowserProfileSelectionChange_() {
     this.selected_ = this.browserProfiles_[this.$.browserSelect.selectedIndex];
   },
 
   /** @private */
-  onActionButtonTap_: function() {
+  onActionButtonTap_() {
+    const checkboxes = this.shadowRoot.querySelectorAll('settings-checkbox');
     if (this.isImportFromFileSelected_()) {
       this.browserProxy_.importFromBookmarksFile();
     } else {
-      this.browserProxy_.importData(this.$.browserSelect.selectedIndex);
+      const types = {};
+      checkboxes.forEach(checkbox => {
+        types[checkbox.pref.key] = checkbox.checked;
+      });
+      this.browserProxy_.importData(this.$.browserSelect.selectedIndex, types);
     }
+    checkboxes.forEach(checkbox => checkbox.sendPrefChange());
   },
 
   /** @private */
-  closeDialog_: function() {
+  closeDialog_() {
     this.$.dialog.close();
   },
 
@@ -137,7 +143,7 @@ Polymer({
    * @return {boolean} Whether the import button should be disabled.
    * @private
    */
-  shouldDisableImport_: function() {
+  shouldDisableImport_() {
     return this.hasImportStatus_(settings.ImportDataStatus.IN_PROGRESS) ||
         this.noImportDataTypeSelected_;
   },

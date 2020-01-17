@@ -13,9 +13,7 @@ source_set("apps") {
     "apps_launch.h",
   ]
 
-  deps = [
-    "//chrome/browser/apps/platform_apps",
-  ]
+  deps = [ "//chrome/browser/apps/platform_apps" ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }

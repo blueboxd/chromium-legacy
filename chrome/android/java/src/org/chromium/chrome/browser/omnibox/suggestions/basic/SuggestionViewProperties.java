@@ -39,9 +39,6 @@ public class SuggestionViewProperties {
         int TOTAL_COUNT = 8;
     }
 
-    /** @see OmniboxSuggestionType */
-    public static final WritableIntPropertyKey SUGGESTION_TYPE = new WritableIntPropertyKey();
-
     /** The suggestion icon type shown. @see SuggestionIcon. Used for metric collection purposes. */
     public static final WritableIntPropertyKey SUGGESTION_ICON_TYPE = new WritableIntPropertyKey();
 
@@ -57,7 +54,7 @@ public class SuggestionViewProperties {
     public static final WritableObjectPropertyKey<SuggestionSpannable> TEXT_LINE_2_TEXT =
             new WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {SUGGESTION_TYPE,
+    public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {
             IS_SEARCH_SUGGESTION, SUGGESTION_ICON_TYPE, TEXT_LINE_1_TEXT, TEXT_LINE_2_TEXT};
 
     public static final PropertyKey[] ALL_KEYS =

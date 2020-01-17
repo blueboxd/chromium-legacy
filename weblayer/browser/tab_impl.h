@@ -63,6 +63,13 @@ class TabImpl : public Tab,
   bool has_new_tab_delegate() const { return new_tab_delegate_ != nullptr; }
 
 #if defined(OS_ANDROID)
+  // Call this method to disable integration with the system-level Autofill
+  // infrastructure. Useful in conjunction with InitializeAutofillForTests().
+  // Should be called early in the lifetime of WebLayer, and in
+  // particular, must be called before the TabImpl is attached to the browser
+  // on the Java side to have the desired effect.
+  static void DisableAutofillSystemIntegrationForTesting();
+
   base::android::ScopedJavaLocalRef<jobject> GetWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -76,6 +83,15 @@ class TabImpl : public Tab,
                      const base::android::JavaParamRef<jobject>& callback);
   void SetJavaImpl(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& impl);
+
+  // Invoked every time that the Java-side AutofillProvider instance is
+  // changed (set to null or to a new object). On first invocation with a non-
+  // null object initializes the native Autofill infrastructure. On
+  // subsequent invocations updates the association of that native
+  // infrastructure with its Java counterpart.
+  void OnAutofillProviderChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& autofill_provider);
 #endif
 
   DownloadDelegate* download_delegate() { return download_delegate_; }

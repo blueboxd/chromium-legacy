@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread.h"
@@ -58,7 +59,8 @@ BaseSessionService::BaseSessionService(SessionType type,
       backend_task_runner_(base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
-  backend_ = new SessionBackend(type, path);
+  backend_ =
+      base::MakeRefCounted<SessionBackend>(backend_task_runner_, type, path);
   DCHECK(backend_);
 }
 

@@ -436,6 +436,19 @@ public class TabGroupPopupUiMediatorUnitTest {
     }
 
     @Test
+    public void testNoCurrentTab_NotShow() {
+        // Mock overview mode is hiding, and current tab is null.
+        doReturn(null).when(mTabModelSelector).getCurrentTab();
+        mOverviewModeObserverCaptor.getValue().onOverviewModeFinishedHiding();
+        assertThat(mMediator.getIsOverviewModeVisibleForTesting(), equalTo(false));
+        assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(false));
+
+        mMediator.maybeShowTabStrip();
+
+        assertThat(mModel.get(TabGroupPopupUiProperties.IS_VISIBLE), equalTo(false));
+    }
+
+    @Test
     public void testDestroy() {
         mMediator.destroy();
         verify(mKeyboardVisibilityDelegate)

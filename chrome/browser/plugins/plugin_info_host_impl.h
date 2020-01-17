@@ -24,7 +24,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 
 class GURL;
 class HostContentSettingsMap;

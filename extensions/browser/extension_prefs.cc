@@ -2262,13 +2262,13 @@ void ExtensionPrefs::MigrateToNewExternalUninstallPref() {
   ListPrefUpdate update(prefs_, kExternalUninstalls);
   base::Value* current_ids = update.Get();
   for (const auto& id : uninstalled_ids) {
-    base::Value::ListStorage& list = current_ids->GetList();
+    base::Value::ListView list = current_ids->GetList();
     auto existing_entry =
         std::find_if(list.begin(), list.end(), [&id](const base::Value& value) {
           return value.is_string() && value.GetString() == id;
         });
     if (existing_entry == list.end())
-      list.push_back(base::Value(id));
+      current_ids->Append(id);
 
     DeleteExtensionPrefs(id);
   }
@@ -2277,7 +2277,7 @@ void ExtensionPrefs::MigrateToNewExternalUninstallPref() {
 void ExtensionPrefs::ClearExternalUninstallBit(const ExtensionId& id) {
   ListPrefUpdate update(prefs_, kExternalUninstalls);
   base::Value* current_ids = update.Get();
-  base::EraseIf(current_ids->GetList(), [&id](const base::Value& value) {
+  current_ids->EraseListValueIf([&id](const base::Value& value) {
     return value.is_string() && value.GetString() == id;
   });
 }

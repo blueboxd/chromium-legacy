@@ -89,6 +89,8 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
     proxy_client_ = proxy_client;
   }
 
+  void ResetIsPaintOffThreadForTesting();
+
  protected:
   // Since paint worklet has more than one global scope, we MUST override this
   // function and provide our own selection logic.
@@ -139,6 +141,12 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   // The proxy client associated with this PaintWorklet. We keep a reference in
   // to ensure that all global scopes get the same proxy client.
   Member<PaintWorkletProxyClient> proxy_client_;
+
+  // When running layout test, paint worklet has to be on the main thread
+  // because "enable-threaded-compositing" is off by default. However, some unit
+  // tests may be testing the functionality of the APIs when the paint worklet
+  // is off the main thread.
+  bool is_paint_off_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintWorklet);
 };

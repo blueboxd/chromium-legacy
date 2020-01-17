@@ -29,6 +29,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COMPUTED_STYLE_CONSTANTS_H_
 
 #include <cstddef>
+#include <cstdint>
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 
 namespace blink {
@@ -50,7 +51,7 @@ inline bool EnumHasFlags(Enum v, Enum mask) {
 enum class BoxSide : unsigned { kTop, kRight, kBottom, kLeft };
 
 // Static pseudo styles. Dynamic ones are produced on the fly.
-enum PseudoId {
+enum PseudoId : uint8_t {
   // The order must be NOP ID, public IDs, and then internal IDs.
   // If you add or remove a public ID, you must update the field_size of
   // "PseudoBits" in computed_style_extra_fields.json5.
@@ -76,10 +77,6 @@ enum PseudoId {
   kAfterLastInternalPseudoId,
   kFirstPublicPseudoId = kPseudoIdFirstLine,
   kFirstInternalPseudoId = kPseudoIdFirstLineInherited,
-  kElementPseudoIdMask = (1 << (kPseudoIdBefore - kFirstPublicPseudoId)) |
-                         (1 << (kPseudoIdAfter - kFirstPublicPseudoId)) |
-                         (1 << (kPseudoIdMarker - kFirstPublicPseudoId)) |
-                         (1 << (kPseudoIdBackdrop - kFirstPublicPseudoId))
 };
 
 enum class OutlineIsAuto : bool { kOff = false, kOn = true };

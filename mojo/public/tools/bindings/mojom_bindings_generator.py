@@ -207,7 +207,7 @@ class MojomProcessor(object):
     module = translate.OrderedModule(tree, module_path, imports)
 
     if args.scrambled_message_id_salt_paths:
-      salt = ''.join(
+      salt = b''.join(
           map(ReadFileContents, args.scrambled_message_id_salt_paths))
       ScrambleMethodOrdinals(module.interfaces, salt)
 
@@ -395,7 +395,7 @@ def _VerifyImportDeps(args, __):
     source_filename, _ = os.path.splitext(rel_path.relative_path())
     output_file = source_filename + '.v'
     output_file_path = os.path.join(args.gen_dir, output_file)
-    WriteFile(b"", output_file_path)
+    WriteFile("", output_file_path)
 
   return 0
 

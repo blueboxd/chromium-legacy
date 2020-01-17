@@ -118,7 +118,6 @@ bool X11SoftwareBitmapPresenter::CompositeBitmap(XDisplay* display,
 
   XPutImage(display, widget, gc, bg.get(), x, y, x, y, width, height);
 
-  XFlush(display);
   return true;
 }
 
@@ -129,7 +128,8 @@ X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
     : widget_(widget),
       display_(gfx::GetXDisplay()),
       gc_(nullptr),
-      host_task_runner_(host_task_runner) {
+      host_task_runner_(host_task_runner),
+      event_task_runner_(event_task_runner) {
   DCHECK_NE(widget_, gfx::kNullAcceleratedWidget);
   gc_ = XCreateGC(display_, widget_, 0, nullptr);
   memset(&attributes_, 0, sizeof(attributes_));
@@ -164,6 +164,29 @@ X11SoftwareBitmapPresenter::~X11SoftwareBitmapPresenter() {
 
 bool X11SoftwareBitmapPresenter::ShmPoolReady() const {
   return shm_pool_ && shm_pool_->Ready();
+}
+
+void X11SoftwareBitmapPresenter::FlushAfterPutImage() {
+  // Ensure the new window content appears immediately. On a TYPE_UI thread we
+  // can rely on the message loop to flush for us so XFlush() isn't necessary.
+  // However, this code can run on a different thread and would have to wait for
+  // the TYPE_UI thread to no longer be idle before a flush happens.
+  XFlush(display_);
+
+  // Work around a race condition caused by XFlush above.  Explanation: XFlush()
+  // flushes all requests and *also* reads events.  It's unclear why it does
+  // this, but there's no alternative Xlib function that flushes the requests
+  // and *doesn't* read any events, so this workaround is necessary. In
+  // |event_task_runner_|'s message loop, poll() is called on the underlying
+  // XDisplay's fd to dispatch toplevel events.  When the fd is readable, poll()
+  // exits and we (via Xlib) check for new events by read()ing from the fd.  But
+  // if the event dispatcher is currently dispatching an event, then our call to
+  // XFlush() may read events into the event queue which will make the fd
+  // blocking since there's no more data to read, so poll() won't wake up until
+  // a new event comes, which may take a long time.  Forcing the event loop to
+  // wake up with a dummy event fixes the race condition.
+  if (event_task_runner_)
+    event_task_runner_->PostTask(FROM_HERE, base::BindOnce([] {}));
 }
 
 void X11SoftwareBitmapPresenter::Resize(const gfx::Size& pixel_size) {
@@ -208,7 +231,7 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
                      rect.x(), rect.y(), rect.x(), rect.y(), rect.width(),
                      rect.height(), x11::True)) {
       needs_swap_ = true;
-      XFlush(display_);
+      FlushAfterPutImage();
       return;
     }
     skia_pixmap = shm_pool_->CurrentBitmap().pixmap();
@@ -220,6 +243,7 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
       CompositeBitmap(display_, widget_, rect.x(), rect.y(), rect.width(),
                       rect.height(), attributes_.depth, gc_,
                       skia_pixmap.addr())) {
+    FlushAfterPutImage();
     return;
   }
 
@@ -244,11 +268,7 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
   XPutImage(display_, widget_, gc_, &image, rect.x(), rect.y(), rect.x(),
             rect.y(), rect.width(), rect.height());
 
-  // Ensure the new window content appears immediately. On a TYPE_UI thread we
-  // can rely on the message loop to flush for us so XFlush() isn't necessary.
-  // However, this code can run on a different thread and would have to wait for
-  // the TYPE_UI thread to no longer be idle before a flush happens.
-  XFlush(display_);
+  FlushAfterPutImage();
 }
 
 void X11SoftwareBitmapPresenter::OnSwapBuffers(

@@ -76,6 +76,9 @@ TEST(JSONReaderTest, EmbeddedComments) {
   ASSERT_TRUE(root);
   EXPECT_TRUE(root->is_int());
   EXPECT_EQ(44, root->GetInt());
+
+  // At one point, this parsed successfully as the value three.
+  EXPECT_FALSE(JSONReader::Read("/33"));
 }
 
 TEST(JSONReaderTest, Ints) {
@@ -165,6 +168,12 @@ TEST(JSONReaderTest, Doubles) {
   double_val = 0.0;
   EXPECT_TRUE(root->GetAsDouble(&double_val));
   EXPECT_DOUBLE_EQ(1.0, double_val);
+
+  // This is syntaxtically valid, but out of range of a double.
+  auto value_with_error =
+      JSONReader::ReadAndReturnValueWithError("1e1000", JSON_PARSE_RFC);
+  ASSERT_FALSE(value_with_error.value);
+  ASSERT_NE(value_with_error.error_code, JSONReader::JSON_NO_ERROR);
 }
 
 TEST(JSONReaderTest, FractionalNumbers) {
@@ -231,6 +240,10 @@ TEST(JSONReaderTest, UnicodeEscapes) {
   std::string str_val;
   EXPECT_TRUE(root->GetAsString(&str_val));
   EXPECT_EQ(std::wstring(L"A\0\x1234\0", 4), UTF8ToWide(str_val));
+
+  // The contents of a Unicode escape may only be four hex chars. Previously the
+  // parser accepted things like "0x01" and "0X01".
+  EXPECT_FALSE(JSONReader::Read("\"\\u0x12\""));
 }
 
 TEST(JSONReaderTest, InvalidStrings) {
@@ -617,7 +630,7 @@ TEST(JSONReaderTest, StringOptimizations) {
     ASSERT_EQ(2u, list->GetList().size());
     list_value_0 = std::move(list->GetList()[0]);
     list_value_1 = std::move(list->GetList()[1]);
-    list->GetList().clear();
+    list->ClearList();
   }
 
   ASSERT_TRUE(dict_literal_0.is_bool());

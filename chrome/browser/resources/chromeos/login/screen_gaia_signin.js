@@ -309,7 +309,7 @@ Polymer({
   pinDialogResultReported_: false,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.authenticator_ = new cr.login.Authenticator(this.getSigninFrame_());
 
     const that = this;
@@ -415,7 +415,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isClosable_: function() {
+  isClosable_() {
     return Oobe.getInstance().hasUserPods || this.isOffline_();
   },
 
@@ -425,7 +425,7 @@ Polymer({
    * @type {boolean}
    * @private
    */
-  isAtTheBeginning_: function() {
+  isAtTheBeginning_() {
     return !this.canGoBack_() && !this.isSaml_ &&
         !this.isWhitelistErrorShown_ && !this.authCompleted_;
   },
@@ -436,7 +436,7 @@ Polymer({
    * should be shown.)
    * @private
    */
-  updateGuestButtonVisibility_: function() {
+  updateGuestButtonVisibility_() {
     let showGuestInOobe = !this.isClosable_() && this.isAtTheBeginning_();
     // TODO(rsorokin): Rename message string to reflect the meaning.
     chrome.send('showGuestInOobe', [showGuestInOobe]);
@@ -445,14 +445,14 @@ Polymer({
   /**
    * Handles clicks on "PrimaryAction" button.
    */
-  onPrimaryActionButtonClicked_: function() {
+  onPrimaryActionButtonClicked_() {
     this.authenticator_.sendMessageToWebview('primaryActionHit');
   },
 
   /**
    * Handles clicks on "SecondaryAction" button.
    */
-  onSecondaryActionButtonClicked_: function() {
+  onSecondaryActionButtonClicked_() {
     this.authenticator_.sendMessageToWebview('secondaryActionHit');
   },
 
@@ -462,7 +462,7 @@ Polymer({
    * @type {boolean}
    * @private
    */
-  canGoBack_: function() {
+  canGoBack_() {
     return this.lastBackMessageValue_ && !this.isWhitelistErrorShown_ &&
         !this.authCompleted_ && !this.isLoadingUiShown_ && !this.isSaml_;
   },
@@ -471,7 +471,7 @@ Polymer({
    * Handles clicks on "Back" button.
    * @private
    */
-  onBackButtonClicked_: function() {
+  onBackButtonClicked_() {
     if (!this.canGoBack_()) {
       this.cancel();
     } else {
@@ -486,7 +486,7 @@ Polymer({
    *     enterprise domain IdP.
    * @private
    */
-  loadAuthenticator_: function(doSamlRedirect) {
+  loadAuthenticator_(doSamlRedirect) {
     this.isLoadingUiShown_ = true;
     this.startLoadingTimer_();
 
@@ -500,7 +500,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isOffline_: function() {
+  isOffline_() {
     return this.screenMode_ == AuthMode.OFFLINE;
   },
 
@@ -510,7 +510,7 @@ Polymer({
    * @param {number} oldValue
    * @private
    */
-  screenModeChanged_: function(newValue, oldValue) {
+  screenModeChanged_(newValue, oldValue) {
     if (oldValue === undefined) {
       // Ignore the first call, triggered by the assignment of the initial
       // value.
@@ -527,7 +527,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isSigninFrameDialogVisible_: function(screenMode, pinDialogParameters) {
+  isSigninFrameDialogVisible_(screenMode, pinDialogParameters) {
     // See the comment in getSigninFrameContainerClass_() for the explanation on
     // why our element shouldn't be hidden during loading.
     return screenMode == AuthMode.DEFAULT && pinDialogParameters === null;
@@ -540,7 +540,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSigninFrameContainerClass_: function(isLoadingUiShown) {
+  getSigninFrameContainerClass_(isLoadingUiShown) {
     // Use the CSS class in order to make the signin-frame webview invisible
     // (completely transparent) during loading, since setting the "hidden"
     // attribute would affect its loading events.
@@ -554,7 +554,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isSamlNoticeContainerVisible_: function(isSaml, pinDialogParameters) {
+  isSamlNoticeContainerVisible_(isSaml, pinDialogParameters) {
     return isSaml && !pinDialogParameters;
   },
 
@@ -567,7 +567,7 @@ Polymer({
    * false.
    * @param {boolean} shouldMonitor
    */
-  monitorOfflineIdle: function(shouldMonitor) {
+  monitorOfflineIdle(shouldMonitor) {
     const ACTIVITY_EVENTS = ['click', 'mousemove', 'keypress'];
     const self = this;
 
@@ -634,7 +634,7 @@ Polymer({
    * Handler for Gaia loading timeout.
    * @private
    */
-  onLoadingTimeOut_: function() {
+  onLoadingTimeOut_() {
     if (Oobe.getInstance().currentScreen.id != 'gaia-signin')
       return;
     this.loadingTimer_ = undefined;
@@ -645,7 +645,7 @@ Polymer({
    * Clears loading timer.
    * @private
    */
-  clearLoadingTimer_: function() {
+  clearLoadingTimer_() {
     if (this.loadingTimer_) {
       clearTimeout(this.loadingTimer_);
       this.loadingTimer_ = undefined;
@@ -656,7 +656,7 @@ Polymer({
    * Sets up loading timer.
    * @private
    */
-  startLoadingTimer_: function() {
+  startLoadingTimer_() {
     this.clearLoadingTimer_();
     this.loadingTimer_ = setTimeout(
         this.onLoadingTimeOut_.bind(this), MAX_GAIA_LOADING_TIME_SEC * 1000);
@@ -666,7 +666,7 @@ Polymer({
    * Handler for GAIA animation guard timer.
    * @private
    */
-  onLoadAnimationGuardTimer_: function() {
+  onLoadAnimationGuardTimer_() {
     this.loadAnimationGuardTimer_ = undefined;
     this.onShowView_();
   },
@@ -675,7 +675,7 @@ Polymer({
    * Clears GAIA animation guard timer.
    * @private
    */
-  clearLoadAnimationGuardTimer_: function() {
+  clearLoadAnimationGuardTimer_() {
     if (this.loadAnimationGuardTimer_) {
       clearTimeout(this.loadAnimationGuardTimer_);
       this.loadAnimationGuardTimer_ = undefined;
@@ -686,7 +686,7 @@ Polymer({
    * Sets up GAIA animation guard timer.
    * @private
    */
-  startLoadAnimationGuardTimer_: function() {
+  startLoadAnimationGuardTimer_() {
     this.clearLoadAnimationGuardTimer_();
     this.loadAnimationGuardTimer_ = setTimeout(
         this.onLoadAnimationGuardTimer_.bind(this),
@@ -696,7 +696,7 @@ Polymer({
   /**
    * Event handler that is invoked just before the frame is shown.
    */
-  onBeforeShow: function() {
+  onBeforeShow() {
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
@@ -726,7 +726,7 @@ Polymer({
    * @return {!Element}
    * @private
    */
-  getSigninFrame_: function() {
+  getSigninFrame_() {
     // Note: Can't use |this.$|, since it returns cached references to elements
     // originally present in DOM, while the signin-frame is dynamically
     // recreated (see Authenticator.setWebviewPartition()).
@@ -736,7 +736,7 @@ Polymer({
   },
 
   /** @private */
-  getActiveFrame_: function() {
+  getActiveFrame_() {
     switch (this.screenMode_) {
       case AuthMode.DEFAULT:
         return this.getSigninFrame_();
@@ -750,12 +750,12 @@ Polymer({
   },
 
   /** @private */
-  focusActiveFrame_: function() {
+  focusActiveFrame_() {
     this.getActiveFrame_().focus();
   },
 
   /** Event handler that is invoked after the screen is shown. */
-  onAfterShow: function() {
+  onAfterShow() {
     if (!this.isLoadingUiShown_)
       this.focusActiveFrame_();
   },
@@ -763,7 +763,7 @@ Polymer({
   /**
    * Event handler that is invoked just before the screen is hidden.
    */
-  onBeforeHide: function() {
+  onBeforeHide() {
     chrome.send('loginUIStateChanged', ['gaia-signin', false]);
     Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
     this.$['offline-gaia'].switchToEmailCard(false /* animated */);
@@ -773,7 +773,7 @@ Polymer({
    * Loads the authentication extension into the iframe.
    * @param {!Object} data Extension parameters bag.
    */
-  loadAuthExtension: function(data) {
+  loadAuthExtension(data) {
     // Redirect the webview to the blank page in order to stop the SAML IdP
     // page from working in a background (see crbug.com/613245).
     if (this.screenMode_ == AuthMode.DEFAULT &&
@@ -840,7 +840,7 @@ Polymer({
    * Whether the current auth flow is SAML.
    * @return {boolean}
    */
-  isSamlForTesting: function() {
+  isSamlForTesting() {
     return this.isSaml_;
   },
 
@@ -848,7 +848,7 @@ Polymer({
    * Helper function to update the title bar.
    * @private
    */
-  updateSamlNotice_: function() {
+  updateSamlNotice_() {
     if (this.authenticator_.videoEnabled) {
       this.$['saml-notice-message'].textContent = loadTimeData.getStringF(
           'samlNoticeWithVideo', this.authenticator_.authDomain);
@@ -866,7 +866,7 @@ Polymer({
    * Clean up from a video-enabled SAML flow.
    * @private
    */
-  clearVideoTimer_: function() {
+  clearVideoTimer_() {
     if (this.videoTimer_ !== undefined) {
       clearTimeout(this.videoTimer_);
       this.videoTimer_ = undefined;
@@ -877,7 +877,7 @@ Polymer({
    * Invoked when the authDomain property is changed on the authenticator.
    * @private
    */
-  onAuthDomainChange_: function() {
+  onAuthDomainChange_() {
     this.updateSamlNotice_();
   },
 
@@ -885,7 +885,7 @@ Polymer({
    * Invoked when the videoEnabled property is changed on the authenticator.
    * @private
    */
-  onVideoEnabledChange_: function() {
+  onVideoEnabledChange_() {
     this.updateSamlNotice_();
     if (this.authenticator_.videoEnabled && this.videoTimer_ === undefined) {
       this.videoTimer_ =
@@ -899,7 +899,7 @@ Polymer({
    * Invoked when the authFlow property is changed on the authenticator.
    * @private
    */
-  onAuthFlowChange_: function() {
+  onAuthFlowChange_() {
     this.isSaml_ =
         this.authenticator_.authFlow == cr.login.Authenticator.AuthFlow.SAML;
   },
@@ -910,7 +910,7 @@ Polymer({
    * @param {number} oldValue
    * @private
    */
-  onSamlChanged_: function(newValue, oldValue) {
+  onSamlChanged_(newValue, oldValue) {
     chrome.send('samlStateChanged', [this.isSaml_]);
 
     this.classList.toggle('saml', this.isSaml_);
@@ -931,7 +931,7 @@ Polymer({
    * authentication frame is completely loaded.
    * @private
    */
-  onAuthReady_: function() {
+  onAuthReady_() {
     this.showViewProcessed_ = false;
     this.startLoadAnimationGuardTimer_();
     this.clearLoadingTimer_();
@@ -945,7 +945,7 @@ Polymer({
    * Invoked when a frame emits 'dialogShown' event.
    * @private
    */
-  onDialogShown_: function() {
+  onDialogShown_() {
     this.navigationEnabled_ = false;
   },
 
@@ -953,7 +953,7 @@ Polymer({
    * Invoked when a frame emits 'dialogHidden' event.
    * @private
    */
-  onDialogHidden_: function() {
+  onDialogHidden_() {
     this.navigationEnabled_ = true;
   },
 
@@ -962,7 +962,7 @@ Polymer({
    * @param {!CustomEvent} e
    * @private
    */
-  onMenuItemClicked_: function(e) {
+  onMenuItemClicked_(e) {
     if (e.detail == 'gm') {
       Oobe.disableSigninUI();
       chrome.send('launchIncognito');
@@ -980,7 +980,7 @@ Polymer({
    * @param {function(boolean)} callback
    * @private
    */
-  getIsSamlUserPasswordless_: function(email, gaiaId, callback) {
+  getIsSamlUserPasswordless_(email, gaiaId, callback) {
     cr.sendWithPromise('getIsSamlUserPasswordless', email, gaiaId)
         .then(callback);
   },
@@ -990,7 +990,7 @@ Polymer({
    * @param {!CustomEvent<boolean>} e
    * @private
    */
-  onBackButton_: function(e) {
+  onBackButton_(e) {
     this.getActiveFrame_().focus();
     this.lastBackMessageValue_ = !!e.detail;
     this.updateGuestButtonVisibility_();
@@ -999,7 +999,7 @@ Polymer({
    * Invoked when the auth host emits 'setPrimaryActionEnabled'  event
    * @private
    */
-  onSetPrimaryActionEnabled_: function(e) {
+  onSetPrimaryActionEnabled_(e) {
     this.primaryActionButtonEnabled_ = e.detail;
   },
 
@@ -1007,7 +1007,7 @@ Polymer({
    * Invoked when the auth host emits 'setSecondaryActionEnabled'  event
    * @private
    */
-  onSetSecondaryActionEnabled_: function(e) {
+  onSetSecondaryActionEnabled_(e) {
     this.secondaryActionButtonEnabled_ = e.detail;
   },
 
@@ -1015,7 +1015,7 @@ Polymer({
    * Invoked when the auth host emits 'setPrimaryActionLabel' event
    * @private
    */
-  onSetPrimaryActionLabel_: function(e) {
+  onSetPrimaryActionLabel_(e) {
     this.primaryActionButtonLabel_ = e.detail;
   },
 
@@ -1023,7 +1023,7 @@ Polymer({
    * Invoked when the auth host emits 'setSecondaryActionLabel' event
    * @private
    */
-  onSetSecondaryActionLabel_: function(e) {
+  onSetSecondaryActionLabel_(e) {
     this.secondaryActionButtonLabel_ = e.detail;
   },
 
@@ -1031,7 +1031,7 @@ Polymer({
    * Invoked when the auth host emits 'setAllActionsEnabled' event
    * @private
    */
-  onSetAllActionsEnabled_: function(e) {
+  onSetAllActionsEnabled_(e) {
     this.onSetPrimaryActionEnabled_(e);
     this.onSetSecondaryActionEnabled_(e);
   },
@@ -1041,7 +1041,7 @@ Polymer({
    * guard time fires.
    * @private
    */
-  onShowView_: function() {
+  onShowView_() {
     if (this.showViewProcessed_)
       return;
 
@@ -1054,7 +1054,7 @@ Polymer({
    * Called when UI is shown.
    * @private
    */
-  onLoginUIVisible_: function() {
+  onLoginUIVisible_() {
     // Show deferred error bubble.
     if (this.errorBubble_) {
       this.showErrorBubble(this.errorBubble_[0], this.errorBubble_[1]);
@@ -1073,7 +1073,7 @@ Polymer({
    * @param {number} passwordCount The number of passwords that were scraped.
    * @private
    */
-  onAuthConfirmPassword_: function(email, passwordCount) {
+  onAuthConfirmPassword_(email, passwordCount) {
     this.isLoadingUiShown_ = true;
 
     if (this.samlPasswordConfirmAttempt_ == 0)
@@ -1098,7 +1098,7 @@ Polymer({
    * was scraped (so we didn't have to ask the user to confirm their password).
    * @private
    */
-  onAuthOnePassword_: function() {
+  onAuthOnePassword_() {
     chrome.send('scrapedPasswordCount', [1]);
   },
 
@@ -1107,7 +1107,7 @@ Polymer({
    * @param {string} password The password entered at the confirm screen.
    * @private
    */
-  onConfirmPasswordCollected_: function(password) {
+  onConfirmPasswordCollected_(password) {
     this.samlPasswordConfirmAttempt_++;
     this.authenticator_.verifyConfirmedPassword(password);
 
@@ -1123,7 +1123,7 @@ Polymer({
    * @param {string} email The authenticated user's e-mail.
    * @private
    */
-  onAuthNoPassword_: function(email) {
+  onAuthNoPassword_(email) {
     chrome.send('scrapedPasswordCount', [0]);
     login.ConfirmPasswordScreen.show(
         email, true /* manual password entry */,
@@ -1138,7 +1138,7 @@ Polymer({
    *     the same as their SAML password.
    * @private
    */
-  onManualPasswordCollected_: function(password) {
+  onManualPasswordCollected_(password) {
     this.authenticator_.completeAuthWithManualPassword(password);
   },
 
@@ -1150,7 +1150,7 @@ Polymer({
    * @param {string} url The URL that was blocked.
    * @private
    */
-  onInsecureContentBlocked_: function(url) {
+  onInsecureContentBlocked_(url) {
     this.showFatalAuthError_(
         loadTimeData.getStringF('fatalErrorMessageInsecureURL', url),
         loadTimeData.getString('fatalErrorDoneButton'));
@@ -1162,7 +1162,7 @@ Polymer({
    * @param {string} buttonLabel The label to display on dismiss button.
    * @private
    */
-  showFatalAuthError_: function(message, buttonLabel) {
+  showFatalAuthError_(message, buttonLabel) {
     login.FatalErrorScreen.show(message, buttonLabel, Oobe.showSigninUI);
   },
 
@@ -1170,7 +1170,7 @@ Polymer({
    * Show fatal auth error when information is missing from GAIA.
    * @private
    */
-  missingGaiaInfo_: function() {
+  missingGaiaInfo_() {
     this.showFatalAuthError_(
         loadTimeData.getString('fatalErrorMessageNoAccountDetails'),
         loadTimeData.getString('fatalErrorTryAgainButton'));
@@ -1181,7 +1181,7 @@ Polymer({
    * @param {boolean} isThirdPartyIdP is login flow SAML with external IdP
    * @private
    */
-  samlApiUsed_: function(isThirdPartyIdP) {
+  samlApiUsed_(isThirdPartyIdP) {
     chrome.send('usingSAMLAPI', [isThirdPartyIdP]);
   },
 
@@ -1190,7 +1190,7 @@ Polymer({
    * @param {!Object} credentials Credentials of the completed authentication.
    * @private
    */
-  onAuthCompleted_: function(credentials) {
+  onAuthCompleted_(credentials) {
     if (this.screenMode_ == AuthMode.AD_AUTH) {
       this.email_ = credentials.username;
       chrome.send(
@@ -1232,7 +1232,7 @@ Polymer({
    *     payload.
    * @private
    */
-  onAuthCompletedMessage_: function(e) {
+  onAuthCompletedMessage_(e) {
     this.onAuthCompleted_(e.detail);
   },
 
@@ -1244,7 +1244,7 @@ Polymer({
    *     {string} src The URL that failed to load.
    * @private
    */
-  onLoadAbortMessage_: function(e) {
+  onLoadAbortMessage_(e) {
     this.onWebviewError_(e.detail);
   },
 
@@ -1254,7 +1254,7 @@ Polymer({
    *     {string} accountIdentifier User identifier.
    * @private
    */
-  onIdentifierEnteredMessage_: function(e) {
+  onIdentifierEnteredMessage_(e) {
     this.onIdentifierEntered_(e.detail);
   },
 
@@ -1264,7 +1264,7 @@ Polymer({
    * @param {boolean} forceOnline Whether online sign-in should be forced.
    * If |forceOnline| is false previously used sign-in type will be used.
    */
-  reset: function(takeFocus, forceOnline) {
+  reset(takeFocus, forceOnline) {
     // Reload and show the sign-in UI if needed.
     this.authenticator_.resetStates();
     if (takeFocus) {
@@ -1280,7 +1280,7 @@ Polymer({
   /**
    * Reloads extension frame.
    */
-  doReload: function() {
+  doReload() {
     if (this.screenMode_ != AuthMode.DEFAULT)
       return;
     this.authenticator_.reload();
@@ -1296,7 +1296,7 @@ Polymer({
    * @param {number} loginAttempts Number of login attempts tried.
    * @param {HTMLElement} error Content to show in bubble.
    */
-  showErrorBubble: function(loginAttempts, error) {
+  showErrorBubble(loginAttempts, error) {
     if (this.isOffline_()) {
       // Reload offline version of the sign-in extension, which will show
       // error itself.
@@ -1314,7 +1314,7 @@ Polymer({
   /**
    * Called when user canceled signin.
    */
-  cancel: function() {
+  cancel() {
     this.clearVideoTimer_();
 
     // TODO(crbug.com/470893): Figure out whether/which of these exit conditions
@@ -1340,7 +1340,7 @@ Polymer({
    *     {string} src The URL that failed to load.
    * @private
    */
-  onWebviewError_: function(data) {
+  onWebviewError_(data) {
     chrome.send('webviewLoadAborted', [data.error_code]);
   },
 
@@ -1350,7 +1350,7 @@ Polymer({
    *     {string} accountIdentifier User identifier.
    * @private
    */
-  onIdentifierEntered_: function(data) {
+  onIdentifierEntered_(data) {
     chrome.send('identifierEntered', [data.accountIdentifier]);
   },
 
@@ -1360,7 +1360,7 @@ Polymer({
    * should switch to the password screen with error.
    * @private
    */
-  loadOffline_: function(params) {
+  loadOffline_(params) {
     this.isLoadingUiShown_ = true;
     this.startLoadingTimer_();
     const offlineLogin = this.$['offline-gaia'];
@@ -1373,7 +1373,7 @@ Polymer({
   },
 
   /** @private */
-  loadAdAuth_: function(params) {
+  loadAdAuth_(params) {
     this.isLoadingUiShown_ = true;
     this.startLoadingTimer_();
     const adAuthUI = this.getActiveFrame_();
@@ -1393,7 +1393,7 @@ Polymer({
    * @param {boolean} show Show/hide error UI.
    * @param {!Object=} opt_data Optional additional information.
    */
-  showWhitelistCheckFailedError: function(show, opt_data) {
+  showWhitelistCheckFailedError(show, opt_data) {
     if (show) {
       const isManaged = opt_data && opt_data.enterpriseManaged;
       this.$['gaia-whitelist-error'].textContent = loadTimeData.getValue(
@@ -1421,7 +1421,7 @@ Polymer({
    * @param {boolean} visible Show/hide back navigation.
    * @private
    */
-  setBackNavigationVisibility_: function(visible) {
+  setBackNavigationVisibility_(visible) {
     this.$['signin-back-button'].hidden = !visible;
     this.$['signin-frame-dialog'].setAttribute('hide-shadow', !visible);
     if (!visible) {
@@ -1435,7 +1435,7 @@ Polymer({
    * @param {string} username
    * @param {ACTIVE_DIRECTORY_ERROR_STATE} errorState
    */
-  invalidateAd: function(username, errorState) {
+  invalidateAd(username, errorState) {
     if (this.screenMode_ != AuthMode.AD_AUTH)
       return;
     const adAuthUI = this.getActiveFrame_();
@@ -1452,7 +1452,7 @@ Polymer({
    * parameters.
    * @param {!OobeTypes.SecurityTokenPinDialogParameters} parameters
    */
-  showPinDialog: function(parameters) {
+  showPinDialog(parameters) {
     assert(parameters);
 
     // Note that this must be done before updating |pinDialogResultReported_|,
@@ -1467,7 +1467,7 @@ Polymer({
    * Closes the PIN dialog (that was previously opened using showPinDialog()).
    * Does nothing if the dialog is not shown.
    */
-  closePinDialog: function() {
+  closePinDialog() {
     // Note that the update triggers the observer, that notifies the handler
     // about the closing.
     this.pinDialogParameters_ = null;
@@ -1480,7 +1480,7 @@ Polymer({
    * @param {number} oldValue
    * @private
    */
-  onPinDialogParametersChanged_: function(newValue, oldValue) {
+  onPinDialogParametersChanged_(newValue, oldValue) {
     if (oldValue === undefined) {
       // Don't do anything on the initial call, triggered by the property
       // initialization.
@@ -1499,7 +1499,7 @@ Polymer({
    * Invoked when the user cancels the PIN dialog.
    * @param {!CustomEvent} e
    */
-  onPinDialogCanceled_: function(e) {
+  onPinDialogCanceled_(e) {
     this.closePinDialog();
     this.cancel();
   },
@@ -1508,7 +1508,7 @@ Polymer({
    * Invoked when the PIN dialog is completed.
    * @param {!CustomEvent<string>} e Event with the entered PIN as the payload.
    */
-  onPinDialogCompleted_: function(e) {
+  onPinDialogCompleted_(e) {
     this.pinDialogResultReported_ = true;
     chrome.send('securityTokenPinEntered', [/*user_input=*/ e.detail]);
   },
@@ -1519,7 +1519,7 @@ Polymer({
    * @param {...string} stepsVarArgs List of steps to compare with.
    * @return {boolean}
    */
-  isStep_: function(currentStep, ...stepsVarArgs) {
+  isStep_(currentStep, ...stepsVarArgs) {
     if (stepsVarArgs.length < 1)
       throw Error('At least one step to compare is required.');
     return stepsVarArgs.some(step => currentStep === step);
@@ -1533,7 +1533,7 @@ Polymer({
    * @param {boolean} isWhitelistError
    * @private
    */
-  refreshDialogStep_: function(mode, pinParams, isLoading, isWhitelistError) {
+  refreshDialogStep_(mode, pinParams, isLoading, isWhitelistError) {
     if (pinParams !== null) {
       this.step_ = DialogMode.PIN_DIALOG;
       return;
@@ -1571,7 +1571,7 @@ Polymer({
    * @param {!CustomEvent} e
    * @private
    */
-  onSamlInterstitialNext_: function() {
+  onSamlInterstitialNext_() {
     this.screenMode_ = AuthMode.DEFAULT;
     this.loadAuthenticator_(true /* doSamlRedirect */);
   },
@@ -1581,7 +1581,7 @@ Polymer({
    * @param {!CustomEvent} e
    * @private
    */
-  onSamlPageChangeAccount_: function() {
+  onSamlPageChangeAccount_() {
     // The user requests to change the account. We must clear the email
     // field of the auth params.
     this.authenticatorParams_.email = '';
@@ -1596,7 +1596,7 @@ Polymer({
    * @param {string} domain
    * @private
    */
-  calculateSamlMessage_: function(locale, domain) {
+  calculateSamlMessage_(locale, domain) {
     return loadTimeData.getStringF('samlInterstitialMessage', domain);
   },
 
@@ -1605,7 +1605,7 @@ Polymer({
    * @param {string} value
    * @private
    */
-  isEmpty_: function(value) {
+  isEmpty_(value) {
     return !value;
   },
 });

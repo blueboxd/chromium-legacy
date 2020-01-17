@@ -97,9 +97,7 @@ source_set("omnibox_icon_type_constants") {
     "omnibox_icon_type.h",
     "omnibox_icon_type.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("omnibox_internal") {
@@ -243,9 +241,7 @@ source_set("test_support+eg2") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "omnibox_app_interface.h",
-  ]
+  sources = [ "omnibox_app_interface.h" ]
 }
 
 source_set("eg2_tests") {
@@ -255,9 +251,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "omnibox_egtest.mm",
-  ]
+  sources = [ "omnibox_egtest.mm" ]
   deps = [
     ":test_support+eg2",
     "//ios/chrome/app/strings:ios_strings_grit",
@@ -274,9 +268,7 @@ source_set("eg2_tests") {
 source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "omnibox_egtest.mm",
-  ]
+  sources = [ "omnibox_egtest.mm" ]
   deps = [
     ":omnibox",
     ":omnibox_internal",
@@ -329,21 +321,15 @@ source_set("unit_tests") {
 bundle_data("resources_unit_tests") {
   visibility = [ ":unit_tests" ]
   testonly = true
-  sources = [
-    "//ios/chrome/test/data/omnibox/selected_ranges.txt",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "ios/chrome/test/data/omnibox/{{source_file_part}}",
-  ]
+  sources = [ "//ios/chrome/test/data/omnibox/selected_ranges.txt" ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "ios/chrome/test/data/omnibox/{{source_file_part}}" ]
 }
 
 source_set("perf_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "omnibox_perftest.mm",
-  ]
+  sources = [ "omnibox_perftest.mm" ]
   deps = [
     ":omnibox_internal",
     "//base",

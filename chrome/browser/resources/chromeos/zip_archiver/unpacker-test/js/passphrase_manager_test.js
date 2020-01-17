@@ -12,7 +12,7 @@ describe('PassphraseManager', function() {
     // This API is not available in Karma unit tests, so stub it using
     // window.open.
     chrome.app.window = {
-      create: function(url, options, callback) {
+      create(url, options, callback) {
         var closeCallbacks = [];
         passphraseWindow = window.open(url);
         passphraseWindow.onload = function() {
@@ -29,7 +29,7 @@ describe('PassphraseManager', function() {
         callback({
           contentWindow: passphraseWindow,
           onClosed: {
-            addListener: function(onClosedCallback) {
+            addListener(onClosedCallback) {
               closeCallbacks.push(onClosedCallback);
             }
           }

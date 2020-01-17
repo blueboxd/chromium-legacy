@@ -180,17 +180,48 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
   LayoutUnit block_size = fragment_geometry.border_box_size.block_size;
   bool is_initial_block_size_indefinite = block_size == kIndefiniteSize;
   if (is_initial_block_size_indefinite) {
-    // The intrinsic size of column flex-boxes can depend on the
-    // %-resolution-block-size. This occurs when a flex-box has "max-height:
-    // 100%" or similar on itself.
-    //
-    // Due to this we can't use cached |NGLayoutResult::IntrinsicBlockSize|
-    // value, as the following |block_size| calculation would be incorrect.
-    if (node.IsFlexibleBox() && style.ResolvedIsColumnFlexDirection() &&
-        layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
-      if (new_space.PercentageResolutionBlockSize() !=
-          old_space.PercentageResolutionBlockSize())
+    if (node.IsFlexibleBox()) {
+      // Flex-boxes can have their children calculate their size based in their
+      // parent's final block-size. E.g.
+      // <div style="display: flex;">
+      //   <div style="display: flex;">
+      //     <!-- Child will stretch to the parent's fixed block-size -->
+      //     <div></div>
+      //   </div>
+      // </div>
+      // <div style="display: flex;">
+      //   <div style="display: flex; flex-direction: column;">
+      //     <!-- Child will grow to the parent's fixed block-size -->
+      //     <div style="flex: 1;"></div>
+      //   </div>
+      // </div>
+      //
+      // If the previous |layout_result| was produced by a space which had a
+      // fixed block-size we can't use |NGLayoutResult::IntrinsicBlockSize()|,
+      // and need to layout.
+      //
+      // TODO(ikilpatrick): Similar to %-block-size descendants we could store
+      // a bit on the |NGLayoutResult| which indicates if it had a child which
+      // sized itself based on the parent's block-size.
+      // We should consider this optimization if we are missing this cache
+      // often within this branch (and could have re-used the result).
+      // TODO(ikilaptrick): This may occur for other layout modes, e.g.
+      // grid/custom-layout/etc.
+      if (old_space.IsFixedBlockSize())
         return NGLayoutCacheStatus::kNeedsLayout;
+
+      // The intrinsic size of column flex-boxes can depend on the
+      // %-resolution-block-size. This occurs when a flex-box has "max-height:
+      // 100%" or similar on itself.
+      //
+      // Due to this we can't use cached |NGLayoutResult::IntrinsicBlockSize|
+      // value, as the following |block_size| calculation would be incorrect.
+      if (style.ResolvedIsColumnFlexDirection() &&
+          layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
+        if (new_space.PercentageResolutionBlockSize() !=
+            old_space.PercentageResolutionBlockSize())
+          return NGLayoutCacheStatus::kNeedsLayout;
+      }
     }
 
     block_size = ComputeBlockSizeForFragment(

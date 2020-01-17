@@ -21,12 +21,16 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/common/constants.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace extensions {
@@ -157,6 +161,27 @@ bool AreEqual(const gfx::ImageSkia& image1, const gfx::ImageSkia& image2) {
   return gfx::test::AreImagesEqual(gfx::Image(image1), gfx::Image(image2));
 }
 
+#if defined(OS_CHROMEOS)
+// Returns true if |res| image is the |src| image with badge identified by
+// |badge_type| resource. If |grayscale| is true applies HSL shift for the
+// comparison.
+bool IsBadgeApplied(const gfx::ImageSkia& src,
+                    const gfx::ImageSkia& res,
+                    ChromeAppIcon::Badge badge_type,
+                    bool grayscale) {
+  src.EnsureRepsForSupportedScales();
+  gfx::ImageSkia reference_src = src.DeepCopy();
+
+  util::ApplyBadge(&reference_src, badge_type);
+  if (grayscale) {
+    constexpr color_utils::HSL shift = {-1, 0, 0.6};
+    reference_src =
+        gfx::ImageSkiaOperations::CreateHSLShiftedImage(reference_src, shift);
+  }
+  return AreEqual(reference_src, res);
+}
+#endif
+
 }  // namespace
 
 class ChromeAppIconTest : public ExtensionServiceTestBase {
@@ -211,6 +236,11 @@ TEST_F(ChromeAppIconTest, IconLifeCycle) {
   EXPECT_NE(2U, update_count_after_disable);
   EXPECT_FALSE(IsBlankImage(reference_icon.image_skia()));
   EXPECT_TRUE(IsGrayscaleImage(reference_icon.image_skia()));
+#if defined(OS_CHROMEOS)
+  EXPECT_TRUE(IsBadgeApplied(image_before_disable, reference_icon.image_skia(),
+                             ChromeAppIcon::Badge::kBlocked,
+                             true /* grayscale */));
+#endif
 
   // Reenable extension. It should match previous enabled image
   service()->EnableExtension(kTestAppId);
@@ -262,6 +292,9 @@ TEST_F(ChromeAppIconTest, ChromeBadging) {
   // by ArcAppListPrefs, and one called by LaunchExtensionAppUpdate.
   EXPECT_EQ(2U, reference_icon.icon_update_count());
   EXPECT_FALSE(AreEqual(reference_icon.image_skia(), image_before_badging));
+  EXPECT_TRUE(IsBadgeApplied(image_before_badging, reference_icon.image_skia(),
+                             ChromeAppIcon::Badge::kChrome,
+                             false /* grayscale */));
 
   // Opts out the Play Store. Badge should be gone and icon image is the same
   // as it was before badging.

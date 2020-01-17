@@ -34,11 +34,11 @@ enum IconEffects : uint32_t {
   // resize-and-then-badge and never badge-and-then-resize, which can matter if
   // the badge has a fixed size.
   kResizeAndPad = 0x01,  // Resize and Pad per Material Design style.
-  kBadge = 0x02,         // Another (Android) app has the same name.
-  kGray = 0x04,          // Disabled apps are grayed out.
+  kChromeBadge = 0x02,   // Another (Android) app has the same name.
+  kBlocked = 0x04,       // Disabled apps are grayed out and badged.
   kRoundCorners = 0x08,  // Bookmark apps get round corners.
-  kPaused = 0x10,        // Paused apps are badged to indicate they cannot be
-                         // launched.
+  kPaused = 0x10,  // Paused apps are grayed out and badged to indicate they
+                   // cannot be launched.
 };
 
 // Modifies |image_skia| to apply icon post-processing effects like badging and

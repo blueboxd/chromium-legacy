@@ -350,7 +350,7 @@ NodeRareData& Node::CreateRareData() {
 
   DCHECK(data_.rare_data_);
   SetFlag(kHasRareDataFlag);
-  MarkingVisitor::WriteBarrier(RareData());
+  MarkingVisitor::WriteBarrier(&data_.rare_data_);
   return *RareData();
 }
 
@@ -1033,7 +1033,7 @@ void Node::SetLayoutObject(LayoutObject* layout_object) {
   } else {
     data_.node_layout_data_ = node_layout_data;
     // We need the following line since data_.node_layout_data_ is not a Member.
-    MarkingVisitor::WriteBarrier(data_.node_layout_data_);
+    MarkingVisitor::WriteBarrier(&data_.node_layout_data_);
   }
 }
 
@@ -1070,7 +1070,7 @@ void Node::SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style) {
   } else {
     data_.node_layout_data_ = node_layout_data;
     // We need the following line since data_.node_layout_data_ is not a Member.
-    MarkingVisitor::WriteBarrier(data_.node_layout_data_);
+    MarkingVisitor::WriteBarrier(&data_.node_layout_data_);
   }
 }
 
@@ -1850,6 +1850,16 @@ ContainerNode* Node::ParentOrShadowHostOrTemplateHostNode() const {
   if (this_fragment && this_fragment->IsTemplateContent())
     return static_cast<const TemplateContentDocumentFragment*>(this)->Host();
   return ParentOrShadowHostNode();
+}
+
+TreeScope& Node::OriginatingTreeScope() const {
+  if (const SVGElement* svg_element = DynamicTo<SVGElement>(this)) {
+    if (const SVGElement* corr_element = svg_element->CorrespondingElement()) {
+      DCHECK(!corr_element->CorrespondingElement());
+      return corr_element->GetTreeScope();
+    }
+  }
+  return GetTreeScope();
 }
 
 Document* Node::ownerDocument() const {
@@ -3240,6 +3250,12 @@ bool Node::IsEffectiveRootScroller() const {
   return GetLayoutObject() ? GetLayoutObject()->IsEffectiveRootScroller()
                            : false;
 }
+
+LayoutBox* Node::AutoscrollBox() {
+  return nullptr;
+}
+
+void Node::StopAutoscroll() {}
 
 WebPluginContainerImpl* Node::GetWebPluginContainer() const {
   if (!IsA<HTMLObjectElement>(this) && !IsA<HTMLEmbedElement>(this)) {

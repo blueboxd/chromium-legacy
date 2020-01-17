@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_request_options.h"
 #include "third_party/blink/renderer/modules/credentialmanager/authentication_extensions_client_inputs.h"
 #include "third_party/blink/renderer/modules/credentialmanager/authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/modules/credentialmanager/cable_authentication_data.h"
@@ -21,7 +22,6 @@
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_descriptor.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_parameters.h"
-#include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_request_options.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_rp_entity.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_user_entity.h"
 

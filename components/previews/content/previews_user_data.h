@@ -31,10 +31,6 @@ class PreviewsUserData {
       return std::make_unique<ServerLitePageInfo>(*this);
     }
 
-    // The start time of the original navigation, that is, the one started by
-    // the user.
-    base::TimeTicks original_navigation_start = base::TimeTicks();
-
     // The page id used for this preview.
     uint64_t page_id = 0;
 

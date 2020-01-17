@@ -17,6 +17,7 @@
     },
     {
       "app": "ios_web_shell_egtests",
+      "xcode parallelization": true,
       "xctest": true
     }
   ]

@@ -29,9 +29,7 @@ source_set("network_fetcher_sources") {
 source_set("updater_tests") {
   testonly = true
 
-  sources = [
-    "net/network_unittest.mm",
-  ]
+  sources = [ "net/network_unittest.mm" ]
 
   deps = [
     ":network_fetcher_sources",
@@ -47,9 +45,7 @@ mac_app_bundle("updater_bundle") {
   info_plist = "Info.plist"
   output_name = "GoogleUpdate"
 
-  sources = [
-    "main.cc",
-  ]
+  sources = [ "main.cc" ]
   deps = [
     ":network_fetcher_sources",
     ":updater_setup_sources",
@@ -79,9 +75,7 @@ source_set("updater_setup_sources") {
 }
 
 executable("updater_setup") {
-  sources = [
-    "setup/main.cc",
-  ]
+  sources = [ "setup/main.cc" ]
 
   deps = [
     ":updater_bundle",
@@ -90,10 +84,6 @@ executable("updater_setup") {
 }
 
 copy("updater_install_script") {
-  sources = [
-    "setup/.install.sh",
-  ]
-  outputs = [
-    "$root_build_dir/chrome/updater/.install.sh",
-  ]
+  sources = [ "setup/.install.sh" ]
+  outputs = [ "$root_build_dir/chrome/updater/.install.sh" ]
 }

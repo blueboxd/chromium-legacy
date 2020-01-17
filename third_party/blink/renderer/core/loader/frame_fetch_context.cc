@@ -573,14 +573,9 @@ void FrameFetchContext::AddClientHintsIfNecessary(
                                                                 &enabled_hints);
   }
 
-  // TODO(iclelland): If feature policy control over client hints ships, remove
-  // the runtime flag check for the next four hints. Currently, when the
-  // kAllowClientHintsToThirdParty feature is enabled, but the runtime flag is
-  // *not* set, the behaviour is that these four hints will be sent on all
-  // eligible requests. Feature policy control is intended to change that
-  // default.
-
-  if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+  // The next 4 hints should be enabled if we're allowing legacy hints to third
+  // parties, or if FeaturePolicy delegation says they are allowed.
+  if ((base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) ||
        policy->IsFeatureEnabledForOrigin(
            mojom::FeaturePolicyFeature::kClientHintDeviceMemory,
            resource_origin)) &&
@@ -593,7 +588,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   }
 
   float dpr = GetDevicePixelRatio();
-  if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+  if ((base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) ||
        policy->IsFeatureEnabledForOrigin(
            mojom::FeaturePolicyFeature::kClientHintDPR, resource_origin)) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kDpr, hints_preferences,
@@ -601,19 +596,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField("DPR", AtomicString(String::Number(dpr)));
   }
 
-  if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
-       policy->IsFeatureEnabledForOrigin(
-           mojom::FeaturePolicyFeature::kClientHintWidth, resource_origin)) &&
-      ShouldSendClientHint(mojom::WebClientHintsType::kResourceWidth,
-                           hints_preferences, enabled_hints)) {
-    if (resource_width.is_set) {
-      float physical_width = resource_width.width * dpr;
-      request.SetHttpHeaderField(
-          "Width", AtomicString(String::Number(ceil(physical_width))));
-    }
-  }
-
-  if ((!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
+  if ((base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) ||
        policy->IsFeatureEnabledForOrigin(
            mojom::FeaturePolicyFeature::kClientHintViewportWidth,
            resource_origin)) &&
@@ -623,6 +606,18 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         "Viewport-Width",
         AtomicString(String::Number(GetFrame()->View()->ViewportWidth())));
+  }
+
+  if ((base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) ||
+       policy->IsFeatureEnabledForOrigin(
+           mojom::FeaturePolicyFeature::kClientHintWidth, resource_origin)) &&
+      ShouldSendClientHint(mojom::WebClientHintsType::kResourceWidth,
+                           hints_preferences, enabled_hints)) {
+    if (resource_width.is_set) {
+      float physical_width = resource_width.width * dpr;
+      request.SetHttpHeaderField(
+          "Width", AtomicString(String::Number(ceil(physical_width))));
+    }
   }
 
   // TODO(iclelland): If feature policy control over client hints ships, remove

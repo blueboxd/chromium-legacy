@@ -33,7 +33,7 @@ constexpr int kDistanceFromUserViewToArrowButton = 44;
 // Distance from the end of arrow button to the bottom of the big user view.
 constexpr int kDistanceFromArrowButtonToBigUserViewBottom = 20;
 
-constexpr int kArrowButtonSizeDp = 40;
+constexpr int kArrowButtonSizeDp = 48;
 
 // Non-empty width, useful for debugging/visualization.
 constexpr int kNonEmptyWidth = 1;

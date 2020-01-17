@@ -277,9 +277,7 @@ jumbo_source_set("objects") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
-  public_deps = [
-    "//ppapi/c",
-  ]
+  public_deps = [ "//ppapi/c" ]
 
   if (is_nacl) {
     public_deps += [ "//build/config/nacl:nacl_base" ]

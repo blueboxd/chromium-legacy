@@ -31,6 +31,9 @@
 #include "third_party/blink/renderer/core/html/forms/search_input_type.h"
 
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -39,7 +42,6 @@
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
-#include "third_party/blink/renderer/core/layout/layout_search_field.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -54,11 +56,6 @@ SearchInputType::SearchInputType(HTMLInputElement& element)
 
 void SearchInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeSearch);
-}
-
-LayoutObject* SearchInputType::CreateLayoutObject(const ComputedStyle&,
-                                                  LegacyLayout) const {
-  return new LayoutSearchField(&GetElement());
 }
 
 const AtomicString& SearchInputType::FormControlType() const {

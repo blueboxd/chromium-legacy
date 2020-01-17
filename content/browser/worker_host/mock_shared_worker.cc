@@ -81,7 +81,7 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
     return false;
   if (!CheckEquality(expected_url, create_params->info->url))
     return false;
-  if (!CheckEquality(expected_name, create_params->info->name))
+  if (!CheckEquality(expected_name, create_params->info->options->name))
     return false;
   if (!CheckEquality(expected_content_security_policy_type,
                      create_params->info->content_security_policy_type))

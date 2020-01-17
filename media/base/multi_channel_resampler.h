@@ -54,6 +54,9 @@ class MEDIA_EXPORT MultiChannelResampler {
   // single call to |read_cb_| for more data.
   int ChunkSize() const;
 
+  // See SincResampler::GetMaxInputFramesRequested().
+  int GetMaxInputFramesRequested(int output_frames_requested) const;
+
   // See SincResampler::BufferedFrames.
   double BufferedFrames() const;
 

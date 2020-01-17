@@ -10,9 +10,8 @@ source_set("public") {
     "paint_preview_compositor_service.h",
   ]
 
-  public_deps = [
-    "//components/services/paint_preview_compositor/public/mojom",
-  ]
+  public_deps =
+      [ "//components/services/paint_preview_compositor/public/mojom" ]
 
   deps = [
     "//base",

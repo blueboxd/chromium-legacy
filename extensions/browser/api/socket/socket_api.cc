@@ -200,9 +200,10 @@ void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
   DCHECK(pending_host_resolver_);
   DCHECK(!receiver_.is_bound());
   host_resolver_.Bind(std::move(pending_host_resolver_));
-  // TODO(https://crbug.com/997049): Pass in a non-empty NetworkIsolationKey.
-  host_resolver_->ResolveHost(host_port_pair, net::NetworkIsolationKey::Todo(),
-                              nullptr, receiver_.BindNewPipeAndPassRemote());
+  url::Origin origin = url::Origin::Create(extension_->url());
+  host_resolver_->ResolveHost(host_port_pair,
+                              net::NetworkIsolationKey(origin, origin), nullptr,
+                              receiver_.BindNewPipeAndPassRemote());
   receiver_.set_disconnect_handler(
       base::BindOnce(&SocketExtensionWithDnsLookupFunction::OnComplete,
                      base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,

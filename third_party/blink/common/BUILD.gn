@@ -88,6 +88,7 @@ jumbo_source_set("common") {
     "origin_trials/trial_token_validator.cc",
     "page/page_zoom.cc",
     "peerconnection/webrtc_ip_handling_policy.cc",
+    "permissions/permission_utils.cc",
     "scheduler/web_scheduler_tracked_feature.cc",
     "service_worker/service_worker_status_code.cc",
     "service_worker/service_worker_type_converters.cc",
@@ -97,9 +98,7 @@ jumbo_source_set("common") {
     "web_package/signed_exchange_request_matcher.cc",
   ]
 
-  public_deps = [
-    "//third_party/blink/public/common:headers",
-  ]
+  public_deps = [ "//third_party/blink/public/common:headers" ]
 
   deps = [
     "//base",
@@ -131,9 +130,7 @@ jumbo_source_set("common") {
 }
 
 fuzzer_test("http_structured_header_fuzzer") {
-  sources = [
-    "http/structured_header_fuzzer.cc",
-  ]
+  sources = [ "http/structured_header_fuzzer.cc" ]
   deps = [
     ":common",
     "//third_party/blink/renderer/platform:blink_fuzzer_test_support",

@@ -48,6 +48,17 @@ class AnsibleManagementServiceTest : public testing::Test {
     return ansible_management_service_;
   }
 
+  void ExecuteSuccessfulConfigurationFlow() {
+    ansible_management_service()->ConfigureDefaultContainer(
+        configuration_finished_mock_callback_.Get());
+    // Should wait for Cicerone response for Linux package install request.
+    base::RunLoop().RunUntilIdle();
+    test_helper_->SendSucceededInstallSignal();
+    // AnsibleManagementService should read playbook file content.
+    task_environment_.RunUntilIdle();
+    test_helper_->SendSucceededApplySignal();
+  }
+
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<AnsibleManagementTestHelper> test_helper_;
   base::MockCallback<base::OnceCallback<void(bool)>>
@@ -74,7 +85,6 @@ TEST_F(AnsibleManagementServiceTest, ConfigureDefaultContainerSuccess) {
   base::RunLoop().RunUntilIdle();
 
   test_helper_->SendSucceededInstallSignal();
-  base::RunLoop().RunUntilIdle();
   task_environment_.RunUntilIdle();
 
   test_helper_->SendSucceededApplySignal();
@@ -104,8 +114,47 @@ TEST_F(AnsibleManagementServiceTest, ConfigureDefaultContainerApplyFail) {
   base::RunLoop().RunUntilIdle();
 
   test_helper_->SendSucceededInstallSignal();
-  base::RunLoop().RunUntilIdle();
   task_environment_.RunUntilIdle();
+}
+
+TEST_F(AnsibleManagementServiceTest,
+       CouldNotConfigureContainerAfterSuccessfullConfiguration) {
+  test_helper_->SetUpAnsibleInstallation(
+      vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
+  test_helper_->SetUpPlaybookApplication(
+      vm_tools::cicerone::ApplyAnsiblePlaybookResponse::STARTED);
+
+  EXPECT_CALL(configuration_finished_mock_callback_, Run(true)).Times(1);
+  ExecuteSuccessfulConfigurationFlow();
+
+  EXPECT_CALL(configuration_finished_mock_callback_, Run(false)).Times(1);
+
+  ansible_management_service()->ConfigureDefaultContainer(
+      configuration_finished_mock_callback_.Get());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(AnsibleManagementServiceTest,
+       CouldConfigureContainerAfterFailedConfiguration) {
+  test_helper_->SetUpAnsibleInstallation(
+      vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
+
+  EXPECT_CALL(configuration_finished_mock_callback_, Run(false)).Times(1);
+
+  // Unsuccessful sequence of events.
+  ansible_management_service()->ConfigureDefaultContainer(
+      configuration_finished_mock_callback_.Get());
+  base::RunLoop().RunUntilIdle();
+  CloseCrostiniAnsibleSoftwareConfigViewForTesting();
+
+  // Setup for success.
+  test_helper_->SetUpAnsibleInstallation(
+      vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
+  test_helper_->SetUpPlaybookApplication(
+      vm_tools::cicerone::ApplyAnsiblePlaybookResponse::STARTED);
+
+  EXPECT_CALL(configuration_finished_mock_callback_, Run(true)).Times(1);
+  ExecuteSuccessfulConfigurationFlow();
 }
 
 }  // namespace crostini

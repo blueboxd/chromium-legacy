@@ -277,4 +277,9 @@ CoreAccountId AdvancedProtectionStatusManager::GetUnconsentedPrimaryAccountId()
                            : CoreAccountId();
 }
 
+void AdvancedProtectionStatusManager::SetAdvancedProtectionStatusForTesting(
+    bool enrolled) {
+  is_under_advanced_protection_ = enrolled;
+}
+
 }  // namespace safe_browsing

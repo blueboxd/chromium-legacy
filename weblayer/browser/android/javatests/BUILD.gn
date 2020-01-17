@@ -83,9 +83,7 @@ template("weblayer_instrumentation") {
       additional_apks = []
     }
     additional_apks += [ "//net/android:net_test_support_apk" ]
-    data = [
-      "//weblayer/test/data/",
-    ]
+    data = [ "//weblayer/test/data/" ]
   }
 }
 
@@ -98,9 +96,7 @@ weblayer_instrumentation("weblayer_instrumentation_test_apk") {
   apk_under_test = "//weblayer/shell/android:weblayer_shell_system_webview_apk"
   use_webview_provider = system_webview_apk_target
 
-  deps = [
-    ":weblayer_java_tests",
-  ]
+  deps = [ ":weblayer_java_tests" ]
 }
 
 # Runs the instrumentation tests loading the implementation from the WebLayer
@@ -110,9 +106,7 @@ weblayer_instrumentation("weblayer_support_instrumentation_test_apk") {
   apk_under_test = "//weblayer/shell/android:weblayer_shell_apk"
   additional_apks = [ "//weblayer/shell/android:weblayer_support_apk" ]
 
-  deps = [
-    ":weblayer_java_tests",
-  ]
+  deps = [ ":weblayer_java_tests" ]
 }
 
 weblayer_instrumentation("weblayer_private_instrumentation_test_apk") {
@@ -120,7 +114,5 @@ weblayer_instrumentation("weblayer_private_instrumentation_test_apk") {
   apk_under_test = "//weblayer/shell/android:weblayer_shell_apk"
   additional_apks = [ "//weblayer/shell/android:weblayer_support_apk" ]
 
-  deps = [
-    ":weblayer_private_java_tests",
-  ]
+  deps = [ ":weblayer_private_java_tests" ]
 }

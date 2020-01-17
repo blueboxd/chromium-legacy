@@ -26,9 +26,7 @@ static_library("managed") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "managed_bookmarks_tracker_unittest.cc",
-  ]
+  sources = [ "managed_bookmarks_tracker_unittest.cc" ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 

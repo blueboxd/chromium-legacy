@@ -50,9 +50,7 @@ static_library("browser") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "dom_distiller_viewer_source_unittest.cc",
-  ]
+  sources = [ "dom_distiller_viewer_source_unittest.cc" ]
   deps = [
     ":browser",
     "//content/test:test_support",

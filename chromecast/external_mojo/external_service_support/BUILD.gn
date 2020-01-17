@@ -36,15 +36,11 @@ source_set("process_setup") {
 }
 
 source_set("service_process") {
-  sources = [
-    "service_process.h",
-  ]
+  sources = [ "service_process.h" ]
 }
 
 source_set("standalone_service_main") {
-  sources = [
-    "standalone_service_main.cc",
-  ]
+  sources = [ "standalone_service_main.cc" ]
   deps = [
     ":external_service",
     ":process_setup",
@@ -52,9 +48,7 @@ source_set("standalone_service_main") {
     "//chromecast/external_mojo/public/cpp:common",
     "//mojo/core/embedder",
   ]
-  public_deps = [
-    ":service_process",
-  ]
+  public_deps = [ ":service_process" ]
 }
 
 source_set("chromium_service") {
@@ -73,9 +67,7 @@ source_set("chromium_service") {
 }
 
 executable("standalone_mojo_broker") {
-  sources = [
-    "standalone_mojo_broker.cc",
-  ]
+  sources = [ "standalone_mojo_broker.cc" ]
   deps = [
     ":process_setup",
     "//base",

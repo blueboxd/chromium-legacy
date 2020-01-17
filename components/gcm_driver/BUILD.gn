@@ -136,9 +136,7 @@ static_library("test_support") {
     "fake_gcm_profile_service.h",
   ]
 
-  public_deps = [
-    ":gcm_driver",
-  ]
+  public_deps = [ ":gcm_driver" ]
   deps = [
     "//base",
     "//components/gcm_driver/instance_id:test_support",

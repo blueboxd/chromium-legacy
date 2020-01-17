@@ -157,7 +157,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     bool IsConnected() const;
 
     // Returns true if the handshake has been confirmed.
-    bool IsCryptoHandshakeConfirmed() const;
+    bool OneRttKeysAvailable() const;
 
     // Starts a request to rendezvous with a promised a stream.  If OK is
     // returned, then |push_stream_| will be updated with the promised

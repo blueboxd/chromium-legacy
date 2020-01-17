@@ -338,8 +338,8 @@ TEST_F(CanvasRenderingContext2DAPITest, AccessibilityRectTestForAddHitRegion) {
   context->rect(10, 10, 40, 40);
   context->addHitRegion(options, exception_state);
 
-  AXObjectCacheImpl* ax_object_cache =
-      ToAXObjectCacheImpl(GetDocument().ExistingAXObjectCache());
+  auto* ax_object_cache =
+      To<AXObjectCacheImpl>(GetDocument().ExistingAXObjectCache());
   AXObject* ax_object = ax_object_cache->GetOrCreate(button_element);
 
   LayoutRect ax_bounds = ax_object->GetBoundsInFrameCoordinates();
@@ -365,8 +365,8 @@ TEST_F(CanvasRenderingContext2DAPITest,
   context->rect(10, 10, 40, 40);
   context->drawFocusIfNeeded(button_element);
 
-  AXObjectCacheImpl* ax_object_cache =
-      ToAXObjectCacheImpl(GetDocument().ExistingAXObjectCache());
+  auto* ax_object_cache =
+      To<AXObjectCacheImpl>(GetDocument().ExistingAXObjectCache());
   AXObject* ax_object = ax_object_cache->GetOrCreate(button_element);
 
   LayoutRect ax_bounds = ax_object->GetBoundsInFrameCoordinates();

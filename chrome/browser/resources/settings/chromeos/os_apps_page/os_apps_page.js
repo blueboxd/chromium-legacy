@@ -56,7 +56,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.APP_MANAGEMENT) {
           map.set(settings.routes.APP_MANAGEMENT.path, '#appManagement');
@@ -77,7 +77,7 @@ Polymer({
     app_: Object,
   },
 
-  attached: function() {
+  attached() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
   },
 
@@ -86,7 +86,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  iconUrlFromId_: function(app) {
+  iconUrlFromId_(app) {
     if (!app) {
       return '';
     }
@@ -94,19 +94,19 @@ Polymer({
   },
 
   /** @private */
-  onClickAppManagement_: function() {
+  onClickAppManagement_() {
     chrome.metricsPrivate.recordEnumerationValue(
         AppManagementEntryPointsHistogramName,
         AppManagementEntryPoint.OsSettingsMainPage,
         Object.keys(AppManagementEntryPoint).length);
-    settings.navigateTo(settings.routes.APP_MANAGEMENT);
+    settings.Router.getInstance().navigateTo(settings.routes.APP_MANAGEMENT);
   },
 
   /**
    * @param {!Event} event
    * @private
    */
-  onEnableAndroidAppsTap_: function(event) {
+  onEnableAndroidAppsTap_(event) {
     this.setPrefValue('arc.enabled', true);
     event.stopPropagation();
   },
@@ -115,18 +115,19 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isEnforced_: function(pref) {
+  isEnforced_(pref) {
     return pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 
   /** @private */
-  onAndroidAppsSubpageTap_: function(event) {
+  onAndroidAppsSubpageTap_(event) {
     if (event.target && event.target.tagName == 'A') {
       // Filter out events coming from 'Learn more' link
       return;
     }
     if (this.androidAppsInfo.playStoreEnabled) {
-      settings.navigateTo(settings.routes.ANDROID_APPS_DETAILS);
+      settings.Router.getInstance().navigateTo(
+          settings.routes.ANDROID_APPS_DETAILS);
     }
   },
 
@@ -134,7 +135,7 @@ Polymer({
    * @param {!MouseEvent} event
    * @private
    */
-  onManageAndroidAppsTap_: function(event) {
+  onManageAndroidAppsTap_(event) {
     // |event.detail| is the click count. Keyboard events will have 0 clicks.
     const isKeyboardAction = event.detail == 0;
     settings.AndroidAppsBrowserProxyImpl.getInstance().showAndroidAppsSettings(

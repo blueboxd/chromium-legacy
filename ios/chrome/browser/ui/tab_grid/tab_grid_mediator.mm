@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
+#include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
@@ -28,8 +29,6 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
-#import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
@@ -104,14 +103,17 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 @interface TabGridMediator ()<CRWWebStateObserver,
                               SnapshotCacheObserver,
                               WebStateListObserving>
-// The list from the tab model.
+// The list from the browser.
 @property(nonatomic, assign) WebStateList* webStateList;
+// The browser state from the browser.
+@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
 // The UI consumer to which updates are made.
 @property(nonatomic, weak) id<GridConsumer> consumer;
 // The saved session window just before close all tabs is called.
 @property(nonatomic, strong) SessionWindowIOS* closedSessionWindow;
-// The number of tabs closed when close all tabs is called.
-@property(nonatomic, assign) int closedTabsCount;
+// The number of tabs in |closedSessionWindow| that are synced by
+// TabRestoreService.
+@property(nonatomic, assign) int syncedClosedTabsCount;
 // Short-term cache for grid thumbnails.
 @property(nonatomic, strong)
     NSMutableDictionary<NSString*, UIImage*>* appearanceCache;
@@ -129,13 +131,14 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 }
 
 // Public properties.
-@synthesize tabModel = _tabModel;
+@synthesize browser = _browser;
 @synthesize tabRestoreService = _tabRestoreService;
 // Private properties.
 @synthesize webStateList = _webStateList;
+@synthesize browserState = _browserState;
 @synthesize consumer = _consumer;
 @synthesize closedSessionWindow = _closedSessionWindow;
-@synthesize closedTabsCount = _closedTabsCount;
+@synthesize syncedClosedTabsCount = _syncedClosedTabsCount;
 @synthesize appearanceCache = _appearanceCache;
 
 - (instancetype)initWithConsumer:(id<GridConsumer>)consumer {
@@ -158,13 +161,15 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 #pragma mark - Public properties
 
-- (void)setTabModel:(TabModel*)tabModel {
+- (void)setBrowser:(Browser*)browser {
   [self.snapshotCache removeObserver:self];
   _scopedWebStateListObserver->RemoveAll();
   _scopedWebStateObserver->RemoveAll();
-  _tabModel = tabModel;
+  _browser = browser;
   [self.snapshotCache addObserver:self];
-  _webStateList = tabModel.webStateList;
+  _webStateList = browser ? browser->GetWebStateList() : nullptr;
+  _browserState = browser ? browser->GetBrowserState() : nullptr;
+
   if (_webStateList) {
     _scopedWebStateListObserver->Add(_webStateList);
     for (int i = 0; i < self.webStateList->count(); i++) {
@@ -264,15 +269,15 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 }
 
 - (void)insertNewItemAtIndex:(NSUInteger)index {
-  // The incognito mediator's TabModel is briefly set to nil after the last
+  // The incognito mediator's Browser is briefly set to nil after the last
   // incognito tab is closed.  This occurs because the incognito BrowserState
   // needs to be destroyed to correctly clear incognito browsing data.  Don't
   // attempt to create a new WebState with a nil BrowserState.
-  if (!self.tabModel)
+  if (!self.browser)
     return;
 
-  DCHECK(self.tabModel.browserState);
-  web::WebState::CreateParams params(self.tabModel.browserState);
+  DCHECK(self.browserState);
+  web::WebState::CreateParams params(self.browserState);
   std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
 
   GURL newTabURL(kChromeUINewTabURL);
@@ -314,38 +319,48 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     return;
   // Tell the cache to mark these images for deletion, rather than immediately
   // deleting them.
-  DCHECK(self.tabModel.browserState);
+  DCHECK(self.browser->GetBrowserState());
   SnapshotCache* cache =
-      SnapshotCacheFactory::GetForBrowserState(self.tabModel.browserState);
+      SnapshotCacheFactory::GetForBrowserState(self.browser->GetBrowserState());
   for (int i = 0; i < self.webStateList->count(); i++) {
     web::WebState* webState = self.webStateList->GetWebStateAt(i);
     TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
     [cache markImageWithSessionID:tabHelper->tab_id()];
   }
   self.closedSessionWindow = SerializeWebStateList(self.webStateList);
-  self.closedTabsCount = self.webStateList->count();
+  int old_size =
+      self.tabRestoreService ? self.tabRestoreService->entries().size() : 0;
   self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
+  self.syncedClosedTabsCount =
+      self.tabRestoreService
+          ? self.tabRestoreService->entries().size() - old_size
+          : 0;
 }
 
 - (void)undoCloseAllItems {
   if (!self.closedSessionWindow)
     return;
-  __weak TabGridMediator* weakSelf = self;
-  self.webStateList->PerformBatchOperation(
-      base::BindOnce(^(WebStateList* web_state_list) {
-        [weakSelf restoreClosedSessionWindowAndUpdateTabRestoreService];
-      }));
+  DCHECK(self.browser->GetBrowserState());
+  [self.browser->GetTabModel() restoreSessionWindow:self.closedSessionWindow
+                                  forInitialRestore:NO];
+
+  self.closedSessionWindow = nil;
+  [self removeEntriesFromTabRestoreService];
+  self.syncedClosedTabsCount = 0;
+  // Unmark all images for deletion since they are now active tabs again.
+  ios::ChromeBrowserState* browserState = self.browser->GetBrowserState();
+  [SnapshotCacheFactory::GetForBrowserState(browserState) unmarkAllImages];
 }
 
 - (void)discardSavedClosedItems {
   if (!self.closedSessionWindow)
     return;
-  self.closedTabsCount = 0;
+  self.syncedClosedTabsCount = 0;
   self.closedSessionWindow = nil;
   // Delete all marked images from the cache.
-  DCHECK(self.tabModel.browserState);
-  ios::ChromeBrowserState* browserState = self.tabModel.browserState;
-  [SnapshotCacheFactory::GetForBrowserState(browserState) removeMarkedImages];
+  DCHECK(self.browserState);
+  [SnapshotCacheFactory::GetForBrowserState(self.browserState)
+      removeMarkedImages];
 }
 
 #pragma mark - GridImageDataSource
@@ -418,7 +433,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   }
 }
 
-// Removes |self.closedTabsCount| most recent entries from the
+// Removes |self.syncedClosedTabsCount| most recent entries from the
 // TabRestoreService.
 - (void)removeEntriesFromTabRestoreService {
   if (!self.tabRestoreService) {
@@ -427,7 +442,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   std::vector<SessionID> identifiers;
   auto iter = self.tabRestoreService->entries().begin();
   auto end = self.tabRestoreService->entries().end();
-  for (int i = 0; i < self.closedTabsCount && iter != end; i++) {
+  for (int i = 0; i < self.syncedClosedTabsCount && iter != end; i++) {
     identifiers.push_back(iter->get()->id);
     iter++;
   }
@@ -436,38 +451,11 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   }
 }
 
-// Restores the saved |self.closedSessionWindow| and updates the
-// TabRestoreService.
-- (void)restoreClosedSessionWindowAndUpdateTabRestoreService {
-  if (!self.closedSessionWindow)
-    return;
-  DCHECK(self.tabModel.browserState);
-  // Don't trigger the initial load for these restored WebStates since the
-  // number of WKWebViews is unbounded and may lead to an OOM crash.
-  WebStateListWebUsageEnabler* webUsageEnabler =
-      WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
-          self.tabModel.browserState);
-  webUsageEnabler->SetTriggersInitialLoad(false);
-  web::WebState::CreateParams createParams(self.tabModel.browserState);
-  DeserializeWebStateList(
-      self.webStateList, self.closedSessionWindow,
-      base::BindRepeating(&web::WebState::CreateWithStorageSession,
-                          createParams));
-  webUsageEnabler->SetTriggersInitialLoad(true);
-
-  self.closedSessionWindow = nil;
-  [self removeEntriesFromTabRestoreService];
-  self.closedTabsCount = 0;
-  // Unmark all images for deletion since they are now active tabs again.
-  ios::ChromeBrowserState* browserState = self.tabModel.browserState;
-  [SnapshotCacheFactory::GetForBrowserState(browserState) unmarkAllImages];
-}
-
 // Returns a SnapshotCache for the current BrowserState.
 - (SnapshotCache*)snapshotCache {
-  if (!_tabModel.browserState)
+  if (!self.browserState)
     return nil;
-  return SnapshotCacheFactory::GetForBrowserState(_tabModel.browserState);
+  return SnapshotCacheFactory::GetForBrowserState(self.browserState);
 }
 
 @end

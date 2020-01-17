@@ -28,9 +28,7 @@ source_set("app_launcher") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "app_launcher_alert_overlay_mediator_unittest.mm",
-  ]
+  sources = [ "app_launcher_alert_overlay_mediator_unittest.mm" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 

@@ -153,11 +153,15 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
       sizes_to_generate.insert(icon.square_size_px);
   }
 
+  base::char16 icon_letter =
+      web_app_info->title.empty()
+          ? GenerateIconLetterFromUrl(web_app_info->app_url)
+          : GenerateIconLetterFromAppName(web_app_info->title);
   web_app_info->generated_icon_color = SK_ColorTRANSPARENT;
   // TODO(https://crbug.com/1029223): Don't resize before writing to disk, it's
   // not necessary and would simplify this code path to remove.
   std::map<SquareSizePx, SkBitmap> size_to_icon = ResizeIconsAndGenerateMissing(
-      square_icons, sizes_to_generate, web_app_info->app_url,
+      square_icons, sizes_to_generate, icon_letter,
       &web_app_info->generated_icon_color);
 
   for (std::pair<const SquareSizePx, SkBitmap>& item : size_to_icon) {

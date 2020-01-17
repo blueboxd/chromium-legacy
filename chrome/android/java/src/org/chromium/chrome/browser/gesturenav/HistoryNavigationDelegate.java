@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
-import android.view.View;
-
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
@@ -24,21 +22,28 @@ public interface HistoryNavigationDelegate {
     NavigationSheet.Delegate createSheetDelegate();
 
     /**
-     * @param view {@link View} object to obtain the navigation setting from.
-     * @return {@code true} if overscroll navigation is allowed to run on this page.
-     */
-    boolean isNavigationEnabled(View view);
-
-    /**
      * @return {@link BottomSheetController} object.
      */
     Supplier<BottomSheetController> getBottomSheetController();
 
     /**
-     * Observe window insets change to update navigation configutation dynamically.
-     * @param view {@link View} to observe the insets change on.
-     * @param runnable {@link Runnable} to execute when insets change is detected.
-     *        Pass {@code null} to reset the observation.
+     * Default {@link HistoryNavigationDelegate} that does not support navigation.
      */
-    void setWindowInsetsChangeObserver(View view, Runnable runnable);
+    public static final HistoryNavigationDelegate DEFAULT = new HistoryNavigationDelegate() {
+        @Override
+        public NavigationHandler.ActionDelegate createActionDelegate() {
+            return null;
+        }
+
+        @Override
+        public NavigationSheet.Delegate createSheetDelegate() {
+            return null;
+        }
+
+        @Override
+        public Supplier<BottomSheetController> getBottomSheetController() {
+            assert false : "Should never be called";
+            return null;
+        }
+    };
 }

@@ -140,6 +140,10 @@ class MockModelTypeWorker : public CommitQueue {
   CommitResponseData SuccessfulCommitResponse(
       const CommitRequestData& request_data,
       int64_t version_offset);
+  // Returns a commit response that indicates a failed commit of the
+  // given |request_data|.
+  FailedCommitResponseData FailedCommitResponse(
+      const CommitRequestData& request_data);
 
   // Retrieve or set the server version.
   int64_t GetServerVersion(const ClientTagHash& tag_hash);

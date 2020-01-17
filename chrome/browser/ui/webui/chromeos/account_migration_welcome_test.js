@@ -43,7 +43,7 @@ AccountMigrationWelcomeUITest.prototype = {
    */
   testDialogUrl: function() {
     // Remove slash at the end of URL if present.
-    let url = window.location.href.replace(/\/$/, '');
+    const url = window.location.href.replace(/\/$/, '');
     assertEquals(chrome.getVariableValue('expectedUrl'), url);
   },
 

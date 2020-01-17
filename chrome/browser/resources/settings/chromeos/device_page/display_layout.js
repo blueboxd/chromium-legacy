@@ -52,7 +52,7 @@ Polymer({
   visualOffset_: {left: 0, top: 0},
 
   /** @override */
-  detached: function() {
+  detached() {
     this.initializeDrag(false);
   },
 
@@ -63,7 +63,7 @@ Polymer({
    * @param {!Array<!chrome.system.display.DisplayLayout>} layouts
    * @param {!Array<string>} mirroringDestinationIds
    */
-  updateDisplays: function(displays, layouts, mirroringDestinationIds) {
+  updateDisplays(displays, layouts, mirroringDestinationIds) {
     this.displays = displays;
     this.layouts = layouts;
     this.mirroringDestinationIds_ = mirroringDestinationIds;
@@ -90,7 +90,7 @@ Polymer({
    * @return {boolean} Whether the calculation was successful.
    * @private
    */
-  calculateVisualScale_: function() {
+  calculateVisualScale_() {
     const displayAreaDiv = this.$.displayArea;
     if (!displayAreaDiv || !displayAreaDiv.offsetWidth || !this.displays ||
         !this.displays.length) {
@@ -154,7 +154,7 @@ Polymer({
    * @return {string} The style string for the div.
    * @private
    */
-  getDivStyle_: function(id, displayBounds, visualScale, opt_offset) {
+  getDivStyle_(id, displayBounds, visualScale, opt_offset) {
     // This matches the size of the box-shadow or border in CSS.
     /** @type {number} */ const BORDER = 1;
     /** @type {number} */ const MARGIN = 4;
@@ -184,7 +184,7 @@ Polymer({
    * @return {string} The style string for the mirror div.
    * @private
    */
-  getMirrorDivStyle_: function(
+  getMirrorDivStyle_(
       mirroringDestinationIndex, mirroringDestinationDisplayNum, displays,
       visualScale) {
     // All destination displays have the same bounds as the mirroring source
@@ -202,7 +202,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getDisplayName_: function(mirroring, displayName, mirroringName) {
+  getDisplayName_(mirroring, displayName, mirroringName) {
     return mirroring ? mirroringName : displayName;
   },
 
@@ -212,7 +212,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isSelected_: function(display, selectedDisplay) {
+  isSelected_(display, selectedDisplay) {
     return display.id == selectedDisplay.id;
   },
 
@@ -221,7 +221,7 @@ Polymer({
    *     target: !HTMLDivElement}} e
    * @private
    */
-  onSelectDisplayTap_: function(e) {
+  onSelectDisplayTap_(e) {
     this.fire('select-display', e.model.item.id);
     // Force active in case the selected display was clicked.
     // TODO(dpapad): Ask @stevenjb, why are we setting 'active' on a div?
@@ -232,7 +232,7 @@ Polymer({
    * @param {string} id
    * @param {?DragPosition} amount
    */
-  onDrag_: function(id, amount) {
+  onDrag_(id, amount) {
     id = id.substr(1);  // Skip prefix
 
     let newBounds;

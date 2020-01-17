@@ -42,9 +42,35 @@ TEST(WebCursorTest, CursorInfoConstructorCustom) {
   CursorInfo info(ui::CursorType::kCustom);
   info.custom_image = CreateTestBitmap(32, 32);
   info.hotspot = gfx::Point(10, 20);
-  info.image_scale_factor = 1.5f;
+  info.image_scale_factor = 2.f;
   WebCursor cursor(info);
   EXPECT_EQ(info, cursor.info());
+
+#if defined(USE_AURA)
+  // Test if the custom cursor is correctly cached and updated
+  // on aura platform.
+  gfx::NativeCursor native_cursor = cursor.GetNativeCursor();
+  EXPECT_EQ(gfx::Point(5, 10), native_cursor.GetHotspot());
+  EXPECT_TRUE(cursor.has_custom_cursor_for_test());
+  cursor.SetInfo(info);
+  EXPECT_FALSE(cursor.has_custom_cursor_for_test());
+  cursor.GetNativeCursor();
+  EXPECT_TRUE(cursor.has_custom_cursor_for_test());
+
+#if defined(USE_OZONE)
+  // Test if the rotating custom cursor works correctly.
+  display::Display display;
+  display.set_panel_rotation(display::Display::ROTATE_90);
+  cursor.SetDisplayInfo(display);
+  EXPECT_FALSE(cursor.has_custom_cursor_for_test());
+  native_cursor = cursor.GetNativeCursor();
+  EXPECT_TRUE(cursor.has_custom_cursor_for_test());
+  // Hotspot should be scaled & rotated.  We're using the icon created for 2.0,
+  // on the display with dsf=1.0, so the host spot should be
+  // ((32 - 20) / 2, 10 / 2) = (6, 5).
+  EXPECT_EQ(gfx::Point(6, 5), native_cursor.GetHotspot());
+#endif
+#endif
 }
 
 TEST(WebCursorTest, CopyConstructorType) {

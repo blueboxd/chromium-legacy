@@ -112,8 +112,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
   void RemoveObserver(drive::DriveServiceObserver* observer) override;
   bool CanSendRequest() const override;
   bool HasAccessToken() const override;
-  void RequestAccessToken(
-      const google_apis::AuthStatusCallback& callback) override;
+  void RequestAccessToken(google_apis::AuthStatusCallback callback) override;
   void ClearAccessToken() override;
   void ClearRefreshToken() override;
   google_apis::CancelCallback GetAllTeamDriveList(

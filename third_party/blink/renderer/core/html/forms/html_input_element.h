@@ -235,6 +235,10 @@ class CORE_EXPORT HTMLInputElement
   bool CanReceiveDroppedFiles() const;
   void SetCanReceiveDroppedFiles(bool);
 
+  // Returns 'Choose File(s)' button in a file control. This returns
+  // nullptr for other input types.
+  HTMLInputElement* UploadButton() const;
+
   void OnSearch();
 
   void UpdateClearButtonVisibility();
@@ -257,7 +261,7 @@ class CORE_EXPORT HTMLInputElement
 
   // For test purposes.
   void SelectColorInColorChooser(const Color&);
-  void EndColorChooser();
+  void EndColorChooserForTesting();
 
   String DefaultToolTip() const override;
 
@@ -315,6 +319,8 @@ class CORE_EXPORT HTMLInputElement
 
   void SetHasBeenPasswordField() { has_been_password_field_ = true; }
 
+  bool IsDraggedSlider() const;
+
  protected:
   void DefaultEventHandler(Event&) override;
   void CreateShadowSubtree();
@@ -361,6 +367,7 @@ class CORE_EXPORT HTMLInputElement
 
   void CloneNonAttributePropertiesFrom(const Element&, CloneChildrenFlag) final;
 
+  bool TypeShouldForceLegacyLayout() const final;
   void AttachLayoutTree(AttachContext&) final;
 
   void AppendToFormData(FormData&) final;

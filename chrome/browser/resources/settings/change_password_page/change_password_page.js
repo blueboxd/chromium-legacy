@@ -11,7 +11,7 @@ Polymer({
   is: 'settings-change-password-page',
 
   /** @private */
-  changePassword_: function() {
+  changePassword_() {
     settings.ChangePasswordBrowserProxyImpl.getInstance().changePassword();
   },
 });

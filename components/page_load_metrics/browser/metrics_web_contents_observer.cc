@@ -584,15 +584,15 @@ void MetricsWebContentsObserver::OnVisibilityChanged(
 
   if (in_foreground_) {
     if (committed_load_)
-      committed_load_->WebContentsShown();
+      committed_load_->PageShown();
     for (const auto& kv : provisional_loads_) {
-      kv.second->WebContentsShown();
+      kv.second->PageShown();
     }
   } else {
     if (committed_load_)
-      committed_load_->WebContentsHidden();
+      committed_load_->PageHidden();
     for (const auto& kv : provisional_loads_) {
-      kv.second->WebContentsHidden();
+      kv.second->PageHidden();
     }
   }
 }

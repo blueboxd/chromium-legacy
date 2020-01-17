@@ -2771,7 +2771,8 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDABLE);
   if (data.HasState(ax::mojom::State::kDefault))
     atk_state_set_add_state(atk_state_set, ATK_STATE_DEFAULT);
-  if (data.HasState(ax::mojom::State::kEditable) &&
+  if ((data.HasState(ax::mojom::State::kEditable) ||
+       data.HasState(ax::mojom::State::kRichlyEditable)) &&
       data.GetRestriction() != ax::mojom::Restriction::kReadOnly) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_EDITABLE);
   }
@@ -2837,18 +2838,15 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, GetAtkStateTypeForCheckableNode());
   }
 
-  switch (GetData().GetRestriction()) {
-    case ax::mojom::Restriction::kNone:
-      atk_state_set_add_state(atk_state_set, ATK_STATE_ENABLED);
-      atk_state_set_add_state(atk_state_set, ATK_STATE_SENSITIVE);
-      break;
-    case ax::mojom::Restriction::kReadOnly:
+  if (data.GetRestriction() != ax::mojom::Restriction::kDisabled) {
+    if (IsReadOnlySupported(data.role) && data.IsReadOnlyOrDisabled()) {
 #if defined(ATK_216)
       atk_state_set_add_state(atk_state_set, ATK_STATE_READ_ONLY);
 #endif
-      break;
-    default:
-      break;
+    } else {
+      atk_state_set_add_state(atk_state_set, ATK_STATE_ENABLED);
+      atk_state_set_add_state(atk_state_set, ATK_STATE_SENSITIVE);
+    }
   }
 
   if (delegate_->GetFocus() == GetOrCreateAtkObject())
@@ -2875,8 +2873,6 @@ static AtkIntRelation kIntRelations[] = {
     {ax::mojom::IntAttribute::kPopupForId, ATK_RELATION_POPUP_FOR,
      base::nullopt},
 #if defined(ATK_226)
-    {ax::mojom::IntAttribute::kDetailsId, ATK_RELATION_DETAILS,
-     ATK_RELATION_DETAILS_FOR},
     {ax::mojom::IntAttribute::kErrormessageId, ATK_RELATION_ERROR_MESSAGE,
      ATK_RELATION_ERROR_FOR},
 #endif
@@ -2891,6 +2887,8 @@ struct AtkIntListRelation {
 static AtkIntListRelation kIntListRelations[] = {
     {ax::mojom::IntListAttribute::kControlsIds, ATK_RELATION_CONTROLLER_FOR,
      ATK_RELATION_CONTROLLED_BY},
+    {ax::mojom::IntListAttribute::kDetailsIds, ATK_RELATION_DETAILS,
+     ATK_RELATION_DETAILS_FOR},
     {ax::mojom::IntListAttribute::kDescribedbyIds, ATK_RELATION_DESCRIBED_BY,
      ATK_RELATION_DESCRIPTION_FOR},
     {ax::mojom::IntListAttribute::kFlowtoIds, ATK_RELATION_FLOWS_TO,

@@ -62,13 +62,13 @@ Polymer({
   ntpBackgroundProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.ntpBackgroundProxy_ = NtpBackgroundProxyImpl.getInstance();
     this.metricsManager_ =
         new ModuleMetricsManager(NtpBackgroundMetricsProxyImpl.getInstance());
   },
 
-  onRouteEnter: function() {
+  onRouteEnter() {
     this.finalized_ = false;
     const defaultBackground = {
       id: -1,
@@ -90,7 +90,7 @@ Polymer({
     this.metricsManager_.recordPageInitialized();
   },
 
-  onRouteExit: function() {
+  onRouteExit() {
     if (this.imageIsLoading_) {
       this.ntpBackgroundProxy_.recordBackgroundImageNeverLoaded();
     }
@@ -101,7 +101,7 @@ Polymer({
     this.metricsManager_.recordBrowserBackOrForward();
   },
 
-  onRouteUnload: function() {
+  onRouteUnload() {
     if (this.imageIsLoading_) {
       this.ntpBackgroundProxy_.recordBackgroundImageNeverLoaded();
     }
@@ -116,7 +116,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasValidSelectedBackground_: function() {
+  hasValidSelectedBackground_() {
     return this.selectedBackground_.id > -1;
   },
 
@@ -124,12 +124,12 @@ Polymer({
    * @param {!NtpBackgroundData} background
    * @private
    */
-  isSelectedBackground_: function(background) {
+  isSelectedBackground_(background) {
     return background === this.selectedBackground_;
   },
 
   /** @private */
-  onSelectedBackgroundChange_: function() {
+  onSelectedBackgroundChange_() {
     const id = this.selectedBackground_.id;
 
     if (id > -1) {
@@ -157,7 +157,7 @@ Polymer({
   },
 
   /** @private */
-  onBackgroundPreviewTransitionEnd_: function() {
+  onBackgroundPreviewTransitionEnd_() {
     // Whenever the #backgroundPreview transitions to a non-active, hidden
     // state, remove the background image. This way, when the element
     // transitions back to active, the previous background is not displayed.
@@ -170,7 +170,7 @@ Polymer({
    * @param {!{model: !{item: !NtpBackgroundData}}} e
    * @private
    */
-  onBackgroundClick_: function(e) {
+  onBackgroundClick_(e) {
     this.selectedBackground_ = e.model.item;
     this.metricsManager_.recordClickedOption();
     this.fire('iron-announce', {
@@ -183,7 +183,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onBackgroundKeyUp_: function(e) {
+  onBackgroundKeyUp_(e) {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       this.changeFocus_(e.currentTarget, 1);
     } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
@@ -226,12 +226,12 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onBackgroundPointerDown_: function(e) {
+  onBackgroundPointerDown_(e) {
     e.currentTarget.classList.remove(KEYBOARD_FOCUSED_CLASS);
   },
 
   /** @private */
-  onNextClicked_: function() {
+  onNextClicked_() {
     this.finalized_ = true;
 
     if (this.selectedBackground_ && this.selectedBackground_.id > -1) {
@@ -244,7 +244,7 @@ Polymer({
   },
 
   /** @private */
-  onSkipClicked_: function() {
+  onSkipClicked_() {
     this.finalized_ = true;
     this.metricsManager_.recordNoThanks();
     navigateToNextStep();

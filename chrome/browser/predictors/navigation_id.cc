@@ -11,8 +11,8 @@
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "components/prefs/pref_service.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
@@ -26,14 +26,14 @@ NavigationID::NavigationID(const NavigationID& other)
       creation_time(other.creation_time) {}
 
 NavigationID::NavigationID(content::WebContents* web_contents)
-    : tab_id(SessionTabHelper::IdForTab(web_contents)),
+    : tab_id(sessions::SessionTabHelper::IdForTab(web_contents)),
       main_frame_url(web_contents->GetLastCommittedURL()),
       creation_time(base::TimeTicks::Now()) {}
 
 NavigationID::NavigationID(content::WebContents* web_contents,
                            const GURL& main_frame_url,
                            const base::TimeTicks& creation_time)
-    : tab_id(SessionTabHelper::IdForTab(web_contents)),
+    : tab_id(sessions::SessionTabHelper::IdForTab(web_contents)),
       main_frame_url(main_frame_url),
       creation_time(creation_time) {}
 

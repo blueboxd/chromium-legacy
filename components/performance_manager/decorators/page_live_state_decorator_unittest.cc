@@ -15,19 +15,19 @@ namespace {
 void EndToEndPropertyTest(content::WebContents* contents,
                           bool (PageLiveStateDecorator::Data::*pm_getter)()
                               const,
-                          void (*ui_thread_setter)(content::WebContents*,
-                                                   bool)) {
-  // By default all properties are set to false.
-  TestPageLiveStatePropertyOnPMSequence(contents, pm_getter, false);
+                          void (*ui_thread_setter)(content::WebContents*, bool),
+                          bool default_state = false) {
+  // By default all properties are set to the default value.
+  TestPageLiveStatePropertyOnPMSequence(contents, pm_getter, default_state);
 
   // Pretend that the property changed and make sure that the PageNode data gets
   // updated.
-  (*ui_thread_setter)(contents, true);
-  TestPageLiveStatePropertyOnPMSequence(contents, pm_getter, true);
+  (*ui_thread_setter)(contents, !default_state);
+  TestPageLiveStatePropertyOnPMSequence(contents, pm_getter, !default_state);
 
   // Switch back to the default state.
-  (*ui_thread_setter)(contents, false);
-  TestPageLiveStatePropertyOnPMSequence(contents, pm_getter, false);
+  (*ui_thread_setter)(contents, default_state);
+  TestPageLiveStatePropertyOnPMSequence(contents, pm_getter, default_state);
 }
 
 }  // namespace
@@ -98,7 +98,8 @@ TEST_F(PageLiveStateDecoratorTest, OnIsCapturingDesktopChanged) {
 TEST_F(PageLiveStateDecoratorTest, SetIsAutoDiscardable) {
   EndToEndPropertyTest(contents(),
                        &PageLiveStateDecorator::Data::IsAutoDiscardable,
-                       &PageLiveStateDecorator::SetIsAutoDiscardable);
+                       &PageLiveStateDecorator::SetIsAutoDiscardable,
+                       /*default_state=*/true);
 }
 
 }  // namespace performance_manager

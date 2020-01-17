@@ -21,7 +21,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/animation/throb_animation.h"
+#include "ui/gfx/animation/multi_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/animation/ink_drop.h"
@@ -36,105 +37,138 @@ namespace {
 constexpr int kDesiredBorderHeight = 22;
 // TODO(999557): Change this to 32 when the font is changed to Roboto.
 constexpr int kDoubleDigitWidth = 30;
+constexpr int kOffscreenLabelDistance = 16;
 
+constexpr base::TimeDelta kFirstPartDuration =
+    base::TimeDelta::FromMilliseconds(100);
+
+// Animates the label and border. |border_view_| does a little bounce. At the
+// peak of |border_view_|'s bounce, the |disappearing_label_| begins to scroll
+// away in the same direction and is replaced with |appearing_label_|, which
+// shows the new number of tabs. This animation is played upside-down when a tab
+// is added vs. removed.
 class TabCounterAnimator : public gfx::AnimationDelegate {
  public:
-  explicit TabCounterAnimator(views::View* animated_view)
-      : animated_view_(animated_view) {
-    animation_ = std::make_unique<gfx::ThrobAnimation>(this);
-    animation_->SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
-    animation_->SetThrobDuration(base::TimeDelta::FromMilliseconds(100));
+  TabCounterAnimator(views::View* appearing_label,
+                     views::View* disappearing_label,
+                     views::View* border_view)
+      : appearing_label_(appearing_label),
+        disappearing_label_(disappearing_label),
+        label_animation_(
+            std::vector<gfx::MultiAnimation::Part>{
+                // Stay in place by canceling out our container's animation.
+                gfx::MultiAnimation::Part(kFirstPartDuration,
+                                          gfx::Tween::Type::ZERO),
+                // Swap out to the new label.
+                gfx::MultiAnimation::Part(
+                    base::TimeDelta::FromMilliseconds(200),
+                    gfx::Tween::Type::EASE_IN_OUT)},
+            gfx::MultiAnimation::kDefaultTimerInterval),
+        border_view_(border_view),
+        border_animation_(
+            std::vector<gfx::MultiAnimation::Part>{
+                gfx::MultiAnimation::Part(kFirstPartDuration,
+                                          gfx::Tween::Type::EASE_OUT),
+                gfx::MultiAnimation::Part(
+                    base::TimeDelta::FromMilliseconds(150),
+                    gfx::Tween::Type::EASE_IN)},
+            gfx::MultiAnimation::kDefaultTimerInterval) {
+    label_animation_.set_delegate(this);
+    label_animation_.set_continuous(false);
+
+    border_animation_.set_delegate(this);
+    border_animation_.set_continuous(false);
   }
   ~TabCounterAnimator() override = default;
 
-  void Animate() {
-    starting_bounds_ = animated_view_->bounds();
-    target_bounds_ =
-        gfx::Rect(starting_bounds_.x(), starting_bounds_.y() - 4,
-                  starting_bounds_.width(), starting_bounds_.height());
-    animation_->StartThrobbing(1);
+  void Animate(bool increasing) {
+    increasing_ = increasing;
+
+    border_animation_.Stop();
+    border_animation_.Start();
+    label_animation_.Stop();
+    label_animation_.Start();
+    AnimationProgressed(&label_animation_);
   }
 
   // AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override {
-    gfx::Rect bounds_rect = gfx::Tween::RectValueBetween(
-        animation->GetCurrentValue(), starting_bounds_, target_bounds_);
-    animated_view_->SetBoundsRect(bounds_rect);
+    // |border_view_| does a hop (if |increasing_| is false) or a dip (if true).
+    const float border_animation_value =
+        border_animation_.current_part_index() == 0
+            ? border_animation_.GetCurrentValue()
+            : 1 - border_animation_.GetCurrentValue();
+    const int border_y_delta = gfx::Tween::IntValueBetween(
+        border_animation_value, 0, GetBorderTargetYDelta());
+    border_view_->SetY(GetBorderStartingY() + border_y_delta);
+
+    // |appearing_label_| scrolls into view - from above if |increasing_|
+    // is false, and from below otherwise.
+    const int appearing_label_position = gfx::Tween::IntValueBetween(
+        label_animation_.GetCurrentValue(),
+        GetAppearingLabelStartPosition() - border_y_delta, 0);
+    appearing_label_->SetY(appearing_label_position);
+
+    // |disappearing_label_| scrolls out of view - out the bottom if
+    // |increasing_| is false, and from below otherwise.
+    const int disappearing_label_position = gfx::Tween::IntValueBetween(
+        label_animation_.GetCurrentValue(), -border_y_delta,
+        GetDisappearingLabelTargetPosition());
+    disappearing_label_->SetY(disappearing_label_position);
+  }
+
+  void AnimationEnded(const gfx::Animation* animation) override {
+    AnimationProgressed(animation);
   }
 
  private:
-  views::View* const animated_view_;
-  gfx::Rect starting_bounds_;
-  gfx::Rect target_bounds_;
-  std::unique_ptr<gfx::ThrobAnimation> animation_;
+  int GetBorderTargetYDelta() const { return increasing_ ? 4 : -4; }
+
+  int GetAppearingLabelStartPosition() const {
+    return increasing_ ? -kOffscreenLabelDistance : kOffscreenLabelDistance;
+  }
+
+  int GetDisappearingLabelTargetPosition() const {
+    // We want to exit out the opposite side that |appearing_label_| entered
+    // from.
+    return -GetAppearingLabelStartPosition();
+  }
+
+  int GetBorderStartingY() const {
+    // When at rest, |border_view_| should be vertically centered within its
+    // container.
+    views::View* border_container = border_view_->parent();
+    int border_available_space = border_container->GetLocalBounds().height();
+    return (border_available_space - border_view_->GetLocalBounds().height()) /
+           2;
+  }
+
+  // The label that will be animated into view, showing the new value.
+  views::View* const appearing_label_;
+  // The label that will be animated out of view, showing the old value.
+  views::View* const disappearing_label_;
+  gfx::MultiAnimation label_animation_;
+
+  views::View* const border_view_;
+  gfx::MultiAnimation border_animation_;
+
+  // True if the counter is currently animating an increase in the displayed
+  // number. The animation is played one way to show a decrease, and upside
+  // down from that to show an increase.
+  bool increasing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TabCounterAnimator);
 };
 
-class TabCounterUpdater : public TabStripModelObserver {
- public:
-  TabCounterUpdater(views::Button* button,
-                    views::Label* tab_counter,
-                    views::View* tab_counter_container)
-      : button_(button),
-        tab_counter_(tab_counter),
-        tab_counter_container_(tab_counter_container),
-        animator_(tab_counter_container) {}
-  ~TabCounterUpdater() override = default;
-
-  void UpdateCounter(TabStripModel* model) {
-    const int num_tabs = model->count();
-
-    button_->SetTooltipText(
-        base::i18n::MessageFormatter::FormatWithNumberedArgs(
-            l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TAB_COUNTER),
-            num_tabs));
-    tab_counter_->SetText(base::FormatNumber(num_tabs));
-
-    const int button_height = button_->GetLocalBounds().height();
-    const int inset_height = (button_height - kDesiredBorderHeight) / 2;
-    int inset_width = inset_height;
-    int border_width = kDesiredBorderHeight;
-    if (num_tabs < 10) {
-      inset_width = inset_height;
-      border_width = kDesiredBorderHeight;
-    } else if (num_tabs < 100) {
-      inset_width = (button_height - kDoubleDigitWidth) / 2;
-      border_width = kDoubleDigitWidth;
-    } else {
-      // In the triple-digit case, fall back to ':D' to match Android.
-      tab_counter_->SetText(base::string16(base::ASCIIToUTF16(":D")));
-      inset_width = inset_height;
-      border_width = kDesiredBorderHeight;
-    }
-    tab_counter_container_->SetBounds(inset_width, inset_height, border_width,
-                                      kDesiredBorderHeight);
-    tab_counter_->SetBounds(0, 0, border_width, kDesiredBorderHeight);
-
-    animator_.Animate();
-  }
-
-  // TabStripModelObserver:
-  void OnTabStripModelChanged(
-      TabStripModel* tab_strip_model,
-      const TabStripModelChange& change,
-      const TabStripSelectionChange& selection) override {
-    UpdateCounter(tab_strip_model);
-  }
-
- private:
-  views::Button* const button_;
-  views::Label* const tab_counter_;
-  views::View* const tab_counter_container_;
-  TabCounterAnimator animator_;
-};
-
-class WebUITabCounterButton : public views::Button {
+class WebUITabCounterButton : public views::Button,
+                              public TabStripModelObserver {
  public:
   explicit WebUITabCounterButton(views::ButtonListener* listener);
   ~WebUITabCounterButton() override;
 
+  void UpdateText(int num_tabs);
   void UpdateColors();
+  void Init(TabStripModel* model);
 
   // views::Button:
   void AfterPropertyChange(const void* key, int64_t old_value) override;
@@ -142,10 +176,19 @@ class WebUITabCounterButton : public views::Button {
   void RemoveLayerBeneathView(ui::Layer* old_layer) override;
   void OnThemeChanged() override;
 
-  std::unique_ptr<TabCounterUpdater> counter_updater_;
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+
   views::InkDropContainerView* ink_drop_container_;
-  views::Label* label_;
-  views::View* border_;
+  views::Label* appearing_label_;
+  views::Label* disappearing_label_;
+  views::View* border_view_;
+  std::unique_ptr<TabCounterAnimator> animator_;
+
+  base::Optional<int> last_num_tabs_ = base::nullopt;
 };
 
 WebUITabCounterButton::WebUITabCounterButton(views::ButtonListener* listener)
@@ -153,12 +196,49 @@ WebUITabCounterButton::WebUITabCounterButton(views::ButtonListener* listener)
 
 WebUITabCounterButton::~WebUITabCounterButton() = default;
 
+void WebUITabCounterButton::UpdateText(int num_tabs) {
+  SetTooltipText(base::i18n::MessageFormatter::FormatWithNumberedArgs(
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TAB_COUNTER),
+      num_tabs));
+  disappearing_label_->SetText(appearing_label_->GetText());
+  appearing_label_->SetText(base::FormatNumber(num_tabs));
+
+  const int button_height = GetLocalBounds().height();
+  const int inset_height = (button_height - kDesiredBorderHeight) / 2;
+  int inset_width = inset_height;
+  int border_width = kDesiredBorderHeight;
+  if (num_tabs < 10) {
+    inset_width = inset_height;
+    border_width = kDesiredBorderHeight;
+  } else if (num_tabs < 100) {
+    inset_width = (button_height - kDoubleDigitWidth) / 2;
+    border_width = kDoubleDigitWidth;
+  } else {
+    // In the triple-digit case, fall back to ':D' to match Android.
+    appearing_label_->SetText(base::string16(base::ASCIIToUTF16(":D")));
+    inset_width = inset_height;
+    border_width = kDesiredBorderHeight;
+  }
+  border_view_->SetBounds(inset_width, inset_height, border_width,
+                          kDesiredBorderHeight);
+  appearing_label_->SetBounds(0, 0, border_width, kDesiredBorderHeight);
+  disappearing_label_->SetBounds(0, -kOffscreenLabelDistance, border_width,
+                                 kDesiredBorderHeight);
+
+  if (last_num_tabs_) {
+    const bool increasing = last_num_tabs_.value() < num_tabs;
+    animator_->Animate(increasing);
+  }
+  last_num_tabs_ = num_tabs;
+}
+
 void WebUITabCounterButton::UpdateColors() {
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
   const SkColor toolbar_color =
       theme_provider ? theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR)
                      : gfx::kPlaceholderColor;
-  label_->SetBackgroundColor(toolbar_color);
+  appearing_label_->SetBackgroundColor(toolbar_color);
+  disappearing_label_->SetBackgroundColor(toolbar_color);
 
   const SkColor normal_text_color =
       theme_provider
@@ -169,12 +249,44 @@ void WebUITabCounterButton::UpdateColors() {
           ? GetFeaturePromoHighlightColorForToolbar(theme_provider)
           : normal_text_color;
 
-  label_->SetEnabledColor(current_text_color);
-  border_->SetBorder(views::CreateRoundedRectBorder(
+  appearing_label_->SetEnabledColor(current_text_color);
+  disappearing_label_->SetEnabledColor(current_text_color);
+  border_view_->SetBorder(views::CreateRoundedRectBorder(
       2,
       views::LayoutProvider::Get()->GetCornerRadiusMetric(
           views::EMPHASIS_MEDIUM),
       current_text_color));
+}
+
+void WebUITabCounterButton::Init(TabStripModel* tab_strip_model) {
+  SetID(VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER);
+
+  SetProperty(views::kFlexBehaviorKey,
+              views::FlexSpecification::ForSizeRule(
+                  views::MinimumFlexSizeRule::kScaleToMinimum,
+                  views::MaximumFlexSizeRule::kPreferred)
+                  .WithOrder(1));
+
+  const int button_height = GetLayoutConstant(TOOLBAR_BUTTON_HEIGHT);
+  SetPreferredSize(gfx::Size(button_height, button_height));
+
+  ink_drop_container_ =
+      AddChildView(std::make_unique<views::InkDropContainerView>());
+  ink_drop_container_->SetBoundsRect(GetLocalBounds());
+
+  border_view_ = AddChildView(std::make_unique<views::View>());
+
+  appearing_label_ = border_view_->AddChildView(std::make_unique<views::Label>(
+      base::string16(), CONTEXT_WEB_UI_TAB_COUNTER));
+  disappearing_label_ =
+      border_view_->AddChildView(std::make_unique<views::Label>(
+          base::string16(), CONTEXT_WEB_UI_TAB_COUNTER));
+
+  animator_ = std::make_unique<TabCounterAnimator>(
+      appearing_label_, disappearing_label_, border_view_);
+
+  tab_strip_model->AddObserver(this);
+  UpdateText(tab_strip_model->count());
 }
 
 void WebUITabCounterButton::AfterPropertyChange(const void* key,
@@ -197,6 +309,15 @@ void WebUITabCounterButton::OnThemeChanged() {
   ConfigureInkDropForToolbar(this);
 }
 
+void WebUITabCounterButton::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  int num_tabs = tab_strip_model->count();
+  if (num_tabs != last_num_tabs_)
+    UpdateText(num_tabs);
+}
+
 }  // namespace
 
 std::unique_ptr<views::View> CreateWebUITabCounterButton(
@@ -204,34 +325,7 @@ std::unique_ptr<views::View> CreateWebUITabCounterButton(
     TabStripModel* tab_strip_model) {
   auto tab_counter = std::make_unique<WebUITabCounterButton>(listener);
 
-  tab_counter->SetID(VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER);
-
-  tab_counter->SetProperty(views::kFlexBehaviorKey,
-                           views::FlexSpecification::ForSizeRule(
-                               views::MinimumFlexSizeRule::kScaleToMinimum,
-                               views::MaximumFlexSizeRule::kPreferred)
-                               .WithOrder(1));
-
-  const int button_height = GetLayoutConstant(TOOLBAR_BUTTON_HEIGHT);
-  tab_counter->SetPreferredSize(gfx::Size(button_height, button_height));
-
-  views::InkDropContainerView* ink_drop_container = tab_counter->AddChildView(
-      std::make_unique<views::InkDropContainerView>());
-  tab_counter->ink_drop_container_ = ink_drop_container;
-  ink_drop_container->SetBoundsRect(tab_counter->GetLocalBounds());
-
-  views::View* border =
-      tab_counter->AddChildView(std::make_unique<views::View>());
-  tab_counter->border_ = border;
-
-  views::Label* label = border->AddChildView(std::make_unique<views::Label>(
-      base::string16(), CONTEXT_WEB_UI_TAB_COUNTER));
-  tab_counter->label_ = label;
-
-  tab_counter->counter_updater_ =
-      std::make_unique<TabCounterUpdater>(tab_counter.get(), label, border);
-  tab_strip_model->AddObserver(tab_counter->counter_updater_.get());
-  tab_counter->counter_updater_->UpdateCounter(tab_strip_model);
+  tab_counter->Init(tab_strip_model);
 
   return tab_counter;
 }

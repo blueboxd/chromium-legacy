@@ -69,6 +69,8 @@ CGFloat doodleHeight(BOOL logoIsShowing) {
 CGFloat doodleTopMargin(BOOL toolbarPresent, CGFloat topInset) {
   if (!IsCompactWidth() && !IsCompactHeight())
     return kDoodleTopMarginRegularXRegular;
+  if (IsCompactHeight())
+    return topInset;
   return topInset + kDoodleTopMarginOther +
          AlignValueToPixel(kDoodleScaledTopMarginOther *
                            SystemSuggestedFontSizeMultiplier());

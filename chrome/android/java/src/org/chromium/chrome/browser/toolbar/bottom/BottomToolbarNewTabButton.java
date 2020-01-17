@@ -9,7 +9,6 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.util.AttributeSet;
 
 import androidx.annotation.StringRes;
@@ -30,7 +29,7 @@ import org.chromium.ui.widget.ChromeImageButton;
 class BottomToolbarNewTabButton extends ChromeImageButton
         implements IncognitoStateObserver, ThemeColorObserver, TintObserver {
     /** The gray pill background behind the plus icon. */
-    private final Drawable mBackground;
+    private Drawable mBackground;
 
     /** The {@link Resources} used to compute the background color. */
     private final Resources mResources;
@@ -45,13 +44,12 @@ class BottomToolbarNewTabButton extends ChromeImageButton
         super(context, attrs);
 
         mResources = context.getResources();
+    }
 
-        setImageDrawable(VectorDrawableCompat.create(
-                getContext().getResources(), R.drawable.new_tab_icon, getContext().getTheme()));
-
-        mBackground = ApiCompatibilityUtils.getDrawable(mResources, R.drawable.ntp_search_box);
-        mBackground.mutate();
-        setBackground(mBackground);
+    @Override
+    public void setBackground(Drawable background) {
+        super.setBackground(background);
+        mBackground = background;
     }
 
     /**
@@ -101,8 +99,9 @@ class BottomToolbarNewTabButton extends ChromeImageButton
     }
 
     private void updateBackground() {
-        if (mThemeColorProvider == null || mIncognitoStateProvider == null) return;
-
+        if (mThemeColorProvider == null || mIncognitoStateProvider == null || mBackground == null) {
+            return;
+        }
         mBackground.setColorFilter(
                 ToolbarColors.getTextBoxColorForToolbarBackgroundInNonNativePage(mResources,
                         mThemeColorProvider.getThemeColor(),

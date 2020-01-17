@@ -16,6 +16,7 @@
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -230,6 +231,19 @@ void Display::Initialize(DisplayClient* client,
   if (output_surface_->software_device())
     output_surface_->software_device()->BindToClient(this);
 
+  gpu::SharedImageInterface* sii = nullptr;
+
+  if (features::ShouldUseRealBuffersForPageFlipTest()) {
+    CHECK(output_surface_->context_provider());
+    sii = output_surface_->context_provider()->SharedImageInterface();
+    CHECK(sii);
+  }
+
+  overlay_processor_ = OverlayProcessorInterface::CreateOverlayProcessor(
+      skia_output_surface_, output_surface_->GetSurfaceHandle(),
+      output_surface_->capabilities(), settings_,
+      output_surface_->GetGpuTaskSchedulerHelper(), sii);
+
   frame_rate_decider_ =
       std::make_unique<FrameRateDecider>(surface_manager_, this);
 
@@ -375,23 +389,28 @@ void Display::InitializeRenderer(bool enable_shared_images) {
     if (skia_output_surface_) {
       renderer_ = std::make_unique<SkiaRenderer>(
           &settings_, output_surface_.get(), resource_provider_.get(),
-          skia_output_surface_, SkiaRenderer::DrawMode::DDL);
+          overlay_processor_.get(), skia_output_surface_,
+          SkiaRenderer::DrawMode::DDL);
     } else {
       // GPU compositing with GL to an SKP.
       DCHECK(output_surface_);
       DCHECK(output_surface_->context_provider());
       DCHECK(settings_.record_sk_picture);
+      DCHECK(!overlay_processor_->IsOverlaySupported());
       renderer_ = std::make_unique<SkiaRenderer>(
           &settings_, output_surface_.get(), resource_provider_.get(),
-          nullptr /* skia_output_surface */, SkiaRenderer::DrawMode::SKPRECORD);
+          overlay_processor_.get(), nullptr /* skia_output_surface */,
+          SkiaRenderer::DrawMode::SKPRECORD);
     }
   } else if (output_surface_->context_provider()) {
-    renderer_ = std::make_unique<GLRenderer>(&settings_, output_surface_.get(),
-                                             resource_provider_.get(),
-                                             current_task_runner_);
+    renderer_ = std::make_unique<GLRenderer>(
+        &settings_, output_surface_.get(), resource_provider_.get(),
+        overlay_processor_.get(), current_task_runner_);
   } else {
+    DCHECK(!overlay_processor_->IsOverlaySupported());
     auto renderer = std::make_unique<SoftwareRenderer>(
-        &settings_, output_surface_.get(), resource_provider_.get());
+        &settings_, output_surface_.get(), resource_provider_.get(),
+        overlay_processor_.get());
     software_renderer_ = renderer.get();
     renderer_ = std::move(renderer);
   }
@@ -403,13 +422,12 @@ void Display::InitializeRenderer(bool enable_shared_images) {
   // outside the damage rect might be needed by the renderer.
   bool output_partial_list =
       output_surface_->capabilities().only_invalidates_damage_rect &&
-      renderer_->use_partial_swap() && !renderer_->has_overlay_validator();
+      renderer_->use_partial_swap() &&
+      !overlay_processor_->IsOverlaySupported();
 
-  bool needs_surface_occluding_damage_rect =
-      renderer_->OverlayNeedsSurfaceOccludingDamageRect();
   aggregator_ = std::make_unique<SurfaceAggregator>(
       surface_manager_, resource_provider_.get(), output_partial_list,
-      needs_surface_occluding_damage_rect);
+      overlay_processor_->NeedsSurfaceOccludingDamageRect());
   if (settings_.show_aggregated_damage)
     aggregator_->SetFrameAnnotator(std::make_unique<DamageFrameAnnotator>());
 

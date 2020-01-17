@@ -45,6 +45,7 @@ RenderSurfaceImpl::RenderSurfaceImpl(LayerTreeImpl* layer_tree_impl,
       ancestor_property_changed_(false),
       contributes_to_drawn_surface_(false),
       is_render_surface_list_member_(false),
+      can_use_cached_backdrop_filtered_result_(false),
       nearest_occlusion_immune_ancestor_(nullptr) {
   damage_tracker_ = DamageTracker::Create();
 }
@@ -210,7 +211,7 @@ gfx::Rect RenderSurfaceImpl::CalculateExpandedClipForFilters(
   gfx::Rect clip_in_surface_space =
       MathUtil::ProjectEnclosingClippedRect(target_to_surface, clip_rect());
   gfx::Rect expanded_clip_in_surface_space =
-      Filters().MapRectReverse(clip_in_surface_space, SurfaceScale().matrix());
+      Filters().MapRect(clip_in_surface_space, SurfaceScale().matrix());
   gfx::Rect expanded_clip_in_target_space = MathUtil::MapEnclosingClippedRect(
       draw_transform(), expanded_clip_in_surface_space);
   return expanded_clip_in_target_space;

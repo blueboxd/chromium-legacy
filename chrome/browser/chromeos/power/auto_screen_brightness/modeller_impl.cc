@@ -341,12 +341,9 @@ ModelConfig ModellerImpl::GetModelConfigForTesting() const {
   return model_config_;
 }
 
-ModellerImpl::ModelSavingSpec ModellerImpl::GetModelSavingSpecFromProfile(
-    const Profile* profile) {
-  DCHECK(profile);
-
+ModellerImpl::ModelSavingSpec ModellerImpl::GetModelSavingSpecFromProfilePath(
+    const base::FilePath& profile_path) {
   ModelSavingSpec model_saving_spec;
-  const base::FilePath profile_path = profile->GetPath();
   if (profile_path.empty()) {
     return model_saving_spec;
   }
@@ -411,7 +408,8 @@ ModellerImpl::ModellerImpl(
 
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&ModellerImpl::GetModelSavingSpecFromProfile, profile),
+      base::BindOnce(&ModellerImpl::GetModelSavingSpecFromProfilePath,
+                     profile->GetPath()),
       base::BindOnce(&ModellerImpl::OnModelSavingSpecReadFromProfile,
                      weak_ptr_factory_.GetWeakPtr()));
 }

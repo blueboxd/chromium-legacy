@@ -19,9 +19,7 @@ group("resources") {
 grit("components_resources") {
   source = "components_resources.grd"
 
-  inputs = [
-    about_credits_file,
-  ]
+  inputs = [ about_credits_file ]
 
   outputs = [
     "grit/components_resources.h",
@@ -40,9 +38,7 @@ grit("components_resources") {
     "enable_print_preview=$enable_print_preview",
   ]
 
-  deps = [
-    ":about_credits",
-  ]
+  deps = [ ":about_credits" ]
 }
 
 grit("dev_ui_components_resources") {
@@ -78,9 +74,7 @@ action("about_credits") {
     "../about_ui/resources/about_credits_entry.tmpl",
   ]
 
-  outputs = [
-    about_credits_file,
-  ]
+  outputs = [ about_credits_file ]
 
   args = [
     "--target-os=$target_os",

@@ -216,52 +216,52 @@ void ContentPasswordManagerDriver::GeneratePassword(
 }
 
 void ContentPasswordManagerDriver::PasswordFormsParsed(
-    const std::vector<autofill::PasswordForm>& forms) {
+    const std::vector<autofill::FormData>& forms_data) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, forms,
+          render_frame_host_, forms_data,
           BadMessageReason::CPMD_BAD_ORIGIN_FORMS_PARSED))
     return;
-  GetPasswordManager()->OnPasswordFormsParsed(this, forms);
+  GetPasswordManager()->OnPasswordFormsParsed(this, forms_data);
 }
 
 void ContentPasswordManagerDriver::PasswordFormsRendered(
-    const std::vector<autofill::PasswordForm>& visible_forms,
+    const std::vector<autofill::FormData>& visible_forms_data,
     bool did_stop_loading) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, visible_forms,
+          render_frame_host_, visible_forms_data,
           BadMessageReason::CPMD_BAD_ORIGIN_FORMS_RENDERED))
     return;
-  GetPasswordManager()->OnPasswordFormsRendered(this, visible_forms,
+  GetPasswordManager()->OnPasswordFormsRendered(this, visible_forms_data,
                                                 did_stop_loading);
 }
 
 void ContentPasswordManagerDriver::PasswordFormSubmitted(
-    const autofill::PasswordForm& password_form) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, password_form,
+    const autofill::FormData& form_data) {
+  if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
+          render_frame_host_, form_data.url,
           BadMessageReason::CPMD_BAD_ORIGIN_FORM_SUBMITTED))
     return;
-  GetPasswordManager()->OnPasswordFormSubmitted(this, password_form);
+  GetPasswordManager()->OnPasswordFormSubmitted(this, form_data);
 
   LogSiteIsolationMetricsForSubmittedForm(render_frame_host_);
 }
 
 void ContentPasswordManagerDriver::ShowManualFallbackForSaving(
-    const autofill::PasswordForm& password_form) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, password_form,
+    const autofill::FormData& form_data) {
+  if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
+          render_frame_host_, form_data.url,
           BadMessageReason::CPMD_BAD_ORIGIN_SHOW_FALLBACK_FOR_SAVING))
     return;
-  GetPasswordManager()->ShowManualFallbackForSaving(this, password_form);
+  GetPasswordManager()->ShowManualFallbackForSaving(this, form_data);
 
   if (client_->IsIsolationForPasswordSitesEnabled()) {
     // This function signals that the user is typing a password into
-    // |password_form|.  Use this as a heuristic to start site-isolating the
+    // password form.  Use this as a heuristic to start site-isolating the
     // form's site.  This is intended to be used primarily when full site
     // isolation is not used, such as on Android.
     content::SiteInstance::StartIsolatingSite(
         render_frame_host_->GetSiteInstance()->GetBrowserContext(),
-        password_form.origin);
+        form_data.url);
   }
 }
 

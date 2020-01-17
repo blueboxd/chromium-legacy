@@ -19,6 +19,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
+#include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
@@ -152,6 +153,10 @@ class TabManager : public LifecycleUnitObserver,
   // non-zero only during session restore.
   int restored_tab_count() const { return restored_tab_count_; }
 
+  InterventionPolicyDatabase* intervention_policy_database() {
+    return intervention_policy_database_.get();
+  }
+
   UsageClock* usage_clock() { return &usage_clock_; }
 
   // Returns true if the tab was created by session restore and has not finished
@@ -164,7 +169,7 @@ class TabManager : public LifecycleUnitObserver,
 
  private:
   friend class TabManagerStatsCollectorTest;
-  friend class TabManagerWithProactiveDiscardExperimentEnabledTest;
+  friend class TabManagerWithTabFreezeEnabledTest;
 
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, AutoDiscardable);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingMode);
@@ -186,14 +191,6 @@ class TabManager : public LifecycleUnitObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnWebContentsDestroyed);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OomPressureListener);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, PauseAndResumeBackgroundTabOpening);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           ProactiveFastShutdownSharedTabProcess);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTestWithTwoTabs,
-                           ProactiveFastShutdownSingleTabProcess);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           ProactiveFastShutdownWithBeforeunloadHandler);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           ProactiveFastShutdownWithUnloadHandler);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectDevToolsTabsFromDiscarding);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectPDFPages);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
@@ -218,14 +215,9 @@ class TabManager : public LifecycleUnitObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownWithUnloadHandler);
   FRIEND_TEST_ALL_PREFIXES(TabManagerWithExperimentDisabledTest,
                            IsInBackgroundTabOpeningSession);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerWithProactiveDiscardExperimentEnabledTest,
-                           GetTimeInBackgroundBeforeProactiveDiscardTest);
-  FRIEND_TEST_ALL_PREFIXES(
-      TabManagerWithProactiveDiscardExperimentEnabledTest,
-      NoProactiveDiscardWhenDiscardingVariationParamDisabled);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerWithProactiveDiscardExperimentEnabledTest,
+  FRIEND_TEST_ALL_PREFIXES(TabManagerWithTabFreezeEnabledTest,
                            FreezingWhenDiscardingVariationParamDisabled);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerWithProactiveDiscardExperimentEnabledTest,
+  FRIEND_TEST_ALL_PREFIXES(TabManagerWithTabFreezeEnabledTest,
                            NoUnfreezeWhenUnfreezingVariationParamDisabled);
 
   // Returns true if the |url| represents an internal Chrome web UI page that
@@ -357,11 +349,6 @@ class TabManager : public LifecycleUnitObserver,
   // Returns true if the background tab force load timer is running.
   bool IsForceLoadTimerRunning() const;
 
-  // Returns the threshold after which a background LifecycleUnit gets
-  // discarded, given the current number of alive LifecycleUnits and experiment
-  // parameters.
-  base::TimeDelta GetTimeInBackgroundBeforeProactiveDiscard() const;
-
   // Schedules a call to PerformStateTransitions() in |delay|. This overrides
   // any previously scheduled call.
   void SchedulePerformStateTransitions(base::TimeDelta delay);
@@ -388,40 +375,20 @@ class TabManager : public LifecycleUnitObserver,
   base::TimeTicks MaybeUnfreezeLifecycleUnit(LifecycleUnit* lifecycle_unit,
                                              base::TimeTicks now);
 
-  // If enough Chrome usage time has elapsed since |lifecycle_unit| was hidden,
-  // proactively discards it. |lifecycle_unit| must be discardable. Returns the
-  // time at which this should be called again, or TimeTicks::Max() if no
-  // further call is needed. Always returns a zero TimeTicks when a discard
-  // happen, to check immediately if another discard should happen. |now| is the
-  // current time.
-  base::TimeTicks MaybeDiscardLifecycleUnit(LifecycleUnit* lifecycle_unit,
-                                            base::TimeTicks now);
-
   // LifecycleUnitObserver:
   void OnLifecycleUnitVisibilityChanged(
       LifecycleUnit* lifecycle_unit,
       content::Visibility visibility) override;
   void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) override;
-  void OnLifecycleUnitStateChanged(
-      LifecycleUnit* lifecycle_unit,
-      LifecycleUnitState last_state,
-      LifecycleUnitStateChangeReason reason) override;
 
   // LifecycleUnitSourceObserver:
   void OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) override;
 
-  // Indicates if TabManager should proactively discard tabs.
-  bool ShouldProactivelyDiscardTabs();
-
   // LifecycleUnits managed by this.
   LifecycleUnitSet lifecycle_units_;
 
-  // Number of LifecycleUnits in |lifecycle_units_| that are not discarded. Used
-  // to determine timeout threshold for proactive discarding.
-  int num_loaded_lifecycle_units_ = 0;
-
-  // Parameters for proactive freezing and discarding.
-  ProactiveTabFreezeAndDiscardParams proactive_freeze_discard_params_;
+  // Parameters for freezing.
+  TabFreezeParams freeze_params_;
 
   // Timer to update the state of LifecycleUnits. This is an std::unique_ptr to
   // allow initialization after mock time is setup in unit tests.
@@ -469,6 +436,10 @@ class TabManager : public LifecycleUnitObserver,
   // Records UMAs for tab and system-related events and properties during
   // session restore.
   std::unique_ptr<TabManagerStatsCollector> stats_collector_;
+
+  // The intervention policy database, should be initialized by
+  // InterventionPolicyDatabaseComponentInstallerPolicy.
+  std::unique_ptr<InterventionPolicyDatabase> intervention_policy_database_;
 
   // Last time at which a LifecycleUnit was temporarily unfrozen.
   base::TimeTicks last_unfreeze_time_;

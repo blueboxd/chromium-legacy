@@ -464,7 +464,7 @@ class Surface final : public ui::PropertyHandler {
 
   // The embedded surface is actually |embedded_surface_size_|. This is used
   // for calculating clipping and scaling.
-  gfx::SizeF embedded_surface_size_;
+  gfx::Size embedded_surface_size_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

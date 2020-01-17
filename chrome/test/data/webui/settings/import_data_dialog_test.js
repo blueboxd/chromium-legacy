@@ -32,8 +32,8 @@ class TestImportDataBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  importData(browserProfileIndex) {
-    this.methodCalled('importData', browserProfileIndex);
+  importData(browserProfileIndex, types) {
+    this.methodCalled('importData', [browserProfileIndex, types]);
   }
 }
 
@@ -167,12 +167,17 @@ suite('ImportDataDialog', function() {
 
   test('ImportFromBrowserProfile', function() {
     dialog.set('prefs.import_dialog_bookmarks.value', false);
+    dialog.set('prefs.import_dialog_search_engine.value', true);
 
     const expectedIndex = 0;
     simulateBrowserProfileChange(expectedIndex);
     dialog.$.import.click();
-    return browserProxy.whenCalled('importData').then(function(actualIndex) {
+
+    const importCalled = browserProxy.whenCalled('importData');
+    return importCalled.then(([actualIndex, types]) => {
       assertEquals(expectedIndex, actualIndex);
+      assertFalse(types['import_dialog_bookmarks']);
+      assertTrue(types['import_dialog_search_engine']);
 
       simulateImportStatusChange(settings.ImportDataStatus.IN_PROGRESS);
       assertInProgressButtons();

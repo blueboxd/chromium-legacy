@@ -10,7 +10,7 @@
 
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_export.h"
-#include "media/base/media_log_properties_helper.h"
+#include "media/base/media_log_type_enforcement.h"
 #include "media/base/video_decoder_config.h"
 #include "ui/gfx/geometry/size.h"
 

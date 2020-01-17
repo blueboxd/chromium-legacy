@@ -1,0 +1,23 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutSlider INPUT",
+          "rect": [8, 8, 133, 20],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='thumb'",
+          "rect": [66, 10, 17, 16],
+          "reason": "subtree"
+        }
+      ]
+    }
+  ]
+}
+

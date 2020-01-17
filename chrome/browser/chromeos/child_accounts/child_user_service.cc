@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/child_accounts/child_user_service.h"
 
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -58,6 +59,21 @@ void ChildUserService::ResumeWebActivity(const std::string& app_id) {
 
   web_time_enforcer->set_time_limit(base::TimeDelta());
   web_time_enforcer->OnWebTimeLimitEnded();
+}
+
+app_time::AppActivityReportInterface::ReportParams
+ChildUserService::GenerateAppActivityReport(
+    enterprise_management::ChildStatusReportRequest* report) const {
+  DCHECK(app_time_controller_);
+  return app_time_controller_->app_registry()->GenerateAppActivityReport(
+      report);
+}
+
+void ChildUserService::AppActivityReportSubmitted(
+    base::Time report_generation_timestamp) {
+  DCHECK(app_time_controller_);
+  app_time_controller_->app_registry()->CleanRegistry(
+      report_generation_timestamp);
 }
 
 bool ChildUserService::WebTimeLimitReached() const {

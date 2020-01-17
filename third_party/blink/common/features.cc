@@ -212,7 +212,7 @@ const base::Feature kStorageAccessAPI{"StorageAccessAPI",
 
 // Enable text snippets in URL fragments. https://crbug.com/919204.
 const base::Feature kTextFragmentAnchor{"TextFragmentAnchor",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the site isolated Wasm code cache that is keyed on the resource URL
 // and the origin lock of the renderer that is requesting the resource. When
@@ -410,16 +410,6 @@ const base::Feature kVizHitTestOcclusionCheck{
 // not ResourceLoadPriority::kVeryLow.
 const base::Feature kSetLowPriorityForBeacon{"SetLowPriorityForBeacon",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, JS function calls in a detached window will be reported.
-// Reporting has a non-zero probability of a performance impact, hence an easy
-// way to disable it may come in handy.
-const base::Feature kSetDetachedWindowReasonByNavigation{
-    "SetDetachedWindowReasonByNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSetDetachedWindowReasonByClosing{
-    "SetDetachedWindowReasonByClosing", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSetDetachedWindowReasonByOtherReason{
-    "SetDetachedWindowReasonByOtherReason", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled allows the header name used in the blink
 // CacheStorageCodeCacheHint runtime feature to be modified.  This runtime

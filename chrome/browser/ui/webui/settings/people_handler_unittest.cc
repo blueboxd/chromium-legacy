@@ -14,6 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/test/mock_callback.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
@@ -242,9 +243,7 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     ON_CALL(*mock_sync_service_, GetSetupInProgressHandle())
         .WillByDefault(
             Return(ByMove(std::make_unique<syncer::SyncSetupInProgressHandle>(
-                base::BindRepeating(
-                    &PeopleHandlerTest::OnSetupInProgressHandleDestroyed,
-                    base::Unretained(this))))));
+                mock_on_setup_in_progress_handle_destroyed_.Get()))));
 
     handler_ = std::make_unique<TestingPeopleHandler>(&web_ui_, profile());
     handler_->AllowJavascript();
@@ -342,8 +341,8 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     return identity_test_env_adaptor_->identity_test_env();
   }
 
-  MOCK_METHOD0(OnSetupInProgressHandleDestroyed, void());
-
+  testing::NiceMock<base::MockCallback<base::RepeatingClosure>>
+      mock_on_setup_in_progress_handle_destroyed_;
   syncer::MockSyncService* mock_sync_service_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;
@@ -485,7 +484,7 @@ TEST_F(PeopleHandlerTest,
   // tell it we're through with the setup progress.
   testing::InSequence seq;
   EXPECT_CALL(*mock_sync_service_, StopAndClear());
-  EXPECT_CALL(*this, OnSetupInProgressHandleDestroyed());
+  EXPECT_CALL(mock_on_setup_in_progress_handle_destroyed_, Run());
 
   handler_->CloseSyncSetup();
   EXPECT_EQ(
@@ -973,7 +972,7 @@ TEST_F(PeopleHandlerTest, ShowSetupCustomPassphraseRequired) {
 
 TEST_F(PeopleHandlerTest, ShowSetupTrustedVaultKeysRequired) {
   ON_CALL(*mock_sync_service_->GetMockUserSettings(),
-          IsTrustedVaultKeyRequiredForPreferredDataTypes())
+          IsTrustedVaultKeyRequired())
       .WillByDefault(Return(true));
   ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetPassphraseType())
       .WillByDefault(Return(syncer::PassphraseType::kTrustedVaultPassphrase));
@@ -987,8 +986,6 @@ TEST_F(PeopleHandlerTest, ShowSetupTrustedVaultKeysRequired) {
   CheckBool(dictionary, "passphraseRequired", false);
   CheckBool(dictionary, "trustedVaultKeysRequired", true);
   EXPECT_FALSE(dictionary->FindKey("enterPassphraseBody"));
-  // TODO: See how to verify the appropriate action, once it's actually
-  // implemented.
 }
 
 TEST_F(PeopleHandlerTest, ShowSetupEncryptAll) {
@@ -1218,13 +1215,24 @@ TEST(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
   ASSERT_TRUE(accounts.is_list());
   base::Value::ConstListView accounts_list = accounts.GetList();
 
-  ASSERT_EQ(2u, accounts_list.size());
+  ASSERT_EQ(1u, accounts_list.size());
   ASSERT_TRUE(accounts_list[0].FindKey("email"));
-  ASSERT_TRUE(accounts_list[1].FindKey("email"));
   EXPECT_EQ("a@gmail.com", accounts_list[0].FindKey("email")->GetString());
-  EXPECT_EQ("b@gmail.com", accounts_list[1].FindKey("email")->GetString());
 }
-
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#if defined(OS_CHROMEOS)
+// Regression test for crash in guest mode. https://crbug.com/1040476
+TEST(PeopleHandlerGuestModeTest, GetStoredAccountsList) {
+  content::BrowserTaskEnvironment task_environment;
+  TestingProfile::Builder builder;
+  builder.SetGuestSession();
+  std::unique_ptr<Profile> profile = builder.Build();
+
+  PeopleHandler handler(profile.get());
+  base::Value accounts = handler.GetStoredAccountsList();
+  EXPECT_TRUE(accounts.GetList().empty());
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace settings

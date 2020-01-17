@@ -402,6 +402,47 @@ TEST_F(RegistryTest, ChangeCallback) {
   EXPECT_FALSE(delegate.WasCalled());
 }
 
+TEST_F(RegistryTest, TestMoveConstruct) {
+  RegKey key;
+  std::wstring foo_key(kRootKey);
+
+  ASSERT_EQ(key.Create(HKEY_CURRENT_USER, foo_key.c_str(), KEY_SET_VALUE),
+            ERROR_SUCCESS);
+  RegKey key2(std::move(key));
+
+  // The old key should be meaningless now.
+  EXPECT_EQ(key.Handle(), nullptr);
+
+  // And the new one should work just fine.
+  EXPECT_NE(key2.Handle(), nullptr);
+  EXPECT_EQ(key2.WriteValue(L"foo", 1U), ERROR_SUCCESS);
+}
+
+TEST_F(RegistryTest, TestMoveAssign) {
+  RegKey key;
+  RegKey key2;
+  std::wstring foo_key(kRootKey);
+  const wchar_t kFooValueName[] = L"foo";
+
+  ASSERT_EQ(key.Create(HKEY_CURRENT_USER, foo_key.c_str(),
+                       KEY_SET_VALUE | KEY_QUERY_VALUE),
+            ERROR_SUCCESS);
+  ASSERT_EQ(key.WriteValue(kFooValueName, 1U), ERROR_SUCCESS);
+  ASSERT_EQ(key2.Create(HKEY_CURRENT_USER, (foo_key + L"\\child").c_str(),
+                        KEY_SET_VALUE),
+            ERROR_SUCCESS);
+  key2 = std::move(key);
+
+  // The old key should be meaningless now.
+  EXPECT_EQ(key.Handle(), nullptr);
+
+  // And the new one should hold what was the old one.
+  EXPECT_NE(key2.Handle(), nullptr);
+  DWORD foo = 0;
+  ASSERT_EQ(key2.ReadValueDW(kFooValueName, &foo), ERROR_SUCCESS);
+  EXPECT_EQ(foo, 1U);
+}
+
 }  // namespace
 
 }  // namespace win

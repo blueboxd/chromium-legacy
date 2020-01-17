@@ -15,7 +15,7 @@ Polymer({
     /** @private */
     shareAllowEnable_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('shareNetworkAllowEnable');
       }
     },
@@ -23,7 +23,7 @@ Polymer({
     /** @private */
     shareDefault_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('shareNetworkDefault');
       }
     },
@@ -67,7 +67,7 @@ Polymer({
     },
   },
 
-  open: function() {
+  open() {
     const dialog = /** @type {!CrDialogElement} */ (this.$.dialog);
     if (!dialog.open) {
       dialog.showModal();
@@ -76,7 +76,7 @@ Polymer({
     this.$.networkConfig.init();
   },
 
-  close: function() {
+  close() {
     const dialog = /** @type {!CrDialogElement} */ (this.$.dialog);
     if (dialog.open) {
       dialog.close();
@@ -87,7 +87,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onClose_: function(event) {
+  onClose_(event) {
     this.close();
   },
 
@@ -95,7 +95,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getDialogTitle_: function() {
+  getDialogTitle_() {
     if (this.name && !this.showConnect) {
       return this.i18n('internetConfigName', HTMLEscape(this.name));
     }
@@ -107,7 +107,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getError_: function() {
+  getError_() {
     if (this.i18nExists(this.error_)) {
       return this.i18n(this.error_);
     }
@@ -115,17 +115,17 @@ Polymer({
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.close();
   },
 
   /** @private */
-  onSaveTap_: function() {
+  onSaveTap_() {
     this.$.networkConfig.save();
   },
 
   /** @private */
-  onConnectTap_: function() {
+  onConnectTap_() {
     this.$.networkConfig.connect();
   },
 });

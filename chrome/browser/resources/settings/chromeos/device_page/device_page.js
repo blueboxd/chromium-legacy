@@ -48,7 +48,7 @@ Polymer({
      */
     enablePowerSettings_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('enablePowerSettings');
       },
       readOnly: true,
@@ -60,7 +60,7 @@ Polymer({
      */
     hideStorageInfo_: {
       type: Boolean,
-      value: function() {
+      value() {
         // TODO(crbug.com/868747): Show an explanatory message instead.
         return loadTimeData.valueExists('isDemoSession') &&
             loadTimeData.getBoolean('isDemoSession');
@@ -71,7 +71,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.POINTERS) {
           map.set(settings.routes.POINTERS.path, '#pointersRow');
@@ -103,7 +103,7 @@ Polymer({
     /** @private */
     androidEnabled_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('androidEnabled');
       },
     },
@@ -114,7 +114,7 @@ Polymer({
   ],
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'has-mouse-changed', this.set.bind(this, 'hasMouse_'));
     this.addWebUIListener(
@@ -135,7 +135,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getPointersTitle_: function() {
+  getPointersTitle_() {
     if (this.hasMouse_ && this.hasTouchpad_) {
       return this.i18n('mouseAndTouchpadTitle');
     }
@@ -152,52 +152,52 @@ Polymer({
    * Handler for tapping the mouse and touchpad settings menu item.
    * @private
    */
-  onPointersTap_: function() {
-    settings.navigateTo(settings.routes.POINTERS);
+  onPointersTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.POINTERS);
   },
 
   /**
    * Handler for tapping the Keyboard settings menu item.
    * @private
    */
-  onKeyboardTap_: function() {
-    settings.navigateTo(settings.routes.KEYBOARD);
+  onKeyboardTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.KEYBOARD);
   },
 
   /**
    * Handler for tapping the Keyboard settings menu item.
    * @private
    */
-  onStylusTap_: function() {
-    settings.navigateTo(settings.routes.STYLUS);
+  onStylusTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.STYLUS);
   },
 
   /**
    * Handler for tapping the Display settings menu item.
    * @private
    */
-  onDisplayTap_: function() {
-    settings.navigateTo(settings.routes.DISPLAY);
+  onDisplayTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.DISPLAY);
   },
 
   /**
    * Handler for tapping the Storage settings menu item.
    * @private
    */
-  onStorageTap_: function() {
-    settings.navigateTo(settings.routes.STORAGE);
+  onStorageTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.STORAGE);
   },
 
   /**
    * Handler for tapping the Power settings menu item.
    * @private
    */
-  onPowerTap_: function() {
-    settings.navigateTo(settings.routes.POWER);
+  onPowerTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.POWER);
   },
 
   /** @protected */
-  currentRouteChanged: function() {
+  currentRouteChanged() {
     this.checkPointerSubpage_();
   },
 
@@ -206,7 +206,7 @@ Polymer({
    * @param {boolean} hasTouchpad
    * @private
    */
-  pointersChanged_: function(hasMouse, hasTouchpad) {
+  pointersChanged_(hasMouse, hasTouchpad) {
     this.$.pointersRow.hidden = !hasMouse && !hasTouchpad;
     this.checkPointerSubpage_();
   },
@@ -215,11 +215,12 @@ Polymer({
    * Leaves the pointer subpage if all pointing devices are detached.
    * @private
    */
-  checkPointerSubpage_: function() {
+  checkPointerSubpage_() {
     // Check that the properties have explicitly been set to false.
     if (this.hasMouse_ === false && this.hasTouchpad_ === false &&
-        settings.getCurrentRoute() == settings.routes.POINTERS) {
-      settings.navigateTo(settings.routes.DEVICE);
+        settings.Router.getInstance().getCurrentRoute() ==
+            settings.routes.POINTERS) {
+      settings.Router.getInstance().navigateTo(settings.routes.DEVICE);
     }
   },
 });

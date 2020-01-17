@@ -220,9 +220,8 @@ WindowPerformance::CreateNavigationTimingInstance() {
 
 void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {
   Performance::BuildJSONValue(builder);
-  builder.Add("timing", timing()->toJSONForBinding(builder.GetScriptState()));
-  builder.Add("navigation",
-              navigation()->toJSONForBinding(builder.GetScriptState()));
+  builder.Add("timing", timing());
+  builder.Add("navigation", navigation());
 }
 
 void WindowPerformance::Trace(blink::Visitor* visitor) {

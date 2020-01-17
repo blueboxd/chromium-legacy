@@ -67,9 +67,7 @@ packaging_files = packaging_files_binaries + [
                   ]
 
 action_foreach("calculate_deb_dependencies") {
-  deps = [
-    ":installer_deps",
-  ]
+  deps = [ ":installer_deps" ]
   script = "debian/calculate_package_deps.py"
   sources = packaging_files_binaries
   inputs = [
@@ -78,9 +76,7 @@ action_foreach("calculate_deb_dependencies") {
     "debian/package_version_interval.py",
     "//third_party/dpkg-shlibdeps/dpkg-shlibdeps.pl",
   ]
-  outputs = [
-    "$root_out_dir/deb_{{source_name_part}}.deps",
-  ]
+  outputs = [ "$root_out_dir/deb_{{source_name_part}}.deps" ]
   args = [
     "{{source}}",
     rebase_path(sysroot, root_build_dir),
@@ -93,9 +89,7 @@ action_foreach("calculate_deb_dependencies") {
 }
 
 action("merge_deb_dependencies") {
-  deps = [
-    ":calculate_deb_dependencies",
-  ]
+  deps = [ ":calculate_deb_dependencies" ]
   script = "debian/merge_package_versions.py"
   additional_deps = "debian/additional_deps"
   inputs = [
@@ -103,9 +97,7 @@ action("merge_deb_dependencies") {
     "debian/deb_version.py",
     "debian/package_version_interval.py",
   ]
-  outputs = [
-    "$root_out_dir/deb_common.deps",
-  ]
+  outputs = [ "$root_out_dir/deb_common.deps" ]
   args = [
     "deb_common.deps",
     rebase_path(additional_deps, root_build_dir),
@@ -115,17 +107,11 @@ action("merge_deb_dependencies") {
 }
 
 action_foreach("calculate_rpm_dependencies") {
-  deps = [
-    ":installer_deps",
-  ]
+  deps = [ ":installer_deps" ]
   script = "rpm/calculate_package_deps.py"
   sources = packaging_files_binaries
-  inputs = [
-    "rpm/dist_package_provides.json",
-  ]
-  outputs = [
-    "$root_out_dir/rpm_{{source_name_part}}.deps",
-  ]
+  inputs = [ "rpm/dist_package_provides.json" ]
+  outputs = [ "$root_out_dir/rpm_{{source_name_part}}.deps" ]
   args = [
     "{{source}}",
     "rpm_{{source_name_part}}.deps",
@@ -137,17 +123,11 @@ action_foreach("calculate_rpm_dependencies") {
 }
 
 action("merge_rpm_dependencies") {
-  deps = [
-    ":calculate_rpm_dependencies",
-  ]
+  deps = [ ":calculate_rpm_dependencies" ]
   script = "rpm/merge_package_deps.py"
   additional_deps = "rpm/additional_deps"
-  inputs = [
-    additional_deps,
-  ]
-  outputs = [
-    "$root_out_dir/rpm_common.deps",
-  ]
+  inputs = [ additional_deps ]
+  outputs = [ "$root_out_dir/rpm_common.deps" ]
   args = [
     "rpm_common.deps",
     rebase_path(additional_deps, root_build_dir),
@@ -160,9 +140,7 @@ action("strip_chrome_binary") {
   prog_name = "$root_out_dir/chrome"
   debug_file = prog_name + ".debug"
   stripped_file = prog_name + ".stripped"
-  deps = [
-    "//chrome",
-  ]
+  deps = [ "//chrome" ]
   script = "//build/gn_run_binary.py"
   sources = [
     "//buildtools/third_party/eu-strip/bin/eu-strip",
@@ -195,6 +173,12 @@ action("strip_chrome_binary") {
 #
 #
 # TO BUILD LINUX INSTALLER PACKAGES
+#
+# Use the following GN args:
+#
+#   is_component_build = false
+#
+# and the "chrome/installer/linux" target.
 #
 # The packages list the exact versions of each library used. The versions used
 # on the bots are likely different than those on your workstation, so you'll
@@ -253,9 +237,7 @@ copy("common_packaging_files") {
 
   sources += [ "//buildtools/third_party/eu-strip/bin/eu-strip" ]
 
-  outputs = [
-    "$root_out_dir/installer/common/{{source_file_part}}",
-  ]
+  outputs = [ "$root_out_dir/installer/common/{{source_file_part}}" ]
 }
 
 copy("deb_packaging_files") {
@@ -270,9 +252,7 @@ copy("deb_packaging_files") {
     "debian/postrm",
     "debian/prerm",
   ]
-  outputs = [
-    "$root_out_dir/installer/debian/{{source_file_part}}",
-  ]
+  outputs = [ "$root_out_dir/installer/debian/{{source_file_part}}" ]
 }
 
 copy("theme_files") {
@@ -308,9 +288,7 @@ copy("theme_files") {
       "$branding_dir_100/product_logo_32_dev.png",
     ]
   }
-  outputs = [
-    "$root_out_dir/installer/theme/{{source_file_part}}",
-  ]
+  outputs = [ "$root_out_dir/installer/theme/{{source_file_part}}" ]
 }
 
 if (!is_chromeos) {
@@ -320,9 +298,7 @@ if (!is_chromeos) {
       "rpm/build.sh",
       "rpm/chrome.spec.template",
     ]
-    outputs = [
-      "$root_out_dir/installer/rpm/{{source_file_part}}",
-    ]
+    outputs = [ "$root_out_dir/installer/rpm/{{source_file_part}}" ]
   }
 }
 
@@ -416,9 +392,7 @@ template("linux_package") {
     } else {
       package = "chromium-browser"
     }
-    outputs = [
-      "$root_out_dir/${package}-${channel}_${chrome_version_full}-1_${deb_arch}.deb",
-    ]
+    outputs = [ "$root_out_dir/${package}-${channel}_${chrome_version_full}-1_${deb_arch}.deb" ]
 
     args = [
       rebase_path("$root_out_dir/installer/debian/build.sh", root_build_dir),
@@ -474,9 +448,7 @@ template("linux_package") {
       } else {
         package = "chromium-browser"
       }
-      outputs = [
-        "$root_out_dir/${package}-${channel}-${chrome_version_full}-1.${rpm_arch}.rpm",
-      ]
+      outputs = [ "$root_out_dir/${package}-${channel}-${chrome_version_full}-1.${rpm_arch}.rpm" ]
 
       args = [
         rebase_path("$root_out_dir/installer/rpm/build.sh", root_build_dir),
@@ -504,9 +476,7 @@ template("linux_package") {
   }
 
   group(target_name) {
-    deps = [
-      ":$deb_target_name",
-    ]
+    deps = [ ":$deb_target_name" ]
     if (!is_chromeos) {
       deps += [ ":$rpm_target_name" ]
     }

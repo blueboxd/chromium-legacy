@@ -135,7 +135,6 @@ class PageActionIconView : public IconLabelBubbleView {
   virtual const gfx::VectorIcon& GetVectorIconBadge() const;
 
   // IconLabelBubbleView:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnTouchUiChanged() override;
   const char* GetClassName() const override;
 

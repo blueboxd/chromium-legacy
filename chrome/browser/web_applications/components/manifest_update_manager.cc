@@ -128,6 +128,7 @@ void ManifestUpdateManager::OnWebAppUninstalled(const AppId& app_id) {
     tasks_.erase(it);
   }
   DCHECK(!tasks_.contains(app_id));
+  last_update_check_.erase(app_id);
 }
 
 bool ManifestUpdateManager::MaybeConsumeUpdateCheck(const GURL& origin,
@@ -151,6 +152,12 @@ bool ManifestUpdateManager::MaybeConsumeUpdateCheck(const GURL& origin,
 base::Optional<base::Time> ManifestUpdateManager::GetLastUpdateCheckTime(
     const GURL& origin,
     const AppId& app_id) const {
+  if (!base::FeatureList::IsEnabled(
+          features::kDesktopPWAsLocalUpdatingThrottlePersistence)) {
+    auto it = last_update_check_.find(app_id);
+    return it != last_update_check_.end() ? it->second : base::Time();
+  }
+
   AppPrefs app_prefs(profile_, origin);
   if (!app_prefs.IsAvailable())
     return base::nullopt;
@@ -164,6 +171,12 @@ base::Optional<base::Time> ManifestUpdateManager::GetLastUpdateCheckTime(
 void ManifestUpdateManager::SetLastUpdateCheckTime(const GURL& origin,
                                                    const AppId& app_id,
                                                    base::Time time) {
+  if (!base::FeatureList::IsEnabled(
+          features::kDesktopPWAsLocalUpdatingThrottlePersistence)) {
+    last_update_check_[app_id] = time;
+    return;
+  }
+
   AppPrefs app_prefs(profile_, origin);
   if (!app_prefs.IsAvailable())
     return;

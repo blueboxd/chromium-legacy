@@ -84,8 +84,7 @@
 #pragma mark - ViewController Lifecycle.
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
-  self = [super initWithTableViewStyle:UITableViewStylePlain
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     _browserState = browserState;
     _dataManager =

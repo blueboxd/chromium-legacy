@@ -16,14 +16,16 @@ class CrostiniInstallerUIDelegate {
  public:
   // The size of the download for the VM image.
   // TODO(timloh): This is just a placeholder.
-  static constexpr int64_t kDownloadSizeInBytes = 300 * 1024 * 1024;
-  // The minimum feasible size for a VM disk image.
+  // As of 2020-01-10 the Termina files.zip is ~90MiB and the squashfs container
+  // is ~330MiB.
+  static constexpr int64_t kDownloadSizeInBytes = 450 * 1024 * 1024;  // 450 MiB
+
+  // As of 2020-01-10 Crostini once installed uses ~1.8GiB, and metrics show
+  // that install success rate plummets when users have less than that much free
+  // space.
   static constexpr int64_t kMinimumDiskSize =
-      1ll * 1024 * 1024 * 1024;  // 1 GiB
-  // Minimum amount of free disk space to install crostini successfully.
-  static constexpr int64_t kMinimumFreeDiskSpace =
-      crostini::CrostiniInstallerUIDelegate::kDownloadSizeInBytes +
-      kMinimumDiskSize;
+      1.8l * 1024 * 1024 * 1024;  // 1.8 GiB
+  static constexpr int64_t kMinimumFreeDiskSpace = kMinimumDiskSize;
 
   // |progress_fraction| ranges from 0.0 to 1.0.
   using ProgressCallback =

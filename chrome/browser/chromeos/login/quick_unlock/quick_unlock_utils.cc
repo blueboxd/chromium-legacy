@@ -126,6 +126,8 @@ FingerprintLocation GetFingerprintLocation() {
       cl->GetSwitchValueASCII(switches::kFingerprintSensorLocation);
   if (location_info == "power-button-top-left")
     return FingerprintLocation::TABLET_POWER_BUTTON;
+  if (location_info == "keyboard-bottom-left")
+    return FingerprintLocation::KEYBOARD_BOTTOM_LEFT;
   if (location_info == "keyboard-bottom-right")
     return FingerprintLocation::KEYBOARD_BOTTOM_RIGHT;
   if (location_info == "keyboard-top-right")

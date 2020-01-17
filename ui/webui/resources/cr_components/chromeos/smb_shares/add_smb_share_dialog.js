@@ -196,7 +196,7 @@ Polymer({
    * @private
    */
   shouldShowCredentialUI_() {
-    return this.authenticationMethod_ == SmbAuthMethod.CREDENTIALS;
+    return this.authenticationMethod_ === SmbAuthMethod.CREDENTIALS;
   },
 
   /**
@@ -215,7 +215,7 @@ Polymer({
     this.inProgress_ = false;
 
     // Success case. Close dialog.
-    if (result == SmbMountResult.SUCCESS) {
+    if (result === SmbMountResult.SUCCESS) {
       this.$.dialog.close();
       return;
     }
@@ -296,7 +296,7 @@ Polymer({
    * @private
    */
   shouldShowCredentialError_() {
-    return this.currentMountError_ == MountErrorType.CREDENTIAL_ERROR;
+    return this.currentMountError_ === MountErrorType.CREDENTIAL_ERROR;
   },
 
   /**
@@ -304,7 +304,7 @@ Polymer({
    * @private
    */
   shouldShowGeneralError_() {
-    return this.currentMountError_ == MountErrorType.GENERAL_ERROR;
+    return this.currentMountError_ === MountErrorType.GENERAL_ERROR;
   },
 
   /**
@@ -312,7 +312,7 @@ Polymer({
    * @private
    */
   shouldShowPathError_() {
-    return this.currentMountError_ == MountErrorType.PATH_ERROR;
+    return this.currentMountError_ === MountErrorType.PATH_ERROR;
   },
 
   /**

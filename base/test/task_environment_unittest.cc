@@ -1192,17 +1192,6 @@ TEST_F(TaskEnvironmentTest, SingleThreadMockTime) {
   EXPECT_EQ(TimeTicks::Now(), start_time + kDelay);
 }
 
-TEST_F(TaskEnvironmentTest, CurrentThread) {
-  SingleThreadTaskEnvironment task_environment;
-  RunLoop run_loop;
-
-  PostTask(FROM_HERE, {CurrentThread()}, BindLambdaForTesting([&]() {
-             PostTask(FROM_HERE, {CurrentThread()}, run_loop.QuitClosure());
-           }));
-
-  run_loop.Run();
-}
-
 #if defined(OS_WIN)
 namespace {
 

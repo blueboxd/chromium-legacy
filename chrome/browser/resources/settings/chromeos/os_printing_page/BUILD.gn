@@ -26,9 +26,7 @@ js_library("cups_add_printer_dialog") {
 }
 
 js_library("cups_add_printer_dialog_elements") {
-  deps = [
-    ":cups_printers_browser_proxy",
-  ]
+  deps = [ ":cups_printers_browser_proxy" ]
 }
 
 js_library("cups_edit_printer_dialog") {
@@ -54,15 +52,11 @@ js_library("cups_nearby_printers") {
 }
 
 js_library("cups_printer_dialog_util") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("cups_printer_types") {
-  deps = [
-    ":cups_printers_browser_proxy",
-  ]
+  deps = [ ":cups_printers_browser_proxy" ]
 }
 
 js_library("cups_printers") {
@@ -72,6 +66,7 @@ js_library("cups_printers") {
     ":cups_printers_entry_manager",
     ":cups_saved_printers",
     "../..:route",
+    "../..:router",
     "../localized_link:localized_link",
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
@@ -85,9 +80,7 @@ js_library("cups_printers") {
 }
 
 js_library("cups_printers_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("cups_printers_entry") {
@@ -129,6 +122,7 @@ js_library("cups_saved_printers") {
 js_library("os_printing_page") {
   deps = [
     "../..:route",
+    "../..:router",
     "../../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:load_time_data",

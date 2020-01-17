@@ -660,6 +660,9 @@ void AccessibilityUIMessageHandler::RequestAccessibilityEvents(
   content::WebContents* web_contents =
       content::WebContents::FromRenderViewHost(rvh);
   if (start) {
+    if (observer_) {
+      return;
+    }
     web_contents->RecordAccessibilityEvents(
         base::BindRepeating(&AccessibilityUIMessageHandler::Callback,
                             base::Unretained(this)),

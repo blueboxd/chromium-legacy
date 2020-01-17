@@ -44,6 +44,7 @@ js_library("appearance_page") {
     ":appearance_browser_proxy",
     "..:page_visibility",
     "..:route",
+    "..:router",
     "../controls:settings_dropdown_menu",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:cr",

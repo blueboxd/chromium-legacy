@@ -89,10 +89,6 @@ void AssistantPageView::InitLayout() {
           assistant_view_delegate_,
           /*web_container_view_delegate=*/nullptr));
     }
-
-    // Update the view state based on the current UI mode.
-    OnUiModeChanged(assistant_view_delegate_->GetUiModel()->ui_mode(),
-                    /*due_to_interaction=*/false);
   }
 }
 
@@ -283,6 +279,10 @@ void AssistantPageView::OnUiVisibilityChanged(
     min_height_dip_ = kMinHeightEmbeddedDip;
     return;
   }
+
+  // Update the visibility of the child views based on the current UI mode.
+  OnUiModeChanged(assistant_view_delegate_->GetUiModel()->ui_mode(),
+                  /*due_to_interaction=*/false);
 
   const bool prefer_voice =
       assistant_view_delegate_->IsTabletMode() ||

@@ -110,4 +110,12 @@ LayoutObject* QuoteContentData::CreateLayoutObject(
   return layout_object;
 }
 
+LayoutObject* NoneContentData::CreateLayoutObject(
+    PseudoElement& pseudo,
+    const ComputedStyle& pseudo_style,
+    LegacyLayout) const {
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace blink

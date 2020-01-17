@@ -78,7 +78,5 @@ executable("modetest") {
     "src/tests/modetest",
   ]
 
-  deps = [
-    ":libdrm",
-  ]
+  deps = [ ":libdrm" ]
 }

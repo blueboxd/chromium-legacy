@@ -115,24 +115,18 @@ DirectRenderer::SwapFrameData& DirectRenderer::SwapFrameData::operator=(
 
 DirectRenderer::DirectRenderer(const RendererSettings* settings,
                                OutputSurface* output_surface,
-                               DisplayResourceProvider* resource_provider)
+                               DisplayResourceProvider* resource_provider,
+                               OverlayProcessorInterface* overlay_processor)
     : settings_(settings),
       output_surface_(output_surface),
-      resource_provider_(resource_provider) {
+      resource_provider_(resource_provider),
+      overlay_processor_(overlay_processor) {
   DCHECK(output_surface_);
 }
 
 DirectRenderer::~DirectRenderer() = default;
 
 void DirectRenderer::Initialize() {
-  // Create an overlay validator based on the platform and set it on the newly
-  // created processor. This would initialize the strategies on the validator as
-  // well.
-  overlay_processor_ = OverlayProcessorInterface::CreateOverlayProcessor(
-      output_surface_->AsSkiaOutputSurface(),
-      output_surface_->GetSurfaceHandle(), output_surface_->capabilities(),
-      *settings_);
-
   auto* context_provider = output_surface_->context_provider();
 
   use_partial_swap_ = settings_->partial_swap_enabled && CanPartialSwap();
@@ -280,8 +274,10 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   current_frame()->render_passes_in_draw_order = render_passes_in_draw_order;
   current_frame()->root_render_pass = root_render_pass;
   current_frame()->root_damage_rect = root_render_pass->damage_rect;
-  current_frame()->root_damage_rect.Union(
-      overlay_processor_->GetAndResetOverlayDamage());
+  if (overlay_processor_) {
+    current_frame()->root_damage_rect.Union(
+        overlay_processor_->GetAndResetOverlayDamage());
+  }
   current_frame()->root_damage_rect.Intersect(gfx::Rect(device_viewport_size));
   current_frame()->device_viewport_size = device_viewport_size;
   current_frame()->sdr_white_level = sdr_white_level;
@@ -307,7 +303,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     output_surface_->Reshape(
         reshape_surface_size_, reshape_device_scale_factor_,
         reshape_device_color_space_, reshape_has_alpha_, reshape_use_stencil_);
-    overlay_processor_->SetViewportSize(reshape_surface_size_);
+    if (overlay_processor_)
+      overlay_processor_->SetViewportSize(reshape_surface_size_);
     did_reshape = true;
   }
 
@@ -330,34 +327,36 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     }
   }
 
-  // Display transform is needed for overlay validator on Android
-  // SurfaceControl. This needs to called before ProcessForOverlays.
-  overlay_processor_->SetDisplayTransformHint(
-      output_surface_->GetDisplayTransform());
+  if (overlay_processor_) {
+    // Display transform is needed for overlay validator on Android
+    // SurfaceControl. This needs to called before ProcessForOverlays.
+    overlay_processor_->SetDisplayTransformHint(
+        output_surface_->GetDisplayTransform());
 
-  // Before ProcessForOverlay calls into the hardware to ask about whether the
-  // overlay setup can be handled, we need to set up the primary plane.
-  OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane = nullptr;
-  if (output_surface_->IsDisplayedAsOverlayPlane()) {
-    current_frame()->output_surface_plane =
-        overlay_processor_->ProcessOutputSurfaceAsOverlay(
-            device_viewport_size, output_surface_->GetOverlayBufferFormat(),
-            reshape_device_color_space_, reshape_has_alpha_);
-    primary_plane = &(current_frame()->output_surface_plane.value());
+    // Before ProcessForOverlay calls into the hardware to ask about whether the
+    // overlay setup can be handled, we need to set up the primary plane.
+    OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane =
+        nullptr;
+    if (output_surface_->IsDisplayedAsOverlayPlane()) {
+      current_frame()->output_surface_plane =
+          overlay_processor_->ProcessOutputSurfaceAsOverlay(
+              device_viewport_size, output_surface_->GetOverlayBufferFormat(),
+              reshape_device_color_space_, reshape_has_alpha_);
+      primary_plane = &(current_frame()->output_surface_plane.value());
+    }
+
+    // Attempt to replace some or all of the quads of the root render pass with
+    // overlays.
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_, render_passes_in_draw_order,
+        output_surface_->color_matrix(), render_pass_filters_,
+        render_pass_backdrop_filters_, primary_plane,
+        &current_frame()->overlay_list, &current_frame()->root_damage_rect,
+        &current_frame()->root_content_bounds);
+
+    overlay_processor_->AdjustOutputSurfaceOverlay(
+        &(current_frame()->output_surface_plane));
   }
-
-  // Attempt to replace some or all of the quads of the root render pass with
-  // overlays.
-  overlay_processor_->ProcessForOverlays(
-      resource_provider_, render_passes_in_draw_order,
-      output_surface_->color_matrix(), render_pass_filters_,
-      render_pass_backdrop_filters_, primary_plane,
-      &current_frame()->overlay_list, &current_frame()->root_damage_rect,
-      &current_frame()->root_content_bounds);
-
-  overlay_processor_->AdjustOutputSurfaceOverlay(
-      &(current_frame()->output_surface_plane));
-
 #if defined(OS_WIN)
   bool was_using_dc_layers = using_dc_layers_;
   if (!current_frame()->overlay_list.empty()) {
@@ -820,10 +819,6 @@ void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {
 bool DirectRenderer::HasAllocatedResourcesForTesting(
     const RenderPassId& render_pass_id) const {
   return IsRenderPassResourceAllocated(render_pass_id);
-}
-
-bool DirectRenderer::OverlayNeedsSurfaceOccludingDamageRect() const {
-  return overlay_processor_->NeedsSurfaceOccludingDamageRect();
 }
 
 bool DirectRenderer::ShouldApplyRoundedCorner(const DrawQuad* quad) const {

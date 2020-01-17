@@ -16,18 +16,14 @@ action("make_ssl_error_assistant_protobuf") {
   python_path_ssl =
       "$python_path_root/components/security_interstitials/content/"
 
-  inputs = [
-    input_filename,
-  ]
+  inputs = [ input_filename ]
 
   deps = [
     "//components/security_interstitials/content:proto",
     "//third_party/protobuf:py_proto",
   ]
 
-  outputs = [
-    "$output_dir/$output_basename",
-  ]
+  outputs = [ "$output_dir/$output_basename" ]
 
   args = [
     "-w",

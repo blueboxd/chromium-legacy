@@ -70,9 +70,7 @@ source_set("tests") {
 
 if (enable_websockets) {
   fuzzer_test("net_http_server_fuzzer") {
-    sources = [
-      "http_server_fuzzer.cc",
-    ]
+    sources = [ "http_server_fuzzer.cc" ]
     deps = [
       ":http_server",
       "//base",

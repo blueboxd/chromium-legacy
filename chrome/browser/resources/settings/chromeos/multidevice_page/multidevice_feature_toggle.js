@@ -39,7 +39,7 @@ Polymer({
    * user.
    * @private
    */
-  resetChecked_: function() {
+  resetChecked_() {
     this.checked_ = this.getFeatureState(this.feature) ===
         settings.MultiDeviceFeatureState.ENABLED_BY_USER;
   },
@@ -55,7 +55,7 @@ Polymer({
    * click from unintentionally bubbling up the tree.
    * @private
    */
-  onDisabledInnerToggleClick_: function(event) {
+  onDisabledInnerToggleClick_(event) {
     event.stopPropagation();
   },
 
@@ -64,7 +64,7 @@ Polymer({
    * status if the user is allowed.
    * @private
    */
-  onChange_: function() {
+  onChange_() {
     this.resetChecked_();
 
     // Pass the negation of |this.checked_|: this indicates that if the toggle

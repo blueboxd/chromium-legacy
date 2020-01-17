@@ -221,9 +221,9 @@ bool HTMLFrameSetElement::LayoutObjectIsNeeded(
 LayoutObject* HTMLFrameSetElement::CreateLayoutObject(
     const ComputedStyle& style,
     LegacyLayout legacy) {
-  if (style.HasContent())
-    return LayoutObject::CreateObject(this, style, legacy);
-  return new LayoutFrameSet(this);
+  if (style.ContentBehavesAsNormal())
+    return new LayoutFrameSet(this);
+  return LayoutObject::CreateObject(this, style, legacy);
 }
 
 void HTMLFrameSetElement::AttachLayoutTree(AttachContext& context) {

@@ -33,9 +33,11 @@ ConvertEncryptionScheme(const String& encryption_scheme) {
     return WebMediaKeySystemMediaCapability::EncryptionScheme::kCenc;
   if (encryption_scheme == "cbcs")
     return WebMediaKeySystemMediaCapability::EncryptionScheme::kCbcs;
+  if (encryption_scheme == "cbcs-1-9")
+    return WebMediaKeySystemMediaCapability::EncryptionScheme::kCbcs_1_9;
 
-  NOTREACHED();
-  return WebMediaKeySystemMediaCapability::EncryptionScheme::kNotSpecified;
+  // Any other strings are not recognized (and therefore not supported).
+  return WebMediaKeySystemMediaCapability::EncryptionScheme::kUnrecognized;
 }
 
 static WebVector<WebMediaKeySystemMediaCapability> ConvertCapabilities(
@@ -57,14 +59,8 @@ static WebVector<WebMediaKeySystemMediaCapability> ConvertCapabilities(
       if (type.GetParameters().ParameterCount() == 1u)
         result[i].codecs = type.ParameterValueForName("codecs");
     }
-    result[i].robustness = capabilities[i]->robustness();
 
-    // From
-    // https://github.com/WICG/encrypted-media-encryption-scheme/blob/master/explainer.md
-    // "Asking for "any" encryption scheme is unrealistic. Defining null as
-    // "any scheme" is convenient for backward compatibility, though.
-    // Applications which ignore this feature by leaving encryptionScheme null
-    // get the same user agent behavior they did before this feature existed."
+    result[i].robustness = capabilities[i]->robustness();
     result[i].encryption_scheme =
         capabilities[i]->hasEncryptionScheme()
             ? ConvertEncryptionScheme(capabilities[i]->encryptionScheme())

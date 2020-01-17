@@ -252,12 +252,12 @@ Polymer({
    * Expose only the promise of dataFetchedResolver_.
    * @return {!Promise<void>}
    */
-  whenDataFetched: function() {
+  whenDataFetched() {
     return this.dataFetchedResolver_.promise;
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.dataFetchedResolver_ = new PromiseResolver();
     this.refreshActivities_();
   },
@@ -266,7 +266,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  shouldShowEmptyActivityLogMessage_: function() {
+  shouldShowEmptyActivityLogMessage_() {
     return this.pageState_ === ActivityLogPageState.LOADED &&
         this.activityData_.length === 0;
   },
@@ -275,7 +275,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  shouldShowLoadingMessage_: function() {
+  shouldShowLoadingMessage_() {
     return this.pageState_ === ActivityLogPageState.LOADING;
   },
 
@@ -283,20 +283,20 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  shouldShowActivities_: function() {
+  shouldShowActivities_() {
     return this.pageState_ === ActivityLogPageState.LOADED &&
         this.activityData_.length > 0;
   },
 
   /** @private */
-  onClearActivitiesClick_: function() {
+  onClearActivitiesClick_() {
     this.delegate.deleteActivitiesFromExtension(this.extensionId).then(() => {
       this.processActivities_([]);
     });
   },
 
   /** @private */
-  onMoreActionsClick_: function() {
+  onMoreActionsClick_() {
     this.$$('cr-action-menu').showAt(assert(this.$$('cr-icon-button')));
   },
 
@@ -304,7 +304,7 @@ Polymer({
    * @private
    * @param {boolean} expanded
    */
-  expandItems_: function(expanded) {
+  expandItems_(expanded) {
     // Do not use .filter here as we need the original index of the item
     // in |activityData_|.
     this.activityData_.forEach((item, index) => {
@@ -316,17 +316,17 @@ Polymer({
   },
 
   /** @private */
-  onExpandAllClick_: function() {
+  onExpandAllClick_() {
     this.expandItems_(true);
   },
 
   /** @private */
-  onCollapseAllClick_: function() {
+  onCollapseAllClick_() {
     this.expandItems_(false);
   },
 
   /** @private */
-  onExportClick_: function() {
+  onExportClick_() {
     const fileName = `exported_activity_log_${this.extensionId}.json`;
     this.delegate.downloadActivities(this.rawActivities_, fileName);
   },
@@ -335,7 +335,7 @@ Polymer({
    * @private
    * @param {!CustomEvent<!Array<string>>} e
    */
-  deleteItem_: function(e) {
+  deleteItem_(e) {
     const activityIds = e.detail;
     this.delegate.deleteActivitiesById(activityIds).then(() => {
       // It is possible for multiple activities displayed to have the same
@@ -351,7 +351,7 @@ Polymer({
    * @param {!Array<!chrome.activityLogPrivate.ExtensionActivity>}
    *     activityData
    */
-  processActivities_: function(activityData) {
+  processActivities_(activityData) {
     this.pageState_ = ActivityLogPageState.LOADED;
 
     // Sort |activityData| in ascending order based on the activity's
@@ -370,7 +370,7 @@ Polymer({
    * @private
    * @return {!Promise<void>}
    */
-  refreshActivities_: function() {
+  refreshActivities_() {
     if (this.lastSearch_ === '') {
       return this.getActivityLog_();
     }
@@ -382,7 +382,7 @@ Polymer({
    * @private
    * @return {!Promise<void>}
    */
-  getActivityLog_: function() {
+  getActivityLog_() {
     this.pageState_ = ActivityLogPageState.LOADING;
     return this.delegate.getExtensionActivityLog(this.extensionId)
         .then(result => {
@@ -395,7 +395,7 @@ Polymer({
    * @param {string} searchTerm
    * @return {!Promise<void>}
    */
-  getFilteredActivityLog_: function(searchTerm) {
+  getFilteredActivityLog_(searchTerm) {
     this.pageState_ = ActivityLogPageState.LOADING;
     return this.delegate
         .getFilteredExtensionActivityLog(this.extensionId, searchTerm)
@@ -408,7 +408,7 @@ Polymer({
    * @private
    * @param {!CustomEvent<string>} e
    */
-  onSearchChanged_: function(e) {
+  onSearchChanged_(e) {
     // Remove all whitespaces from the search term, as API call names and
     // urls should not contain any whitespace. As of now, only single term
     // search queries are allowed.

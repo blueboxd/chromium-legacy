@@ -39,6 +39,15 @@ class DocumentLayout final {
 
     ~Options();
 
+    friend bool operator==(const Options& lhs, const Options& rhs) {
+      return lhs.two_up_view_enabled() == rhs.two_up_view_enabled() &&
+             lhs.default_page_orientation() == rhs.default_page_orientation();
+    }
+
+    friend bool operator!=(const Options& lhs, const Options& rhs) {
+      return !(lhs == rhs);
+    }
+
     // Serializes layout options to a pp::Var.
     pp::Var ToVar() const;
 
@@ -55,8 +64,14 @@ class DocumentLayout final {
     // Rotates default page orientation 90 degrees counterclockwise.
     void RotatePagesCounterclockwise();
 
+    bool two_up_view_enabled() const { return two_up_view_enabled_; }
+
+    // Changes two-up view status.
+    void set_two_up_view_enabled(bool enable) { two_up_view_enabled_ = enable; }
+
    private:
     PageOrientation default_page_orientation_ = PageOrientation::kOriginal;
+    bool two_up_view_enabled_ = false;
   };
 
   static const draw_utils::PageInsetSizes kSingleViewInsets;

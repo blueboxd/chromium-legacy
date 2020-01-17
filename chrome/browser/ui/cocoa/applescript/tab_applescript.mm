@@ -11,12 +11,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/cocoa/applescript/apple_event_util.h"
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #include "chrome/browser/ui/cocoa/applescript/metrics_applescript.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/url_constants.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -88,8 +88,8 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
     // particular tab is never returned.
     _webContents = webContents;
     _profile = Profile::FromBrowserContext(webContents->GetBrowserContext());
-    SessionTabHelper* session_tab_helper =
-        SessionTabHelper::FromWebContents(webContents);
+    sessions::SessionTabHelper* session_tab_helper =
+        sessions::SessionTabHelper::FromWebContents(webContents);
     base::scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc] initWithInt:session_tab_helper->session_id().id()]);
     [self setUniqueID:numID];
@@ -103,8 +103,8 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
   // the AppleScript runtime calls tabs in AppleScriptWindow and this
   // particular tab is never returned.
   _webContents = webContents;
-  SessionTabHelper* session_tab_helper =
-      SessionTabHelper::FromWebContents(webContents);
+  sessions::SessionTabHelper* session_tab_helper =
+      sessions::SessionTabHelper::FromWebContents(webContents);
   _profile = Profile::FromBrowserContext(webContents->GetBrowserContext());
   base::scoped_nsobject<NSNumber> numID(
       [[NSNumber alloc] initWithInt:session_tab_helper->session_id().id()]);

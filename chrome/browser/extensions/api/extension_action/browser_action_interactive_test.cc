@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/zoom/test/zoom_test_utils.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -347,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
                                       ExtensionRegistry::ENABLED)
                    ->permissions_data()
                    ->HasAPIPermissionForTab(
-                       SessionTabHelper::IdForTab(
+                       sessions::SessionTabHelper::IdForTab(
                            browser()->tab_strip_model()->GetActiveWebContents())
                            .id(),
                        APIPermission::kTab));

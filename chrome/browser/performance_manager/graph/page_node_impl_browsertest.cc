@@ -4,6 +4,7 @@
 
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -14,6 +15,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/graph/frame_node.h"
+#include "components/performance_manager/public/performance_manager.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -94,6 +97,48 @@ constexpr char kTwoiFrameTestBody[] = R"(
 </html>
 )";
 
+// Class used to count how many frame level OrigianTrial freeze policy changed
+// events have been received, used to ensure that all the frame policies have
+// been loaded before checking if the page level policy is the expected one.
+// Created on the UI thread and then lives on the PM sequence.
+class FrameNodeOriginTrialFreezePolicyChangedCounter
+    : public FrameNode::ObserverDefaultImpl,
+      public GraphOwnedDefaultImpl {
+ public:
+  FrameNodeOriginTrialFreezePolicyChangedCounter() {
+    DETACH_FROM_SEQUENCE(sequence_checker_);
+  }
+  ~FrameNodeOriginTrialFreezePolicyChangedCounter() override = default;
+
+  uint32_t GetCount() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return ot_freeze_policy_changed_counter_;
+  }
+
+ private:
+  // GraphOwned implementation:
+  void OnPassedToGraph(Graph* graph) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    graph->AddFrameNodeObserver(this);
+  }
+  void OnTakenFromGraph(Graph* graph) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    graph->RemoveFrameNodeObserver(this);
+  }
+
+  // FrameNode::ObserverDefaultImpl implementation:
+  void OnOriginTrialFreezePolicyChanged(
+      const FrameNode* frame_node,
+      const InterventionPolicy& previous_value) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    ++ot_freeze_policy_changed_counter_;
+  }
+
+  uint32_t ot_freeze_policy_changed_counter_ = 0;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+};
+
 // Generate a test response for the PageFreeze Origin Trial tests, based on
 // kOriginTrialTestResponseTemplate.
 std::string GetPageFreezeOriginTrialPageContent(const std::string& page) {
@@ -156,22 +201,40 @@ std::string GetContentForURL(const std::string& url) {
 }
 
 void RunOriginTrialTestOnPMSequence(
-    const mojom::InterventionPolicy expected_policy) {
+    const mojom::InterventionPolicy expected_policy,
+    FrameNodeOriginTrialFreezePolicyChangedCounter* ot_change_counter,
+    uint32_t expected_ot_change_count) {
   auto* perf_manager = PerformanceManagerImpl::GetInstance();
   ASSERT_TRUE(perf_manager);
+  for (;;) {
+    bool load_complete = false;
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    perf_manager->CallOnGraphImpl(
+        FROM_HERE,
+        base::BindLambdaForTesting([&](performance_manager::GraphImpl* graph) {
+          auto ot_change_count = ot_change_counter->GetCount();
+          EXPECT_GE(expected_ot_change_count, ot_change_count);
+          if (ot_change_count == expected_ot_change_count)
+            load_complete = true;
+          std::move(quit_closure).Run();
+        }));
+    run_loop.Run();
+    if (load_complete)
+      break;
+    base::RunLoop().RunUntilIdle();
+  }
+
   base::RunLoop run_loop;
+  auto quit_closure = run_loop.QuitClosure();
   perf_manager->CallOnGraphImpl(
-      FROM_HERE, base::BindOnce(
-                     [](base::OnceClosure quit_closure,
-                        const mojom::InterventionPolicy expected_policy,
-                        performance_manager::GraphImpl* graph) {
-                       auto page_nodes = graph->GetAllPageNodeImpls();
-                       EXPECT_EQ(1U, page_nodes.size());
-                       EXPECT_EQ(expected_policy,
-                                 page_nodes[0]->origin_trial_freeze_policy());
-                       std::move(quit_closure).Run();
-                     },
-                     run_loop.QuitClosure(), expected_policy));
+      FROM_HERE,
+      base::BindLambdaForTesting([&](performance_manager::GraphImpl* graph) {
+        auto page_nodes = graph->GetAllPageNodeImpls();
+        EXPECT_EQ(1U, page_nodes.size());
+        EXPECT_EQ(expected_policy, page_nodes[0]->origin_trial_freeze_policy());
+        std::move(quit_closure).Run();
+      }));
   run_loop.Run();
 }
 
@@ -205,15 +268,26 @@ class PageNodeImplBrowserTest : public InProcessBrowserTest {
     // origin, whereas EmbeddedTestServer serves content on a random port.
     url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
         base::BindRepeating(&URLLoaderInterceptorCallback));
+
+    auto ot_change_counter =
+        std::make_unique<FrameNodeOriginTrialFreezePolicyChangedCounter>();
+    ot_change_counter_ = ot_change_counter.get();
+    PerformanceManager::PassToGraph(FROM_HERE, std::move(ot_change_counter));
   }
 
   void TearDownOnMainThread() override {
     url_loader_interceptor_.reset();
+    ot_change_counter_ = nullptr;
     InProcessBrowserTest::TearDownOnMainThread();
+  }
+
+  FrameNodeOriginTrialFreezePolicyChangedCounter* ot_change_counter() {
+    return ot_change_counter_;
   }
 
  private:
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
+  FrameNodeOriginTrialFreezePolicyChangedCounter* ot_change_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(PageNodeImplBrowserTest);
 };
@@ -224,7 +298,8 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialOptIn) {
                      {kOriginTrialTestHostname,
                       kOriginTrialFreezePolicyTestPath, kOriginTrialOptInPage},
                      "/")));
-  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptIn);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptIn,
+                                 ot_change_counter(), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialOptOut) {
@@ -233,7 +308,8 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialOptOut) {
                      {kOriginTrialTestHostname,
                       kOriginTrialFreezePolicyTestPath, kOriginTrialOptOutPage},
                      "/")));
-  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut,
+                                 ot_change_counter(), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialDefault) {
@@ -242,7 +318,8 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest, PageFreezeOriginTrialDefault) {
                                         kOriginTrialFreezePolicyTestPath,
                                         kOriginTrialDefaultPage},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kDefault);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kDefault,
+                                 ot_change_counter(), 0);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -251,17 +328,18 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptInOptOut},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut,
+                                 ot_change_counter(), 2);
 }
 
-// Flaky. https://crbug.com/1014282
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
-                       DISABLED_PageFreezeOriginTrialOptOutOptIn) {
+                       PageFreezeOriginTrialOptOutOptIn) {
   ui_test_utils::NavigateToURL(
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptOutOptIn},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut,
+                                 ot_change_counter(), 2);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -270,7 +348,8 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialDefaultOptIn},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptIn);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptIn,
+                                 ot_change_counter(), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -279,7 +358,8 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialDefaultOptOut},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut,
+                                 ot_change_counter(), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -288,7 +368,8 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptInOptIn},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptIn);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptIn,
+                                 ot_change_counter(), 2);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -297,7 +378,8 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptOutOptOut},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut,
+                                 ot_change_counter(), 2);
 }
 
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
@@ -306,7 +388,8 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialDefaultDefault},
                                        "/")));
-  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kDefault);
+  RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kDefault,
+                                 ot_change_counter(), 0);
 }
 
 // TODO(sebmarchand): Add more tests, e.g. a test where the main frame and a

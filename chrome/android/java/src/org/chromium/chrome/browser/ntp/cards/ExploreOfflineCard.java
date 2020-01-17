@@ -12,8 +12,8 @@ import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.ExploreOfflineStatusProvider;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.net.NetworkChangeNotifier;
 
 import java.lang.annotation.Retention;

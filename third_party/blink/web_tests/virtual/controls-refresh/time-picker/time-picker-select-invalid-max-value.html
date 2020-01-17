@@ -22,7 +22,7 @@ function selectValue() {
   }));
   clickTimeCellAt(0, 4);
   clickTimeCellAt(1, 2);
-  clickSubmitTimeButton();
+  eventSender.keyDown('Enter');
 }
 
 t.step(() => {

@@ -48,63 +48,6 @@ namespace safe_browsing {
 
 using content::BrowserThread;
 
-namespace {
-
-void DeepScanningClientResponseToDownloadCheckResult(
-    const DeepScanningClientResponse& response,
-    DownloadCheckResult* download_result,
-    DownloadCheckResultReason* download_reason) {
-  if (response.has_malware_scan_verdict() &&
-      response.malware_scan_verdict().verdict() ==
-          MalwareDeepScanningVerdict::MALWARE) {
-    *download_result = DownloadCheckResult::DANGEROUS;
-    *download_reason = DownloadCheckResultReason::REASON_DOWNLOAD_DANGEROUS;
-    return;
-  }
-
-  if (response.has_malware_scan_verdict() &&
-      response.malware_scan_verdict().verdict() ==
-          MalwareDeepScanningVerdict::UWS) {
-    *download_result = DownloadCheckResult::POTENTIALLY_UNWANTED;
-    *download_reason =
-        DownloadCheckResultReason::REASON_DOWNLOAD_POTENTIALLY_UNWANTED;
-    return;
-  }
-
-  if (response.has_dlp_scan_verdict()) {
-    bool should_dlp_block = std::any_of(
-        response.dlp_scan_verdict().triggered_rules().begin(),
-        response.dlp_scan_verdict().triggered_rules().end(),
-        [](const DlpDeepScanningVerdict::TriggeredRule& rule) {
-          return rule.action() == DlpDeepScanningVerdict::TriggeredRule::BLOCK;
-        });
-    if (should_dlp_block) {
-      *download_result = DownloadCheckResult::SENSITIVE_CONTENT_BLOCK;
-      *download_reason =
-          DownloadCheckResultReason::REASON_SENSITIVE_CONTENT_BLOCK;
-      return;
-    }
-
-    bool should_dlp_warn = std::any_of(
-        response.dlp_scan_verdict().triggered_rules().begin(),
-        response.dlp_scan_verdict().triggered_rules().end(),
-        [](const DlpDeepScanningVerdict::TriggeredRule& rule) {
-          return rule.action() == DlpDeepScanningVerdict::TriggeredRule::WARN;
-        });
-    if (should_dlp_warn) {
-      *download_result = DownloadCheckResult::SENSITIVE_CONTENT_WARNING;
-      *download_reason =
-          DownloadCheckResultReason::REASON_SENSITIVE_CONTENT_WARNING;
-      return;
-    }
-  }
-
-  *download_result = DownloadCheckResult::DEEP_SCANNED_SAFE;
-  *download_reason = DownloadCheckResultReason::REASON_DEEP_SCANNED_SAFE;
-}
-
-}  // namespace
-
 CheckClientDownloadRequest::CheckClientDownloadRequest(
     download::DownloadItem* item,
     CheckDownloadRepeatingCallback callback,
@@ -274,16 +217,6 @@ void CheckClientDownloadRequest::MaybeStorePingsForDownload(
       result, upload_requested, item_, request_data, response_body);
 }
 
-bool CheckClientDownloadRequest::MaybeReturnAsynchronousVerdict(
-    DownloadCheckResultReason reason) {
-  if (ShouldUploadBinary(reason)) {
-    callback_.Run(DownloadCheckResult::ASYNC_SCANNING);
-    return true;
-  }
-
-  return false;
-}
-
 bool CheckClientDownloadRequest::ShouldUploadBinary(
     DownloadCheckResultReason reason) {
   bool upload_for_dlp = ShouldUploadForDlpScan();
@@ -294,42 +227,9 @@ bool CheckClientDownloadRequest::ShouldUploadBinary(
   return !!Profile::FromBrowserContext(GetBrowserContext());
 }
 
-void CheckClientDownloadRequest::UploadBinary(
-    DownloadCheckResult result,
-    DownloadCheckResultReason reason) {
-  saved_result_ = result;
-  saved_reason_ = reason;
-
-  bool upload_for_dlp = ShouldUploadForDlpScan();
-  bool upload_for_malware = ShouldUploadForMalwareScan(reason);
-  auto request = std::make_unique<DownloadItemRequest>(
-      item_, /*read_immediately=*/true,
-      base::BindOnce(&CheckClientDownloadRequest::OnDeepScanningComplete,
-                     weakptr_factory_.GetWeakPtr()));
-
-  Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
-
-  if (upload_for_dlp) {
-    DlpDeepScanningClientRequest dlp_request;
-    dlp_request.set_content_source(DlpDeepScanningClientRequest::FILE_DOWNLOAD);
-    request->set_request_dlp_scan(std::move(dlp_request));
-  }
-
-  if (upload_for_malware) {
-    MalwareDeepScanningClientRequest malware_request;
-    malware_request.set_population(
-        MalwareDeepScanningClientRequest::POPULATION_ENTERPRISE);
-    malware_request.set_download_token(
-        DownloadProtectionService::GetDownloadPingToken(item_));
-    request->set_request_malware_scan(std::move(malware_request));
-  }
-
-  policy::DMToken dm_token = GetDMToken(profile);
-  DCHECK(dm_token.is_valid());
-  request->set_dm_token(dm_token.value());
-
-  upload_start_time_ = base::TimeTicks::Now();
-  service()->UploadForDeepScanning(profile, std::move(request));
+void CheckClientDownloadRequest::UploadBinary() {
+  service()->UploadForDeepScanning(
+      item_, callback_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY);
 }
 
 void CheckClientDownloadRequest::NotifyRequestFinished(
@@ -400,43 +300,6 @@ bool CheckClientDownloadRequest::ShouldUploadForMalwareScan(
   // If there's no valid DM token, the upload will fail, so we can skip
   // uploading now.
   return GetDMToken(profile).is_valid();
-}
-
-void CheckClientDownloadRequest::OnDeepScanningComplete(
-    BinaryUploadService::Result result,
-    DeepScanningClientResponse response) {
-  RecordDeepScanMetrics(
-      /*access_point=*/DeepScanAccessPoint::DOWNLOAD,
-      /*duration=*/base::TimeTicks::Now() - upload_start_time_,
-      /*total_size=*/item_->GetTotalBytes(), /*result=*/result,
-      /*response=*/response);
-  Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
-  if (profile) {
-    std::string raw_digest_sha256 = item_->GetHash();
-    MaybeReportDeepScanningVerdict(
-        profile, item_->GetURL(), item_->GetTargetFilePath().AsUTF8Unsafe(),
-        base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
-        item_->GetMimeType(),
-        extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
-        item_->GetTotalBytes(), result, response);
-  }
-
-  // In case of error, restore the original result and reason from the server.
-  DownloadCheckResult download_result = saved_result_;
-  DownloadCheckResultReason download_reason = saved_reason_;
-
-  if (result == BinaryUploadService::Result::SUCCESS) {
-    DeepScanningClientResponseToDownloadCheckResult(response, &download_result,
-                                                    &download_reason);
-  }
-
-  if (!IsCancelled()) {
-    // If we're not delaying verdicts, we already ran |callback_| with the final
-    // result in FinishRequest.
-    callback_.Run(download_result);
-    NotifyRequestFinished(download_result, download_reason);
-    service()->RequestFinished(this);
-  }
 }
 
 }  // namespace safe_browsing

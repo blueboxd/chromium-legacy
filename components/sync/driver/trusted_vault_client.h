@@ -13,6 +13,8 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 
+struct CoreAccountInfo;
+
 namespace syncer {
 
 // Interface that allows platform-specific logic related to accessing locally
@@ -37,7 +39,7 @@ class TrustedVaultClient {
   // Concurrent calls to FetchKeys() must not be issued since implementations
   // may not support them.
   virtual void FetchKeys(
-      const std::string& gaia_id,
+      const CoreAccountInfo& account_info,
       base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)>
           cb) = 0;
 
@@ -48,7 +50,7 @@ class TrustedVaultClient {
   // is unsupported) or true if some change may have occurred (which indicates a
   // second FetchKeys() attempt is worth). Concurrent calls to MarkKeysAsStale()
   // must not be issued since implementations may not support them.
-  virtual void MarkKeysAsStale(const std::string& gaia_id,
+  virtual void MarkKeysAsStale(const CoreAccountInfo& account_info,
                                base::OnceCallback<void(bool)> cb) = 0;
 
   // Allows implementations to store encryption keys fetched by other means such

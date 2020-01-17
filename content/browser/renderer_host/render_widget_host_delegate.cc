@@ -163,4 +163,8 @@ RenderWidgetHostDelegate::GetFocusedFrameFromFocusedDelegate() {
   return nullptr;
 }
 
+bool RenderWidgetHostDelegate::IsPortal() const {
+  return false;
+}
+
 }  // namespace content

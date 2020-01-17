@@ -20,9 +20,7 @@ component("user_manager") {
     "//ui/gfx",
   ]
 
-  deps = [
-    "//google_apis",
-  ]
+  deps = [ "//google_apis" ]
 
   defines = [ "USER_MANAGER_IMPLEMENTATION" ]
 
@@ -65,16 +63,12 @@ if (is_chromeos) {
       "//components/account_id",
     ]
 
-    deps = [
-      "//chromeos/constants",
-    ]
+    deps = [ "//chromeos/constants" ]
   }
 
   source_set("unit_tests") {
     testonly = true
-    sources = [
-      "user_unittest.cc",
-    ]
+    sources = [ "user_unittest.cc" ]
     deps = [
       ":user_manager",
       "//components/account_id",

@@ -116,7 +116,7 @@ Polymer({
    * @private
    */
   doesDeviceListHaveOneElement_(devices) {
-    return devices.length == 1;
+    return devices.length === 1;
   },
 
   /**
@@ -135,7 +135,7 @@ Polymer({
    * @private
    */
   getDeviceOptionClass_(connectivityStatus) {
-    return connectivityStatus ==
+    return connectivityStatus ===
             chromeos.deviceSync.mojom.ConnectivityStatus.kOffline ?
         'offline-device-name' :
         '';
@@ -147,7 +147,7 @@ Polymer({
    * @private
    */
   getDeviceNameWithConnectivityStatus_(device) {
-    return device.connectivityStatus ==
+    return device.connectivityStatus ===
             chromeos.deviceSync.mojom.ConnectivityStatus.kOffline ?
         this.i18n(
             'startSetupPageOfflineDeviceOption',

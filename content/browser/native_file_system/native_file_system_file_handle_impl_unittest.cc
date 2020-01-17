@@ -55,7 +55,8 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
                                               test_file_url_));
 
     chrome_blob_context_ = base::MakeRefCounted<ChromeBlobStorageContext>();
-    chrome_blob_context_->InitializeOnIOThread(base::FilePath(), nullptr);
+    chrome_blob_context_->InitializeOnIOThread(base::FilePath(),
+                                               base::FilePath(), nullptr);
 
     manager_ = base::MakeRefCounted<NativeFileSystemManagerImpl>(
         file_system_context_, chrome_blob_context_,

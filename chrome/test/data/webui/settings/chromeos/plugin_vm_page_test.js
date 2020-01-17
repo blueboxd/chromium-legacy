@@ -126,20 +126,58 @@ suite('SharedPaths', function() {
 });
 
 suite('Remove', function() {
+  let page;
+  const getDialog = () => page.$$(
+      '#plugin-vm-remove settings-plugin-vm-remove-confirmation-dialog');
+  const hasDialog = () => !!getDialog();
+
   setup(function() {
     pluginVmBrowserProxy = new TestPluginVmBrowserProxy();
     settings.PluginVmBrowserProxyImpl.instance_ = pluginVmBrowserProxy;
     PolymerTest.clearBody();
-    this.page = document.createElement('settings-plugin-vm-subpage');
-    document.body.appendChild(this.page);
+    page = document.createElement('settings-plugin-vm-subpage');
+    document.body.appendChild(page);
   });
 
   teardown(function() {
-    this.page.remove();
+    page.remove();
   });
 
-  test('Remove', function() {
-    this.page.$$('#plugin-vm-remove cr-button').click();
+  test('Remove', async function() {
+    assertFalse(hasDialog());
+
+    page.$.pluginVmRemoveButton.click();
+    assertFalse(hasDialog());
+
+    Polymer.dom.flush();
+    assertTrue(hasDialog());
+
+    getDialog().$.continue.click();
     assertEquals(1, pluginVmBrowserProxy.getCallCount('removePluginVm'));
+
+    await test_util.eventToPromise('dom-change', page.$$('#plugin-vm-remove'));
+    assertFalse(hasDialog());
+
+    assertEquals(getDeepActiveElement(), page.$.pluginVmRemoveButton);
+  });
+
+  test('RemoveDialogCancelled', async function() {
+    assertFalse(hasDialog());
+
+    page.$.pluginVmRemoveButton.click();
+    assertFalse(hasDialog());
+
+    Polymer.dom.flush();
+    assertTrue(hasDialog());
+
+    getDialog().$.cancel.click();
+    assertTrue(hasDialog());
+    assertEquals(0, pluginVmBrowserProxy.getCallCount('removePluginVm'));
+
+    await test_util.eventToPromise('dom-change', page.$$('#plugin-vm-remove'));
+    assertFalse(hasDialog());
+    assertEquals(0, pluginVmBrowserProxy.getCallCount('removePluginVm'));
+
+    assertEquals(getDeepActiveElement(), page.$.pluginVmRemoveButton);
   });
 });

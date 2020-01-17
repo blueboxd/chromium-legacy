@@ -57,8 +57,8 @@ cr.define('cr.ui', function() {
               // Reject all hidden nodes. FILTER_REJECT also rejects these
               // nodes' children, so non-hidden elements that are descendants of
               // hidden <div>s will correctly be rejected.
-              if (node.hidden || style.display == 'none' ||
-                  style.visibility == 'hidden') {
+              if (node.hidden || style.display === 'none' ||
+                  style.visibility === 'hidden') {
                 return NodeFilter.FILTER_REJECT;
               }
 
@@ -126,15 +126,15 @@ cr.define('cr.ui', function() {
       if (!element) {
         return null;
       }
-      if (element.tagName != 'INPUT' || element.type != 'radio' ||
-          element.name == '') {
+      if (element.tagName !== 'INPUT' || element.type !== 'radio' ||
+          element.name === '') {
         return element;
       }
       if (!element.checked) {
         for (let i = 0; i < focusableElements.length; i++) {
           const e = focusableElements[i];
-          if (e && e.tagName == 'INPUT' && e.type == 'radio' &&
-              e.name == element.name && e.checked) {
+          if (e && e.tagName === 'INPUT' && e.type === 'radio' &&
+              e.name === element.name && e.checked) {
             element = e;
             break;
           }
@@ -177,7 +177,7 @@ cr.define('cr.ui', function() {
     onDocumentKeyDown_(event) {
       /** @const */ const tabKeyCode = 9;
 
-      if (event.keyCode == tabKeyCode) {
+      if (event.keyCode === tabKeyCode) {
         // If the "Shift" key is held, focus is being transferred backward in
         // the page.
         this.focusDirBackwards_ = event.shiftKey ? true : false;

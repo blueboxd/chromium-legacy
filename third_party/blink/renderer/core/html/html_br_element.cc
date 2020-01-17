@@ -62,9 +62,9 @@ void HTMLBRElement::CollectStyleForPresentationAttribute(
 
 LayoutObject* HTMLBRElement::CreateLayoutObject(const ComputedStyle& style,
                                                 LegacyLayout legacy) {
-  if (style.HasContent())
-    return LayoutObject::CreateObject(this, style, legacy);
-  return new LayoutBR(this);
+  if (style.ContentBehavesAsNormal())
+    return new LayoutBR(this);
+  return LayoutObject::CreateObject(this, style, legacy);
 }
 
 }  // namespace blink

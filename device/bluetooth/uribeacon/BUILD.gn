@@ -7,7 +7,5 @@ source_set("uribeacon") {
     "uri_encoder.cc",
     "uri_encoder.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

@@ -26,6 +26,21 @@ namespace ukm {
 // Wraps an UkmRecorder with additional accessors used for testing.
 class TestUkmRecorder : public UkmRecorderImpl {
  public:
+  using HumanReadableUkmMetrics = std::map<std::string, int64_t>;
+
+  struct HumanReadableUkmEntry {
+    HumanReadableUkmEntry();
+    HumanReadableUkmEntry(ukm::SourceId source_id,
+                          HumanReadableUkmMetrics ukm_metrics);
+    ~HumanReadableUkmEntry();
+    HumanReadableUkmEntry(const HumanReadableUkmEntry&);
+
+    bool operator==(const HumanReadableUkmEntry& other) const;
+
+    ukm::SourceId source_id = kInvalidSourceId;
+    HumanReadableUkmMetrics metrics;
+  };
+
   TestUkmRecorder();
   ~TestUkmRecorder() override;
 
@@ -84,6 +99,18 @@ class TestUkmRecorder : public UkmRecorderImpl {
   // not found.
   static const int64_t* GetEntryMetric(const mojom::UkmEntry* entry,
                                        base::StringPiece metric_name);
+
+  // A test helper returning all metrics for all entries with a given name in a
+  // human-readable form, allowing to write clearer test expectations.
+  std::vector<HumanReadableUkmMetrics> GetMetrics(
+      std::string entry_name,
+      const std::vector<std::string>& metric_names);
+
+  // A test helper returning all entries for a given name in a human-readable
+  // form, allowing to write clearer test expectations.
+  std::vector<HumanReadableUkmEntry> GetEntries(
+      std::string entry_name,
+      const std::vector<std::string>& metric_names);
 
  private:
   uint64_t entry_hash_to_wait_for_ = 0;

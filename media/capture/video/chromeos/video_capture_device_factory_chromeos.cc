@@ -10,7 +10,6 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/chromeos/camera_app_device_bridge_impl.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
 

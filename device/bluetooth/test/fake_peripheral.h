@@ -14,6 +14,10 @@
 #include "device/bluetooth/test/fake_central.h"
 #include "device/bluetooth/test/fake_remote_gatt_service.h"
 
+namespace device {
+class BluetoothUUID;
+}
+
 namespace bluetooth {
 
 // Implements device::BluetoothDevice. Meant to be used by FakeCentral
@@ -108,8 +112,10 @@ class FakePeripheral : public device::BluetoothDevice {
       const device::BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) override;
-  void CreateGattConnection(GattConnectionCallback callback,
-                            ConnectErrorCallback error_callback) override;
+  void CreateGattConnection(
+      GattConnectionCallback callback,
+      ConnectErrorCallback error_callback,
+      base::Optional<device::BluetoothUUID> service_uuid) override;
   bool IsGattServicesDiscoveryComplete() const override;
 #if defined(OS_CHROMEOS)
   void ExecuteWrite(const base::Closure& callback,
@@ -119,7 +125,7 @@ class FakePeripheral : public device::BluetoothDevice {
 #endif
 
  protected:
-  void CreateGattConnectionImpl() override;
+  void CreateGattConnectionImpl(base::Optional<device::BluetoothUUID>) override;
   void DisconnectGatt() override;
 
  private:

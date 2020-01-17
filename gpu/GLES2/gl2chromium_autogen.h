@@ -435,5 +435,9 @@
   GLES2_GET_FUN(BeginSharedImageAccessDirectCHROMIUM)
 #define glEndSharedImageAccessDirectCHROMIUM \
   GLES2_GET_FUN(EndSharedImageAccessDirectCHROMIUM)
+#define glBeginBatchReadAccessSharedImageCHROMIUM \
+  GLES2_GET_FUN(BeginBatchReadAccessSharedImageCHROMIUM)
+#define glEndBatchReadAccessSharedImageCHROMIUM \
+  GLES2_GET_FUN(EndBatchReadAccessSharedImageCHROMIUM)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

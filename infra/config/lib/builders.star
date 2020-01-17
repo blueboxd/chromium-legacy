@@ -31,28 +31,40 @@ cpu = struct(
 )
 
 
+# The category for an os: a more generic grouping than specific OS versions that
+# can be used for computing defaults
+os_category = struct(
+    ANDROID = 'Android',
+    LINUX = 'Linux',
+    MAC = 'Mac',
+    WINDOWS = 'Windows',
+)
+
 # The os constants to be used for the os parameter of the builder function
 # The *_DEFAULT members enable distinguishing between a use that runs the
 # "current" version of the OS and a use that runs against a specific version
 # that happens to be the "current" version
+def os_enum(dimension, category):
+  return struct(dimension=dimension, category=category)
+
 os = struct(
-    ANDROID = 'Android',
+    ANDROID = os_enum('Android', os_category.ANDROID),
 
-    LINUX_TRUSTY = 'Ubuntu-14.04',
-    LINUX_XENIAL = 'Ubuntu-16.04',
-    LINUX_DEFAULT = 'Ubuntu-16.04',
+    LINUX_TRUSTY = os_enum('Ubuntu-14.04', os_category.LINUX),
+    LINUX_XENIAL = os_enum('Ubuntu-16.04', os_category.LINUX),
+    LINUX_DEFAULT = os_enum('Ubuntu-16.04', os_category.LINUX),
 
-    MAC_10_12 = 'Mac-10.12',
-    MAC_10_13 = 'Mac-10.13',
-    MAC_10_14 = 'Mac-10.14',
-    MAC_DEFAULT = 'Mac-10.13',
-    MAC_ANY = 'Mac',
+    MAC_10_12 = os_enum('Mac-10.12', os_category.MAC),
+    MAC_10_13 = os_enum('Mac-10.13', os_category.MAC),
+    MAC_10_14 = os_enum('Mac-10.14', os_category.MAC),
+    MAC_DEFAULT = os_enum('Mac-10.13', os_category.MAC),
+    MAC_ANY = os_enum('Mac', os_category.MAC),
 
-    WINDOWS_7 = 'Windows-7',
-    WINDOWS_8_1 = 'Windows-8.1',
-    WINDOWS_10 = 'Windows-10',
-    WINDOWS_DEFAULT = 'Windows-10',
-    WINDOWS_ANY = 'Windows',
+    WINDOWS_7 = os_enum('Windows-7', os_category.WINDOWS),
+    WINDOWS_8_1 = os_enum('Windows-8.1', os_category.WINDOWS),
+    WINDOWS_10 = os_enum('Windows-10', os_category.WINDOWS),
+    WINDOWS_DEFAULT = os_enum('Windows-10', os_category.WINDOWS),
+    WINDOWS_ANY = os_enum('Windows', os_category.WINDOWS),
 )
 
 
@@ -108,7 +120,7 @@ goma = struct(
 # Implementation details                                                       #
 ################################################################################
 
-_DEFAULT_BUILDERLESS_OSES = [os.LINUX_TRUSTY, os.LINUX_XENIAL]
+_DEFAULT_BUILDERLESS_OS_CATEGORIES = [os_category.LINUX]
 
 
 def _sentinel(tag):
@@ -132,26 +144,30 @@ def _chromium_tests_property(*, bucketed_triggers):
   return chromium_tests or None
 
 
-def _goma_property(*, goma_backend, goma_debug, goma_enable_ats, goma_jobs):
-  goma = {}
+def _goma_property(*, goma_backend, goma_debug, goma_enable_ats, goma_jobs, os):
+  goma_properties = {}
 
   goma_backend = _default('goma_backend', goma_backend)
   if goma_backend != None:
-    goma.update(goma_backend)
+    goma_properties.update(goma_backend)
 
   goma_debug = _default('goma_debug', goma_debug)
   if goma_debug:
-    goma['debug'] = True
+    goma_properties['debug'] = True
 
   goma_enable_ats = _default('goma_enable_ats', goma_enable_ats)
-  if goma_enable_ats:
-    goma['enable_ats'] = True
+  if goma_enable_ats:  # TODO(crbug.com/1040754): Remove this flag.
+    goma_properties['enable_ats'] = True
+  elif (goma_backend in (goma.backend.RBE_TOT, goma.backend.RBE_STAGING,
+                         goma.backend.RBE_PROD) and
+        (os and os.category in (os_category.LINUX, os_category.WINDOWS))):
+    goma_properties['enable_ats'] = True
 
   goma_jobs = _default('goma_jobs', goma_jobs)
   if goma_jobs != None:
-    goma['jobs'] = goma_jobs
+    goma_properties['jobs'] = goma_jobs
 
-  return goma or None
+  return goma_properties or None
 
 
 def _code_coverage_property(*, use_clang_coverage, use_java_coverage):
@@ -319,11 +335,11 @@ def builder(
 
   os = _default('os', os)
   if os:
-    dimensions['os'] = os
+    dimensions['os'] = os.dimension
 
   builderless = _default('builderless', builderless)
   if builderless == _COMPUTE:
-    builderless = os in _DEFAULT_BUILDERLESS_OSES
+    builderless = os != None and os.category in _DEFAULT_BUILDERLESS_OS_CATEGORIES
   if builderless:
     dimensions['builderless'] = '1'
 
@@ -373,6 +389,7 @@ def builder(
       goma_debug = goma_debug,
       goma_enable_ats = goma_enable_ats,
       goma_jobs = goma_jobs,
+      os = os,
   )
   if goma != None:
     properties['$build/goma'] = goma

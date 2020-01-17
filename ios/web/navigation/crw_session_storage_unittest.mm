@@ -53,7 +53,6 @@ BOOL SessionStoragesAreEqual(CRWSessionStorage* session1,
   return ItemStorageListsAreEqual(items1, items2) &&
          session1.hasOpener == session2.hasOpener &&
          session1.lastCommittedItemIndex == session2.lastCommittedItemIndex &&
-         session1.previousItemIndex == session2.previousItemIndex &&
          UserDataAreEqual(session1.userData, session2.userData);
 }
 }  // namespace
@@ -65,7 +64,6 @@ class CRWNSessionStorageTest : public PlatformTest {
     // Set up |session_storage_|.
     [session_storage_ setHasOpener:YES];
     [session_storage_ setLastCommittedItemIndex:4];
-    [session_storage_ setPreviousItemIndex:3];
     // Create an item storage.
     CRWNavigationItemStorage* item_storage =
         [[CRWNavigationItemStorage alloc] init];

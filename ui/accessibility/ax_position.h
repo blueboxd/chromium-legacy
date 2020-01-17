@@ -340,6 +340,10 @@ class AXPosition {
         NOTREACHED();
         return false;
       case AXPositionKind::TREE_POSITION: {
+        // If this is a "before text" position, it's pointing to the anchor
+        // itself, which we've determined to be unignored.
+        if (child_index_ == BEFORE_TEXT)
+          return false;
         // If there is a node at the position pointed to by "child_index_", i.e.
         // this position is neither a leaf position nor an "after children"
         // position, consider this tree position to be ignored if the child node
@@ -1882,7 +1886,9 @@ class AXPosition {
       text_position = text_position->CreateAncestorPosition(
           common_anchor, AXTextBoundaryDirection::kForwards);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      NOTREACHED() << "Original text position was not at end of anchor.";
+      // If the next character position crosses the current anchor boundary
+      // with StopAtAnchorBoundary, snap to the end of the current anchor.
+      return CreatePositionAtEndOfAnchor();
     }
 
     // Even if the resulting position is right on a soft line break, affinity is
@@ -1943,7 +1949,9 @@ class AXPosition {
       text_position = text_position->CreateAncestorPosition(
           common_anchor, AXTextBoundaryDirection::kBackwards);
     } else if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary) {
-      NOTREACHED() << "Original text position was not at start of anchor.";
+      // If the previous character position crosses the current anchor boundary
+      // with StopAtAnchorBoundary, snap to the start of the current anchor.
+      return CreatePositionAtStartOfAnchor();
     }
 
     // Even if the resulting position is right on a soft line break, affinity is
@@ -2540,6 +2548,104 @@ class AXPosition {
     if (this->IsNullPosition() || other.IsNullPosition())
       return base::Optional<int>(base::nullopt);
 
+    // If both positions share an anchor and are of the same type, we can do a
+    // straight compare of text offsets or child indices.
+    if (GetAnchor() == other.GetAnchor()) {
+      if (IsTextPosition() && other.IsTextPosition())
+        return text_offset() - other.text_offset();
+      if (IsTreePosition() && other.IsTreePosition())
+        return child_index() - other.child_index();
+    }
+
+    // Ancestor positions are expensive to compute. If possible, we will avoid
+    // doing so by computing the ancestor chain of the two positions' anchors.
+    // If the lowest common ancestor is neither position's anchor, we can use
+    // the order of the first uncommon ancestors as a proxy for the order of the
+    // positions.
+    //
+    // In order to do that, we need to normalize text positions at the end of an
+    // anchor to equivalent positions at the start of the next anchor. Ignored
+    // positions are a special case in that they need to be shifted to the
+    // nearest unignored position in order to be normalized. That shifting can
+    // change the comparison result, so if we have an ignored position, we must
+    // use the slow path.
+    if (IsIgnored() || other.IsIgnored())
+      return SlowCompareTo(other);
+
+    // Normalize any text positions at the end of an anchor to equivalent
+    // positions at the start of the next anchor.
+    AXPositionInstance normalized_this_position = Clone();
+    if (normalized_this_position->IsTextPosition())
+      normalized_this_position =
+          normalized_this_position->AsLeafTextPositionBeforeCharacter();
+    AXPositionInstance normalized_other_position = other.Clone();
+    if (normalized_other_position->IsTextPosition())
+      normalized_other_position =
+          normalized_other_position->AsLeafTextPositionBeforeCharacter();
+
+    if (normalized_this_position->IsNullPosition()) {
+      if (normalized_other_position->IsNullPosition()) {
+        // Both positions normalized to a position past the end of the document.
+        DCHECK_EQ(SlowCompareTo(other).value(), 0);
+        return 0;
+      }
+      // |this| normalized to a position past the end of the document.
+      DCHECK_GT(SlowCompareTo(other).value(), 0);
+      return 1;
+    } else if (normalized_other_position->IsNullPosition()) {
+      // |other| normalized to a position past the end of the document.
+      DCHECK_LT(SlowCompareTo(other).value(), 0);
+      return -1;
+    }
+
+    // Compute the ancestor stacks of both positions and walk them ourselves
+    // rather than calling LowestCommonAnchor(). That way, we can discover the
+    // first uncommon ancestors.
+    const AXNodeType* common_anchor = nullptr;
+    base::stack<AXNodeType*> our_ancestors =
+        normalized_this_position->GetAncestorAnchors();
+    base::stack<AXNodeType*> other_ancestors =
+        normalized_other_position->GetAncestorAnchors();
+    while (!our_ancestors.empty() && !other_ancestors.empty() &&
+           our_ancestors.top() == other_ancestors.top()) {
+      common_anchor = our_ancestors.top();
+      our_ancestors.pop();
+      other_ancestors.pop();
+    }
+
+    if (!common_anchor)
+      return base::Optional<int>(base::nullopt);
+
+    // If each position has an uncommon ancestor node, we can compare those
+    // instead of needing to compute ancestor positions.
+    if (!our_ancestors.empty() && !other_ancestors.empty()) {
+      int this_uncommon_ancestor_index =
+          CreateTreePosition(GetTreeID(our_ancestors.top()),
+                             GetAnchorID(our_ancestors.top()),
+                             0 /*child_index*/)
+              ->AnchorIndexInParent();
+      int other_uncommon_ancestor_index =
+          CreateTreePosition(GetTreeID(other_ancestors.top()),
+                             GetAnchorID(other_ancestors.top()),
+                             0 /*child_index*/)
+              ->AnchorIndexInParent();
+      DCHECK(this_uncommon_ancestor_index != other_uncommon_ancestor_index);
+      int result = this_uncommon_ancestor_index - other_uncommon_ancestor_index;
+
+#if DCHECK_IS_ON()
+      // Validate the optimization.
+      int slow_result = SlowCompareTo(other).value();
+      DCHECK((result < 0 && slow_result < 0) ||
+             (result > 0 && slow_result > 0));
+#endif
+
+      return result;
+    }
+
+    return SlowCompareTo(other);
+  }
+
+  base::Optional<int> SlowCompareTo(const AXPosition& other) const {
     // It is potentially costly to compute the parent position of a text
     // position, whilst computing the parent position of a tree position is
     // really inexpensive. In order to find the lowest common ancestor,
@@ -2784,6 +2890,8 @@ class AXPosition {
   virtual void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const = 0;
   virtual AXNodeType* GetNodeInTree(AXTreeID tree_id,
                                     int32_t node_id) const = 0;
+  virtual int32_t GetAnchorID(AXNodeType* node) const = 0;
+  virtual AXTreeID GetTreeID(AXNodeType* node) const = 0;
 
   // Returns the length of text that this anchor node takes up in its parent.
   // On some platforms, embedded objects are represented in their parent with a

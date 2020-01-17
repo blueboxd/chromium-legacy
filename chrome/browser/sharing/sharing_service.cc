@@ -76,8 +76,9 @@ void SharingService::SendMessageToDevice(
     base::TimeDelta response_timeout,
     chrome_browser_sharing::SharingMessage message,
     SharingMessageSender::ResponseCallback callback) {
-  message_sender_->SendMessageToDevice(device, response_timeout,
-                                       std::move(message), std::move(callback));
+  message_sender_->SendMessageToDevice(
+      device, response_timeout, std::move(message),
+      SharingMessageSender::DelegateType::kFCM, std::move(callback));
 }
 
 SharingDeviceSource* SharingService::GetDeviceSource() const {

@@ -20,7 +20,7 @@ class View;
 namespace ash {
 
 // This class will get used by the AppListView to drag and drop Application
-// shortcuts onto another host (the launcher).
+// shortcuts onto another host (the shelf).
 class ApplicationDragAndDropHost {
  public:
   // Creates an OS dependent drag proxy icon which can escape the given view.

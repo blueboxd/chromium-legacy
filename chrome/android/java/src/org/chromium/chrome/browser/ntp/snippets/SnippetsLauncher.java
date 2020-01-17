@@ -18,6 +18,8 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeBackgroundService;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
  * The {@link SnippetsLauncher} singleton is created and owned by the C++ browser.
@@ -33,9 +35,6 @@ public class SnippetsLauncher {
 
     // The amount of "flex" to add around the fetching periods, as a ratio of the period.
     private static final double FLEX_FACTOR = 0.1;
-
-    @VisibleForTesting
-    public static final String PREF_IS_SCHEDULED = "ntp_snippets.is_scheduled";
 
     // The instance of SnippetsLauncher currently owned by a C++ SnippetsLauncherAndroid, if any.
     // If it is non-null then the browser is running.
@@ -124,10 +123,8 @@ public class SnippetsLauncher {
         Log.i(TAG, "Scheduling: " + periodWifiSeconds + " " + periodFallbackSeconds);
 
         boolean isScheduled = periodWifiSeconds != 0 || periodFallbackSeconds != 0;
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(PREF_IS_SCHEDULED, isScheduled)
-                .apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.NTP_SNIPPETS_IS_SCHEDULED, isScheduled);
 
         // Google Play Services may not be up to date, if the application was not installed through
         // the Play Store. In this case, scheduling the task will fail silently.
@@ -140,7 +137,8 @@ public class SnippetsLauncher {
             // Disable GCM for the remainder of this session.
             mGCMEnabled = false;
 
-            ContextUtils.getAppSharedPreferences().edit().remove(PREF_IS_SCHEDULED).apply();
+            SharedPreferencesManager.getInstance().removeKey(
+                    ChromePreferenceKeys.NTP_SNIPPETS_IS_SCHEDULED);
             // Return false so that the failure will be logged.
             return false;
         }
@@ -164,7 +162,8 @@ public class SnippetsLauncher {
 
     public static boolean shouldNotifyOnBrowserUpgraded() {
         // If there was no schedule previously, we do not need to react to upgrades.
-        return ContextUtils.getAppSharedPreferences().getBoolean(PREF_IS_SCHEDULED, false);
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.NTP_SNIPPETS_IS_SCHEDULED, false);
     }
 }
 

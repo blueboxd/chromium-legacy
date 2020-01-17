@@ -181,8 +181,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   virtual bool HasAccessToken() const = 0;
 
   // Gets the cached OAuth2 access token or if empty, then fetches a new one.
-  virtual void RequestAccessToken(
-      const google_apis::AuthStatusCallback& callback) = 0;
+  virtual void RequestAccessToken(google_apis::AuthStatusCallback callback) = 0;
 
   // True if OAuth2 refresh token is present.
   virtual bool HasRefreshToken() const = 0;

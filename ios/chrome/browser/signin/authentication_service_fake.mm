@@ -42,6 +42,7 @@ void AuthenticationServiceFake::SignIn(ChromeIdentity* identity) {
 
 void AuthenticationServiceFake::SignOut(
     signin_metrics::ProfileSignout signout_source,
+    bool force_clear_browsing_data,
     ProceduralBlock completion) {
   authenticated_identity_ = nil;
   if (completion)

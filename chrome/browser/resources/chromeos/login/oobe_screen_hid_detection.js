@@ -52,7 +52,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
     /** @type {string} */
     keyboardDeviceLabel_: '',
 
-    setKeyboardState: function(stateId) {
+    setKeyboardState(stateId) {
       this.keyboardState_ = stateId;
 
       this.updatePincodeKeysState_();
@@ -68,41 +68,41 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
       }
     },
 
-    setMouseState: function(stateId) {
+    setMouseState(stateId) {
       if (stateId === undefined)
         return;
       $('oobe-hid-detection-md').setMouseState(stateId);
     },
 
-    setKeyboardPinCode: function(value) {
+    setKeyboardPinCode(value) {
       this.keyboardPinCode_ = value;
       this.updatePincodeKeysState_();
     },
 
-    setNumKeysEnteredExpected: function(value) {
+    setNumKeysEnteredExpected(value) {
       this.keyboardEnteredExpected_ = value;
       this.updatePincodeKeysState_();
     },
 
-    setNumKeysEnteredPincode: function(value) {
+    setNumKeysEnteredPincode(value) {
       this.numKeysEnteredPincode_ = value;
       this.updatePincodeKeysState_();
     },
 
-    setMouseDeviceName: function(value) {},
+    setMouseDeviceName(value) {},
 
-    setKeyboardDeviceName: function(value) {},
+    setKeyboardDeviceName(value) {},
 
-    setKeyboardDeviceLabel: function(value) {
+    setKeyboardDeviceLabel(value) {
       this.keyboardDeviceLabel_ = value;
     },
 
-    setContinueButtonEnabled: function(enabled) {
+    setContinueButtonEnabled(enabled) {
       $('oobe-hid-detection-md').continueButtonDisabled = !enabled;
     },
 
     /** @override */
-    decorate: function() {
+    decorate() {
       $('oobe-hid-detection-md').screen = this;
     },
 
@@ -117,7 +117,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
      * Sets state for mouse-block.
      * @param {state} one of keys of this.CONNECTION dict.
      */
-    setPointingDeviceState: function(state) {
+    setPointingDeviceState(state) {
       if (state === undefined)
         return;
       $('oobe-hid-detection-md').setMouseState(state);
@@ -126,7 +126,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
     /**
      * Updates state for pincode key elements.
      */
-    updatePincodeKeysState_: function() {
+    updatePincodeKeysState_() {
       var pincode = this.keyboardPinCode_;
       var state = this.keyboardState_;
       var label = this.keyboardDeviceLabel_;
@@ -143,7 +143,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
      * Event handler that is invoked just before the screen in shown.
      * @param {Object} data Screen init payload.
      */
-    onBeforeShow: function(data) {
+    onBeforeShow(data) {
       $('oobe-hid-detection-md').setMouseState(this.CONNECTION.SEARCHING);
       $('oobe-hid-detection-md').setKeyboardState(this.CONNECTION.SEARCHING);
     },
@@ -151,7 +151,7 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
     /**
      * Updates localized content of the screen that is not updated via template.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       $('oobe-hid-detection-md').i18nUpdateLocale();
     },
 

@@ -17,18 +17,6 @@ class WebContents;
 
 namespace content_settings {
 
-// UMA histogram for the mixed script shield. The enum values correspond to
-// histogram entries, so do not remove any existing values.
-enum MixedScriptAction {
-  MIXED_SCRIPT_ACTION_DISPLAYED_SHIELD = 0,
-  MIXED_SCRIPT_ACTION_DISPLAYED_BUBBLE,
-  MIXED_SCRIPT_ACTION_CLICKED_ALLOW,
-  MIXED_SCRIPT_ACTION_CLICKED_LEARN_MORE,
-  MIXED_SCRIPT_ACTION_COUNT
-};
-
-void RecordMixedScriptAction(MixedScriptAction action);
-
 // UMA histogram for the plugins broken puzzle piece. The enum values
 // correspond to histogram entries, so do not remove any existing values.
 enum PluginsAction {

@@ -109,6 +109,8 @@ class MediaNotificationService
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest, DismissesMediaSession);
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest,
                            HidesInactiveNotifications);
+  FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest,
+                           HidingNotification_FeatureDisabled);
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.

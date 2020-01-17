@@ -90,7 +90,6 @@ public class FeedNewTabPage
         SectionHeaderView sectionHeaderView = (SectionHeaderView) inflater.inflate(
                 R.layout.new_tab_page_snippets_expandable_header, null, false);
         mCoordinator = new FeedSurfaceCoordinator(((TabImpl) mTab).getActivity(),
-                host.createHistoryNavigationDelegate(),
                 new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout), mNewTabPageLayout,
                 sectionHeaderView, actionApi,
                 ((TabImpl) mTab).getActivity().getNightModeStateProvider().isInNightMode(), this);

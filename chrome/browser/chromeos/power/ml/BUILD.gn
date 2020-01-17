@@ -3,13 +3,9 @@
 # found in the LICENSE file.
 
 source_set("user_activity_ukm_logger_helpers") {
-  public = [
-    "user_activity_ukm_logger_helpers.h",
-  ]
+  public = [ "user_activity_ukm_logger_helpers.h" ]
 
-  sources = [
-    "user_activity_ukm_logger_helpers.cc",
-  ]
+  sources = [ "user_activity_ukm_logger_helpers.cc" ]
 
   deps = [
     "//base",

@@ -30,9 +30,7 @@ generate_jni("jni_headers") {
 }
 
 java_cpp_enum("java_enums_srcjar") {
-  sources = [
-    "//chrome/browser/android/preferences/prefs.h",
-  ]
+  sources = [ "//chrome/browser/android/preferences/prefs.h" ]
 }
 
 java_library("preferences_junit_tests") {

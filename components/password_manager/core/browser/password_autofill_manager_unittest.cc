@@ -657,7 +657,7 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
     // Expect a sample only in the shown histogram.
     histograms.ExpectUniqueSample(
         kShownContextHistogram,
-        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD, 1);
+        metrics_util::ShowAllSavedPasswordsContext::kPassword, 1);
     // Clicking at the "Show all passwords row" should trigger a call to open
     // the Password Manager settings page and hide the popup.
     EXPECT_CALL(
@@ -670,10 +670,10 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
     // Expect a sample in both the shown and accepted histogram.
     histograms.ExpectUniqueSample(
         kShownContextHistogram,
-        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD, 1);
+        metrics_util::ShowAllSavedPasswordsContext::kPassword, 1);
     histograms.ExpectUniqueSample(
         kAcceptedContextHistogram,
-        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD, 1);
+        metrics_util::ShowAllSavedPasswordsContext::kPassword, 1);
     histograms.ExpectUniqueSample(
         kDropdownSelectedHistogram,
         metrics_util::PasswordDropdownSelectedOption::kShowAll, 1);

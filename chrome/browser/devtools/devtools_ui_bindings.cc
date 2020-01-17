@@ -213,6 +213,7 @@ std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
   }
   response->SetInteger("statusCode", responseCode);
   response->SetInteger("netError", net_error);
+  response->SetString("netErrorName", net::ErrorToString(net_error));
 
   auto headers = std::make_unique<base::DictionaryValue>();
   size_t iterator = 0;
@@ -707,6 +708,12 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
 }
 
 // content::DevToolsAgentHostClient implementation --------------------------
+// There is a sibling implementation of DevToolsAgentHostClient in
+//   content/shell/browser/shell_devtools_bindings.cc
+// that is used in layout tests, which only use content_shell.
+// The two implementations needs to be kept in sync wrt. the interface they
+// provide to the DevTools front-end.
+
 void DevToolsUIBindings::DispatchProtocolMessage(
     content::DevToolsAgentHost* agent_host,
     base::span<const uint8_t> message) {

@@ -9,7 +9,7 @@
 
 #pinKeyboard {
   --pin-keyboard-pin-input-style: {
-    width: 244px;
+    width: 192px;
     padding-bottom: 24px;
   };
   --pin-keyboard-number-color: var(--google-grey-900);

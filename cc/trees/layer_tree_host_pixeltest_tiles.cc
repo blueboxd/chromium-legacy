@@ -36,6 +36,8 @@ class LayerTreeHostTilesPixelTest
     : public LayerTreePixelTest,
       public ::testing::WithParamInterface<TilesTestConfig> {
  protected:
+  LayerTreeHostTilesPixelTest() : LayerTreePixelTest(renderer_type()) {}
+
   RendererType renderer_type() const { return GetParam().renderer_type; }
 
   RasterMode raster_mode() const { return GetParam().raster_mode; }
@@ -193,13 +195,13 @@ INSTANTIATE_TEST_SUITE_P(All,
 TEST_P(LayerTreeHostTilesTestPartialInvalidation, PartialRaster) {
   use_partial_raster_ = true;
   RunSingleThreadedPixelTest(
-      renderer_type(), picture_layer_,
+      picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
 }
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidation, FullRaster) {
   RunSingleThreadedPixelTest(
-      renderer_type(), picture_layer_,
+      picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")));
 }
 
@@ -228,12 +230,12 @@ TEST_P(LayerTreeHostTilesTestPartialInvalidationMultiThread,
        MAYBE_PartialRaster) {
   use_partial_raster_ = true;
   RunPixelTest(
-      renderer_type(), picture_layer_,
+      picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
 }
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidationMultiThread, FullRaster) {
-  RunPixelTest(renderer_type(), picture_layer_,
+  RunPixelTest(picture_layer_,
                base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")));
 }
 
@@ -252,14 +254,14 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth, PartialRaster) {
   use_partial_raster_ = true;
-  RunSingleThreadedPixelTest(renderer_type(), picture_layer_,
+  RunSingleThreadedPixelTest(picture_layer_,
                              base::FilePath(FILE_PATH_LITERAL(
                                  "blue_yellow_partial_flipped_dither.png")));
 }
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth, FullRaster) {
   RunSingleThreadedPixelTest(
-      renderer_type(), picture_layer_,
+      picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped_dither.png")));
 }
 

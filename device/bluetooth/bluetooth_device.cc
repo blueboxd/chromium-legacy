@@ -23,6 +23,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/bluetooth/string_util_icu.h"
 #include "device/bluetooth/strings/grit/bluetooth_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -345,14 +346,39 @@ base::Optional<int8_t> BluetoothDevice::GetInquiryTxPower() const {
 
 void BluetoothDevice::CreateGattConnection(
     GattConnectionCallback callback,
-    ConnectErrorCallback error_callback) {
+    ConnectErrorCallback error_callback,
+    base::Optional<BluetoothUUID> service_uuid) {
+  if (!supports_service_specific_discovery_)
+    service_uuid.reset();
+
+  const bool connection_already_pending =
+      !create_gatt_connection_success_callbacks_.empty();
+
   create_gatt_connection_success_callbacks_.push_back(std::move(callback));
   create_gatt_connection_error_callbacks_.push_back(std::move(error_callback));
 
-  if (IsGattConnected())
-    return DidConnectGatt();
+  // If a service-specific discovery was originally requested, but this request
+  // is for a different or non-specific discovery, then the previous discovery
+  // needs to be redone.
+  if (target_service_.has_value() && target_service_ != service_uuid) {
+    DCHECK(IsGattConnected() || connection_already_pending);
+    target_service_ = service_uuid;
+    UpgradeToFullDiscovery();
+  }
 
-  CreateGattConnectionImpl();
+  if (IsGattConnected()) {
+    DCHECK(!connection_already_pending);
+    return DidConnectGatt();
+  }
+
+  if (connection_already_pending) {
+    // The correct callback will be run when the existing connection attempt
+    // completes.
+    return;
+  }
+
+  target_service_ = service_uuid;
+  CreateGattConnectionImpl(std::move(service_uuid));
 }
 
 void BluetoothDevice::SetGattServicesDiscoveryComplete(bool complete) {
@@ -360,7 +386,7 @@ void BluetoothDevice::SetGattServicesDiscoveryComplete(bool complete) {
 }
 
 bool BluetoothDevice::IsGattServicesDiscoveryComplete() const {
-  return gatt_services_discovery_complete_;
+  return !target_service_ && gatt_services_discovery_complete_;
 }
 
 std::vector<BluetoothRemoteGattService*> BluetoothDevice::GetGattServices()
@@ -496,6 +522,16 @@ void BluetoothDevice::SetBatteryPercentage(
 }
 #endif
 
+bool BluetoothDevice::supports_service_specific_discovery() const {
+  return supports_service_specific_discovery_;
+}
+
+void BluetoothDevice::UpgradeToFullDiscovery() {
+  // Must be overridden by any subclass that sets
+  // |supports_service_specific_discovery_|.
+  NOTREACHED();
+}
+
 std::unique_ptr<BluetoothGattConnection>
 BluetoothDevice::CreateBluetoothGattConnectionObject() {
   return std::make_unique<BluetoothGattConnection>(adapter_, GetAddress());
@@ -515,6 +551,8 @@ void BluetoothDevice::DidFailToConnectGatt(ConnectErrorCode error) {
   // connections.
   DCHECK(gatt_connections_.empty());
 
+  target_service_.reset();
+
   for (auto& error_callback : create_gatt_connection_error_callbacks_)
     std::move(error_callback).Run(error);
   create_gatt_connection_success_callbacks_.clear();
@@ -525,6 +563,8 @@ void BluetoothDevice::DidDisconnectGatt() {
   // Pending calls to connect GATT are not expected, if they were then
   // DidFailToConnectGatt should have been called.
   DCHECK(create_gatt_connection_error_callbacks_.empty());
+
+  target_service_.reset();
 
   // Invalidate all BluetoothGattConnection objects.
   for (BluetoothGattConnection* connection : gatt_connections_) {

@@ -101,6 +101,12 @@ class CORE_EXPORT NGInlineCursor {
   // has no children, returns an empty cursor.
   NGInlineCursor CursorForDescendants() const;
 
+  // If |this| is created by |CursorForDescendants()| to traverse parts of an
+  // inline formatting context, expand the traversable range to the containing
+  // |LayoutBlockFlow|. Does nothing if |this| is for an inline formatting
+  // context.
+  void ExpandRootToContainingBlock();
+
   // True if current position has soft wrap to next line. It is error to call
   // other than line.
   bool HasSoftWrapToNextLine() const;

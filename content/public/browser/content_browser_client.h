@@ -21,6 +21,7 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/generated_code_cache_settings.h"
@@ -150,6 +151,7 @@ class TargetPolicy;
 
 namespace ui {
 class SelectFilePolicy;
+struct ClipboardFormatType;
 }  // namespace ui
 
 namespace url {
@@ -217,6 +219,12 @@ struct WebPreferences;
 // the observer interfaces.)
 class CONTENT_EXPORT ContentBrowserClient {
  public:
+  // Callback used with IsClipboardPasteAllowed() method.
+  using ClipboardPasteAllowed =
+      util::StrongAlias<class ClipboardPasteAllowedTag, bool>;
+  using IsClipboardPasteAllowedCallback =
+      base::OnceCallback<void(ClipboardPasteAllowed)>;
+
   virtual ~ContentBrowserClient() {}
 
   // Allows the embedder to set any number of custom BrowserMainParts
@@ -1743,6 +1751,32 @@ class CONTENT_EXPORT ContentBrowserClient {
       content::BrowserContext* browser_context,
       const url::Origin& origin,
       base::OnceCallback<void(base::Optional<std::string>)> callback);
+
+  // Determines if a clipboard paste using |data| of type |data_type| is allowed
+  // in this renderer frame.  Possible data types supported for paste can be
+  // seen in the ClipboardHostImpl class.  Text based formats will use the
+  // data_type ui::ClipboardFormatType::GetPlainTextType() unless it is known
+  // to be of a more specific type, like RTF or HTML, in which case a type
+  // such as ui::ClipboardFormatType::GetRtfType() or
+  // ui::ClipboardFormatType::GetHtmlType() is used.
+  //
+  // It is also possible for the data type to be
+  // ui::ClipboardFormatType::GetWebCustomDataType() indicating that the paste
+  // uses a custom data format.  It is up to the implementation to attempt to
+  // understand the type if possible.  It is acceptable to deny pastes of
+  // unknown data types.
+  //
+  // The implementation is expected to show UX to the user if needed.  If
+  // shown, the UX should be associated with the specific WebContents.
+  //
+  // The callback is called, possibly asynchronously, with a status indicating
+  // whether the operation is allowed or not.
+  virtual void IsClipboardPasteAllowed(
+      content::WebContents* web_contents,
+      const GURL& url,
+      const ui::ClipboardFormatType& data_type,
+      const std::string& data,
+      IsClipboardPasteAllowedCallback callback);
 };
 
 }  // namespace content

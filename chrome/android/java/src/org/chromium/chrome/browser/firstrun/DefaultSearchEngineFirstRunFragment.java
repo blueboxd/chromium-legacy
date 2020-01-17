@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.locale.DefaultSearchEngineDialogHelper;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.ui.widget.RadioButtonLayout;
+import org.chromium.components.browser_ui.widget.RadioButtonLayout;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /** A {@link Fragment} that presents a set of search engines for the user to choose from. */

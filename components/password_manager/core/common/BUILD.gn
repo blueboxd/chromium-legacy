@@ -32,9 +32,7 @@ jumbo_static_library("common") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "credential_manager_types_unittest.cc",
-  ]
+  sources = [ "credential_manager_types_unittest.cc" ]
 
   if (is_ios) {
     sources += [ "passwords_directory_util_ios_unittest.cc" ]

@@ -117,7 +117,7 @@ Polymer({
       return;
     }
     const connectionState = this.networkState.connectionState;
-    if (connectionState == this.connectionState_) {
+    if (connectionState === this.connectionState_) {
       return;
     }
     this.connectionState_ = connectionState;
@@ -268,7 +268,7 @@ Polymer({
       return '';
     }
     const connectionState = this.networkState.connectionState;
-    if (this.networkState.type == mojom.NetworkType.kCellular) {
+    if (this.networkState.type === mojom.NetworkType.kCellular) {
       if (this.shouldShowNotAvailableText_()) {
         return this.i18n('networkListItemNotAvailable');
       }
@@ -284,7 +284,7 @@ Polymer({
       // and Online.
       return this.i18n('networkListItemConnected');
     }
-    if (connectionState == mojom.ConnectionStateType.kConnecting) {
+    if (connectionState === mojom.ConnectionStateType.kConnecting) {
       return this.i18n('networkListItemConnecting');
     }
     return '';
@@ -324,9 +324,9 @@ Polymer({
   onKeydown_(event) {
     // The only key event handled by this element is pressing Enter when the
     // subpage arrow is focused.
-    if (event.key != 'Enter' ||
+    if (event.key !== 'Enter' ||
         !this.isSubpageButtonVisible_(this.networkState, this.showButtons) ||
-        this.$$('#subpage-button') != this.shadowRoot.activeElement) {
+        this.$$('#subpage-button') !== this.shadowRoot.activeElement) {
       return;
     }
 
@@ -370,8 +370,8 @@ Polymer({
     // If cellular activation is not currently available and |this.networkState|
     // describes an unactivated cellular network, the text should be shown.
     const mojom = chromeos.networkConfig.mojom;
-    return this.networkState.type == mojom.NetworkType.kCellular &&
-        this.networkState.typeState.cellular.activationState !=
+    return this.networkState.type === mojom.NetworkType.kCellular &&
+        this.networkState.typeState.cellular.activationState !==
         mojom.ActivationStateType.kActivated;
   },
 });

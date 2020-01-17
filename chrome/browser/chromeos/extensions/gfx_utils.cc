@@ -233,12 +233,27 @@ bool ShouldApplyChromeBadgeToWebApp(content::BrowserContext* context,
   return true;
 }
 
-void ApplyChromeBadge(gfx::ImageSkia* icon_out) {
+void ApplyBadge(gfx::ImageSkia* icon_out, ChromeAppIcon::Badge badge_type) {
   DCHECK(icon_out);
+  DCHECK_NE(ChromeAppIcon::Badge::kNone, badge_type);
+
+  int badge_res = 0;
+  switch (badge_type) {
+    case ChromeAppIcon::Badge::kChrome:
+      badge_res = IDR_CHROME_ICON_BADGE;
+      break;
+    case ChromeAppIcon::Badge::kBlocked:
+      badge_res = IDR_BLOCK_ICON_BADGE;
+      break;
+    case ChromeAppIcon::Badge::kPaused:
+      badge_res = IDR_HOURGLASS_ICON_BADGE;
+      break;
+    default:
+      NOTREACHED();
+  }
 
   const gfx::ImageSkia* badge_image =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_ARC_DUAL_ICON_BADGE);
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(badge_res);
   DCHECK(badge_image);
 
   gfx::ImageSkia resized_badge_image = *badge_image;

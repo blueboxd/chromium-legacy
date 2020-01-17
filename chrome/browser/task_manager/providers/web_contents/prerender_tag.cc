@@ -6,7 +6,7 @@
 
 namespace task_manager {
 
-PrerenderTask* PrerenderTag::CreateTask() const {
+PrerenderTask* PrerenderTag::CreateTask(WebContentsTaskProvider*) const {
   return new PrerenderTask(web_contents());
 }
 

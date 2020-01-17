@@ -54,6 +54,12 @@ template("chrome_feature_module") {
     _shared_libraries += [
       "//chrome/android:${_base_target_name}_${_module_desc.name}${_toolchain}",
     ]
+
+    if (android_64bit_target_cpu && _is_monochrome_or_trichrome &&
+        invoker.is_64_bit_browser && build_hwasan_splits) {
+      _hwasan_toolchain = "//build/toolchain/android:android_clang_arm64_hwasan"
+      _shared_libraries += [ "//chrome/android:${_base_target_name}_${_module_desc.name}($_hwasan_toolchain)" ]
+    }
   } else {
     not_needed([ "_is_monochrome_or_trichrome" ])
   }
@@ -87,9 +93,7 @@ template("chrome_feature_module") {
                            ])
     android_manifest = _module_desc.android_manifest
     target_sdk_version = android_sdk_version
-    deps = [
-      ":${target_name}__module_desc_java",
-    ]
+    deps = [ ":${target_name}__module_desc_java" ]
     if (defined(_module_desc.pak_deps)) {
       deps += [ ":${target_name}__pak_assets" ]
     }

@@ -1039,20 +1039,3 @@ class Portrait extends Photo {
         PerfEvent.PORTRAIT_MODE_CAPTURE_POST_PROCESSING, false, {hasError});
   }
 }
-
-/** @const */
-cca.views.camera.VideoResult = VideoResult;
-/** @const */
-cca.views.camera.PhotoResult = PhotoResult;
-/** @const */
-cca.views.camera.DoSwitchMode = DoSwitchMode;
-/** @const */
-cca.views.camera.DoSavePhoto = DoSavePhoto;
-/** @const */
-cca.views.camera.CreateVideoSaver = CreateVideoSaver;
-/** @const */
-cca.views.camera.DoSaveVideo = DoSaveVideo;
-/** @const */
-cca.views.camera.PlayShutterEffect = PlayShutterEffect;
-/** @const */
-cca.views.camera.Modes = Modes;

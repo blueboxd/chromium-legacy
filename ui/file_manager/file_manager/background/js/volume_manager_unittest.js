@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 let mockChrome;
+let createVolumeInfoOriginal;
 
 function setUp() {
   window.loadTimeData.getString = id => id;
@@ -126,12 +127,17 @@ function setUp() {
         new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
     'android_files:0': new MockFileSystem('android_files:0')
   };
+
+  createVolumeInfoOriginal = volumeManagerUtil.createVolumeInfo;
 }
 
 function tearDown() {
   volumeManagerFactory.revokeInstanceForTesting();
   // To avoid a closure warning assigning to |chrome|, tearDown() does not
   // balance the call to installMockChrome() here.
+
+  // Restore the createVolumeInfo() function.
+  volumeManagerUtil.createVolumeInfo = createVolumeInfoOriginal;
 }
 
 /**
@@ -438,4 +444,88 @@ function testErrorPropagatedDuringInitialization(done) {
   };
 
   reportPromise(assertRejected(volumeManagerFactory.getInstance()), done);
+}
+
+/**
+ * Tests that an error initializing one volume doesn't stop other volumes to be
+ * initialized. crbug.com/1041340
+ */
+async function testErrorInitializingVolume(done) {
+  // Confirm that a Drive volume is on faked getVolumeMetadataList().
+  assertTrue(
+      chrome.fileManagerPrivate.volumeMetadataList_.some(volumeMetadata => {
+        return volumeMetadata.volumeType ===
+            VolumeManagerCommon.VolumeType.DRIVE;
+      }));
+
+  // Replace createVolumeInfo() to fail to create Drive volume.
+  const createVolumeInfoFake = (volumeMetadata) => {
+    if (volumeMetadata.volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
+      throw new Error('Fake security error');
+    }
+
+    // For any other volume return normal value.
+    return createVolumeInfoOriginal(volumeMetadata);
+  };
+  volumeManagerUtil.createVolumeInfo = createVolumeInfoFake;
+
+  // Wait for initialization to populate volumeInfoList.
+  const volumeManager = new VolumeManagerImpl();
+  await volumeManager.initialize();
+
+  // VolumeInfoList should contain only Android and MyFiles.
+  assertEquals(2, volumeManager.volumeInfoList.length);
+  assertEquals(
+      VolumeManagerCommon.VolumeType.DOWNLOADS,
+      volumeManager.volumeInfoList.item(0).volumeType);
+  assertEquals(
+      VolumeManagerCommon.VolumeType.ANDROID_FILES,
+      volumeManager.volumeInfoList.item(1).volumeType);
+
+  done();
+}
+
+/**
+ * Tests VolumeInfoImpl doesn't raise exception if null is passed for
+ * filesystem. crbug.com/1041340
+ */
+async function testDriveWithNullFilesystem(done) {
+  // Get Drive volume metadata from faked getVolumeMetadataList().
+  const driveVolumeMetadata =
+      chrome.fileManagerPrivate.volumeMetadataList_.find(volumeMetadata => {
+        return volumeMetadata.volumeType ===
+            VolumeManagerCommon.VolumeType.DRIVE;
+      });
+  assertTrue(!!driveVolumeMetadata);
+
+  const localizedLabel = 'DRIVE LABEL';
+  const expectedError = 'EXPECTED ERROR DESCRIPTION';
+
+  // Create a VolumeInfo with null filesystem, in the same way that happens on
+  // volumeManagerUtil.createVolumeInfo().
+  const volumeInfo = new VolumeInfoImpl(
+      /** @type {VolumeManagerCommon.VolumeType} */
+      (driveVolumeMetadata.volumeType), driveVolumeMetadata.volumeId,
+      null,  // File system is not found.
+      expectedError, driveVolumeMetadata.deviceType,
+      driveVolumeMetadata.devicePath, driveVolumeMetadata.isReadOnly,
+      driveVolumeMetadata.isReadOnlyRemovableDevice,
+      driveVolumeMetadata.profile, localizedLabel,
+      driveVolumeMetadata.providerId, driveVolumeMetadata.hasMedia,
+      driveVolumeMetadata.configurable, driveVolumeMetadata.watchable,
+      /** @type {VolumeManagerCommon.Source} */
+      (driveVolumeMetadata.source),
+      /** @type {VolumeManagerCommon.FileSystemType} */
+      (driveVolumeMetadata.diskFileSystemType), driveVolumeMetadata.iconSet,
+      (driveVolumeMetadata.driveLabel));
+
+  // Wait for trying to resolve display root, it should fail with
+  // |expectedError| if not re-throw to make the test fail.
+  await volumeInfo.resolveDisplayRoot().catch(error => {
+    if (error !== expectedError) {
+      throw error;
+    }
+  });
+
+  done();
 }

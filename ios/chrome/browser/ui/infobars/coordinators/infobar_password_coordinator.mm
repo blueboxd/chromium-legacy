@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
@@ -232,24 +233,22 @@
 
 - (void)neverSaveCredentialsForCurrentSite {
   self.passwordInfoBarDelegate->Cancel();
-  [self dismissInfobarModal:self
-                   animated:YES
-                 completion:^{
-                   // Completely remove the Infobar along with its badge after
-                   // blocking the Website.
-                   [self detachView];
-                 }];
+  [self dismissInfobarModalAnimated:YES
+                         completion:^{
+                           // Completely remove the Infobar along with its badge
+                           // after blocking the Website.
+                           [self detachView];
+                         }];
 }
 
 - (void)presentPasswordSettings {
   DCHECK(self.dispatcher);
-  [self
-      dismissInfobarModal:self
-                 animated:NO
-               completion:^{
-                 [self.dispatcher showSavedPasswordsSettingsFromViewController:
-                                      self.baseViewController];
-               }];
+  [self dismissInfobarModalAnimated:NO
+                         completion:^{
+                           [self.dispatcher
+                               showSavedPasswordsSettingsFromViewController:
+                                   self.baseViewController];
+                         }];
 }
 
 #pragma mark - Helpers

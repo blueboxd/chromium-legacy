@@ -50,6 +50,11 @@ extern const base::Feature kUseJSForErrorPage;
 // is requested by default.
 extern const base::Feature kUseDefaultUserAgentInWebClient;
 
+// When enabled, preserves properties of the UIScrollView using CRWPropertyStore
+// when the scroll view is recreated. When disabled, only preserve a small set
+// of properties using hard coded logic.
+extern const base::Feature kPreserveScrollViewProperties;
+
 // Use WKWebView.loading to update WebState::IsLoading.
 // TODO(crbug.com/1006012): Clean up this flag after experiment.
 bool UseWKWebViewLoading();

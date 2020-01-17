@@ -5,9 +5,7 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":cr_fingerprint_progress_arc",
-  ]
+  deps = [ ":cr_fingerprint_progress_arc" ]
 }
 
 js_library("cr_fingerprint_progress_arc") {

@@ -89,7 +89,7 @@ constexpr int kAccessCodeInputFieldHeightDp = 32;
 constexpr int kAccessCodeInputFieldUnderlineThicknessDp = 1;
 constexpr int kAccessCodeBetweenInputFieldsGapDp = 4;
 
-constexpr int kArrowButtonSizeDp = 40;
+constexpr int kArrowButtonSizeDp = 48;
 constexpr int kArrowSizeDp = 20;
 
 constexpr int kAlpha70Percent = 178;

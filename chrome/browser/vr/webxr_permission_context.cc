@@ -20,25 +20,6 @@ WebXrPermissionContext::WebXrPermissionContext(
 
 WebXrPermissionContext::~WebXrPermissionContext() = default;
 
-ContentSetting WebXrPermissionContext::GetPermissionStatusInternal(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) const {
-  return CONTENT_SETTING_BLOCK;
-}
-
-void WebXrPermissionContext::DecidePermission(
-    content::WebContents* web_contents,
-    const PermissionRequestID& id,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin,
-    bool user_gesture,
-    BrowserPermissionCallback callback) {
-  // The user shouldn't be prompted to authorize AR/VR while it's being
-  // implemented.
-  NOTREACHED();
-}
-
 bool WebXrPermissionContext::IsRestrictedToSecureOrigins() const {
   return true;
 }

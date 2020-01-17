@@ -50,6 +50,11 @@ IPC_MESSAGE_ROUTED2(WebTestHostMsg_InitiateCaptureDump,
                     bool /* should dump navigation history */,
                     bool /* should dump pixels */)
 
+IPC_SYNC_MESSAGE_ROUTED0_1(WebTestHostMsg_GetWritableDirectory,
+                           base::FilePath /* local_path */)
+IPC_MESSAGE_ROUTED1(WebTestHostMsg_SetFilePathForMockFileDialog,
+                    base::FilePath /* local_path */)
+
 // Notifies the browser that one of renderers has changed web test runtime
 // flags (i.e. has set dump_as_text).
 IPC_MESSAGE_CONTROL1(WebTestHostMsg_WebTestRuntimeFlagsChanged,

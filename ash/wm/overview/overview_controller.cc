@@ -492,6 +492,16 @@ void OverviewController::ToggleOverview(
         break;
       }
     }
+    // |should_focus_overview_| should also be false if overview starts when
+    // there is a window being dragged. Do not change the window activation as
+    // it might cause the unnecessary shelf item activition indicator change.
+    if (should_focus_overview_) {
+      aura::Window* active_window = window_util::GetActiveWindow();
+      if (active_window && WindowState::Get(active_window)->is_dragged()) {
+        DCHECK(window_util::ShouldExcludeForOverview(active_window));
+        should_focus_overview_ = false;
+      }
+    }
 
     // Suspend occlusion tracker until the enter animation is complete.
     PauseOcclusionTracker();

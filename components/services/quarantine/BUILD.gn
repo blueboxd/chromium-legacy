@@ -18,9 +18,7 @@ static_library("quarantine") {
     "quarantine_win.cc",
   ]
 
-  public_deps = [
-    "//components/services/quarantine/public/mojom",
-  ]
+  public_deps = [ "//components/services/quarantine/public/mojom" ]
 
   deps = [
     ":common",

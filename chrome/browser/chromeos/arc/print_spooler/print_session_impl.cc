@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/print_spooler/print_session_impl.h"
 
 #include <limits>
+#include <string>
 #include <utility>
 
 #include "ash/public/cpp/arc_custom_tab.h"
@@ -28,7 +29,6 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
-#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/filename_util.h"
 #include "printing/page_range.h"
 #include "printing/print_job_constants.h"
@@ -265,13 +265,16 @@ void PrintSessionImpl::CreatePreviewDocument(
     return;
   }
 
+  int request_id = job_settings.FindIntKey(printing::kPreviewRequestID).value();
   instance_->CreatePreviewDocument(
       std::move(request),
       base::BindOnce(&PrintSessionImpl::OnPreviewDocumentCreated,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), request_id,
+                     std::move(callback)));
 }
 
 void PrintSessionImpl::OnPreviewDocumentCreated(
+    int request_id,
     CreatePreviewDocumentCallback callback,
     mojo::ScopedHandle preview_document,
     int64_t data_size) {
@@ -286,10 +289,12 @@ void PrintSessionImpl::OnPreviewDocumentCreated(
       base::BindOnce(&ReadPreviewDocument, std::move(preview_document),
                      static_cast<size_t>(data_size)),
       base::BindOnce(&PrintSessionImpl::OnPreviewDocumentRead,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), request_id,
+                     std::move(callback)));
 }
 
 void PrintSessionImpl::OnPreviewDocumentRead(
+    int request_id,
     CreatePreviewDocumentCallback callback,
     base::ReadOnlySharedMemoryRegion preview_document_region) {
   if (!preview_document_region.IsValid()) {
@@ -300,11 +305,32 @@ void PrintSessionImpl::OnPreviewDocumentRead(
   if (!pdf_flattener_.is_bound()) {
     GetPrintingService()->BindPdfFlattener(
         pdf_flattener_.BindNewPipeAndPassReceiver());
+    pdf_flattener_.set_disconnect_handler(
+        base::BindOnce(&PrintSessionImpl::OnPdfFlattenerDisconnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
+
+  bool inserted = callbacks_.emplace(request_id, std::move(callback)).second;
+  DCHECK(inserted);
+
   pdf_flattener_->FlattenPdf(
       std::move(preview_document_region),
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          std::move(callback), base::ReadOnlySharedMemoryRegion()));
+      base::BindOnce(&PrintSessionImpl::OnPdfFlattened,
+                     weak_ptr_factory_.GetWeakPtr(), request_id));
+}
+
+void PrintSessionImpl::OnPdfFlattened(
+    int request_id,
+    base::ReadOnlySharedMemoryRegion flattened_document_region) {
+  auto it = callbacks_.find(request_id);
+  std::move(it->second).Run(std::move(flattened_document_region));
+  callbacks_.erase(it);
+}
+
+void PrintSessionImpl::OnPdfFlattenerDisconnected() {
+  for (auto& it : callbacks_)
+    std::move(it.second).Run(base::ReadOnlySharedMemoryRegion());
+  callbacks_.clear();
 }
 
 void PrintSessionImpl::Close() {

@@ -80,12 +80,6 @@ class V8TestInterfaceSecureContext {
 };
 
 template <>
-struct NativeValueTraits<TestInterfaceSecureContext> : public NativeValueTraitsBase<TestInterfaceSecureContext> {
-  CORE_EXPORT static TestInterfaceSecureContext* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestInterfaceSecureContext* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestInterfaceSecureContext> {
   typedef V8TestInterfaceSecureContext Type;
 };

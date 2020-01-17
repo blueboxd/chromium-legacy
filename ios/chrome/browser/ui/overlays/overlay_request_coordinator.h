@@ -14,7 +14,8 @@ class OverlayRequest;
 // Coordinator superclass used to present UI for an OverlayRequest.
 @interface OverlayRequestCoordinator : ChromeCoordinator
 
-// Returns the request support for this coordinator.
+// Returns the request support for this coordinator.  Must return a non-null
+// value.
 @property(class, nonatomic, readonly)
     const OverlayRequestSupport* requestSupport;
 

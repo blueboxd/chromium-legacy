@@ -15,9 +15,7 @@ static_library("demographic_metrics_provider") {
     "demographic_metrics_provider.h",
   ]
 
-  public_deps = [
-    "//third_party/metrics_proto",
-  ]
+  public_deps = [ "//third_party/metrics_proto" ]
 
   deps = [
     ":metrics",
@@ -56,6 +54,10 @@ jumbo_static_library("metrics") {
     "drive_metrics_provider_win.cc",
     "enabled_state_provider.cc",
     "enabled_state_provider.h",
+    "entropy_state.cc",
+    "entropy_state.h",
+    "entropy_state_provider.cc",
+    "entropy_state_provider.h",
     "environment_recorder.cc",
     "environment_recorder.h",
     "expired_histogram_util.cc",
@@ -177,9 +179,7 @@ if (is_android) {
   java_cpp_strings("java_switches_srcjar") {
     # External code should depend on ":metrics_java" instead.
     visibility = [ ":*" ]
-    sources = [
-      "//components/metrics/metrics_switches.cc",
-    ]
+    sources = [ "//components/metrics/metrics_switches.cc" ]
     template =
         "//components/metrics/android/java_templates/MetricsSwitches.java.tmpl"
   }
@@ -200,9 +200,7 @@ static_library("component_metrics") {
     "component_metrics_provider.h",
   ]
 
-  public_deps = [
-    "//third_party/metrics_proto",
-  ]
+  public_deps = [ "//third_party/metrics_proto" ]
 
   deps = [
     ":metrics",
@@ -218,9 +216,7 @@ if (!is_ios) {
       "gpu/gpu_metrics_provider.h",
     ]
 
-    public_deps = [
-      ":metrics",
-    ]
+    public_deps = [ ":metrics" ]
     deps = [
       "//base",
       "//content/public/browser",
@@ -241,9 +237,7 @@ jumbo_static_library("net") {
     "net/wifi_access_point_info_provider.h",
   ]
 
-  public_deps = [
-    ":metrics",
-  ]
+  public_deps = [ ":metrics" ]
   allow_circular_includes_from = [ ":metrics" ]
 
   deps = [
@@ -273,9 +267,7 @@ static_library("ui") {
     "ui/screen_info_metrics_provider.h",
   ]
 
-  public_deps = [
-    ":metrics",
-  ]
+  public_deps = [ ":metrics" ]
   deps = [
     "//base",
     "//ui/display",
@@ -308,9 +300,7 @@ source_set("call_stack_profile_params") {
     "call_stack_profile_encoding.h",
     "call_stack_profile_params.h",
   ]
-  sources = [
-    "call_stack_profile_encoding.cc",
-  ]
+  sources = [ "call_stack_profile_encoding.cc" ]
 
   deps = [
     "//base:base",
@@ -330,9 +320,7 @@ source_set("child_call_stack_profile_builder") {
     "call_stack_profile_metadata.cc",
     "child_call_stack_profile_collector.cc",
   ]
-  public_deps = [
-    ":call_stack_profile_params",
-  ]
+  public_deps = [ ":call_stack_profile_params" ]
   deps = [
     "//base",
     "//components/metrics/public/mojom:call_stack_mojo_bindings",
@@ -346,12 +334,8 @@ source_set("child_call_stack_profile_builder") {
 
 # Dependency for browser process use of the CallStackProfileBuilder.
 source_set("call_stack_profile_builder") {
-  deps = [
-    ":metrics",
-  ]
-  public_deps = [
-    ":child_call_stack_profile_builder",
-  ]
+  deps = [ ":metrics" ]
+  public_deps = [ ":child_call_stack_profile_builder" ]
 }
 
 # The browser process mojo service for collecting profiles from child
@@ -381,12 +365,8 @@ jumbo_static_library("test_support") {
     "test_metrics_service_client.h",
   ]
 
-  public_deps = [
-    ":metrics",
-  ]
-  deps = [
-    "//base",
-  ]
+  public_deps = [ ":metrics" ]
+  deps = [ "//base" ]
 }
 
 if (is_linux) {
@@ -397,9 +377,7 @@ if (is_linux) {
       "serialization/serialization_utils.cc",
       "serialization/serialization_utils.h",
     ]
-    deps = [
-      "//base",
-    ]
+    deps = [ "//base" ]
   }
 }
 
@@ -417,6 +395,8 @@ source_set("unit_tests") {
     "data_use_tracker_unittest.cc",
     "demographic_metrics_provider_unittest.cc",
     "drive_metrics_provider_unittest.cc",
+    "entropy_state_provider_unittest.cc",
+    "entropy_state_unittest.cc",
     "environment_recorder_unittest.cc",
     "expired_histograms_checker_unittest.cc",
     "field_trials_provider_unittest.cc",
@@ -497,9 +477,7 @@ source_set("unit_tests") {
 
 # Convenience testing target
 test("metrics_unittests") {
-  sources = [
-    "//components/test/run_all_unittests.cc",
-  ]
+  sources = [ "//components/test/run_all_unittests.cc" ]
   deps = [
     ":unit_tests",
     "//components/test:test_support",

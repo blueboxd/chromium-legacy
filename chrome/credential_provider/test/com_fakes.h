@@ -141,11 +141,15 @@ class FakeCredentialProviderCredentialEvents
   CREDENTIAL_PROVIDER_FIELD_STATE GetFieldState(
       ICredentialProviderCredential* pcpc,
       DWORD dwFieldID);
+  LPCWSTR GetFieldString(ICredentialProviderCredential* pcpc, DWORD dwFieldID);
 
  private:
   std::unordered_map<ICredentialProviderCredential*,
                      std::unordered_map<DWORD, CREDENTIAL_PROVIDER_FIELD_STATE>>
       field_states_;
+  std::unordered_map<ICredentialProviderCredential*,
+                     std::unordered_map<DWORD, base::string16>>
+      field_string_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

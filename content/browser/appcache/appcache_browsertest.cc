@@ -48,8 +48,10 @@ class AppCacheNetworkServiceBrowserTest : public ContentBrowserTest {
 // associated with it and then navigating to another TLD within that
 // host clears the previously registered factory. We verify this by
 // validating that request count for the last navigation.
-IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
-                       VerifySubresourceFactoryClearedOnNewNavigation) {
+// Flaky on linux-chromeos-chrome (http://crbug.com/1042385)
+IN_PROC_BROWSER_TEST_F(
+    AppCacheNetworkServiceBrowserTest,
+    DISABLED_VerifySubresourceFactoryClearedOnNewNavigation) {
   net::EmbeddedTestServer embedded_test_server;
 
   int request_count = 0;

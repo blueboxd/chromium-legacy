@@ -458,12 +458,6 @@ void TabManagerStatsCollector::PerformPeriodicSample() {
     lifecycle_unit->CanFreeze(&freeze_decision);
     RecordDecisionDetails(lifecycle_unit, freeze_decision,
                           LifecycleUnitState::FROZEN);
-
-    DecisionDetails discard_decision;
-    lifecycle_unit->CanDiscard(LifecycleUnitDiscardReason::PROACTIVE,
-                               &discard_decision);
-    RecordDecisionDetails(lifecycle_unit, discard_decision,
-                          LifecycleUnitState::DISCARDED);
   }
 
   // Determine when the next sample should run based on when this cycle

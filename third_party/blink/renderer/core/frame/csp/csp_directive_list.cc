@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
@@ -124,9 +125,12 @@ ContentSecurityPolicy::DirectiveType GetDirectiveTypeForAllowHashFromInlineType(
 
 }  // namespace
 
+using network::mojom::ContentSecurityPolicySource;
+using network::mojom::ContentSecurityPolicyType;
+
 CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy,
-                                   ContentSecurityPolicyHeaderType type,
-                                   ContentSecurityPolicyHeaderSource source)
+                                   ContentSecurityPolicyType type,
+                                   ContentSecurityPolicySource source)
     : policy_(policy),
       header_type_(type),
       header_source_(source),
@@ -136,13 +140,12 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy,
       require_sri_for_(RequireSRIForToken::kNone),
       use_reporting_api_(false) {}
 
-CSPDirectiveList* CSPDirectiveList::Create(
-    ContentSecurityPolicy* policy,
-    const UChar* begin,
-    const UChar* end,
-    ContentSecurityPolicyHeaderType type,
-    ContentSecurityPolicyHeaderSource source,
-    bool should_parse_wasm_eval) {
+CSPDirectiveList* CSPDirectiveList::Create(ContentSecurityPolicy* policy,
+                                           const UChar* begin,
+                                           const UChar* end,
+                                           ContentSecurityPolicyType type,
+                                           ContentSecurityPolicySource source,
+                                           bool should_parse_wasm_eval) {
   CSPDirectiveList* directives =
       MakeGarbageCollected<CSPDirectiveList>(policy, type, source);
   directives->Parse(begin, end, should_parse_wasm_eval);
@@ -167,7 +170,7 @@ CSPDirectiveList* CSPDirectiveList::Create(
   }
 
   if (directives->IsReportOnly() &&
-      source != kContentSecurityPolicyHeaderSourceMeta &&
+      source != ContentSecurityPolicySource::kMeta &&
       directives->ReportEndpoints().IsEmpty()) {
     policy->ReportMissingReportURI(
         String(begin, static_cast<wtf_size_t>(end - begin)));
@@ -1125,7 +1128,7 @@ void CSPDirectiveList::ParseReportURI(const String& name, const String& value) {
 
   // Remove report-uri in meta policies, per
   // https://html.spec.whatwg.org/C/#attr-meta-http-equiv-content-security-policy.
-  if (header_source_ == kContentSecurityPolicyHeaderSourceMeta) {
+  if (header_source_ == ContentSecurityPolicySource::kMeta) {
     policy_->ReportInvalidDirectiveInMeta(name);
     return;
   }
@@ -1197,7 +1200,7 @@ void CSPDirectiveList::SetCSPDirective(const String& name,
 
   // Remove frame-ancestors directives in meta policies, per
   // https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
-  if (header_source_ == kContentSecurityPolicyHeaderSourceMeta &&
+  if (header_source_ == ContentSecurityPolicySource::kMeta &&
       ContentSecurityPolicy::GetDirectiveType(name) ==
           ContentSecurityPolicy::DirectiveType::kFrameAncestors) {
     policy_->ReportInvalidDirectiveInMeta(name);
@@ -1211,7 +1214,7 @@ void CSPDirectiveList::ApplySandboxPolicy(const String& name,
                                           const String& sandbox_policy) {
   // Remove sandbox directives in meta policies, per
   // https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
-  if (header_source_ == kContentSecurityPolicyHeaderSourceMeta) {
+  if (header_source_ == ContentSecurityPolicySource::kMeta) {
     policy_->ReportInvalidDirectiveInMeta(name);
     return;
   }
@@ -1571,10 +1574,8 @@ bool CSPDirectiveList::Subsumes(const CSPDirectiveListVector& other) {
 
 WebContentSecurityPolicy CSPDirectiveList::ExposeForNavigationalChecks() const {
   WebContentSecurityPolicy policy;
-  policy.disposition =
-      static_cast<network::mojom::ContentSecurityPolicyType>(header_type_);
-  policy.source =
-      static_cast<network::mojom::ContentSecurityPolicySource>(header_source_);
+  policy.disposition = header_type_;
+  policy.source = header_source_;
   for (const auto& directive :
        {child_src_, default_src_, form_action_, frame_src_, navigate_to_}) {
     if (directive) {

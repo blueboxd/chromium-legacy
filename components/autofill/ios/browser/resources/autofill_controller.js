@@ -299,7 +299,7 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
         fieldIdentifier !== forceFillFieldIdentifier &&
         !__gCrWeb.fill.isSelectElement(element) &&
         !((element.hasAttribute('value') &&
-           element.getAttribute('value') == element.value) ||
+           element.getAttribute('value') === element.value) ||
           (element.hasAttribute('placeholder') &&
            element.getAttribute('placeholder').toLowerCase() ==
                element.value.toLowerCase()))) {
@@ -371,7 +371,7 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(
       continue;
     }
 
-    if (formField && formField.autofillSection != element.autofillSection) {
+    if (formField && formField.autofillSection !== element.autofillSection) {
       continue;
     }
 
@@ -592,7 +592,7 @@ function unownedFormElementsAndFieldSetsToFormData_(
     }
   }
 
-  if (controlElementsWithAutocomplete.length == 0) {
+  if (controlElementsWithAutocomplete.length === 0) {
     return false;
   }
   return __gCrWeb.fill.formOrFieldsetsToFormData(
@@ -726,7 +726,7 @@ __gCrWeb.autofill['sanitizedFieldIsEmpty'] = function(value) {
   // Some sites enter values such as ____-____-____-____ or (___)-___-____ in
   // their fields. Check if the field value is empty after the removal of the
   // formatting characters.
-  return __gCrWeb.common.trim(value.replace(/[-_()/|]/g, '')) == '';
+  return __gCrWeb.common.trim(value.replace(/[-_()/|]/g, '')) === '';
 };
 
 }());  // End of anonymous object

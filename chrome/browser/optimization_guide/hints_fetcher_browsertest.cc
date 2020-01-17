@@ -346,10 +346,10 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     return search_results_page_url_;
   }
 
-  void SetExpectedHintsRequestForHosts(
-      const base::flat_set<std::string>& hosts) {
+  void SetExpectedHintsRequestForHostsAndUrls(
+      const base::flat_set<std::string>& hosts_or_urls) {
     base::AutoLock lock(lock_);
-    expect_hints_request_for_hosts_ = hosts;
+    expect_hints_request_for_hosts_and_urls_ = hosts_or_urls;
   }
 
   size_t count_hints_requests_received() {
@@ -420,12 +420,14 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
 
     optimization_guide::proto::GetHintsRequest hints_request;
     EXPECT_TRUE(hints_request.ParseFromString(request.content));
-    EXPECT_FALSE(hints_request.hosts().empty());
+    EXPECT_FALSE(hints_request.hosts().empty() && hints_request.urls().empty());
     EXPECT_GE(optimization_guide::features::
                   MaxHostsForOptimizationGuideServiceHintsFetch(),
               static_cast<size_t>(hints_request.hosts().size()));
 
-    VerifyHintsMatchExpectedHosts(hints_request);
+    // Only verify the hints if there are hosts in the request.
+    if (!hints_request.hosts().empty())
+      VerifyHintsMatchExpectedHostsAndUrls(hints_request);
 
     if (response_type_ == HintsFetcherRemoteResponseType::kSuccessful) {
       response->set_code(net::HTTP_OK);
@@ -461,21 +463,24 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
   // Verifies that the hosts present in |hints_request| match the expected set
   // of hosts present in |expect_hints_request_for_hosts_|. The ordering of the
   // hosts in not matched.
-  void VerifyHintsMatchExpectedHosts(
+  void VerifyHintsMatchExpectedHostsAndUrls(
       const optimization_guide::proto::GetHintsRequest& hints_request) const {
-    if (!expect_hints_request_for_hosts_)
+    if (!expect_hints_request_for_hosts_and_urls_)
       return;
 
-    base::flat_set<std::string> hosts_requested;
+    base::flat_set<std::string> hosts_and_urls_requested;
     for (const auto& host : hints_request.hosts())
-      hosts_requested.insert(host.host());
+      hosts_and_urls_requested.insert(host.host());
+    for (const auto& url : hints_request.urls())
+      hosts_and_urls_requested.insert(url.url());
 
-    EXPECT_EQ(expect_hints_request_for_hosts_.value().size(),
-              hosts_requested.size());
-    for (const auto& host : expect_hints_request_for_hosts_.value()) {
-      hosts_requested.erase(host);
+    EXPECT_EQ(expect_hints_request_for_hosts_and_urls_.value().size(),
+              hosts_and_urls_requested.size());
+    for (const auto& host_or_url :
+         expect_hints_request_for_hosts_and_urls_.value()) {
+      hosts_and_urls_requested.erase(host_or_url);
     }
-    EXPECT_EQ(0u, hosts_requested.size());
+    EXPECT_EQ(0u, hosts_and_urls_requested.size());
   }
 
   void TearDownOnMainThread() override {
@@ -502,11 +507,12 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
   // Count of hints requests received so far by |hints_server_|.
   size_t count_hints_requests_received_ = 0;
 
-  // Guarded by |lock_|.
-  // Set of hosts for which a hints request is expected to arrive. This set is
-  // verified to match with the set of hosts present in the hints request. If
-  // null, then the verification is not done.
-  base::Optional<base::flat_set<std::string>> expect_hints_request_for_hosts_;
+  // Guarded by |lock_|. Set of hosts and URLs for which a hints request is
+  // expected to arrive. This set is verified to match with the set of hosts and
+  // URLs present in the hints request. If null, then the verification is not
+  // done.
+  base::Optional<base::flat_set<std::string>>
+      expect_hints_request_for_hosts_and_urls_;
 
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 
@@ -1070,10 +1076,11 @@ IN_PROC_BROWSER_TEST_F(
 
     // Navigate to a host not in the seeded site engagement service; it
     // should be recorded as covered by the hints fetcher due to the race.
-    base::flat_set<std::string> expected_hosts_2g;
+    base::flat_set<std::string> expected_request_2g;
     std::string host_2g("https://unseenhost_2g.com/");
-    expected_hosts_2g.insert(GURL(host_2g).host());
-    SetExpectedHintsRequestForHosts(expected_hosts_2g);
+    expected_request_2g.insert(GURL(host_2g).host());
+    expected_request_2g.insert(GURL(host_2g).spec());
+    SetExpectedHintsRequestForHostsAndUrls(expected_request_2g);
     ui_test_utils::NavigateToURL(browser(), GURL(host_2g));
 
     EXPECT_EQ(2u, count_hints_requests_received());
@@ -1102,10 +1109,11 @@ IN_PROC_BROWSER_TEST_F(
         ->ReportEffectiveConnectionTypeForTesting(
             net::EFFECTIVE_CONNECTION_TYPE_4G);
 
-    base::flat_set<std::string> expected_hosts_4g;
+    base::flat_set<std::string> expected_request_4g;
     std::string host_4g("https://unseenhost_4g.com/");
-    expected_hosts_4g.insert((GURL(host_4g).host()));
-    SetExpectedHintsRequestForHosts(expected_hosts_4g);
+    expected_request_4g.insert((GURL(host_4g).host()));
+    expected_request_4g.insert((GURL(host_4g).spec()));
+    SetExpectedHintsRequestForHostsAndUrls(expected_request_4g);
     ui_test_utils::NavigateToURL(browser(), GURL(host_4g));
 
     EXPECT_EQ(2u, count_hints_requests_received());
@@ -1140,10 +1148,11 @@ IN_PROC_BROWSER_TEST_F(
 
     // Navigate to a host not in the seeded site engagement service; it
     // should be recorded as not covered by the hints fetcher.
-    base::flat_set<std::string> expected_hosts_3g;
+    base::flat_set<std::string> expected_request_3g;
     std::string host_3g("https://unseenhost_3g.com/");
-    expected_hosts_3g.insert(GURL(host_3g).host());
-    SetExpectedHintsRequestForHosts(expected_hosts_3g);
+    expected_request_3g.insert(GURL(host_3g).host());
+    expected_request_3g.insert(GURL(host_3g).spec());
+    SetExpectedHintsRequestForHostsAndUrls(expected_request_3g);
     ui_test_utils::NavigateToURL(browser(), GURL(host_3g));
 
     EXPECT_EQ(3u, count_hints_requests_received());
@@ -1176,14 +1185,17 @@ IN_PROC_BROWSER_TEST_F(
   {
     // Navigate to a host that was recently fetched. It
     // should be recorded as covered by the hints fetcher.
-    base::flat_set<std::string> expected_hosts_3g;
+    base::flat_set<std::string> expected_request_3g;
     std::string host_3g("https://unseenhost_3g.com");
-    expected_hosts_3g.insert(GURL(host_3g).host());
-    SetExpectedHintsRequestForHosts(expected_hosts_3g);
+    expected_request_3g.insert(GURL(host_3g).host());
+    expected_request_3g.insert(GURL(host_3g).spec());
+    SetExpectedHintsRequestForHostsAndUrls(expected_request_3g);
     ui_test_utils::NavigateToURL(browser(),
                                  GURL("https://unseenhost_3g.com/test1.html"));
-    // Hints should not be fetched for the same host again.
-    EXPECT_EQ(3u, count_hints_requests_received());
+
+    // With URL-keyed Hints, every unique URL navigated to will result in a
+    // hints fetch if racing is enabled and allowed.
+    EXPECT_EQ(4u, count_hints_requests_received());
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
         4);
@@ -1341,7 +1353,7 @@ IN_PROC_BROWSER_TEST_F(
   expected_hosts.insert(GURL("https://foo.com").host());
   expected_hosts.insert(GURL("https://example.com").host());
   expected_hosts.insert(GURL("https://example3.com").host());
-  SetExpectedHintsRequestForHosts(expected_hosts);
+  SetExpectedHintsRequestForHostsAndUrls(expected_hosts);
 
   histogram_tester->ExpectTotalCount(
       optimization_guide::kLoadedHintLocalHistogramString, 0);

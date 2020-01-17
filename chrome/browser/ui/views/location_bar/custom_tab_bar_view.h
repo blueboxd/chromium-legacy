@@ -13,7 +13,6 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/controls/button/button.h"
 
 namespace gfx {
 class Rect;
@@ -22,6 +21,7 @@ class Rect;
 namespace views {
 class FlexLayout;
 class MenuRunner;
+class ImageButton;
 }
 
 class CustomTabBarTitleOriginView;
@@ -47,19 +47,18 @@ class CustomTabBarView : public views::AccessiblePaneView,
 
   LocationIconView* location_icon_view() { return location_icon_view_; }
 
-  // views::View:
+  // views::AccessiblePaneView:
   gfx::Rect GetAnchorBoundsInScreen() const override;
   const char* GetClassName() const override;
+  gfx::Size CalculatePreferredSize() const override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void OnThemeChanged() override;
 
   // TabstripModelObserver:
   void TabChangedAt(content::WebContents* contents,
                     int index,
                     TabChangeType change_type) override;
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-  void OnPaintBackground(gfx::Canvas* canvas) override;
-  void ChildPreferredSizeChanged(views::View* child) override;
 
   // IconLabelBubbleView::Delegate:
   SkColor GetIconLabelBubbleSurroundingForegroundColor() const override;
@@ -83,7 +82,7 @@ class CustomTabBarView : public views::AccessiblePaneView,
   // Methods for testing.
   base::string16 title_for_testing() const { return last_title_; }
   base::string16 location_for_testing() const { return last_location_; }
-  views::Button* close_button_for_testing() const { return close_button_; }
+  views::ImageButton* close_button_for_testing() const { return close_button_; }
   ui::SimpleMenuModel* context_menu_for_testing() const {
     return context_menu_model_.get();
   }
@@ -91,6 +90,11 @@ class CustomTabBarView : public views::AccessiblePaneView,
   bool IsShowingOriginForTesting() const;
 
  private:
+  // Calculate the view's background and frame color from the current theme
+  // provider.
+  SkColor GetBackgroundColor() const;
+  SkColor GetDefaultFrameColor() const;
+
   // Takes the web contents for the custom tab bar back to the app scope.
   void GoBackToApp();
 
@@ -113,7 +117,7 @@ class CustomTabBarView : public views::AccessiblePaneView,
   base::string16 last_title_;
   base::string16 last_location_;
 
-  views::Button* close_button_ = nullptr;
+  views::ImageButton* close_button_ = nullptr;
   LocationBarView::Delegate* delegate_ = nullptr;
   LocationIconView* location_icon_view_ = nullptr;
   CustomTabBarTitleOriginView* title_origin_view_ = nullptr;

@@ -38,7 +38,7 @@ Polymer({
     /** @private {chrome.settingsPrivate.PrefObject} */
     metricsReportingPref_: {
       type: Object,
-      value: function() {
+      value() {
         // TODO(dbeam): this is basically only to appease PrefControlBehavior.
         // Maybe add a no-validate attribute instead? This makes little sense.
         return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
@@ -67,12 +67,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeSyncFirstSetupInProgress_: function() {
+  computeSyncFirstSetupInProgress_() {
     return !!this.syncStatus && !!this.syncStatus.firstSetupInProgress;
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = settings.PrivacyPageBrowserProxyImpl.getInstance();
 
     // <if expr="_google_chrome and not chromeos">
@@ -84,7 +84,7 @@ Polymer({
 
   // <if expr="_google_chrome and not chromeos">
   /** @private */
-  onMetricsReportingChange_: function() {
+  onMetricsReportingChange_() {
     const enabled = this.$.metricsReportingControl.checked;
     this.browserProxy_.setMetricsReportingEnabled(enabled);
   },
@@ -93,7 +93,7 @@ Polymer({
    * @param {!MetricsReporting} metricsReporting
    * @private
    */
-  setMetricsReportingPref_: function(metricsReporting) {
+  setMetricsReportingPref_(metricsReporting) {
     const hadPreviousPref = this.metricsReportingPref_.value !== undefined;
     const pref = {
       key: '',
@@ -123,7 +123,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onUseSpellingServiceToggle_: function(event) {
+  onUseSpellingServiceToggle_(event) {
     // If turning on using the spelling service, automatically turn on
     // spellcheck so that the spelling service can run.
     if (event.target.checked) {
@@ -136,7 +136,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showSpellCheckControl_: function() {
+  showSpellCheckControl_() {
     return (
         !!this.prefs.spellcheck &&
         /** @type {!Array<string>} */
@@ -147,14 +147,14 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowDriveSuggest_: function() {
+  shouldShowDriveSuggest_() {
     return loadTimeData.getBoolean('driveSuggestAvailable') &&
         !!this.syncStatus && !!this.syncStatus.signedIn &&
         this.syncStatus.statusAction !== settings.StatusAction.REAUTHENTICATE;
   },
 
   /** @private */
-  onSigninAllowedChange_: function() {
+  onSigninAllowedChange_() {
     if (this.syncStatus.signedIn && !this.$$('#signinAllowedToggle').checked) {
       // Switch the toggle back on and show the signout dialog.
       this.$$('#signinAllowedToggle').checked = true;
@@ -171,7 +171,7 @@ Polymer({
   },
 
   /** @private */
-  onSignoutDialogClosed_: function() {
+  onSignoutDialogClosed_() {
     if (/** @type {!SettingsSignoutDialogElement} */ (
             this.$$('settings-signout-dialog'))
             .wasConfirmed()) {
@@ -188,7 +188,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onRestartTap_: function(e) {
+  onRestartTap_(e) {
     e.stopPropagation();
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
   },

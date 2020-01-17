@@ -624,7 +624,8 @@ base::WeakPtr<HostContentSettingsMap> HostContentSettingsMap::GetWeakPtr() {
 }
 
 void HostContentSettingsMap::SetClockForTesting(base::Clock* clock) {
-  pref_provider_->SetClockForTesting(clock);
+  for (auto* provider : user_modifiable_providers_)
+    provider->SetClockForTesting(clock);
 }
 
 void HostContentSettingsMap::RecordExceptionMetrics() {

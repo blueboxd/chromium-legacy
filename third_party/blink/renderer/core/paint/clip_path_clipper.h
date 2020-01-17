@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class DisplayItemClient;
 class GraphicsContext;
 class LayoutObject;
 
@@ -22,6 +23,7 @@ class CORE_EXPORT ClipPathClipper {
  public:
   ClipPathClipper(GraphicsContext&,
                   const LayoutObject&,
+                  const DisplayItemClient&,
                   const PhysicalOffset& paint_offset);
   ~ClipPathClipper();
 
@@ -52,6 +54,7 @@ class CORE_EXPORT ClipPathClipper {
  private:
   GraphicsContext& context_;
   const LayoutObject& layout_object_;
+  const DisplayItemClient& display_item_client_;
   PhysicalOffset paint_offset_;
 };
 

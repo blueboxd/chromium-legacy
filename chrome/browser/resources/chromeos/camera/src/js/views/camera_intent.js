@@ -178,6 +178,3 @@ export class CameraIntent extends Camera {
     return this.startWithMode_(deviceId, this.defaultMode_);
   }
 }
-
-/** @const */
-cca.views.CameraIntent = CameraIntent;

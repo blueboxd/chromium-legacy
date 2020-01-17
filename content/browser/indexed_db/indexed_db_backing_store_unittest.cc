@@ -256,8 +256,9 @@ class IndexedDBBackingStoreTest : public testing::Test {
             ->leveldb_state()
             ->RequestDestruction(loop.QuitClosure(),
                                  base::SequencedTaskRunnerHandle::Get());
-        idb_context_->ForceClose(
-            origin, IndexedDBContextImpl::FORCE_CLOSE_DELETE_ORIGIN);
+        idb_context_->ForceCloseSync(
+            origin,
+            storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN);
         loop.Run();
       }
       // All leveldb databases are closed, and they can be deleted.

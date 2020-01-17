@@ -38,7 +38,5 @@ source_set("unit_tests") {
     "//services/network/public/cpp",
     "//testing/gtest",
   ]
-  sources = [
-    "timezone_unittest.cc",
-  ]
+  sources = [ "timezone_unittest.cc" ]
 }

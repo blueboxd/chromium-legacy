@@ -18,7 +18,7 @@ cr.define('ntp', function() {
   PageSwitcher.prototype = {
     __proto__: HTMLButtonElement.prototype,
 
-    decorate: function(el) {
+    decorate(el) {
       el.__proto__ = PageSwitcher.prototype;
 
       el.addEventListener('click', el.activate_);
@@ -32,7 +32,7 @@ cr.define('ntp', function() {
      * Activate the switcher (go to the next card).
      * @private
      */
-    activate_: function() {
+    activate_() {
       ntp.getCardSlider().selectCard(this.nextCardIndex_(), true);
     },
 
@@ -40,7 +40,7 @@ cr.define('ntp', function() {
      * Calculate the index of the card that this button will switch to.
      * @private
      */
-    nextCardIndex_: function() {
+    nextCardIndex_() {
       const cardSlider = ntp.getCardSlider();
       const index = cardSlider.currentCard + this.direction_;
       const numCards = cardSlider.cardCount - 1;
@@ -53,7 +53,7 @@ cr.define('ntp', function() {
      * @param {NodeList} dots The dot elements which display the names of the
      *     cards.
      */
-    updateButtonAccessibleLabel: function(dots) {
+    updateButtonAccessibleLabel(dots) {
       const currentIndex = ntp.getCardSlider().currentCard;
       const nextCardIndex = this.nextCardIndex_();
       if (nextCardIndex == currentIndex) {
@@ -77,7 +77,7 @@ cr.define('ntp', function() {
       this.setAttribute('aria-label', ariaLabel);
     },
 
-    shouldAcceptDrag: function(e) {
+    shouldAcceptDrag(e) {
       // Only allow page switching when a drop could happen on the page being
       // switched to.
       const nextPage =
@@ -85,16 +85,16 @@ cr.define('ntp', function() {
       return nextPage.shouldAcceptDrag(e);
     },
 
-    doDragEnter: function(e) {
+    doDragEnter(e) {
       this.scheduleDelayedSwitch_(e);
       this.doDragOver(e);
     },
 
-    doDragLeave: function(e) {
+    doDragLeave(e) {
       this.cancelDelayedSwitch_();
     },
 
-    doDragOver: function(e) {
+    doDragOver(e) {
       e.preventDefault();
       const targetPage = ntp.getCardSlider().currentCardValue;
       if (targetPage.shouldAcceptDrag(e)) {
@@ -102,7 +102,7 @@ cr.define('ntp', function() {
       }
     },
 
-    doDrop: function(e) {
+    doDrop(e) {
       e.stopPropagation();
       this.cancelDelayedSwitch_();
 
@@ -125,7 +125,7 @@ cr.define('ntp', function() {
      * cancelled by cancelDelayedSwitch_.
      * @private
      */
-    scheduleDelayedSwitch_: function(e) {
+    scheduleDelayedSwitch_(e) {
       // Stop switching when the next page can't be dropped onto.
       const nextPage =
           ntp.getCardSlider().getCardAtIndex(this.nextCardIndex_());
@@ -146,7 +146,7 @@ cr.define('ntp', function() {
      * Cancels the timer that activates the switcher while dragging.
      * @private
      */
-    cancelDelayedSwitch_: function() {
+    cancelDelayedSwitch_() {
       if (this.dragNavTimeout_) {
         window.clearTimeout(this.dragNavTimeout_);
         this.dragNavTimeout_ = null;

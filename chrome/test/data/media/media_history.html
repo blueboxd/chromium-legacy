@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<meta charset='utf-8'>
+<title>Media History</title>
+<video src='bigbuck.webm'></video>
+<script>
+function attemptPlay() {
+  document.querySelector('video').play().then(function() {
+    window.domAutomationController.send(true);
+  }, function() {
+    window.domAutomationController.send(false);
+  });
+}
+
+function setMediaMetadata() {
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: 'Big Buck Bunny',
+    artist: 'Test Footage',
+    album: 'The Chrome Collection'
+  });
+}
+
+function seekToFour() {
+  const video = document.querySelector('video');
+  video.currentTime = 4;
+}
+
+function finishPlaying() {
+  const video = document.querySelector('video');
+  video.currentTime = video.duration;
+}
+</script>
+</html>

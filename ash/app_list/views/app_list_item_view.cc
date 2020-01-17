@@ -219,11 +219,10 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       is_folder_(item->GetItemType() == AppListFolderItem::kItemType),
       item_weak_(item),
       delegate_(delegate),
-      apps_grid_view_(apps_grid_view),
-      icon_(new IconImageView),
-      title_(new views::Label),
-      progress_bar_(new views::ProgressBar) {
+      apps_grid_view_(apps_grid_view) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
+
+  auto icon = std::make_unique<IconImageView>();
 
   if (is_folder_) {
     // Set background blur for folder icon and use mask layer to clip it into
@@ -231,7 +230,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
     // smoothness.
     if (apps_grid_view_->IsTabletMode())
       SetBackgroundBlurEnabled(true);
-    icon_->SetRoundedCornerAndInsets(
+    icon->SetRoundedCornerAndInsets(
         GetAppListConfig().folder_icon_radius(),
         gfx::Insets(GetAppListConfig().folder_icon_insets()));
   }
@@ -239,30 +238,31 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   if (!is_in_folder && !is_folder_) {
     // To display shadow for icon while not affecting the icon's bounds, icon
     // shadow is behind the icon.
-    icon_shadow_ = new views::ImageView;
-    icon_shadow_->set_can_process_events_within_subtree(false);
-    icon_shadow_->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
-    AddChildView(icon_shadow_);
+    auto icon_shadow = std::make_unique<views::ImageView>();
+    icon_shadow->set_can_process_events_within_subtree(false);
+    icon_shadow->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
+    icon_shadow_ = AddChildView(std::move(icon_shadow));
   }
 
-  title_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  title_->SetHandlesTooltips(false);
-  title_->SetFontList(GetAppListConfig().app_title_font());
-  title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  title_->SetEnabledColor(apps_grid_view_->is_in_folder()
-                              ? kFolderGridTitleColor
-                              : GetAppListConfig().grid_title_color());
+  auto title = std::make_unique<views::Label>();
+  title->SetBackgroundColor(SK_ColorTRANSPARENT);
+  title->SetHandlesTooltips(false);
+  title->SetFontList(GetAppListConfig().app_title_font());
+  title->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  title->SetEnabledColor(apps_grid_view_->is_in_folder()
+                             ? kFolderGridTitleColor
+                             : GetAppListConfig().grid_title_color());
   if (!is_in_folder) {
     gfx::ShadowValues title_shadow = gfx::ShadowValues(
         1,
         gfx::ShadowValue(gfx::Vector2d(), kTitleShadowBlur, kTitleShadowColor));
-    title_->SetShadows(title_shadow);
+    title->SetShadows(title_shadow);
     title_shadow_margins_ = gfx::ShadowValue::GetMargin(title_shadow);
   }
 
-  AddChildView(icon_);
-  AddChildView(title_);
-  AddChildView(progress_bar_);
+  icon_ = AddChildView(std::move(icon));
+  title_ = AddChildView(std::move(title));
+  progress_bar_ = AddChildView(std::make_unique<views::ProgressBar>());
 
   SetIcon(item->GetIcon(GetAppListConfig().type()));
   SetItemName(base::UTF8ToUTF16(item->GetDisplayName()),

@@ -75,9 +75,7 @@ static_library("service") {
     "//third_party/webrtc_overrides:webrtc_component",
   ]
 
-  public_deps = [
-    "//chrome/common:service_process_mojom",
-  ]
+  public_deps = [ "//chrome/common:service_process_mojom" ]
 
   if (use_cups) {
     sources += [ "cloud_print/print_system_cups.cc" ]

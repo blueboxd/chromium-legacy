@@ -5,67 +5,50 @@
 #ifndef IOS_CHROME_BROWSER_INFOBARS_OVERLAYS_BROWSER_AGENT_INTERACTION_HANDLERS_TEST_MOCK_INFOBAR_INTERACTION_HANDLER_H_
 #define IOS_CHROME_BROWSER_INFOBARS_OVERLAYS_BROWSER_AGENT_INTERACTION_HANDLERS_TEST_MOCK_INFOBAR_INTERACTION_HANDLER_H_
 
+#include <map>
+
+#import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/infobar_interaction_handler.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-// Mock version of InfobarBannerInteractionHandler.
-class MockInfobarBannerInteractionHandler
-    : public InfobarBannerInteractionHandler {
- public:
-  MockInfobarBannerInteractionHandler();
-  ~MockInfobarBannerInteractionHandler() override;
-
-  MOCK_METHOD2(BannerVisibilityChanged,
-               void(InfoBarIOS* infobar, bool visible));
-  MOCK_METHOD1(MainButtonTapped, void(InfoBarIOS* infobar));
-  MOCK_METHOD2(ShowModalButtonTapped,
-               void(InfoBarIOS* infobar, web::WebState* web_state));
-  MOCK_METHOD1(BannerDismissedByUser, void(InfoBarIOS* infobar));
-};
-
-// Mock version of InfobarDetailSheetInteractionHandler.
-class MockInfobarDetailSheetInteractionHandler
-    : public InfobarDetailSheetInteractionHandler {
- public:
-  MockInfobarDetailSheetInteractionHandler();
-  ~MockInfobarDetailSheetInteractionHandler() override;
-
-  // TODO(crbug.com/1030357): Add mock interaction handling for detail sheets.
-};
-
-// Mock version of MockInfobarModalInteractionHandler.
-class MockInfobarModalInteractionHandler
-    : public InfobarModalInteractionHandler {
- public:
-  MockInfobarModalInteractionHandler();
-  ~MockInfobarModalInteractionHandler() override;
-
-  // TODO(crbug.com/1030357): Add mock interaction handling for modals.
-};
-
-// InfobarModalInteractionHandler subclass that returns mock versions of the
-// banner, detail sheet, and modal interaction handlers.
+// Mock implementation of InfobarInteractionHandler for use in tests.
 class MockInfobarInteractionHandler : public InfobarInteractionHandler {
  public:
-  MockInfobarInteractionHandler();
-  ~MockInfobarInteractionHandler() override;
+  // Mock handler object used by the builder
+  class Handler : public InfobarInteractionHandler::Handler {
+   public:
+    Handler();
+    ~Handler() override;
 
-  MockInfobarBannerInteractionHandler* mock_banner_handler() {
-    return mock_banner_handler_;
-  }
-  MockInfobarDetailSheetInteractionHandler* mock_sheet_handler() {
-    return mock_sheet_handler_;
-  }
-  MockInfobarModalInteractionHandler* mock_modal_handler() {
-    return mock_modal_handler_;
-  }
+    MOCK_METHOD0(CreateInstaller,
+                 std::unique_ptr<OverlayRequestCallbackInstaller>(void));
+    MOCK_METHOD2(InfobarVisibilityChanged,
+                 void(InfoBarIOS* infobar, bool visible));
+  };
 
- private:
-  // Pointers to the mock handlers passed to the InfobarInteractionHandler
-  // constructor.  Guaranteed to be non-null for the lifetime of the object.
-  MockInfobarBannerInteractionHandler* mock_banner_handler_ = nullptr;
-  MockInfobarDetailSheetInteractionHandler* mock_sheet_handler_ = nullptr;
-  MockInfobarModalInteractionHandler* mock_modal_handler_ = nullptr;
+  // Helper object that builds InfobarInteractionHandlers with mock handlers.
+  class Builder {
+   public:
+    explicit Builder(InfobarType infobar_type);
+    ~Builder();
+
+    // Constructs an InfobarInteractionHandler using mock handlers.  Calling
+    // this function also populates |mock_handlers_|.  Must only be called once
+    // per Builder.
+    std::unique_ptr<InfobarInteractionHandler> Build();
+
+    // Returns the mock handler for |overlay_type| used to build the
+    // InfobarInteractionHandler.  Returns null before Build() is called.
+    Handler* mock_handler(InfobarOverlayType overlay_type) {
+      return mock_handlers_[overlay_type];
+    }
+
+   private:
+    InfobarType infobar_type_;
+    bool has_built_ = false;
+    std::map<InfobarOverlayType, Handler*> mock_handlers_;
+  };
 };
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_OVERLAYS_BROWSER_AGENT_INTERACTION_HANDLERS_TEST_MOCK_INFOBAR_INTERACTION_HANDLER_H_

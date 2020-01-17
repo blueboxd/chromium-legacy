@@ -13,9 +13,8 @@
 #include "build/build_config.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/geometry/point_f.h"
-#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/transform.h"
 
@@ -31,6 +30,10 @@ int g_has_forced_device_scale_factor = -1;
 // the command line. If the cache is invalidated by setting this variable to
 // -1.0, we read the forced device scale factor again.
 float g_forced_device_scale_factor = -1.0;
+
+// An alloance error epsilon cauesd by fractional scale factor to produce
+// expected DP display size.
+constexpr float kDisplaySizeAllowanceEpsilon = 0.01f;
 
 bool HasForceDeviceScaleFactorImpl() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -233,7 +236,8 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
   SetColorSpaceAndDepth(color_space);
 
 #if defined(USE_AURA)
-  SetScaleAndBounds(device_scale_factor_, bounds);
+  if (!bounds.IsEmpty())
+    SetScaleAndBounds(device_scale_factor_, bounds);
 #endif
 }
 
@@ -303,10 +307,10 @@ void Display::SetScaleAndBounds(float device_scale_factor,
     device_scale_factor_ = device_scale_factor;
   }
   device_scale_factor_ = std::max(0.5f, device_scale_factor_);
-  bounds_ = gfx::Rect(gfx::ScaleToFlooredPoint(bounds_in_pixel.origin(),
-                                               1.0f / device_scale_factor_),
-                      gfx::ScaleToFlooredSize(bounds_in_pixel.size(),
-                                              1.0f / device_scale_factor_));
+
+  gfx::RectF f(bounds_in_pixel);
+  f.Scale(1.f / device_scale_factor_);
+  bounds_ = gfx::ToEnclosedRectIgnoringError(f, kDisplaySizeAllowanceEpsilon);
   size_in_pixels_ = bounds_in_pixel.size();
   UpdateWorkAreaFromInsets(insets);
 }

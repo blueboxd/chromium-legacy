@@ -200,28 +200,6 @@ TEST_F(LeakDetectionDelegateTest, LeakDetectionDoneWithTrueResult) {
       "PasswordManager.LeakDetection.NotifyIsLeakedTime", 1);
 }
 
-TEST_F(LeakDetectionDelegateTest, LeakHistoryRemoveCredentials) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLeakHistory);
-  LeakDetectionDelegateInterface* delegate_interface = &delegate();
-  const autofill::PasswordForm form = CreateTestForm();
-
-  EXPECT_CALL(client(), GetProfilePasswordStore())
-      .WillRepeatedly(testing::Return(store()));
-  EXPECT_CALL(factory(), TryCreateLeakCheck)
-      .WillOnce(Return(ByMove(std::make_unique<MockLeakDetectionCheck>())));
-  delegate().StartLeakCheck(form);
-
-  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked).Times(0);
-  delegate_interface->OnLeakDetectionDone(
-      /*is_leaked=*/false, form.origin, form.username_value,
-      form.password_value);
-
-  EXPECT_CALL(*store(), RemoveCompromisedCredentialsImpl(form.origin,
-                                                         form.username_value));
-  WaitForPasswordStore();
-}
-
 TEST_F(LeakDetectionDelegateTest, LeakHistoryAddCredentials) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kLeakHistory);

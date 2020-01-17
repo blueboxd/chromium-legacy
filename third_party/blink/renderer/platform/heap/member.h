@@ -203,8 +203,7 @@ class MemberBase {
   static constexpr intptr_t kHashTableDeletedRawValue = -1;
 
   void WriteBarrier() const {
-    MarkingVisitor::WriteBarrier(
-        const_cast<typename std::remove_const<T>::type*>(GetRaw()));
+    MarkingVisitor::WriteBarrier(const_cast<std::remove_const_t<T>**>(&raw_));
   }
 
   void CheckPointer() {
@@ -398,6 +397,12 @@ class UntracedMember final
   UntracedMember(const Member<U>& other) : Parent(other) {}
 
   UntracedMember(WTF::HashTableDeletedValueType x) : Parent(x) {}
+
+  UntracedMember& operator=(const UntracedMember& other) {
+    this->SetRaw(other);
+    this->CheckPointer();
+    return *this;
+  }
 
   template <typename U>
   UntracedMember& operator=(const Persistent<U>& other) {

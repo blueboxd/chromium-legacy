@@ -1,8 +1,8 @@
 include_rules = [
   "-chrome",
   "+chrome/android/java/src/org/chromium/chrome/browser/AppHooks.java",
-  "+chrome/android/java/src/org/chromium/chrome/browser/ChromeFeatureList.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/TabHidingType.java",
+  "+chrome/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/incognito/IncognitoUtils.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/tab",
   "+chrome/android/java/src/org/chromium/chrome/browser/webapps/WebDisplayMode.java",

@@ -24,26 +24,6 @@ namespace cc {
 namespace {
 const int kMaxRectsSize = 256;
 
-SkRect MapRect(const SkMatrix& matrix, const SkRect& src) {
-  SkRect dst;
-  matrix.mapRect(&dst, src);
-  return dst;
-}
-
-bool ComputePaintBounds(const SkRect& rect,
-                        const SkPaint* current_paint,
-                        SkRect* paint_bounds) {
-  *paint_bounds = rect;
-  if (current_paint) {
-    if (!current_paint->canComputeFastBounds())
-      return false;
-    *paint_bounds =
-        current_paint->computeFastBounds(*paint_bounds, paint_bounds);
-  }
-
-  return true;
-}
-
 class DiscardableImageGenerator {
  public:
   DiscardableImageGenerator(int width,
@@ -148,7 +128,10 @@ class DiscardableImageGenerator {
       if (top_level_op_rect) {
         op_rect = *top_level_op_rect;
       } else {
-        local_op_rect = ComputePaintRect(op, canvas);
+        const SkRect& clip_rect = SkRect::Make(canvas->getDeviceClipBounds());
+        const SkMatrix& ctm = canvas->getTotalMatrix();
+
+        local_op_rect = PaintOp::ComputePaintRect(op, clip_rect, ctm);
         if (local_op_rect.value().IsEmpty())
           continue;
 
@@ -182,58 +165,6 @@ class DiscardableImageGenerator {
             top_level_op_rect, canvas);
       }
     }
-  }
-
-  // Given the |op_rect|, which is the rect for the draw op, returns the
-  // transformed rect accounting for the current transform, clip and paint
-  // state on |canvas_|.
-  gfx::Rect ComputePaintRect(const PaintOp* op, SkNoDrawCanvas* canvas) {
-    const SkRect& clip_rect = SkRect::Make(canvas->getDeviceClipBounds());
-    const SkMatrix& ctm = canvas->getTotalMatrix();
-
-    gfx::Rect transformed_rect;
-    SkRect op_rect;
-    if (!op->IsDrawOp() || !PaintOp::GetBounds(op, &op_rect)) {
-      // If we can't provide a conservative bounding rect for the op, assume it
-      // covers the complete current clip.
-      // TODO(khushalsagar): See if we can do something better for non-draw ops.
-      transformed_rect = gfx::ToEnclosingRect(gfx::SkRectToRectF(clip_rect));
-    } else {
-      const PaintFlags* flags =
-          op->IsPaintOpWithFlags()
-              ? &static_cast<const PaintOpWithFlags*>(op)->flags
-              : nullptr;
-      SkPaint paint;
-      if (flags)
-        paint = flags->ToSkPaint();
-
-      SkRect paint_rect = MapRect(ctm, op_rect);
-      bool computed_paint_bounds =
-          ComputePaintBounds(paint_rect, &paint, &paint_rect);
-      if (!computed_paint_bounds) {
-        // TODO(vmpstr): UMA this case.
-        paint_rect = clip_rect;
-      }
-
-      // Clamp the image rect by the current clip rect.
-      if (!paint_rect.intersect(clip_rect))
-        return gfx::Rect();
-
-      transformed_rect = gfx::ToEnclosingRect(gfx::SkRectToRectF(paint_rect));
-    }
-
-    // During raster, we use the device clip bounds on the canvas, which outsets
-    // the actual clip by 1 due to the possibility of antialiasing. Account for
-    // this here by outsetting the image rect by 1. Note that this only affects
-    // queries into the rtree, which will now return images that only touch the
-    // bounds of the query rect.
-    //
-    // Note that it's not sufficient for us to inset the device clip bounds at
-    // raster time, since we might be sending a larger-than-one-item display
-    // item to skia, which means that skia will internally determine whether to
-    // raster the picture (using device clip bounds that are outset).
-    transformed_rect.Inset(-1, -1);
-    return transformed_rect;
   }
 
   void AddImageFromFlags(const gfx::Rect& op_rect,

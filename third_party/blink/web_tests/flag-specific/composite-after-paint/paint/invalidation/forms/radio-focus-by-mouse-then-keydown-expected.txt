@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow INPUT",
-          "rect": [12, 10, 15, 15],
+          "rect": [11, 9, 17, 17],
           "reason": "subtree"
         }
       ]

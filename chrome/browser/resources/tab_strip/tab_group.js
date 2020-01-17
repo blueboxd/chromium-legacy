@@ -4,7 +4,7 @@
 
 import {CustomElement} from './custom_element.js';
 
-class TabGroupElement extends CustomElement {
+export class TabGroupElement extends CustomElement {
   static get template() {
     return `{__html_template__}`;
   }

@@ -138,6 +138,3 @@ export class Layout {
     }
   }
 }
-
-/** @const */
-cca.views.camera.Layout = Layout;

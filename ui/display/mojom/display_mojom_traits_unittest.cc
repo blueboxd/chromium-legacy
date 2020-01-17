@@ -82,6 +82,7 @@ void CheckDisplaySnapShotMojoEqual(const DisplaySnapshot& input,
   EXPECT_EQ(input.is_aspect_preserving_scaling(),
             output.is_aspect_preserving_scaling());
   EXPECT_EQ(input.has_overscan(), output.has_overscan());
+  EXPECT_EQ(input.has_privacy_screen(), output.has_privacy_screen());
   EXPECT_EQ(input.has_color_correction_matrix(),
             output.has_color_correction_matrix());
   EXPECT_EQ(input.color_correction_in_linear_space(),
@@ -255,6 +256,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
   const DisplayConnectionType type = DISPLAY_CONNECTION_TYPE_DISPLAYPORT;
   const bool is_aspect_preserving_scaling = true;
   const bool has_overscan = true;
+  const bool has_privacy_screen = true;
   const bool has_color_correction_matrix = true;
   const bool color_correction_in_linear_space = true;
   const gfx::ColorSpace display_color_space = gfx::ColorSpace::CreateREC709();
@@ -275,7 +277,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
 
   std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-      has_overscan, has_color_correction_matrix,
+      has_overscan, has_privacy_screen, has_color_correction_matrix,
       color_correction_in_linear_space, display_color_space, bits_per_channel,
       display_name, sys_path, std::move(modes), PanelOrientation::kNormal, edid,
       current_mode, native_mode, product_code, year_of_manufacture,
@@ -297,6 +299,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
   const DisplayConnectionType type = DISPLAY_CONNECTION_TYPE_VGA;
   const bool is_aspect_preserving_scaling = true;
   const bool has_overscan = true;
+  const bool has_privacy_screen = true;
   const bool has_color_correction_matrix = true;
   const bool color_correction_in_linear_space = true;
   const gfx::ColorSpace display_color_space = gfx::ColorSpace::CreateREC709();
@@ -317,7 +320,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
 
   std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-      has_overscan, has_color_correction_matrix,
+      has_overscan, has_privacy_screen, has_color_correction_matrix,
       color_correction_in_linear_space, display_color_space, bits_per_channel,
       display_name, sys_path, std::move(modes), PanelOrientation::kNormal, edid,
       current_mode, native_mode, product_code, year_of_manufacture,
@@ -339,6 +342,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotExternal) {
   const DisplayConnectionType type = DISPLAY_CONNECTION_TYPE_HDMI;
   const bool is_aspect_preserving_scaling = false;
   const bool has_overscan = false;
+  const bool has_privacy_screen = false;
   const bool has_color_correction_matrix = false;
   const bool color_correction_in_linear_space = false;
   const std::string display_name("HP Z24i");
@@ -363,7 +367,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotExternal) {
 
   std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-      has_overscan, has_color_correction_matrix,
+      has_overscan, has_privacy_screen, has_color_correction_matrix,
       color_correction_in_linear_space, display_color_space, bits_per_channel,
       display_name, sys_path, std::move(modes), PanelOrientation::kLeftUp, edid,
       current_mode, native_mode, product_code, year_of_manufacture,
@@ -384,6 +388,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotInternal) {
   const DisplayConnectionType type = DISPLAY_CONNECTION_TYPE_INTERNAL;
   const bool is_aspect_preserving_scaling = true;
   const bool has_overscan = false;
+  const bool has_privacy_screen = false;
   const bool has_color_correction_matrix = false;
   const bool color_correction_in_linear_space = false;
   const gfx::ColorSpace display_color_space =
@@ -405,7 +410,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotInternal) {
 
   std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-      has_overscan, has_color_correction_matrix,
+      has_overscan, has_privacy_screen, has_color_correction_matrix,
       color_correction_in_linear_space, display_color_space, bits_per_channel,
       display_name, sys_path, std::move(modes), PanelOrientation::kRightUp,
       edid, current_mode, native_mode, product_code, year_of_manufacture,

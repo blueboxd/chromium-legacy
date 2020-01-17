@@ -894,7 +894,6 @@ void {{v8_class_or_partial}}::Install{{feature.name}}(ScriptState* script_state)
 {% block has_instance %}{% endblock %}
 {% block to_impl %}{% endblock %}
 {% block to_impl_with_type_check %}{% endblock %}
-{% block native_value_traits %}{% endblock %}
 {##############################################################################}
 {% block install_conditional_features %}
 {% from 'attributes.cc.tmpl' import install_conditional_attributes,

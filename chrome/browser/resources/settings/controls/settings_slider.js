@@ -69,7 +69,7 @@ Polymer({
     'valueChanged_(pref.*, ticks.*, loaded_)',
   ],
 
-  attached: function() {
+  attached() {
     this.loaded_ = true;
   },
 
@@ -77,7 +77,7 @@ Polymer({
    * @param {number|cr_slider.SliderTick} tick
    * @return {number|undefined}
    */
-  getTickValue_: function(tick) {
+  getTickValue_(tick) {
     return typeof tick == 'object' ? tick.value : tick;
   },
 
@@ -86,7 +86,7 @@ Polymer({
    * @return {number|undefined}
    * @private
    */
-  getTickValueAtIndex_: function(index) {
+  getTickValueAtIndex_(index) {
     return this.getTickValue_(this.ticks[index]);
   },
 
@@ -95,7 +95,7 @@ Polymer({
    * position after a user action.
    * @private
    */
-  onSliderChanged_: function() {
+  onSliderChanged_() {
     if (!this.loaded_) {
       return;
     }
@@ -117,7 +117,7 @@ Polymer({
   },
 
   /** @private */
-  computeDisableSlider_: function() {
+  computeDisableSlider_() {
     return this.disabled || this.isPrefEnforced();
   },
 
@@ -127,7 +127,7 @@ Polymer({
    * position.
    * @private
    */
-  valueChanged_: function() {
+  valueChanged_() {
     if (this.pref == undefined || !this.loaded_ || this.$.slider.dragging ||
         this.$.slider.updatingFromKey) {
       return;
@@ -176,7 +176,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getRoleDescription_: function() {
+  getRoleDescription_() {
     return loadTimeData.getStringF('settingsSliderRoleDescription',
       this.labelMin, this.labelMax);
   },

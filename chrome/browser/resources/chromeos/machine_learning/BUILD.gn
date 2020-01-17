@@ -14,9 +14,7 @@ js_type_check("closure_compile") {
 }
 
 js_library("test_model_tab") {
-  deps = [
-    ":machine_learning_internals_utils",
-  ]
+  deps = [ ":machine_learning_internals_utils" ]
 }
 
 js_library("machine_learning_internals") {

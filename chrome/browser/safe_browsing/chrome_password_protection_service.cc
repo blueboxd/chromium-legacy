@@ -1668,8 +1668,8 @@ void ChromePasswordProtectionService::CacheVerdict(
     const base::Time& receive_time) {
   if (!CanGetReputationOfURL(url) || IsIncognito())
     return;
-  cache_manager_->CachePhishGuardVerdict(url, trigger_type, password_type,
-                                         verdict, receive_time);
+  cache_manager_->CachePhishGuardVerdict(trigger_type, password_type, verdict,
+                                         receive_time);
 }
 
 // Looks up |settings| to find the cached verdict response. If verdict is not

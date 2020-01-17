@@ -191,7 +191,8 @@ TEST_F(OverviewControllerTest, AnimationCallbacksForCrossFadeWallpaper) {
   EXPECT_TRUE(wallpaper_widget_controller->IsAnimating());
   wallpaper_widget_controller->StopAnimating();
 
-  // Exiting overview has no animations.
+  // Exiting overview has no animations until the overview animation is
+  // complete.
   overview_controller->EndOverview();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
@@ -201,7 +202,8 @@ TEST_F(OverviewControllerTest, AnimationCallbacksForCrossFadeWallpaper) {
   observer.WaitForEndingAnimationComplete();
   EXPECT_EQ(TestOverviewObserver::COMPLETED, observer.ending_animation_state());
   EXPECT_EQ(0, wallpaper_widget_controller->GetWallpaperProperty().blur_sigma);
-  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
+  EXPECT_TRUE(wallpaper_widget_controller->IsAnimating());
+  wallpaper_widget_controller->StopAnimating();
 
   gfx::Rect bounds(0, 0, 100, 100);
   std::unique_ptr<aura::Window> window1(

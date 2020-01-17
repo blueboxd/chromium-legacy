@@ -3,6 +3,7 @@
 <link rel="import" href="../appearance_page/fonts_browser_proxy.html">
 <link rel="import" href="../controls/settings_dropdown_menu.html">
 <link rel="import" href="../controls/settings_slider.html">
+<link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-captions">
@@ -115,6 +116,12 @@
         </settings-dropdown-menu>
       </div>
     </div>
+    <template is="dom-if" if="[[enableLiveCaption_]]">
+      <settings-toggle-button
+          pref="{{prefs.accessibility.captions.live_caption_enabled}}"
+          label="$i18n{captionsEnableLiveCaption}">
+      </settings-toggle-button>
+    </template>
   </template>
   <script src="captions_subpage.js"></script>
 </dom-module>

@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(ScrollbarTest, LongPromptScrollbar) {
   }
   std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt =
       CreatePrompt(ExtensionInstallPrompt::PERMISSIONS_PROMPT);
-  prompt->AddPermissions(permissions);
+  prompt->AddPermissionMessages(permissions);
   ASSERT_TRUE(IsScrollbarVisible(std::move(prompt)))
       << "Scrollbar is not visible";
 }
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(ScrollbarTest, DISABLED_ScrollbarRegression) {
                                           PermissionIDSet()));
   std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt =
       CreatePrompt(ExtensionInstallPrompt::PERMISSIONS_PROMPT);
-  prompt->AddPermissions(permissions);
+  prompt->AddPermissionMessages(permissions);
   ASSERT_FALSE(IsScrollbarVisible(std::move(prompt))) << "Scrollbar is visible";
 }
 
@@ -252,7 +252,7 @@ class ExtensionInstallDialogViewInteractiveBrowserTest
     icon.eraseARGB(255, 128, 255, 128);
 
     auto prompt = std::make_unique<ExtensionInstallPrompt::Prompt>(type_);
-    prompt->AddPermissions(permissions_);
+    prompt->AddPermissionMessages(permissions_);
     prompt->set_retained_files(retained_files_);
     prompt->set_retained_device_messages(retained_devices_);
 

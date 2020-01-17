@@ -146,7 +146,8 @@ __gCrWeb.fill.autoComplete = function(element) {
   if (!element) {
     return false;
   }
-  if (__gCrWeb.common.getLowerCaseAttribute(element, 'autocomplete') == 'off') {
+  if (__gCrWeb.common.getLowerCaseAttribute(element, 'autocomplete') ===
+      'off') {
     return false;
   }
   if (__gCrWeb.common.getLowerCaseAttribute(element.form, 'autocomplete') ==
@@ -218,7 +219,7 @@ __gCrWeb.fill.setInputElementValue = function(
   if (!input) return;
 
   const activeElement = document.activeElement;
-  if (input != activeElement) {
+  if (input !== activeElement) {
     __gCrWeb.fill.createAndDispatchHTMLEvent(
         activeElement, value, 'blur', true, false);
     __gCrWeb.fill.createAndDispatchHTMLEvent(
@@ -228,7 +229,7 @@ __gCrWeb.fill.setInputElementValue = function(
   setInputElementValue_(value, input);
   if (callback) callback();
 
-  if (input != activeElement) {
+  if (input !== activeElement) {
     __gCrWeb.fill.createAndDispatchHTMLEvent(input, value, 'blur', true, false);
     __gCrWeb.fill.createAndDispatchHTMLEvent(
         activeElement, value, 'focus', true, false);
@@ -255,7 +256,9 @@ function setInputElementValue_(value, input) {
   }
 
   // Return early if the value hasn't changed.
-  if (input[propertyName] == value) return;
+  if (input[propertyName] === value) {
+    return;
+  }
 
   // When the user inputs a value in an HTMLInput field, the property setter is
   // not called. The different frameworks often call it explicitly when
@@ -280,7 +283,7 @@ function setInputElementValue_(value, input) {
 
   if (overrideProperty) {
     const newProperty = {
-      get: function() {
+      get() {
         if (setterCalled && oldPropertyDescriptor.get) {
           return oldPropertyDescriptor.get.call(input);
         }
@@ -311,7 +314,7 @@ function setInputElementValue_(value, input) {
 
   if (overrideProperty) {
     Object.defineProperty(input, propertyName, oldPropertyDescriptor);
-    if (!setterCalled && input[propertyName] != value) {
+    if (!setterCalled && input[propertyName] !== value) {
       // The setter was never called. This may be intentional (the framework
       // ignored the input event) or not (the event did not conform to what
       // framework expected). The whole function will likely fail, but try to
@@ -387,7 +390,7 @@ __gCrWeb.fill.sanitizeValueForTextFieldInputType = function(
   // This logic is from method String limitLength() in TextFieldInputType.h
   for (let i = 0; i < newLength; ++i) {
     const current = valueWithLineBreakRemoved[i];
-    if (current < ' ' && current != '\t') {
+    if (current < ' ' && current !== '\t') {
       newLength = i;
       break;
     }
@@ -493,7 +496,7 @@ __gCrWeb.fill.createAndDispatchHTMLEvent = function(
     element, value, type, bubbles, cancelable) {
   const event =
       new Event(type, {bubbles: bubbles, cancelable: cancelable, data: value});
-  if (type == 'input') {
+  if (type === 'input') {
     event.inputType = 'insertText';
   }
   element.dispatchEvent(event);
@@ -582,7 +585,9 @@ function isVisibleNode_(node) {
 
   if (node.nodeType === Node.ELEMENT_NODE) {
     const style = window.getComputedStyle(/** @type {Element} */ (node));
-    if (style.visibility == 'hidden' || style.display == 'none') return false;
+    if (style.visibility === 'hidden' || style.display === 'none') {
+      return false;
+    }
   }
 
   // Verify all ancestors are focusable.
@@ -642,7 +647,7 @@ function matchLabelsAndFields_(
         }
       }
     } else if (
-        fieldElement.form != formElement || fieldElement.type === 'hidden') {
+        fieldElement.form !== formElement || fieldElement.type === 'hidden') {
       continue;
     } else {
       // Typical case: look up |fieldData| in |elementArray|.
@@ -915,9 +920,9 @@ __gCrWeb.fill.trimWhitespaceTrailing = function(input) {
 __gCrWeb.fill.combineAndCollapseWhitespace = function(
     prefix, suffix, forceWhitespace) {
   const prefixTrimmed = __gCrWeb.fill.trimWhitespaceTrailing(prefix);
-  const prefixTrailingWhitespace = prefixTrimmed != prefix;
+  const prefixTrailingWhitespace = prefixTrimmed !== prefix;
   const suffixTrimmed = __gCrWeb.fill.trimWhitespaceLeading(suffix);
-  const suffixLeadingWhitespace = suffixTrimmed != suffix;
+  const suffixLeadingWhitespace = suffixTrimmed !== suffix;
   if (prefixTrailingWhitespace || suffixLeadingWhitespace || forceWhitespace) {
     return prefixTrimmed + ' ' + suffixTrimmed;
   } else {
@@ -1086,7 +1091,7 @@ __gCrWeb.fill.inferLabelFromSibling = function(element, forward) {
     }
 
     // Otherwise, only consider normal HTML elements and their contents.
-    if (nodeType != Node.TEXT_NODE && nodeType != Node.ELEMENT_NODE) {
+    if (nodeType !== Node.TEXT_NODE && nodeType !== Node.ELEMENT_NODE) {
       break;
     }
 
@@ -1218,7 +1223,7 @@ __gCrWeb.fill.inferLabelFromAriaLabel = function(element) {
  */
 __gCrWeb.fill.InferLabelFromValueAttr = function(element) {
   if (!element || !element.value || !element.hasAttribute('value') ||
-      element.value != element.getAttribute('value')) {
+      element.value !== element.getAttribute('value')) {
     return '';
   }
 
@@ -1861,7 +1866,7 @@ __gCrWeb.fill.nodeValue = function(node) {
 __gCrWeb.fill.value = function(element) {
   let value = element.value;
   if (__gCrWeb.fill.isSelectElement(element)) {
-    if (element.options.length > 0 && element.selectedIndex == 0 &&
+    if (element.options.length > 0 && element.selectedIndex === 0 &&
         element.options[0].disabled &&
         !element.options[0].hasAttribute('selected')) {
       for (let i = 0; i < element.options.length; i++) {
@@ -1924,7 +1929,7 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
   }
 
   const roleAttribute = element.getAttribute('role');
-  if (roleAttribute && roleAttribute.toLowerCase() == 'presentation') {
+  if (roleAttribute && roleAttribute.toLowerCase() === 'presentation') {
     field['role'] = __gCrWeb.fill.ROLE_ATTRIBUTE_PRESENTATION;
   }
 
@@ -1947,7 +1952,7 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
   if (__gCrWeb.fill.isAutofillableInputElement(element)) {
     if (__gCrWeb.fill.isTextInput(element)) {
       field['max_length'] = element.maxLength;
-      if (field['max_length'] == -1) {
+      if (field['max_length'] === -1) {
         // Take default value as defined by W3C.
         field['max_length'] = 524288;
       }

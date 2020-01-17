@@ -50,7 +50,7 @@ Profile* ProfileAndroid::FromProfileAndroid(const JavaRef<jobject>& obj) {
 }
 
 // static
-ScopedJavaLocalRef<jobject> ProfileAndroid::GetLastUsedProfile(JNIEnv* env) {
+ScopedJavaLocalRef<jobject> ProfileAndroid::GetMainProfile(JNIEnv* env) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
   if (profile == NULL) {
     NOTREACHED() << "Profile not found.";
@@ -122,8 +122,8 @@ void ProfileAndroid::Wipe(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 }
 
 // static
-ScopedJavaLocalRef<jobject> JNI_Profile_GetLastUsedProfile(JNIEnv* env) {
-  return ProfileAndroid::GetLastUsedProfile(env);
+ScopedJavaLocalRef<jobject> JNI_Profile_GetMainProfile(JNIEnv* env) {
+  return ProfileAndroid::GetMainProfile(env);
 }
 
 // static

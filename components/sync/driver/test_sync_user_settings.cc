@@ -170,6 +170,10 @@ bool TestSyncUserSettings::IsPassphraseRequiredForPreferredDataTypes() const {
   return passphrase_required_for_preferred_data_types_;
 }
 
+bool TestSyncUserSettings::IsTrustedVaultKeyRequired() const {
+  return trusted_vault_key_required_;
+}
+
 bool TestSyncUserSettings::IsTrustedVaultKeyRequiredForPreferredDataTypes()
     const {
   return trusted_vault_key_required_for_preferred_data_types_;
@@ -211,6 +215,10 @@ void TestSyncUserSettings::SetPassphraseRequired(bool required) {
 void TestSyncUserSettings::SetPassphraseRequiredForPreferredDataTypes(
     bool required) {
   passphrase_required_for_preferred_data_types_ = required;
+}
+
+void TestSyncUserSettings::SetTrustedVaultKeyRequired(bool required) {
+  trusted_vault_key_required_ = required;
 }
 
 void TestSyncUserSettings::SetTrustedVaultKeyRequiredForPreferredDataTypes(

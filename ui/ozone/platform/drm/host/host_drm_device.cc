@@ -325,6 +325,11 @@ void HostDrmDevice::OnGpuServiceLaunchedOnUIThread(
     mojo::PendingRemote<ui::ozone::mojom::DrmDevice> drm_device) {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
 
+  // We can get into this state if a new instance of GpuProcessHost is created
+  // before the old one is destroyed.
+  if (IsConnected())
+    OnGpuServiceLost();
+
   drm_device_.Bind(std::move(drm_device));
 
   // Create two DeviceCursor connections: one for the UI thread and one for the

@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Itxi uneko fitxa</translation>
 <translation id="1258753120186372309">Google doodle-a: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Bilatu eta arakatu</translation>
-<translation id="1264974993859112054">Kirolak</translation>
 <translation id="1266864766717917324">Ezin izan da partekatu <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Gelditu</translation>
 <translation id="1283039547216852943">Sakatu zabaltzeko</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Laster-markak gailu guztietan izateko, hasi saioa eta aktibatu sinkronizazioa</translation>
 <translation id="2822354292072154809">Ziur <ph name="CHOSEN_OBJECT_NAME" /> objektuaren webgune-baimen guztiak berrezarri nahi dituzula?</translation>
 <translation id="2842985007712546952">Karpeta nagusia</translation>
-<translation id="2858138569776157458">Webgune nagusiak</translation>
 <translation id="2860954141821109167">Ziurtatu telefonoetarako aplikazio bat gaituta dagoela gailu honetan</translation>
 <translation id="2870560284913253234">Webgunea</translation>
 <translation id="2874939134665556319">Aurreko pista</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Hasi saioa Chrome-n</translation>
 <translation id="3288003805934695103">Orria berriro kargatu.</translation>
 <translation id="32895400574683172">Jakinarazpenak onartzen dira</translation>
+<translation id="3290926146403723641">Google-ren Laguntzailea eginbidearen bidez sarean zereginak egin ahal izan ditzazun, Chrome-k webgunearen URLa, edukia eta informazio pertsonal garrantzitsua bidaliko ditu Google-ra.</translation>
 <translation id="3295530008794733555">Arakatu bizkorrago. Erabili datu gutxiago.</translation>
 <translation id="3298243779924642547">Oinarrizkoa</translation>
 <translation id="3303414029551471755">Aurrera egin eta edukia deskargatu nahi duzu?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Telefono-zenbakiak</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> deskarga ezabatu dira</translation>
 <translation id="3822502789641063741">Webgune-datuak garbitu?</translation>
-<translation id="3853625385350850937">Aurrera egiteko, aktibatu NFC aukera gailuan</translation>
 <translation id="3859306556332390985">Aurreratu</translation>
 <translation id="388596076286380598">Eskuratu gustuko dituzun webguneetako artikuluak, bideoak edo bestelako edukia, baita konexiorik ez baduzu edo konexioa txarra baldin bada ere.</translation>
 <translation id="3894427358181296146">Gehitu karpeta</translation>
@@ -764,7 +762,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="6697947395630195233">Chrome-k baimena behar du kokapena webgune honekin partekatzeko.</translation>
 <translation id="6698801883190606802">Kudeatu sinkronizatutako datuak</translation>
 <translation id="6699370405921460408">Google zerbitzariek ikusten dituzun orriak optimizatuko dituzte.</translation>
-<translation id="6709133671862442373">Albisteak</translation>
 <translation id="6710213216561001401">Aurrekoa</translation>
 <translation id="671481426037969117">Agortu da <ph name="FQDN" /> tenporizadorearen denbora. Bihar hasiko da berriro.</translation>
 <translation id="6738867403308150051">Deskargatzen…</translation>
@@ -1050,7 +1047,7 @@ Webguneak EZ du izango kamera atzitzeko baimenik. Zeuk soilik ikus ditzakezu kam
 <translation id="8912362522468806198">Google-ko kontua</translation>
 <translation id="8920114477895755567">Gurasoen xehetasunen zain.</translation>
 <translation id="8922289737868596582">Sakatu Aukera gehiago botoia orriak deskargatu eta konexiorik gabe erabiltzeko</translation>
-<translation id="8926666909099850184">NFC aukera desaktibatuta dago gailu honetan. Aktiba ezazu <ph name="BEGIN_LINK" />Android-eko ezarpenetan<ph name="END_LINK" />.</translation>
+<translation id="8926666909099850184">NFC aukera desaktibatuta dago gailu honetan. Aktiba ezazu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Chrome-ko jarduerak Ongizate digitala programatik kendu nahi dituzu?</translation>
 <translation id="8941729603749328384">www.adibidea.com</translation>
 <translation id="8942627711005830162">Ireki beste leiho batean</translation>
@@ -1079,7 +1076,6 @@ Webguneak EZ du izango kamera atzitzeko baimenik. Zeuk soilik ikus ditzakezu kam
 <translation id="9133397713400217035">Arakatu konexiorik gabeko edukia</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Ikusi jatorrizkoa</translation>
-<translation id="9139318394846604261">Erosketak</translation>
 <translation id="9155898266292537608">Hatzarekin ukitu bizkor bat emanda ere egin ditzakezu bilaketak</translation>
 <translation id="9169507124922466868">Nabigazio-historia erdi-irekita dago</translation>
 <translation id="9204836675896933765">1 fitxategi gelditzen da</translation>

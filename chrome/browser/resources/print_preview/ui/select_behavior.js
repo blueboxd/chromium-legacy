@@ -24,7 +24,7 @@ export const SelectBehavior = {
    * @param {?string} previous
    * @private
    */
-  onSelectedValueChange_: function(current, previous) {
+  onSelectedValueChange_(current, previous) {
     // Don't trigger an extra preview request at startup.
     if (previous === undefined) {
       return;
@@ -43,5 +43,5 @@ export const SelectBehavior = {
    * value updates.
    * @param {string} value The new select value to process.
    */
-  onProcessSelectChange: function(value) {},
+  onProcessSelectChange(value) {},
 };

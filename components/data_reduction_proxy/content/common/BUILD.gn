@@ -16,9 +16,7 @@ static_library("common") {
     "//mojo/public/cpp/bindings",
   ]
 
-  deps = [
-    "//net",
-  ]
+  deps = [ "//net" ]
 }
 
 source_set("unit_tests") {

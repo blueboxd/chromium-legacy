@@ -40,17 +40,9 @@ class MEDIA_BLINK_EXPORT SmoothnessHelper {
   // we create.  They should be features that could be captured at the time a
   // prediction would be needed.
   static std::unique_ptr<SmoothnessHelper> Create(
-      std::unique_ptr<learning::LearningTaskController> controller,
+      std::unique_ptr<learning::LearningTaskController> consecutive_controller,
       const learning::FeatureVector& features,
       Client* player);
-
-  // Notify us when we start or stop playing.
-  // TODO(liberato): There is an open question whether we'd like one call of
-  // the form "ThePlayerIsInTheRightStateToRecordSmoothness(bool)", or whether
-  // we'd like multiple calls to record the state of the player, like
-  // "SetIsPlaying", "SetIsBackgrounded", etc.  The difference is whether the
-  // decision to record is made by the player or by us.
-  virtual void NotifyPlayState(bool playing) = 0;
 
   // We split playbacks up into |kSegmentSize| units, and record the worst
   // dropped frame ratio over all segments of a playback.  A playback is not

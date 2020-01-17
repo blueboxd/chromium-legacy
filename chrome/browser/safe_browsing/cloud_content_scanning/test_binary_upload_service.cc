@@ -12,8 +12,9 @@
 namespace safe_browsing {
 
 TestBinaryUploadService::TestBinaryUploadService()
-    : BinaryUploadService(nullptr, std::unique_ptr<BinaryFCMService>(nullptr)) {
-}
+    : BinaryUploadService(/*url_loader_factory=*/nullptr,
+                          /*profile=*/nullptr,
+                          /*binary_fcm_service=*/nullptr) {}
 
 void TestBinaryUploadService::MaybeUploadForDeepScanning(
     std::unique_ptr<Request> request) {

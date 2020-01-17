@@ -38,7 +38,7 @@ Polymer({
   ],
 
   /** @private */
-  updateFromSettings_: function() {
+  updateFromSettings_() {
     const settings = this.getSetting('vendorItems').value;
 
     // The settings may not have a property with the id if they were populated
@@ -67,7 +67,7 @@ Polymer({
    * @return {string} The display name for the setting.
    * @private
    */
-  getDisplayName_: function(item) {
+  getDisplayName_(item) {
     let displayName = item.display_name;
     if (!displayName && item.display_name_localized) {
       displayName = getStringForCurrentLocale(item.display_name_localized);
@@ -80,7 +80,7 @@ Polymer({
    *     of type select.
    * @private
    */
-  isCapabilityTypeSelect_: function() {
+  isCapabilityTypeSelect_() {
     return this.capability.type === 'SELECT';
   },
 
@@ -89,7 +89,7 @@ Polymer({
    *     of type checkbox.
    * @private
    */
-  isCapabilityTypeCheckbox_: function() {
+  isCapabilityTypeCheckbox_() {
     return this.capability.type === 'TYPED_VALUE' &&
         this.capability.typed_value_cap.value_type === 'BOOLEAN';
   },
@@ -99,7 +99,7 @@ Polymer({
    *     of type input.
    * @private
    */
-  isCapabilityTypeInput_: function() {
+  isCapabilityTypeInput_() {
     return !this.isCapabilityTypeSelect_() && !this.isCapabilityTypeCheckbox_();
   },
 
@@ -107,7 +107,7 @@ Polymer({
    * @return {boolean} Whether the checkbox setting is checked.
    * @private
    */
-  isChecked_: function() {
+  isChecked_() {
     return this.currentValue_ === 'true';
   },
 
@@ -117,7 +117,7 @@ Polymer({
    * @return {boolean} Whether the option is selected.
    * @private
    */
-  isOptionSelected_: function(option) {
+  isOptionSelected_(option) {
     return this.currentValue_ === undefined ?
         !!option.is_default :
         option.value === this.currentValue_;
@@ -127,7 +127,7 @@ Polymer({
    * @return {string} The placeholder value for the capability's text input.
    * @private
    */
-  getCapabilityPlaceholder_: function() {
+  getCapabilityPlaceholder_() {
     if (this.capability.type === 'TYPED_VALUE' &&
         this.capability.typed_value_cap &&
         this.capability.typed_value_cap.default !== undefined) {
@@ -144,7 +144,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasOptionWithValue_: function(value) {
+  hasOptionWithValue_(value) {
     return !!this.capability.select_cap &&
         !!this.capability.select_cap.option &&
         this.capability.select_cap.option.some(
@@ -155,7 +155,7 @@ Polymer({
    * @param {?RegExp} query The current search query.
    * @return {boolean} Whether the item has a match for the query.
    */
-  hasMatch: function(query) {
+  hasMatch(query) {
     if (!query || this.getDisplayName_(this.capability).match(query)) {
       return true;
     }
@@ -178,7 +178,7 @@ Polymer({
    * @param {!Event} e Event containing the new value.
    * @private
    */
-  onUserInput_: function(e) {
+  onUserInput_(e) {
     this.currentValue_ = e.target.value;
   },
 
@@ -186,7 +186,7 @@ Polymer({
    * @param {!Event} e Event containing the new value.
    * @private
    */
-  onCheckboxInput_: function(e) {
+  onCheckboxInput_(e) {
     this.currentValue_ = e.target.checked ? 'true' : 'false';
   },
 
@@ -194,7 +194,7 @@ Polymer({
    * @return {string} The current value of the setting, or the empty string if
    *     it is not set.
    */
-  getCurrentValue: function() {
+  getCurrentValue() {
     return this.currentValue_ || '';
   },
 
@@ -202,7 +202,7 @@ Polymer({
    * Only used in tests.
    * @param {string} value A value to set the setting to.
    */
-  setCurrentValueForTest: function(value) {
+  setCurrentValueForTest(value) {
     this.currentValue_ = value;
   },
 
@@ -211,7 +211,7 @@ Polymer({
    * @param {!Map<!Node, number>} bubbles
    * @return {!Array<!Node>} The highlight wrappers and that were created.
    */
-  updateHighlighting: function(query, bubbles) {
+  updateHighlighting(query, bubbles) {
     return updateHighlights(this, query, bubbles);
   },
 });

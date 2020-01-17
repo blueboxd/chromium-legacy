@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sessions/content/session_tab_helper_delegate.h"
 #include "components/sessions/core/base_session_service_delegate.h"
 #include "components/sessions/core/session_service_commands.h"
 #include "components/sessions/core/tab_restore_service_client.h"
@@ -66,6 +67,7 @@ struct SessionWindow;
 // |SessionService| rebuilds the contents of the file from the open state of the
 // browser.
 class SessionService : public sessions::BaseSessionServiceDelegate,
+                       public sessions::SessionTabHelperDelegate,
                        public KeyedService,
                        public BrowserListObserver {
   friend class SessionServiceTestHelper;
@@ -174,42 +176,12 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   void SetWindowAppName(const SessionID& window_id,
                         const std::string& app_name);
 
-  // Invoked when the NavigationController has removed entries from the list.
-  // |index| gives the the starting index from which entries were deleted.
-  // |count| gives the number of entries that were removed.
-  void TabNavigationPathPruned(const SessionID& window_id,
-                               const SessionID& tab_id,
-                               int index,
-                               int count);
-
-  // Invoked when the NavigationController has deleted entries because of a
-  // history deletion.
-  void TabNavigationPathEntriesDeleted(const SessionID& window_id,
-                                       const SessionID& tab_id);
-
-  // Updates the navigation entry for the specified tab.
-  void UpdateTabNavigation(
-      const SessionID& window_id,
-      const SessionID& tab_id,
-      const sessions::SerializedNavigationEntry& navigation);
-
   // Notification that a tab has restored its entries or a closed tab is being
   // reused.
   void TabRestored(content::WebContents* tab, bool pinned);
 
-  // Sets the index of the selected entry in the navigation controller for the
-  // specified tab.
-  void SetSelectedNavigationIndex(const SessionID& window_id,
-                                  const SessionID& tab_id,
-                                  int index);
-
   // Sets the index of the selected tab in the specified window.
   void SetSelectedTabInWindow(const SessionID& window_id, int index);
-
-  // Sets the user agent override of the specified tab.
-  void SetTabUserAgentOverride(const SessionID& window_id,
-                               const SessionID& tab_id,
-                               const std::string& user_agent_override);
 
   // Sets the application extension id of the specified tab.
   void SetTabExtensionAppID(const SessionID& window_id,
@@ -231,6 +203,24 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   // BaseSessionServiceDelegate:
   bool ShouldUseDelayedSave() override;
   void OnWillSaveCommands() override;
+
+  // sessions::SessionTabHelperDelegate:
+  void SetTabUserAgentOverride(const SessionID& window_id,
+                               const SessionID& tab_id,
+                               const std::string& user_agent_override) override;
+  void SetSelectedNavigationIndex(const SessionID& window_id,
+                                  const SessionID& tab_id,
+                                  int index) override;
+  void UpdateTabNavigation(
+      const SessionID& window_id,
+      const SessionID& tab_id,
+      const sessions::SerializedNavigationEntry& navigation) override;
+  void TabNavigationPathPruned(const SessionID& window_id,
+                               const SessionID& tab_id,
+                               int index,
+                               int count) override;
+  void TabNavigationPathEntriesDeleted(const SessionID& window_id,
+                                       const SessionID& tab_id) override;
 
  private:
   // Allow tests to access our innards for testing purposes.

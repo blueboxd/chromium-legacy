@@ -11,5 +11,6 @@
 ]
 interface XRWorldTrackingState {
    readonly attribute XRPlaneDetectionState planeDetectionState;
+   readonly attribute XRLightEstimationState lightEstimationState;
 };
 

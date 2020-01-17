@@ -52,7 +52,7 @@ TEST(VectorIcon, SmokeTest) {
   EXPECT_CALL(canvas, willSave());
 
   // This matrix is concatenated to apply to the vector icon.
-  EXPECT_CALL(canvas, didConcat(_));
+  EXPECT_CALL(canvas, didScale(_, _));
 
   // This is the call to draw the path comprising the vector icon.
   EXPECT_CALL(canvas, onDrawPath(_, _));

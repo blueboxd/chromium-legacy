@@ -9,23 +9,17 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 # Several targets want to include this header file. We separate it out
 # here so multiple targets can depend on it.
 source_set("sandbox_export") {
-  sources = [
-    "sandbox_export.h",
-  ]
+  sources = [ "sandbox_export.h" ]
 }
 
 source_set("common") {
-  sources = [
-    "constants.h",
-  ]
+  sources = [ "constants.h" ]
 }
 
 # Meta-target that forwards to the proper platform one.
 group("sandbox") {
   if (is_win) {
-    public_deps = [
-      "//sandbox/win:sandbox",
-    ]
+    public_deps = [ "//sandbox/win:sandbox" ]
   } else if (is_mac) {
     public_deps = [
       "//sandbox/mac:seatbelt",
@@ -34,9 +28,7 @@ group("sandbox") {
       "//sandbox/mac/mojom",
     ]
   } else if (is_linux || is_android) {
-    public_deps = [
-      "//sandbox/linux:sandbox",
-    ]
+    public_deps = [ "//sandbox/linux:sandbox" ]
   }
 }
 
@@ -61,9 +53,7 @@ fuzzer_test("sandbox_ipc_fuzzer") {
   if (!is_win) {
     defines = [ "SANDBOX_FUZZ_TARGET" ]
   }
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   dict = "ipc.dict"
   libfuzzer_options = [ "max_len=1024" ]
 }

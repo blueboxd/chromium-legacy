@@ -51,7 +51,7 @@ Polymer({
     documentSettings: {
       type: Object,
       notify: true,
-      value: function() {
+      value() {
         return {
           hasCssMediaStyles: false,
           hasSelection: false,
@@ -86,7 +86,7 @@ Polymer({
     pageSize: {
       type: Object,
       notify: true,
-      value: function() {
+      value() {
         return new Size(612, 792);
       },
     },
@@ -98,7 +98,7 @@ Polymer({
     printableArea: {
       type: Object,
       notify: true,
-      value: function() {
+      value() {
         return new PrintableArea(new Coordinate2d(0, 0), new Size(612, 792));
       },
     },
@@ -111,7 +111,7 @@ Polymer({
   isInitialized_: false,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'page-count-ready', this.onPageCountReady_.bind(this));
     this.addWebUIListener(
@@ -127,7 +127,7 @@ Polymer({
    * @param {boolean} hasSelection Whether the document has user-selected
    *     content.
    */
-  init: function(isModifiable, isFromArc, isPdf, title, hasSelection) {
+  init(isModifiable, isFromArc, isPdf, title, hasSelection) {
     this.isInitialized_ = true;
     this.set('documentSettings.isModifiable', isModifiable);
     this.set('documentSettings.isFromArc', isFromArc);
@@ -142,7 +142,7 @@ Polymer({
    * @param {boolean} isScalingDisabled Whether scaling of the document is
    *     prohibited.
    */
-  updateIsScalingDisabled: function(isScalingDisabled) {
+  updateIsScalingDisabled(isScalingDisabled) {
     if (this.isInitialized_) {
       this.set('documentSettings.isScalingDisabled', isScalingDisabled);
     }
@@ -157,7 +157,7 @@ Polymer({
    *     custom page size or style to use.
    * @private
    */
-  onPageLayoutReady_: function(pageLayout, hasCustomPageSizeStyle) {
+  onPageLayoutReady_(pageLayout, hasCustomPageSizeStyle) {
     const origin =
         new Coordinate2d(pageLayout.printableAreaX, pageLayout.printableAreaY);
     const size =
@@ -189,7 +189,7 @@ Polymer({
    *     to page.
    * @private
    */
-  onPageCountReady_: function(pageCount, previewResponseId, fitToPageScaling) {
+  onPageCountReady_(pageCount, previewResponseId, fitToPageScaling) {
     if (this.inFlightRequestId !== previewResponseId || !this.isInitialized_) {
       return;
     }

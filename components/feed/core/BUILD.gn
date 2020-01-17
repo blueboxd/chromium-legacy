@@ -63,9 +63,7 @@ source_set("feed_core") {
 
 if (is_android) {
   java_cpp_enum("feed_core_java_enums_srcjar") {
-    sources = [
-      "feed_scheduler_host.h",
-    ]
+    sources = [ "feed_scheduler_host.h" ]
   }
 }
 

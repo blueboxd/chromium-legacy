@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<script src="../../../resources/run-after-layout-and-paint.js"></script>
+<script src="../../../../fast/forms/resources/common.js"></script>
+<script src="../../../../resources/run-after-layout-and-paint.js"></script>
 <body>
 
 <!-- no style for reference -->
@@ -7,7 +8,7 @@
   <optgroup label="unstyled">
     <option selected>first selected option</option>
     <option>unselected option</option>
-    <option selected>second selected option</option>
+    <option selected selected id="hoverTarget">2nd selected (hovered)</option>
   </optgroup>
 </select> <br>
 
@@ -150,4 +151,10 @@
   </optgroup>
 </select><br>
 
+<script>
+  runAfterLayoutAndPaint(function () {
+    let hoverTarget = document.getElementById('hoverTarget');
+    hoverOverElement(hoverTarget);
+  }, true);
+</script>
 </body>

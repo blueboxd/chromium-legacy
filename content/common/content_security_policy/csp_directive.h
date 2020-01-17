@@ -8,6 +8,7 @@
 #include <string>
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/csp_source_list.h"
+#include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 
 namespace content {
 
@@ -21,28 +22,13 @@ namespace content {
 //
 // https://w3c.github.io/webappsec-csp/#framework-directives
 struct CONTENT_EXPORT CSPDirective {
-  enum Name {
-    DefaultSrc,
-    ChildSrc,
-    FrameSrc,
-    FormAction,
-    UpgradeInsecureRequests,
-    NavigateTo,
-    FrameAncestors,
-
-    Unknown,
-    NameLast = Unknown,
-  };
-
-  static std::string NameToString(Name name);
-  static Name StringToName(const std::string& name);
-
   CSPDirective();
-  CSPDirective(Name name, const CSPSourceList& source_list);
+  CSPDirective(network::mojom::CSPDirectiveName name,
+               const CSPSourceList& source_list);
   CSPDirective(const CSPDirective&);
   explicit CSPDirective(network::mojom::CSPDirectivePtr directive);
 
-  Name name;
+  network::mojom::CSPDirectiveName name;
   CSPSourceList source_list;
 
   std::string ToString() const;

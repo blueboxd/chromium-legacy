@@ -23,7 +23,6 @@
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "net/url_request/url_request_context.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-forward.h"
 #include "services/service_manager/public/mojom/service.mojom-forward.h"
@@ -79,7 +78,6 @@ class VideoResolutionPolicy;
 namespace shell {
 class CastBrowserMainParts;
 class CastNetworkContexts;
-class URLRequestContextFactory;
 
 class CastContentBrowserClient
     : public content::ContentBrowserClient,
@@ -273,10 +271,6 @@ class CastContentBrowserClient
   explicit CastContentBrowserClient(
       CastFeatureListCreator* cast_feature_list_creator);
 
-  URLRequestContextFactory* url_request_context_factory() const {
-    return url_request_context_factory_.get();
-  }
-
   void BindMediaRenderer(
       mojo::PendingReceiver<::media::mojom::Renderer> receiver);
 
@@ -288,6 +282,12 @@ class CastContentBrowserClient
   // Create device cert/key
   virtual scoped_refptr<net::X509Certificate> DeviceCert();
   virtual scoped_refptr<net::SSLPrivateKey> DeviceKey();
+
+  virtual bool IsWhitelisted(const GURL& gurl,
+                             const std::string& session_id,
+                             int render_process_id,
+                             int render_frame_id,
+                             bool for_device_auth);
 
   void SelectClientCertificateOnIOThread(
       GURL requesting_url,
@@ -340,7 +340,6 @@ class CastContentBrowserClient
   // Created by CastContentBrowserClient but owned by BrowserMainLoop.
   CastBrowserMainParts* cast_browser_main_parts_;
   std::unique_ptr<CastNetworkContexts> cast_network_contexts_;
-  std::unique_ptr<URLRequestContextFactory> url_request_context_factory_;
   std::unique_ptr<media::CmaBackendFactory> cma_backend_factory_;
   std::unique_ptr<GeneralAudienceBrowsingService>
       general_audience_browsing_service_;

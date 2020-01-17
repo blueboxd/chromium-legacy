@@ -92,7 +92,7 @@ class AvatarToolbarButtonDelegate : public BrowserListObserver,
   void OnAvatarErrorChanged() override;
 
   // Initiates showing the identity.
-  void OnUserIdentityChanged(const base::Feature& triggering_feature);
+  void OnUserIdentityChanged();
 
   // Called after the user interacted with the button or after some timeout.
   void OnIdentityAnimationTimeout();

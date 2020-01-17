@@ -78,6 +78,9 @@ class MixerInput {
     // source.
     virtual void OnAudioPlaybackError(MixerError error) = 0;
 
+    // Called when an underrun error occurs on mixer output.
+    virtual void OnOutputUnderrun() {}
+
     // Called when the mixer has finished removing this input. The source may be
     // deleted at this point.
     virtual void FinalizeAudioPlayback() = 0;

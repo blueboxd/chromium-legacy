@@ -24,6 +24,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.MathUtils;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -234,20 +236,34 @@ class TabGridViewBinder {
         TabListMediator.ThumbnailFetcher fetcher = model.get(TabProperties.THUMBNAIL_FETCHER);
         ImageView thumbnail = (ImageView) view.fastFindViewById(R.id.tab_thumbnail);
         if (fetcher == null) {
-            // Release the thumbnail to save memory.
-            thumbnail.setImageDrawable(null);
-            thumbnail.setMinimumHeight(thumbnail.getWidth());
+            releaseThumbnail(thumbnail);
             return;
         }
         Callback<Bitmap> callback = result -> {
             if (result == null) {
-                thumbnail.setImageDrawable(null);
-                thumbnail.setMinimumHeight(thumbnail.getWidth());
+                releaseThumbnail(thumbnail);
             } else {
                 thumbnail.setImageBitmap(result);
             }
         };
         fetcher.fetch(callback);
+    }
+
+    private static void releaseThumbnail(ImageView thumbnail) {
+        if (FeatureUtilities.isTabThumbnailAspectRatioNotOne()) {
+            float expectedThumbnailAspectRatio =
+                    (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
+                            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio",
+                            1.0);
+            expectedThumbnailAspectRatio =
+                    MathUtils.clamp(expectedThumbnailAspectRatio, 0.5f, 2.0f);
+            int height = (int) (thumbnail.getWidth() * 1.0 / expectedThumbnailAspectRatio);
+            thumbnail.setMinimumHeight(Math.min(thumbnail.getHeight(), height));
+            thumbnail.setImageDrawable(null);
+        } else {
+            thumbnail.setImageDrawable(null);
+            thumbnail.setMinimumHeight(thumbnail.getWidth());
+        }
     }
 
     private static void updateColor(ViewLookupCachingFrameLayout rootView, boolean isIncognito,

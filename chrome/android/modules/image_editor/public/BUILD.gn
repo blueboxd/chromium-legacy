@@ -5,9 +5,7 @@
 import("//build/config/android/rules.gni")
 
 android_library("java") {
-  sources = [
-    "java/src/org/chromium/chrome/modules/image_editor/ImageEditorProvider.java",
-  ]
+  sources = [ "java/src/org/chromium/chrome/modules/image_editor/ImageEditorProvider.java" ]
 
   deps = [
     "//chrome/browser/image_editor/public:java",

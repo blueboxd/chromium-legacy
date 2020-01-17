@@ -96,7 +96,7 @@ Polymer({
    */
   onExportTap_(event) {
     this.closePopupMenu_();
-    if (this.certificateType == CertificateType.PERSONAL) {
+    if (this.certificateType === CertificateType.PERSONAL) {
       this.browserProxy_.exportPersonalCertificate(this.model.id).then(() => {
         this.dispatchCertificateActionEvent_(CertificateAction.EXPORT_PERSONAL);
       }, this.onRejected_.bind(this));
@@ -121,7 +121,7 @@ Polymer({
    * @private
    */
   canExport_(certificateType, model) {
-    if (certificateType == CertificateType.PERSONAL) {
+    if (certificateType === CertificateType.PERSONAL) {
       return model.extractable;
     }
     return true;

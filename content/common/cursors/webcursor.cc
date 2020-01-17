@@ -11,6 +11,8 @@
 
 namespace content {
 
+WebCursor::WebCursor() = default;
+
 WebCursor::~WebCursor() {
   CleanupPlatformData();
 }

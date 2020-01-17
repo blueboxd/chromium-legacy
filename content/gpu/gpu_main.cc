@@ -308,6 +308,10 @@ int GpuMain(const MainFunctionParams& parameters) {
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(
             base::MessagePumpType::NS_RUNLOOP);
+    // As part of the migration to DoSomeWork(), this policy is required to keep
+    // previous behavior and avoid regressions.
+    // TODO(crbug.com/1041853): Consider updating the policy.
+    main_thread_task_executor->SetWorkBatchSize(2);
 #else
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(

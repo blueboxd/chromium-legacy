@@ -48,9 +48,7 @@ js_type_check("closure_compile_module") {
 }
 
 js_library("cr_search_field.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_search_field/cr_search_field.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_search_field/cr_search_field.m.js" ]
   deps = [
     ":cr_search_field_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -61,9 +59,7 @@ js_library("cr_search_field.m") {
 }
 
 js_library("cr_search_field_behavior.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_search_field/cr_search_field_behavior.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_search_field/cr_search_field_behavior.m.js" ]
   deps = []
   extra_deps = [ ":modulize" ]
 }

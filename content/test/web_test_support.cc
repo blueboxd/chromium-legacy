@@ -92,11 +92,10 @@ std::unique_ptr<RenderWidget> CreateRenderWidgetForFrame(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
     blink::mojom::DisplayMode display_mode,
-    bool swapped_out,
     bool never_composited,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {
   return std::make_unique<test_runner::WebWidgetTestProxy>(
-      routing_id, compositor_deps, display_mode, swapped_out,
+      routing_id, compositor_deps, display_mode,
       /*hidden=*/true, never_composited, std::move(widget_receiver));
 }
 

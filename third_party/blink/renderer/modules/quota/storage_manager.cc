@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/modules/quota/quota_utils.h"
-#include "third_party/blink/renderer/modules/quota/storage_estimate.h"
 #include "third_party/blink/renderer/modules/quota/storage_usage_details.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"

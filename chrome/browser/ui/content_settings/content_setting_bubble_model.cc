@@ -336,8 +336,6 @@ ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
     : ContentSettingSimpleBubbleModel(delegate,
                                       web_contents,
                                       ContentSettingsType::MIXEDSCRIPT) {
-  content_settings::RecordMixedScriptAction(
-      content_settings::MIXED_SCRIPT_ACTION_DISPLAYED_BUBBLE);
   set_custom_link_enabled(true);
   set_show_learn_more(true);
   SetManageText();
@@ -346,9 +344,6 @@ ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
 void ContentSettingMixedScriptBubbleModel::OnLearnMoreClicked() {
   if (delegate())
     delegate()->ShowLearnMorePage(content_type());
-
-  content_settings::RecordMixedScriptAction(
-      content_settings::MIXED_SCRIPT_ACTION_CLICKED_LEARN_MORE);
 }
 
 void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
@@ -363,9 +358,6 @@ void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
   // Update renderer side settings to allow active mixed content.
   web_contents()->ForEachFrame(
       base::BindRepeating(&::SetAllowRunningInsecureContent));
-
-  content_settings::RecordMixedScriptAction(
-      content_settings::MIXED_SCRIPT_ACTION_CLICKED_ALLOW);
 }
 
 // Don't set any manage text since none is displayed.

@@ -14,6 +14,7 @@
 namespace cc {
 
 struct ScrollAndScaleSet;
+class MutatorEvents;
 
 struct CC_EXPORT BeginMainFrameAndCommitState {
   BeginMainFrameAndCommitState();
@@ -25,6 +26,7 @@ struct CC_EXPORT BeginMainFrameAndCommitState {
   size_t memory_allocation_limit_bytes = 0;
   bool evicted_ui_resources = false;
   std::vector<std::pair<int, bool>> completed_image_decode_requests;
+  std::unique_ptr<MutatorEvents> mutator_events;
 };
 
 }  // namespace cc

@@ -380,7 +380,6 @@ TEST(AppCacheManifestParserTest, WhitelistUrls) {
   const size_t kExpected = 6;
   ASSERT_EQ(kExpected, online.size());
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE, online[0].type);
-  EXPECT_FALSE(online[0].is_pattern);
   EXPECT_TRUE(online[0].target_url.is_empty());
   EXPECT_EQ(GURL("http://www.bar.com/relative/one"), online[0].namespace_url);
   EXPECT_EQ(GURL("http://www.bar.com/two"), online[1].namespace_url);
@@ -702,75 +701,6 @@ TEST(AppCacheManifestParserTest, DifferentOriginUrlWithSecureScheme) {
       urls.end());
 }
 
-TEST(AppCacheManifestParserTest, PatternMatching) {
-  const GURL kUrl("http://foo.com/manifest");
-  const std::string kScope = kUrl.GetWithoutFilename().path();
-  const std::string kManifestBody(
-      "CACHE MANIFEST\r"
-      "CACHE: \r"
-      "http://foo.com/page.html\r"
-      "CHROMIUM-INTERCEPT:\r"
-      "http://foo.com/intercept_prefix return /prefix\r"
-      "http://foo.com/intercept_pattern return /pattern isPattern\r"
-      "http://foo.com/*/intercept_pattern?query return /pattern isPattern\r"
-      "FALLBACK:\r"
-      "http://foo.com/fallback_prefix  /prefix wrongAnnotation\r"
-      "http://foo.com/fallback_pattern* /pattern\tisPattern    \r"
-      "NETWORK:\r"
-      "*\r"
-      "isPattern\r"  // should not be interpretted as a pattern
-      "http://foo.com/network_pattern* isPattern\r");
-
-
-  AppCacheManifest manifest;
-  EXPECT_TRUE(ParseManifest(
-      kUrl, kScope, true, kManifestBody.c_str(), kManifestBody.length(),
-      PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest));
-  EXPECT_TRUE(manifest.online_whitelist_all);
-  EXPECT_FALSE(manifest.did_ignore_intercept_namespaces);
-  EXPECT_FALSE(manifest.did_ignore_fallback_namespaces);
-  EXPECT_EQ(1u, manifest.explicit_urls.size());
-  EXPECT_EQ(3u, manifest.intercept_namespaces.size());
-  EXPECT_EQ(2u, manifest.fallback_namespaces.size());
-  EXPECT_EQ(2u, manifest.online_whitelist_namespaces.size());
-  EXPECT_EQ(APPCACHE_INTERCEPT_NAMESPACE,
-            manifest.intercept_namespaces[0].type);
-  EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, manifest.fallback_namespaces[0].type);
-  EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
-            manifest.online_whitelist_namespaces[0].type);
-  EXPECT_FALSE(manifest.intercept_namespaces[0].is_pattern);
-  EXPECT_TRUE(manifest.intercept_namespaces[1].is_pattern);
-  EXPECT_TRUE(manifest.intercept_namespaces[2].is_pattern);
-  EXPECT_FALSE(manifest.fallback_namespaces[0].is_pattern);
-  EXPECT_TRUE(manifest.fallback_namespaces[1].is_pattern);
-  EXPECT_FALSE(manifest.online_whitelist_namespaces[0].is_pattern);
-  EXPECT_TRUE(manifest.online_whitelist_namespaces[1].is_pattern);
-  EXPECT_EQ(
-      GURL("http://foo.com/*/intercept_pattern?query"),
-      manifest.intercept_namespaces[2].namespace_url);
-  EXPECT_EQ(
-      GURL("http://foo.com/pattern"),
-      manifest.intercept_namespaces[2].target_url);
-  EXPECT_EQ(
-      GURL("http://foo.com/fallback_pattern*"),
-      manifest.fallback_namespaces[1].namespace_url);
-  EXPECT_EQ(
-      GURL("http://foo.com/pattern"),
-      manifest.fallback_namespaces[1].target_url);
-  EXPECT_EQ(
-      GURL("http://foo.com/isPattern"),
-      manifest.online_whitelist_namespaces[0].namespace_url);
-  EXPECT_EQ(
-      GURL(),
-      manifest.online_whitelist_namespaces[0].target_url);
-  EXPECT_EQ(
-      GURL("http://foo.com/network_pattern*"),
-      manifest.online_whitelist_namespaces[1].namespace_url);
-  EXPECT_EQ(
-      GURL(),
-      manifest.online_whitelist_namespaces[1].target_url);
-}
-
 TEST(AppCacheManifestParserTest, IgnoreDangerousFallbacksWithGlobalScope) {
   const GURL kUrl("http://foo.com/scope/manifest?with_query_args");
   const std::string kScope = kUrl.GetWithEmptyPath().path();
@@ -864,129 +794,6 @@ TEST(AppCacheManifestParserTest, IgnoreDangerousFallbacksWithDefaultScope) {
             manifest.fallback_namespaces[0].namespace_url);
 }
 
-TEST(AppCacheManifestParserTest, NetworkPatternMetrics) {
-  const GURL url("http://foo.com/scope/manifest?with_query_args");
-  const std::string scope = url.GetWithoutFilename().path();
-
-  struct TestCase {
-    std::string manifest;
-    int expected_false_count;
-    int expected_true_count;
-  } test_cases[] = {
-      {"", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 1,
-       0},
-      {"NETWORK:\r*\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 0, 1},
-      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0},
-      {"CHROMIUM-INTERCEPT:\r"
-       "http://foo.com/intercept* return /pattern isPattern\r",
-       1, 0},
-  };
-
-  for (const auto& test_case : test_cases) {
-    AppCacheManifest manifest;
-    base::HistogramTester tester;
-    std::string manifest_text =
-        std::string("CACHE MANIFEST\r") + test_case.manifest;
-
-    ParseManifest(url, scope, true, manifest_text.c_str(),
-                  manifest_text.length(),
-                  PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest);
-    tester.ExpectBucketCount("appcache.Manifest.NetworkPattern", 0,
-                             test_case.expected_false_count);
-    tester.ExpectBucketCount("appcache.Manifest.NetworkPattern", 1,
-                             test_case.expected_true_count);
-  }
-}
-
-TEST(AppCacheManifestParserTest, FallbackPatternMetricsWithGlobalScope) {
-  const GURL url("http://foo.com/scope/manifest?with_query_args");
-  const std::string scope = url.GetWithEmptyPath().path();
-
-  struct TestCase {
-    std::string manifest;
-    int expected_false_count;
-    int expected_true_count;
-  } test_cases[] = {
-      {"", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 0,
-       1},
-      {"NETWORK:\r*\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0},
-      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0},
-      {"CHROMIUM-INTERCEPT:\r"
-       "http://foo.com/intercept* return /pattern isPattern\r",
-       1, 0},
-  };
-
-  for (const auto& test_case : test_cases) {
-    AppCacheManifest manifest;
-    base::HistogramTester tester;
-    std::string manifest_text =
-        std::string("CACHE MANIFEST\r") + test_case.manifest;
-
-    ParseManifest(url, scope, true, manifest_text.c_str(),
-                  manifest_text.length(),
-                  PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest);
-    tester.ExpectBucketCount("appcache.Manifest.FallbackPattern", 0,
-                             test_case.expected_false_count);
-    tester.ExpectBucketCount("appcache.Manifest.FallbackPattern", 1,
-                             test_case.expected_true_count);
-  }
-}
-
-TEST(AppCacheManifestParserTest, FallbackPatternMetricsWithDefaultScope) {
-  const GURL url("http://foo.com/scope/manifest?with_query_args");
-  const std::string scope = url.GetWithoutFilename().path();
-
-  struct TestCase {
-    std::string manifest;
-    int expected_false_count;
-    int expected_true_count;
-  } test_cases[] = {
-      {"", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 1,
-       0},
-      {"FALLBACK:\rhttp://foo.com/scope/fallback /url\r", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/scope/fallback_pattern* /pattern isPattern\r",
-       0, 1},
-      {"NETWORK:\r*\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0},
-      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0},
-      {"CHROMIUM-INTERCEPT:\r"
-       "http://foo.com/intercept* return /pattern isPattern\r",
-       1, 0},
-      {"CHROMIUM-INTERCEPT:\r"
-       "http://foo.com/scope/intercept return /url\r",
-       1, 0},
-      {"CHROMIUM-INTERCEPT:\r"
-       "http://foo.com/scope/intercept* return /pattern isPattern\r",
-       1, 0},
-  };
-
-  for (const auto& test_case : test_cases) {
-    AppCacheManifest manifest;
-    base::HistogramTester tester;
-    std::string manifest_text =
-        std::string("CACHE MANIFEST\r") + test_case.manifest;
-
-    ParseManifest(url, scope, true, manifest_text.c_str(),
-                  manifest_text.length(),
-                  PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest);
-    tester.ExpectBucketCount("appcache.Manifest.FallbackPattern", 0,
-                             test_case.expected_false_count);
-    tester.ExpectBucketCount("appcache.Manifest.FallbackPattern", 1,
-                             test_case.expected_true_count);
-  }
-}
-
 TEST(AppCacheManifestParserTest, InterceptUsageMetricsWithGlobalScope) {
   const GURL url("http://foo.com/scope/manifest?with_query_args");
   const std::string scope = url.GetWithEmptyPath().path();
@@ -995,19 +802,18 @@ TEST(AppCacheManifestParserTest, InterceptUsageMetricsWithGlobalScope) {
     std::string manifest;
     int expected_none_count;
     int expected_exact_count;
-    int expected_pattern_count;
   } test_cases[] = {
-      {"", 1, 0, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 1, 0,
+      {"", 1, 0},
+      {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0},
+      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 1,
        0},
-      {"NETWORK:\r*\r", 1, 0, 0},
-      {"NETWORK:\rhttp://foo.com/network\r", 1, 0, 0},
-      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0, 0},
-      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 0, 1, 0},
+      {"NETWORK:\r*\r", 1, 0},
+      {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
+      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0},
+      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 0, 1},
       {"CHROMIUM-INTERCEPT:\r"
        "http://foo.com/intercept* return /pattern isPattern\r",
-       0, 0, 1},
+       0, 1},
   };
 
   for (const auto& test_case : test_cases) {
@@ -1023,8 +829,7 @@ TEST(AppCacheManifestParserTest, InterceptUsageMetricsWithGlobalScope) {
                              test_case.expected_none_count);
     tester.ExpectBucketCount("appcache.Manifest.InterceptUsage", 1,
                              test_case.expected_exact_count);
-    tester.ExpectBucketCount("appcache.Manifest.InterceptUsage", 2,
-                             test_case.expected_pattern_count);
+    tester.ExpectBucketCount("appcache.Manifest.InterceptUsage", 2, 0);
   }
 }
 
@@ -1036,25 +841,24 @@ TEST(AppCacheManifestParserTest, InterceptUsageMetricsWithDefaultScope) {
     std::string manifest;
     int expected_none_count;
     int expected_exact_count;
-    int expected_pattern_count;
   } test_cases[] = {
-      {"", 1, 0, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 1, 0,
+      {"", 1, 0},
+      {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0},
+      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 1,
        0},
-      {"NETWORK:\r*\r", 1, 0, 0},
-      {"NETWORK:\rhttp://foo.com/network\r", 1, 0, 0},
-      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0, 0},
-      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0, 0},
+      {"NETWORK:\r*\r", 1, 0},
+      {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
+      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0},
+      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0},
       {"CHROMIUM-INTERCEPT:\r"
        "http://foo.com/intercept* return /pattern isPattern\r",
-       1, 0, 0},
+       1, 0},
       {"CHROMIUM-INTERCEPT:\r"
        "http://foo.com/scope/intercept return /url\r",
-       0, 1, 0},
+       0, 1},
       {"CHROMIUM-INTERCEPT:\r"
        "http://foo.com/scope/intercept* return /pattern isPattern\r",
-       0, 0, 1},
+       0, 1},
   };
 
   for (const auto& test_case : test_cases) {
@@ -1070,104 +874,7 @@ TEST(AppCacheManifestParserTest, InterceptUsageMetricsWithDefaultScope) {
                              test_case.expected_none_count);
     tester.ExpectBucketCount("appcache.Manifest.InterceptUsage", 1,
                              test_case.expected_exact_count);
-    tester.ExpectBucketCount("appcache.Manifest.InterceptUsage", 2,
-                             test_case.expected_pattern_count);
-  }
-}
-
-TEST(AppCacheManifestParserTest, PatternMetricsWithGlobalScope) {
-  const GURL url("http://foo.com/scope/manifest?with_query_args");
-  const std::string scope = url.GetWithEmptyPath().path();
-
-  struct TestCase {
-    std::string manifest;
-    int expected_false_count;
-    int expected_true_count;
-  } test_cases[] = {
-      {"", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 0,
-       1},
-      {"FALLBACK:\rhttp://foo.com/scope /pattern isPattern\r", 0, 1},
-      {"FALLBACK:\rhttp://foo.com/scope/fallback_pattern* /pattern isPattern\r",
-       0, 1},
-      {"FALLBACK:\rhttp://foo.com/scope/foo/fallback_pattern* /pattern "
-       "isPattern\r",
-       0, 1},
-      {"NETWORK:\r*\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 0, 1},
-      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0},
-      {"CHROMIUM-INTERCEPT:\r"
-       "http://foo.com/intercept* return /pattern isPattern\r",
-       0, 1},
-  };
-
-  for (const auto& test_case : test_cases) {
-    AppCacheManifest manifest;
-    base::HistogramTester tester;
-    std::string manifest_text =
-        std::string("CACHE MANIFEST\r") + test_case.manifest;
-
-    ParseManifest(url, scope, true, manifest_text.c_str(),
-                  manifest_text.length(),
-                  PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest);
-    tester.ExpectBucketCount("appcache.Manifest.Pattern", 0,
-                             test_case.expected_false_count);
-    tester.ExpectBucketCount("appcache.Manifest.Pattern", 1,
-                             test_case.expected_true_count);
-  }
-}
-
-TEST(AppCacheManifestParserTest, PatternMetricsWithDefaultScope) {
-  const GURL url("http://foo.com/scope/manifest?with_query_args");
-  const std::string scope = url.GetWithoutFilename().path();
-
-  struct TestCase {
-    std::string manifest;
-    int expected_false_count;
-    int expected_true_count;
-  } test_cases[] = {
-      {"", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 1,
-       0},
-      {"FALLBACK:\rhttp://foo.com/scope /pattern isPattern\r", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/scope/fallback_pattern* /pattern isPattern\r",
-       0, 1},
-      {"FALLBACK:\rhttp://foo.com/scope/foo/fallback_pattern* /pattern "
-       "isPattern\r",
-       0, 1},
-      {"NETWORK:\r*\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 0, 1},
-      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0},
-      {"CHROMIUM-INTERCEPT:\r"
-       "http://foo.com/intercept* return /pattern isPattern\r",
-       1, 0},
-      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/scope return /url\r", 1, 0},
-      {"CHROMIUM-INTERCEPT:\r"
-       "http://foo.com/scope* return /pattern isPattern\r",
-       1, 0},
-      {"CHROMIUM-INTERCEPT:\rhttp://foo.com/scope/x return /url\r", 1, 0},
-      {"CHROMIUM-INTERCEPT:\r"
-       "http://foo.com/scope/x* return /pattern isPattern\r",
-       0, 1},
-  };
-
-  for (const auto& test_case : test_cases) {
-    AppCacheManifest manifest;
-    base::HistogramTester tester;
-    std::string manifest_text =
-        std::string("CACHE MANIFEST\r") + test_case.manifest;
-
-    ParseManifest(url, scope, true, manifest_text.c_str(),
-                  manifest_text.length(),
-                  PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest);
-    tester.ExpectBucketCount("appcache.Manifest.Pattern", 0,
-                             test_case.expected_false_count);
-    tester.ExpectBucketCount("appcache.Manifest.Pattern", 1,
-                             test_case.expected_true_count);
+    tester.ExpectBucketCount("appcache.Manifest.InterceptUsage", 2, 0);
   }
 }
 

@@ -589,7 +589,7 @@ class CONTENT_EXPORT NavigationRequest
   // allows the navigation. This is called to perform the frame-src
   // and navigate-to checks.
   bool IsAllowedByCSPDirective(CSPContext* context,
-                               CSPDirective::Name directive,
+                               network::mojom::CSPDirectiveName directive,
                                bool has_followed_redirect,
                                bool url_upgraded_after_redirect,
                                bool is_response_check,

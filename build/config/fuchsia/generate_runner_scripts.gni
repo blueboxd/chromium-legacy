@@ -69,16 +69,12 @@ template("fuchsia_package_runner") {
     }
     wrapper_script = generated_run_pkg_script_path
 
-    deps = [
-      invoker.package,
-    ]
+    deps = [ invoker.package ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
 
-    data_deps = [
-      invoker.package,
-    ]
+    data_deps = [ invoker.package ]
 
     # Declares the files that are needed for test execution on the
     # swarming test client.
@@ -170,9 +166,7 @@ template("fuchsia_package_runner") {
     executable = rebase_path("//build/fuchsia/deploy_to_amber_repo.py")
     wrapper_script = generated_install_pkg_script_path
 
-    deps = [
-      invoker.package,
-    ]
+    deps = [ invoker.package ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -211,9 +205,7 @@ template("fuchsia_package_runner") {
 
   group(target_name) {
     forward_variables_from(invoker, [ "testonly" ])
-    deps = [
-      ":${_generate_installer_target}",
-    ]
+    deps = [ ":${_generate_installer_target}" ]
 
     if (!defined(invoker.install_only) || invoker.install_only == false) {
       deps += [ ":${_generate_runner_target}" ]

@@ -188,6 +188,7 @@
 namespace blink {
 
 using ui::mojom::ImeTextSpanThickness;
+using ui::mojom::ImeTextSpanUnderlineStyle;
 
 namespace {
 
@@ -851,7 +852,7 @@ void Internals::selectColorInColorChooser(Element* element,
 void Internals::endColorChooser(Element* element) {
   DCHECK(element);
   if (auto* input = DynamicTo<HTMLInputElement>(*element))
-    input->EndColorChooser();
+    input->EndColorChooserForTesting();
 }
 
 bool Internals::hasAutofocusRequest(Document* document) {
@@ -1133,17 +1134,34 @@ static base::Optional<ImeTextSpanThickness> ThicknessFrom(
   return base::nullopt;
 }
 
+static base::Optional<ImeTextSpanUnderlineStyle> UnderlineStyleFrom(
+    const String& underline_style) {
+  if (EqualIgnoringASCIICase(underline_style, "none"))
+    return ImeTextSpanUnderlineStyle::kNone;
+  if (EqualIgnoringASCIICase(underline_style, "solid"))
+    return ImeTextSpanUnderlineStyle::kSolid;
+  if (EqualIgnoringASCIICase(underline_style, "dot"))
+    return ImeTextSpanUnderlineStyle::kDot;
+  if (EqualIgnoringASCIICase(underline_style, "dash"))
+    return ImeTextSpanUnderlineStyle::kDash;
+  return base::nullopt;
+}
+
 namespace {
 
-void addStyleableMarkerHelper(
-    const Range* range,
-    const String& underline_color_value,
-    const String& thickness_value,
-    const String& background_color_value,
-    ExceptionState& exception_state,
-    std::function<
-        void(const EphemeralRange&, Color, ImeTextSpanThickness, Color)>
-        create_marker) {
+void addStyleableMarkerHelper(const Range* range,
+                              const String& underline_color_value,
+                              const String& thickness_value,
+                              const String& underline_style_value,
+                              const String& text_color_value,
+                              const String& background_color_value,
+                              ExceptionState& exception_state,
+                              std::function<void(const EphemeralRange&,
+                                                 Color,
+                                                 ImeTextSpanThickness,
+                                                 ImeTextSpanUnderlineStyle,
+                                                 Color,
+                                                 Color)> create_marker) {
   DCHECK(range);
   range->OwnerDocument().UpdateStyleAndLayout();
 
@@ -1156,14 +1174,27 @@ void addStyleableMarkerHelper(
     return;
   }
 
+  base::Optional<ImeTextSpanUnderlineStyle> underline_style =
+      UnderlineStyleFrom(underline_style_value);
+  if (!underline_style_value) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "The underline style provided ('" +
+                                          underline_style_value +
+                                          "') is invalid.");
+    return;
+  }
+
   Color underline_color;
   Color background_color;
+  Color text_color;
   if (ParseColor(underline_color_value, underline_color, exception_state,
                  "Invalid underline color.") &&
+      ParseColor(text_color_value, text_color, exception_state,
+                 "Invalid text color.") &&
       ParseColor(background_color_value, background_color, exception_state,
                  "Invalid background color.")) {
     create_marker(EphemeralRange(range), underline_color, thickness.value(),
-                  background_color);
+                  underline_style.value(), text_color, background_color);
   }
 }
 
@@ -1172,18 +1203,23 @@ void addStyleableMarkerHelper(
 void Internals::addCompositionMarker(const Range* range,
                                      const String& underline_color_value,
                                      const String& thickness_value,
+                                     const String& underline_style_value,
+                                     const String& text_color_value,
                                      const String& background_color_value,
                                      ExceptionState& exception_state) {
   DocumentMarkerController& document_marker_controller =
       range->OwnerDocument().Markers();
   addStyleableMarkerHelper(
-      range, underline_color_value, thickness_value, background_color_value,
-      exception_state,
-      [&document_marker_controller](
-          const EphemeralRange& range, Color underline_color,
-          ImeTextSpanThickness thickness, Color background_color) {
+      range, underline_color_value, thickness_value, underline_style_value,
+      text_color_value, background_color_value, exception_state,
+      [&document_marker_controller](const EphemeralRange& range,
+                                    Color underline_color,
+                                    ImeTextSpanThickness thickness,
+                                    ImeTextSpanUnderlineStyle underline_style,
+                                    Color text_color, Color background_color) {
         document_marker_controller.AddCompositionMarker(
-            range, underline_color, thickness, background_color);
+            range, underline_color, thickness, underline_style, text_color,
+            background_color);
       });
 }
 
@@ -1192,16 +1228,23 @@ void Internals::addActiveSuggestionMarker(const Range* range,
                                           const String& thickness_value,
                                           const String& background_color_value,
                                           ExceptionState& exception_state) {
+  // Underline style and text color aren't really supported for suggestions so
+  // providing default values for now.
+  String underline_style_value = "solid";
+  String text_color_value = "transparent";
   DocumentMarkerController& document_marker_controller =
       range->OwnerDocument().Markers();
   addStyleableMarkerHelper(
-      range, underline_color_value, thickness_value, background_color_value,
-      exception_state,
-      [&document_marker_controller](
-          const EphemeralRange& range, Color underline_color,
-          ImeTextSpanThickness thickness, Color background_color) {
+      range, underline_color_value, thickness_value, underline_style_value,
+      text_color_value, background_color_value, exception_state,
+      [&document_marker_controller](const EphemeralRange& range,
+                                    Color underline_color,
+                                    ImeTextSpanThickness thickness,
+                                    ImeTextSpanUnderlineStyle underline_style,
+                                    Color text_color, Color background_color) {
         document_marker_controller.AddActiveSuggestionMarker(
-            range, underline_color, thickness, background_color);
+            range, underline_color, thickness, underline_style, text_color,
+            background_color);
       });
 }
 
@@ -1213,6 +1256,10 @@ void Internals::addSuggestionMarker(
     const String& thickness_value,
     const String& background_color_value,
     ExceptionState& exception_state) {
+  // Underline style and text color aren't really supported for suggestions so
+  // providing default values for now.
+  String underline_style_value = "solid";
+  String text_color_value = "transparent";
   Color suggestion_highlight_color;
   if (!ParseColor(suggestion_highlight_color_value, suggestion_highlight_color,
                   exception_state, "Invalid suggestion highlight color."))
@@ -1221,11 +1268,13 @@ void Internals::addSuggestionMarker(
   DocumentMarkerController& document_marker_controller =
       range->OwnerDocument().Markers();
   addStyleableMarkerHelper(
-      range, underline_color_value, thickness_value, background_color_value,
-      exception_state,
+      range, underline_color_value, thickness_value, underline_style_value,
+      text_color_value, background_color_value, exception_state,
       [&document_marker_controller, &suggestions, &suggestion_highlight_color](
           const EphemeralRange& range, Color underline_color,
-          ImeTextSpanThickness thickness, Color background_color) {
+          ImeTextSpanThickness thickness,
+          ImeTextSpanUnderlineStyle underline_style, Color text_color,
+          Color background_color) {
         document_marker_controller.AddSuggestionMarker(
             range,
             SuggestionMarkerProperties::Builder()
@@ -1234,6 +1283,8 @@ void Internals::addSuggestionMarker(
                 .SetHighlightColor(suggestion_highlight_color)
                 .SetUnderlineColor(underline_color)
                 .SetThickness(thickness)
+                .SetUnderlineStyle(underline_style)
+                .SetTextColor(text_color)
                 .SetBackgroundColor(background_color)
                 .Build());
       });

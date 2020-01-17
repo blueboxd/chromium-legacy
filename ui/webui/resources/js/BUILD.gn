@@ -72,21 +72,15 @@ js_library("icon") {
 }
 
 js_library("i18n_template_no_process") {
-  deps = [
-    ":load_time_data",
-  ]
+  deps = [ ":load_time_data" ]
 }
 
 js_library("i18n_template") {
-  deps = [
-    ":i18n_template_no_process",
-  ]
+  deps = [ ":i18n_template_no_process" ]
 }
 
 js_library("i18n_behavior") {
-  deps = [
-    ":load_time_data",
-  ]
+  deps = [ ":load_time_data" ]
 }
 
 js_library("list_property_update_behavior") {
@@ -104,22 +98,16 @@ js_library("parse_html_subset") {
 }
 
 js_library("promise_resolver") {
-  deps = [
-    ":assert",
-  ]
+  deps = [ ":assert" ]
 }
 
 js_library("util") {
-  deps = [
-    ":cr",
-  ]
+  deps = [ ":cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
 js_library("web_ui_listener_behavior") {
-  deps = [
-    ":cr",
-  ]
+  deps = [ ":cr" ]
 }
 
 js_library("webui_resource_test") {
@@ -157,9 +145,7 @@ js_modulizer("modulize") {
     "cr.ui.KeyboardShortcutList|KeyboardShortcutList",
     "Polymer.ArraySplice.calculateSplices|calculateSplices",
   ]
-  deps = [
-    "cr:modulize",
-  ]
+  deps = [ "cr:modulize" ]
 }
 
 group("closure_compile_modules") {
@@ -189,9 +175,7 @@ js_type_check("js_resources_modules") {
 }
 
 js_library("assert.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/assert.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/assert.m.js" ]
   extra_deps = [ ":modulize" ]
 }
 
@@ -204,16 +188,13 @@ js_library("cr.m") {
 }
 
 js_library("event_tracker.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/event_tracker.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/event_tracker.m.js" ]
   extra_deps = [ ":modulize" ]
 }
 
 js_library("find_shortcut_behavior.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/find_shortcut_behavior.m.js",
-  ]
+  sources =
+      [ "$root_gen_dir/ui/webui/resources/js/find_shortcut_behavior.m.js" ]
   deps = [
     ":assert.m",
     ":cr.m",
@@ -224,19 +205,13 @@ js_library("find_shortcut_behavior.m") {
 }
 
 js_library("icon.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/icon.m.js",
-  ]
-  deps = [
-    ":cr.m",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/icon.m.js" ]
+  deps = [ ":cr.m" ]
   extra_deps = [ ":modulize" ]
 }
 
 js_library("i18n_behavior.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/i18n_behavior.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/i18n_behavior.m.js" ]
   deps = [
     ":load_time_data.m",
     ":parse_html_subset.m",
@@ -255,9 +230,7 @@ js_library("list_property_update_behavior.m") {
 }
 
 js_library("load_time_data.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/load_time_data.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/load_time_data.m.js" ]
   deps = [
     ":assert.m",
     ":parse_html_subset.m",
@@ -267,36 +240,25 @@ js_library("load_time_data.m") {
 }
 
 js_library("parse_html_subset.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/parse_html_subset.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/parse_html_subset.m.js" ]
   extra_deps = [ ":modulize" ]
 }
 
 js_library("promise_resolver.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/promise_resolver.m.js",
-  ]
-  deps = [
-    ":assert.m",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/promise_resolver.m.js" ]
+  deps = [ ":assert.m" ]
   extra_deps = [ ":modulize" ]
 }
 
 js_library("search_highlight_utils.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/search_highlight_utils.m.js",
-  ]
-  deps = [
-    ":assert.m",
-  ]
+  sources =
+      [ "$root_gen_dir/ui/webui/resources/js/search_highlight_utils.m.js" ]
+  deps = [ ":assert.m" ]
   extra_deps = [ ":modulize" ]
 }
 
 js_library("util.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/util.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/util.m.js" ]
   deps = [
     ":assert.m",
     ":cr.m",
@@ -306,11 +268,8 @@ js_library("util.m") {
 }
 
 js_library("web_ui_listener_behavior.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/web_ui_listener_behavior.m.js",
-  ]
-  deps = [
-    ":cr.m",
-  ]
+  sources =
+      [ "$root_gen_dir/ui/webui/resources/js/web_ui_listener_behavior.m.js" ]
+  deps = [ ":cr.m" ]
   extra_deps = [ ":modulize" ]
 }

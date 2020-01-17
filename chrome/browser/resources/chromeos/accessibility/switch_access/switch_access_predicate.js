@@ -13,6 +13,7 @@ const DefaultActionVerb = chrome.automation.DefaultActionVerb;
  *    - isGroup
  *    - isInteresting
  *    - isInterestingSubtree
+ *    - isVisible
  *    - isTextInput
  *    - isNotContainer
  *    - isSwitchAccessMenuPanel
@@ -39,8 +40,7 @@ const SwitchAccessPredicate = {
     const state = node.state;
 
     // Skip things that are offscreen or invisible.
-    if (state[StateType.OFFSCREEN] || !loc || loc.top < 0 || loc.left < 0 ||
-        state[StateType.INVISIBLE]) {
+    if (!SwitchAccessPredicate.isVisible(node)) {
       return false;
     }
 
@@ -146,6 +146,16 @@ const SwitchAccessPredicate = {
       SwitchAccessPredicate.isGroup(node, scope),
 
   /**
+   * Returns true if the element is visible to the user for any reason.
+   *
+   * @param {chrome.automation.AutomationNode} node
+   * @return {boolean}
+   */
+  isVisible: (node) => !node.state[StateType.OFFSCREEN] && !!node.location &&
+      node.location.top >= 0 && node.location.left >= 0 &&
+      !node.state[StateType.INVISIBLE],
+
+  /**
    * Returns true if there is an interesting node in the subtree containing
    * |node| as its root (including |node| itself).
    *
@@ -205,7 +215,7 @@ const SwitchAccessPredicate = {
    * @param {!SARootNode} scope
    * @return {function(!chrome.automation.AutomationNode): boolean}
    */
-  leaf: function(scope) {
+  leaf(scope) {
     return (node) => node.state[StateType.INVISIBLE] ||
         (!scope.isEquivalentTo(node) &&
          SwitchAccessPredicate.isInteresting(node, scope)) ||
@@ -219,7 +229,7 @@ const SwitchAccessPredicate = {
    * @param {!SARootNode} scope
    * @return {function(!chrome.automation.AutomationNode): boolean}
    */
-  root: function(scope) {
+  root(scope) {
     return (node) => scope.isEquivalentTo(node);
   },
 
@@ -230,7 +240,7 @@ const SwitchAccessPredicate = {
    * @param {!SARootNode} scope
    * @return {function(!chrome.automation.AutomationNode): boolean}
    */
-  visit: function(scope) {
+  visit(scope) {
     return (node) => node.role !== RoleType.DESKTOP &&
         SwitchAccessPredicate.isInteresting(node, scope);
   },

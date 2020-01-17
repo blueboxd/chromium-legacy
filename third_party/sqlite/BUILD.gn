@@ -289,9 +289,7 @@ config("sqlite_warnings") {
 component("chromium_sqlite3") {
   visibility = [ ":*" ]
 
-  public = [
-    "sqlite3.h",
-  ]
+  public = [ "sqlite3.h" ]
 
   sources = [
     "amalgamation/sqlite3.h",
@@ -362,9 +360,7 @@ component("chromium_sqlite3") {
     ]
   }
 
-  deps = [
-    "//third_party/icu",
-  ]
+  deps = [ "//third_party/icu" ]
 }
 
 config("sqlite_export") {
@@ -376,9 +372,7 @@ config("sqlite_export") {
 # This is used to allow the SQLITE_API definition to be different when
 # building sqlite3.c than it is when clients include sqlite3.h.
 group("sqlite") {
-  public_deps = [
-    ":chromium_sqlite3",
-  ]
+  public_deps = [ ":chromium_sqlite3" ]
   public_configs = [
     ":chromium_sqlite3_compile_options",
     ":sqlite_export",
@@ -421,12 +415,8 @@ if (is_win || is_mac || is_linux) {
 # Libfuzzer-based fuzzer test from SQLite source tree.
 fuzzer_test("sqlite3_ossfuzz_fuzzer") {
   include_dirs = [ "." ]
-  sources = [
-    "patched/test/ossfuzz.c",
-  ]
-  deps = [
-    ":sqlite",
-  ]
+  sources = [ "patched/test/ossfuzz.c" ]
+  deps = [ ":sqlite" ]
   dict = "fuzz/sql.dict"
 }
 
@@ -437,12 +427,8 @@ source_set("sqlite3_lpm_fuzzer_core") {
     "fuzz/sql_run_queries.cc",
     "fuzz/sql_run_queries.h",
   ]
-  deps = [
-    ":sqlite",
-  ]
-  public_deps = [
-    ":sqlite3_lpm_fuzzer_input",
-  ]
+  deps = [ ":sqlite" ]
+  public_deps = [ ":sqlite3_lpm_fuzzer_input" ]
   configs += [
     ":sqlite_warnings",
     ":chromium_sqlite3_compile_options",
@@ -494,12 +480,8 @@ fuzzer_test("sqlite3_fts3_lpm_fuzzer") {
 }
 
 fuzzer_test("sqlite3_shadow_table_fuzzer") {
-  sources = [
-    "fuzz/shadow_table_fuzzer.cc",
-  ]
-  deps = [
-    ":sqlite",
-  ]
+  sources = [ "fuzz/shadow_table_fuzzer.cc" ]
+  deps = [ ":sqlite" ]
   additional_configs = [ ":sqlite_warnings" ]
 }
 
@@ -591,12 +573,8 @@ config("sqlite3_dbfuzz2_config") {
 if (use_fuzzing_engine) {
   fuzzer_test("sqlite3_dbfuzz2_fuzzer") {
     include_dirs = [ "." ]
-    sources = [
-      "patched/test/dbfuzz2.c",
-    ]
-    deps = [
-      ":sqlite",
-    ]
+    sources = [ "patched/test/dbfuzz2.c" ]
+    deps = [ ":sqlite" ]
     additional_configs = [ ":sqlite3_dbfuzz2_config" ]
     seed_corpus = "fuzz/db_corpus"
   }

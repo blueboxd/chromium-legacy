@@ -55,9 +55,7 @@ class MODULES_EXPORT BackgroundFetchRecord final : public ScriptWrappable {
 
  private:
   using ResponseReadyProperty =
-      ScriptPromiseProperty<Member<BackgroundFetchRecord>,
-                            Member<Response>,
-                            Member<DOMException>>;
+      ScriptPromiseProperty<Member<Response>, Member<DOMException>>;
 
   // Resolves a pending |response_ready_property_| with |response|, if it's not
   // null.

@@ -20,9 +20,7 @@ component("metal_util") {
     "types.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   libs = [
     "Cocoa.framework",

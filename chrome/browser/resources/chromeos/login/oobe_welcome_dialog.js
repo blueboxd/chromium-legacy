@@ -31,7 +31,7 @@
      *
      * @private
      */
-    onTimeout_: function() {
+    onTimeout_() {
       this.killTimer_();
       this.callback_();
     },
@@ -39,7 +39,7 @@
     /**
      * @private
      */
-    onTouchStart_: function() {
+    onTouchStart_() {
       this.killTimer_();
       this.timeoutId_ = window.setTimeout(
           this.onTimeout_.bind(this, this.attempt_), LONG_TOUCH_TIME_MS);
@@ -48,7 +48,7 @@
     /**
      * @private
      */
-    killTimer_: function() {
+    killTimer_() {
       if (this.timeoutId_ === null)
         return;
 
@@ -292,19 +292,19 @@
       }
     },
 
-    getVideoDeviceType_: function() {
+    getVideoDeviceType_() {
       if (this.timezoneButtonVisible)
         return VIDEO_DEVICE.CHROMEBOX;
 
       return this.isInTabletMode ? VIDEO_DEVICE.TABLET : VIDEO_DEVICE.LAPTOP;
     },
 
-    getVideoOrientationType_: function() {
+    getVideoOrientationType_() {
       return this.isInPortraitMode ? VIDEO_ORIENTATION.PORTRAIT :
                                      VIDEO_ORIENTATION.LANDSCAPE;
     },
 
-    updateVideoMode_: function() {
+    updateVideoMode_() {
       // Depending on the order of events, this might be called before
       // attached().
       if (!this.welcomeVideoController_)
@@ -330,27 +330,27 @@
      */
     focusedElement_: 'welcomeNextButton',
 
-    onLanguageClicked_: function() {
+    onLanguageClicked_() {
       this.focusedElement_ = 'languageSelectionButton';
       this.fire('language-button-clicked');
     },
 
-    onAccessibilityClicked_: function() {
+    onAccessibilityClicked_() {
       this.focusedElement_ = 'accessibilitySettingsButton';
       this.fire('accessibility-button-clicked');
     },
 
-    onTimezoneClicked_: function() {
+    onTimezoneClicked_() {
       this.focusedElement_ = 'timezoneSettingsButton';
       this.fire('timezone-button-clicked');
     },
 
-    onNextClicked_: function() {
+    onNextClicked_() {
       this.focusedElement_ = 'welcomeNextButton';
       this.fire('next-button-clicked');
     },
 
-    onDebuggingLinkClicked_: function() {
+    onDebuggingLinkClicked_() {
       this.fire('enable-debugging-clicked');
     },
 
@@ -359,11 +359,11 @@
      *
      * @private
      */
-    onTitleLongTouch_: function() {
+    onTitleLongTouch_() {
       this.fire('launch-advanced-options');
     },
 
-    attached: function() {
+    attached() {
       this.welcomeVideoController_ = new WelcomeVideoController(
           this.getVideoDeviceType_(), this.getVideoOrientationType_());
       let videos = Polymer.dom(this.root).querySelectorAll('video');
@@ -375,7 +375,7 @@
       this.focus();
     },
 
-    focus: function() {
+    focus() {
       this.onWindowResize();
       let focusedElement = this.$[this.focusedElement_];
       if (focusedElement)
@@ -385,7 +385,7 @@
     /**
      * This is called from oobe_welcome when this dialog is shown.
      */
-    show: function() {
+    show() {
       this.focus();
       this.welcomeVideoController_.play();
     },
@@ -396,14 +396,14 @@
      * @param String parameter i18n string parameter.
      * @private
      */
-    formatMessage_: function(label, parameter) {
+    formatMessage_(label, parameter) {
       return loadTimeData.getStringF(label, parameter);
     },
 
     /**
      * Window-resize event listener (delivered through the display_manager).
      */
-    onWindowResize: function() {
+    onWindowResize() {
       this.isInPortraitMode = window.innerHeight > window.innerWidth;
     },
   });

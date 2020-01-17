@@ -32,6 +32,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/extension_action/test_extension_action_api_observer.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -41,6 +42,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -344,6 +346,17 @@ class DeclarativeNetRequestBrowserTest
     has_background_script_ = has_background_script;
   }
 
+  // Sets whether the extension should load with the
+  // declarativeNetRequestFeedback permission.
+  void set_has_feedback_permission(bool has_feedback_permission) {
+    has_feedback_permission_ = has_feedback_permission;
+  }
+
+  // Sets whether the extension should load with the activeTab permission.
+  void set_has_active_tab_permission(bool has_active_tab_permission) {
+    has_active_tab_permission_ = has_active_tab_permission;
+  }
+
   // Loads an extension with the given declarative |rules| in the given
   // |directory|. Generates a fatal failure if the extension failed to load.
   // |hosts| specifies the host permissions, the extensions should
@@ -357,9 +370,10 @@ class DeclarativeNetRequestBrowserTest
     base::FilePath extension_dir = temp_dir_.GetPath().AppendASCII(directory);
     EXPECT_TRUE(base::CreateDirectory(extension_dir));
 
-    WriteManifestAndRuleset(
-        extension_dir, kJSONRulesetFilepath, kJSONRulesFilename, rules, hosts,
-        has_background_script_, true /* has_feedback_permission */);
+    WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
+                            kJSONRulesFilename, rules, hosts,
+                            has_background_script_, has_feedback_permission_,
+                            has_active_tab_permission_);
 
     background_page_ready_listener_->Reset();
     const Extension* extension = nullptr;
@@ -560,26 +574,34 @@ class DeclarativeNetRequestBrowserTest
         base::StringPrintf(kGetMatchedRulesScript, tab_id_param.c_str()));
   }
 
-  // Calls getMatchedRules for |extension_id|, |tab_id| and optionally,
-  // |timestamp|. Returns the matched rule count for the tab specified by
-  // |tab_id| and are more recent than |timestamp| if specified.
-  std::string GetMatchedRuleCountForTab(const ExtensionId& extension_id,
-                                        int tab_id,
-                                        base::Optional<base::Time> timestamp) {
+  // Calls getMatchedRules for |extension_id| and optionally, |tab_id| and
+  // |timestamp|. Returns the matched rule count for rules more recent than
+  // |timestamp| if specified, and are associated with the tab specified by
+  // |tab_id| or all tabs if |tab_id| is not specified. Returns any API error if
+  // the call fails.
+  std::string GetMatchedRuleCount(const ExtensionId& extension_id,
+                                  base::Optional<int> tab_id,
+                                  base::Optional<base::Time> timestamp) {
     const char kGetMatchedRulesScript[] = R"(
       chrome.declarativeNetRequest.getMatchedRules(%s, (rules) => {
+        if (chrome.runtime.lastError) {
+          window.domAutomationController.send(chrome.runtime.lastError.message);
+          return;
+        }
+
         var rule_count = rules.rulesMatchedInfo.length;
         window.domAutomationController.send(rule_count.toString());
       });
     )";
 
-    std::string param_string = base::StringPrintf("{tabId: %d}", tab_id);
+    double timestamp_in_js =
+        timestamp.has_value() ? timestamp->ToJsTimeIgnoringNull() : 0;
 
-    if (timestamp) {
-      double timestamp_in_js = timestamp->ToJsTimeIgnoringNull();
-      param_string = base::StringPrintf("{tabId: %d, minTimeStamp: %f}", tab_id,
-                                        timestamp_in_js);
-    }
+    std::string param_string =
+        tab_id.has_value()
+            ? base::StringPrintf("{tabId: %d, minTimeStamp: %f}", *tab_id,
+                                 timestamp_in_js)
+            : base::StringPrintf("{minTimeStamp: %f}", timestamp_in_js);
 
     return ExecuteScriptInBackgroundPage(
         extension_id,
@@ -625,6 +647,8 @@ class DeclarativeNetRequestBrowserTest
 
   base::ScopedTempDir temp_dir_;
   bool has_background_script_ = false;
+  bool has_feedback_permission_ = false;
+  bool has_active_tab_permission_ = false;
   std::unique_ptr<ExtensionTestMessageListener> background_page_ready_listener_;
 
   // Requests observed by the EmbeddedTestServer. This is accessed on both the
@@ -2772,6 +2796,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // generated background page.
   set_has_background_script(true);
 
+  // Grant the feedback permission for the extension so it has access to the
+  // getMatchedRules API function.
+  set_has_feedback_permission(true);
+
   auto get_url_for_host = [this](std::string hostname) {
     return embedded_test_server()->GetURL(hostname,
                                           "/pages_with_script/index.html");
@@ -3422,6 +3450,11 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // Load the extension with a background script so scripts can be run from its
   // generated background page.
   set_has_background_script(true);
+
+  // Grant the feedback permission for the extension so it can have access to
+  // the onRuleMatchedDebug event when unpacked.
+  set_has_feedback_permission(true);
+
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
       {}, "test_extension", {URLPattern::kAllUrlsPattern}));
 
@@ -3450,6 +3483,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Unpacked,
   // Load the extension with a background script so scripts can be run from its
   // generated background page.
   set_has_background_script(true);
+
+  // Grant the feedback permission for the extension so it has access to the
+  // onRuleMatchedDebug event.
+  set_has_feedback_permission(true);
 
   auto create_remove_headers_rule =
       [](int id, const std::string& url_filter,
@@ -3527,6 +3564,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // Load the extension with a background script so scripts can be run from its
   // generated background page.
   set_has_background_script(true);
+
+  // Grant the feedback permission for the extension so it has access to the
+  // getMatchedRules API function.
+  set_has_feedback_permission(true);
 
   // Sub-frames are used for navigations instead of the main-frame to allow
   // multiple requests to be made without triggering a main-frame navigation,
@@ -3666,6 +3707,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // generated background page.
   set_has_background_script(true);
 
+  // Grant the feedback permission for the extension so it has access to the
+  // getMatchedRules API function.
+  set_has_feedback_permission(true);
+
   const std::string test_host = "abc.com";
   GURL page_url = embedded_test_server()->GetURL(
       test_host, "/pages_with_script/index.html");
@@ -3736,6 +3781,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // generated background page.
   set_has_background_script(true);
 
+  // Grant the feedback permission for the extension so it has access to the
+  // getMatchedRules API function.
+  set_has_feedback_permission(true);
+
   const std::string kFrameName1 = "frame1";
   const GURL page_url = embedded_test_server()->GetURL(
       "nomatch.com", "/page_with_two_frames.html");
@@ -3795,21 +3844,91 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
 
   // Two rules should be matched on |first_tab_id|.
-  std::string rule_count =
-      GetMatchedRuleCountForTab(extension_id, first_tab_id, base::nullopt);
+  std::string rule_count = GetMatchedRuleCount(extension_id, first_tab_id,
+                                               base::nullopt /* timestamp */);
   EXPECT_EQ("2", rule_count);
 
   // Only one rule should be matched on |first_tab_id| after |timestamp_1|.
-  rule_count =
-      GetMatchedRuleCountForTab(extension_id, first_tab_id, timestamp_1);
+  rule_count = GetMatchedRuleCount(extension_id, first_tab_id, timestamp_1);
   EXPECT_EQ("1", rule_count);
 
   // No rules should be matched on |first_tab_id| after |timestamp_2|.
-  rule_count =
-      GetMatchedRuleCountForTab(extension_id, first_tab_id, timestamp_2);
+  rule_count = GetMatchedRuleCount(extension_id, first_tab_id, timestamp_2);
   EXPECT_EQ("0", rule_count);
 
   rules_monitor_service->action_tracker().SetClockForTests(nullptr);
+}
+
+// Test that getMatchedRules will only return matched rules for individual tabs
+// where activeTab is granted.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       GetMatchedRulesActiveTab) {
+  // Load the extension with a background script so scripts can be run from its
+  // generated background page.
+  set_has_background_script(true);
+
+  // Turn activeTab on.
+  set_has_active_tab_permission(true);
+
+  const std::string test_host = "abc.com";
+  GURL page_url = embedded_test_server()->GetURL(
+      test_host, "/pages_with_script/index.html");
+
+  TestRule rule = CreateGenericRule();
+  rule.id = kMinValidID;
+  rule.condition->url_filter = test_host;
+  rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule.action->type = "block";
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}, "extension_1", {}));
+  const ExtensionId& extension_id = last_loaded_extension_id();
+
+  // Navigate to |page_url| which will cause |rule| to be matched.
+  ui_test_utils::NavigateToURL(browser(), page_url);
+
+  int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+
+  // Open a new tab and navigate to |page_url| which will cause |rule| to be
+  // matched.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), page_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_TRUE(browser()->tab_strip_model()->IsTabSelected(1));
+
+  TabHelper* tab_helper = TabHelper::FromWebContents(web_contents());
+  ASSERT_TRUE(tab_helper);
+
+  // Get the ActiveTabPermissionGranter for the second tab.
+  ActiveTabPermissionGranter* active_tab_granter =
+      tab_helper->active_tab_permission_granter();
+  ASSERT_TRUE(active_tab_granter);
+
+  const Extension* dnr_extension = extension_registry()->GetExtensionById(
+      extension_id, extensions::ExtensionRegistry::ENABLED);
+
+  // Grant the activeTab permission for the second tab.
+  active_tab_granter->GrantIfRequested(dnr_extension);
+
+  int second_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+
+  // Calling getMatchedRules with no tab ID specified should result in an error
+  // since the extension does not have the feedback permission.
+  EXPECT_EQ(declarative_net_request::kErrorGetMatchedRulesMissingPermissions,
+            GetMatchedRuleCount(extension_id, base::nullopt /* tab_id */,
+                                base::nullopt /* timestamp */));
+
+  // Calling getMatchedRules for a tab without the activeTab permission granted
+  // should result in an error.
+  EXPECT_EQ(declarative_net_request::kErrorGetMatchedRulesMissingPermissions,
+            GetMatchedRuleCount(extension_id, first_tab_id,
+                                base::nullopt /* timestamp */));
+
+  // Calling getMatchedRules for a tab with the activeTab permission granted
+  // should return the rules matched for that tab.
+  EXPECT_EQ("1", GetMatchedRuleCount(extension_id, second_tab_id,
+                                     base::nullopt /* timestamp */));
 }
 
 // Test fixture to verify that host permissions for the request url and the

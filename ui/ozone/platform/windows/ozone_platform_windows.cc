@@ -15,6 +15,7 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/windows/windows_surface_factory.h"
 #include "ui/ozone/platform/windows/windows_window.h"
@@ -77,7 +78,8 @@ class OzonePlatformWindows : public OzonePlatform {
     return std::make_unique<display::FakeDisplayDelegate>();
   }
   std::unique_ptr<InputMethod> CreateInputMethod(
-      internal::InputMethodDelegate* delegate) override {
+      internal::InputMethodDelegate* delegate,
+      gfx::AcceleratedWidget) override {
     NOTREACHED();
     return nullptr;
   }

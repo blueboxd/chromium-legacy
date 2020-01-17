@@ -10,8 +10,6 @@
  * information relevant to the individual feature, such as a route to the
  * feature's autonomous page if there is one.
  */
-cr.exportPath('settings');
-
 Polymer({
   is: 'settings-multidevice-feature-item',
 
@@ -40,7 +38,7 @@ Polymer({
   /** settings.RouteOriginBehavior override */
   route_: settings.routes.MULTIDEVICE_FEATURES,
 
-  ready: function() {
+  ready() {
     this.addFocusConfig_(this.subpageRoute, '#subpageButton');
   },
 
@@ -48,12 +46,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasSubpageClickHandler_: function() {
+  hasSubpageClickHandler_() {
     return !!this.subpageRoute && this.isFeatureAllowedByPolicy(this.feature);
   },
 
   /** @private */
-  handleItemClick_: function(event) {
+  handleItemClick_(event) {
     if (!this.hasSubpageClickHandler_()) {
       return;
     }
@@ -67,8 +65,8 @@ Polymer({
     // Remove the search term when navigating to avoid potentially having any
     // visible search term reappear at a later time. See
     // https://crbug.com/989119.
-    settings.navigateTo(
-        this.subpageRoute, this.subpageRouteUrlSearchParams,
-        true /* opt_removeSearch */);
+    settings.Router.getInstance().navigateTo(
+        /** @type {!settings.Route} */ (this.subpageRoute),
+        this.subpageRouteUrlSearchParams, true /* opt_removeSearch */);
   },
 });

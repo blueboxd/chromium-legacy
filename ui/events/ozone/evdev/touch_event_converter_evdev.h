@@ -189,6 +189,9 @@ class COMPONENT_EXPORT(EVDEV) TouchEventConverterEvdev
   // Callback to enable/disable palm suppression.
   base::RepeatingCallback<void(bool)> enable_palm_suppression_callback_;
 
+  // Do we mark a touch as palm when touch_major is the max?
+  const bool palm_on_touch_major_max_;
+
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };
 

@@ -351,6 +351,8 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
   if (data_.metrics_name.empty())
     data_.metrics_name = GetProcessTypeNameInEnglish(data_.process_type);
 
+  data_.sandbox_type = delegate->GetSandboxType();
+
   notify_child_disconnected_ = true;
   child_process_.reset(new ChildProcessLauncher(
       std::move(delegate), std::move(cmd_line), data_.id, this,

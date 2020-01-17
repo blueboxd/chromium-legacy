@@ -224,6 +224,12 @@ void TextSuggestionHostAndroid::StopSuggestionMenuTimer() {
   suggestion_menu_timeout_.Stop();
 }
 
+void TextSuggestionHostAndroid::BindTextSuggestionHost(
+    mojo::PendingReceiver<blink::mojom::TextSuggestionHost> receiver) {
+  text_suggestion_impl_ =
+      TextSuggestionHostMojoImplAndroid::Create(this, std::move(receiver));
+}
+
 RenderFrameHost* TextSuggestionHostAndroid::GetFocusedFrame() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // We get the focused frame from the WebContents of the page. Although

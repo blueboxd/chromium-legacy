@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/html/image_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
@@ -1124,6 +1125,14 @@ void LayoutObject::ClearPreferredLogicalWidthsDirty() {
   bitfields_.SetPreferredLogicalWidthsDirty(false);
 }
 
+void LayoutObject::InvalidateIntersectionObserverCachedRects() {
+  if (GetNode() && GetNode()->IsElementNode()) {
+    if (auto* data = To<Element>(GetNode())->IntersectionObserverData()) {
+      data->InvalidateCachedRects();
+    }
+  }
+}
+
 static inline bool NGKeepInvalidatingBeyond(LayoutObject* o) {
   // Because LayoutNG does not work on individual inline objects, we can't
   // use a dirty width on an inline as a signal that it is safe to stop --
@@ -1628,14 +1637,12 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
   if (ancestor == this)
     return true;
 
-  const auto* property_container = this;
   AncestorSkipInfo skip_info(ancestor);
-  while (!property_container->FirstFragment().HasLocalBorderBoxProperties()) {
-    property_container = property_container->Container(&skip_info);
-    if (!property_container || skip_info.AncestorSkipped() ||
-        property_container->FirstFragment().NextFragment())
-      return false;
-  }
+  PropertyTreeState container_properties = PropertyTreeState::Uninitialized();
+  const LayoutObject* property_container =
+      GetPropertyContainer(&skip_info, &container_properties);
+  if (!property_container)
+    return false;
 
   // This works because it's not possible to have any intervening clips,
   // effects, transforms between |this| and |property_container|, and therefore
@@ -1645,13 +1652,9 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
   rect.Move(FirstFragment().PaintOffset());
   if (property_container != ancestor) {
     FloatClipRect clip_rect((FloatRect(rect)));
-    const auto& local_state =
-        property_container == this
-            ? FirstFragment().LocalBorderBoxProperties()
-            : property_container->FirstFragment().ContentsProperties();
     intersects = GeometryMapper::LocalToAncestorVisualRect(
-        local_state, ancestor->FirstFragment().ContentsProperties(), clip_rect,
-        kIgnorePlatformOverlayScrollbarSize,
+        container_properties, ancestor->FirstFragment().ContentsProperties(),
+        clip_rect, kIgnorePlatformOverlayScrollbarSize,
         (visual_rect_flags & kEdgeInclusive) ? kInclusiveIntersect
                                              : kNonInclusiveIntersect);
     rect = PhysicalRect::EnclosingRect(clip_rect.Rect());
@@ -1707,6 +1710,27 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternal(
         ancestor, transform_state, visual_rect_flags);
   }
   return true;
+}
+
+const LayoutObject* LayoutObject::GetPropertyContainer(
+    AncestorSkipInfo* skip_info,
+    PropertyTreeState* container_properties) const {
+  const LayoutObject* property_container = this;
+  while (!property_container->FirstFragment().HasLocalBorderBoxProperties()) {
+    property_container = property_container->Container(skip_info);
+    if (!property_container || (skip_info && skip_info->AncestorSkipped()) ||
+        property_container->FirstFragment().NextFragment())
+      return nullptr;
+  }
+  if (container_properties) {
+    if (property_container == this) {
+      *container_properties = FirstFragment().LocalBorderBoxProperties();
+    } else {
+      *container_properties =
+          property_container->FirstFragment().ContentsProperties();
+    }
+  }
+  return property_container;
 }
 
 HitTestResult LayoutObject::HitTestForOcclusion(
@@ -1958,7 +1982,9 @@ void LayoutObject::SetPseudoElementStyle(
   SetStyle(std::move(pseudo_style));
 }
 
-void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded() {
+void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded(
+    bool mark_container_chain_layout_overflow_recalc,
+    bool mark_container_chain_visual_overflow_recalc) {
   LayoutObject* object = this;
   do {
     // Cell and row need to propagate the flag to their containing section and
@@ -1968,25 +1994,42 @@ void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded() {
                  ? object->Parent()
                  : object->Container();
     if (object) {
-      object->SetChildNeedsLayoutOverflowRecalc();
-      object->MarkSelfPaintingLayerForVisualOverflowRecalc();
+      if (mark_container_chain_layout_overflow_recalc)
+        object->SetChildNeedsLayoutOverflowRecalc();
+      if (mark_container_chain_visual_overflow_recalc)
+        object->MarkSelfPaintingLayerForVisualOverflowRecalc();
     }
 
   } while (object);
 }
 
-void LayoutObject::SetNeedsVisualOverflowAndPaintInvalidation() {
+void LayoutObject::SetNeedsOverflowRecalc(
+    OverflowRecalcType overflow_recalc_type) {
+  bool mark_container_chain_layout_overflow_recalc = false;
+  bool mark_container_chain_visual_overflow_recalc = false;
+
+  if (overflow_recalc_type ==
+      OverflowRecalcType::kLayoutAndVisualOverflowRecalc) {
+    mark_container_chain_layout_overflow_recalc =
+        !SelfNeedsLayoutOverflowRecalc();
+    SetSelfNeedsLayoutOverflowRecalc();
+  }
+
+  DCHECK(overflow_recalc_type ==
+             OverflowRecalcType::kOnlyVisualOverflowRecalc ||
+         overflow_recalc_type ==
+             OverflowRecalcType::kLayoutAndVisualOverflowRecalc);
   SetShouldCheckForPaintInvalidation();
+  mark_container_chain_visual_overflow_recalc =
+      !SelfPaintingLayerNeedsVisualOverflowRecalc();
   MarkSelfPaintingLayerForVisualOverflowRecalc();
-}
 
-void LayoutObject::SetNeedsOverflowRecalc() {
-  bool needed_recalc = SelfNeedsLayoutOverflowRecalc();
-  SetSelfNeedsLayoutOverflowRecalc();
-  SetNeedsVisualOverflowAndPaintInvalidation();
-
-  if (!needed_recalc)
-    MarkContainerChainForOverflowRecalcIfNeeded();
+  if (mark_container_chain_layout_overflow_recalc ||
+      mark_container_chain_visual_overflow_recalc) {
+    MarkContainerChainForOverflowRecalcIfNeeded(
+        mark_container_chain_layout_overflow_recalc,
+        mark_container_chain_visual_overflow_recalc);
+  }
 }
 
 DISABLE_CFI_PERF
@@ -2489,7 +2532,7 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
 
   // Don't propagate style from markers with 'content: normal' because it's not
   // needed and it would be slow.
-  if (pseudo_id == kPseudoIdMarker && !StyleRef().GetContentData())
+  if (pseudo_id == kPseudoIdMarker && StyleRef().ContentBehavesAsNormal())
     return;
 
   // Propagate style from pseudo elements to generated content. We skip children
@@ -3160,6 +3203,11 @@ void LayoutObject::WillBeRemovedFromTree() {
 }
 
 void LayoutObject::SetNeedsPaintPropertyUpdate() {
+  SetNeedsPaintPropertyUpdatePreservingCachedRects();
+  InvalidateIntersectionObserverCachedRects();
+}
+
+void LayoutObject::SetNeedsPaintPropertyUpdatePreservingCachedRects() {
   if (bitfields_.NeedsPaintPropertyUpdate())
     return;
 
@@ -3282,6 +3330,10 @@ CompositingState LayoutObject::GetCompositingState() const {
   return HasLayer()
              ? ToLayoutBoxModelObject(this)->Layer()->GetCompositingState()
              : kNotComposited;
+}
+
+bool LayoutObject::CanHaveAdditionalCompositingReasons() const {
+  return false;
 }
 
 CompositingReasons LayoutObject::AdditionalCompositingReasons() const {
@@ -4069,6 +4121,15 @@ LayoutUnit LayoutObject::FlipForWritingModeInternal(
     return position;
   return (box_for_flipping ? box_for_flipping : ContainingBlock())
       ->FlipForWritingMode(position, width);
+}
+
+bool LayoutObject::SelfPaintingLayerNeedsVisualOverflowRecalc() const {
+  if (HasLayer()) {
+    auto* box_model_object = ToLayoutBoxModelObject(this);
+    if (box_model_object->HasSelfPaintingLayer())
+      return box_model_object->Layer()->NeedsVisualOverflowRecalc();
+  }
+  return false;
 }
 
 void LayoutObject::MarkSelfPaintingLayerForVisualOverflowRecalc() {

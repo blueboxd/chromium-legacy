@@ -75,7 +75,7 @@ void DocumentXSLT::ApplyXSLTransform(Document& document,
   DCHECK(!pi->IsLoading());
   UseCounter::Count(document, WebFeature::kXSLProcessingInstruction);
   XSLTProcessor* processor = XSLTProcessor::Create(document);
-  processor->SetXSLStyleSheet(ToXSLStyleSheet(pi->sheet()));
+  processor->SetXSLStyleSheet(To<XSLStyleSheet>(pi->sheet()));
   String result_mime_type;
   String new_source;
   String result_encoding;

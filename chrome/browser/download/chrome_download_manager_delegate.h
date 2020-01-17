@@ -147,6 +147,12 @@ class ChromeDownloadManagerDelegate
   };
 #endif  // FULL_SAFE_BROWSING
 
+  // Callback function after the DownloadProtectionService completes.
+  void CheckClientDownloadDone(uint32_t download_id,
+                               safe_browsing::DownloadCheckResult result);
+
+  base::WeakPtr<ChromeDownloadManagerDelegate> GetWeakPtr();
+
  protected:
   virtual safe_browsing::DownloadProtectionService*
       GetDownloadProtectionService();
@@ -217,10 +223,6 @@ class ChromeDownloadManagerDelegate
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
-
-  // Callback function after the DownloadProtectionService completes.
-  void CheckClientDownloadDone(uint32_t download_id,
-                               safe_browsing::DownloadCheckResult result);
 
   // Internal gateways for ShouldCompleteDownload().
   bool IsDownloadReadyForCompletion(

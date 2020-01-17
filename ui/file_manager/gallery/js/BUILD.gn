@@ -68,9 +68,7 @@ js_unittest("entry_list_watcher_unittest") {
 }
 
 js_library("error_banner") {
-  deps = [
-    "//ui/file_manager/file_manager/common/js:util",
-  ]
+  deps = [ "//ui/file_manager/file_manager/common/js:util" ]
 }
 
 js_library("gallery") {
@@ -130,9 +128,7 @@ js_unittest("gallery_item_unittest") {
 }
 
 js_library("gallery_metrics") {
-  deps = [
-    "//ui/file_manager/file_manager/common/js:metrics_base",
-  ]
+  deps = [ "//ui/file_manager/file_manager/common/js:metrics_base" ]
 }
 
 js_library("gallery_util") {
@@ -179,9 +175,7 @@ js_library("ribbon") {
 }
 
 js_unittest("ribbon_unittest") {
-  deps = [
-    ":ribbon",
-  ]
+  deps = [ ":ribbon" ]
 }
 
 js_library("slide_mode") {

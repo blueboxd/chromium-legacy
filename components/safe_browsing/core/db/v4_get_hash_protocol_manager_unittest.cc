@@ -16,10 +16,10 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/db/safebrowsing.pb.h"
 #include "components/safe_browsing/core/db/util.h"
 #include "components/safe_browsing/core/db/v4_test_util.h"
-#include "content/public/test/browser_task_environment.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -69,6 +69,7 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
  public:
   void SetUp() override {
     PlatformTest::SetUp();
+    task_environment_ = CreateTestTaskEnvironment();
     callback_called_ = false;
     test_shared_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -189,7 +190,7 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
   base::SimpleTestClock clock_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
-  content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 };
 
 TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingNetwork) {

@@ -58,12 +58,8 @@ template("ios_remoting_app_tmpl") {
   _credits_bundle_target_name = "${target_name}_credits_bundle"
   bundle_data(_credits_bundle_target_name) {
     sources = get_target_outputs(":$_credits_resources_target_name")
-    public_deps = [
-      ":$_credits_resources_target_name",
-    ]
-    outputs = [
-      "{{bundle_resources_dir}}/{{source_file_part}}",
-    ]
+    public_deps = [ ":$_credits_resources_target_name" ]
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
   }
 
   ios_app_bundle(target_name) {

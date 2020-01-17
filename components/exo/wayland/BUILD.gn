@@ -187,9 +187,7 @@ source_set("wayland") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "server_unittest.cc",
-  ]
+  sources = [ "server_unittest.cc" ]
 
   deps = [
     ":wayland",
@@ -273,9 +271,7 @@ source_set("client_support") {
 }
 
 executable("wayland_rects_client") {
-  sources = [
-    "clients/rects.cc",
-  ]
+  sources = [ "clients/rects.cc" ]
 
   deps = [
     ":client_support",
@@ -347,9 +343,7 @@ source_set("fullscreen_shell") {
 }
 
 executable("wayland_simple_client") {
-  sources = [
-    "clients/simple_main.cc",
-  ]
+  sources = [ "clients/simple_main.cc" ]
   deps = [
     ":client_support",
     ":simple",
@@ -358,9 +352,7 @@ executable("wayland_simple_client") {
 }
 
 executable("wayland_fullscreen_client") {
-  sources = [
-    "clients/fullscreen_shell_main.cc",
-  ]
+  sources = [ "clients/fullscreen_shell_main.cc" ]
   deps = [
     ":client_support",
     ":fullscreen_shell",
@@ -369,9 +361,7 @@ executable("wayland_fullscreen_client") {
 }
 
 executable("wayland_subsurface_client") {
-  sources = [
-    "clients/subsurface.cc",
-  ]
+  sources = [ "clients/subsurface.cc" ]
 
   deps = [
     ":client_support",
@@ -412,9 +402,7 @@ source_set("blur") {
 }
 
 executable("wayland_blur_client") {
-  sources = [
-    "clients/blur_main.cc",
-  ]
+  sources = [ "clients/blur_main.cc" ]
   deps = [
     ":blur",
     ":client_support",
@@ -423,9 +411,7 @@ executable("wayland_blur_client") {
 }
 
 executable("wayland_info_client") {
-  sources = [
-    "clients/info.cc",
-  ]
+  sources = [ "clients/info.cc" ]
 
   deps = [
     ":client_support",
@@ -515,9 +501,7 @@ test("wayland_client_perftests") {
 
 if (ozone_platform_gbm) {
   executable("wayland_yuv_client") {
-    sources = [
-      "clients/yuv.cc",
-    ]
+    sources = [ "clients/yuv.cc" ]
 
     deps = [
       ":client_support",
@@ -535,9 +519,7 @@ if (ozone_platform_gbm) {
   }
 
   executable("wayland_color_space_client") {
-    sources = [
-      "clients/color_space.cc",
-    ]
+    sources = [ "clients/color_space.cc" ]
 
     deps = [
       ":client_support",
@@ -556,9 +538,7 @@ if (ozone_platform_gbm) {
   }
 
   executable("wayland_explicit_synchronization_client") {
-    sources = [
-      "clients/explicit_synchronization.cc",
-    ]
+    sources = [ "clients/explicit_synchronization.cc" ]
 
     deps = [
       ":client_support",
@@ -575,9 +555,7 @@ if (ozone_platform_gbm) {
 
   if (enable_vulkan) {
     executable("wayland_vulkan_client") {
-      sources = [
-        "clients/vulkan.cc",
-      ]
+      sources = [ "clients/vulkan.cc" ]
 
       deps = [
         ":client_support",

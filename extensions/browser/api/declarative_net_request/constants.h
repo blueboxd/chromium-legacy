@@ -122,6 +122,10 @@ extern const char kReadDynamicRulesJSONStatusHistogram[];
 // badge text is set to the DNR action count.
 extern const char kActionCountPlaceholderBadgeText[];
 
+// Error returned for the getMatchedRules extension function call, if the
+// extension does not have sufficient permissions to make the call.
+extern const char kErrorGetMatchedRulesMissingPermissions[];
+
 }  // namespace declarative_net_request
 }  // namespace extensions
 

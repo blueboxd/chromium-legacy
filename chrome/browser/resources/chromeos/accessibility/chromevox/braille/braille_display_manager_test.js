@@ -25,7 +25,7 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
   ],
 
   /** @override */
-  setUp: function() {
+  setUp() {
     /** @const */
     this.NAV_BRAILLE = new NavBraille({text: 'Hello, world!'});
     this.EMPTY_NAV_BRAILLE = new NavBraille({text: ''});
@@ -36,7 +36,7 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
     this.DISPLAY_COLUMN_SIZE = 12;
   },
 
-  addFakeApi: function() {
+  addFakeApi() {
     chrome.brailleDisplayPrivate = {};
     chrome.brailleDisplayPrivate.getDisplayState = function(callback) {
       callback(this.displayState);
@@ -49,7 +49,7 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
     chrome.brailleDisplayPrivate.onKeyEvent = new FakeChromeEvent();
   },
 
-  displayAvailable: function() {
+  displayAvailable() {
     this.displayState = {
       available: true,
       textRowCount: this.DISPLAY_ROW_SIZE,
@@ -66,7 +66,7 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
    *                               should have a selection
    * @param {number=} opt_selEnd last cell that should have a selection.
    */
-  assertDisplayPositionAndClear: function(start, opt_selStart, opt_selEnd) {
+  assertDisplayPositionAndClear(start, opt_selStart, opt_selEnd) {
     if (opt_selStart !== undefined && opt_selEnd === undefined) {
       opt_selEnd = opt_selStart + 1;
     }
@@ -94,7 +94,7 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
    * of cells and clears the list of written cells.
    * There must be only one buffer in the list.
    */
-  assertEmptyDisplayAndClear: function() {
+  assertEmptyDisplayAndClear() {
     assertEquals(1, this.writtenCells.length);
     var content = this.writtenCells[0];
     this.writtenCells.length = 0;
@@ -105,7 +105,7 @@ ChromeVoxBrailleDisplayManagerUnitTest.prototype = {
   /**
    * Asserts that the groups passed in actually match what we expect.
    */
-  assertGroupsValid: function(groups, expected) {
+  assertGroupsValid(groups, expected) {
     assertEquals(JSON.stringify(groups), JSON.stringify(expected));
   }
 };
@@ -122,7 +122,7 @@ FakeTranslator.prototype = {
    * mapped to two translated cells.
    * @override
    */
-  translate: function(spannable, expansionType, callback) {
+  translate(spannable, expansionType, callback) {
     text = spannable.toString();
     var buf = new Uint8Array(text.length + text.length / 2);
     var textToBraille = [];
@@ -150,19 +150,19 @@ FakeTranslatorManager.prototype = {
   changeListener: null,
   translator: null,
 
-  setTranslator: function(translator) {
+  setTranslator(translator) {
     this.translator = translator;
     if (this.changeListener) {
       this.changeListener();
     }
   },
 
-  addChangeListener: function(listener) {
+  addChangeListener(listener) {
     assertEquals(null, this.changeListener);
     this.changeListener = listener;
   },
 
-  getExpandingTranslator: function() {
+  getExpandingTranslator() {
     return this.translator;
   }
 };
@@ -174,7 +174,7 @@ chrome.storage = {
   onChanged: new FakeChromeEvent(),
 
   local: {
-    get: function(object, callback) {
+    get(object, callback) {
       callback({brailleWordWrap: false});
     }
   }

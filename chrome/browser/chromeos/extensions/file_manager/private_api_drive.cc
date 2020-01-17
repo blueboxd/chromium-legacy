@@ -1050,7 +1050,7 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
           ->GetURLLoaderFactoryForBrowserProcess();
   auth_service_ = std::make_unique<google_apis::AuthService>(
       identity_manager, account_id, url_loader_factory, scopes);
-  auth_service_->StartAuthentication(base::Bind(
+  auth_service_->StartAuthentication(base::BindOnce(
       &FileManagerPrivateInternalGetDownloadUrlFunction::OnTokenFetched, this));
 }
 

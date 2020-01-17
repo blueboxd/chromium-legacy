@@ -102,6 +102,10 @@ public class ContentView extends FrameLayout
         setOnSystemUiVisibilityChangeListener(this);
     }
 
+    public WebContents getWebContents() {
+        return mWebContents;
+    }
+
     protected WebContentsAccessibility getWebContentsAccessibility() {
         return !mWebContents.isDestroyed() ? WebContentsAccessibility.fromWebContents(mWebContents)
                                            : null;

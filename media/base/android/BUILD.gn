@@ -66,9 +66,7 @@ if (is_android) {
       "stream_texture_wrapper.h",
     ]
     configs += [ "//media:subcomponent_config" ]
-    public_deps = [
-      ":media_jni_headers",
-    ]
+    public_deps = [ ":media_jni_headers" ]
     deps = [
       "//media/audio",
       "//media/base",
@@ -154,9 +152,7 @@ if (is_android) {
   }
 
   java_cpp_strings("java_switches") {
-    sources = [
-      "//media/base/media_switches.cc",
-    ]
+    sources = [ "//media/base/media_switches.cc" ]
     template = "//media/base/android/java_templates/MediaSwitches.java.tmpl"
   }
 

@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
@@ -80,6 +81,20 @@ UiToUse GetUiToUseFromSafeBrowsingVerdict(
   return UiToUse::kNormalUi;
 }
 
+// Roll the dice to decide whether to use the normal UI even when the crowd data
+// suggests that a site is sending unsolicited prompts. This creates a control
+// group of normal UI prompt impressions, which facilitates comparing acceptance
+// rates, better calibrating server-side logic, and detecting when the
+// notification experience on the site has improved.
+bool ShouldHoldBackQuietUI() {
+  const double chance =
+      QuietNotificationPermissionUiConfig::GetCrowdDenyHoldBackChance();
+  // Avoid rolling a dice if the chance is 0.
+  const bool result = chance && base::RandDouble() < chance;
+  base::UmaHistogramBoolean("Permissions.CrowdDeny.DidHoldbackQuietUi", result);
+  return result;
+}
+
 }  // namespace
 
 ContextualNotificationPermissionUiSelector::
@@ -121,11 +136,12 @@ void ContextualNotificationPermissionUiSelector::EvaluateCrowdDenyTrigger(
 
   base::Optional<UiToUse> ui_to_use = GetUiToUseBasedOnSiteReputation(
       CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(origin));
-  if (ui_to_use) {
-    OnCrowdDenyTriggerEvaluated(*ui_to_use);
+  if (!ui_to_use || *ui_to_use == UiToUse::kNormalUi) {
+    OnCrowdDenyTriggerEvaluated(UiToUse::kNormalUi);
     return;
   }
 
+  // PreloadData suggests a spammy site, ping safe browsing to verify.
   DCHECK(!safe_browsing_request_);
   DCHECK(g_browser_process->safe_browsing_service());
 
@@ -149,7 +165,7 @@ void ContextualNotificationPermissionUiSelector::OnSafeBrowsingVerdictReceived(
 
 void ContextualNotificationPermissionUiSelector::OnCrowdDenyTriggerEvaluated(
     UiToUse ui_to_use) {
-  if (ui_to_use == UiToUse::kQuietUi) {
+  if (ui_to_use == UiToUse::kQuietUi && !ShouldHoldBackQuietUI()) {
     Notify(UiToUse::kQuietUi, QuietUiReason::kTriggeredByCrowdDeny);
     return;
   }
@@ -170,3 +186,5 @@ void ContextualNotificationPermissionUiSelector::Notify(
   DCHECK_EQ(ui_to_use == UiToUse::kQuietUi, !!quiet_ui_reason);
   std::move(callback_).Run(ui_to_use, quiet_ui_reason);
 }
+
+// static

@@ -37,8 +37,8 @@ void SVGInlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
 
   ScopedSVGPaintState paint_state(*LineLayoutAPIShim::ConstLayoutObjectFrom(
                                       svg_inline_flow_box_.GetLineLayoutItem()),
-                                  paint_info);
-  if (paint_state.ApplyClipMaskAndFilterIfNecessary()) {
+                                  paint_info, svg_inline_flow_box_);
+  if (paint_state.ApplyEffects()) {
     for (InlineBox* child = svg_inline_flow_box_.FirstChild(); child;
          child = child->NextOnLine())
       child->Paint(paint_state.GetPaintInfo(), paint_offset, LayoutUnit(),

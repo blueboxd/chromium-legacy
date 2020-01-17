@@ -24,4 +24,9 @@ public interface ContextMenuItem {
      * @return The title of the menu item.
      */
     CharSequence getTitle(Context context);
+
+    /**
+     * Turn on a flag indicating the menu item should show an in-product help label.
+     */
+    default void setShowInProductHelp() {}
 }

@@ -73,7 +73,7 @@ void LanguagePrefs::ClearFluent(const std::string& language) {
   std::string canonical_lang = language;
   language::ToTranslateLanguageSynonym(&canonical_lang);
   ListPrefUpdate update(prefs_, language::prefs::kFluentLanguages);
-  base::Erase(update->GetList(), base::Value(canonical_lang));
+  update->EraseListValue(base::Value(canonical_lang));
 }
 
 void LanguagePrefs::ResetFluentLanguagesToDefaults() {

@@ -91,7 +91,7 @@ Polymer({
     /** @private {!Array<number>} */
     pagesToPrint_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -135,12 +135,12 @@ Polymer({
    * settings.pages, because settings.pages is not sticky.
    * @override
    */
-  attached: function() {
+  attached() {
     this.selectedValue = PagesValue.ALL.toString();
   },
 
   /** @return {!CrInputElement} The cr-input field element for InputBehavior. */
-  getInput: function() {
+  getInput() {
     return /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput);
   },
 
@@ -148,19 +148,19 @@ Polymer({
    * @param {!CustomEvent<string>} e Contains the new input value.
    * @private
    */
-  onInputChange_: function(e) {
+  onInputChange_(e) {
     if (this.inputString_ !== e.detail) {
       this.restoreLastInput_ = true;
     }
     this.inputString_ = e.detail;
   },
 
-  onProcessSelectChange: function(value) {
+  onProcessSelectChange(value) {
     this.customSelected_ = value === PagesValue.CUSTOM.toString();
   },
 
   /** @private */
-  onCollapseChanged_: function() {
+  onCollapseChanged_() {
     if (this.customSelected_) {
       /** @type {!CrInputElement} */ (this.$.pageSettingsCustomInput)
           .inputElement.focus();
@@ -171,7 +171,7 @@ Polymer({
    * @return {boolean} Whether the controls should be disabled.
    * @private
    */
-  computeControlsDisabled_: function() {
+  computeControlsDisabled_() {
     // Disable the input if other settings are responsible for the error state.
     return !this.hasError_ && this.disabled;
   },
@@ -181,7 +181,7 @@ Polymer({
    * current value of the input.
    * @private
    */
-  updatePagesToPrint_: function() {
+  updatePagesToPrint_() {
     if (!this.customSelected_) {
       this.errorState_ = PagesInputErrorState.NO_ERROR;
       this.pagesToPrint_ = this.pageCount ?
@@ -273,7 +273,7 @@ Polymer({
    * @return {!Array<{to: number, from: number}>}
    * @private
    */
-  computeRangesToPrint_: function() {
+  computeRangesToPrint_() {
     if (!this.pagesToPrint_ || this.pagesToPrint_.length === 0 ||
         this.pagesToPrint_[0] === -1 ||
         this.pagesToPrint_.length === this.pageCount) {
@@ -302,7 +302,7 @@ Polymer({
    *     user.
    * @private
    */
-  getNupPages_: function() {
+  getNupPages_() {
     const pagesPerSheet =
         /** @type {number} */ (this.getSettingValue('pagesPerSheet'));
     if (pagesPerSheet <= 1 || this.pagesToPrint_.length === 0) {
@@ -322,7 +322,7 @@ Polymer({
    * needed.
    * @private
    */
-  onRangeChange_: function() {
+  onRangeChange_() {
     if (this.settings === undefined || this.pagesToPrint_ === undefined) {
       return;
     }
@@ -355,7 +355,7 @@ Polymer({
   },
 
   /** @private */
-  onSelectBlur_: function(event) {
+  onSelectBlur_(event) {
     if (!this.customSelected_ ||
         event.relatedTarget === this.$.pageSettingsCustomInput) {
       return;
@@ -365,7 +365,7 @@ Polymer({
   },
 
   /** @private */
-  onCustomInputBlur_: function() {
+  onCustomInputBlur_() {
     this.resetAndUpdate();
     if (this.errorState_ === PagesInputErrorState.EMPTY) {
       // Update with all pages.
@@ -380,7 +380,7 @@ Polymer({
    * @return {string} Gets message to show as hint.
    * @private
    */
-  getHintMessage_: function() {
+  getHintMessage_() {
     if (this.errorState_ === PagesInputErrorState.NO_ERROR ||
         this.errorState_ === PagesInputErrorState.EMPTY) {
       return '';
@@ -402,7 +402,7 @@ Polymer({
    * @return {boolean} Whether to hide the hint.
    * @private
    */
-  hintHidden_: function() {
+  hintHidden_() {
     return this.errorState_ === PagesInputErrorState.NO_ERROR ||
         this.errorState_ === PagesInputErrorState.EMPTY;
   },
@@ -411,7 +411,7 @@ Polymer({
    * @return {boolean} Whether to disable the custom input.
    * @private
    */
-  inputDisabled_: function() {
+  inputDisabled_() {
     return !this.customSelected_ || this.controlsDisabled_;
   },
 
@@ -419,7 +419,7 @@ Polymer({
    * @return {string} A string representing the full page range.
    * @private
    */
-  getAllPagesString_: function() {
+  getAllPagesString_() {
     if (this.pageCount === 0) {
       return '';
     }
@@ -428,7 +428,7 @@ Polymer({
   },
 
   /** @private */
-  onCustomSelectedChange_: function() {
+  onCustomSelectedChange_() {
     if ((this.customSelected_ && !this.restoreLastInput_) ||
         this.errorState_ !== PagesInputErrorState.NO_ERROR) {
       this.restoreLastInput_ = true;
@@ -444,7 +444,7 @@ Polymer({
    * @param {number} previous
    * @private
    */
-  onPageCountChange_: function(current, previous) {
+  onPageCountChange_(current, previous) {
     // Reset the custom input to the new "all pages" value if it is equal to the
     // full page range and was either set automatically, or would become invalid
     // due to the page count change.

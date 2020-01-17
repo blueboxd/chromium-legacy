@@ -41,7 +41,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/browser.h"
@@ -63,6 +62,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/zoom/zoom_controller.h"
@@ -1225,7 +1225,7 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
     contents = browser->tab_strip_model()->GetActiveWebContents();
     if (!contents)
       return RespondNow(Error(tabs_constants::kNoSelectedTabError));
-    tab_id = SessionTabHelper::IdForTab(contents).id();
+    tab_id = sessions::SessionTabHelper::IdForTab(contents).id();
   } else {
     tab_id = *params->tab_id;
   }
@@ -1672,7 +1672,7 @@ WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(
 
   if (!extension()->permissions_data()->CanCaptureVisiblePage(
           contents->GetLastCommittedURL(),
-          SessionTabHelper::IdForTab(contents).id(), error,
+          sessions::SessionTabHelper::IdForTab(contents).id(), error,
           extensions::CaptureRequirement::kActiveTabOrAllUrls)) {
     return nullptr;
   }

@@ -4,6 +4,7 @@
 
 #include "services/network/quic_transport.h"
 
+#include <set>
 #include <vector>
 
 #include "base/test/bind_test_util.h"
@@ -29,7 +30,10 @@ std::string Read(mojo::ScopedDataPipeConsumerHandle readable) {
     MojoResult result =
         readable->ReadData(buffer, &size, MOJO_READ_DATA_FLAG_NONE);
     if (result == MOJO_RESULT_SHOULD_WAIT) {
-      base::RunLoop().RunUntilIdle();
+      base::RunLoop run_loop;
+      base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                       run_loop.QuitClosure());
+      run_loop.Run();
       continue;
     }
     if (result == MOJO_RESULT_FAILED_PRECONDITION) {
@@ -105,17 +109,63 @@ class TestClient final : public mojom::QuicTransportClient {
  public:
   explicit TestClient(
       mojo::PendingReceiver<mojom::QuicTransportClient> pending_receiver)
-      : receiver_(this, std::move(pending_receiver)) {}
+      : receiver_(this, std::move(pending_receiver)) {
+    receiver_.set_disconnect_handler(base::BindOnce(
+        &TestClient::OnMojoConnectionError, base::Unretained(this)));
+  }
+
+  // mojom::QuicTransportClient implementation.
+  void OnDatagramReceived(base::span<const uint8_t> data) override {}
+  void OnIncomingStreamClosed(uint32_t stream_id, bool fin_received) override {
+    closed_incoming_streams_.insert(std::make_pair(stream_id, fin_received));
+    if (quit_closure_for_incoming_stream_closure_) {
+      std::move(quit_closure_for_incoming_stream_closure_).Run();
+    }
+  }
 
   void WaitUntilMojoConnectionError() {
     base::RunLoop run_loop;
 
-    receiver_.set_disconnect_handler(run_loop.QuitClosure());
+    quit_closure_for_mojo_connection_error_ = run_loop.QuitClosure();
     run_loop.Run();
   }
 
+  void WaitUntilIncomingStreamIsClosed(uint32_t stream_id) {
+    while (!stream_is_closed_as_incoming_stream(stream_id)) {
+      base::RunLoop run_loop;
+
+      quit_closure_for_incoming_stream_closure_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+  }
+
+  bool has_received_fin_for(uint32_t stream_id) {
+    auto it = closed_incoming_streams_.find(stream_id);
+    return it != closed_incoming_streams_.end() && it->second;
+  }
+  bool stream_is_closed_as_incoming_stream(uint32_t stream_id) {
+    return closed_incoming_streams_.find(stream_id) !=
+           closed_incoming_streams_.end();
+  }
+  bool has_seen_mojo_connection_error() const {
+    return has_seen_mojo_connection_error_;
+  }
+
  private:
+  void OnMojoConnectionError() {
+    has_seen_mojo_connection_error_ = true;
+    if (quit_closure_for_mojo_connection_error_) {
+      std::move(quit_closure_for_mojo_connection_error_).Run();
+    }
+  }
+
   mojo::Receiver<mojom::QuicTransportClient> receiver_;
+
+  base::OnceClosure quit_closure_for_mojo_connection_error_;
+  base::OnceClosure quit_closure_for_incoming_stream_closure_;
+
+  std::map<uint32_t, bool> closed_incoming_streams_;
+  bool has_seen_mojo_connection_error_ = false;
 };
 
 class QuicTransportTest : public testing::Test {
@@ -171,6 +221,13 @@ class QuicTransportTest : public testing::Test {
 
   const url::Origin& origin() const { return origin_; }
   const NetworkContext& network_context() const { return network_context_; }
+
+  void RunPendingTasks() {
+    base::RunLoop run_loop;
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
  private:
   const url::Origin origin_;
@@ -255,6 +312,9 @@ TEST_F(QuicTransportTest, SendDatagram) {
   EXPECT_TRUE(result);
 }
 
+// TODO(yhirano): Add a test for OnDatagramReceived. It would be difficult due
+// to the flaky nature of datagrams.
+
 TEST_F(QuicTransportTest, SendToolargeDatagram) {
   base::RunLoop run_loop_for_handshake;
   mojo::PendingRemote<mojom::QuicTransportHandshakeClient> handshake_client;
@@ -300,6 +360,7 @@ TEST_F(QuicTransportTest, EchoOnUnidirectionalStreams) {
 
   ASSERT_TRUE(test_handshake_client.has_seen_connection_establishment());
 
+  TestClient client(test_handshake_client.PassClientReceiver());
   mojo::Remote<mojom::QuicTransport> transport_remote(
       test_handshake_client.PassTransport());
 
@@ -313,8 +374,6 @@ TEST_F(QuicTransportTest, EchoOnUnidirectionalStreams) {
   uint32_t size = 5;
   ASSERT_EQ(MOJO_RESULT_OK, writable_for_outgoing->WriteData(
                                 "hello", &size, MOJO_WRITE_DATA_FLAG_NONE));
-  // Signal the end-of-data.
-  writable_for_outgoing.reset();
 
   base::RunLoop run_loop_for_stream_creation;
   uint32_t stream_id;
@@ -328,6 +387,10 @@ TEST_F(QuicTransportTest, EchoOnUnidirectionalStreams) {
       }));
   run_loop_for_stream_creation.Run();
   ASSERT_TRUE(stream_created);
+
+  // Signal the end-of-data.
+  writable_for_outgoing.reset();
+  transport_remote->SendFin(stream_id);
 
   mojo::ScopedDataPipeConsumerHandle readable_for_incoming;
   uint32_t incoming_stream_id = stream_id;
@@ -345,6 +408,12 @@ TEST_F(QuicTransportTest, EchoOnUnidirectionalStreams) {
 
   std::string echo_back = Read(std::move(readable_for_incoming));
   EXPECT_EQ("hello", echo_back);
+
+  client.WaitUntilIncomingStreamIsClosed(incoming_stream_id);
+
+  EXPECT_FALSE(client.has_received_fin_for(stream_id));
+  EXPECT_TRUE(client.has_received_fin_for(incoming_stream_id));
+  EXPECT_FALSE(client.has_seen_mojo_connection_error());
 }
 
 TEST_F(QuicTransportTest, EchoOnBidirectionalStream) {
@@ -362,6 +431,7 @@ TEST_F(QuicTransportTest, EchoOnBidirectionalStream) {
 
   ASSERT_TRUE(test_handshake_client.has_seen_connection_establishment());
 
+  TestClient client(test_handshake_client.PassClientReceiver());
   mojo::Remote<mojom::QuicTransport> transport_remote(
       test_handshake_client.PassTransport());
 
@@ -380,8 +450,6 @@ TEST_F(QuicTransportTest, EchoOnBidirectionalStream) {
   uint32_t size = 5;
   ASSERT_EQ(MOJO_RESULT_OK, writable_for_outgoing->WriteData(
                                 "hello", &size, MOJO_WRITE_DATA_FLAG_NONE));
-  // Signal the end-of-data.
-  writable_for_outgoing.reset();
 
   base::RunLoop run_loop_for_stream_creation;
   uint32_t stream_id;
@@ -396,8 +464,17 @@ TEST_F(QuicTransportTest, EchoOnBidirectionalStream) {
   run_loop_for_stream_creation.Run();
   ASSERT_TRUE(stream_created);
 
+  // Signal the end-of-data.
+  writable_for_outgoing.reset();
+  transport_remote->SendFin(stream_id);
+
   std::string echo_back = Read(std::move(readable_for_incoming));
   EXPECT_EQ("hello", echo_back);
+
+  client.WaitUntilIncomingStreamIsClosed(stream_id);
+  EXPECT_FALSE(client.has_seen_mojo_connection_error());
+  EXPECT_TRUE(client.has_received_fin_for(stream_id));
+  EXPECT_TRUE(client.stream_is_closed_as_incoming_stream(stream_id));
 }
 
 }  // namespace

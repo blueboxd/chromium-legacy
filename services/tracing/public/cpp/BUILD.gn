@@ -15,14 +15,10 @@ source_set("traced_process") {
     "traced_process.h",
   ]
 
-  public_deps = [
-    "//services/tracing/public/mojom",
-  ]
+  public_deps = [ "//services/tracing/public/mojom" ]
 
   if (!is_nacl && !is_ios) {
-    deps = [
-      ":cpp",
-    ]
+    deps = [ ":cpp" ]
   }
 }
 

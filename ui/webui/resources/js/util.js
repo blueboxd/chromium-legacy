@@ -129,7 +129,7 @@
  * @return {boolean} True if Chrome is running an RTL UI.
  */
 /* #export */ function isRTL() {
-  return document.documentElement.dir == 'rtl';
+  return document.documentElement.dir === 'rtl';
 }
 
 /**
@@ -170,7 +170,7 @@
 /* #export */ function appendParam(url, key, value) {
   const param = encodeURIComponent(key) + '=' + encodeURIComponent(value);
 
-  if (url.indexOf('?') == -1) {
+  if (url.indexOf('?') === -1) {
     return url + '?' + param;
   }
   return url + '&' + param;
@@ -439,5 +439,5 @@ if (!('key' in KeyboardEvent.prototype)) {
  * @return {boolean} Whether the element is interactive via text input.
  */
 /* #export */ function isTextInputElement(el) {
-  return el.tagName == 'INPUT' || el.tagName == 'TEXTAREA';
+  return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA';
 }

@@ -69,7 +69,7 @@ class CONTENT_EXPORT PowerStatusHelperImpl : public media::PowerStatusHelper {
   void SetIsPlaying(bool is_playing) override;
   void SetMetadata(const media::PipelineMetadata& metadata) override;
   void SetIsFullscreen(bool is_fullscreen) override;
-  void SetAverageDuration(base::TimeDelta average_duration) override;
+  void SetAverageFrameRate(base::Optional<int> average_fps) override;
   void UpdatePowerExperimentState(bool state) override;
 
  private:
@@ -84,7 +84,7 @@ class CONTENT_EXPORT PowerStatusHelperImpl : public media::PowerStatusHelper {
                                        media::VideoCodecProfile profile,
                                        gfx::Size natural_size,
                                        bool is_fullscreen,
-                                       base::TimeDelta average_duration);
+                                       base::Optional<int> average_fps);
 
   // Return the histogram names.  Here so that tests can find them too.
   static const char* BatteryDeltaHistogram();
@@ -114,8 +114,8 @@ class CONTENT_EXPORT PowerStatusHelperImpl : public media::PowerStatusHelper {
       media::VideoCodecProfile::VIDEO_CODEC_PROFILE_UNKNOWN;
   gfx::Size natural_size_;
   bool is_fullscreen_ = false;
-  // For estimating fps.
-  base::TimeDelta average_duration_;
+  // For estimating fps.  Can be unset if we don't know.
+  base::Optional<int> average_fps_;
 
   // Current UMA bucket, if any.
   base::Optional<int> current_bucket_;

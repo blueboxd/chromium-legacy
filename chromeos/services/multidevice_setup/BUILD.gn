@@ -75,9 +75,7 @@ static_library("multidevice_setup") {
     "//url",
   ]
 
-  public_deps = [
-    "//chromeos/services/multidevice_setup/public/mojom",
-  ]
+  public_deps = [ "//chromeos/services/multidevice_setup/public/mojom" ]
 
   visibility = [
     ":*",

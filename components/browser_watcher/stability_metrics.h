@@ -16,6 +16,7 @@ enum class CollectOnCrashEvent {
   kPmaSetDeletedFailed,
   kOpenForDeleteFailed,
   kSuccess,
+  kInMemoryAnnotationExists,
   // New values go here.
   kCollectOnCrashEventMax
 };

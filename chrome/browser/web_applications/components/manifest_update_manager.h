@@ -82,6 +82,8 @@ class ManifestUpdateManager final : public AppRegistrarObserver {
 
   base::flat_map<AppId, std::unique_ptr<ManifestUpdateTask>> tasks_;
 
+  base::flat_map<AppId, base::Time> last_update_check_;
+
   base::Optional<base::Time> time_override_for_testing_;
   ResultCallback result_callback_for_testing_;
 

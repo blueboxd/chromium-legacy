@@ -14,10 +14,10 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
+import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -62,24 +62,21 @@ public class CurrentPageVerifier implements NativeInitObserver {
     }
 
     /** A {@link TabObserver} that checks whether we are on a verified page on navigation. */
-    private final TabObserver mVerifyOnPageLoadObserver = new EmptyTabObserver() {
+    private final CustomTabTabObserver mVerifyOnPageLoadObserver = new CustomTabTabObserver() {
         @Override
         public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
             if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
             verify(navigation.getUrl());
         }
-    };
 
-    private final CustomTabActivityTabProvider.Observer mVerifyOnTabSwitchObserver =
-            new CustomTabActivityTabProvider.Observer() {
-                @Override
-                public void onTabSwapped(@NonNull Tab tab) {
-                    // When a link with target="_blank" is followed and the user navigates back, we
-                    // don't get the onDidFinishNavigation event (because the original page wasn't
-                    // navigated away from, it was only ever hidden). https://crbug.com/942088
-                    verify(tab.getUrl());
-                }
-            };
+        @Override
+        public void onObservingDifferentTab(@NonNull Tab tab) {
+            // When a link with target="_blank" is followed and the user navigates back, we
+            // don't get the onDidFinishNavigation event (because the original page wasn't
+            // navigated away from, it was only ever hidden). https://crbug.com/942088
+            verify(tab.getUrl());
+        }
+    };
 
     @Inject
     public CurrentPageVerifier(
@@ -93,7 +90,6 @@ public class CurrentPageVerifier implements NativeInitObserver {
         mDelegate = delegate;
 
         tabObserverRegistrar.registerActivityTabObserver(mVerifyOnPageLoadObserver);
-        tabProvider.addObserver(mVerifyOnTabSwitchObserver);
         lifecycleDispatcher.register(this);
     }
 

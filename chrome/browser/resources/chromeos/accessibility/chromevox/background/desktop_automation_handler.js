@@ -119,7 +119,7 @@ DesktopAutomationHandler.prototype = {
   },
 
   /** @override */
-  willHandleEvent_: function(evt) {
+  willHandleEvent_(evt) {
     return false;
   },
 
@@ -127,7 +127,7 @@ DesktopAutomationHandler.prototype = {
    * Provides all feedback once ChromeVox's focus changes.
    * @param {!AutomationEvent} evt
    */
-  onEventDefault: function(evt) {
+  onEventDefault(evt) {
     var node = evt.target;
     if (!node) {
       return;
@@ -163,7 +163,7 @@ DesktopAutomationHandler.prototype = {
   /**
    * @param {!AutomationEvent} evt
    */
-  onEventFromViews: function(evt) {
+  onEventFromViews(evt) {
     if (evt.target.root.role == RoleType.DESKTOP) {
       this.onEventDefault(evt);
     }
@@ -172,7 +172,7 @@ DesktopAutomationHandler.prototype = {
   /**
    * @param {!AutomationEvent} evt
    */
-  onEventIfSelected: function(evt) {
+  onEventIfSelected(evt) {
     if (evt.target.selected) {
       this.onEventDefault(evt);
     }
@@ -182,7 +182,7 @@ DesktopAutomationHandler.prototype = {
    * Handles the result of a hit test.
    * @param {!AutomationNode} node The hit result.
    */
-  onHitTestResult: function(node) {
+  onHitTestResult(node) {
     // It is possible that the user moved since we requested a hit test.  Bail
     // if the current range is valid and on the same page as the hit result (but
     // not the root).
@@ -222,7 +222,7 @@ DesktopAutomationHandler.prototype = {
   /**
    * @param {!AutomationEvent} evt
    */
-  onHover: function(evt) {
+  onHover(evt) {
     if (!GestureCommandHandler.getEnabled()) {
       return;
     }
@@ -265,7 +265,7 @@ DesktopAutomationHandler.prototype = {
    * Makes an announcement without changing focus.
    * @param {!AutomationEvent} evt
    */
-  onAlert: function(evt) {
+  onAlert(evt) {
     var node = evt.target;
     var range = cursors.Range.fromNode(node);
 
@@ -275,7 +275,7 @@ DesktopAutomationHandler.prototype = {
         .go();
   },
 
-  onBlur: function(evt) {
+  onBlur(evt) {
     // Nullify focus if it no longer exists.
     chrome.automation.getFocus(function(focus) {
       if (!focus) {
@@ -287,7 +287,7 @@ DesktopAutomationHandler.prototype = {
   /**
    * @param {!AutomationEvent} evt
    */
-  onDocumentSelectionChanged: function(evt) {
+  onDocumentSelectionChanged(evt) {
     var selectionStart = evt.target.selectionStartObject;
 
     // No selection.
@@ -316,7 +316,7 @@ DesktopAutomationHandler.prototype = {
    * Provides all feedback once a focus event fires.
    * @param {!AutomationEvent} evt
    */
-  onFocus: function(evt) {
+  onFocus(evt) {
     if (evt.target.role == RoleType.ROOT_WEB_AREA &&
         evt.eventFrom != 'action') {
       chrome.automation.getFocus(
@@ -364,7 +364,7 @@ DesktopAutomationHandler.prototype = {
    * Provides all feedback once a load complete event fires.
    * @param {!AutomationEvent} evt
    */
-  onLoadComplete: function(evt) {
+  onLoadComplete(evt) {
     // A load complete gets fired on the desktop node when display metrics
     // change.
     if (evt.target.role == RoleType.DESKTOP) {
@@ -420,7 +420,7 @@ DesktopAutomationHandler.prototype = {
    * Sets whether document selections from actions should be ignored.
    * @param {boolean} val
    */
-  ignoreDocumentSelectionFromAction: function(val) {
+  ignoreDocumentSelectionFromAction(val) {
     this.shouldIgnoreDocumentSelectionFromAction_ = val;
   },
 
@@ -429,7 +429,7 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    * @private
    */
-  onEditableChanged_: function(evt) {
+  onEditableChanged_(evt) {
     // Document selections only apply to rich editables, text selections to
     // non-rich editables.
     if (evt.type != EventType.DOCUMENT_SELECTION_CHANGED &&
@@ -471,7 +471,7 @@ DesktopAutomationHandler.prototype = {
    * Provides all feedback once a value changed event fires.
    * @param {!AutomationEvent} evt
    */
-  onValueChanged: function(evt) {
+  onValueChanged(evt) {
     // Skip root web areas.
     if (evt.target.role == RoleType.ROOT_WEB_AREA) {
       return;
@@ -524,7 +524,7 @@ DesktopAutomationHandler.prototype = {
    * Handle updating the active indicator when the document scrolls.
    * @param {!AutomationEvent} evt
    */
-  onScrollPositionChanged: function(evt) {
+  onScrollPositionChanged(evt) {
     var currentRange = ChromeVoxState.instance.currentRange;
     if (currentRange && currentRange.isValid()) {
       new Output().withLocation(currentRange, null, evt.type).go();
@@ -534,7 +534,7 @@ DesktopAutomationHandler.prototype = {
   /**
    * @param {!AutomationEvent} evt
    */
-  onSelection: function(evt) {
+  onSelection(evt) {
     // Invalidate any previous editable text handler state since some nodes,
     // like menuitems, can receive selection while focus remains on an editable
     // leading to braille output routing to the editable.
@@ -563,7 +563,7 @@ DesktopAutomationHandler.prototype = {
    * Provides all feedback once a menu start event fires.
    * @param {!AutomationEvent} evt
    */
-  onMenuStart: function(evt) {
+  onMenuStart(evt) {
     ChromeVoxState.instance.markCurrentRange();
     this.onEventDefault(evt);
   },
@@ -572,7 +572,7 @@ DesktopAutomationHandler.prototype = {
    * Provides all feedback once a menu end event fires.
    * @param {!AutomationEvent} evt
    */
-  onMenuEnd: function(evt) {
+  onMenuEnd(evt) {
     this.onEventDefault(evt);
 
     // This is a work around for Chrome context menus not firing a focus event
@@ -592,7 +592,7 @@ DesktopAutomationHandler.prototype = {
    *     False by default.
    * @return {boolean} True if the handler exists (created/already present).
    */
-  createTextEditHandlerIfNeeded_: function(node, opt_onFocus) {
+  createTextEditHandlerIfNeeded_(node, opt_onFocus) {
     if (!node.state.editable) {
       return false;
     }
@@ -639,7 +639,7 @@ DesktopAutomationHandler.prototype = {
    * @param {AutomationEvent} evt
    * @private
    */
-  maybeRecoverFocusAndOutput_: function(evt, focus) {
+  maybeRecoverFocusAndOutput_(evt, focus) {
     var focusedRoot = AutomationUtil.getTopLevelRoot(focus);
     if (!focusedRoot) {
       return;

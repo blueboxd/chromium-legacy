@@ -282,17 +282,6 @@ std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnbound(
       std::move(settings)));
 }
 
-// static
-std::unique_ptr<SequenceManagerImpl>
-SequenceManagerImpl::CreateSequenceFunneled(
-    scoped_refptr<SingleThreadTaskRunner> task_runner,
-    SequenceManager::Settings settings) {
-  return WrapUnique(
-      new SequenceManagerImpl(ThreadControllerImpl::CreateSequenceFunneled(
-                                  std::move(task_runner), settings.clock),
-                              std::move(settings)));
-}
-
 void SequenceManagerImpl::BindToMessagePump(std::unique_ptr<MessagePump> pump) {
   controller_->BindToCurrentThread(std::move(pump));
   CompleteInitializationOnBoundThread();

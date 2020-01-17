@@ -288,6 +288,7 @@ class ClankCompiler(object):
         'is_chrome_branded=' + str(not self._public).lower(),
         'is_debug=false',
         'is_official_build=true',
+        'symbol_level=1',  # to fit 30 GiB RAM on the bot when LLD is running
         'target_os="android"',
         'use_goma=' + str(self._use_goma).lower(),
         'use_order_profiling=' + str(instrumented).lower(),

@@ -41,9 +41,7 @@ static_library("client") {
     "//remoting/build/config:enable_webrtc_remoting_client",
   ]
 
-  public_deps = [
-    "//remoting/base",
-  ]
+  public_deps = [ "//remoting/base" ]
 
   deps = [
     "//mojo/core/embedder",

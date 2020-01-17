@@ -115,9 +115,7 @@ source_set("test_support") {
     "//ios/web",
     "//ui/base",
   ]
-  public_deps = [
-    "//testing/gmock",
-  ]
+  public_deps = [ "//testing/gmock" ]
 }
 
 source_set("unit_tests") {

@@ -333,8 +333,22 @@ class CONTENT_EXPORT WebContentsDelegate {
                                   const GURL& target_url,
                                   WebContents* new_contents) {}
 
-  // Notifies the embedder that a Portal WebContents was created.
+  // Notifies the embedder that a new WebContents has been created to contain
+  // the contents of a portal.
   virtual void PortalWebContentsCreated(WebContents* portal_web_contents) {}
+
+  // Notifies the embedder that an existing WebContents that it manages (e.g., a
+  // browser tab) has become the contents of a portal.
+  //
+  // During portal activation, WebContentsDelegate::SwapWebContents will be
+  // called to release the delegate's management of a WebContents.
+  // Shortly afterward, the portal will assume ownership of the contents and
+  // call this function to indicate that this is complete, passing the
+  // swapped-out contents as |portal_web_contents|.
+  //
+  // Implementations will likely want to apply changes analogous to those they
+  // would apply to a new WebContents in PortalWebContentsCreated.
+  virtual void WebContentsBecamePortal(WebContents* portal_web_contents) {}
 
   // Notification that one of the frames in the WebContents is hung. |source| is
   // the WebContents that is hung, and |render_widget_host| is the

@@ -13,11 +13,13 @@
 
 namespace gl {
 class GLFenceEGL;
+class SharedGLFenceEGL;
 }  // namespace gl
 
 namespace gpu {
 class SharedImageRepresentationGLTexture;
 class SharedImageRepresentationSkia;
+class SharedImageBatchAccessManager;
 struct Mailbox;
 
 namespace gles2 {
@@ -32,14 +34,16 @@ class Texture;
 // group. This is achieved by using locks and fences for proper synchronization.
 class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
  public:
-  SharedImageBackingEglImage(const Mailbox& mailbox,
-                             viz::ResourceFormat format,
-                             const gfx::Size& size,
-                             const gfx::ColorSpace& color_space,
-                             uint32_t usage,
-                             size_t estimated_size,
-                             GLuint gl_format,
-                             GLuint gl_type);
+  SharedImageBackingEglImage(
+      const Mailbox& mailbox,
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage,
+      size_t estimated_size,
+      GLuint gl_format,
+      GLuint gl_type,
+      SharedImageBatchAccessManager* batch_access_manager);
 
   ~SharedImageBackingEglImage() override;
 
@@ -47,10 +51,9 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
 
   bool BeginWrite();
-  void EndWrite(std::unique_ptr<gl::GLFenceEGL> end_write_fence);
+  void EndWrite();
   bool BeginRead(const SharedImageRepresentation* reader);
-  void EndRead(const SharedImageRepresentation* reader,
-               std::unique_ptr<gl::GLFenceEGL> end_read_fence);
+  void EndRead(const SharedImageRepresentation* reader);
 
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
@@ -63,10 +66,13 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
       scoped_refptr<SharedContextState> context_state) override;
 
  private:
+  friend class SharedImageBatchAccessManager;
   friend class SharedImageRepresentationEglImageGLTexture;
 
   // Use to create EGLImage texture target from the same EGLImage object.
   gles2::Texture* GenEGLImageSibling();
+
+  void SetEndReadFence(scoped_refptr<gl::SharedGLFenceEGL> shared_egl_fence);
 
   const GLuint gl_format_;
   const GLuint gl_type_;
@@ -75,6 +81,9 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
   scoped_refptr<gles2::NativeImageBuffer> egl_image_buffer_ GUARDED_BY(lock_);
 
   // All reads and writes must wait for exiting writes to complete.
+  // TODO(vikassoni): Use SharedGLFenceEGL here instead of GLFenceEGL here in
+  // future for |write_fence_| once the SharedGLFenceEGL has the capability to
+  // support multiple GLContexts.
   std::unique_ptr<gl::GLFenceEGL> write_fence_ GUARDED_BY(lock_);
   bool is_writing_ GUARDED_BY(lock_) = false;
 
@@ -82,10 +91,12 @@ class SharedImageBackingEglImage : public ClearTrackingSharedImageBacking {
   // context, we only need to keep the most recent fence. Waiting on the most
   // recent read fence is enough to make sure all past read fences have been
   // signalled.
-  base::flat_map<gl::GLApi*, std::unique_ptr<gl::GLFenceEGL>> read_fences_
+  base::flat_map<gl::GLApi*, scoped_refptr<gl::SharedGLFenceEGL>> read_fences_
       GUARDED_BY(lock_);
   base::flat_set<const SharedImageRepresentation*> active_readers_
       GUARDED_BY(lock_);
+  SharedImageBatchAccessManager* batch_access_manager_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingEglImage);
 };
 

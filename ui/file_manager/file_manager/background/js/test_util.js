@@ -504,5 +504,18 @@ test.util.async.requestAnimationFrame = (contentWindow, callback) => {
   });
 };
 
+/**
+ * Set the window text direction to RTL and wait for the window to redraw.
+ * @param {Window} contentWindow Window to be tested.
+ * @param {function(boolean)} callback Completion callback.
+ */
+test.util.async.renderWindowTextDirectionRTL = (contentWindow, callback) => {
+  contentWindow.document.documentElement.setAttribute('dir', 'rtl');
+  contentWindow.document.body.setAttribute('dir', 'rtl');
+  contentWindow.requestAnimationFrame(() => {
+    callback(true);
+  });
+};
+
 // Register the test utils.
 test.util.registerRemoteTestUtils();

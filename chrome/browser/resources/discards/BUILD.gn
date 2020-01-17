@@ -82,18 +82,14 @@ action("generate_graph_tab") {
     "graph_doc_template.html",
     "graph_tab_template.html",
   ]
-  outputs = [
-    "$target_gen_dir/graph_tab.js",
-  ]
+  outputs = [ "$target_gen_dir/graph_tab.js" ]
 
   args = rebase_path(outputs) + rebase_path([
                                               "graph_doc_template.html",
                                               "graph_doc.js",
                                             ]) +
          rebase_path([ "$target_gen_dir/graph_tab_template.js" ])
-  deps = [
-    ":graph_tab_module",
-  ]
+  deps = [ ":graph_tab_module" ]
 }
 
 # Action with a transparent name.

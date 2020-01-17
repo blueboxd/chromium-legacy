@@ -184,17 +184,14 @@ base::Value MojoFacade::HandleMojoHandleReadMessage(base::Value args) {
   base::Value result(base::Value::Type::DICTIONARY);
   if (mojo_result == MOJO_RESULT_OK) {
     base::Value handles_list(base::Value::Type::LIST);
-    base::Value::ListStorage& handles_list_storage = handles_list.GetList();
     for (uint32_t i = 0; i < handles.size(); i++) {
-      handles_list_storage.emplace_back(
-          static_cast<int>(handles[i].release().value()));
+      handles_list.Append(static_cast<int>(handles[i].release().value()));
     }
     result.SetKey("handles", std::move(handles_list));
 
     base::Value buffer(base::Value::Type::LIST);
-    base::Value::ListStorage& buffer_storage = buffer.GetList();
     for (uint32_t i = 0; i < bytes.size(); i++) {
-      buffer_storage.emplace_back(bytes[i]);
+      buffer.Append(bytes[i]);
     }
     result.SetKey("buffer", std::move(buffer));
   }

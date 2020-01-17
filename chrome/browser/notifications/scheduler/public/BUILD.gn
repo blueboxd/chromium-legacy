@@ -46,17 +46,13 @@ source_set("public") {
 
 if (is_android) {
   java_cpp_enum("jni_enums") {
-    sources = [
-      "notification_scheduler_types.h",
-    ]
+    sources = [ "notification_scheduler_types.h" ]
   }
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "schedule_service_utils_unittest.cc",
-  ]
+  sources = [ "schedule_service_utils_unittest.cc" ]
 
   deps = [
     "//chrome/browser/notifications/scheduler/public",

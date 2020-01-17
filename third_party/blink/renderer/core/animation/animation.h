@@ -282,7 +282,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void NotifyAnimationAborted(double monotonic_time, int group) override {}
 
   using AnimationPromise = ScriptPromiseProperty<Member<Animation>,
-                                                 Member<Animation>,
                                                  Member<DOMException>>;
   void ResolvePromiseMaybeAsync(AnimationPromise*);
   void RejectAndResetPromise(AnimationPromise*);

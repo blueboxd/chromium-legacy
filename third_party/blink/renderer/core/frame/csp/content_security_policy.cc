@@ -73,20 +73,23 @@
 
 namespace blink {
 
+using network::mojom::ContentSecurityPolicySource;
+using network::mojom::ContentSecurityPolicyType;
+
 namespace {
 
 // Helper function that returns true if the given |header_type| should be
 // checked when the CheckHeaderType is |check_header_type|.
 bool CheckHeaderTypeMatches(
     ContentSecurityPolicy::CheckHeaderType check_header_type,
-    ContentSecurityPolicyHeaderType header_type) {
+    ContentSecurityPolicyType header_type) {
   switch (check_header_type) {
     case ContentSecurityPolicy::CheckHeaderType::kCheckAll:
       return true;
     case ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly:
-      return header_type == kContentSecurityPolicyHeaderTypeReport;
+      return header_type == ContentSecurityPolicyType::kReport;
     case ContentSecurityPolicy::CheckHeaderType::kCheckEnforce:
-      return header_type == kContentSecurityPolicyHeaderTypeEnforce;
+      return header_type == ContentSecurityPolicyType::kEnforce;
   }
   NOTREACHED();
   return false;
@@ -135,12 +138,11 @@ bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
   return nonceable;
 }
 
-static WebFeature GetUseCounterHelperType(
-    ContentSecurityPolicyHeaderType type) {
+static WebFeature GetUseCounterHelperType(ContentSecurityPolicyType type) {
   switch (type) {
-    case kContentSecurityPolicyHeaderTypeEnforce:
+    case ContentSecurityPolicyType::kEnforce:
       return WebFeature::kContentSecurityPolicy;
-    case kContentSecurityPolicyHeaderTypeReport:
+    case ContentSecurityPolicyType::kReport:
       return WebFeature::kContentSecurityPolicyReportOnly;
   }
   NOTREACHED();
@@ -261,23 +263,24 @@ void ContentSecurityPolicy::CopyPluginTypesFrom(
 
 void ContentSecurityPolicy::DidReceiveHeaders(
     const ContentSecurityPolicyResponseHeaders& headers) {
-  if (headers.ShouldParseWasmEval()) {
+  if (headers.ShouldParseWasmEval())
     supports_wasm_eval_ = true;
-  }
-  if (!headers.ContentSecurityPolicy().IsEmpty())
+  if (!headers.ContentSecurityPolicy().IsEmpty()) {
     AddAndReportPolicyFromHeaderValue(headers.ContentSecurityPolicy(),
-                                      kContentSecurityPolicyHeaderTypeEnforce,
-                                      kContentSecurityPolicyHeaderSourceHTTP);
-  if (!headers.ContentSecurityPolicyReportOnly().IsEmpty())
+                                      ContentSecurityPolicyType::kEnforce,
+                                      ContentSecurityPolicySource::kHTTP);
+  }
+  if (!headers.ContentSecurityPolicyReportOnly().IsEmpty()) {
     AddAndReportPolicyFromHeaderValue(headers.ContentSecurityPolicyReportOnly(),
-                                      kContentSecurityPolicyHeaderTypeReport,
-                                      kContentSecurityPolicyHeaderSourceHTTP);
+                                      ContentSecurityPolicyType::kReport,
+                                      ContentSecurityPolicySource::kHTTP);
+  }
 }
 
 void ContentSecurityPolicy::DidReceiveHeader(
     const String& header,
-    ContentSecurityPolicyHeaderType type,
-    ContentSecurityPolicyHeaderSource source) {
+    ContentSecurityPolicyType type,
+    ContentSecurityPolicySource source) {
   AddAndReportPolicyFromHeaderValue(header, type, source);
 
   // This might be called after we've been bound to a delegate. For example, a
@@ -315,16 +318,16 @@ bool ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
 
 void ContentSecurityPolicy::AddPolicyFromHeaderValue(
     const String& header,
-    ContentSecurityPolicyHeaderType type,
-    ContentSecurityPolicyHeaderSource source) {
+    ContentSecurityPolicyType type,
+    ContentSecurityPolicySource source) {
   // If this is a report-only header inside a <meta> element, bail out.
-  if (source == kContentSecurityPolicyHeaderSourceMeta &&
-      type == kContentSecurityPolicyHeaderTypeReport) {
+  if (source == ContentSecurityPolicySource::kMeta &&
+      type == ContentSecurityPolicyType::kReport) {
     ReportReportOnlyInMeta(header);
     return;
   }
 
-  if (source == kContentSecurityPolicyHeaderSourceHTTP)
+  if (source == ContentSecurityPolicySource::kHTTP)
     header_delivered_ = true;
 
   Vector<UChar> characters;
@@ -372,8 +375,8 @@ void ContentSecurityPolicy::ReportAccumulatedHeaders(
 
 void ContentSecurityPolicy::AddAndReportPolicyFromHeaderValue(
     const String& header,
-    ContentSecurityPolicyHeaderType type,
-    ContentSecurityPolicyHeaderSource source) {
+    ContentSecurityPolicyType type,
+    ContentSecurityPolicySource source) {
   wtf_size_t previous_policy_count = policies_.size();
   AddPolicyFromHeaderValue(header, type, source);
   // Notify about the new header, so that it can be reported back to the
@@ -931,7 +934,7 @@ static void GatherSecurityPolicyViolationEventData(
     const KURL& blocked_url,
     const String& header,
     RedirectStatus redirect_status,
-    ContentSecurityPolicyHeaderType header_type,
+    ContentSecurityPolicyType header_type,
     ContentSecurityPolicy::ViolationType violation_type,
     std::unique_ptr<SourceLocation> source_location,
     const String& script_source) {
@@ -976,7 +979,7 @@ static void GatherSecurityPolicyViolationEventData(
   init->setViolatedDirective(effective_directive);
   init->setEffectiveDirective(effective_directive);
   init->setOriginalPolicy(header);
-  init->setDisposition(header_type == kContentSecurityPolicyHeaderTypeEnforce
+  init->setDisposition(header_type == ContentSecurityPolicyType::kEnforce
                            ? "enforce"
                            : "report");
   init->setStatusCode(0);
@@ -1029,7 +1032,7 @@ void ContentSecurityPolicy::ReportViolation(
     const Vector<String>& report_endpoints,
     bool use_reporting_api,
     const String& header,
-    ContentSecurityPolicyHeaderType header_type,
+    ContentSecurityPolicyType header_type,
     ViolationType violation_type,
     std::unique_ptr<SourceLocation> source_location,
     LocalFrame* context_frame,
@@ -1587,8 +1590,8 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
 
   auto* attr_policy = MakeGarbageCollected<ContentSecurityPolicy>();
   attr_policy->AddPolicyFromHeaderValue(attr,
-                                        kContentSecurityPolicyHeaderTypeEnforce,
-                                        kContentSecurityPolicyHeaderSourceHTTP);
+                                        ContentSecurityPolicyType::kEnforce,
+                                        ContentSecurityPolicySource::kHTTP);
   if (!attr_policy->console_messages_.IsEmpty() ||
       attr_policy->policies_.size() != 1) {
     return false;
@@ -1605,9 +1608,9 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
   }
 
   auto* context_policy = MakeGarbageCollected<ContentSecurityPolicy>();
-  context_policy->AddPolicyFromHeaderValue(
-      context_required_csp, kContentSecurityPolicyHeaderTypeEnforce,
-      kContentSecurityPolicyHeaderSourceHTTP);
+  context_policy->AddPolicyFromHeaderValue(context_required_csp,
+                                           ContentSecurityPolicyType::kEnforce,
+                                           ContentSecurityPolicySource::kHTTP);
 
   DCHECK(context_policy->console_messages_.IsEmpty() &&
          context_policy->policies_.size() == 1);
@@ -1629,7 +1632,7 @@ ContentSecurityPolicy::ExposeForNavigationalChecks() const {
 }
 
 bool ContentSecurityPolicy::HasPolicyFromSource(
-    ContentSecurityPolicyHeaderSource source) const {
+    ContentSecurityPolicySource source) const {
   for (const auto& policy : policies_) {
     if (policy->HeaderSource() == source)
       return true;

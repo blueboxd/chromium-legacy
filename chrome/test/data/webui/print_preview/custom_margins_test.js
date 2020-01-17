@@ -246,11 +246,11 @@ suite(custom_margins_test.suiteName, function() {
       container.setSetting(settingName, newValue);
       container.previewLoaded = false;
 
-      // Margins should be reset to default and custom margins values should
-      // be cleared.
-      expectEquals(MarginsType.DEFAULT, container.getSettingValue('margins'));
+      // Custom margins values should be cleared.
       expectEquals(
           '{}', JSON.stringify(container.getSettingValue('customMargins')));
+      // The margins-settings element will also set the margins type to DEFAULT.
+      model.set('settings.margins.value', MarginsType.DEFAULT);
 
       // When preview loads, custom margins should still be empty, since
       // custom margins are not selected. We do not want to set the sticky

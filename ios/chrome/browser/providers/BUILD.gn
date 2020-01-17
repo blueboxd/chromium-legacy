@@ -31,9 +31,7 @@ source_set("providers") {
 }
 
 source_set("provider_factory") {
-  sources = [
-    "chromium_browser_provider_factory.mm",
-  ]
+  sources = [ "chromium_browser_provider_factory.mm" ]
   deps = [
     ":providers",
     "//base",

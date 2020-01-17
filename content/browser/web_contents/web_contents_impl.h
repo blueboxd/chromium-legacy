@@ -667,6 +667,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                  const std::string& protocol,
                                  const GURL& url,
                                  bool user_gesture) override;
+  void IsClipboardPasteAllowed(
+      const GURL& url,
+      const ui::ClipboardFormatType& data_type,
+      const std::string& data,
+      IsClipboardPasteAllowedCallback callback) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;

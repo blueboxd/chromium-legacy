@@ -14,7 +14,6 @@
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/safe_browsing/core/common/utils.h"
@@ -153,19 +152,12 @@ void CheckNativeFileSystemWriteRequest::MaybeStorePingsForDownload(
   // TODO(https://crbug.com/996797): Integrate with DownloadFeedbackService.
 }
 
-bool CheckNativeFileSystemWriteRequest::MaybeReturnAsynchronousVerdict(
-    DownloadCheckResultReason reason) {
-  return false;
-}
-
 bool CheckNativeFileSystemWriteRequest::ShouldUploadBinary(
     DownloadCheckResultReason reason) {
   return false;
 }
 
-void CheckNativeFileSystemWriteRequest::UploadBinary(
-    DownloadCheckResult result,
-    DownloadCheckResultReason reason) {}
+void CheckNativeFileSystemWriteRequest::UploadBinary() {}
 
 void CheckNativeFileSystemWriteRequest::NotifyRequestFinished(
     DownloadCheckResult result,

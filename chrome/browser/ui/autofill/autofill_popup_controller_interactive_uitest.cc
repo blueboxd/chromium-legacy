@@ -6,7 +6,9 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -108,6 +110,32 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
   // hidden. This can happen if the web_contents are destroyed before the popup
   // is hidden. See http://crbug.com/232475
   autofill_external_delegate_.reset();
+}
+
+// crbug.com/965025
+IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest, ResetSelectedLine) {
+  test::GenerateTestAutofillPopup(autofill_external_delegate_.get());
+
+  auto* client =
+      autofill::ChromeAutofillClient::FromWebContents(web_contents());
+  AutofillPopupController* controller =
+      client->popup_controller_for_testing().get();
+  ASSERT_TRUE(controller);
+
+  // Push some suggestions and select the line #3.
+  std::vector<base::string16> rows = {
+      base::ASCIIToUTF16("suggestion1"), base::ASCIIToUTF16("suggestion2"),
+      base::ASCIIToUTF16("suggestion3"), base::ASCIIToUTF16("suggestion4")};
+  client->UpdateAutofillPopupDataListValues(rows, rows);
+  controller->SetSelectedLine(3);
+
+  // Replace the list with the smaller one.
+  rows = {base::ASCIIToUTF16("suggestion1")};
+  client->UpdateAutofillPopupDataListValues(rows, rows);
+  // Make sure that previously selected line #3 doesn't exist.
+  ASSERT_LT(controller->GetLineCount(), 4);
+  // Selecting a new line should not crash.
+  controller->SetSelectedLine(0);
 }
 
 }  // namespace autofill

@@ -4,12 +4,15 @@
 
 #include "extensions/browser/content_verifier/content_verifier_utils.h"
 
+#include "base/strings/string_util.h"
+
 namespace extensions {
 namespace content_verifier_utils {
 
-#if defined(OS_WIN)
 bool TrimDotSpaceSuffix(const base::FilePath::StringType& path,
                         base::FilePath::StringType* out_path) {
+  DCHECK(IsDotSpaceFilenameSuffixIgnored())
+      << "dot-space suffix shouldn't be trimmed in current system";
   base::FilePath::StringType::size_type trim_pos =
       path.find_last_not_of(FILE_PATH_LITERAL(". "));
   if (trim_pos == base::FilePath::StringType::npos)
@@ -18,7 +21,16 @@ bool TrimDotSpaceSuffix(const base::FilePath::StringType& path,
   *out_path = path.substr(0, trim_pos + 1);
   return true;
 }
-#endif  // defined(OS_WIN)
+
+base::FilePath::StringType CanonicalizeFilePath(const base::FilePath& path) {
+  base::FilePath::StringType canonicalized_path =
+      path.NormalizePathSeparatorsTo('/').value();
+  if (!IsFileAccessCaseSensitive())
+    canonicalized_path = base::ToLowerASCII(canonicalized_path);
+  if (IsDotSpaceFilenameSuffixIgnored())
+    TrimDotSpaceSuffix(canonicalized_path, &canonicalized_path);
+  return canonicalized_path;
+}
 
 }  // namespace content_verifier_utils
 }  // namespace extensions

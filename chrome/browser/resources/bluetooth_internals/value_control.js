@@ -45,7 +45,7 @@ cr.define('value_control', function() {
      * Gets the backing array value.
      * @return {!Array<number>}
      */
-    getArray: function() {
+    getArray() {
       return this.value_;
     },
 
@@ -53,7 +53,7 @@ cr.define('value_control', function() {
      * Sets the backing array value.
      * @param {!Array<number>} newValue
      */
-    setArray: function(newValue) {
+    setArray(newValue) {
       this.value_ = newValue;
     },
 
@@ -63,7 +63,7 @@ cr.define('value_control', function() {
      * @param {!value_control.ValueDataType} valueDataType
      * @param {string} newValue
      */
-    setAs: function(valueDataType, newValue) {
+    setAs(valueDataType, newValue) {
       switch (valueDataType) {
         case ValueDataType.HEXADECIMAL:
           this.setValueFromHex_(newValue);
@@ -84,7 +84,7 @@ cr.define('value_control', function() {
      * @param {!value_control.ValueDataType} valueDataType
      * @return {string}
      */
-    getAs: function(valueDataType) {
+    getAs(valueDataType) {
       switch (valueDataType) {
         case ValueDataType.HEXADECIMAL:
           return this.toHex_();
@@ -104,7 +104,7 @@ cr.define('value_control', function() {
      * @return {string}
      * @private
      */
-    toHex_: function() {
+    toHex_() {
       if (this.value_.length == 0) {
         return '';
       }
@@ -119,7 +119,7 @@ cr.define('value_control', function() {
      * @param {string} newValue
      * @private
      */
-    setValueFromHex_: function(newValue) {
+    setValueFromHex_(newValue) {
       if (!newValue) {
         this.value_ = [];
         return;
@@ -142,7 +142,7 @@ cr.define('value_control', function() {
      * @return {string}
      * @private
      */
-    toUTF8_: function() {
+    toUTF8_() {
       return this.value_.reduce(function(result, value) {
         return result + String.fromCharCode(value);
       }, '');
@@ -153,7 +153,7 @@ cr.define('value_control', function() {
      * @param {string} newValue
      * @private
      */
-    setValueFromUTF8_: function(newValue) {
+    setValueFromUTF8_(newValue) {
       if (!newValue) {
         this.value_ = [];
         return;
@@ -169,7 +169,7 @@ cr.define('value_control', function() {
      * @return {string}
      * @private
      */
-    toDecimal_: function() {
+    toDecimal_() {
       return this.value_.join('-');
     },
 
@@ -178,7 +178,7 @@ cr.define('value_control', function() {
      * @param {string} newValue
      * @private
      */
-    setValueFromDecimal_: function(newValue) {
+    setValueFromDecimal_(newValue) {
       if (!newValue) {
         this.value_ = [];
         return;
@@ -214,7 +214,7 @@ cr.define('value_control', function() {
      * read/write requests. Event handlers are attached and references to these
      * elements are stored for later use.
      */
-    decorate: function() {
+    decorate() {
       this.classList.add('value-control');
 
       /** @private {!Value} */
@@ -281,7 +281,7 @@ cr.define('value_control', function() {
      * are not provided, no restrictions on reading/writing are applied.
      * @param {!ValueLoadOptions} options
      */
-    load: function(options) {
+    load(options) {
       this.deviceAddress_ = options.deviceAddress;
       this.serviceId_ = options.serviceId;
       this.characteristicId_ = options.characteristicId;
@@ -298,7 +298,7 @@ cr.define('value_control', function() {
      * Redraws the value control with updated layout depending on the
      * availability of reads and writes and the current cached value.
      */
-    redraw: function() {
+    redraw() {
       this.readBtn_.hidden =
           (this.properties_ & bluetooth.mojom.Property.READ) === 0;
       this.writeBtn_.hidden =
@@ -322,7 +322,7 @@ cr.define('value_control', function() {
      * Sets the value of the control.
      * @param {!Array<number>} value
      */
-    setValue: function(value) {
+    setValue(value) {
       this.value_.setArray(value);
       this.redraw();
     },
@@ -332,7 +332,7 @@ cr.define('value_control', function() {
      * @param {!bluetooth.mojom.GattResult} result
      * @private
      */
-    getErrorString_: function(result) {
+    getErrorString_(result) {
       // TODO(crbug.com/663394): Replace with more descriptive error
       // messages.
       const GattResult = bluetooth.mojom.GattResult;
@@ -348,7 +348,7 @@ cr.define('value_control', function() {
      * descriptor value with |descriptor_id| is read instead.
      * @private
      */
-    readValue_: function() {
+    readValue_() {
       this.readBtn_.disabled = true;
 
       device_broker.connectToDevice(assert(this.deviceAddress_))
@@ -386,7 +386,7 @@ cr.define('value_control', function() {
      * the descriptor value with |descriptor_id| is written instead.
      * @private
      */
-    writeValue_: function() {
+    writeValue_() {
       this.writeBtn_.disabled = true;
 
       device_broker.connectToDevice(assert(this.deviceAddress_))

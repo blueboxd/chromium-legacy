@@ -44,9 +44,7 @@ cast_source_set("renderer") {
     "queryable_data_store.h",
   ]
 
-  public_deps = [
-    "//chromecast/renderer/media",
-  ]
+  public_deps = [ "//chromecast/renderer/media" ]
 
   if (chromecast_branding == "public") {
     sources += [ "cast_content_renderer_client_simple.cc" ]

@@ -25,10 +25,8 @@
 
 @implementation AutofillEditTableViewController
 
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle {
-  self = [super initWithTableViewStyle:style appBarStyle:appBarStyle];
+- (instancetype)initWithStyle:(UITableViewStyle)style {
+  self = [super initWithStyle:style];
   if (!self) {
     return nil;
   }

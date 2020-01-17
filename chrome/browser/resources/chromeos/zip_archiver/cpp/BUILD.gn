@@ -55,16 +55,12 @@ source_set("ziparchiver_unittests") {
     "//testing/gtest",
   ]
 
-  data = [
-    "//chrome/browser/resources/chromeos/zip_archiver/test/data/",
-  ]
+  data = [ "//chrome/browser/resources/chromeos/zip_archiver/test/data/" ]
 }
 
 if (is_nacl) {
   executable("zip_archiver_pnacl") {
-    sources = [
-      "module.cc",
-    ]
+    sources = [ "module.cc" ]
 
     deps = [
       ":zip_archiver_library",

@@ -40,7 +40,7 @@ public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateIm
     }
 
     private boolean isMenuButtonInBottomToolbar() {
-        return mToolbarManager != null && mToolbarManager.isBottomToolbarVisible();
+        return mToolbarManager != null && mToolbarManager.isMenuFromBottom();
     }
 
     private boolean shouldShowDataSaverMenuItem() {

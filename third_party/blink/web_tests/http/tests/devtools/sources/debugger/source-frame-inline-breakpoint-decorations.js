@@ -30,10 +30,11 @@
       //# sourceURL=foo.js
     `);
 
-  function waitAndDumpDecorations(sourceFrame) {
-    return SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame)
-        .then(
-            () => SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame));
+  async function runAsyncBreakpointActionAndDumpDecorations(sourceFrame, action) {
+    const waitPromise = SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
+    await action();
+    await waitPromise;
+    SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
   }
 
   Bindings.breakpointManager._storage._breakpoints = new Map();
@@ -45,14 +46,16 @@
       function addBreakpoint(sourceFrame) {
         javaScriptSourceFrame = sourceFrame;
         TestRunner.addResult('Setting breakpoint');
-        SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 11, '', true)
-            .then(() => waitAndDumpDecorations(javaScriptSourceFrame).then(removeBreakpoint));
+        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+          SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 11, '', true)
+        ).then(removeBreakpoint);
       }
 
       function removeBreakpoint() {
         TestRunner.addResult('Toggle breakpoint');
-        waitAndDumpDecorations(javaScriptSourceFrame).then(() => next());
-        SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 11);
+        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+          SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 11)
+        ).then(next);
       }
     },
 
@@ -63,14 +66,16 @@
       function addBreakpoint(sourceFrame) {
         javaScriptSourceFrame = sourceFrame;
         TestRunner.addResult('Setting breakpoint');
-        SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 13, '', true)
-            .then(() => waitAndDumpDecorations(javaScriptSourceFrame).then(removeBreakpoint));
+        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+          SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 13, '', true)
+        ).then(removeBreakpoint);
       }
 
       function removeBreakpoint() {
         TestRunner.addResult('Toggle breakpoint');
-        SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 13);
-        waitAndDumpDecorations(javaScriptSourceFrame).then(() => next());
+        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+          SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 13)
+        ).then(next);
       }
     },
 
@@ -81,29 +86,33 @@
       function addBreakpoint(sourceFrame) {
         javaScriptSourceFrame = sourceFrame;
         TestRunner.addResult('Setting breakpoint');
-        SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 11, '', true)
-            .then(() => waitAndDumpDecorations(javaScriptSourceFrame).then(clickBySecondLocation));
+        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+          SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 11, '', true)
+        ).then(clickBySecondLocation);
       }
 
       function clickBySecondLocation() {
         TestRunner.addResult('Click by second breakpoint');
-        waitAndDumpDecorations(javaScriptSourceFrame).then(clickByFirstLocation);
-        SourcesTestRunner.clickDebuggerPluginBreakpoint(
-            javaScriptSourceFrame, 11, 1, next);
+        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+          SourcesTestRunner.clickDebuggerPluginBreakpoint(
+              javaScriptSourceFrame, 11, 1, next)
+        ).then(clickByFirstLocation);
       }
 
       function clickByFirstLocation() {
         TestRunner.addResult('Click by first breakpoint');
-        waitAndDumpDecorations(javaScriptSourceFrame).then(clickBySecondLocationAgain);
-        SourcesTestRunner.clickDebuggerPluginBreakpoint(
-            javaScriptSourceFrame, 11, 0, next);
+        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+          SourcesTestRunner.clickDebuggerPluginBreakpoint(
+              javaScriptSourceFrame, 11, 0, next)
+        ).then(clickBySecondLocationAgain);
       }
 
       function clickBySecondLocationAgain() {
         TestRunner.addResult('Click by second breakpoint');
-        waitAndDumpDecorations(javaScriptSourceFrame).then(() => next());
-        SourcesTestRunner.clickDebuggerPluginBreakpoint(
-            javaScriptSourceFrame, 11, 1, next);
+        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+          SourcesTestRunner.clickDebuggerPluginBreakpoint(
+              javaScriptSourceFrame, 11, 1, next)
+        ).then(next);
       }
     },
 
@@ -114,23 +123,26 @@
       function addBreakpoint(sourceFrame) {
         javaScriptSourceFrame = sourceFrame;
         TestRunner.addResult('Setting breakpoint in line 4');
-        SourcesTestRunner.toggleBreakpoint(sourceFrame, 12, false);
-        waitAndDumpDecorations(javaScriptSourceFrame).then(toggleBreakpointInAnotherLine);
+        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+          SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 12, false)
+        ).then(toggleBreakpointInAnotherLine);
       }
 
       function toggleBreakpointInAnotherLine() {
         TestRunner.addResult('Setting breakpoint in line 3');
-        waitAndDumpDecorations(javaScriptSourceFrame).then(removeBreakpoints);
-        SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 11, false);
+        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+          SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 11, false)
+        ).then(removeBreakpoints);
       }
 
       function removeBreakpoints() {
         TestRunner.addResult('Click by first inline breakpoints');
-        waitAndDumpDecorations(javaScriptSourceFrame).then(() => next());
-        SourcesTestRunner.clickDebuggerPluginBreakpoint(
-            javaScriptSourceFrame, 11, 0, next);
-        SourcesTestRunner.clickDebuggerPluginBreakpoint(
-            javaScriptSourceFrame, 12, 0, next);
+        runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () => {
+          SourcesTestRunner.clickDebuggerPluginBreakpoint(
+              javaScriptSourceFrame, 11, 0, next);
+          SourcesTestRunner.clickDebuggerPluginBreakpoint(
+              javaScriptSourceFrame, 12, 0, next);
+        }).then(next);
       }
     },
 
@@ -138,13 +150,14 @@
       let javaScriptSourceFrame = await SourcesTestRunner.showScriptSourcePromise('foo.js');
 
       TestRunner.addResult('Setting breakpoint');
-      await SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 16, '', true)
-      await waitAndDumpDecorations(javaScriptSourceFrame);
+      await runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+        SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 16, '', true)
+      );
 
       TestRunner.addResult('Toggle breakpoint');
-      let decorationsPromise = waitAndDumpDecorations(javaScriptSourceFrame);
-      SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 28);
-      await decorationsPromise;
+      await runAsyncBreakpointActionAndDumpDecorations(javaScriptSourceFrame, () =>
+        SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 28)
+      );
       next();
     }
   ]);

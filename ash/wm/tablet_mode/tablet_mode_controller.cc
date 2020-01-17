@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
@@ -651,6 +652,9 @@ void TabletModeController::SetEnabledForDev(bool enabled) {
 }
 
 bool TabletModeController::ShouldShowOverviewButton() const {
+  if (!ShelfConfig::Get()->shelf_controls_shown())
+    return false;
+
   return AreInternalInputDeviceEventsBlocked() ||
          tablet_mode_behavior_.always_show_overview_button;
 }

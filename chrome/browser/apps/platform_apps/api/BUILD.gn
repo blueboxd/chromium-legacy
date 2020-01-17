@@ -59,9 +59,8 @@ source_set("api") {
     "//extensions/browser",
   ]
 
-  public_deps = [
-    "//chrome/browser/apps/platform_apps/api/music_manager_private",
-  ]
+  public_deps =
+      [ "//chrome/browser/apps/platform_apps/api/music_manager_private" ]
 
   if (is_chromeos) {
     sources += [

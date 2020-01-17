@@ -24,6 +24,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   JSONReader::ValueWithError json_val =
       JSONReader::ReadAndReturnValueWithError(input_string, options);
+  CHECK((json_val.error_code == JSONReader::JSON_NO_ERROR) ==
+        json_val.value.has_value());
 
   if (json_val.value) {
     // Check that the value can be serialized and deserialized back to an

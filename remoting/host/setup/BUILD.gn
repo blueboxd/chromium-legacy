@@ -3,12 +3,8 @@
 # found in the LICENSE file.
 
 source_set("setup") {
-  public_deps = [
-    ":common",
-  ]
-  deps = [
-    "//remoting/host",
-  ]
+  public_deps = [ ":common" ]
+  deps = [ "//remoting/host" ]
 }
 
 source_set("common") {

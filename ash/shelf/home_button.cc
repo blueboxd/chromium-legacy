@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_focus_cycler.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
@@ -24,7 +25,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
-#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/button/button_controller.h"
 
 namespace ash {
@@ -69,17 +69,15 @@ const char* HomeButton::GetClassName() const {
 void HomeButton::OnShelfButtonAboutToRequestFocusFromTabTraversal(
     ShelfButton* button,
     bool reverse) {
-  const bool tablet_mode =
-      Shell::Get()->tablet_mode_controller() &&
-      Shell::Get()->tablet_mode_controller()->InTabletMode();
   DCHECK_EQ(button, this);
-  // If the currently focused view is already this button, and we are not
-  // in tablet mode (meaning this is the only button in this widget), then we
-  // always want to focus out. We also want to focus out if we are in tablet
-  // mode and going in reverse (which means we're trying to loop back from
-  // the back button.
-  if ((!tablet_mode && GetFocusManager()->GetFocusedView() == this) ||
-      (reverse && tablet_mode)) {
+  // Focus out if:
+  // *   The currently focused view is already this button, which implies that
+  //     this is the only button in this widget.
+  // *   Going in reverse when the shelf has a back button, which implies that
+  //     the widget is trying to loop back from the back button.
+  if (GetFocusManager()->GetFocusedView() == this ||
+      (reverse &&
+       shelf()->shelf_widget()->navigation_widget()->GetBackButton())) {
     shelf()->shelf_focus_cycler()->FocusOut(reverse,
                                             SourceView::kShelfNavigationView);
   }
@@ -98,7 +96,8 @@ void HomeButton::ButtonPressed(views::Button* sender,
 
   const AppListShowSource show_source =
       event.IsShiftDown() ? kShelfButtonFullscreen : kShelfButton;
-  OnPressed(show_source, event.time_stamp());
+  Shell::Get()->app_list_controller()->ToggleAppList(
+      GetDisplayId(), show_source, event.time_stamp());
 }
 
 void HomeButton::OnAssistantAvailabilityChanged() {
@@ -107,17 +106,6 @@ void HomeButton::OnAssistantAvailabilityChanged() {
 
 bool HomeButton::IsShowingAppList() const {
   return controller_.is_showing_app_list();
-}
-
-void HomeButton::OnPressed(AppListShowSource show_source,
-                           base::TimeTicks time_stamp) {
-  ShelfAction shelf_action =
-      Shell::Get()->app_list_controller()->OnHomeButtonPressed(
-          GetDisplayId(), show_source, time_stamp);
-  if (shelf_action == SHELF_ACTION_APP_LIST_DISMISSED) {
-    GetInkDrop()->SnapToActivated();
-    GetInkDrop()->AnimateToState(views::InkDropState::HIDDEN);
-  }
 }
 
 int64_t HomeButton::GetDisplayId() const {

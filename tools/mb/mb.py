@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,6 +9,7 @@ MB is a wrapper script for GN that can be used to generate build files
 for sets of canned configurations and analyze them.
 """
 
+from __future__ import absolute_import
 from __future__ import print_function
 
 import argparse
@@ -34,8 +35,21 @@ from collections import OrderedDict
 CHROMIUM_SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
 sys.path = [os.path.join(CHROMIUM_SRC_DIR, 'build')] + sys.path
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), '..'))
 
 import gn_helpers
+from mb.lib import validation
+
+
+def DefaultVals():
+  """Default mixin values"""
+  return {
+      'args_file': '',
+      'cros_passthrough': False,
+      'gn_args': '',
+  }
+
 
 def PruneVirtualEnv():
   # Set by VirtualEnv, no need to keep it.
@@ -68,16 +82,21 @@ def main(args):
 class MetaBuildWrapper(object):
   def __init__(self):
     self.chromium_src_dir = CHROMIUM_SRC_DIR
-    self.default_config = os.path.join(self.chromium_src_dir, 'tools', 'mb',
-                                       'mb_config.pyl')
+    self.default_config_master = os.path.join(self.chromium_src_dir, 'tools',
+                                              'mb', 'mb_config.pyl')
+    self.default_config_bucket = os.path.join(self.chromium_src_dir, 'tools',
+                                              'mb', 'mb_config_buckets.pyl')
     self.default_isolate_map = os.path.join(self.chromium_src_dir, 'testing',
                                             'buildbot', 'gn_isolate_map.pyl')
+    self.group_by_bucket = False
     self.executable = sys.executable
     self.platform = sys.platform
     self.sep = os.sep
     self.args = argparse.Namespace()
     self.configs = {}
+    self.public_artifact_builders = None
     self.masters = {}
+    self.buckets = {}
     self.mixins = {}
 
   def Main(self, args):
@@ -99,20 +118,24 @@ class MetaBuildWrapper(object):
 
   def ParseArgs(self, argv):
     def AddCommonOptions(subp):
+      group = subp.add_mutually_exclusive_group()
+      group.add_argument(
+          '-m', '--master', help='master name to look up config from')
+      group.add_argument('-u', '--bucket', help='bucket to look up config from')
       subp.add_argument('-b', '--builder',
                         help='builder name to look up config from')
-      subp.add_argument('-m', '--master',
-                        help='master name to look up config from')
       subp.add_argument('-c', '--config',
                         help='configuration to analyze')
       subp.add_argument('--phase',
                         help='optional phase name (used when builders '
                              'do multiple compiles with different '
                              'arguments in a single build)')
-      subp.add_argument('-f', '--config-file', metavar='PATH',
-                        default=self.default_config,
-                        help='path to config file '
-                             '(default is %(default)s)')
+      subp.add_argument(
+          '-f',
+          '--config-file',
+          metavar='PATH',
+          help=('path to config file '
+                '(default is mb_config[_bucket].pyl'))
       subp.add_argument('-i', '--isolate-map-file', metavar='PATH',
                         help='path to isolate map file '
                              '(default is %(default)s)',
@@ -159,9 +182,12 @@ class MetaBuildWrapper(object):
     subp = subps.add_parser('export',
                             description='Print out the expanded configuration '
                             'for each builder as a JSON object.')
-    subp.add_argument('-f', '--config-file', metavar='PATH',
-                      default=self.default_config,
-                      help='path to config file (default is %(default)s)')
+    subp.add_argument(
+        '-f',
+        '--config-file',
+        metavar='PATH',
+        help=('path to config file '
+              '(default is mb_config[_bucket].pyl'))
     subp.add_argument('-g', '--goma-dir',
                       help='path to goma directory')
     subp.set_defaults(func=self.CmdExport)
@@ -275,7 +301,6 @@ class MetaBuildWrapper(object):
     subp = subps.add_parser('validate',
                             description='Validate the config file.')
     subp.add_argument('-f', '--config-file', metavar='PATH',
-                      default=self.default_config,
                       help='path to config file (default is %(default)s)')
     subp.set_defaults(func=self.CmdValidate)
 
@@ -304,6 +329,20 @@ class MetaBuildWrapper(object):
 
     self.args = parser.parse_args(argv)
 
+    self.group_by_bucket = getattr(self.args, 'master', None) is None
+
+    # Use the correct default config file
+    # Not using hasattr here because it would still require a None check
+    if (self.args.func != self.CmdValidate
+        and getattr(self.args, 'config_file', None) is None):
+      # The default bucket config should be the same in all except replacing
+      # master with bucket and handling proprietary chrome mixins
+      if self.group_by_bucket:
+        self.args.config_file = self.default_config_bucket
+      else:
+        self.args.config_file = self.default_config_master
+
+
   def DumpInputFiles(self):
 
     def DumpContentsOfFilePassedTo(arg_name, path):
@@ -325,7 +364,42 @@ class MetaBuildWrapper(object):
     vals = self.Lookup()
     return self.RunGNAnalyze(vals)
 
+  def CmdExportBucket(self):
+    self.ReadConfigFile()
+    obj = {}
+    for bucket, builders in self.buckets.items():
+      obj[bucket] = {}
+      for builder in builders:
+        config = self.buckets[bucket][builder]
+        if not config:
+          continue
+
+        if isinstance(config, dict):
+          args = {
+              k: FlattenConfig(self.configs, self.mixins, v)['gn_args']
+              for k, v in config.items()
+          }
+        elif config.startswith('//'):
+          args = config
+        else:
+          args = FlattenConfig(self.configs, self.mixins, config)['gn_args']
+          if 'error' in args:
+            continue
+
+        obj[bucket][builder] = args
+
+    # Dump object and trim trailing whitespace.
+    s = '\n'.join(
+        l.rstrip()
+        for l in json.dumps(obj, sort_keys=True, indent=2).splitlines())
+    self.Print(s)
+    return 0
+
   def CmdExport(self):
+    ''' Deprecated in favor of CmdExportBucket '''
+    if self.group_by_bucket:
+      return self.CmdExportBucket()
+
     self.ReadConfigFile()
     obj = {}
     for master, builders in self.masters.items():
@@ -336,12 +410,14 @@ class MetaBuildWrapper(object):
           continue
 
         if isinstance(config, dict):
-          args = {k: self.FlattenConfig(v)['gn_args']
-                  for k, v in config.items()}
+          args = {
+              k: FlattenConfig(self.configs, self.mixins, v)['gn_args']
+              for k, v in config.items()
+          }
         elif config.startswith('//'):
           args = config
         else:
-          args = self.FlattenConfig(config)['gn_args']
+          args = FlattenConfig(self.configs, self.mixins, config)['gn_args']
           if 'error' in args:
             continue
 
@@ -632,21 +708,60 @@ class MetaBuildWrapper(object):
             ('cpu', 'x86-64'),
             os_dim]
 
+  def CmdValidateBucket(self, print_ok=True):
+    errs = []
+
+    # Build a list of all of the configs referenced by builders.
+    all_configs = validation.GetAllConfigsBucket(self.buckets)
+
+    # Check that every referenced args file or config actually exists.
+    for config, loc in all_configs.items():
+      if config.startswith('//'):
+        if not self.Exists(self.ToAbsPath(config)):
+          errs.append(
+              'Unknown args file "%s" referenced from "%s".' % (config, loc))
+      elif not config in self.configs:
+        errs.append('Unknown config "%s" referenced from "%s".' % (config, loc))
+
+    # Check that every config and mixin is referenced.
+    validation.CheckAllConfigsAndMixinsReferenced(errs, all_configs,
+                                                  self.configs, self.mixins)
+
+    validation.EnsureNoProprietaryMixinsBucket(
+        errs, self.default_config_bucket, self.args.config_file,
+        self.public_artifact_builders, self.buckets, self.configs, self.mixins)
+
+    validation.CheckDuplicateConfigs(errs, self.configs, self.mixins,
+                                     self.buckets, FlattenConfig)
+
+    if errs:
+      raise MBErr(('mb config file %s has problems:' % self.args.config_file) +
+                  '\n  ' + '\n  '.join(errs))
+
+    if print_ok:
+      self.Print('mb config file %s looks ok.' % self.args.config_file)
+    return 0
+
   def CmdValidate(self, print_ok=True):
     errs = []
 
-    # Read the file to make sure it parses.
-    self.ReadConfigFile()
+    # Validate both bucket and master configs if
+    # a specific one isn't specified
+    if getattr(self.args, 'config_file', None) is None:
+      # Read the file to make sure it parses.
+      self.args.config_file = self.default_config_bucket
+      self.ReadConfigFile()
+      self.CmdValidateBucket()
+
+      self.args.config_file = self.default_config_master
+      self.ReadConfigFile()
+    else:
+      self.ReadConfigFile()
+      if self.group_by_bucket:
+        return self.CmdValidateBucket()
 
     # Build a list of all of the configs referenced by builders.
-    all_configs = {}
-    for master in self.masters:
-      for config in self.masters[master].values():
-        if isinstance(config, dict):
-          for c in config.values():
-            all_configs[c] = master
-        else:
-          all_configs[config] = master
+    all_configs = validation.GetAllConfigsMaster(self.masters)
 
     # Check that every referenced args file or config actually exists.
     for config, loc in all_configs.items():
@@ -658,84 +773,17 @@ class MetaBuildWrapper(object):
         errs.append('Unknown config "%s" referenced from "%s".' %
                     (config, loc))
 
-    # Check that every actual config is actually referenced.
-    for config in self.configs:
-      if not config in all_configs:
-        errs.append('Unused config "%s".' % config)
+    # Check that every config and mixin is referenced.
+    validation.CheckAllConfigsAndMixinsReferenced(errs, all_configs,
+                                                  self.configs, self.mixins)
 
-    # Figure out the whole list of mixins, and check that every mixin
-    # listed by a config or another mixin actually exists.
-    referenced_mixins = set()
-    for config, mixins in self.configs.items():
-      for mixin in mixins:
-        if not mixin in self.mixins:
-          errs.append('Unknown mixin "%s" referenced by config "%s".' %
-                      (mixin, config))
-        referenced_mixins.add(mixin)
+    validation.EnsureNoProprietaryMixinsMaster(
+        errs, self.default_config_master, self.args.config_file, self.masters,
+        self.configs, self.mixins)
 
-    for mixin in self.mixins:
-      for sub_mixin in self.mixins[mixin].get('mixins', []):
-        if not sub_mixin in self.mixins:
-          errs.append('Unknown mixin "%s" referenced by mixin "%s".' %
-                      (sub_mixin, mixin))
-        referenced_mixins.add(sub_mixin)
+    validation.CheckDuplicateConfigs(errs, self.configs, self.mixins,
+                                     self.masters, FlattenConfig)
 
-    # Check that every mixin defined is actually referenced somewhere.
-    for mixin in self.mixins:
-      if not mixin in referenced_mixins:
-        errs.append('Unreferenced mixin "%s".' % mixin)
-
-    # If we're checking the Chromium config, check that the 'chromium' bots
-    # which build public artifacts do not include the chrome_with_codecs mixin.
-    if self.args.config_file == self.default_config:
-      if 'chromium' in self.masters:
-        for builder in self.masters['chromium']:
-          config = self.masters['chromium'][builder]
-          def RecurseMixins(builder, current_mixin):
-            if current_mixin == 'chrome_with_codecs':
-              errs.append('Public artifact builder "%s" can not contain the '
-                          '"chrome_with_codecs" mixin.' % builder)
-              return
-            if not 'mixins' in self.mixins[current_mixin]:
-              return
-            for mixin in self.mixins[current_mixin]['mixins']:
-              RecurseMixins(builder, mixin)
-
-          for mixin in self.configs[config]:
-            RecurseMixins(builder, mixin)
-      else:
-        errs.append('Missing "chromium" master. Please update this '
-                    'proprietary codecs check with the name of the master '
-                    'responsible for public build artifacts.')
-
-    # Check for duplicate configs. Evaluate all configs, and see if, when
-    # evaluated, differently named configs are the same.
-    evaled_to_source = collections.defaultdict(set)
-    for master, builders in self.masters.items():
-      for builder in builders:
-        config = self.masters[master][builder]
-        if not config:
-          continue
-
-        if isinstance(config, dict):
-          # Ignore for now
-          continue
-        elif config.startswith('//'):
-          args = config
-        else:
-          args = self.FlattenConfig(config)['gn_args']
-          if 'error' in args:
-            continue
-
-        evaled_to_source[args].add(config)
-
-    for v in evaled_to_source.values():
-      if len(v) != 1:
-        errs.append('Duplicate configs detected. When evaluated fully, the '
-                    'following configs are all equivalent: %s. Please '
-                    'consolidate these configs into only one unique name per '
-                    'configuration value.' % (
-                      ', '.join(sorted('%r' % val for val in v))))
     if errs:
       raise MBErr(('mb config file %s has problems:' % self.args.config_file) +
                     '\n  ' + '\n  '.join(errs))
@@ -747,7 +795,7 @@ class MetaBuildWrapper(object):
   def GetConfig(self):
     build_dir = self.args.path
 
-    vals = self.DefaultVals()
+    vals = DefaultVals()
     if self.args.builder or self.args.master or self.args.config:
       vals = self.Lookup()
       # Re-run gn gen in order to ensure the config is consistent with the
@@ -784,17 +832,20 @@ class MetaBuildWrapper(object):
     vals = self.ReadIOSBotConfig()
     if not vals:
       self.ReadConfigFile()
-      config = self.ConfigFromArgs()
+      if self.group_by_bucket:
+        config = self.ConfigFromArgsBucket()
+      else:
+        config = self.ConfigFromArgs()
       if config.startswith('//'):
         if not self.Exists(self.ToAbsPath(config)):
           raise MBErr('args file "%s" not found' % config)
-        vals = self.DefaultVals()
+        vals = DefaultVals()
         vals['args_file'] = config
       else:
         if not config in self.configs:
           raise MBErr('Config "%s" not found in %s' %
                       (config, self.args.config_file))
-        vals = self.FlattenConfig(config)
+        vals = FlattenConfig(self.configs, self.mixins, config)
     return vals
 
   def ReadIOSBotConfig(self):
@@ -808,7 +859,7 @@ class MetaBuildWrapper(object):
     contents = json.loads(self.ReadFile(path))
     gn_args = ' '.join(contents.get('gn_args', []))
 
-    vals = self.DefaultVals()
+    vals = DefaultVals()
     vals['gn_args'] = gn_args
     return vals
 
@@ -823,8 +874,12 @@ class MetaBuildWrapper(object):
                  (self.args.config_file, e))
 
     self.configs = contents['configs']
-    self.masters = contents['masters']
     self.mixins = contents['mixins']
+    self.masters = contents.get('masters')
+    self.buckets = contents.get('buckets')
+    self.public_artifact_builders = contents.get('public_artifact_builders')
+
+    self.group_by_bucket = bool(self.buckets)
 
   def ReadIsolateMap(self):
     if not self.args.isolate_map_files:
@@ -848,7 +903,44 @@ class MetaBuildWrapper(object):
             'Failed to parse isolate map file "%s": %s' % (isolate_map, e))
     return isolate_maps
 
+  def ConfigFromArgsBucket(self):
+    if self.args.config:
+      if self.args.bucket or self.args.builder:
+        raise MBErr('Can not specify both -c/--config and -u/--bucket or '
+                    '-b/--builder')
+
+      return self.args.config
+
+    if not self.args.bucket or not self.args.builder:
+      raise MBErr('Must specify either -c/--config or '
+                  '(-u/--bucket and -b/--builder)')
+
+    if not self.args.bucket in self.buckets:
+      raise MBErr('Bucket name "%s" not found in "%s"' %
+                  (self.args.bucket, self.args.config_file))
+
+    if not self.args.builder in self.buckets[self.args.bucket]:
+      raise MBErr('Builder name "%s"  not found under buckets[%s] in "%s"' %
+                  (self.args.builder, self.args.bucket, self.args.config_file))
+
+    config = self.buckets[self.args.bucket][self.args.builder]
+    if isinstance(config, dict):
+      if self.args.phase is None:
+        raise MBErr('Must specify a build --phase for %s on %s' %
+                    (self.args.builder, self.args.bucket))
+      phase = str(self.args.phase)
+      if phase not in config:
+        raise MBErr('Phase %s doesn\'t exist for %s on %s' %
+                    (phase, self.args.builder, self.args.bucket))
+      return config[phase]
+
+    if self.args.phase is not None:
+      raise MBErr('Must not specify a build --phase for %s on %s' %
+                  (self.args.builder, self.args.bucket))
+    return config
+
   def ConfigFromArgs(self):
+    ''' Deprecated in favor ConfigFromArgsBucket '''
     if self.args.config:
       if self.args.master or self.args.builder:
         raise MBErr('Can not specific both -c/--config and -m/--master or '
@@ -883,47 +975,6 @@ class MetaBuildWrapper(object):
       raise MBErr('Must not specify a build --phase for %s on %s' %
                   (self.args.builder, self.args.master))
     return config
-
-  def FlattenConfig(self, config):
-    mixins = self.configs[config]
-    vals = self.DefaultVals()
-
-    visited = []
-    self.FlattenMixins(mixins, vals, visited)
-    return vals
-
-  def DefaultVals(self):
-    return {
-      'args_file': '',
-      'cros_passthrough': False,
-      'gn_args': '',
-    }
-
-  def FlattenMixins(self, mixins, vals, visited):
-    for m in mixins:
-      if m not in self.mixins:
-        raise MBErr('Unknown mixin "%s"' % m)
-
-      visited.append(m)
-
-      mixin_vals = self.mixins[m]
-
-      if 'cros_passthrough' in mixin_vals:
-        vals['cros_passthrough'] = mixin_vals['cros_passthrough']
-      if 'args_file' in mixin_vals:
-        if vals['args_file']:
-          raise MBErr('args_file specified multiple times in mixins '
-                      'for mixin %s' % m)
-        vals['args_file'] = mixin_vals['args_file']
-      if 'gn_args' in mixin_vals:
-        if vals['gn_args']:
-          vals['gn_args'] += ' ' + mixin_vals['gn_args']
-        else:
-          vals['gn_args'] = mixin_vals['gn_args']
-
-      if 'mixins' in mixin_vals:
-        self.FlattenMixins(mixin_vals['mixins'], vals, visited)
-    return vals
 
   def RunGNGen(self, vals, compute_inputs_for_analyze=False, check=True):
     build_dir = self.args.path
@@ -1705,26 +1756,6 @@ class MetaBuildWrapper(object):
       raise MBErr('Error %s writing to the output path "%s"' %
                  (e, path))
 
-  def CheckCompile(self, master, builder):
-    url_template = self.args.url_template + '/{builder}/builds/_all?as_text=1'
-    url = urllib2.quote(url_template.format(master=master, builder=builder),
-                        safe=':/()?=')
-    try:
-      builds = json.loads(self.Fetch(url))
-    except Exception as e:
-      return str(e)
-    successes = sorted(
-        [int(x) for x in builds.keys() if "text" in builds[x] and
-          cmp(builds[x]["text"][:2], ["build", "successful"]) == 0],
-        reverse=True)
-    if not successes:
-      return "no successful builds"
-    build = builds[str(successes[0])]
-    step_names = set([step["name"] for step in build["steps"]])
-    compile_indicators = set(["compile", "compile (with patch)", "analyze"])
-    if compile_indicators & step_names:
-      return "compiles"
-    return "does not compile"
 
   def PrintCmd(self, cmd, env):
     if self.platform == 'win32':
@@ -1884,6 +1915,42 @@ class LedResult(object):
     """
     return self.__class__(
         self._run_cmd(self._result, cmd), self._run_cmd)
+
+
+def FlattenConfig(config_pool, mixin_pool, config):
+  mixins = config_pool[config]
+  vals = DefaultVals()
+
+  visited = []
+  FlattenMixins(mixin_pool, mixins, vals, visited)
+  return vals
+
+
+def FlattenMixins(mixin_pool, mixins_to_flatten, vals, visited):
+  for m in mixins_to_flatten:
+    if m not in mixin_pool:
+      raise MBErr('Unknown mixin "%s"' % m)
+
+    visited.append(m)
+
+    mixin_vals = mixin_pool[m]
+
+    if 'cros_passthrough' in mixin_vals:
+      vals['cros_passthrough'] = mixin_vals['cros_passthrough']
+    if 'args_file' in mixin_vals:
+      if vals['args_file']:
+        raise MBErr('args_file specified multiple times in mixins '
+                    'for mixin %s' % m)
+      vals['args_file'] = mixin_vals['args_file']
+    if 'gn_args' in mixin_vals:
+      if vals['gn_args']:
+        vals['gn_args'] += ' ' + mixin_vals['gn_args']
+      else:
+        vals['gn_args'] = mixin_vals['gn_args']
+
+    if 'mixins' in mixin_vals:
+      FlattenMixins(mixin_pool, mixin_vals['mixins'], vals, visited)
+  return vals
 
 
 

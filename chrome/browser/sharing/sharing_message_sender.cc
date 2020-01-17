@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sharing/sharing_message_sender.h"
+
 #include "base/guid.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
@@ -15,11 +16,9 @@
 #include "content/public/browser/browser_task_traits.h"
 
 SharingMessageSender::SharingMessageSender(
-    std::unique_ptr<SharingFCMSender> sharing_fcm_sender,
     SharingSyncPreference* sync_prefs,
     syncer::LocalDeviceInfoProvider* local_device_info_provider)
-    : fcm_sender_(std::move(sharing_fcm_sender)),
-      sync_prefs_(sync_prefs),
+    : sync_prefs_(sync_prefs),
       local_device_info_provider_(local_device_info_provider) {}
 
 SharingMessageSender::~SharingMessageSender() = default;
@@ -28,142 +27,157 @@ void SharingMessageSender::SendMessageToDevice(
     const syncer::DeviceInfo& device,
     base::TimeDelta response_timeout,
     chrome_browser_sharing::SharingMessage message,
+    DelegateType delegate_type,
     ResponseCallback callback) {
   DCHECK(message.payload_case() !=
          chrome_browser_sharing::SharingMessage::kAckMessage);
 
   std::string message_guid = base::GenerateGUID();
-  send_message_callbacks_.emplace(message_guid, std::move(callback));
   chrome_browser_sharing::MessageType message_type =
       SharingPayloadCaseToMessageType(message.payload_case());
   SharingDevicePlatform receiver_device_platform =
       sync_prefs_->GetDevicePlatform(device.guid());
+  base::TimeDelta last_updated_age =
+      base::Time::Now() - device.last_updated_timestamp();
+
+  auto inserted = base::InsertOrAssign(
+      message_metadata_, message_guid,
+      SentMessageMetadata(std::move(callback), base::TimeTicks::Now(),
+                          message_type, receiver_device_platform,
+                          last_updated_age));
+  DCHECK(inserted.second);
+
+  auto delegate_iter = send_delegates_.find(delegate_type);
+  if (delegate_iter == send_delegates_.end()) {
+    InvokeSendMessageCallback(message_guid,
+                              SharingSendMessageResult::kInternalError,
+                              /*response=*/nullptr);
+    return;
+  }
+  SendMessageDelegate* delegate = delegate_iter->second.get();
+  DCHECK(delegate);
+
+  // TODO(crbug/1015411): Here we assume the caller gets the |device| from
+  // GetDeviceCandidates, so LocalDeviceInfoProvider is ready. It's better to
+  // queue up the message and wait until LocalDeviceInfoProvider is ready.
+  const syncer::DeviceInfo* local_device_info =
+      local_device_info_provider_->GetLocalDeviceInfo();
+  if (!local_device_info) {
+    InvokeSendMessageCallback(message_guid,
+                              SharingSendMessageResult::kInternalError,
+                              /*response=*/nullptr);
+    return;
+  }
 
   base::PostDelayedTask(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, content::BrowserThread::UI},
       base::BindOnce(&SharingMessageSender::InvokeSendMessageCallback,
-                     weak_ptr_factory_.GetWeakPtr(), message_guid, message_type,
-                     receiver_device_platform,
+                     weak_ptr_factory_.GetWeakPtr(), message_guid,
                      SharingSendMessageResult::kAckTimeout,
                      /*response=*/nullptr),
       response_timeout);
 
-  // TODO(crbug/1015411): Here we assume the caller gets the device guid from
-  // GetDeviceCandidates, so both DeviceInfoTracker and LocalDeviceInfoProvider
-  // are already ready. It's better to queue up the message and wait until
-  // DeviceInfoTracker and LocalDeviceInfoProvider are ready.
-  auto target_info = sync_prefs_->GetTargetInfo(device.guid());
-  if (!target_info) {
-    InvokeSendMessageCallback(message_guid, message_type,
-                              receiver_device_platform,
-                              SharingSendMessageResult::kDeviceNotFound,
-                              /*response=*/nullptr);
-    return;
-  }
-
-  const syncer::DeviceInfo* local_device_info =
-      local_device_info_provider_->GetLocalDeviceInfo();
-  if (!local_device_info) {
-    InvokeSendMessageCallback(message_guid, message_type,
-                              receiver_device_platform,
-                              SharingSendMessageResult::kInternalError,
-                              /*response=*/nullptr);
-    return;
-  }
-
-  base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
-      sync_prefs_->GetLocalSharingInfo(local_device_info);
-  if (!sharing_info) {
-    InvokeSendMessageCallback(message_guid, message_type,
-                              receiver_device_platform,
-                              SharingSendMessageResult::kInternalError,
-                              /*response=*/nullptr);
-    return;
-  }
-
-  LogSharingDeviceLastUpdatedAge(
-      message_type, base::Time::Now() - device.last_updated_timestamp());
+  LogSharingDeviceLastUpdatedAge(message_type, last_updated_age);
   LogSharingVersionComparison(message_type, device.chrome_version());
 
   message.set_sender_guid(local_device_info->guid());
   message.set_sender_device_name(
       send_tab_to_self::GetSharingDeviceNames(local_device_info).full_name);
 
-  auto* sender_info = message.mutable_sender_info();
-  sender_info->set_fcm_token(sharing_info->vapid_target_info.fcm_token);
-  sender_info->set_p256dh(sharing_info->vapid_target_info.p256dh);
-  sender_info->set_auth_secret(sharing_info->vapid_target_info.auth_secret);
-
-  DCHECK_GE(response_timeout, kAckTimeToLive);
-  fcm_sender_->SendMessageToDevice(
-      std::move(*target_info), response_timeout - kAckTimeToLive,
-      std::move(message),
+  delegate->DoSendMessageToDevice(
+      device, response_timeout, std::move(message),
       base::BindOnce(&SharingMessageSender::OnMessageSent,
-                     weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
-                     message_guid, message_type, receiver_device_platform));
+                     weak_ptr_factory_.GetWeakPtr(), message_guid));
 }
 
 void SharingMessageSender::OnMessageSent(
-    base::TimeTicks start_time,
     const std::string& message_guid,
-    chrome_browser_sharing::MessageType message_type,
-    SharingDevicePlatform receiver_device_platform,
     SharingSendMessageResult result,
     base::Optional<std::string> message_id) {
   if (result != SharingSendMessageResult::kSuccessful) {
-    InvokeSendMessageCallback(message_guid, message_type,
-                              receiver_device_platform, result,
+    InvokeSendMessageCallback(message_guid, result,
                               /*response=*/nullptr);
     return;
   }
 
-  send_message_times_.emplace(*message_id, start_time);
+  // Got a new message id, store it for later.
   message_guids_.emplace(*message_id, message_guid);
-  receiver_device_platform_.emplace(*message_id, receiver_device_platform);
+
+  // Check if we got the ack while waiting for the FCM response.
+  auto cached_iter = cached_ack_response_messages_.find(*message_id);
+  if (cached_iter != cached_ack_response_messages_.end()) {
+    OnAckReceived(*message_id, std::move(cached_iter->second));
+    cached_ack_response_messages_.erase(cached_iter);
+  }
 }
 
 void SharingMessageSender::OnAckReceived(
-    chrome_browser_sharing::MessageType message_type,
     const std::string& message_id,
     std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
   auto guid_iter = message_guids_.find(message_id);
-  if (guid_iter == message_guids_.end())
+  if (guid_iter == message_guids_.end()) {
+    // We don't have the guid yet, store the response until we receive it.
+    cached_ack_response_messages_.emplace(message_id, std::move(response));
     return;
+  }
 
   std::string message_guid = std::move(guid_iter->second);
   message_guids_.erase(guid_iter);
 
-  auto times_iter = send_message_times_.find(message_id);
-  DCHECK(times_iter != send_message_times_.end());
+  auto metadata_iter = message_metadata_.find(message_guid);
+  DCHECK(metadata_iter != message_metadata_.end());
+  const SentMessageMetadata& metadata = metadata_iter->second;
 
-  auto device_platform_iter = receiver_device_platform_.find(message_id);
-  DCHECK(device_platform_iter != receiver_device_platform_.end());
+  LogSharingMessageAckTime(metadata.type, metadata.receiver_device_platform,
+                           base::TimeTicks::Now() - metadata.timestamp);
 
-  SharingDevicePlatform receiver_device_platform = device_platform_iter->second;
-  receiver_device_platform_.erase(device_platform_iter);
+  InvokeSendMessageCallback(message_guid, SharingSendMessageResult::kSuccessful,
+                            std::move(response));
 
-  LogSharingMessageAckTime(message_type, receiver_device_platform,
-                           base::TimeTicks::Now() - times_iter->second);
-  send_message_times_.erase(times_iter);
+  message_metadata_.erase(metadata_iter);
+}
 
-  InvokeSendMessageCallback(
-      message_guid, message_type, receiver_device_platform,
-      SharingSendMessageResult::kSuccessful, std::move(response));
+void SharingMessageSender::RegisterSendDelegate(
+    DelegateType type,
+    std::unique_ptr<SendMessageDelegate> delegate) {
+  auto result = send_delegates_.emplace(type, std::move(delegate));
+  DCHECK(result.second) << "Delegate type already registered";
 }
 
 void SharingMessageSender::InvokeSendMessageCallback(
     const std::string& message_guid,
-    chrome_browser_sharing::MessageType message_type,
-    SharingDevicePlatform receiver_device_platform,
     SharingSendMessageResult result,
     std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
-  auto iter = send_message_callbacks_.find(message_guid);
-  if (iter == send_message_callbacks_.end())
+  auto iter = message_metadata_.find(message_guid);
+  if (iter == message_metadata_.end() || !iter->second.callback)
     return;
 
-  ResponseCallback callback = std::move(iter->second);
-  send_message_callbacks_.erase(iter);
-  std::move(callback).Run(result, std::move(response));
+  SentMessageMetadata& metadata = iter->second;
 
-  LogSendSharingMessageResult(message_type, receiver_device_platform, result);
+  std::move(metadata.callback).Run(result, std::move(response));
+
+  LogSendSharingMessageResult(metadata.type, metadata.receiver_device_platform,
+                              result);
+  LogSharingDeviceLastUpdatedAgeWithResult(result, metadata.last_updated_age);
 }
+
+SharingMessageSender::SentMessageMetadata::SentMessageMetadata(
+    ResponseCallback callback,
+    base::TimeTicks timestamp,
+    chrome_browser_sharing::MessageType type,
+    SharingDevicePlatform receiver_device_platform,
+    base::TimeDelta last_updated_age)
+    : callback(std::move(callback)),
+      timestamp(timestamp),
+      type(type),
+      receiver_device_platform(receiver_device_platform),
+      last_updated_age(last_updated_age) {}
+
+SharingMessageSender::SentMessageMetadata::SentMessageMetadata(
+    SentMessageMetadata&& other) = default;
+
+SharingMessageSender::SentMessageMetadata&
+SharingMessageSender::SentMessageMetadata::operator=(
+    SentMessageMetadata&& other) = default;
+
+SharingMessageSender::SentMessageMetadata::~SentMessageMetadata() = default;

@@ -8,6 +8,7 @@
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/sandbox_type.h"
 
 namespace content {
 
@@ -28,6 +29,10 @@ struct CONTENT_EXPORT ChildProcessData {
   // process ID, and will be unique for all types of child process for
   // one run of the browser.
   int id = 0;
+
+  // The content::SandboxType that this process was launched at. May be
+  // invalid prior to process launch.
+  content::SandboxType sandbox_type;
 
   const base::Process& GetProcess() const { return process_; }
   // Since base::Process is non-copyable, the caller has to provide a rvalue.

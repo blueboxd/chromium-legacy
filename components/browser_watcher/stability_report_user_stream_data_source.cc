@@ -14,22 +14,41 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/memory/free_deleter.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/persistent_memory_allocator.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/browser_watcher/activity_tracker_annotation.h"
 #include "components/browser_watcher/minidump_user_streams.h"
 #include "components/browser_watcher/stability_metrics.h"
 #include "components/browser_watcher/stability_paths.h"
 #include "components/browser_watcher/stability_report_extractor.h"
 #include "third_party/crashpad/crashpad/minidump/minidump_user_extension_stream_data_source.h"
+#include "third_party/crashpad/crashpad/snapshot/annotation_snapshot.h"
 #include "third_party/crashpad/crashpad/snapshot/exception_snapshot.h"
+#include "third_party/crashpad/crashpad/snapshot/module_snapshot.h"
 #include "third_party/crashpad/crashpad/snapshot/process_snapshot.h"
+#include "third_party/crashpad/crashpad/util/process/process_memory.h"
 
 namespace browser_watcher {
 
 namespace {
+
+// TODO(siggi): Refactor this to harmonize with the activity tracker setup.
+const size_t kMaxActivityAnnotationSize = 2 << 20;
+
+using UniqueMallocPtr = std::unique_ptr<void, base::FreeDeleter>;
+
+UniqueMallocPtr UncheckedAllocate(size_t size) {
+  void* raw_ptr = nullptr;
+  if (!base::UncheckedMalloc(size, &raw_ptr))
+    return UniqueMallocPtr();
+
+  return UniqueMallocPtr(raw_ptr);
+}
 
 base::FilePath GetStabilityFileName(
     const base::FilePath& user_data_dir,
@@ -41,6 +60,22 @@ base::FilePath GetStabilityFileName(
 
   return GetStabilityFileForProcess(process_snapshot->ProcessID(),
                                     creation_time, user_data_dir);
+}
+
+// A PersistentMemoryAllocator subclass that can take ownership of a buffer
+// that's allocated with a malloc-compatible allocation function.
+class MallocMemoryAllocator : public base::PersistentMemoryAllocator {
+ public:
+  MallocMemoryAllocator(UniqueMallocPtr buffer, size_t size);
+  ~MallocMemoryAllocator() override;
+};
+
+MallocMemoryAllocator::MallocMemoryAllocator(UniqueMallocPtr buffer,
+                                             size_t size)
+    : base::PersistentMemoryAllocator(buffer.release(), size, 0, 0, "", true) {}
+
+MallocMemoryAllocator::~MallocMemoryAllocator() {
+  free(const_cast<char*>(mem_base_));
 }
 
 class BufferExtensionStreamDataSource final
@@ -83,17 +118,32 @@ bool BufferExtensionStreamDataSource::ReadStreamData(Delegate* delegate) {
 
 // TODO(manzagop): Collection should factor in whether this is a true crash or
 // dump without crashing.
-bool CollectStabilityReport(const base::FilePath& path,
-                            StabilityReport* report) {
-  CollectionStatus status = Extract(path, report);
+bool CollectStabilityReport(
+    std::unique_ptr<base::debug::GlobalActivityAnalyzer> global_analyzer,
+    StabilityReport* report) {
+  CollectionStatus status = ANALYZER_CREATION_FAILED;
+  if (global_analyzer)
+    status = Extract(std::move(global_analyzer), report);
+
   base::UmaHistogramEnumeration("ActivityTracker.CollectCrash.Status", status,
                                 COLLECTION_STATUS_MAX);
   if (status != SUCCESS)
     return false;
 
   LogCollectOnCrashEvent(CollectOnCrashEvent::kReportExtractionSuccess);
-  MarkStabilityFileDeletedOnCrash(path);
 
+  return true;
+}
+
+bool CollectPersistentReport(const base::FilePath& path,
+                             StabilityReport* report) {
+  std::unique_ptr<base::debug::GlobalActivityAnalyzer> global_analyzer =
+      base::debug::GlobalActivityAnalyzer::CreateWithFile(path);
+
+  if (!CollectStabilityReport(std::move(global_analyzer), report))
+    return false;
+
+  MarkStabilityFileDeletedOnCrash(path);
   return true;
 }
 
@@ -175,6 +225,59 @@ void CollectProcessPerformanceMetrics(
   }
 }
 
+// If the process has a beacon for in-memory activities, returns an analyzer
+// for it.
+std::unique_ptr<base::debug::GlobalActivityAnalyzer>
+MaybeGetInMemoryActivityAnalyzer(crashpad::ProcessSnapshot* process_snapshot) {
+  if (!process_snapshot->Memory())
+    return nullptr;
+
+  auto modules = process_snapshot->Modules();
+  for (auto* module : modules) {
+    auto annotations = module->AnnotationObjects();
+    for (const auto& annotation : annotations) {
+      if (annotation.name == ActivityTrackerAnnotation::kAnnotationName &&
+          annotation.type == static_cast<uint16_t>(
+                                 ActivityTrackerAnnotation::kAnnotationType) &&
+          annotation.value.size() ==
+              sizeof(ActivityTrackerAnnotation::ValueType)) {
+        // Re-cast the annotation to its value type.
+        ActivityTrackerAnnotation::ValueType value;
+        memcpy(&value, annotation.value.data(), sizeof(value));
+
+        // Check the size field for sanity.
+        if (value.size > kMaxActivityAnnotationSize)
+          continue;
+
+        // Allocate the buffer with no terminate-on-exhaustion to make sure
+        // this can't be used to bring down the handler and thus elide
+        // crash reporting.
+        UniqueMallocPtr buffer = UncheckedAllocate(value.size);
+        if (!buffer || !base::PersistentMemoryAllocator::IsMemoryAcceptable(
+                           buffer.get(), value.size, 0, true)) {
+          continue;
+        }
+
+        // Read the activity tracker data from the crashed process.
+        if (process_snapshot->Memory()->Read(value.address, value.size,
+                                             buffer.get())) {
+          // Success - wrap an allocator on the buffer, and an analyzer on that.
+          std::unique_ptr<MallocMemoryAllocator> allocator =
+              std::make_unique<MallocMemoryAllocator>(std::move(buffer),
+                                                      value.size);
+
+          return base::debug::GlobalActivityAnalyzer::CreateWithAllocator(
+              std::move(allocator));
+        } else {
+          return nullptr;
+        }
+      }
+    }
+  }
+
+  return nullptr;
+}
+
 }  // namespace
 
 StabilityReportUserStreamDataSource::StabilityReportUserStreamDataSource(
@@ -187,6 +290,7 @@ StabilityReportUserStreamDataSource::ProduceStreamData(
   DCHECK(process_snapshot);
   LogCollectOnCrashEvent(CollectOnCrashEvent::kCollectAttempt);
 
+  // See whether there is a persistent stability file.
   StabilityReport report;
   bool collected_report = false;
   if (!user_data_dir_.empty()) {
@@ -197,7 +301,19 @@ StabilityReportUserStreamDataSource::ProduceStreamData(
     if (PathExists(stability_file)) {
       LogCollectOnCrashEvent(CollectOnCrashEvent::kPathExists);
 
-      collected_report = CollectStabilityReport(stability_file, &report);
+      collected_report = CollectPersistentReport(stability_file, &report);
+    }
+  }
+  // If there isn't a persistent report, see whether there's a non-persistent
+  // report beacon in the process' annotations.
+  if (!collected_report) {
+    std::unique_ptr<base::debug::GlobalActivityAnalyzer> global_analyzer =
+        MaybeGetInMemoryActivityAnalyzer(process_snapshot);
+    if (global_analyzer) {
+      LogCollectOnCrashEvent(CollectOnCrashEvent::kInMemoryAnnotationExists);
+
+      collected_report =
+          CollectStabilityReport(std::move(global_analyzer), &report);
     }
   }
 

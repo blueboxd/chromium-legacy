@@ -29,7 +29,6 @@
 #include "chrome/browser/media/router/providers/wired_display/wired_display_media_route_provider.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_controller.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/media_router/media_sink_with_cast_modes.h"
@@ -41,6 +40,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -503,7 +503,8 @@ void MediaRouterViewsUI::InitCommon() {
   query_result_manager_->SetSourcesForCastMode(
       MediaCastMode::LOCAL_FILE, {MediaSource::ForTab(0)}, origin);
 
-  SessionID::id_type tab_id = SessionTabHelper::IdForTab(initiator_).id();
+  SessionID::id_type tab_id =
+      sessions::SessionTabHelper::IdForTab(initiator_).id();
   if (tab_id != -1) {
     MediaSource mirroring_source(MediaSource::ForTab(tab_id));
     query_result_manager_->SetSourcesForCastMode(MediaCastMode::TAB_MIRROR,
@@ -879,7 +880,8 @@ base::Optional<RouteParameters> MediaRouterViewsUI::GetLocalFileRouteParameters(
     const GURL& file_url,
     content::WebContents* tab_contents) {
   RouteParameters params;
-  SessionID::id_type tab_id = SessionTabHelper::IdForTab(tab_contents).id();
+  SessionID::id_type tab_id =
+      sessions::SessionTabHelper::IdForTab(tab_contents).id();
   params.source_id = MediaSource::ForTab(tab_id).id();
   params.origin = url::Origin();
 

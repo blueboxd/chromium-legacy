@@ -19,10 +19,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_slider.h"
 
-#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
-#include "third_party/blink/renderer/core/html/forms/slider_thumb_element.h"
-#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
@@ -55,16 +52,6 @@ void LayoutSlider::ComputeIntrinsicLogicalWidths(
       LayoutUnit(kDefaultTrackLength * StyleRef().EffectiveZoom());
   if (!StyleRef().Width().IsPercentOrCalc())
     min_logical_width = max_logical_width;
-}
-
-inline SliderThumbElement* LayoutSlider::GetSliderThumbElement() const {
-  return To<SliderThumbElement>(
-      To<Element>(GetNode())->UserAgentShadowRoot()->getElementById(
-          shadow_element_names::SliderThumb()));
-}
-
-bool LayoutSlider::InDragMode() const {
-  return GetSliderThumbElement()->IsActive();
 }
 
 }  // namespace blink

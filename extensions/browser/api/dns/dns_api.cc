@@ -14,6 +14,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
 #include "net/dns/public/resolve_error_info.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 using extensions::api::dns::ResolveCallbackResolveInfo;
@@ -36,11 +37,11 @@ ExtensionFunction::ResponseAction DnsResolveFunction::Run() {
   // hostname you'd like to resolve, even though it doesn't use that value in
   // determining its answer.
   net::HostPortPair host_port_pair(params->hostname, 0);
-  // TODO(https://crbug.com/997049): Pass in a non-empty NetworkIsolationKey.
+  url::Origin origin = url::Origin::Create(extension_->url());
   content::BrowserContext::GetDefaultStoragePartition(browser_context())
       ->GetNetworkContext()
-      ->ResolveHost(host_port_pair, net::NetworkIsolationKey::Todo(), nullptr,
-                    receiver_.BindNewPipeAndPassRemote());
+      ->ResolveHost(host_port_pair, net::NetworkIsolationKey(origin, origin),
+                    nullptr, receiver_.BindNewPipeAndPassRemote());
   receiver_.set_disconnect_handler(
       base::BindOnce(&DnsResolveFunction::OnComplete, base::Unretained(this),
                      net::ERR_NAME_NOT_RESOLVED,

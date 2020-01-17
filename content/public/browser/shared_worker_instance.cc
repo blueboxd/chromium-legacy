@@ -15,6 +15,8 @@ namespace content {
 SharedWorkerInstance::SharedWorkerInstance(
     int64_t id,
     const GURL& url,
+    blink::mojom::ScriptType script_type,
+    network::mojom::CredentialsMode credentials_mode,
     const std::string& name,
     const url::Origin& constructor_origin,
     const std::string& content_security_policy,
@@ -23,6 +25,8 @@ SharedWorkerInstance::SharedWorkerInstance(
     blink::mojom::SharedWorkerCreationContextType creation_context_type)
     : id_(id),
       url_(url),
+      script_type_(script_type),
+      credentials_mode_(credentials_mode),
       name_(name),
       constructor_origin_(constructor_origin),
       content_security_policy_(content_security_policy),

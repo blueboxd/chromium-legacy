@@ -1097,16 +1097,6 @@ TestInterface5Implementation* V8TestInterface5::ToImplWithTypeCheck(
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInterface5Implementation* NativeValueTraits<TestInterface5Implementation>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestInterface5Implementation* native_value = V8TestInterface5::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestInterface5"));
-  }
-  return native_value;
-}
-
 void V8TestInterface5::InstallConditionalFeatures(
     v8::Local<v8::Context> context,
     const DOMWrapperWorld& world,

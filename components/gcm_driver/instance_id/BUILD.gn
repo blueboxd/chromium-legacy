@@ -51,9 +51,7 @@ static_library("test_support") {
     "scoped_use_fake_instance_id_android.h",
   ]
 
-  public_deps = [
-    ":instance_id",
-  ]
+  public_deps = [ ":instance_id" ]
   deps = [
     "//base",
     "//components/gcm_driver",
@@ -67,9 +65,7 @@ static_library("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "instance_id_driver_unittest.cc",
-  ]
+  sources = [ "instance_id_driver_unittest.cc" ]
 
   deps = [
     ":instance_id",
@@ -84,8 +80,6 @@ source_set("unit_tests") {
 
 if (is_android) {
   java_cpp_enum("instance_id_java_enums_srcjar") {
-    sources = [
-      "instance_id.h",
-    ]
+    sources = [ "instance_id.h" ]
   }
 }

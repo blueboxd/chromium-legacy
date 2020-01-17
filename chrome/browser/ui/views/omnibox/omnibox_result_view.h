@@ -39,17 +39,12 @@ class Button;
 class FocusRing;
 }  // namespace views
 
-namespace ui {
-class ThemeProvider;
-}
-
 class OmniboxResultView : public views::View,
                           public views::AnimationDelegateViews,
                           public views::ButtonListener {
  public:
   OmniboxResultView(OmniboxPopupContentsView* popup_contents_view,
-                    size_t model_index,
-                    const ui::ThemeProvider* theme_provider);
+                    size_t model_index);
   ~OmniboxResultView() override;
 
   // Helper to get the color for |part| using the current state.
@@ -150,9 +145,6 @@ class OmniboxResultView : public views::View,
 
   // This result's model index.
   size_t model_index_;
-
-  // The theme provider associated with this view.
-  const ui::ThemeProvider* theme_provider_;
 
   // The data this class is built to display (the "Omnibox Result").
   AutocompleteMatch match_;

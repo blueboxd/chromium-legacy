@@ -91,7 +91,7 @@ Polymer({
   wasBookmarkBarShownOnInit_: false,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.appProxy_ = GoogleAppProxyImpl.getInstance();
     this.metricsManager_ = new ModuleMetricsManager(
         GoogleAppsMetricsProxyImpl.getInstance());
@@ -100,17 +100,17 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     afterNextRender(this, () => IronA11yAnnouncer.requestAvailability());
   },
 
-  onRouteEnter: function() {
+  onRouteEnter() {
     this.finalized_ = false;
     this.metricsManager_.recordPageInitialized();
     this.populateAllBookmarks_();
   },
 
-  onRouteExit: function() {
+  onRouteExit() {
     if (this.finalized_) {
       return;
     }
@@ -118,7 +118,7 @@ Polymer({
     this.metricsManager_.recordBrowserBackOrForward();
   },
 
-  onRouteUnload: function() {
+  onRouteUnload() {
     if (this.finalized_) {
       return;
     }
@@ -131,7 +131,7 @@ Polymer({
    * @param {number} direction
    * @private
    */
-  changeFocus_: function(element, direction) {
+  changeFocus_(element, direction) {
     if (isRTL()) {
       direction *= -1;  // Reverse direction if RTL.
     }
@@ -160,7 +160,7 @@ Polymer({
    * Called when bookmarks should be removed for all selected apps.
    * @private
    */
-  cleanUp_: function() {
+  cleanUp_() {
     this.finalized_ = true;
 
     if (!this.appList_) {
@@ -189,7 +189,7 @@ Polymer({
    * @param {!{model: !AppItemModel}} e
    * @private
    */
-  onAppClick_: function(e) {
+  onAppClick_(e) {
     const item = e.model.item;
 
     e.model.set('item.selected', !item.selected);
@@ -209,7 +209,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onAppKeyUp_: function(e) {
+  onAppKeyUp_(e) {
     if (e.key === 'ArrowRight') {
       this.changeFocus_(e.currentTarget, 1);
     } else if (e.key === 'ArrowLeft') {
@@ -223,12 +223,12 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onAppPointerDown_: function(e) {
+  onAppPointerDown_(e) {
     e.currentTarget.classList.remove(KEYBOARD_FOCUSED);
   },
 
   /** @private */
-  onGetStartedClicked_: function() {
+  onGetStartedClicked_() {
     this.finalized_ = true;
     this.appList_.forEach(app => {
       if (app.selected) {
@@ -240,7 +240,7 @@ Polymer({
   },
 
   /** @private */
-  onNoThanksClicked_: function() {
+  onNoThanksClicked_() {
     this.cleanUp_();
     this.metricsManager_.recordNoThanks();
     navigateToNextStep();
@@ -250,7 +250,7 @@ Polymer({
    * Called when bookmarks should be created for all selected apps.
    * @private
    */
-  populateAllBookmarks_: function() {
+  populateAllBookmarks_() {
     this.wasBookmarkBarShownOnInit_ = this.bookmarkBarManager_.getShown();
 
     if (this.appList_) {
@@ -273,7 +273,7 @@ Polymer({
    * @param {!AppItem} item
    * @private
    */
-  updateBookmark_: function(item) {
+  updateBookmark_(item) {
     if (item.selected && !item.bookmarkId) {
       this.bookmarkBarManager_.setShown(true);
       this.bookmarkProxy_.addBookmark(
@@ -297,7 +297,7 @@ Polymer({
    * Updates the value of hasAppsSelected_.
    * @private
    */
-  updateHasAppsSelected_: function() {
+  updateHasAppsSelected_() {
     this.hasAppsSelected_ =
         this.appList_ && this.appList_.some(a => a.selected);
     if (!this.hasAppsSelected_) {
@@ -311,7 +311,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getAriaPressed_: function(value) {
+  getAriaPressed_(value) {
     return value ? 'true' : 'false';
   }
 });

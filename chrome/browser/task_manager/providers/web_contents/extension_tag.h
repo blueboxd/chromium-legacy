@@ -17,7 +17,7 @@ class ExtensionTag : public WebContentsTag {
   ~ExtensionTag() override;
 
   // task_manager::WebContentsTag:
-  ExtensionTask* CreateTask() const override;
+  ExtensionTask* CreateTask(WebContentsTaskProvider*) const override;
 
  private:
   friend class WebContentsTags;

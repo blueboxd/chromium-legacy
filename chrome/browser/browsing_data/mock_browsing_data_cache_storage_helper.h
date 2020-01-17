@@ -37,14 +37,14 @@ class MockBrowsingDataCacheStorageHelper
 
   // BrowsingDataCacheStorageHelper.
   void StartFetching(FetchCallback callback) override;
-  void DeleteCacheStorage(const GURL& origin) override;
+  void DeleteCacheStorage(const url::Origin& origin) override;
 
  private:
   ~MockBrowsingDataCacheStorageHelper() override;
 
   FetchCallback callback_;
   bool fetched_ = false;
-  std::map<GURL, bool> origins_;
+  std::map<url::Origin, bool> origins_;
   std::list<content::StorageUsageInfo> response_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataCacheStorageHelper);

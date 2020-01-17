@@ -14,6 +14,8 @@
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
@@ -185,6 +187,9 @@
 
 - (void)createMainBrowser {
   _mainBrowser = Browser::Create(_browserState);
+  BrowserList* browserList =
+      BrowserListFactory::GetForBrowserState(_mainBrowser->GetBrowserState());
+  browserList->AddBrowser(_mainBrowser.get());
   [self setUpTabModel:_mainBrowser->GetTabModel()
            withBrowserState:_browserState
       restorePersistedState:YES];
@@ -351,6 +356,12 @@
   DCHECK(![self.otrBrowser->GetTabModel() count]);
   DCHECK(_browserState);
 
+  // Remove the OTR browser from the browser list. The browser itself is
+  // still alive during this call, so any observers can act on it.
+  BrowserList* browserList = BrowserListFactory::GetForBrowserState(
+      self.otrBrowser->GetBrowserState());
+  browserList->RemoveIncognitoBrowser(self.otrBrowser);
+
   // Stop watching the OTR webStateList's state for crashes.
   breakpad::StopMonitoringTabStateForWebStateList(
       self.otrBrowser->GetWebStateList());
@@ -406,6 +417,13 @@
   [_incognitoBrowserCoordinator stop];
   _incognitoBrowserCoordinator = nil;
 
+  BrowserList* browserList = BrowserListFactory::GetForBrowserState(
+      self.mainBrowser->GetBrowserState());
+  browserList->RemoveBrowser(self.mainBrowser);
+  BrowserList* otrBrowserList = BrowserListFactory::GetForBrowserState(
+      self.otrBrowser->GetBrowserState());
+  otrBrowserList->RemoveIncognitoBrowser(self.otrBrowser);
+
   // Handles removing observers, stopping breakpad monitoring, and closing all
   // tabs.
   [self setMainBrowser:nullptr];
@@ -434,6 +452,10 @@
   }
 
   std::unique_ptr<Browser> browser = Browser::Create(otrBrowserState);
+  BrowserList* browserList =
+      BrowserListFactory::GetForBrowserState(browser->GetBrowserState());
+  browserList->AddIncognitoBrowser(browser.get());
+
   [self setUpTabModel:browser->GetTabModel()
            withBrowserState:otrBrowserState
       restorePersistedState:restorePersistedState];

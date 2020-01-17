@@ -53,12 +53,6 @@ CGFloat ToolbarHeight() {
       [UIApplication sharedApplication].preferredContentSizeCategory);
 }
 
-// Returns the amount of vertical space to allow for the existence of a top
-// toolbar when iPhone is in landscape orientation.
-CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
-  return IsCompactHeight(environment) ? ToolbarHeight() : 0;
-}
-
 }  // namespace
 
 @interface ContentSuggestionsHeaderView ()
@@ -77,6 +71,9 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
 // Layout constraints for Identity Disc that need to be adjusted based on
 // device size class changes.
 @property(nonatomic, strong) NSLayoutConstraint* identityDiscTopConstraint;
+// Layout constraint for the invisible button that is where the omnibox should
+// be and that focuses the omnibox when tapped.
+@property(nonatomic, strong) NSLayoutConstraint* invisibleOmniboxConstraint;
 // View used to add on-touch highlight to the fake omnibox.
 @property(nonatomic, strong) UIView* fakeLocationBarHighlightView;
 
@@ -97,12 +94,14 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
 - (void)addToolbarView:(UIView*)toolbarView {
   _toolBarView = toolbarView;
   [self addSubview:toolbarView];
-  id<LayoutGuideProvider> layoutGuide = self.safeAreaLayoutGuide;
+  self.invisibleOmniboxConstraint =
+      [toolbarView.topAnchor constraintEqualToAnchor:self.topAnchor
+                                            constant:self.safeAreaInsets.top];
   [NSLayoutConstraint activateConstraints:@[
     [toolbarView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-    [toolbarView.topAnchor constraintEqualToAnchor:layoutGuide.topAnchor],
     [toolbarView.heightAnchor constraintEqualToConstant:ToolbarHeight()],
-    [toolbarView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor]
+    [toolbarView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    self.invisibleOmniboxConstraint,
   ]];
 }
 
@@ -116,8 +115,8 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
   self.identityDiscView.translatesAutoresizingMaskIntoConstraints = NO;
   id<LayoutGuideProvider> layoutGuide = self.safeAreaLayoutGuide;
   self.identityDiscTopConstraint = [self.identityDiscView.topAnchor
-      constraintEqualToAnchor:layoutGuide.topAnchor
-                     constant:IdentityDiscToolbarOffset(self)];
+      constraintEqualToAnchor:self.topAnchor
+                     constant:self.safeAreaInsets.top];
   CGFloat dimension =
       ntp_home::kIdentityAvatarDimension + 2 * ntp_home::kIdentityAvatarMargin;
   [NSLayoutConstraint activateConstraints:@[
@@ -274,8 +273,8 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
                            ntp_header::kFakeOmniboxScrolledToTopMargin -
                            safeAreaInsets.top;
 
-  // With RxR the search field should scroll under the toolbar.
-  if (IsRegularXRegularSizeClass(self)) {
+  // If it is not in SplitMode the search field should scroll under the toolbar.
+  if (!IsSplitToolbarMode(self)) {
     maxScaleOffset += ToolbarHeight();
   }
 
@@ -395,26 +394,17 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
 
 #pragma mark - UITraitEnvironment
 
-// Adjusts the autolayout constraints for |identityDiscView| when view changes
-// size. When an iPhone is rotated from portrait (no top toolbar) to landscape
-// (with top toolbar), the placement of Identity Disc has to be shifted down
-// below the top toolbar. Otherwise, the Identity Disc may be obscured by the
-// top toolbar in landscape mode.
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  // identityDiscView may not be set if feature is not enabled.
-  if (!self.identityDiscView)
-    return;
-  if ((self.traitCollection.verticalSizeClass !=
-       previousTraitCollection.verticalSizeClass) ||
-      (self.traitCollection.horizontalSizeClass !=
-       previousTraitCollection.horizontalSizeClass)) {
-    self.identityDiscTopConstraint.constant = IdentityDiscToolbarOffset(self);
-  }
   if (previousTraitCollection.preferredContentSizeCategory !=
       self.traitCollection.preferredContentSizeCategory) {
     self.searchHintLabel.font = [self hintLabelFont];
   }
+}
+
+- (void)updateForTopSafeAreaInset:(CGFloat)topSafeAreaInset {
+  self.identityDiscTopConstraint.constant = topSafeAreaInset;
+  self.invisibleOmniboxConstraint.constant = topSafeAreaInset;
 }
 
 #pragma mark - Property accessors

@@ -142,6 +142,8 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
 #endif
     ContentSettingsType::BLUETOOTH_SCANNING,
+    ContentSettingsType::VR,
+    ContentSettingsType::AR,
 };
 
 // Checks whether this permission is currently the factory default, as set by

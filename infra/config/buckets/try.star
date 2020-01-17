@@ -187,6 +187,10 @@ android_builder(
 )
 
 android_builder(
+    name = 'android-10-arm64-rel',
+)
+
+android_builder(
     name = 'android-webview-marshmallow-arm64-dbg',
 )
 
@@ -361,25 +365,21 @@ angle_builder(
 
 angle_builder(
     name = 'win-angle-deqp-rel-32',
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
 angle_builder(
     name = 'win-angle-deqp-rel-64',
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
 angle_builder(
     name = 'win-angle-rel-32',
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
 angle_builder(
     name = 'win-angle-rel-64',
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -408,7 +408,6 @@ blink_builder(
 blink_builder(
     name = 'win10-blink-rel',
     goma_backend = goma.backend.RBE_PROD,
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
     builderless = True,
 )
@@ -416,7 +415,6 @@ blink_builder(
 blink_builder(
     name = 'win7-blink-rel',
     goma_backend = goma.backend.RBE_PROD,
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
     builderless = True,
 )
@@ -497,7 +495,6 @@ def chromiumos_builder(*, name, **kwargs):
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-dbg',
-    goma_enable_ats = True,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/content/gpu/.+',
@@ -508,23 +505,19 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-cfi-thin-lto-rel',
-    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-arm-generic-dbg',
-    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-arm-generic-rel',
-    goma_enable_ats = True,
     tryjob = tryjob(),
 )
 
 chromiumos_builder(
     name = 'chromeos-kevin-compile-rel',
-    goma_enable_ats = True,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chromeos/CHROMEOS_LKGM',
@@ -534,7 +527,6 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'chromeos-kevin-rel',
-    goma_enable_ats = True,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/build/chromeos/.+',
@@ -597,7 +589,6 @@ dawn_builder(
 
 dawn_builder(
     name = 'dawn-win10-x64-deps-rel',
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
     tryjob = tryjob(
         location_regexp = [
@@ -614,7 +605,6 @@ dawn_builder(
 
 dawn_builder(
     name = 'dawn-win10-x86-deps-rel',
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
     tryjob = tryjob(
         location_regexp = [
@@ -640,7 +630,6 @@ dawn_builder(
 
 dawn_builder(
     name = 'win-dawn-rel',
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -860,7 +849,6 @@ def gpu_win_builder(*, name, os=os.WINDOWS_ANY, **kwargs):
   return gpu_builder(
       name = name,
       goma_backend = goma.backend.RBE_PROD,
-      goma_enable_ats = True,
       mastername = 'tryserver.chromium.win',
       os = os,
       **kwargs
@@ -1113,7 +1101,6 @@ linux_builder(
 
 linux_builder(
     name = 'linux_arm',
-    goma_enable_ats = True,
 )
 
 linux_builder(
@@ -1490,7 +1477,6 @@ def swangle_windows_builder(*, name, **kwargs):
       name = name,
       os = os.WINDOWS_DEFAULT,
       goma_backend = goma.backend.RBE_PROD,
-      goma_enable_ats = True,
       **kwargs
   )
 
@@ -1524,14 +1510,12 @@ def win_builder(
     name,
     builderless=True,
     goma_backend=goma.backend.RBE_PROD,
-    goma_enable_ats=True,
     os=os.WINDOWS_DEFAULT,
     **kwargs):
   return try_builder(
       name = name,
       builderless = builderless,
       goma_backend = goma_backend,
-      goma_enable_ats = goma_enable_ats,
       mastername = 'tryserver.chromium.win',
       os = os,
       **kwargs
@@ -1622,7 +1606,6 @@ win_builder(
     cores = 32,
     executable = luci.recipe(name = 'chromium_upload_clang'),
     goma_backend = None,
-    goma_enable_ats = False,
     os = os.WINDOWS_ANY,
 )
 

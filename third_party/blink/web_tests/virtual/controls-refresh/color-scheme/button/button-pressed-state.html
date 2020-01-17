@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../../../../resources/run-after-layout-and-paint.js"></script>
+<script src="../../../../fast/forms/resources/common.js"></script>
+<body>
+<input type="button" value="button"/>
+<br>
+<br>
+<input type="button" value="button" id="pressTarget"/>
+<script>
+runAfterLayoutAndPaint(function() {
+  var target = document.getElementById('pressTarget');
+  pressElement(target)
+}, true);
+</script>
+</body>

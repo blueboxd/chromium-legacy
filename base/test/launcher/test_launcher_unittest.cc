@@ -598,7 +598,7 @@ TEST_F(TestLauncherTest, JsonSummaryWithDisabledTests) {
   ASSERT_TRUE(val);
   ASSERT_EQ(1u, val->GetList().size());
 
-  Value* iteration_val = &(val->GetList().at(0));
+  Value* iteration_val = &(val->GetList()[0]);
   ASSERT_TRUE(iteration_val);
   ASSERT_TRUE(iteration_val->is_dict());
   EXPECT_EQ(1u, iteration_val->DictSize());
@@ -748,7 +748,7 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   ASSERT_TRUE(val);
   ASSERT_EQ(1u, val->GetList().size());
 
-  Value* iteration_val = &(val->GetList().at(0));
+  Value* iteration_val = &(val->GetList()[0]);
   ASSERT_TRUE(iteration_val);
   ASSERT_TRUE(iteration_val->is_dict());
   EXPECT_EQ(4u, iteration_val->DictSize());

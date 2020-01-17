@@ -29,6 +29,7 @@ class Transform;
 
 namespace viz {
 class CompositorFrame;
+class BeginFrameSource;
 }
 
 namespace content {
@@ -126,6 +127,10 @@ class CONTENT_EXPORT SynchronousCompositor {
 
   // Called when viz for webview enabled to drive browser-side fling
   virtual void ProgressFling(base::TimeTicks frame_time) = 0;
+
+  // Sets BeginFrameSource to use
+  virtual void SetBeginFrameSource(
+      viz::BeginFrameSource* begin_frame_source) = 0;
 
  protected:
   virtual ~SynchronousCompositor() {}

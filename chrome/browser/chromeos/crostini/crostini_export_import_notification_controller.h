@@ -22,26 +22,40 @@ class Notification;
 
 namespace crostini {
 
+class CrostiniExportImportClickCloseDelegate
+    : public message_center::HandleNotificationClickDelegate {
+ public:
+  using HandleNotificationClickDelegate::ButtonClickCallback;
+
+  CrostiniExportImportClickCloseDelegate();
+
+  void SetCloseCallback(base::RepeatingClosure close_closure) {
+    close_closure_ = std::move(close_closure);
+  }
+
+  // NotificationDelegate overrides:
+  void Close(bool by_user) override;
+
+ private:
+  ~CrostiniExportImportClickCloseDelegate() override;
+
+  base::RepeatingClosure close_closure_{};
+};
+
 enum class ExportImportType;
 
-// Controller for Crostini's Export Import Notification UI.
-// It can be used to change the look of the UI, and handles actions from the UI.
+// Controller for Crostini's Export Import notification UI.
+// Upon construction the Controller will create a new notification, displaying
+// the StatusRunning UI. If the controller is freed the notification will
+// continue to be shown and handle click events until the user closes it.
 class CrostiniExportImportNotificationController
-    : public CrostiniExportImportStatusTracker,
-      public message_center::NotificationObserver {
+    : public CrostiniExportImportStatusTracker {
  public:
-  // Used to construct CrostiniExportImportNotificationController to ensure it
-  // controls its lifetime.
-  static CrostiniExportImportStatusTracker* Create(
-      Profile* profile,
-      ContainerId container_id,
-      const std::string& notification_id,
-      ExportImportType type,
-      base::FilePath path) {
-    return new CrostiniExportImportNotificationController(
-        profile, type, notification_id, std::move(path),
-        std::move(container_id));
-  }
+  CrostiniExportImportNotificationController(Profile* profile,
+                                             ExportImportType type,
+                                             const std::string& notification_id,
+                                             base::FilePath path,
+                                             ContainerId container_id);
 
   ~CrostiniExportImportNotificationController() override;
 
@@ -52,19 +66,11 @@ class CrostiniExportImportNotificationController
   base::WeakPtr<CrostiniExportImportNotificationController> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
-
-  // message_center::NotificationObserver:
-  void Close(bool by_user) override;
-  void Click(const base::Optional<int>& button_index,
-             const base::Optional<base::string16>& reply) override;
+  message_center::NotificationObserver* get_delegate() {
+    return delegate_.get();
+  }
 
  private:
-  CrostiniExportImportNotificationController(Profile* profile,
-                                             ExportImportType type,
-                                             const std::string& notification_id,
-                                             base::FilePath path,
-                                             ContainerId container_id);
-
   // CrostiniExportImportStatusTracker:
   void ForceRedisplay() override;
   void SetStatusRunningUI(int progress_percent) override;
@@ -74,15 +80,26 @@ class CrostiniExportImportNotificationController
   void SetStatusFailedWithMessageUI(Status status,
                                     const base::string16& message) override;
 
+  void on_notification_closed() { hidden_ = true; }
+
   Profile* profile_;  // Not owned.
   ContainerId container_id_;
+  // |delegate_| is responsible for handling click events. It is separate from
+  // the controller because it needs to live as long as the notification is in
+  // the UI, but the controller's lifetime ends once the notification is in a
+  // final state (done, canceled, or failed).
+  scoped_refptr<CrostiniExportImportClickCloseDelegate> delegate_;
 
   // Time when the operation started.  Used for estimating time remaining.
   base::TimeTicks started_ = base::TimeTicks::Now();
+  // |notification_| acts as a handle to the notification UI, it is used to
+  // update the UI's progress/message/buttons. Freeing |notification_| doesn't
+  // close the notification UI; the UI system is responsible for closing it.
   std::unique_ptr<message_center::Notification> notification_;
   bool hidden_ = false;
   base::WeakPtrFactory<CrostiniExportImportNotificationController>
       weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(CrostiniExportImportNotificationController);
 };
 

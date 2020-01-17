@@ -13,7 +13,7 @@ cr.define('chrome.sync.about_tab', function() {
 
     const oldStr = oldVal.toString();
     const newStr = newVal.toString();
-    if (oldStr != '' && oldStr != newStr) {
+    if (oldStr !== '' && oldStr !== newStr) {
       // Note the addListener function does not end up creating duplicate
       // listeners.  There can be only one listener per event at a time.
       // Reference: https://developer.mozilla.org/en/DOM/element.addEventListener
@@ -40,7 +40,7 @@ cr.define('chrome.sync.about_tab', function() {
 
     const typeStatusArray = chrome.sync.aboutInfo.type_status;
     typeStatusArray.forEach(function(row) {
-      if (row.name == modelType) {
+      if (row.name === modelType) {
         // There are three types of counters, only "status" counters have these
         // fields. Keep the old values if updated fields are not present.
         if (counters.numEntriesAndTombstones !== undefined) {
@@ -61,7 +61,7 @@ cr.define('chrome.sync.about_tab', function() {
    * @return {boolean} true if the element is scrolled to the bottom
    */
   function isScrolledToBottom(elem) {
-    return elem.scrollHeight - elem.scrollTop == elem.clientHeight;
+    return elem.scrollHeight - elem.scrollTop === elem.clientHeight;
   }
 
   /**
@@ -157,7 +157,7 @@ cr.define('chrome.sync.about_tab', function() {
     const importStatusButton = $('import-status');
     importStatusButton.addEventListener('click', function(event) {
       $('status-data').hidden = false;
-      if ($('status-text').value.length == 0) {
+      if ($('status-text').value.length === 0) {
         $('status-text').value =
             'Paste sync status dump here then click import.';
         return;
@@ -197,7 +197,7 @@ cr.define('chrome.sync.about_tab', function() {
     }
     let trafficEventDiv = e.target;
     // Click might be on div's child.
-    if (trafficEventDiv.nodeName != 'DIV') {
+    if (trafficEventDiv.nodeName !== 'DIV') {
       trafficEventDiv = trafficEventDiv.parentNode;
     }
     trafficEventDiv.classList.toggle('traffic-event-entry-expanded');

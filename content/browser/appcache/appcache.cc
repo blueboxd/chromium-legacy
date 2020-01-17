@@ -196,11 +196,8 @@ void AppCache::InitializeWithDatabaseRecords(
 
   for (size_t i = 0; i < whitelists.size(); ++i) {
     const AppCacheDatabase::OnlineWhiteListRecord& record = whitelists.at(i);
-    online_whitelist_namespaces_.push_back(
-        AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE,
-                  record.namespace_url,
-                  GURL(),
-                  record.is_pattern));
+    online_whitelist_namespaces_.push_back(AppCacheNamespace(
+        APPCACHE_NETWORK_NAMESPACE, record.namespace_url, GURL()));
   }
 }
 
@@ -257,7 +254,6 @@ void AppCache::ToDatabaseRecords(
     AppCacheDatabase::OnlineWhiteListRecord& record = whitelists->back();
     record.cache_id = cache_id_;
     record.namespace_url = online_whitelist_namespaces_[i].namespace_url;
-    record.is_pattern = online_whitelist_namespaces_[i].is_pattern;
   }
 }
 

@@ -180,8 +180,8 @@ static_library("utility") {
 
   if (enable_basic_printing) {
     deps += [
-      "//components/services/pdf_compositor",
-      "//components/services/pdf_compositor/public/mojom",
+      "//components/services/print_compositor",
+      "//components/services/print_compositor/public/mojom",
     ]
 
     if (is_chromeos) {

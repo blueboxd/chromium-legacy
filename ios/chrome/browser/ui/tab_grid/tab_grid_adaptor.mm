@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/main/browser.h"
+#include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
@@ -56,9 +57,9 @@
                      focusOmnibox:NO];
 }
 
-- (void)setOtrTabModel:(TabModel*)otrModel {
+- (void)setOtrBrowser:(Browser*)browser {
   DCHECK(self.incognitoMediator);
-  self.incognitoMediator.tabModel = otrModel;
+  self.incognitoMediator.browser = browser;
 }
 
 @end

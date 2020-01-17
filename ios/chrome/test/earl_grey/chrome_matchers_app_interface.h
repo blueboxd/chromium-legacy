@@ -399,6 +399,9 @@
 // views.
 + (id<GREYMatcher>)settingsBottomToolbarDeleteButton;
 
+// Returns a matcher for the search engine button in the main settings view.
++ (id<GREYMatcher>)settingsSearchEngineButton;
+
 // Returns a matcher for an autofill suggestion view.
 + (id<GREYMatcher>)autofillSuggestionViewMatcher;
 

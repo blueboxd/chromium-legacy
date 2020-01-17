@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/optional.h"
 #include "components/arc/mojom/accessibility_helper.mojom-forward.h"
 #include "ui/accessibility/ax_enum_util.h"
 
@@ -15,6 +16,9 @@ namespace arc {
 
 ax::mojom::Event ToAXEvent(mojom::AccessibilityEventType arc_event_type,
                            mojom::AccessibilityNodeInfoData* node_info_data);
+
+base::Optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
+    ax::mojom::Action action);
 
 // TODO(hirokisato) clean up GetProperty methods in AccessibilityNodeInfoData
 // and AccessibilityWindowInfoData.

@@ -19,6 +19,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/install_prompt_permissions.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -89,7 +90,9 @@ class ExtensionInstallPrompt {
     explicit Prompt(PromptType type);
     ~Prompt();
 
-    void AddPermissions(const extensions::PermissionMessages& permissions);
+    void AddPermissionSet(const extensions::PermissionSet& permissions);
+    void AddPermissionMessages(
+        const extensions::PermissionMessages& permissions);
     void SetIsShowingDetails(DetailsType type,
                              size_t index,
                              bool is_showing_details);
@@ -165,15 +168,6 @@ class ExtensionInstallPrompt {
    private:
     friend class base::RefCountedThreadSafe<Prompt>;
 
-    struct InstallPromptPermissions {
-      InstallPromptPermissions();
-      ~InstallPromptPermissions();
-
-      std::vector<base::string16> permissions;
-      std::vector<base::string16> details;
-      std::vector<bool> is_showing_details;
-    };
-
     bool ShouldDisplayRevokeButton() const;
 
     bool ShouldDisplayRevokeFilesButton() const;
@@ -182,7 +176,7 @@ class ExtensionInstallPrompt {
 
     // Permissions that are being requested (may not be all of an extension's
     // permissions if only additional ones are being requested)
-    InstallPromptPermissions prompt_permissions_;
+    extensions::InstallPromptPermissions prompt_permissions_;
 
     bool is_showing_details_for_retained_files_;
     bool is_showing_details_for_retained_devices_;

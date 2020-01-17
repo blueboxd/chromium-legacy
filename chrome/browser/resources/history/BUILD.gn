@@ -36,9 +36,7 @@ if (optimize_webui) {
     pak_file = history_pak_file
     out_folder = unpak_folder
 
-    deps = [
-      ":flattened_resources",
-    ]
+    deps = [ ":flattened_resources" ]
   }
 
   grit("flattened_resources") {
@@ -51,9 +49,7 @@ if (optimize_webui) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
-    deps = [
-      ":polymer3_elements",
-    ]
+    deps = [ ":polymer3_elements" ]
     defines = chrome_grit_defines
     outputs = [
       "grit/history_resources.h",

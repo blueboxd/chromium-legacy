@@ -24,10 +24,10 @@ ServiceWorkerOfflineCapabilityChecker::
     ~ServiceWorkerOfflineCapabilityChecker() = default;
 
 void ServiceWorkerOfflineCapabilityChecker::Start(
-    ServiceWorkerStorage* storage,
+    ServiceWorkerRegistry* registry,
     ServiceWorkerContext::CheckOfflineCapabilityCallback callback) {
   callback_ = std::move(callback);
-  storage->FindRegistrationForClientUrl(
+  registry->FindRegistrationForClientUrl(
       url_, base::BindOnce(
                 &ServiceWorkerOfflineCapabilityChecker::DidFindRegistration,
                 // We can use base::Unretained(this) because |this| is expected

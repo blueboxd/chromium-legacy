@@ -206,8 +206,8 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void EvictCachedBackBuffer(uint32_t cache_id);
 
  private:
+  friend class HostFrameSinkManagerTest;
   friend class HostFrameSinkManagerTestApi;
-  friend class HostFrameSinkManagerTestBase;
 
   struct FrameSinkData {
     FrameSinkData();

@@ -35,6 +35,7 @@ void WebCursor::CleanupPlatformData() {
     ui::UnrefCustomXCursor(platform_cursor_);
     platform_cursor_ = 0;
   }
+  custom_cursor_.reset();
 }
 
 void WebCursor::CopyPlatformData(const WebCursor& other) {

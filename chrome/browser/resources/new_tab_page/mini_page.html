@@ -1,0 +1,35 @@
+<style>
+  :host {
+    --mini-page-shortcut-color: var(--google-grey-refresh-300);
+  }
+
+  .mini-page {
+    margin: auto;
+    padding-top: 26px;
+    width: fit-content;
+  }
+
+  .mini-header {
+    -webkit-mask-image: url(icons/header.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    background-color: var(--google-grey-refresh-300);
+    height: 40px;
+    width: 130px;
+  }
+
+  .mini-shortcuts {
+    -webkit-mask-image: url(icons/shortcut_circles.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    background-color: var(--mini-page-shortcut-color);
+    height: 42px;
+    margin-inline-start: 7px;
+    margin-top: 12px;
+    width: 116px;
+  }
+</style>
+<div class="mini-page">
+  <div class="mini-header"></div>
+  <div class="mini-shortcuts"></div>
+</div>

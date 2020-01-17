@@ -2078,16 +2078,6 @@ TEST_F(MainThreadSchedulerImplTest,
   run_loop.Run();
 }
 
-TEST_F(MainThreadSchedulerImplTest, CurrentThread) {
-  EXPECT_EQ(scheduler_->DeprecatedDefaultTaskRunner(),
-            base::CreateSingleThreadTaskRunner({base::CurrentThread()}));
-
-  // base::TaskPriority is currently ignored in blink.
-  EXPECT_EQ(scheduler_->DeprecatedDefaultTaskRunner(),
-            base::CreateSingleThreadTaskRunner(
-                {base::CurrentThread(), base::TaskPriority::BEST_EFFORT}));
-}
-
 TEST_F(MainThreadSchedulerImplTest, TestBeginMainFrameNotExpectedUntil) {
   base::TimeDelta ten_millis(base::TimeDelta::FromMilliseconds(10));
   base::TimeTicks expected_deadline = Now() + ten_millis;

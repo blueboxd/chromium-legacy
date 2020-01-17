@@ -10,20 +10,14 @@
 
 // Macro used to define an OverlayRequestConfig that holds no data.  Can be used
 // in tests for functionality specific to config types.
-#define DEFINE_TEST_OVERLAY_REQUEST_CONFIG(ConfigType)         \
-  class ConfigType : public OverlayRequestConfig<ConfigType> { \
-   private:                                                    \
-    OVERLAY_USER_DATA_SETUP(ConfigType);                       \
-  };                                                           \
+#define DEFINE_TEST_OVERLAY_REQUEST_CONFIG(ConfigType) \
+  DEFINE_STATELESS_OVERLAY_REQUEST_CONFIG(ConfigType); \
   OVERLAY_USER_DATA_SETUP_IMPL(ConfigType)
 
 // Macro used to define a response info that holds no data.  Can be used
 // in tests for functionality specific to info types.
-#define DEFINE_TEST_OVERLAY_RESPONSE_INFO(InfoType)       \
-  class InfoType : public OverlayResponseInfo<InfoType> { \
-   private:                                               \
-    OVERLAY_USER_DATA_SETUP(InfoType);                    \
-  };                                                      \
+#define DEFINE_TEST_OVERLAY_RESPONSE_INFO(InfoType) \
+  DEFINE_STATELESS_OVERLAY_RESPONSE_INFO(InfoType); \
   OVERLAY_USER_DATA_SETUP_IMPL(InfoType)
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_TEST_OVERLAY_TEST_MACROS_H_

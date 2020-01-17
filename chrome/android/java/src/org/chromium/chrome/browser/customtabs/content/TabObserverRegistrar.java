@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -22,8 +23,6 @@ import javax.inject.Inject;
 /**
  * Adds and removes the given {@link PageLoadMetrics.Observer}s and {@link TabObserver}s to Tabs as
  * they enter/leave the TabModel.
- *
- * // TODO(peconn): Get rid of EmptyTabModelObserver now that we have Java 8 default methods.
  */
 @ActivityScope
 public class TabObserverRegistrar extends EmptyTabModelObserver implements Destroyable {
@@ -32,7 +31,7 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
     private final Set<TabObserver> mTabObservers = new HashSet<>();
 
     /** Observers for active tab. */
-    private final Set<TabObserver> mActivityTabObservers = new HashSet<>();
+    private final Set<CustomTabTabObserver> mActivityTabObservers = new HashSet<>();
 
     /**
      * Caches the {@link CustomTabActivityTabProvider}'s active tab so that TabObservers can be
@@ -45,11 +44,17 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
                 @Override
                 public void onInitialTabCreated(@NonNull Tab tab, @TabCreationMode int mode) {
                     onTabProviderTabUpdated();
+                    for (CustomTabTabObserver observer : mActivityTabObservers) {
+                        observer.onAttachedToInitialTab(tab);
+                    }
                 }
 
                 @Override
                 public void onTabSwapped(@NonNull Tab tab) {
                     onTabProviderTabUpdated();
+                    for (CustomTabTabObserver observer : mActivityTabObservers) {
+                        observer.onObservingDifferentTab(tab);
+                    }
                 }
 
                 @Override
@@ -84,15 +89,16 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
      * being observed when the CustomTabActivity's active tab changes.
      * Differs from {@link #registerTabObserver()} which observes all newly created tabs.
      */
-    public void registerActivityTabObserver(TabObserver observer) {
+    public void registerActivityTabObserver(CustomTabTabObserver observer) {
         mActivityTabObservers.add(observer);
         Tab activeTab = mTabProvider.getTab();
         if (activeTab != null) {
             activeTab.addObserver(observer);
+            observer.onAttachedToInitialTab(activeTab);
         }
     }
 
-    public void unregisterActivityTabObserver(TabObserver observer) {
+    public void unregisterActivityTabObserver(CustomTabTabObserver observer) {
         mActivityTabObservers.remove(observer);
         Tab activeTab = mTabProvider.getTab();
         if (activeTab != null) {
@@ -161,13 +167,13 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
         }
     }
 
-    private void addTabObservers(Tab tab, Set<TabObserver> tabObservers) {
+    private void addTabObservers(Tab tab, Set<? extends TabObserver> tabObservers) {
         for (TabObserver observer : tabObservers) {
             tab.addObserver(observer);
         }
     }
 
-    private void removeTabObservers(Tab tab, Set<TabObserver> tabObservers) {
+    private void removeTabObservers(Tab tab, Set<? extends TabObserver> tabObservers) {
         for (TabObserver observer : tabObservers) {
             tab.removeObserver(observer);
         }
@@ -176,5 +182,24 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
     @Override
     public void destroy() {
         removePageLoadMetricsObservers();
+    }
+
+    /**
+     * A class for observing the activity tab. When the activity tab changes, the observer is
+     * switched to that tab.
+     */
+    public abstract static class CustomTabTabObserver extends EmptyTabObserver {
+        /**
+         * Called when the initial tab is created or the observer is registered with
+         * {@link TabObserverRegistrar}, whichever occurs last.
+         */
+        protected void onAttachedToInitialTab(@NonNull Tab tab) {}
+
+        /**
+         * A notification that the observer has switched to observing a different tab. This will not
+         * be called for the initial tab being attached to after creation.
+         * @param tab The tab that the observer is now observing.
+         */
+        protected void onObservingDifferentTab(@NonNull Tab tab) {}
     }
 }

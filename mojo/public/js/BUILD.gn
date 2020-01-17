@@ -41,16 +41,12 @@ action("bindings") {
   script = "//mojo/public/tools/bindings/concatenate-files.py"
 
   sources = bindings_js_files
-  outputs = [
-    compiled_file,
-  ]
+  outputs = [ compiled_file ]
 
   args = rebase_path(bindings_js_files, root_build_dir)
   args += [ rebase_path(compiled_file, root_build_dir) ]
 
-  deps = [
-    "//mojo/public/interfaces/bindings:bindings_js__generator",
-  ]
+  deps = [ "//mojo/public/interfaces/bindings:bindings_js__generator" ]
 }
 
 bindings_lite_sources = [
@@ -62,19 +58,13 @@ bindings_lite_compiled_file = "$target_gen_dir/mojo_bindings_lite.js"
 
 js_library("bindings_lite_sources") {
   sources = [ "compile_preamble.js" ] + bindings_lite_sources
-  deps = [
-    "//mojo/public/interfaces/bindings:bindings_js_library_for_compile",
-  ]
+  deps = [ "//mojo/public/interfaces/bindings:bindings_js_library_for_compile" ]
 }
 
 if (enable_mojom_closure_compile || closure_compile) {
   js_binary("bindings_lite") {
-    outputs = [
-      bindings_lite_compiled_file,
-    ]
-    deps = [
-      ":bindings_lite_sources",
-    ]
+    outputs = [ bindings_lite_compiled_file ]
+    deps = [ ":bindings_lite_sources" ]
     externs_list = [
       "$externs_path/mojo_core.js",
       "$externs_path/pending.js",
@@ -93,14 +83,10 @@ if (enable_mojom_closure_compile || closure_compile) {
     all_sources = bindings_lite_sources + [ "$root_gen_dir/mojo/public/interfaces/bindings/interface_control_messages.mojom-lite.js" ]
     script = "//mojo/public/tools/bindings/concatenate_and_replace_closure_exports.py"
     sources = all_sources
-    outputs = [
-      bindings_lite_compiled_file,
-    ]
+    outputs = [ bindings_lite_compiled_file ]
     args = rebase_path(all_sources, root_build_dir) +
            [ rebase_path(bindings_lite_compiled_file, root_build_dir) ]
-    deps = [
-      "//mojo/public/interfaces/bindings:bindings_js__generator",
-    ]
+    deps = [ "//mojo/public/interfaces/bindings:bindings_js__generator" ]
   }
 }
 
@@ -130,7 +116,5 @@ grit("resources") {
 }
 
 group("tests") {
-  deps = [
-    "//mojo/public/js/test:compile_test",
-  ]
+  deps = [ "//mojo/public/js/test:compile_test" ]
 }

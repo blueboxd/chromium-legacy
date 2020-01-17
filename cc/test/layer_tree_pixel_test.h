@@ -43,7 +43,7 @@ class TextureLayer;
 
 class LayerTreePixelTest : public LayerTreeTest {
  protected:
-  LayerTreePixelTest();
+  explicit LayerTreePixelTest(RendererType renderer_type);
   ~LayerTreePixelTest() override;
 
   // LayerTreeTest overrides.
@@ -85,23 +85,18 @@ class LayerTreePixelTest : public LayerTreeTest {
       SkColor border_color,
       std::vector<scoped_refptr<SolidColorLayer>>&);
 
-  void RunPixelTest(RendererType renderer_type,
-                    scoped_refptr<Layer> content_root,
+  void RunPixelTest(scoped_refptr<Layer> content_root,
                     base::FilePath file_name);
 
-  void RunPixelTest(RendererType renderer_type,
-                    scoped_refptr<Layer> content_root,
+  void RunPixelTest(scoped_refptr<Layer> content_root,
                     const SkBitmap& expected_bitmap);
 
-  void RunPixelTestWithLayerList(RendererType renderer_type,
-                                 base::FilePath file_name);
+  void RunPixelTestWithLayerList(base::FilePath file_name);
 
-  void RunSingleThreadedPixelTest(RendererType renderer_type,
-                                  scoped_refptr<Layer> content_root,
+  void RunSingleThreadedPixelTest(scoped_refptr<Layer> content_root,
                                   base::FilePath file_name);
 
-  void RunPixelTestWithReadbackTarget(RendererType renderer_type,
-                                      scoped_refptr<Layer> content_root,
+  void RunPixelTestWithReadbackTarget(scoped_refptr<Layer> content_root,
                                       Layer* target,
                                       base::FilePath file_name);
 

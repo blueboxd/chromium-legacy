@@ -79,8 +79,6 @@ class ObjectAttributeSetter : public AXSparseAttributeSetter {
     switch (attribute_) {
       case AXObjectAttribute::kAriaActiveDescendant:
         return html_names::kAriaActivedescendantAttr;
-      case AXObjectAttribute::kAriaDetails:
-        return html_names::kAriaDetailsAttr;
       case AXObjectAttribute::kAriaErrorMessage:
         return html_names::kAriaErrormessageAttr;
       default:
@@ -120,6 +118,8 @@ class ObjectVectorAttributeSetter : public AXSparseAttributeSetter {
     switch (attribute_) {
       case AXObjectVectorAttribute::kAriaControls:
         return html_names::kAriaControlsAttr;
+      case AXObjectVectorAttribute::kAriaDetails:
+        return html_names::kAriaDetailsAttr;
       case AXObjectVectorAttribute::kAriaFlowTo:
         return html_names::kAriaFlowtoAttr;
       default:
@@ -175,7 +175,7 @@ AXSparseAttributeSetterMap& GetSparseAttributeSetterMap() {
         new ObjectVectorAttributeSetter(AXObjectVectorAttribute::kAriaFlowTo));
     ax_sparse_attribute_setter_map.Set(
         html_names::kAriaDetailsAttr,
-        new ObjectAttributeSetter(AXObjectAttribute::kAriaDetails));
+        new ObjectVectorAttributeSetter(AXObjectVectorAttribute::kAriaDetails));
     ax_sparse_attribute_setter_map.Set(
         html_names::kAriaErrormessageAttr,
         new ObjectAttributeSetter(AXObjectAttribute::kAriaErrorMessage));
@@ -260,9 +260,6 @@ void AXSparseAttributeAOMPropertyClient::AddRelationProperty(
     case AOMRelationProperty::kActiveDescendant:
       attribute = AXObjectAttribute::kAriaActiveDescendant;
       break;
-    case AOMRelationProperty::kDetails:
-      attribute = AXObjectAttribute::kAriaDetails;
-      break;
     case AOMRelationProperty::kErrorMessage:
       attribute = AXObjectAttribute::kAriaErrorMessage;
       break;
@@ -283,6 +280,9 @@ void AXSparseAttributeAOMPropertyClient::AddRelationListProperty(
   switch (property) {
     case AOMRelationListProperty::kControls:
       attribute = AXObjectVectorAttribute::kAriaControls;
+      break;
+    case AOMRelationListProperty::kDetails:
+      attribute = AXObjectVectorAttribute::kAriaDetails;
       break;
     case AOMRelationListProperty::kFlowTo:
       attribute = AXObjectVectorAttribute::kAriaFlowTo;

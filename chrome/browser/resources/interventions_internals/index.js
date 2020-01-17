@@ -465,7 +465,7 @@ InterventionsInternalPageImpl.prototype = {
    * @param {!mojom.MessageLog} log The new log message recorded by
    * PreviewsLogger.
    */
-  logNewMessage: function(log) {
+  logNewMessage(log) {
     insertMessageRowToMessageLogTable(
         log.time, log.type, log.description, log.url.url, log.pageId);
   },
@@ -478,7 +478,7 @@ InterventionsInternalPageImpl.prototype = {
    * @param {number} time The time when the host was blacklisted in milliseconds
    * since Unix epoch.
    */
-  onBlacklistedHost: function(host, time) {
+  onBlacklistedHost(host, time) {
     const row = document.createElement('tr');
     row.setAttribute('class', 'blacklisted-host-row');
 
@@ -503,7 +503,7 @@ InterventionsInternalPageImpl.prototype = {
    * @param {boolean} blacklisted The time of the event in milliseconds since
    * Unix epoch.
    */
-  onUserBlacklistedStatusChange: function(blacklisted) {
+  onUserBlacklistedStatusChange(blacklisted) {
     const userBlacklistedStatus = $('user-blacklisted-status-value');
     userBlacklistedStatus.textContent =
         (blacklisted ? 'Blacklisted' : 'Not blacklisted');
@@ -516,7 +516,7 @@ InterventionsInternalPageImpl.prototype = {
    * @param {number} time The time of the event in milliseconds since Unix
    * epoch.
    */
-  onBlacklistCleared: function(time) {
+  onBlacklistCleared(time) {
     const blacklistClearedStatus = $('blacklist-last-cleared-time');
     blacklistClearedStatus.textContent = getTimeFormat(time);
 
@@ -541,7 +541,7 @@ InterventionsInternalPageImpl.prototype = {
    * @param {boolean} ignored The new status of whether the previews blacklist
    * decisions is blacklisted or not.
    */
-  onIgnoreBlacklistDecisionStatusChanged: function(ignored) {
+  onIgnoreBlacklistDecisionStatusChanged(ignored) {
     const ignoreButton = $('ignore-blacklist-button');
     ignoreButton.textContent =
         ignored ? ENABLE_BLACKLIST_BUTTON : IGNORE_BLACKLIST_BUTTON;
@@ -560,7 +560,7 @@ InterventionsInternalPageImpl.prototype = {
    * @param {string} maxInterventionType The string representation of the
    * session's maximum ECT threshold for interventions.
    */
-  updateEffectiveConnectionType: function(type, maxInterventionType) {
+  updateEffectiveConnectionType(type, maxInterventionType) {
     // Change the current ECT.
     const ectType = $('nqe-type');
     ectType.textContent = type;
@@ -589,7 +589,7 @@ InterventionsInternalPageImpl.prototype = {
   /**
    * Returns a remote interface to the receiver.
    */
-  bindNewPipeAndPassRemote: function() {
+  bindNewPipeAndPassRemote() {
     const helper = this.receiver_.$;
     return helper.bindNewPipeAndPassRemote();
   },

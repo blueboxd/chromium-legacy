@@ -8,8 +8,11 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/interface_registry.h"
+#include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_dom_window.h"
@@ -298,6 +301,15 @@ void RemoteFrame::WillEnterFullscreen() {
       Fullscreen::RequestType::kPrefixedForCrossProcessDescendant);
 }
 
+void RemoteFrame::AddReplicatedContentSecurityPolicies(
+    WTF::Vector<network::mojom::blink::ContentSecurityPolicyHeaderPtr>
+        headers) {
+  for (auto& header : headers) {
+    GetSecurityContext()->GetContentSecurityPolicy()->AddPolicyFromHeaderValue(
+        header->header_value, header->type, header->source);
+  }
+}
+
 void RemoteFrame::ResetReplicatedContentSecurityPolicy() {
   security_context_.ResetReplicatedContentSecurityPolicy();
 }
@@ -349,6 +361,10 @@ void RemoteFrame::SetHadStickyUserActivationBeforeNavigation(bool value) {
   Frame::SetHadStickyUserActivationBeforeNavigation(value);
 }
 
+void RemoteFrame::SetNeedsOcclusionTracking(bool needs_tracking) {
+  View()->SetNeedsOcclusionTracking(needs_tracking);
+}
+
 void RemoteFrame::BubbleLogicalScroll(
     mojom::blink::ScrollDirection direction,
     ui::input_types::ScrollGranularity granularity) {
@@ -357,6 +373,35 @@ void RemoteFrame::BubbleLogicalScroll(
   DCHECK(parent_frame->IsLocalFrame());
 
   parent_frame->BubbleLogicalScrollFromChildFrame(direction, granularity, this);
+}
+
+void RemoteFrame::UpdateUserActivationState(
+    mojom::blink::UserActivationUpdateType update_type) {
+  switch (update_type) {
+    case mojom::blink::UserActivationUpdateType::kNotifyActivation:
+      NotifyUserActivationInLocalTree();
+      break;
+    case mojom::blink::UserActivationUpdateType::kConsumeTransientActivation:
+      ConsumeTransientUserActivationInLocalTree();
+      break;
+    case mojom::blink::UserActivationUpdateType::kClearActivation:
+      ClearUserActivationInLocalTree();
+      break;
+    case mojom::blink::UserActivationUpdateType::
+        kNotifyActivationPendingBrowserVerification:
+      NOTREACHED() << "Unexpected UserActivationUpdateType from browser";
+      break;
+  }
+}
+
+void RemoteFrame::SetEmbeddingToken(
+    const base::UnguessableToken& embedding_token) {
+  FrameOwner* owner = Owner();
+  To<HTMLFrameOwnerElement>(owner)->SetEmbeddingToken(embedding_token);
+}
+
+void RemoteFrame::SetPageFocus(bool is_focused) {
+  WebFrame::FromFrame(this)->View()->SetFocus(is_focused);
 }
 
 bool RemoteFrame::IsIgnoredForHitTest() const {
@@ -374,11 +419,11 @@ void RemoteFrame::UpdateHitTestOcclusionData() {
   bool unoccluded = false;
   if (base::FeatureList::IsEnabled(
           blink::features::kVizHitTestOcclusionCheck)) {
-    if (HTMLFrameOwnerElement* owner_element = DeprecatedLocalOwner()) {
-      if (LayoutObject* owner = owner_element->GetLayoutObject()) {
+    if (LayoutEmbeddedContent* owner = OwnerLayoutObject()) {
+      if (!owner->GetFrameView()->CanThrottleRendering()) {
         HitTestResult hit_test_result(owner->HitTestForOcclusion());
         const Node* hit_node = hit_test_result.InnerNode();
-        unoccluded = (!hit_node || hit_node == owner_element);
+        unoccluded = (!hit_node || hit_node == owner->GetNode());
       }
     }
   }

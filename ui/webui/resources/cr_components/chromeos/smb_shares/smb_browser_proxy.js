@@ -77,8 +77,8 @@ cr.define('smb_shares', function() {
         shouldOpenFileManagerAfterMount, saveCredentials) {
       return cr.sendWithPromise(
           'smbMount', smbUrl, smbName, username, password,
-          authMethod == SmbAuthMethod.KERBEROS, shouldOpenFileManagerAfterMount,
-          saveCredentials);
+          authMethod === SmbAuthMethod.KERBEROS,
+          shouldOpenFileManagerAfterMount, saveCredentials);
     }
 
     /** @override */

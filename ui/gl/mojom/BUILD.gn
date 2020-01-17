@@ -5,21 +5,13 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "gpu_preference.mojom",
-  ]
+  sources = [ "gpu_preference.mojom" ]
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }
 
 mojom("test_interfaces") {
-  sources = [
-    "traits_test_service.mojom",
-  ]
+  sources = [ "traits_test_service.mojom" ]
 
-  public_deps = [
-    ":mojom",
-  ]
+  public_deps = [ ":mojom" ]
 }

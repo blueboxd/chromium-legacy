@@ -83,7 +83,7 @@ Polymer({
    * @private
    */
   disabledChanged_(newValue, oldValue) {
-    if (!newValue && oldValue == undefined) {
+    if (!newValue && oldValue === undefined) {
       return;
     }
     if (this.disabled) {
@@ -108,7 +108,7 @@ Polymer({
    * @private
    */
   onKeyDown_(e) {
-    if (e.key != ' ' && e.key != 'Enter') {
+    if (e.key !== ' ' && e.key !== 'Enter') {
       return;
     }
 
@@ -120,7 +120,7 @@ Polymer({
     }
 
     this.getRipple().uiDownAction();
-    if (e.key == 'Enter') {
+    if (e.key === 'Enter') {
       this.click();
       // Delay was chosen manually as a good time period for the ripple to be
       // visible.
@@ -133,14 +133,14 @@ Polymer({
    * @private
    */
   onKeyUp_(e) {
-    if (e.key != ' ' && e.key != 'Enter') {
+    if (e.key !== ' ' && e.key !== 'Enter') {
       return;
     }
 
     e.preventDefault();
     e.stopPropagation();
 
-    if (e.key == ' ') {
+    if (e.key === ' ') {
       this.click();
       this.getRipple().uiUpAction();
     }

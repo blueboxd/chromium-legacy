@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/sessions/core/base_session_service.h"
 #include "components/sessions/core/session_command.h"
@@ -36,7 +36,7 @@ namespace sessions {
 // SessionBackend does not use the id in anyway, that is used by
 // BaseSessionService.
 class SESSIONS_EXPORT SessionBackend
-    : public base::RefCountedThreadSafe<SessionBackend> {
+    : public base::RefCountedDeleteOnSequence<SessionBackend> {
  public:
   typedef sessions::SessionCommand::id_type id_type;
   typedef sessions::SessionCommand::size_type size_type;
@@ -47,12 +47,13 @@ class SESSIONS_EXPORT SessionBackend
 
   // Creates a SessionBackend. This method is invoked on the MAIN thread,
   // and does no IO. The real work is done from Init, which is invoked on
-  // the file thread.
+  // a background task runer.
   //
   // |path_to_dir| gives the path the files are written two, and |type|
   // indicates which service is using this backend. |type| is used to determine
   // the name of the files to use as well as for logging.
-  SessionBackend(sessions::BaseSessionService::SessionType type,
+  SessionBackend(scoped_refptr<base::SequencedTaskRunner> owning_task_runner,
+                 sessions::BaseSessionService::SessionType type,
                  const base::FilePath& path_to_dir);
 
   // Moves the current file to the last file, and recreates the current file.
@@ -96,7 +97,8 @@ class SESSIONS_EXPORT SessionBackend
       std::vector<std::unique_ptr<sessions::SessionCommand>>* commands);
 
  private:
-  friend class base::RefCountedThreadSafe<SessionBackend>;
+  friend class base::RefCountedDeleteOnSequence<SessionBackend>;
+  friend class base::DeleteHelper<SessionBackend>;
 
   ~SessionBackend();
 

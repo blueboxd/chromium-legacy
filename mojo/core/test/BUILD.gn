@@ -35,9 +35,7 @@ static_library("test_support") {
 
 source_set("run_all_unittests") {
   testonly = true
-  sources = [
-    "run_all_unittests.cc",
-  ]
+  sources = [ "run_all_unittests.cc" ]
 
   deps = [
     ":test_support",
@@ -65,9 +63,7 @@ source_set("run_all_perftests") {
     "//mojo/public/c/test_support",
   ]
 
-  sources = [
-    "run_all_perftests.cc",
-  ]
+  sources = [ "run_all_perftests.cc" ]
 
   if (is_linux && !is_component_build) {
     public_configs = [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
@@ -92,9 +88,7 @@ static_library("test_support_impl") {
 if (is_mac) {
   proto_library("channel_mac_proto") {
     proto_in_dir = "//"
-    sources = [
-      "data/channel_mac/channel_mac.proto",
-    ]
+    sources = [ "data/channel_mac/channel_mac.proto" ]
     link_deps = [ "//testing/libfuzzer/fuzzers/mach:proto" ]
   }
 }

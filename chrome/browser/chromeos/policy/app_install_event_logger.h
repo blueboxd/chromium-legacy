@@ -58,6 +58,11 @@ class AppInstallEventLogger : public AppInstallEventLogCollector::Delegate,
         const std::set<std::string>& packages,
         const enterprise_management::AppInstallReportLogEvent& event) = 0;
 
+    using AndroidIdCallback =
+        base::OnceCallback<void(bool ok, int64_t android_id)>;
+
+    virtual void GetAndroidId(AndroidIdCallback callback) const = 0;
+
    protected:
     virtual ~Delegate() = default;
   };
@@ -124,6 +129,12 @@ class AppInstallEventLogger : public AppInstallEventLogCollector::Delegate,
   void AddForSetOfPackages(
       const std::set<std::string>& packages,
       std::unique_ptr<enterprise_management::AppInstallReportLogEvent> event);
+
+  void OnGetAndroidId(
+      const std::set<std::string>& packages,
+      std::unique_ptr<enterprise_management::AppInstallReportLogEvent> event,
+      bool ok,
+      int64_t android_id);
 
   // The delegate that events are forwarded to for inclusion in the log.
   Delegate* const delegate_;

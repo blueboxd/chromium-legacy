@@ -391,7 +391,7 @@ void Page::ResetPluginData() {
 static void RestoreSVGImageAnimations() {
   for (const Page* page : AllPages()) {
     if (auto* svg_image_chrome_client =
-            ToSVGImageChromeClientOrNull(page->GetChromeClient()))
+            DynamicTo<SVGImageChromeClient>(page->GetChromeClient()))
       svg_image_chrome_client->RestoreAnimationIfNeeded();
   }
 }

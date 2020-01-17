@@ -164,4 +164,48 @@ TestAutoSetUkmRecorder::~TestAutoSetUkmRecorder() {
   DelegatingUkmRecorder::Get()->RemoveDelegate(this);
 }
 
+std::vector<TestUkmRecorder::HumanReadableUkmMetrics>
+TestUkmRecorder::GetMetrics(std::string entry_name,
+                            const std::vector<std::string>& metric_names) {
+  std::vector<TestUkmRecorder::HumanReadableUkmMetrics> result;
+  for (const auto& entry : GetEntries(entry_name, metric_names)) {
+    result.push_back(entry.metrics);
+  }
+  return result;
+}
+
+std::vector<TestUkmRecorder::HumanReadableUkmEntry> TestUkmRecorder::GetEntries(
+    std::string entry_name,
+    const std::vector<std::string>& metric_names) {
+  std::vector<TestUkmRecorder::HumanReadableUkmEntry> results;
+  for (const ukm::mojom::UkmEntry* entry : GetEntriesByName(entry_name)) {
+    HumanReadableUkmEntry result;
+    result.source_id = entry->source_id;
+    for (const std::string& metric_name : metric_names) {
+      const int64_t* metric_value =
+          ukm::TestUkmRecorder::GetEntryMetric(entry, metric_name);
+      if (metric_value)
+        result.metrics[metric_name] = *metric_value;
+    }
+    results.push_back(std::move(result));
+  }
+  return results;
+}
+
+TestUkmRecorder::HumanReadableUkmEntry::HumanReadableUkmEntry() = default;
+
+TestUkmRecorder::HumanReadableUkmEntry::HumanReadableUkmEntry(
+    ukm::SourceId source_id,
+    TestUkmRecorder::HumanReadableUkmMetrics ukm_metrics)
+    : source_id(source_id), metrics(std::move(ukm_metrics)) {}
+
+TestUkmRecorder::HumanReadableUkmEntry::HumanReadableUkmEntry(
+    const HumanReadableUkmEntry&) = default;
+TestUkmRecorder::HumanReadableUkmEntry::~HumanReadableUkmEntry() = default;
+
+bool TestUkmRecorder::HumanReadableUkmEntry::operator==(
+    const HumanReadableUkmEntry& other) const {
+  return source_id == other.source_id && metrics == other.metrics;
+}
+
 }  // namespace ukm

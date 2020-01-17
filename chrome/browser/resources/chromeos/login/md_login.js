@@ -66,7 +66,7 @@ cr.define('cr.ui.Oobe', function() {
      * Initializes the OOBE flow.  This will cause all C++ handlers to
      * be invoked to do final setup.
      */
-    initialize: function() {
+    initialize() {
       cr.ui.login.DisplayManager.initialize();
       login.WrongHWIDScreen.register();
       login.AccountPickerScreen.register();
@@ -105,16 +105,16 @@ cr.define('cr.ui.Oobe', function() {
     },
 
     // Dummy Oobe functions not present with stripped login UI.
-    setUsageStats: function(checked) {},
-    setTpmPassword: function(password) {},
-    refreshA11yInfo: function(data) {},
-    reloadEulaContent: function(data) {},
+    setUsageStats(checked) {},
+    setTpmPassword(password) {},
+    refreshA11yInfo(data) {},
+    reloadEulaContent(data) {},
 
     /**
      * Reloads content of the page.
      * @param {!Object} data New dictionary with i18n values.
      */
-    reloadContent: function(data) {
+    reloadContent(data) {
       loadTimeData.overrideValues(data);
       i18nTemplate.process(document, loadTimeData);
       Oobe.getInstance().updateLocalizedContent_();
@@ -124,7 +124,7 @@ cr.define('cr.ui.Oobe', function() {
      * Updates "device in tablet mode" state when tablet mode is changed.
      * @param {Boolean} isInTabletMode True when in tablet mode.
      */
-    setTabletModeState: function(isInTabletMode) {
+    setTabletModeState(isInTabletMode) {
       Oobe.getInstance().setTabletModeState_(isInTabletMode);
     },
 
@@ -132,7 +132,7 @@ cr.define('cr.ui.Oobe', function() {
      * Updates OOBE configuration when it is loaded.
      * @param {!OobeTypes.OobeConfiguration} configuration OOBE configuration.
      */
-    updateOobeConfiguration: function(configuration) {
+    updateOobeConfiguration(configuration) {
       Oobe.getInstance().updateOobeConfiguration_(configuration);
     },
   };

@@ -31,7 +31,6 @@
 
 namespace blink {
 
-class HTMLOptionElement;
 class HTMLSelectElement;
 class LayoutText;
 
@@ -41,7 +40,6 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
   ~LayoutMenuList() override;
 
   HTMLSelectElement* SelectElement() const;
-  void DidSelectOption(HTMLOptionElement*);
   String GetText() const;
 
   const char* GetName() const override { return "LayoutMenuList"; }
@@ -103,19 +101,14 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
   void UpdateOptionsWidth() const;
   void SetIndexToSelectOnCancel(int list_index);
 
-  void DidUpdateActiveOption(HTMLOptionElement*);
-
   LayoutText* button_text_;
   LayoutBlock* inner_block_;
 
   bool is_empty_ : 1;
-  bool has_updated_active_option_ : 1;
   LayoutUnit inner_block_height_;
   // m_optionsWidth is calculated and cached on demand.
   // updateOptionsWidth() should be called before reading them.
   mutable int options_width_;
-
-  int last_active_index_;
 
   scoped_refptr<const ComputedStyle> option_style_;
 };

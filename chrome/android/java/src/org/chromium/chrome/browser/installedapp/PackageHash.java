@@ -7,7 +7,10 @@ package org.chromium.chrome.browser.installedapp;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.crypto.ByteArrayGenerator;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -33,18 +36,67 @@ import javax.crypto.spec.SecretKeySpec;
  * However, it does need to change periodically: because installing or uninstalling the app creates
  * a noticeable change to the timing of the operation, we need to occasionally change the salt to
  * create plausible deniability (the attacker can't tell the difference between the salt changing
- * and the app being installed/uninstalled).
+ * and the app being installed/uninstalled). The salt is also updated whenever the cookies are
+ * cleared.
  */
 class PackageHash {
-    // Global salt string for the life of the browser process. A unique salt is generated for
-    // each run of the browser process that will be stable for its lifetime.
-    private static byte[] sSalt;
+    static class Salt implements ProfileManager.Observer {
+        private static Salt sInstance;
+
+        private byte[] mProfileSalt;
+        private byte[] mIncognitoSalt;
+
+        private Salt() {
+            reset(false);
+            ProfileManager.addObserver(this);
+        }
+
+        void reset(boolean onlyIncognito) {
+            try {
+                if (!onlyIncognito) {
+                    mProfileSalt = new ByteArrayGenerator().getBytes(20);
+                }
+                mIncognitoSalt = new ByteArrayGenerator().getBytes(20);
+            } catch (IOException | GeneralSecurityException e) {
+                // If this happens, the crypto source is messed up and we want the browser to crash.
+                throw new RuntimeException(e);
+            }
+        }
+
+        public static Salt getInstance() {
+            if (sInstance == null) {
+                sInstance = new Salt();
+            }
+            return sInstance;
+        }
+
+        public byte[] getSaltBytes(boolean isIncognito) {
+            return isIncognito ? mIncognitoSalt : mProfileSalt;
+        }
+
+        @Override
+        public void onProfileAdded(Profile profile) {}
+
+        @Override
+        public void onProfileDestroyed(Profile profile) {
+            if (profile.isOffTheRecord()) {
+                reset(true);
+            }
+        }
+
+        @VisibleForTesting
+        public static void setGlobalSaltForTesting(byte[] salt) {
+            if (sInstance == null) getInstance();
+            sInstance.mProfileSalt = salt.clone();
+            sInstance.mIncognitoSalt = salt.clone();
+        }
+    }
 
     /**
      * Returns a SHA-256 hash of the package name, truncated to a 16-bit integer.
      */
-    public static short hashForPackage(String packageName) {
-        byte[] salt = getGlobalSalt();
+    public static short hashForPackage(String packageName, boolean isIncognito) {
+        byte[] salt = Salt.getInstance().getSaltBytes(isIncognito);
         Mac hasher;
         try {
             hasher = Mac.getInstance("HmacSHA256");
@@ -64,30 +116,16 @@ class PackageHash {
         }
         byte[] digest = hasher.doFinal(packageNameBytes);
         // Take just the first two bytes of the digest.
-        int hash = ((((int) digest[0]) & 0xff) << 8) | (((int) digest[1]) & 0xff);
+        int hash = (((digest[0]) & 0xff) << 8) | ((digest[1]) & 0xff);
         return (short) hash;
     }
 
-    /**
-     * Gets the global salt for the current browser session.
-     *
-     * If one does not exist, generates one using a PRNG and caches it, then returns it.
-     */
-    private static byte[] getGlobalSalt() {
-        if (sSalt == null) {
-            try {
-                sSalt = new ByteArrayGenerator().getBytes(20);
-            } catch (IOException | GeneralSecurityException e) {
-                // If this happens, the crypto source is messed up and we want the browser to crash.
-                throw new RuntimeException(e);
-            }
+    @CalledByNative
+    public static void onCookiesDeleted() {
+        if (Salt.sInstance == null) {
+            // Singleton is uninitialized. No need to reset the salt.
+            return;
         }
-
-        return sSalt;
-    }
-
-    @VisibleForTesting
-    public static void setGlobalSaltForTesting(byte[] salt) {
-        sSalt = salt;
+        Salt.getInstance().reset(false);
     }
 }

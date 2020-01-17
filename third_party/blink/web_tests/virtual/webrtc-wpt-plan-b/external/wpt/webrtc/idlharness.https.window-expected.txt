@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 497 tests; 400 PASS, 97 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 497 tests; 404 PASS, 93 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Test driver for asyncInitCertificate
@@ -202,18 +202,18 @@ PASS RTCPeerConnectionIceErrorEvent interface object name
 PASS RTCPeerConnectionIceErrorEvent interface: existence and properties of interface prototype object
 PASS RTCPeerConnectionIceErrorEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS RTCPeerConnectionIceErrorEvent interface: existence and properties of interface prototype object's @@unscopables property
-FAIL RTCPeerConnectionIceErrorEvent interface: attribute address assert_true: The prototype object must have a property "address" expected true got false
-FAIL RTCPeerConnectionIceErrorEvent interface: attribute port assert_true: The prototype object must have a property "port" expected true got false
+PASS RTCPeerConnectionIceErrorEvent interface: attribute address
+PASS RTCPeerConnectionIceErrorEvent interface: attribute port
 PASS RTCPeerConnectionIceErrorEvent interface: attribute url
 PASS RTCPeerConnectionIceErrorEvent interface: attribute errorCode
 PASS RTCPeerConnectionIceErrorEvent interface: attribute errorText
-PASS RTCPeerConnectionIceErrorEvent must be primary interface of new RTCPeerConnectionIceErrorEvent('ice-error', { errorCode: 701 });
-PASS Stringification of new RTCPeerConnectionIceErrorEvent('ice-error', { errorCode: 701 });
-FAIL RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent('ice-error', { errorCode: 701 }); must inherit property "address" with the proper type assert_inherits: property "address" not found in prototype chain
-FAIL RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent('ice-error', { errorCode: 701 }); must inherit property "port" with the proper type assert_inherits: property "port" not found in prototype chain
-PASS RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent('ice-error', { errorCode: 701 }); must inherit property "url" with the proper type
-PASS RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent('ice-error', { errorCode: 701 }); must inherit property "errorCode" with the proper type
-PASS RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent('ice-error', { errorCode: 701 }); must inherit property "errorText" with the proper type
+PASS RTCPeerConnectionIceErrorEvent must be primary interface of new RTCPeerConnectionIceErrorEvent('ice-error', { port: 0, errorCode: 701 });
+PASS Stringification of new RTCPeerConnectionIceErrorEvent('ice-error', { port: 0, errorCode: 701 });
+PASS RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent('ice-error', { port: 0, errorCode: 701 }); must inherit property "address" with the proper type
+PASS RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent('ice-error', { port: 0, errorCode: 701 }); must inherit property "port" with the proper type
+PASS RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent('ice-error', { port: 0, errorCode: 701 }); must inherit property "url" with the proper type
+PASS RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent('ice-error', { port: 0, errorCode: 701 }); must inherit property "errorCode" with the proper type
+PASS RTCPeerConnectionIceErrorEvent interface: new RTCPeerConnectionIceErrorEvent('ice-error', { port: 0, errorCode: 701 }); must inherit property "errorText" with the proper type
 PASS RTCCertificate interface: existence and properties of interface object
 PASS RTCCertificate interface object length
 PASS RTCCertificate interface object name

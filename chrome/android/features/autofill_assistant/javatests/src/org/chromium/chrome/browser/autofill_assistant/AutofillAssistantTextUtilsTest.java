@@ -41,6 +41,20 @@ public class AutofillAssistantTextUtilsTest {
     @Rule
     public CustomTabActivityTestRule mTestRule = new CustomTabActivityTestRule();
 
+    /* Simple helper class that keeps track of the most recent callback result. */
+    class LinkCallback implements Callback<Integer> {
+        private int mLastCallback = -1;
+
+        private int getLastCallback() {
+            return mLastCallback;
+        }
+
+        @Override
+        public void onResult(Integer result) {
+            mLastCallback = result;
+        }
+    }
+
     @Before
     public void setUp() {
         AutofillAssistantUiTestUtil.startOnBlankPage(mTestRule);
@@ -92,20 +106,26 @@ public class AutofillAssistantTextUtilsTest {
 
     @Test
     @MediumTest
+    public void testMismatchingTextTags() throws Exception {
+        TextView textView = runOnUiThreadBlocking(() -> {
+            TextView view = new TextView(mTestRule.getActivity());
+            mTestLayout.addView(view);
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    view, "<b>Fat</b>. <b>Not fat</br>. <i>Italic</i>. <i>Not italic</ii>.", null);
+            StyleSpan[] spans =
+                    ((SpannedString) view.getText()).getSpans(0, view.length(), StyleSpan.class);
+            assertThat(spans.length, is(2));
+            assertThat(spans[0].getStyle(), is(Typeface.BOLD));
+            assertThat(spans[1].getStyle(), is(Typeface.ITALIC));
+            return view;
+        });
+        onView(is(textView))
+                .check(matches(withText("Fat. <b>Not fat</br>. Italic. <i>Not italic</ii>.")));
+    }
+
+    @Test
+    @MediumTest
     public void testTextLinks() throws Exception {
-        /* Simple helper class that keeps track of the most recent callback result. */
-        class LinkCallback implements Callback<Integer> {
-            private int mLastCallback = -1;
-
-            private int getLastCallback() {
-                return mLastCallback;
-            }
-            @Override
-            public void onResult(Integer result) {
-                mLastCallback = result;
-            }
-        }
-
         LinkCallback linkCallback = new LinkCallback();
         TextView multiLinkView = runOnUiThreadBlocking(() -> {
             TextView view = new TextView(mTestRule.getActivity());
@@ -124,5 +144,26 @@ public class AutofillAssistantTextUtilsTest {
         assertThat(linkCallback.getLastCallback(), is(3));
         onView(is(multiLinkView)).perform(openTextLink("there"));
         assertThat(linkCallback.getLastCallback(), is(2));
+    }
+
+    @Test
+    @MediumTest
+    public void testMismatchingTextLinks() throws Exception {
+        LinkCallback linkCallback = new LinkCallback();
+
+        TextView singleLinkView = runOnUiThreadBlocking(() -> {
+            TextView view = new TextView(mTestRule.getActivity());
+            mTestLayout.addView(view);
+            AssistantTextUtils.applyVisualAppearanceTags(view,
+                    "Don't click <link0>here</link1> or <link2>this</lin2>, "
+                            + "click <link3>me</link3>.",
+                    linkCallback);
+            return view;
+        });
+        onView(is(singleLinkView))
+                .check(matches(withText(
+                        "Don't click <link0>here</link1> or <link2>this</lin2>, click me.")));
+        onView(is(singleLinkView)).perform(openTextLink("me"));
+        assertThat(linkCallback.getLastCallback(), is(3));
     }
 }

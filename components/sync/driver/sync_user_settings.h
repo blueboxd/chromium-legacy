@@ -104,6 +104,10 @@ class SyncUserSettings {
   // Whether a passphrase is required to decrypt the data for any currently
   // enabled data type.
   virtual bool IsPassphraseRequiredForPreferredDataTypes() const = 0;
+  // Whether trusted vault keys are required for encryption or decryption. Note
+  // that Sync might still be working fine if the user has disabled all
+  // encrypted data types.
+  virtual bool IsTrustedVaultKeyRequired() const = 0;
   // Whether trusted vault keys are required for encryption or decryption to
   // proceed for any currently enabled data type.
   virtual bool IsTrustedVaultKeyRequiredForPreferredDataTypes() const = 0;

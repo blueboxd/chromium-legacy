@@ -286,6 +286,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
            network::URLLoaderCompletionStatus(net::ERR_INSECURE_RESPONSE));
       return;
     }
+    cross_origin_embedder_policy_ = response_head->cross_origin_embedder_policy;
   }
 
   network_loader_state_ =

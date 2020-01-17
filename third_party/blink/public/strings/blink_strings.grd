@@ -1132,7 +1132,7 @@ below:
         Track <ph name="NUMBER">$1<ex>1</ex></ph>
       </message>
 
-      <message name="IDS_MEDIA_TRACKS_OFF" desc="Menu item label for a text track that represents disabling closed captions">
+      <message name="IDS_MEDIA_TRACKS_OFF" desc="Menu item label for a text track that represents disabling closed captions" meaning="Closed captions are disabled.">
         Off
       </message>
 

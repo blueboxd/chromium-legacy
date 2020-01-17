@@ -19,7 +19,7 @@
         android:layout_marginEnd="16dp"
         android:textAppearance="@style/TextAppearance.BlackBody" />
 
-    <org.chromium.chrome.browser.ui.widget.WrappingLayout
+    <org.chromium.components.browser_ui.widget.WrappingLayout
         android:id="@+id/chip_container"
         android:layout_below="@id/explanation"
         android:layout_width="match_parent"
@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             style="@style/SuggestionChipContacts" />
-    </org.chromium.chrome.browser.ui.widget.WrappingLayout>
+    </org.chromium.components.browser_ui.widget.WrappingLayout>
 
     <LinearLayout
         android:id="@+id/content"

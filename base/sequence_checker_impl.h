@@ -21,7 +21,9 @@ namespace base {
 //
 // Note: You should almost always use the SequenceChecker class to get the right
 // version for your build configuration.
-class BASE_EXPORT SequenceCheckerImpl {
+// Note: This is only a check, not a "lock". It is marked "LOCKABLE" only in
+// order to support thread_annotations.h.
+class LOCKABLE BASE_EXPORT SequenceCheckerImpl {
  public:
   SequenceCheckerImpl();
   ~SequenceCheckerImpl();

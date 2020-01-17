@@ -6,10 +6,6 @@ import("//ppapi/examples/ppapi_example.gni")
 
 ppapi_example("enumerate_devices") {
   output_name = "ppapi_example_enumerate_devices"
-  sources = [
-    "enumerate_devices.cc",
-  ]
-  deps = [
-    "//ppapi/cpp",
-  ]
+  sources = [ "enumerate_devices.cc" ]
+  deps = [ "//ppapi/cpp" ]
 }

@@ -10,12 +10,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/deferred_sequenced_task_runner.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -107,6 +107,11 @@ void CreateInProcessNetworkServiceOnThread(
       true /* delay_initialization_until_set_client */);
 }
 
+scoped_refptr<base::SequencedTaskRunner>& GetNetworkTaskRunnerStorage() {
+  static base::NoDestructor<scoped_refptr<base::SequencedTaskRunner>> storage;
+  return *storage;
+}
+
 void CreateInProcessNetworkService(
     mojo::PendingReceiver<network::mojom::NetworkService> receiver) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
@@ -118,10 +123,11 @@ void CreateInProcessNetworkService(
     task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
   }
 
-  GetNetworkTaskRunner()->StartWithTaskRunner(task_runner);
-  task_runner->PostTask(FROM_HERE,
-                        base::BindOnce(&CreateInProcessNetworkServiceOnThread,
-                                       std::move(receiver)));
+  GetNetworkTaskRunnerStorage() = std::move(task_runner);
+
+  GetNetworkTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&CreateInProcessNetworkServiceOnThread,
+                                std::move(receiver)));
 }
 
 network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
@@ -223,13 +229,6 @@ net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
   }
 
   return net::NetLogCaptureMode::kDefault;
-}
-
-scoped_refptr<base::DeferredSequencedTaskRunner>&
-GetNetworkTaskRunnerStorage() {
-  static base::NoDestructor<scoped_refptr<base::DeferredSequencedTaskRunner>>
-      storage;
-  return *storage;
 }
 
 }  // namespace
@@ -441,12 +440,9 @@ void SetNetworkConnectionTrackerForTesting(
   }
 }
 
-scoped_refptr<base::DeferredSequencedTaskRunner> GetNetworkTaskRunner() {
+const scoped_refptr<base::SequencedTaskRunner>& GetNetworkTaskRunner() {
   DCHECK(IsInProcessNetworkService());
-  auto& storage = GetNetworkTaskRunnerStorage();
-  if (!storage)
-    storage = base::MakeRefCounted<base::DeferredSequencedTaskRunner>();
-  return storage;
+  return GetNetworkTaskRunnerStorage();
 }
 
 void ForceCreateNetworkServiceDirectlyForTesting() {

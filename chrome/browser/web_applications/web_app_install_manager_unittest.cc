@@ -289,11 +289,12 @@ class WebAppInstallManagerTest : public WebAppTest {
     return result;
   }
 
-  bool UninstallExternalWebApp(const GURL& app_url,
-                               ExternalInstallSource external_install_source) {
+  bool UninstallExternalWebAppByUrl(
+      const GURL& app_url,
+      ExternalInstallSource external_install_source) {
     bool result = false;
     base::RunLoop run_loop;
-    finalizer().UninstallExternalWebApp(
+    finalizer().UninstallExternalWebAppByUrl(
         app_url, external_install_source,
         base::BindLambdaForTesting([&](bool uninstalled) {
           result = uninstalled;
@@ -730,12 +731,12 @@ TEST_F(WebAppInstallManagerTest, PolicyAndUser_UninstallExternalWebApp) {
       }));
 
   // Unknown url fails.
-  EXPECT_FALSE(UninstallExternalWebApp(GURL("https://example.org/"),
-                                       ExternalInstallSource::kExternalPolicy));
+  EXPECT_FALSE(UninstallExternalWebAppByUrl(
+      GURL("https://example.org/"), ExternalInstallSource::kExternalPolicy));
 
   // Uninstall policy app first.
-  EXPECT_TRUE(UninstallExternalWebApp(external_app_url,
-                                      ExternalInstallSource::kExternalPolicy));
+  EXPECT_TRUE(UninstallExternalWebAppByUrl(
+      external_app_url, ExternalInstallSource::kExternalPolicy));
 
   EXPECT_TRUE(registrar().GetAppById(app_id));
   EXPECT_FALSE(observer_uninstall_called);
@@ -790,8 +791,8 @@ TEST_F(WebAppInstallManagerTest, PolicyAndUser_UninstallWebAppFromSyncByUser) {
   // Uninstall policy app last.
   file_utils().SetNextDeleteFileRecursivelyResult(true);
 
-  EXPECT_TRUE(UninstallExternalWebApp(external_app_url,
-                                      ExternalInstallSource::kExternalPolicy));
+  EXPECT_TRUE(UninstallExternalWebAppByUrl(
+      external_app_url, ExternalInstallSource::kExternalPolicy));
   EXPECT_FALSE(registrar().GetAppById(app_id));
   EXPECT_TRUE(observer_uninstall_called);
   EXPECT_FALSE(finalizer().WasExternalAppUninstalledByUser(app_id));

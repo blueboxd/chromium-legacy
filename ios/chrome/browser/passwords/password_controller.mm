@@ -588,18 +588,14 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 - (void)formHelper:(PasswordFormHelper*)formHelper
      didSubmitForm:(const FormData&)form
        inMainFrame:(BOOL)inMainFrame {
-  // TODO(crbug.com/949519): remove using PasswordForm completely when the old
-  // parser is gone.
-  PasswordForm password_form;
-  password_form.form_data = form;
   if (inMainFrame) {
     self.passwordManager->OnPasswordFormSubmitted(self.passwordManagerDriver,
-                                                  password_form);
+                                                  form);
   } else {
     // Show a save prompt immediately because for iframes it is very hard to
     // figure out correctness of password forms submission.
     self.passwordManager->OnPasswordFormSubmittedNoChecksForiOS(
-        self.passwordManagerDriver, password_form);
+        self.passwordManagerDriver, form);
   }
 }
 
@@ -617,19 +613,13 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   if (!self.passwordManager)
     return;
 
-  // TODO(crbug.com/949519): remove using PasswordForm completely when the old
-  // parser is gone.
-  std::vector<PasswordForm> password_forms(forms.size());
-  for (size_t i = 0; i < forms.size(); ++i)
-    password_forms[i].form_data = forms[i];
-
-  if (!password_forms.empty()) {
+  if (!forms.empty()) {
     [self.suggestionHelper updateStateOnPasswordFormExtracted];
 
     // Invoke the password manager callback to autofill password forms
     // on the loaded page.
     self.passwordManager->OnPasswordFormsParsed(self.passwordManagerDriver,
-                                                password_forms);
+                                                forms);
   } else {
     [self onNoSavedCredentials];
   }
@@ -640,7 +630,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   // and OnPasswordFormsRendered(). Bling has to improvised a bit on the
   // ordering of these two calls.
   self.passwordManager->OnPasswordFormsRendered(self.passwordManagerDriver,
-                                                password_forms, true);
+                                                forms, true);
 }
 
 - (void)findPasswordFormsAndSendThemToPasswordStore {
@@ -759,7 +749,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   // TODO(crbug.com/886583): pass correct |max_length|.
   base::string16 generatedPassword =
       _passwordGenerationHelper->GeneratePassword([self lastCommittedURL], 0, 0,
-                                                  0, nullptr);
+                                                  0);
 
   self.generatedPotentialPassword = SysUTF16ToNSString(generatedPassword);
 

@@ -70,9 +70,7 @@ template("fuchsia_sdk_pkg") {
         sources += [ "${sdk_dist_dir}/lib${lib}.so" ]
       }
 
-      outputs = [
-        "${root_out_dir}${shlib_subdir}/{{source_file_part}}",
-      ]
+      outputs = [ "${root_out_dir}${shlib_subdir}/{{source_file_part}}" ]
     }
   }
 
@@ -92,9 +90,7 @@ template("fuchsia_sdk_pkg") {
     if (defined(invoker.shared_libs)) {
       configs += [ "//third_party/fuchsia-sdk:sdk_lib_dirs_config" ]
       libs = invoker.shared_libs
-      data_deps = [
-        ":${target_name}_dist_libs",
-      ]
+      data_deps = [ ":${target_name}_dist_libs" ]
     } else if (defined(invoker.static_libs)) {
       libs = invoker.static_libs
     }

@@ -204,8 +204,12 @@ namespace http://www.w3.org/1999/xhtml
     property ontransitionend
     property onvolumechange
     property onwaiting
+    property onwebkitanimationend
+    property onwebkitanimationiteration
+    property onwebkitanimationstart
     property onwebkitfullscreenchange
     property onwebkitfullscreenerror
+    property onwebkittransitionend
     property onwheel
     property outerHTML
     property outerText
@@ -1302,8 +1306,12 @@ namespace http://www.w3.org/2000/svg
     property ontransitionend
     property onvolumechange
     property onwaiting
+    property onwebkitanimationend
+    property onwebkitanimationiteration
+    property onwebkitanimationstart
     property onwebkitfullscreenchange
     property onwebkitfullscreenerror
+    property onwebkittransitionend
     property onwheel
     property outerHTML
     property ownerDocument

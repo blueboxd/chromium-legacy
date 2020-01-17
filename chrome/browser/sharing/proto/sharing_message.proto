@@ -35,7 +35,7 @@ enum MessageType {
 }
 
 // Message for sending between devices in Sharing.
-// Next tag: 12
+// Next tag: 13
 message SharingMessage {
   // Identifier of sender. required except for AckMessage.
   string sender_guid = 1;
@@ -52,8 +52,15 @@ message SharingMessage {
     IceCandidateMessage ice_candidate_message = 11;
   }
 
-  // RecipientInfo for responding an AckMessage to the sender. optional.
-  RecipientInfo sender_info = 6;
+  oneof ack_channel_configuration {
+    // FCM channel configuration. Ack message will be delivered as a FCM
+    // message. optional.
+    FCMChannelConfiguration fcm_channel_configuration = 6;
+
+    // Server channel configuration. Ack message will be delivered through
+    // server channel. optional.
+    ServerChannelConfiguration server_channel_configuration = 12;
+  }
 
   // The name of the device sending this message. optional.
   string sender_device_name = 7;
@@ -65,12 +72,12 @@ message PingMessage {
 }
 
 // Message for acknowledging the sender after a non-AckMessage is received.
+// Next tag: 4
 message AckMessage {
+  reserved 2;
+
   // required.
   string original_message_id = 1;
-
-  // The type of message that this is acknowledging. optional.
-  MessageType original_message_type = 2;
 
   // Response of the message, optional.
   ResponseMessage response_message = 3;
@@ -85,8 +92,8 @@ message ResponseMessage {
   }
 }
 
-// Message for data necessary to send an AckMessage to the sender.
-message RecipientInfo {
+// FCM channel configuration. Message will be delivered as a FCM message.
+message FCMChannelConfiguration {
   // FCM registration token of device. required.
   string fcm_token = 1;
 
@@ -95,4 +102,14 @@ message RecipientInfo {
 
   // Auth secret key required for RFC 8291.
   bytes auth_secret = 3;
+}
+
+// Server channel configuration. Message will be delivered through server
+// channel.
+message ServerChannelConfiguration {
+  // Where to send the message to. required.
+  string channel_id = 1;
+
+  // Optional cookie set on the original request. optional.
+  bytes session_cookie = 2;
 }

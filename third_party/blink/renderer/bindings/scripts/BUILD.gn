@@ -37,9 +37,7 @@ action("cached_jinja_templates") {
 
   # Dummy file to track dependency.
   stamp_file = "$bindings_scripts_output_dir/cached_jinja_templates.stamp"
-  outputs = [
-    stamp_file,
-  ]
+  outputs = [ stamp_file ]
 
   args = [
     rebase_path(bindings_scripts_output_dir, root_build_dir),

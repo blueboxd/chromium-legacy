@@ -12,8 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -197,7 +197,7 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
           navigation_handle->GetURL());
 
   nav_event->source_tab_id =
-      SessionTabHelper::IdForTab(navigation_handle->GetWebContents());
+      sessions::SessionTabHelper::IdForTab(navigation_handle->GetWebContents());
 
   if (navigation_handle->IsInMainFrame()) {
     nav_event->source_main_frame_url = nav_event->source_url;
@@ -249,7 +249,7 @@ void SafeBrowsingNavigationObserver::DidFinishNavigation(
                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   nav_event->has_committed = navigation_handle->HasCommitted();
   nav_event->target_tab_id =
-      SessionTabHelper::IdForTab(navigation_handle->GetWebContents());
+      sessions::SessionTabHelper::IdForTab(navigation_handle->GetWebContents());
   nav_event->last_updated = base::Time::Now();
 
   manager_->RecordNavigationEvent(

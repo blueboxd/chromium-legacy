@@ -106,6 +106,22 @@ RegKey::RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access) {
   }
 }
 
+RegKey::RegKey(RegKey&& other)
+    : key_(other.key_),
+      wow64access_(other.wow64access_),
+      key_watcher_(std::move(other.key_watcher_)) {
+  other.key_ = nullptr;
+  other.wow64access_ = 0;
+}
+
+RegKey& RegKey::operator=(RegKey&& other) {
+  Close();
+  std::swap(key_, other.key_);
+  std::swap(wow64access_, other.wow64access_);
+  key_watcher_ = std::move(other.key_watcher_);
+  return *this;
+}
+
 RegKey::~RegKey() {
   Close();
 }

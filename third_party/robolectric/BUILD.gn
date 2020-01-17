@@ -336,9 +336,7 @@ java_library("robolectric_resources_java") {
 
 java_library("robolectric_utils_java") {
   testonly = true
-  deps = [
-    ":robolectric_annotations_java",
-  ]
+  deps = [ ":robolectric_annotations_java" ]
   sources = [
     "robolectric/utils/src/main/java/org/robolectric/AndroidMetadata.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Clock.java",
@@ -425,16 +423,12 @@ java_library("robolectric_junit_java") {
     "//third_party/junit:junit",
   ]
 
-  sources = [
-    "robolectric/junit/src/main/java/org/robolectric/internal/SandboxTestRunner.java",
-  ]
+  sources = [ "robolectric/junit/src/main/java/org/robolectric/internal/SandboxTestRunner.java" ]
 }
 
 java_library("robolectric_shadowapi_java") {
   testonly = true
-  deps = [
-    "//third_party/jsr-305:jsr_305_javalib",
-  ]
+  deps = [ "//third_party/jsr-305:jsr_305_javalib" ]
 
   sources = [
     "robolectric/shadowapi/src/main/java/org/robolectric/annotation/internal/DoNotInstrument.java",

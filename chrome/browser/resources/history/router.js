@@ -47,7 +47,7 @@ Polymer({
   ],
 
   /** @override */
-  attached: function() {
+  attached() {
     // Redirect legacy search URLs to URLs compatible with History.
     if (window.location.hash) {
       window.location.href = window.location.href.split('#')[0] + '?' +
@@ -60,21 +60,21 @@ Polymer({
    * @param {?string} previous Previous value of the query.
    * @private
    */
-  onQueryChanged_: function(current, previous) {
+  onQueryChanged_(current, previous) {
     if (previous !== undefined) {
       this.urlQuery_ = this.query_;
     }
   },
 
   /** @private */
-  onUrlQueryChanged_: function() {
+  onUrlQueryChanged_() {
     this.query_ = this.urlQuery_;
   },
 
   /**
    * Write all relevant page state to the URL.
    */
-  serializeUrl: function() {
+  serializeUrl() {
     let path = this.selectedPage;
 
     if (path === 'history') {
@@ -88,7 +88,7 @@ Polymer({
   },
 
   /** @private */
-  selectedPageChanged_: function() {
+  selectedPageChanged_() {
     // Update the URL if the page was changed externally, but ignore the update
     // if it came from parseUrl_().
     if (!this.parsing_) {
@@ -97,7 +97,7 @@ Polymer({
   },
 
   /** @private */
-  parseUrl_: function() {
+  parseUrl_() {
     this.parsing_ = true;
     const changes = {};
     const sections = this.path_.substr(1).split('/');
@@ -115,7 +115,7 @@ Polymer({
   },
 
   /** @private */
-  onUrlChanged_: function() {
+  onUrlChanged_() {
     // Changing the url and query parameters at the same time will cause two
     // calls to onUrlChanged_. Debounce the actual work so that these two
     // changes get processed together.

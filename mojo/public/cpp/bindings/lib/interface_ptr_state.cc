@@ -34,6 +34,15 @@ void InterfacePtrStateBase::RequireVersion(uint32_t version) {
   endpoint_client_->RequireVersion(version);
 }
 
+void InterfacePtrStateBase::PauseReceiverUntilFlushCompletes(
+    PendingFlush flush) {
+  router_->PausePeerUntilFlushCompletes(std::move(flush));
+}
+
+void InterfacePtrStateBase::FlushAsync(AsyncFlusher flusher) {
+  router_->FlushAsync(std::move(flusher));
+}
+
 void InterfacePtrStateBase::Swap(InterfacePtrStateBase* other) {
   using std::swap;
   swap(other->router_, router_);

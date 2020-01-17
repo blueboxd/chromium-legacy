@@ -21,6 +21,14 @@ class QuietNotificationPermissionUiConfig {
   // rate.
   static const char kEnableCrowdDenyTriggering[];
 
+  // Name of the variation parameter that represents the chance that a
+  // quiet notifications permission prompt UI triggered by crowd deny will be
+  // replaced by the normal UI. This ensures that a small percentage of
+  // permission requests still use the normal UI and allows sites to recover
+  // from a bad reputation score. Represented as a number in the [0,1] interval.
+  // If the quiet UI is enabled in preferences, the quiet UI is always used.
+  static const char kCrowdDenyHoldBackChance[];
+
   // Whether or not adaptive activation is enabled. Adaptive activation means
   // that quiet notifications permission prompts will be turned on after three
   // consecutive prompt denies.
@@ -30,6 +38,11 @@ class QuietNotificationPermissionUiConfig {
   // sites with a low notification permission grant rate, the quiet UI will be
   // shown as a one-off, even when it is not turned on for all sites in prefs.
   static bool IsCrowdDenyTriggeringEnabled();
+
+  // The chance that a quiet notifications permission prompt UI triggered by
+  // crowd deny will be replaced by the normal UI. This is per individual
+  // permission prompt.
+  static double GetCrowdDenyHoldBackChance();
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_QUIET_NOTIFICATION_PERMISSION_UI_CONFIG_H_

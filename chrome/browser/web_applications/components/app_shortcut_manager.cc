@@ -22,6 +22,15 @@ void AppShortcutManager::SetSubsystems(AppRegistrar* registrar) {
   registrar_ = registrar;
 }
 
+void AppShortcutManager::Start() {
+  DCHECK(registrar_);
+  app_registrar_observer_.Add(registrar_);
+}
+
+void AppShortcutManager::Shutdown() {
+  app_registrar_observer_.RemoveAll();
+}
+
 void AppShortcutManager::AddObserver(AppShortcutObserver* observer) {
   observers_.AddObserver(observer);
 }

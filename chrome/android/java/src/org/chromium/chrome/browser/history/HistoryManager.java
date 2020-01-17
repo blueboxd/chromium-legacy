@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar.PrefObserver;
@@ -294,14 +293,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mLargeIconBridge = null;
         IdentityServicesProvider.get().getSigninManager().removeSignInStateObserver(this);
         mPrefChangeRegistrar.destroy();
-    }
-
-    /**
-     * Sets the delegate object needed for history navigation logic.
-     * @param delegate {@link HistoryNavigationDelegate} object.
-     */
-    public void setHistoryNavigationDelegate(HistoryNavigationDelegate delegate) {
-        mSelectableListLayout.setHistoryNavigationDelegate(delegate);
     }
 
     /**

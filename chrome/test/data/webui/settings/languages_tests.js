@@ -66,6 +66,20 @@ cr.define('settings-languages', function() {
       // TODO(michaelpg): Test other aspects of the model.
     });
 
+    test('get language', function() {
+      // If a language code is not found, try language without location.
+      lang = languageHelper.getLanguage('en-CN');
+      assertEquals('en', lang.code);
+
+      // The old language code for Hebriew is supported.
+      lang = languageHelper.getLanguage('iw');
+      assertEquals('he', lang.code);
+
+      // The 'no' macrolanguage is returned for Norsk Nynorsk.
+      lang = languageHelper.getLanguage('nn');
+      assertEquals('no', lang.code);
+    });
+
     test('modifying languages', function() {
       assertTrue(languageHelper.isLanguageEnabled('en-US'));
       assertTrue(languageHelper.isLanguageEnabled('sw'));

@@ -265,9 +265,7 @@ jumbo_static_library("test_support") {
 executable("aura_demo") {
   testonly = true
 
-  sources = [
-    "demo/demo_main.cc",
-  ]
+  sources = [ "demo/demo_main.cc" ]
 
   deps = [
     ":aura",
@@ -342,9 +340,7 @@ test("aura_unittests") {
     "//ui/wm",
   ]
 
-  data_deps = [
-    "//third_party/mesa_headers",
-  ]
+  data_deps = [ "//third_party/mesa_headers" ]
 }
 
 # This target is added as a dependency of browser interactive_ui_tests. It must
@@ -352,9 +348,7 @@ test("aura_unittests") {
 source_set("aura_interactive_ui_tests") {
   testonly = true
   if (is_win) {
-    sources = [
-      "native_window_occlusion_tracker_win_interactive_test.cc",
-    ]
+    sources = [ "native_window_occlusion_tracker_win_interactive_test.cc" ]
 
     deps = [
       ":aura",

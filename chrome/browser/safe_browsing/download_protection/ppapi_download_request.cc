@@ -15,10 +15,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/safe_browsing/core/common/utils.h"
 #include "components/safe_browsing/core/db/database_manager.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -52,7 +52,7 @@ PPAPIDownloadRequest::PPAPIDownloadRequest(
       initiating_frame_url_(initiating_frame_url),
       initiating_main_frame_url_(
           web_contents ? web_contents->GetLastCommittedURL() : GURL()),
-      tab_id_(SessionTabHelper::IdForTab(web_contents)),
+      tab_id_(sessions::SessionTabHelper::IdForTab(web_contents)),
       default_file_path_(default_file_path),
       alternate_extensions_(alternate_extensions),
       callback_(std::move(callback)),

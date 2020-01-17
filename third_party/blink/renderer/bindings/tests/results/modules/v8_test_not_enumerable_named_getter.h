@@ -56,12 +56,6 @@ class V8TestNotEnumerableNamedGetter {
 };
 
 template <>
-struct NativeValueTraits<TestNotEnumerableNamedGetter> : public NativeValueTraitsBase<TestNotEnumerableNamedGetter> {
-  MODULES_EXPORT static TestNotEnumerableNamedGetter* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  MODULES_EXPORT static TestNotEnumerableNamedGetter* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestNotEnumerableNamedGetter> {
   typedef V8TestNotEnumerableNamedGetter Type;
 };

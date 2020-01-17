@@ -13,17 +13,6 @@ namespace blink {
 
 typedef std::pair<unsigned, DigestValue> CSPHashValue;
 
-enum ContentSecurityPolicyHeaderType {
-  kContentSecurityPolicyHeaderTypeReport,
-  kContentSecurityPolicyHeaderTypeEnforce
-};
-
-enum ContentSecurityPolicyHeaderSource {
-  kContentSecurityPolicyHeaderSourceHTTP,
-  kContentSecurityPolicyHeaderSourceMeta,
-  kContentSecurityPolicyHeaderSourceOriginPolicy
-};
-
 enum ContentSecurityPolicyHashAlgorithm {
   kContentSecurityPolicyHashAlgorithmNone = 0,
   kContentSecurityPolicyHashAlgorithmSha256 = 1 << 2,

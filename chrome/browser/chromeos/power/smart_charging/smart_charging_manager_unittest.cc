@@ -4,15 +4,32 @@
 
 #include "chrome/browser/chromeos/power/smart_charging/smart_charging_manager.h"
 
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/power/smart_charging/user_charging_event.pb.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "components/session_manager/core/session_manager.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 
 namespace chromeos {
 namespace power {
+namespace {
+PastEvent CreateEvent(int time,
+                      int battery_percent,
+                      int timezone,
+                      const EventReason& reason) {
+  PastEvent event;
+  event.set_time(time);
+  event.set_battery_percent(battery_percent);
+  event.set_timezone(timezone);
+  event.set_reason(reason);
+  return event;
+}
+}  // namespace
 
 class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -36,7 +53,7 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
         task_environment()->GetMainThreadTaskRunner());
     smart_charging_manager_ = std::make_unique<SmartChargingManager>(
         &user_activity_detector_, observer.InitWithNewPipeAndPassReceiver(),
-        std::move(periodic_timer));
+        &session_manager_, std::move(periodic_timer));
   }
 
   void TearDown() override {
@@ -112,6 +129,40 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
     return smart_charging_manager_->DurationRecentVideoPlaying();
   }
 
+  std::tuple<PastEvent, PastEvent> GetLastChargeEvents() {
+    return smart_charging_manager_->GetLastChargeEvents();
+  }
+
+  void UpdatePastEvents() { smart_charging_manager_->UpdatePastEvents(); }
+
+  std::vector<PastEvent> GetPastEvents() {
+    return smart_charging_manager_->past_events_;
+  }
+
+  void SetBatteryPercentage(double battery_percent) {
+    smart_charging_manager_->battery_percent_ = battery_percent;
+  }
+
+  void AddEvent(const PastEvent& event) {
+    smart_charging_manager_->past_events_.emplace_back(event);
+  }
+
+  void AddPastEvent(const EventReason& reason) {
+    smart_charging_manager_->AddPastEvent(reason);
+  }
+
+  void MaybeSaveToDisk(const base::FilePath& profile_path) {
+    smart_charging_manager_->MaybeSaveToDisk(profile_path);
+  }
+
+  void MaybeLoadFromDisk(const base::FilePath& profile_path) {
+    smart_charging_manager_->MaybeLoadFromDisk(profile_path);
+  }
+
+  void ClearPastEvents() { smart_charging_manager_->past_events_.clear(); }
+
+  void Wait() { task_environment()->RunUntilIdle(); }
+
   const gfx::Point kEventLocation = gfx::Point(90, 90);
   const ui::MouseEvent kMouseEvent = ui::MouseEvent(ui::ET_MOUSE_MOVED,
                                                     kEventLocation,
@@ -122,6 +173,7 @@ class SmartChargingManagerTest : public ChromeRenderViewHostTestHarness {
 
  private:
   ui::UserActivityDetector user_activity_detector_;
+  session_manager::SessionManager session_manager_;
   std::unique_ptr<SmartChargingManager> smart_charging_manager_;
 };
 
@@ -280,6 +332,188 @@ TEST_F(SmartChargingManagerTest, DeviceMode) {
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 15.0f);
   EXPECT_EQ(GetUserChargingEvent().features().device_mode(),
             UserChargingEvent::Features::LAPTOP_MODE);
+}
+
+TEST_F(SmartChargingManagerTest, GetLastChargeEventsNoLastCharges) {
+  AddEvent(CreateEvent(1, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(2, 20, 11, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(CreateEvent(3, 30, 11, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(
+      CreateEvent(4, 40, 11, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+  AddEvent(CreateEvent(5, 50, 11, UserChargingEvent::Event::SHUTDOWN));
+  AddEvent(CreateEvent(6, 60, 11, UserChargingEvent::Event::PERIODIC_LOG));
+
+  PastEvent plugged_in;
+  PastEvent unplugged;
+  std::tie(plugged_in, unplugged) = GetLastChargeEvents();
+  EXPECT_FALSE(plugged_in.has_time());
+  EXPECT_FALSE(unplugged.has_time());
+}
+
+TEST_F(SmartChargingManagerTest, GetLastChargeEventsComplex) {
+  AddEvent(CreateEvent(1, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(2, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(3, 20, 11, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(CreateEvent(4, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(5, 30, 11, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(
+      CreateEvent(6, 20, 11, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+  AddEvent(CreateEvent(7, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(
+      CreateEvent(8, 30, 11, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+  AddEvent(CreateEvent(9, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(10, 20, 1, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(CreateEvent(11, 10, 1, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(12, 20, 1, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(CreateEvent(13, 10, 1, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(
+      CreateEvent(14, 40, 1, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+  AddEvent(
+      CreateEvent(15, 40, 1, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+  AddEvent(CreateEvent(16, 10, 1, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(17, 10, 1, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(18, 20, 1, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(CreateEvent(19, 10, 1, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(
+      CreateEvent(20, 40, 1, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+  AddEvent(CreateEvent(21, 40, 1, UserChargingEvent::Event::SHUTDOWN));
+  AddEvent(
+      CreateEvent(22, 40, 1, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+
+  PastEvent plugged_in;
+  PastEvent unplugged;
+  std::tie(plugged_in, unplugged) = GetLastChargeEvents();
+  EXPECT_TRUE(plugged_in.has_time());
+  EXPECT_TRUE(unplugged.has_time());
+  EXPECT_EQ(plugged_in.time(), 15);
+  EXPECT_EQ(unplugged.time(), 18);
+}
+
+TEST_F(SmartChargingManagerTest, UpdatePastEventsNoLastCharge) {
+  AddEvent(CreateEvent(1, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(2, 20, 11, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(CreateEvent(3, 30, 11, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(
+      CreateEvent(4, 40, 11, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+  AddEvent(CreateEvent(5, 50, 11, UserChargingEvent::Event::SHUTDOWN));
+  AddEvent(CreateEvent(6, 60, 11, UserChargingEvent::Event::PERIODIC_LOG));
+
+  UpdatePastEvents();
+
+  const std::vector<PastEvent> events = GetPastEvents();
+  EXPECT_EQ(events.size(), static_cast<unsigned long>(2));
+  EXPECT_EQ(events[0].time(), 4);
+  EXPECT_EQ(events[1].time(), 5);
+}
+
+TEST_F(SmartChargingManagerTest, UpdatePastEventsComplex) {
+  AddEvent(CreateEvent(1, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(2, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(3, 20, 11, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(CreateEvent(4, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(5, 30, 11, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(
+      CreateEvent(6, 20, 11, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+  AddEvent(CreateEvent(7, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(
+      CreateEvent(8, 30, 11, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+  AddEvent(CreateEvent(9, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(10, 20, 1, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(CreateEvent(11, 10, 1, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(12, 20, 1, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(CreateEvent(13, 10, 1, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(
+      CreateEvent(14, 40, 1, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+  AddEvent(
+      CreateEvent(15, 40, 1, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+  AddEvent(CreateEvent(16, 10, 1, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(17, 10, 1, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(18, 20, 1, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(CreateEvent(19, 10, 1, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(
+      CreateEvent(20, 40, 1, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+  AddEvent(CreateEvent(21, 40, 1, UserChargingEvent::Event::SHUTDOWN));
+  AddEvent(
+      CreateEvent(22, 40, 1, UserChargingEvent::Event::CHARGER_PLUGGED_IN));
+
+  UpdatePastEvents();
+
+  const std::vector<PastEvent> events = GetPastEvents();
+  EXPECT_EQ(events.size(), static_cast<unsigned long>(4));
+  EXPECT_EQ(events[0].time(), 15);
+  EXPECT_EQ(events[1].time(), 18);
+  EXPECT_EQ(events[2].time(), 22);
+  EXPECT_EQ(events[3].time(), 21);
+}
+
+TEST_F(SmartChargingManagerTest, AddPastEventTest) {
+  SetBatteryPercentage(15.5);
+  AddPastEvent(UserChargingEvent::Event::CHARGER_PLUGGED_IN);
+  SetBatteryPercentage(25.7);
+  AddPastEvent(UserChargingEvent::Event::CHARGER_UNPLUGGED);
+
+  const std::vector<PastEvent> events = GetPastEvents();
+  EXPECT_EQ(events.size(), static_cast<unsigned long>(2));
+  EXPECT_EQ(events[0].battery_percent(), 15);
+  EXPECT_EQ(events[0].reason(), UserChargingEvent::Event::CHARGER_PLUGGED_IN);
+  EXPECT_EQ(events[1].battery_percent(), 25);
+  EXPECT_EQ(events[1].reason(), UserChargingEvent::Event::CHARGER_UNPLUGGED);
+}
+
+TEST_F(SmartChargingManagerTest, LoadAndSave) {
+  AddEvent(CreateEvent(1, 10, 11, UserChargingEvent::Event::PERIODIC_LOG));
+  AddEvent(CreateEvent(2, 20, 11, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+  AddEvent(CreateEvent(3, 30, 11, UserChargingEvent::Event::CHARGER_UNPLUGGED));
+
+  EXPECT_EQ(GetPastEvents().size(), static_cast<unsigned long>(3));
+
+  // Save to disk
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(
+      base::CreateDirectory(temp_dir.GetPath().AppendASCII("smartcharging")));
+  const base::FilePath file_path =
+      temp_dir.GetPath().AppendASCII("smartcharging/past_charging_events.pb");
+
+  MaybeSaveToDisk(temp_dir.GetPath());
+  Wait();
+  ASSERT_TRUE(base::PathExists(file_path));
+
+  // Clear memory
+  ClearPastEvents();
+
+  // Now there is no past event on memory
+  EXPECT_EQ(GetPastEvents().size(), static_cast<unsigned long>(0));
+
+  // Load from disk
+  MaybeLoadFromDisk(temp_dir.GetPath());
+  Wait();
+
+  // Check the result
+  const std::vector<PastEvent> events = GetPastEvents();
+  EXPECT_EQ(events.size(), static_cast<unsigned long>(3));
+  EXPECT_EQ(events[0].time(), 1);
+  EXPECT_EQ(events[1].time(), 2);
+  EXPECT_EQ(events[2].time(), 3);
+}
+
+TEST_F(SmartChargingManagerTest, LastChargeRelatedFeatures) {
+  ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 23.0f);
+  FastForwardTimeBySecs(3600);
+  ReportPowerChangeEvent(power_manager::PowerSupplyProperties::DISCONNECTED,
+                         80.0f);
+  FastForwardTimeBySecs(600);
+  ReportShutdownEvent();
+  FastForwardTimeBySecs(1800);
+  ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 75.0f);
+
+  const auto features = GetUserChargingEvent().features();
+
+  EXPECT_TRUE(features.halt_from_last_charge());
+  EXPECT_EQ(features.time_since_last_charge(), 38);
+  EXPECT_EQ(features.duration_of_last_charge(), 58);
+  EXPECT_EQ(features.battery_percentage_before_last_charge(), 23);
+  EXPECT_EQ(features.battery_percentage_of_last_charge(), 80);
 }
 }  // namespace power
 }  // namespace chromeos

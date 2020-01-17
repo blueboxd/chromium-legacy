@@ -116,4 +116,25 @@ void WebTestRenderFrameObserver::SetupSecondaryRenderer() {
       ->OnSetupSecondaryRenderer();
 }
 
+void WebTestRenderFrameObserver::Reset() {
+  BlinkTestRunner::Get(render_frame()->GetRenderView())->OnReset();
+}
+
+void WebTestRenderFrameObserver::TestFinishedInSecondaryRenderer() {
+  BlinkTestRunner::Get(render_frame()->GetRenderView())
+      ->OnTestFinishedInSecondaryRenderer();
+}
+
+void WebTestRenderFrameObserver::LayoutDumpCompleted(
+    const std::string& completed_layout_dump) {
+  BlinkTestRunner::Get(render_frame()->GetRenderView())
+      ->OnLayoutDumpCompleted(completed_layout_dump);
+}
+
+void WebTestRenderFrameObserver::ReplyBluetoothManualChooserEvents(
+    const std::vector<std::string>& events) {
+  BlinkTestRunner::Get(render_frame()->GetRenderView())
+      ->OnReplyBluetoothManualChooserEvents(events);
+}
+
 }  // namespace content

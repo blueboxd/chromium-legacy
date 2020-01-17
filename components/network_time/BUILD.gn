@@ -23,9 +23,7 @@ static_library("network_time") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "network_time_tracker_unittest.cc",
-  ]
+  sources = [ "network_time_tracker_unittest.cc" ]
 
   deps = [
     ":network_time",

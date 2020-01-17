@@ -491,11 +491,9 @@ def main(argv):
   # Reconstruct file.
   # Specify the newline character so that the exact same file is generated
   # across platforms.
-  with io.open(os.path.join(out_folder, result[1]), mode='w', encoding='utf-8', newline='\n') as f:
+  with io.open(os.path.join(out_folder, result[1]), mode='wb') as f:
     for l in result[0]:
-      if (type(l) != unicode):
-        l = unicode(l, encoding='utf-8')
-      f.write(l)
+      f.write(l.encode('utf-8'))
   return
 
 

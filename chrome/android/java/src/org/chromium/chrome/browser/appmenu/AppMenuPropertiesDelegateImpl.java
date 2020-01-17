@@ -206,9 +206,9 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                     || mDecorView.getWidth()
                             < DeviceFormFactor.getNonMultiDisplayMinimumTabletWidthPx(mContext);
 
-            final boolean bottomToolbarVisible =
-                    mToolbarManager != null && mToolbarManager.isBottomToolbarVisible();
-            shouldShowIconRow &= !bottomToolbarVisible;
+            final boolean isMenuButtonOnTop =
+                    mToolbarManager != null && !mToolbarManager.isMenuFromBottom();
+            shouldShowIconRow &= isMenuButtonOnTop;
 
             // Update the icon row items (shown in narrow form factors).
             menu.findItem(R.id.icon_row_menu_id).setVisible(shouldShowIconRow);

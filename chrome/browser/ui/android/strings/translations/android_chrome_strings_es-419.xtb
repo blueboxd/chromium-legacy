@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Cerrar la pestaña actual</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Buscar y explorar</translation>
-<translation id="1264974993859112054">Deportes</translation>
 <translation id="1266864766717917324">No se pudo compartir <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1283039547216852943">Presiona para expandir</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Para que tus favoritos estén en todos tus dispositivos, accede a tu cuenta y activa la sincronización</translation>
 <translation id="2822354292072154809">¿Confirmas que quieres restablecer todos los permisos de sitios para <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
-<translation id="2858138569776157458">Populares</translation>
 <translation id="2860954141821109167">Comprueba que este dispositivo tenga una app de teléfono habilitada</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
@@ -366,7 +364,6 @@
 <translation id="381841723434055211">Números de teléfono</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descargas borradas</translation>
 <translation id="3822502789641063741">¿Borrar el almacenamiento de sitios?</translation>
-<translation id="3853625385350850937">Para continuar, activa NFC en tu dispositivo</translation>
 <translation id="3859306556332390985">Buscar más adelante</translation>
 <translation id="388596076286380598">Recibe artículos, videos y otro contenido de sitios que te gustan, incluso si tu conexión es poca o nula.</translation>
 <translation id="3894427358181296146">Agregar carpeta</translation>
@@ -764,7 +761,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6697947395630195233">Chrome necesita acceso a tu ubicación para compartirla con este sitio.</translation>
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>
 <translation id="6699370405921460408">Los servidores de Google optimizarán las páginas que visites.</translation>
-<translation id="6709133671862442373">Noticias</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="671481426037969117">Se agotó el temporizador de <ph name="FQDN" />. Volverá a empezar mañana.</translation>
 <translation id="6738867403308150051">Descargando…</translation>
@@ -1079,7 +1075,6 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="9133397713400217035">Explorar sin conexión</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
-<translation id="9139318394846604261">Compras</translation>
 <translation id="9155898266292537608">También puedes presionar brevemente la palabra para realizar una búsqueda</translation>
 <translation id="9169507124922466868">El historial de navegación está abierto a la mitad</translation>
 <translation id="9204836675896933765">Queda 1 archivo</translation>

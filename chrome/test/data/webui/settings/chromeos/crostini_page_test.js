@@ -117,7 +117,7 @@ suite('CrostiniPageTests', function() {
         assertTrue(cr.removeWebUIListener(v));
       });
 
-      settings.navigateTo(settings.routes.CROSTINI);
+      settings.Router.getInstance().navigateTo(settings.routes.CROSTINI);
       crostiniPage.$$('#crostini').click();
 
       const pageLoadPromise = flushAsync().then(() => {
@@ -212,6 +212,33 @@ suite('CrostiniPageTests', function() {
           });
     });
 
+    test('ExportImportButtonsDisabledOnWhenInstallingCrostini', function() {
+      assertTrue(!!subpage.$$('#crostini-export-import'));
+      subpage.$$('#crostini-export-import').click();
+      return flushAsync()
+          .then(() => {
+            subpage = crostiniPage.$$('settings-crostini-export-import');
+            assertFalse(subpage.$$('#export cr-button').disabled);
+            assertFalse(subpage.$$('#import cr-button').disabled);
+            cr.webUIListenerCallback('crostini-installer-status-changed', true);
+            return flushAsync();
+          })
+          .then(() => {
+            subpage = crostiniPage.$$('settings-crostini-export-import');
+            assertTrue(subpage.$$('#export cr-button').disabled);
+            assertTrue(subpage.$$('#import cr-button').disabled);
+            cr.webUIListenerCallback(
+                'crostini-installer-status-changed', false);
+            return flushAsync();
+          })
+          .then(() => {
+            subpage = crostiniPage.$$('settings-crostini-export-import');
+            assertFalse(subpage.$$('#export cr-button').disabled);
+            assertFalse(subpage.$$('#import cr-button').disabled);
+          });
+    });
+
+
     test('Remove', function() {
       assertTrue(!!subpage.$$('#remove cr-button'));
       subpage.$$('#remove cr-button').click();
@@ -219,7 +246,9 @@ suite('CrostiniPageTests', function() {
           1, crostiniBrowserProxy.getCallCount('requestRemoveCrostini'));
       setCrostiniPrefs(false);
       return whenPopState().then(function() {
-        assertEquals(settings.getCurrentRoute(), settings.routes.CROSTINI);
+        assertEquals(
+            settings.Router.getInstance().getCurrentRoute(),
+            settings.routes.CROSTINI);
         assertTrue(!!crostiniPage.$$('#enable'));
       });
     });
@@ -243,10 +272,13 @@ suite('CrostiniPageTests', function() {
 
     test('HideOnDisable', function() {
       assertEquals(
-          settings.getCurrentRoute(), settings.routes.CROSTINI_DETAILS);
+          settings.Router.getInstance().getCurrentRoute(),
+          settings.routes.CROSTINI_DETAILS);
       setCrostiniPrefs(false);
       return whenPopState().then(function() {
-        assertEquals(settings.getCurrentRoute(), settings.routes.CROSTINI);
+        assertEquals(
+            settings.Router.getInstance().getCurrentRoute(),
+            settings.routes.CROSTINI);
       });
     });
   });
@@ -257,7 +289,8 @@ suite('CrostiniPageTests', function() {
     setup(function() {
       setCrostiniPrefs(true, {'path1': ['termina'], 'path2': ['termina']});
       return flushAsync().then(() => {
-        settings.navigateTo(settings.routes.CROSTINI_SHARED_PATHS);
+        settings.Router.getInstance().navigateTo(
+            settings.routes.CROSTINI_SHARED_PATHS);
         return flushAsync().then(() => {
           subpage = crostiniPage.$$('settings-crostini-shared-paths');
           assertTrue(!!subpage);
@@ -322,7 +355,8 @@ suite('CrostiniPageTests', function() {
 
       return flushAsync()
           .then(() => {
-            settings.navigateTo(settings.routes.CROSTINI_SHARED_USB_DEVICES);
+            settings.Router.getInstance().navigateTo(
+                settings.routes.CROSTINI_SHARED_USB_DEVICES);
             return flushAsync();
           })
           .then(() => {

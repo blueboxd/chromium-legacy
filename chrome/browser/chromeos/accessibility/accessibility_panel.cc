@@ -82,14 +82,6 @@ void AccessibilityPanel::Close() {
   widget_->Close();
 }
 
-const views::Widget* AccessibilityPanel::GetWidget() const {
-  return widget_;
-}
-
-views::Widget* AccessibilityPanel::GetWidget() {
-  return widget_;
-}
-
 content::WebContents* AccessibilityPanel::GetWebContents() {
   return web_contents_;
 }
@@ -100,6 +92,10 @@ void AccessibilityPanel::DeleteDelegate() {
 
 views::View* AccessibilityPanel::GetContentsView() {
   return web_view_;
+}
+
+const views::Widget* AccessibilityPanel::GetWidgetImpl() const {
+  return widget_;
 }
 
 bool AccessibilityPanel::HandleContextMenu(

@@ -209,9 +209,7 @@ bundle_data("terms_resources") {
     "//components/resources/terms/terms_zh-CN.html",
     "//components/resources/terms/terms_zh-TW.html",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
 }
 
 source_set("test_support") {
@@ -257,9 +255,7 @@ source_set("eg_test_support+eg2") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "keyboard_observer_helper_app_interface.h",
-  ]
+  sources = [ "keyboard_observer_helper_app_interface.h" ]
   deps = [
     ":util",
     "//ios/testing/earl_grey:eg_test_support+eg2",

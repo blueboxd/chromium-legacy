@@ -34,9 +34,7 @@ source_set("civil_time") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "src/civil_time_detail.cc",
-  ]
+  sources = [ "src/civil_time_detail.cc" ]
   public = [
     "include/cctz/civil_time.h",
     "include/cctz/civil_time_detail.h",
@@ -72,7 +70,5 @@ source_set("time_zone") {
   if (is_mac || is_ios) {
     libs = [ "Foundation.framework" ]
   }
-  deps = [
-    ":civil_time",
-  ]
+  deps = [ ":civil_time" ]
 }

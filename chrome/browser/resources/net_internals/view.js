@@ -20,7 +20,7 @@ const View = (function() {
     /**
      * Called to reposition the view on the page. Measurements are in pixels.
      */
-    setGeometry: function(left, top, width, height) {
+    setGeometry(left, top, width, height) {
       this.left_ = left;
       this.top_ = top;
       this.width_ = width;
@@ -30,11 +30,11 @@ const View = (function() {
     /**
      * Called to show/hide the view.
      */
-    show: function(isVisible) {
+    show(isVisible) {
       this.isVisible_ = isVisible;
     },
 
-    isVisible: function() {
+    isVisible() {
       return this.isVisible_;
     },
 
@@ -44,35 +44,35 @@ const View = (function() {
      * Called to check if an observer needs the data it is
      * observing to be actively updated.
      */
-    isActive: function() {
+    isActive() {
       return this.isVisible();
     },
 
-    getLeft: function() {
+    getLeft() {
       return this.left_;
     },
 
-    getTop: function() {
+    getTop() {
       return this.top_;
     },
 
-    getWidth: function() {
+    getWidth() {
       return this.width_;
     },
 
-    getHeight: function() {
+    getHeight() {
       return this.height_;
     },
 
-    getRight: function() {
+    getRight() {
       return this.getLeft() + this.getWidth();
     },
 
-    getBottom: function() {
+    getBottom() {
       return this.getTop() + this.getHeight();
     },
 
-    setParameters: function(params) {},
+    setParameters(params) {},
 
     /**
      * Called when loading a log file, after clearing all events, but before
@@ -82,14 +82,14 @@ const View = (function() {
      * values.  It's included separately so most views don't have to depend on
      * its specifics.
      */
-    onLoadLogStart: function(polledData, tabData, logDump) {},
+    onLoadLogStart(polledData, tabData, logDump) {},
 
     /**
      * Called as the final step of loading a log file.  Arguments are the same
      * as onLoadLogStart.  Returns true to indicate the tab should be shown,
      * false otherwise.
      */
-    onLoadLogFinish: function(polledData, tabData, logDump) {
+    onLoadLogFinish(polledData, tabData, logDump) {
       return false;
     }
   };
@@ -130,14 +130,14 @@ const DivView = (function() {
     // Inherit the superclass's methods.
     __proto__: superClass.prototype,
 
-    setGeometry: function(left, top, width, height) {
+    setGeometry(left, top, width, height) {
       superClass.prototype.setGeometry.call(this, left, top, width, height);
 
       this.node_.style.position = 'absolute';
       setNodePosition(this.node_, left, top, width, height);
     },
 
-    show: function(isVisible) {
+    show(isVisible) {
       superClass.prototype.show.call(this, isVisible);
       setNodeDisplay(this.node_, isVisible);
     },
@@ -145,7 +145,7 @@ const DivView = (function() {
     /**
      * Returns the wrapped DIV
      */
-    getNode: function() {
+    getNode() {
       return this.node_;
     }
   };
@@ -182,17 +182,17 @@ const WindowView = (function() {
     // Inherit the superclass's methods.
     __proto__: superClass.prototype,
 
-    setGeometry: function(left, top, width, height) {
+    setGeometry(left, top, width, height) {
       superClass.prototype.setGeometry.call(this, left, top, width, height);
       this.childView_.setGeometry(left, top, width, height);
     },
 
-    show: function() {
+    show() {
       superClass.prototype.show.call(this, isVisible);
       this.childView_.show(isVisible);
     },
 
-    resetGeometry: function() {
+    resetGeometry() {
       this.setGeometry(
           0, 0, document.documentElement.clientWidth,
           document.documentElement.clientHeight);
@@ -242,7 +242,7 @@ const VerticalSplitView = (function() {
     // Inherit the superclass's methods.
     __proto__: superClass.prototype,
 
-    setGeometry: function(left, top, width, height) {
+    setGeometry(left, top, width, height) {
       superClass.prototype.setGeometry.call(this, left, top, width, height);
 
       const fixedHeight = this.topView_.getHeight();
@@ -252,7 +252,7 @@ const VerticalSplitView = (function() {
           left, top + fixedHeight, width, height - fixedHeight);
     },
 
-    show: function(isVisible) {
+    show(isVisible) {
       superClass.prototype.show.call(this, isVisible);
 
       this.topView_.show(isVisible);
@@ -304,7 +304,7 @@ const HorizontalSplitView = (function() {
     // Inherit the superclass's methods.
     __proto__: superClass.prototype,
 
-    setGeometry: function(left, top, width, height) {
+    setGeometry(left, top, width, height) {
       superClass.prototype.setGeometry.call(this, left, top, width, height);
 
       const fixedWidth = this.leftView_.getWidth();
@@ -314,7 +314,7 @@ const HorizontalSplitView = (function() {
           left + fixedWidth, top, width - fixedWidth, height);
     },
 
-    show: function(isVisible) {
+    show(isVisible) {
       superClass.prototype.show.call(this, isVisible);
 
       this.leftView_.show(isVisible);

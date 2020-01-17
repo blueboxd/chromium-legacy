@@ -92,9 +92,7 @@ source_set("feature_flags") {
     "feature_flags.h",
     "feature_flags.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("test_support") {

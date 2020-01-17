@@ -138,6 +138,16 @@ BrowserAccessibility* BrowserAccessibilityPosition::GetNodeInTree(
   return manager->GetFromID(node_id);
 }
 
+int32_t BrowserAccessibilityPosition::GetAnchorID(
+    BrowserAccessibility* node) const {
+  return node->GetId();
+}
+
+AXTreeID BrowserAccessibilityPosition::GetTreeID(
+    BrowserAccessibility* node) const {
+  return node->manager()->ax_tree_id();
+}
+
 bool BrowserAccessibilityPosition::IsEmbeddedObjectInParent() const {
   // On some platforms, most objects are represented in the text of their
   // parents with a special (embedded object) character and not with their

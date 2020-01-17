@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_view_controller.h"
@@ -22,10 +23,16 @@
 @end
 
 @implementation QRScannerLegacyCoordinator
-@synthesize dispatcher = _dispatcher;
 @synthesize viewController = _viewController;
 
 #pragma mark - ChromeCoordinator
+
+- (void)start {
+  DCHECK(self.browser);
+  [self.browser->GetCommandDispatcher()
+      startDispatchingToTarget:self
+                   forSelector:@selector(showQRScanner)];
+}
 
 - (void)stop {
   [super stop];
@@ -33,34 +40,20 @@
     [self.baseViewController dismissViewControllerAnimated:NO completion:nil];
   }
   self.viewController = nil;
-  self.dispatcher = nil;
-}
-
-#pragma mark - Public
-
-- (void)setDispatcher:(CommandDispatcher*)dispatcher {
-  if (dispatcher == self.dispatcher) {
-    return;
-  }
-
-  if (self.dispatcher) {
-    [self.dispatcher stopDispatchingToTarget:self];
-  }
-
-  [dispatcher startDispatchingToTarget:self
-                           forSelector:@selector(showQRScanner)];
-  _dispatcher = dispatcher;
+  [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
 }
 
 #pragma mark - Commands
 
 - (void)showQRScanner {
-  DCHECK(self.dispatcher);
-  [static_cast<id<OmniboxFocuser>>(self.dispatcher) cancelOmniboxEdit];
+  DCHECK(self.browser);
+  CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
+  id<OmniboxFocuser> handler = HandlerForProtocol(dispatcher, OmniboxFocuser);
+  [handler cancelOmniboxEdit];
   self.viewController = [[QRScannerViewController alloc]
       initWithPresentationProvider:self
                        queryLoader:static_cast<id<LoadQueryCommands>>(
-                                       self.dispatcher)];
+                                       self.browser->GetCommandDispatcher())];
   self.viewController.modalPresentationStyle = UIModalPresentationFullScreen;
 
   [self.baseViewController

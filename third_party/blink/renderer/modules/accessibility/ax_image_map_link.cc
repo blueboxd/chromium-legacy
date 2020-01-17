@@ -67,6 +67,12 @@ ax::mojom::Role AXImageMapLink::RoleValue() const {
   if (!aria_role.IsEmpty())
     return AXObject::AriaRoleToWebCoreRole(aria_role);
 
+  // https://www.w3.org/TR/html-aam-1.0/#html-element-role-mappings
+  // <area> tags without an href should be treated as static text.
+  KURL url = Url();
+  if (url.IsNull() || url.IsEmpty())
+    return ax::mojom::Role::kStaticText;
+
   return ax::mojom::Role::kLink;
 }
 

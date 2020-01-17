@@ -12,6 +12,8 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -89,8 +91,16 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
 
   views::View* group_modifier_container =
       AddChildView(std::make_unique<views::View>());
+
+  gfx::Insets color_element_insets =
+      ChromeLayoutProvider::Get()->GetInsetsMetric(
+          views::INSETS_VECTOR_IMAGE_BUTTON);
   group_modifier_container->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(vertical_dialog_content_spacing, horizontal_spacing)));
+      gfx::Insets(vertical_dialog_content_spacing,
+                  horizontal_spacing - color_element_insets.left(),
+                  vertical_dialog_content_spacing,
+                  horizontal_spacing - color_element_insets.right())));
+
   views::FlexLayout* container_layout =
       group_modifier_container->SetLayoutManager(
           std::make_unique<views::FlexLayout>());
@@ -98,21 +108,32 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
       .SetIgnoreDefaultMainAxisMargins(true);
 
   // Add the text field for editing the title.
-  title_field_ = group_modifier_container->AddChildView(
-      std::make_unique<views::Textfield>());
+  views::View* title_field_container =
+      group_modifier_container->AddChildView(std::make_unique<views::View>());
+  title_field_container->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+      0, color_element_insets.left(), vertical_dialog_content_spacing,
+      color_element_insets.right())));
+  title_field_ =
+      title_field_container->AddChildView(std::make_unique<views::Textfield>());
   title_field_->SetText(title);
   title_field_->SetAccessibleName(base::ASCIIToUTF16("Group title"));
+  title_field_->SetPlaceholderText(
+      l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_BUBBLE_TITLE_PLACEHOLDER));
   title_field_->set_controller(&title_field_controller_);
 
-  const SkColor initial_color = InitColorSet();
+  views::FlexLayout* title_field_container_layout =
+      title_field_container->SetLayoutManager(
+          std::make_unique<views::FlexLayout>());
+  title_field_container_layout
+      ->SetOrientation(views::LayoutOrientation::kVertical)
+      .SetIgnoreDefaultMainAxisMargins(true);
 
+  const SkColor initial_color = InitColorSet();
   color_selector_ =
       group_modifier_container->AddChildView(std::make_unique<ColorPickerView>(
           colors_, background_color(), initial_color,
           base::Bind(&TabGroupEditorBubbleView::UpdateGroup,
                      base::Unretained(this))));
-  color_selector_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(vertical_dialog_content_spacing, 0, 0, 0)));
 
   AddChildView(std::make_unique<views::Separator>());
 
@@ -237,6 +258,8 @@ void TabGroupEditorBubbleView::ButtonListener::ButtonPressed(
     const ui::Event& event) {
   switch (sender->GetID()) {
     case TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP:
+      base::RecordAction(
+          base::UserMetricsAction("TabGroups_TabGroupBubble_NewTabInGroup"));
       tab_controller_->AddNewTabInGroup(group_);
       break;
     case TAB_GROUP_HEADER_CXMENU_UNGROUP:

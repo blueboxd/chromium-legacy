@@ -8,10 +8,9 @@
 #include <string>
 
 #include "ash/assistant/ui/main_stage/assistant_ui_element_view.h"
+#include "ash/public/cpp/assistant/assistant_web_view_2.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "services/content/public/cpp/navigable_contents.h"
-#include "services/content/public/cpp/navigable_contents_view.h"
 
 namespace ash {
 
@@ -22,7 +21,7 @@ class AssistantViewDelegate;
 // AssistantCardElement. It is a child view of UiElementContainerView.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantCardElementView
     : public AssistantUiElementView,
-      public content::NavigableContentsObserver {
+      public AssistantWebView2::Observer {
  public:
   AssistantCardElementView(AssistantViewDelegate* delegate,
                            const AssistantCardElement* card_element);
@@ -34,34 +33,30 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantCardElementView
   std::string ToStringForTesting() const override;
   void AddedToWidget() override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  void AboutToRequestFocusFromTabTraversal(bool reverse) override;
-  void OnFocus() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ScrollRectToVisible(const gfx::Rect& rect) override;
 
-  // content::NavigableContentsObserver:
-  void DidAutoResizeView(const gfx::Size& new_size) override;
+  // AssistantWebView2::Observer:
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
                              bool from_user_gesture) override;
-  void FocusedNodeChanged(bool is_editable_node,
-                          const gfx::Rect& node_bounds_in_screen) override;
+  void DidChangeFocusedNode(const gfx::Rect& node_bounds_in_screen) override;
 
   // Returns a reference to the native view associated with the underlying web
   // contents. When animating AssistantCardElementView, we should animate the
   // layer for the native view as opposed to painting to and animating a layer
   // belonging to AssistantCardElementView.
-  gfx::NativeView native_view() { return contents()->GetView()->native_view(); }
+  gfx::NativeView native_view() { return contents_view()->GetNativeView(); }
 
  private:
   void InitLayout(const AssistantCardElement* card_element);
 
-  content::NavigableContents* contents();
+  AssistantWebView2* contents_view();
 
   AssistantViewDelegate* const delegate_;
   const AssistantCardElement* const card_element_;
 
-  // Rect of the focused node in the |contents_|.
+  // Rect of the focused node in the |contents_view()|.
   gfx::Rect focused_node_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantCardElementView);

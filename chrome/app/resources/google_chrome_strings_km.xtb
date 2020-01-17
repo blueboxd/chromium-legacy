@@ -22,7 +22,6 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> មានគ្រោះថ្នាក់ ដូច្នេះ Chrome បានរារាំងវា។</translation>
 <translation id="1619887657840448962">ដើម្បីធ្វើឲ្យ Chrome មានសុវត្ថិភាពជាងមុន យើងបានបិទដំណើរកម្មវិធីបន្ថែមមួយចំនួនដែលមិនត្រូវបានរាយនៅក្នុង <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ហើយអាចត្រូវបានបន្ថែមដោយពុំមានការជូនដំណឹងដល់អ្នក។</translation>
 <translation id="1628000112320670027">ទទួលយកជំនួយពី Chrome</translation>
-<translation id="1635734105302489219">អ្នកសម្អាតខូគី នៅពេលអ្នក​ចាកចេញពី Chrome ។ ដើម្បីបន្ត​ធ្វើសមកាលកម្ម សូមប្ដូរ <ph name="COOKIE_SETTINGS_LINK" /> នេះ។</translation>
 <translation id="1662639173275167396">Chrome OS អាចបង្កើត​ឡើងបានដោយ <ph name="BEGIN_LINK_CROS_OSS" />កម្មវិធីកូដ​ចំហ<ph name="END_LINK_CROS_OSS" />បន្ថែម​ ដូចនៅ​ក្នុង <ph name="BEGIN_LINK_LINUX_OSS" />Linux (បេតា)<ph name="END_LINK_LINUX_OSS" /> ដែរ។</translation>
 <translation id="1666409074978194368">ជិតដំឡើង​កំណែរួចរាល់ហើយ! សូមចាប់ផ្ដើម Google Chrome ដើម្បី​បញ្ចប់​ការដំឡើងកំណែ។ ផ្ទាំងឯកជនរបស់អ្នក​នឹង​មិនបើកឡើងវិញទេ។</translation>
 <translation id="1674870198290878346">បើក​តំណ​នៅក្នុងវិនដូ​ឯកជន Chrome</translation>
@@ -77,7 +76,6 @@
 <translation id="3089968997497233615">មានកំណែថ្មីដែលមានសុវត្ថិភាពជាងមុនសម្រាប់ Google Chrome។</translation>
 <translation id="3149510190863420837">កម្មវិធី Chrome</translation>
 <translation id="3282568296779691940">ចូលទៅ Chrome</translation>
-<translation id="3340978935015468852">ការកំណត់</translation>
 <translation id="3360895254066713204">ជំនួយការ Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome នឹង​ចាប់ផ្ដើមឡើងវិញ​ឥឡូវនេះ}=1{Chrome នឹង​ចាប់ផ្ដើមឡើងវិញ​ក្នុងរយៈពេល 1 វិនាទីទៀត}other{Chrome នឹង​ចាប់ផ្ដើមឡើងវិញ​ក្នុងរយៈពេល # វិនាទីទៀត}}</translation>
 <translation id="3395323229510056640">ទទួលយកជំនួយពី Chrome OS</translation>

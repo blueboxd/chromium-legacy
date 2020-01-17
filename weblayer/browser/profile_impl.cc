@@ -14,6 +14,8 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/device_service.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "weblayer/browser/browser_context_impl.h"
@@ -101,7 +103,9 @@ base::FilePath ProfileImpl::GetCachePath(content::BrowserContext* context) {
 #endif
 }
 
-ProfileImpl::ProfileImpl(const std::string& name) : name_(name) {
+ProfileImpl::ProfileImpl(const std::string& name)
+    : name_(name),
+      download_directory_(BrowserContextImpl::GetDefaultDownloadDirectory()) {
   if (!name.empty()) {
     CHECK(IsNameValid(name));
     {
@@ -162,6 +166,10 @@ void ProfileImpl::ClearBrowsingData(
     }
   }
   clearer->ClearData(remove_mask, from_time, to_time);
+}
+
+void ProfileImpl::SetDownloadDirectory(const base::FilePath& directory) {
+  download_directory_ = directory;
 }
 
 void ProfileImpl::ClearRendererCache() {
@@ -228,6 +236,16 @@ void ProfileImpl::ClearBrowsingData(
       base::BindOnce(base::android::RunRunnableAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
 }
+
+void ProfileImpl::SetDownloadDirectory(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& directory) {
+  base::FilePath directory_path(
+      base::android::ConvertJavaStringToUTF8(directory));
+
+  SetDownloadDirectory(directory_path);
+}
+
 #endif  // OS_ANDROID
 
 }  // namespace weblayer

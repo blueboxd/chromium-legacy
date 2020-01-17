@@ -23,6 +23,10 @@ class TestBrowser : public Browser {
   TestBrowser(ios::ChromeBrowserState* browser_state,
               WebStateList* web_state_list);
 
+  // Constructor that takes only a BrowserState; an empty web state list will be
+  // created internally.
+  TestBrowser(ios::ChromeBrowserState* browser_state);
+
   // Constructor that creates a test browser state and an empty web state list.
   // Test fixtures will need to include a base::test::TaskEnvironment member if
   // this constructor is used (since it creates a TestChromeBrowserState that

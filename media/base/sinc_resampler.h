@@ -61,6 +61,10 @@ class MEDIA_EXPORT SincResampler {
   // kKernelSize / (2 * io_sample_rate_ratio).  See the .cc file for details.
   int ChunkSize() const { return chunk_size_; }
 
+  // Returns the max number of frames that could be requested (via multiple
+  // calls to |read_cb_|) during one Resample(|output_frames_requested|) call.
+  int GetMaxInputFramesRequested(int output_frames_requested) const;
+
   // Guarantees that ChunkSize() will not change between calls by initializing
   // the input buffer with silence.  Note, this will cause the first few samples
   // of output to be biased towards silence. Must be called again after Flush().

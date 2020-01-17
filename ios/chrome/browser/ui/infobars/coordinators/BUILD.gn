@@ -7,6 +7,7 @@ source_set("coordinators") {
   sources = [
     "infobar_confirm_coordinator.h",
     "infobar_confirm_coordinator.mm",
+    "infobar_coordinator+subclassing.h",
     "infobar_coordinator.h",
     "infobar_coordinator.mm",
     "infobar_coordinator_implementation.h",

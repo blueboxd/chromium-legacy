@@ -118,6 +118,21 @@ def constant_name(cg_context):
     return name_style.constant(kind, property_name)
 
 
+def custom_function_name(cg_context, overload_index=None):
+    assert isinstance(cg_context, CodeGenContext)
+
+    if cg_context.attribute_get:
+        suffix = "AttributeGetterCustom"
+    elif cg_context.attribute_set:
+        suffix = "AttributeSetterCustom"
+    elif cg_context.operation_group:
+        suffix = "MethodCustom"
+    else:
+        assert False
+
+    return name_style.func(cg_context.property_.identifier, suffix)
+
+
 # ----------------------------------------------------------------------------
 # Callback functions
 # ----------------------------------------------------------------------------
@@ -147,8 +162,12 @@ def bind_blink_api_arguments(code_node, cg_context):
         else:
             v8_value = "${{info}}[{}]".format(argument.index)
             code_node.register_code_symbol(
-                make_v8_to_blink_value(name, v8_value, argument.idl_type,
-                                       argument.default_value))
+                make_v8_to_blink_value(
+                    name,
+                    v8_value,
+                    argument.idl_type,
+                    argument_index=index,
+                    default_value=argument.default_value))
 
 
 def bind_callback_local_vars(code_node, cg_context):
@@ -353,6 +372,9 @@ def _make_reflect_process_keyword_state(cg_context):
         return "keywords::{}".format(name_style.constant(keyword))
 
     branches = CxxMultiBranchesNode()
+    branches.accumulate(
+        CodeGenAccumulator.require_include_headers(
+            ["third_party/blink/renderer/core/keywords.h"]))
     nodes = [
         T("// [ReflectOnly]"),
         T("const AtomicString reflect_value(${return_value}.LowerASCII());"),
@@ -572,7 +594,7 @@ def make_check_constructor_call(cg_context):
         CxxLikelyIfNode(
             cond=("ConstructorMode::Current(${isolate}) == "
                   "ConstructorMode::kWrapExistingObject"),
-            body=T("V8SetReturnValue(${info}, ${v8_receiver});\n"
+            body=T("bindings::V8SetReturnValue(${info}, ${v8_receiver});\n"
                    "return;")),
     ])
 
@@ -587,7 +609,7 @@ def make_check_receiver(cg_context):
         return SequenceNode([
             T("// [LenientThis]"),
             CxxUnlikelyIfNode(
-                cond="!${class_name}::HasInstance(${v8_receiver}, ${isolate})",
+                cond="!${class_name}::HasInstance(${isolate}, ${v8_receiver})",
                 body=T("return;")),
         ])
 
@@ -596,7 +618,7 @@ def make_check_receiver(cg_context):
             T("// Promise returning function: "
               "Convert a TypeError to a reject promise."),
             CxxUnlikelyIfNode(
-                cond="!${class_name}::HasInstance(${v8_receiver}, ${isolate})",
+                cond="!${class_name}::HasInstance(${isolate}, ${v8_receiver})",
                 body=[
                     T("${exception_state}.ThrowTypeError("
                       "\"Illegal invocation\");"),
@@ -628,7 +650,7 @@ def make_check_security_of_return_value(cg_context):
              "BindingSecurity::ErrorReportOption::kDoNotReport)")
     body = [
         T(use_counter),
-        T("V8SetReturnValueNull(${info});\n"
+        T("bindings::V8SetReturnValue(${info}, nullptr);\n"
           "return;"),
     ]
     return SequenceNode([
@@ -1038,7 +1060,7 @@ if (!${blink_receiver}->""" + pred + """()) {
   v8::Local<v8::Value> v8_value;
   if (v8_private_cached_attribute.GetOrUndefined(${v8_receiver})
           .ToLocal(&v8_value) && !v8_value->IsUndefined()) {
-    V8SetReturnValue(${info}, v8_value);
+    bindings::V8SetReturnValue(${info}, v8_value);
     return;
   }
 }""")
@@ -1053,7 +1075,7 @@ auto v8_private_save_same_object =
   v8::Local<v8::Value> v8_value;
   if (v8_private_save_same_object.GetOrUndefined(${v8_receiver})
           .ToLocal(&v8_value) && !v8_value->IsUndefined()) {
-    V8SetReturnValue(${info}, v8_value);
+    bindings::V8SetReturnValue(${info}, v8_value);
     return;
   }
 }""")
@@ -1147,7 +1169,7 @@ def make_steps_of_put_forwards(cg_context):
         T("// [PutForwards]"),
         T("v8::Local<v8::Value> target;"),
         T("if (!${v8_receiver}->Get(${current_context}, "
-          "V8AtomicString(${isolate}, property_name))"
+          "V8AtomicString(${isolate}, ${property_name}))"
           ".ToLocal(&target)) {\n"
           "  return;\n"
           "}"),
@@ -1160,7 +1182,7 @@ def make_steps_of_put_forwards(cg_context):
             ]),
         T("bool did_set;"),
         T("if (!target.As<v8::Object>()->Set(${current_context}, "
-          "V8AtomicString("
+          "V8AtomicString(${isolate}, "
           "\"${attribute.extended_attributes.value_of(\"PutForwards\")}\""
           "), ${info}[0]).To(&did_set)) {{\n"
           "  return;\n"
@@ -1177,7 +1199,7 @@ def make_steps_of_replaceable(cg_context):
         T("// [Replaceable]"),
         T("bool did_create;"),
         T("if (!${v8_receiver}->CreateDataProperty(${current_context}, "
-          "V8AtomicString(${isolate}, property_name), "
+          "V8AtomicString(${isolate}, ${property_name}), "
           "${info}[0]).To(&did_create)) {\n"
           "  return;\n"
           "}"),
@@ -1194,33 +1216,50 @@ def make_v8_set_return_value(cg_context):
         # any text.
         return T("<% return_value.request_symbol_definition() %>")
 
-    return_type = cg_context.return_type.unwrap(typedef=True)
+    return_type = cg_context.return_type
+    if return_type.is_typedef:
+        if return_type.identifier in ("EventHandler",
+                                      "OnBeforeUnloadEventHandler",
+                                      "OnErrorEventHandler"):
+            return T("bindings::V8SetReturnValue(${info}, ${return_value}, "
+                     "${isolate}, ${blink_receiver});")
+
+    return_type = return_type.unwrap(typedef=True)
     return_type_body = return_type.unwrap()
 
-    if (cg_context.for_world == cg_context.MAIN_WORLD
-            and return_type_body.is_interface):
-        return T("V8SetReturnValueForMainWorld(${info}, ${return_value});")
-
-    if return_type_body.is_interface:
-        return T("V8SetReturnValue(${info}, ${return_value}, "
-                 "${creation_context_object});")
+    V8_RETURN_VALUE_FAST_TYPES = ("boolean", "byte", "octet", "short",
+                                  "unsigned short", "long", "unsigned long")
+    if return_type.keyword_typename in V8_RETURN_VALUE_FAST_TYPES:
+        return T("bindings::V8SetReturnValue(${info}, ${return_value});")
 
     if return_type_body.is_string:
+        args = ["${info}", "${return_value}", "${isolate}"]
         if return_type.is_nullable:
-            return T("V8SetReturnValueStringOrNull"
-                     "(${info}, ${return_value}, ${isolate});")
+            args.append("bindings::V8ReturnValue::kNullable")
         else:
-            return T("V8SetReturnValueString"
-                     "(${info}, ${return_value}, ${isolate});")
+            args.append("bindings::V8ReturnValue::kNonNullable")
+        return T("bindings::V8SetReturnValue({});".format(", ".join(args)))
+
+    if return_type_body.is_interface:
+        args = ["${info}", "${return_value}"]
+        if cg_context.for_world == cg_context.MAIN_WORLD:
+            args.append("bindings::V8ReturnValue::kMainWorld")
+        elif cg_context.constructor or cg_context.member_like.is_static:
+            args.append("${creation_context}")
+        else:
+            args.append("${blink_receiver}")
+        return T("bindings::V8SetReturnValue({});".format(", ".join(args)))
 
     if return_type.is_frozen_array:
-        return T("V8SetReturnValue(${info}, FreezeV8Object(ToV8("
-                 "${return_value}, ${v8_receiver}, ${isolate}), ${isolate}));")
+        return T("bindings::V8SetReturnValue(${info}, FreezeV8Object(ToV8("
+                 "${return_value}, ${creation_context_object}, ${isolate})));")
 
     if return_type.is_promise:
-        return T("V8SetReturnValue(${info}, ${return_value}.V8Value());")
+        return T("bindings::V8SetReturnValue"
+                 "(${info}, ${return_value}.V8Value());")
 
-    return T("V8SetReturnValue(${info}, ${return_value});")
+    return T("bindings::V8SetReturnValue(${info}, "
+             "ToV8(${return_value}, ${creation_context_object}, ${isolate}));")
 
 
 def _make_empty_callback_def(cg_context, function_name, arg_decls=None):
@@ -1258,6 +1297,16 @@ def make_attribute_get_callback_def(cg_context, function_name):
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
         EmptyNode(),
+    ])
+
+    if "Getter" in cg_context.property_.extended_attributes.values_of(
+            "Custom"):
+        text = _format("${class_name}::{}(${info});",
+                       custom_function_name(cg_context))
+        body.append(TextNode(text))
+        return func_def
+
+    body.extend([
         make_check_receiver(cg_context),
         make_return_value_cache_return_early(cg_context),
         EmptyNode(),
@@ -1292,6 +1341,16 @@ def make_attribute_set_callback_def(cg_context, function_name):
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
         EmptyNode(),
+    ])
+
+    if "Setter" in cg_context.property_.extended_attributes.values_of(
+            "Custom"):
+        text = _format("${class_name}::{}(${info}[0], ${info});",
+                       custom_function_name(cg_context))
+        body.append(TextNode(text))
+        return func_def
+
+    body.extend([
         make_check_receiver(cg_context),
         make_check_argument_length(cg_context),
         EmptyNode(),
@@ -1336,7 +1395,7 @@ def make_constant_callback_def(cg_context, function_name):
     body = func_def.body
 
     v8_set_return_value = _format(
-        "V8SetReturnValue(${info}, ${class_name}::{});",
+        "bindings::V8SetReturnValue(${info}, ${class_name}::{});",
         constant_name(cg_context))
     body.extend([
         make_runtime_call_timer_scope(cg_context),
@@ -1410,7 +1469,7 @@ def make_constructor_function_def(cg_context, function_name):
             T("v8::Local<v8::Object> v8_wrapper = "
               "${return_value}->AssociateWithWrapper(${isolate}, "
               "${class_name}::GetWrapperTypeInfo(), ${v8_receiver});"))
-        body.append(T("V8SetReturnValue(${info}, v8_wrapper);"))
+        body.append(T("bindings::V8SetReturnValue(${info}, v8_wrapper);"))
 
     return func_def
 
@@ -1453,7 +1512,8 @@ def make_exposed_construct_callback_def(cg_context, function_name):
     body = func_def.body
 
     v8_set_return_value = _format(
-        "V8SetReturnValueInterfaceObject(${info}, {}::GetWrapperTypeInfo());",
+        "bindings::V8SetReturnValue"
+        "(${info}, {}::GetWrapperTypeInfo(), InterfaceObject);",
         v8_bridge_class_name(cg_context.exposed_construct))
     body.extend([
         make_runtime_call_timer_scope(cg_context),
@@ -1480,6 +1540,15 @@ def make_operation_function_def(cg_context, function_name):
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
         EmptyNode(),
+    ])
+
+    if "Custom" in cg_context.property_.extended_attributes:
+        text = _format("${class_name}::{}(${info});",
+                       custom_function_name(cg_context))
+        body.append(TextNode(text))
+        return func_def
+
+    body.extend([
         make_check_receiver(cg_context),
         EmptyNode(),
         make_steps_of_ce_reactions(cg_context),
@@ -1496,6 +1565,9 @@ def make_operation_callback_def(cg_context, function_name):
     assert isinstance(function_name, str)
 
     operation_group = cg_context.operation_group
+
+    assert (not ("Custom" in operation_group.extended_attributes)
+            or len(operation_group) == 1)
 
     if len(operation_group) == 1:
         return make_operation_function_def(
@@ -2709,6 +2781,42 @@ def generate_interface(interface):
         constant_defs.append(
             make_constant_constant_def(cgc, constant_name(cgc)))
 
+    # Custom callback implementations
+    custom_callback_impl_decls = ListNode()
+    for attribute in interface.attributes:
+        custom_values = attribute.extended_attributes.values_of("Custom")
+        if "Getter" in custom_values:
+            func_name = custom_function_name(
+                cg_context.make_copy(attribute=attribute, attribute_get=True))
+            custom_callback_impl_decls.append(
+                CxxFuncDeclNode(
+                    name=func_name,
+                    arg_decls=["const v8::FunctionCallbackInfo<v8::Value>&"],
+                    return_type="void",
+                    static=True))
+        if "Setter" in custom_values:
+            func_name = custom_function_name(
+                cg_context.make_copy(attribute=attribute, attribute_set=True))
+            custom_callback_impl_decls.append(
+                CxxFuncDeclNode(
+                    name=func_name,
+                    arg_decls=[
+                        "v8::Local<v8::Value>",
+                        "const v8::FunctionCallbackInfo<v8::Value>&"
+                    ],
+                    return_type="void",
+                    static=True))
+    for operation_group in interface.operation_groups:
+        if "Custom" in operation_group.extended_attributes:
+            func_name = custom_function_name(
+                cg_context.make_copy(operation_group=operation_group))
+            custom_callback_impl_decls.append(
+                CxxFuncDeclNode(
+                    name=func_name,
+                    arg_decls=["const v8::FunctionCallbackInfo<v8::Value>&"],
+                    return_type="void",
+                    static=True))
+
     # Cross-component trampolines
     if is_cross_components:
         # tp_ = trampoline name
@@ -2901,6 +3009,8 @@ def generate_interface(interface):
         "third_party/blink/renderer/bindings/core/v8/"
         "native_value_traits_impl.h",
         "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h",
+        "third_party/blink/renderer/bindings/core/v8/"
+        "v8_set_return_value_for_core.h",
         "third_party/blink/renderer/platform/bindings/exception_messages.h",
         "third_party/blink/renderer/platform/bindings/runtime_call_stats.h",
         "third_party/blink/renderer/platform/bindings/v8_binding.h",
@@ -2935,8 +3045,18 @@ def generate_interface(interface):
         api_class_def.public_section.append(installer_function_decls)
 
     if constant_defs:
-        api_class_def.public_section.append(EmptyNode())
-        api_class_def.public_section.append(constant_defs)
+        api_class_def.public_section.extend([
+            EmptyNode(),
+            TextNode("// Constants"),
+            constant_defs,
+        ])
+
+    if custom_callback_impl_decls:
+        api_class_def.public_section.extend([
+            EmptyNode(),
+            TextNode("// Custom callback implementations"),
+            custom_callback_impl_decls,
+        ])
 
     impl_source_blink_ns.body.extend([
         CxxNamespaceNode(name="", body=callback_defs),
@@ -2957,5 +3077,5 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("Navigator")
+    interface = web_idl_database.find("Element")
     generate_interface(interface)

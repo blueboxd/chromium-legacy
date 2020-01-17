@@ -56,7 +56,7 @@ Polymer({
     counters_: {
       type: Object,
       // Will be filled as results are reported.
-      value: function() {
+      value() {
         return {};
       }
     },
@@ -92,7 +92,7 @@ Polymer({
     /** @private */
     isSupervised_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isSupervised');
       },
     },
@@ -187,7 +187,7 @@ Polymer({
   syncBrowserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
     this.syncBrowserProxy_.getSyncStatus().then(
         this.handleSyncStatus_.bind(this));
@@ -201,7 +201,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.browserProxy_ =
         settings.ClearBrowsingDataBrowserProxyImpl.getInstance();
     this.dialogOpenedTime_ = Date.now();
@@ -215,7 +215,7 @@ Polymer({
    * @param {?settings.SyncStatus} syncStatus
    * @private
    */
-  handleSyncStatus_: function(syncStatus) {
+  handleSyncStatus_(syncStatus) {
     this.syncStatus = syncStatus;
   },
 
@@ -226,7 +226,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isClearButtonDisabled_: function(clearingInProgress, clearButtonDisabled) {
+  isClearButtonDisabled_(clearingInProgress, clearButtonDisabled) {
     return clearingInProgress || clearButtonDisabled;
   },
 
@@ -234,7 +234,7 @@ Polymer({
    * Disables the Clear Data button if no data type is selected.
    * @private
    */
-  updateClearButtonState_: function() {
+  updateClearButtonState_() {
     // on-select-item-changed gets called with undefined during a tab change.
     // https://github.com/PolymerElements/iron-selector/issues/95
     const tab = this.$.tabs.selectedItem;
@@ -251,7 +251,7 @@ Polymer({
    * @param {!settings.Route} currentRoute
    * @protected
    */
-  currentRouteChanged: function(currentRoute) {
+  currentRouteChanged(currentRoute) {
     if (currentRoute == settings.routes.CLEAR_BROWSER_DATA) {
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_DialogCreated');
       this.dialogOpenedTime_ = Date.now();
@@ -268,7 +268,7 @@ Polymer({
    *    being signed out of your Google account should be shown.
    * @private
    */
-  updateSyncState_: function(signedIn, syncing, shouldShowCookieException) {
+  updateSyncState_(signedIn, syncing, shouldShowCookieException) {
     this.isSignedIn_ = signedIn;
     this.isSyncingHistory_ = syncing;
     this.shouldShowCookieException_ = shouldShowCookieException;
@@ -285,7 +285,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  browsingCheckboxLabel_: function(
+  browsingCheckboxLabel_(
       isSignedIn, isSyncingHistory, hasSyncError, historySummary,
       historySummarySignedIn, historySummarySynced) {
     if (isSyncingHistory && !hasSyncError) {
@@ -304,7 +304,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  cookiesCheckboxLabel_: function(
+  cookiesCheckboxLabel_(
       shouldShowCookieException, cookiesSummary, cookiesSummarySignedIn) {
     if (shouldShowCookieException) {
       return cookiesSummarySignedIn;
@@ -319,7 +319,7 @@ Polymer({
    * @param {string} text The text with which to update the counter
    * @private
    */
-  updateCounterText_: function(prefName, text) {
+  updateCounterText_(prefName, text) {
     // Data type deletion preferences are named "browser.clear_data.<datatype>".
     // Strip the common prefix, i.e. use only "<datatype>".
     const matches = prefName.match(/^browser\.clear_data\.(\w+)$/);
@@ -332,7 +332,7 @@ Polymer({
    * @return {!Array<string>}
    * @private
    */
-  getSelectedDataTypes_: function(tab) {
+  getSelectedDataTypes_(tab) {
     const checkboxes = tab.querySelectorAll('settings-checkbox');
     const dataTypes = [];
     checkboxes.forEach((checkbox) => {
@@ -358,7 +358,7 @@ Polymer({
   },
 
   /** @private */
-  shouldShowInstalledApps_: function() {
+  shouldShowInstalledApps_() {
     if(!this.installedAppsFlagEnabled_) {
       return false;
     }
@@ -389,6 +389,9 @@ Polymer({
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_AdvancedTab');
     }
 
+    this.shadowRoot.querySelectorAll('settings-checkbox[no-set-pref]')
+        .forEach(checkbox => checkbox.sendPrefChange());
+
     const shouldShowNotice = await this.browserProxy_.clearBrowsingData(
         dataTypes, timePeriod, this.installedApps_);
     this.clearingInProgress_ = false;
@@ -404,7 +407,7 @@ Polymer({
   /** Closes clear brtowsing data or installed app dialog if they are open.
    * @private
    */
-  closeDialogs_: function() {
+  closeDialogs_() {
     if(this.$.clearBrowsingDataDialog.open) {
       this.$.clearBrowsingDataDialog.close();
     }
@@ -414,7 +417,7 @@ Polymer({
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.clearBrowsingDataDialog.cancel();
   },
 
@@ -422,7 +425,7 @@ Polymer({
    * Handles the closing of the notice about other forms of browsing history.
    * @private
    */
-  onHistoryDeletionDialogClose_: function() {
+  onHistoryDeletionDialogClose_() {
     this.showHistoryDeletionDialog_ = false;
     this.closeDialogs_();
   },
@@ -432,7 +435,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  recordTabChange_: function(event) {
+  recordTabChange_(event) {
     if (event.detail.value == 0) {
       chrome.metricsPrivate.recordUserAction(
           'ClearBrowsingData_SwitchTo_BasicTab');
@@ -447,7 +450,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onSyncDescriptionLinkClicked_: function(e) {
+  onSyncDescriptionLinkClicked_(e) {
     if (e.target.tagName === 'A') {
       e.preventDefault();
       if (!this.syncStatus.hasError) {
@@ -465,7 +468,7 @@ Polymer({
               'ClearBrowsingData_Sync_NavigateToError');
         }
         // In any other error case, navigate to the sync page.
-        settings.navigateTo(settings.routes.SYNC);
+        settings.Router.getInstance().navigateTo(settings.routes.SYNC);
       }
     }
   },
@@ -474,7 +477,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeIsSyncPaused_: function() {
+  computeIsSyncPaused_() {
     return !!this.syncStatus.hasError &&
         this.syncStatus.statusAction === settings.StatusAction.REAUTHENTICATE;
   },
@@ -483,7 +486,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeHasPassphraseError_: function() {
+  computeHasPassphraseError_() {
     return !!this.syncStatus.hasError &&
         this.syncStatus.statusAction === settings.StatusAction.ENTER_PASSPHRASE;
   },
@@ -492,7 +495,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeHasOtherError_: function() {
+  computeHasOtherError_() {
     return this.syncStatus !== undefined && !!this.syncStatus.hasError &&
         !this.isSyncPaused_ && !this.hasPassphraseError_;
   },
@@ -501,7 +504,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowFooter_: function() {
+  shouldShowFooter_() {
     let showFooter = false;
     // <if expr="not chromeos">
     showFooter = !!this.syncStatus && !!this.syncStatus.signedIn;
@@ -524,7 +527,7 @@ Polymer({
   },
 
   /** @private */
-  hideInstalledApps_: function() {
+  hideInstalledApps_() {
     replaceDialog(
         this.$.installedAppsDialog, this.$.clearBrowsingDataDialog);
   },

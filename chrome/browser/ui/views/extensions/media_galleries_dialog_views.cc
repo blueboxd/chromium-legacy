@@ -107,6 +107,10 @@ void MediaGalleriesDialogViews::AcceptDialogForTesting() {
   web_modal::WebContentsModalDialogManager::TestApi(manager).CloseAllDialogs();
 }
 
+const views::Widget* MediaGalleriesDialogViews::GetWidgetImpl() const {
+  return contents_->GetWidget();
+}
+
 void MediaGalleriesDialogViews::InitChildViews() {
   // Outer dialog layout.
   contents_->RemoveAllChildViews(true);
@@ -235,14 +239,6 @@ bool MediaGalleriesDialogViews::ShouldShowCloseButton() const {
 
 void MediaGalleriesDialogViews::DeleteDelegate() {
   controller_->DialogFinished(accepted_);
-}
-
-views::Widget* MediaGalleriesDialogViews::GetWidget() {
-  return contents_->GetWidget();
-}
-
-const views::Widget* MediaGalleriesDialogViews::GetWidget() const {
-  return contents_->GetWidget();
 }
 
 views::View* MediaGalleriesDialogViews::GetContentsView() {

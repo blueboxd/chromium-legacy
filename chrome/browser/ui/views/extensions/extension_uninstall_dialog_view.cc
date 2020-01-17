@@ -135,10 +135,12 @@ void ExtensionUninstallDialogViews::Show() {
     anchor_view = container->GetViewForId(extension()->id());
   } else if (browser_view &&
              !base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    BrowserActionsContainer* const browser_actions_container =
+        browser_view->toolbar_button_provider()->GetBrowserActionsContainer();
     ToolbarActionView* const reference_view =
-        browser_view->toolbar_button_provider()
-            ->GetBrowserActionsContainer()
-            ->GetViewForId(extension()->id());
+        browser_actions_container
+            ? browser_actions_container->GetViewForId(extension()->id())
+            : nullptr;
     if (reference_view && reference_view->GetVisible())
       anchor_view = reference_view;
   }

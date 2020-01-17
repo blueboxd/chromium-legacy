@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/process/memory.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
-#include "base/process/memory.h"
+#include "base/partition_alloc_buildflags.h"
+#if BUILDFLAG(USE_PARTITION_ALLOC)
+#include "base/allocator/partition_allocator/page_allocator.h"
+#endif
 #include "build/build_config.h"
 
 namespace base {
@@ -28,7 +32,7 @@ void TerminateBecauseOutOfMemory(size_t size) {
   OnNoMemory(size);
 }
 
-#endif
+#endif  // !defined(OS_WIN)
 
 // Defined in memory_mac.mm for Mac.
 #if !defined(OS_MACOSX)
@@ -49,6 +53,16 @@ bool UncheckedCalloc(size_t num_items, size_t size, void** result) {
   return true;
 }
 
+#endif  // defined(OS_MACOSX)
+
+namespace internal {
+bool ReleaseAddressSpaceReservation() {
+#if BUILDFLAG(USE_PARTITION_ALLOC)
+  return ReleaseReservation();
+#else
+  return false;
 #endif
+}
+}  // namespace internal
 
 }  // namespace base

@@ -52,9 +52,7 @@ source_set("element_selector") {
     "element_selector.mm",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("util") {
@@ -76,9 +74,7 @@ source_set("util") {
 
   # TODO(crbug.com/922813): Remove this once internal targets depend directly
   # on ":element_selector".
-  public_deps = [
-    "//ios/web/public/test:element_selector",
-  ]
+  public_deps = [ "//ios/web/public/test:element_selector" ]
 
   sources = [
     "error_test_util.h",

@@ -26,7 +26,7 @@ const base::Feature kSyncUseScryptForNewCustomPassphrases{
     "SyncUseScryptForNewCustomPassphrases", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSyncSupportTrustedVaultPassphrase{
-    "SyncSupportTrustedVaultPassphrase", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SyncSupportTrustedVaultPassphrase", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled sync cycle ends by collecting contributions from all datatypes
 // and having less than max_commit_batch_size() entries to commit. If disabled

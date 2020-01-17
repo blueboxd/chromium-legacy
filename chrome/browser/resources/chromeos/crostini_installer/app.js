@@ -66,7 +66,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     const callbackRouter = BrowserProxy.getInstance().callbackRouter;
 
     this.listenerIds_ = [
@@ -99,13 +99,13 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     const callbackRouter = BrowserProxy.getInstance().callbackRouter;
     this.listenerIds_.forEach(id => callbackRouter.removeListener(id));
   },
 
   /** @private */
-  onInstallButtonClick_: function() {
+  onInstallButtonClick_() {
     assert(this.state_ === State.PROMPT || this.state_ === State.ERROR);
     this.installerState_ = InstallerState.kStart;
     this.installerProgress_ = 0;
@@ -114,7 +114,7 @@ Polymer({
   },
 
   /** @private */
-  onCancelButtonClick_: function() {
+  onCancelButtonClick_() {
     switch (this.state_) {
       case State.PROMPT:
         BrowserProxy.getInstance().handler.cancelBeforeStart();
@@ -137,7 +137,7 @@ Polymer({
   },
 
   /** @private */
-  closeDialog_: function() {
+  closeDialog_() {
     BrowserProxy.getInstance().handler.close();
   },
 
@@ -146,7 +146,7 @@ Polymer({
    * @returns {string}
    * @private
    */
-  getTitle_: function(state) {
+  getTitle_(state) {
     let titleId;
     switch (state) {
       case State.PROMPT:
@@ -173,7 +173,7 @@ Polymer({
    * @returns {boolean}
    * @private
    */
-  isState_: function(state1, state2) {
+  isState_(state1, state2) {
     return state1 === state2;
   },
 
@@ -182,7 +182,7 @@ Polymer({
    * @returns {boolean}
    * @private
    */
-  canInstall_: function(state) {
+  canInstall_(state) {
     return state === State.PROMPT || state === State.ERROR;
   },
 
@@ -191,7 +191,7 @@ Polymer({
    * @returns {string}
    * @private
    */
-  getInstallButtonLabel_: function(state) {
+  getInstallButtonLabel_(state) {
     switch (state) {
       case State.PROMPT:
         return loadTimeData.getString('install');
@@ -206,7 +206,7 @@ Polymer({
    * @returns {string}
    * @private
    */
-  getProgressMessage_: function(installerState) {
+  getProgressMessage_(installerState) {
     let messageId = null;
     switch (installerState) {
       case InstallerState.kStart:
@@ -257,7 +257,7 @@ Polymer({
    * @returns {string}
    * @private
    */
-  getErrorMessage_: function(error) {
+  getErrorMessage_(error) {
     let messageId = null;
     switch (error) {
       case InstallerError.kErrorLoadingTermina:

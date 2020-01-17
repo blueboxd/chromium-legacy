@@ -26,6 +26,9 @@ declare_args() {
   # Only effective if use_order_profiling = true. When this is true the call
   # graph based instrumentation is used.
   use_call_graph = false
+
+  # Build additional browser splits with HWASAN instrumentation enabled.
+  build_hwasan_splits = false
 }
 
 assert(!devtools_instrumentation_dumping || use_order_profiling,

@@ -33,8 +33,12 @@ class BackButtonTest : public AshTestBase,
   ~BackButtonTest() override = default;
 
   BackButton* back_button() {
-    return test_api_->shelf_view()->shelf_widget()->GetBackButton();
+    return test_api_->shelf_view()
+        ->shelf_widget()
+        ->navigation_widget()
+        ->GetBackButton();
   }
+
   ShelfViewTestAPI* test_api() { return test_api_.get(); }
 
   void SetUp() override {
@@ -57,6 +61,12 @@ class BackButtonTest : public AshTestBase,
     base::RunLoop().RunUntilIdle();
   }
 
+  bool IsBackButtonVisible() const {
+    return ShelfNavigationWidget::TestApi(
+               test_api_->shelf_view()->shelf_widget()->navigation_widget())
+        .IsBackButtonVisible();
+  }
+
  protected:
   std::unique_ptr<ShelfViewTestAPI> test_api_;
 
@@ -71,32 +81,37 @@ INSTANTIATE_TEST_SUITE_P(All, BackButtonTest, testing::Bool());
 
 // Verify that the back button is visible in tablet mode.
 TEST_P(BackButtonTest, Visibility) {
-  ASSERT_TRUE(back_button()->layer());
-  EXPECT_EQ(0.f, back_button()->layer()->opacity());
+  EXPECT_FALSE(back_button());
+  EXPECT_FALSE(IsBackButtonVisible());
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  if (GetParam()) {
-    // Ensure the back button is not yet visible when hotseat is enabled.
-    EXPECT_EQ(0.f, back_button()->layer()->opacity());
+  test_api()->RunMessageLoopUntilAnimationsDone();
 
+  // Ensure the back button is not yet visible when hotseat is enabled.
+  EXPECT_EQ(!GetParam(), IsBackButtonVisible());
+  ASSERT_EQ(GetParam(), !back_button());
+
+  if (GetParam()) {
     // When hotseat is enabled, the back button is only usable in in-app shelf.
     std::unique_ptr<views::Widget> widget = CreateTestWidget();
+    test_api()->RunMessageLoopUntilAnimationsDone();
   }
 
-  test_api()->RunMessageLoopUntilAnimationsDone();
+  EXPECT_TRUE(IsBackButtonVisible());
   EXPECT_EQ(1.f, back_button()->layer()->opacity());
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api()->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(0.f, back_button()->layer()->opacity());
+
+  EXPECT_FALSE(IsBackButtonVisible());
 }
 
 // Verify that the back button is visible in tablet mode, if the initial shelf
 // alignment is on the left or right.
 TEST_P(BackButtonTest, VisibilityWithVerticalShelf) {
   test_api()->shelf_view()->shelf()->SetAlignment(ShelfAlignment::kLeft);
-  ASSERT_TRUE(back_button()->layer());
-  EXPECT_EQ(0.f, back_button()->layer()->opacity());
+  EXPECT_FALSE(back_button());
+  EXPECT_FALSE(IsBackButtonVisible());
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   // When hotseat is enabled, the back button is only usable in in-app shelf.
@@ -104,11 +119,14 @@ TEST_P(BackButtonTest, VisibilityWithVerticalShelf) {
     std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
   test_api()->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(1.f, back_button()->layer()->opacity());
+  EXPECT_TRUE(back_button());
+  EXPECT_TRUE(IsBackButtonVisible());
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api()->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(0.f, back_button()->layer()->opacity());
+
+  EXPECT_FALSE(back_button());
+  EXPECT_FALSE(IsBackButtonVisible());
 }
 
 TEST_P(BackButtonTest, BackKeySequenceGenerated) {
@@ -118,12 +136,11 @@ TEST_P(BackButtonTest, BackKeySequenceGenerated) {
   if (GetParam())
     std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
+  ShelfNavigationWidget::TestApi navigation_widget_test_api(
+      GetPrimaryShelf()->shelf_widget()->navigation_widget());
   // Wait for the navigation widget's animation.
   test_api()->RunMessageLoopUntilAnimationsDone(
-      GetPrimaryShelf()
-          ->shelf_widget()
-          ->navigation_widget()
-          ->get_bounds_animator_for_testing());
+      navigation_widget_test_api.GetBoundsAnimator());
 
   AcceleratorControllerImpl* controller =
       Shell::Get()->accelerator_controller();
@@ -174,12 +191,12 @@ TEST_P(BackButtonTest, NoContextMenuOnBackButton) {
   if (GetParam())
     std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
-  // We need to wait for the navigation widget's animation to be done.
-  test_api_->RunMessageLoopUntilAnimationsDone(
-      GetPrimaryShelf()
-          ->shelf_widget()
-          ->navigation_widget()
-          ->get_bounds_animator_for_testing());
+  // Wait for the navigation widget's animation.
+  ShelfNavigationWidget::TestApi navigation_widget_test_api(
+      GetPrimaryShelf()->shelf_widget()->navigation_widget());
+  test_api()->RunMessageLoopUntilAnimationsDone(
+      navigation_widget_test_api.GetBoundsAnimator());
+
   generator->MoveMouseTo(back_button()->GetBoundsInScreen().CenterPoint());
   generator->PressRightButton();
 

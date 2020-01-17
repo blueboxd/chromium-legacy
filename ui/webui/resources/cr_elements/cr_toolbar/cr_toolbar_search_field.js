@@ -116,7 +116,7 @@ Polymer({
 
   /** @private */
   onSearchTermKeydown_(e) {
-    if (e.key == 'Escape') {
+    if (e.key === 'Escape') {
       this.showingSearch = false;
     }
   },
@@ -126,7 +126,7 @@ Polymer({
    * @private
    */
   showSearch_(e) {
-    if (e.target != this.$.clearSearch) {
+    if (e.target !== this.$.clearSearch) {
       this.showingSearch = true;
     }
   },
@@ -148,7 +148,7 @@ Polymer({
    */
   showingSearchChanged_(current, previous) {
     // Prevent unnecessary 'search-changed' event from firing on startup.
-    if (previous == undefined) {
+    if (previous === undefined) {
       return;
     }
 

@@ -63,7 +63,7 @@ const DragBehavior = {
    * @param {!HTMLDivElement=} opt_container
    * @param {!function(string, ?DragPosition):void=} opt_callback
    */
-  initializeDrag: function(enabled, opt_container, opt_callback) {
+  initializeDrag(enabled, opt_container, opt_callback) {
     this.dragEnabled = enabled;
     if (!enabled) {
       this.removeListeners_();
@@ -82,7 +82,7 @@ const DragBehavior = {
   },
 
   /** @private */
-  addListeners_: function() {
+  addListeners_() {
     const container = this.container_;
     if (!container || this.mouseDownListener_) {
       return;
@@ -105,7 +105,7 @@ const DragBehavior = {
   },
 
   /** @private */
-  removeListeners_: function() {
+  removeListeners_() {
     const container = this.container_;
     if (!container || !this.mouseDownListener_) {
       return;
@@ -130,7 +130,7 @@ const DragBehavior = {
    * @return {boolean}
    * @private
    */
-  onMouseDown_: function(e) {
+  onMouseDown_(e) {
     if (e.button != 0 || !e.target.getAttribute('draggable')) {
       return true;
     }
@@ -144,7 +144,7 @@ const DragBehavior = {
    * @return {boolean}
    * @private
    */
-  onMouseMove_: function(e) {
+  onMouseMove_(e) {
     e.preventDefault();
     return this.processDrag_(e, {x: e.pageX, y: e.pageY});
   },
@@ -154,7 +154,7 @@ const DragBehavior = {
    * @return {boolean}
    * @private
    */
-  onTouchStart_: function(e) {
+  onTouchStart_(e) {
     if (e.touches.length != 1) {
       return false;
     }
@@ -171,7 +171,7 @@ const DragBehavior = {
    * @return {boolean}
    * @private
    */
-  onTouchMove_: function(e) {
+  onTouchMove_(e) {
     if (e.touches.length != 1) {
       return true;
     }
@@ -199,7 +199,7 @@ const DragBehavior = {
    * @return {boolean}
    * @private
    */
-  startDrag_: function(target, eventLocation) {
+  startDrag_(target, eventLocation) {
     assert(this.dragEnabled);
     this.dragId = target.id;
     this.dragStartLocation_ = eventLocation;
@@ -211,7 +211,7 @@ const DragBehavior = {
    * @return {boolean}
    * @private
    */
-  endDrag_: function(e) {
+  endDrag_(e) {
     assert(this.dragEnabled);
     if (this.dragId && this.callback_) {
       this.callback_(this.dragId, null);
@@ -227,7 +227,7 @@ const DragBehavior = {
    * @return {boolean}
    * @private
    */
-  processDrag_: function(e, eventLocation) {
+  processDrag_(e, eventLocation) {
     assert(this.dragEnabled);
     if (!this.dragId) {
       return true;

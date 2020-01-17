@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/network_service_instance.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -24,7 +25,10 @@ class CrostiniAnsibleSoftwareConfigViewBrowserTest
         container_id_(crostini::kCrostiniDefaultVmName,
                       crostini::kCrostiniDefaultContainerName),
         network_connection_tracker_(
-            network::TestNetworkConnectionTracker::CreateInstance()) {}
+            network::TestNetworkConnectionTracker::CreateInstance()) {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kCrostiniAnsibleInfrastructure);
+  }
 
   // CrostiniDialogBrowserTest:
   void ShowUi(const std::string& name) override {
@@ -114,6 +118,7 @@ class CrostiniAnsibleSoftwareConfigViewBrowserTest
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
   std::unique_ptr<crostini::AnsibleManagementTestHelper> test_helper_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(CrostiniAnsibleSoftwareConfigViewBrowserTest,

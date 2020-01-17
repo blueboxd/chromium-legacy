@@ -97,6 +97,17 @@ public class PhotoPickerDialog
     }
 
     @Override
+    public void onBackPressed() {
+        // Pressing Back when a video is playing, should only end the video playback.
+        boolean videoWasStopped = mCategoryView.closeVideoPlayer();
+        if (videoWasStopped) {
+            return;
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public void dismiss() {
         if (!mListenerWrapper.externalIntentSelected() || mDoneWaitingForExternalIntent) {
             super.dismiss();

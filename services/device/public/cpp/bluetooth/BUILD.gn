@@ -20,9 +20,7 @@ source_set("bluetooth") {
 source_set("bluetooth_tests") {
   testonly = true
 
-  sources = [
-    "bluetooth_utils_unittest.cc",
-  ]
+  sources = [ "bluetooth_utils_unittest.cc" ]
 
   deps = [
     ":bluetooth",

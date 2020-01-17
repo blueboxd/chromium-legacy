@@ -169,8 +169,8 @@ void RestoreDefaultLocaleForNextSession() {
 // Returns the list of locales (and related info) supported by demo mode.
 std::vector<ash::LocaleInfo> GetSupportedLocales() {
   const base::flat_set<std::string> kSupportedLocales(
-      {"da", "de", "en-GB", "en-US", "fi", "fr", "fr-CA", "ja", "nb", "nl",
-       "sv"});
+      {"da", "de", "en-GB", "en-US", "es", "fi", "fr", "fr-CA", "it", "ja",
+       "nb", "nl", "sv"});
 
   const std::vector<std::string>& available_locales =
       l10n_util::GetAvailableLocales();

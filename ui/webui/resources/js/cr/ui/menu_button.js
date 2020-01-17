@@ -72,7 +72,7 @@ cr.define('cr.ui', function() {
       return this.menu_;
     },
     set menu(menu) {
-      if (typeof menu == 'string' && menu[0] == '#') {
+      if (typeof menu === 'string' && menu[0] === '#') {
         menu = assert(this.ownerDocument.getElementById(menu.slice(1)));
         cr.ui.decorate(menu, Menu);
       }
@@ -123,7 +123,7 @@ cr.define('cr.ui', function() {
           }
           break;
         case 'mousedown':
-          if (e.currentTarget == this.ownerDocument) {
+          if (e.currentTarget === this.ownerDocument) {
             if (this.shouldDismissMenu_(e)) {
               this.hideMenuWithoutTakingFocus_();
             } else {
@@ -132,8 +132,8 @@ cr.define('cr.ui', function() {
           } else {
             if (this.isMenuShown()) {
               this.hideMenuWithoutTakingFocus_();
-            } else if (e.button == 0) {  // Only show the menu when using left
-                                         // mouse button.
+            } else if (e.button === 0) {  // Only show the menu when using left
+                                          // mouse button.
               this.showMenu(false, {x: e.screenX, y: e.screenY});
 
               // Prevent the button from stealing focus on mousedown.
@@ -147,7 +147,7 @@ cr.define('cr.ui', function() {
         case 'keydown':
           this.handleKeyDown(e);
           // If the menu is visible we let it handle all the keyboard events.
-          if (this.isMenuShown() && e.currentTarget == this.ownerDocument) {
+          if (this.isMenuShown() && e.currentTarget === this.ownerDocument) {
             this.menu.handleKeyDown(e);
             e.preventDefault();
             e.stopPropagation();
@@ -182,7 +182,7 @@ cr.define('cr.ui', function() {
           }
           break;
         case 'scroll':
-          if (!(e.target == this.menu || this.menu.contains(e.target))) {
+          if (!(e.target === this.menu || this.menu.contains(e.target))) {
             this.hideMenu();
           }
           break;
@@ -280,7 +280,7 @@ cr.define('cr.ui', function() {
       }
 
       this.removeAttribute('menu-shown');
-      if (opt_hideType == HideType.DELAYED) {
+      if (opt_hideType === HideType.DELAYED) {
         this.menu.classList.add('hide-delayed');
       } else {
         this.menu.classList.remove('hide-delayed');

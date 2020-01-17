@@ -15,6 +15,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_frame_request_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_xr_hit_test_options_init.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -28,10 +29,10 @@
 #include "third_party/blink/renderer/modules/xr/xr_anchor_set.h"
 #include "third_party/blink/renderer/modules/xr/xr_bounded_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_canvas_input_provider.h"
+#include "third_party/blink/renderer/modules/xr/xr_dom_overlay_state.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_hit_result.h"
-#include "third_party/blink/renderer/modules/xr/xr_hit_test_options_init.h"
 #include "third_party/blink/renderer/modules/xr/xr_hit_test_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_sources_change_event.h"
@@ -296,7 +297,7 @@ void XRSession::MetricsReporter::ReportFeatureUsed(
     case XRSessionFeature::REF_SPACE_UNBOUNDED:
       recorder_->ReportFeatureUsed(XRSessionFeature::REF_SPACE_UNBOUNDED);
       break;
-    case XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR:
+    case XRSessionFeature::DOM_OVERLAY:
       // Not recording metrics for this feature currently
       break;
   }
@@ -343,6 +344,24 @@ XRSession::XRSession(
       NOTREACHED() << "Unknown environment blend mode: "
                    << environment_blend_mode;
   }
+}
+
+void XRSession::SetDOMOverlayElement(Element* element) {
+  DVLOG(2) << __func__ << ": element=" << element;
+  DCHECK(
+      enabled_features_.Contains(device::mojom::XRSessionFeature::DOM_OVERLAY));
+  DCHECK(element);
+
+  overlay_element_ = element;
+
+  // Set up the domOverlayState attribute. This could be done lazily on first
+  // access, but it's a tiny object and it's unclear if the memory that might
+  // save during XR sessions is worth the code size increase to do so. This
+  // should be revisited if the state gets more complex in the future.
+  //
+  // At this time, "screen" is the only supported DOM Overlay type.
+  dom_overlay_state_ = MakeGarbageCollected<XRDOMOverlayState>(
+      XRDOMOverlayState::DOMOverlayType::kScreen);
 }
 
 const String XRSession::visibilityState() const {
@@ -1409,6 +1428,12 @@ void XRSession::UpdatePresentationFrameState(
 
     OnInputStateChangeInternal(frame_id, input_states);
 
+    // World understanding includes hit testing for transient input sources, and
+    // these sources may have been hidden when touching DOM Overlay content
+    // that's inside cross-origin iframes. Since hit test subscriptions only
+    // happen for existing input_sources_ entries, these touches will not
+    // generate hit test results. For this to work, this step must happen
+    // after OnInputStateChangeInternal which updated input sources.
     UpdateWorldUnderstandingStateForFrame(timestamp, frame_data);
 
     // If this session uses input eventing, XR select events are handled via
@@ -1416,6 +1441,8 @@ void XRSession::UpdatePresentationFrameState(
     if (!uses_input_eventing_) {
       ProcessInputSourceEvents(input_states);
     }
+  } else {
+    UpdateWorldUnderstandingStateForFrame(timestamp, frame_data);
   }
 }
 
@@ -1428,10 +1455,13 @@ void XRSession::UpdateWorldUnderstandingStateForFrame(
         frame_data->detected_planes_data.get(), timestamp);
     ProcessAnchorsData(frame_data->anchors_data.get(), timestamp);
     ProcessHitTestData(frame_data->hit_test_subscription_results.get());
+    world_information_->ProcessLightEstimationData(
+        frame_data->light_estimation_data.get(), timestamp);
   } else {
     world_information_->ProcessPlaneInformation(nullptr, timestamp);
     ProcessAnchorsData(nullptr, timestamp);
     ProcessHitTestData(nullptr);
+    world_information_->ProcessLightEstimationData(nullptr, timestamp);
   }
 }
 
@@ -1608,23 +1638,45 @@ void XRSession::OnInputStateChangeInternal(
   HeapVector<Member<XRInputSource>> removed;
   last_frame_id_ = frame_id;
 
+  DVLOG(2) << __func__ << ": frame_id=" << frame_id
+           << " input_states.size()=" << input_states.size();
   // Build up our added array, and update the frame id of any active input
   // sources so we can flag the ones that are no longer active.
   for (const auto& input_state : input_states) {
+    DVLOG(2) << __func__ << ": input_state->primary_input_pressed="
+             << input_state->primary_input_pressed
+             << " clicked=" << input_state->primary_input_clicked;
+
     XRInputSource* stored_input_source =
         input_sources_->GetWithSourceId(input_state->source_id);
+    DVLOG(2) << __func__ << ": stored_input_source=" << stored_input_source;
     XRInputSource* input_source = XRInputSource::CreateOrUpdateFrom(
         stored_input_source, this, input_state);
 
+    bool hide_input_source = false;
+    if (overlay_element_ && input_state->overlay_pointer_position) {
+      input_source->ProcessOverlayHitTest(overlay_element_, input_state);
+      if (!stored_input_source && !input_source->IsVisible()) {
+        DVLOG(2) << __func__ << ": (new) hidden_input_source";
+        hide_input_source = true;
+      }
+    }
+
     // Using pointer equality to determine if the pointer needs to be set.
     if (stored_input_source != input_source) {
-      input_sources_->SetWithSourceId(input_state->source_id, input_source);
-      added.push_back(input_source);
+      DVLOG(2) << __func__ << ": stored_input_source != input_source";
+      if (!hide_input_source) {
+        input_sources_->SetWithSourceId(input_state->source_id, input_source);
+        added.push_back(input_source);
+        DVLOG(2) << __func__ << ": ADDED input_source "
+                 << input_state->source_id;
+      }
 
-      // If we previously had a stored_input_source, disconnect it's gamepad
+      // If we previously had a stored_input_source, disconnect its gamepad
       // and mark that it was removed.
       if (stored_input_source) {
         stored_input_source->SetGamepadConnected(false);
+        DVLOG(2) << __func__ << ": REMOVED stored_input_source";
         removed.push_back(stored_input_source);
       }
     }
@@ -1670,8 +1722,10 @@ void XRSession::ProcessInputSourceEvents(
 
     XRInputSource* input_source =
         input_sources_->GetWithSourceId(input_state->source_id);
-    DCHECK(input_source);
-    input_source->UpdateSelectState(input_state);
+    // The input source might not be in input_sources_ if it was created hidden.
+    if (input_source) {
+      input_source->UpdateSelectState(input_state);
+    }
   }
 }
 
@@ -1854,6 +1908,8 @@ void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(input_sources_);
   visitor->Trace(resize_observer_);
   visitor->Trace(canvas_input_provider_);
+  visitor->Trace(overlay_element_);
+  visitor->Trace(dom_overlay_state_);
   visitor->Trace(callback_collection_);
   visitor->Trace(hit_test_promises_);
   visitor->Trace(create_anchor_promises_);

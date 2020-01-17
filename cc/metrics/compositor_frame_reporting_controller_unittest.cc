@@ -45,11 +45,15 @@ class TestCompositorFrameReportingController
 
 class CompositorFrameReportingControllerTest : public testing::Test {
  public:
-  CompositorFrameReportingControllerTest() : reporting_controller_(this) {}
+  CompositorFrameReportingControllerTest() : reporting_controller_(this) {
+    current_id_ = viz::BeginFrameId(1, 1);
+  }
 
   // The following functions simulate the actions that would
   // occur for each phase of the reporting controller.
-  void SimulateBeginImplFrame() { reporting_controller_.WillBeginImplFrame(); }
+  void SimulateBeginImplFrame() {
+    reporting_controller_.WillBeginImplFrame(current_id_);
+  }
 
   void SimulateBeginMainFrame() {
     if (!reporting_controller_.reporters()[CompositorFrameReportingController::
@@ -58,7 +62,7 @@ class CompositorFrameReportingControllerTest : public testing::Test {
     CHECK(
         reporting_controller_.reporters()[CompositorFrameReportingController::
                                               PipelineStage::kBeginImplFrame]);
-    reporting_controller_.WillBeginMainFrame();
+    reporting_controller_.WillBeginMainFrame(current_id_);
   }
 
   void SimulateCommit(std::unique_ptr<BeginMainFrameMetrics> blink_breakdown) {
@@ -81,6 +85,7 @@ class CompositorFrameReportingControllerTest : public testing::Test {
               [CompositorFrameReportingController::PipelineStage::kCommit]);
     reporting_controller_.WillActivate();
     reporting_controller_.DidActivate();
+    last_activated_id_ = viz::BeginFrameId(current_id_);
   }
 
   void SimulateSubmitCompositorFrame(uint32_t frame_token) {
@@ -89,7 +94,8 @@ class CompositorFrameReportingControllerTest : public testing::Test {
       SimulateActivate();
     CHECK(reporting_controller_.reporters()
               [CompositorFrameReportingController::PipelineStage::kActivate]);
-    reporting_controller_.DidSubmitCompositorFrame(frame_token);
+    reporting_controller_.DidSubmitCompositorFrame(frame_token, current_id_,
+                                                   last_activated_id_);
   }
 
   void SimulatePresentCompositorFrame() {
@@ -102,6 +108,8 @@ class CompositorFrameReportingControllerTest : public testing::Test {
 
  protected:
   TestCompositorFrameReportingController reporting_controller_;
+  viz::BeginFrameId current_id_;
+  viz::BeginFrameId last_activated_id_;
 
  private:
   viz::FrameTokenGenerator next_token_;
@@ -119,18 +127,18 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
   // - 4 Simultaneous Reporters
 
   // BF
-  reporting_controller_.WillBeginImplFrame();
+  reporting_controller_.WillBeginImplFrame(current_id_);
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
   // BF -> BF
   // Should replace previous reporter.
-  reporting_controller_.WillBeginImplFrame();
+  reporting_controller_.WillBeginImplFrame(current_id_);
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
   // BF -> BMF -> BF
   // Should add new reporter.
-  reporting_controller_.WillBeginMainFrame();
-  reporting_controller_.WillBeginImplFrame();
+  reporting_controller_.WillBeginMainFrame(current_id_);
+  reporting_controller_.WillBeginImplFrame(current_id_);
   EXPECT_EQ(2, reporting_controller_.ActiveReporters());
 
   // BF -> BMF -> BF -> Commit
@@ -141,16 +149,18 @@ TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
 
   // BF -> BMF -> BF -> Commit -> BMF -> Activate -> Commit -> Activation
   // Having two reporters at Activate phase should delete the older one.
-  reporting_controller_.WillBeginMainFrame();
+  reporting_controller_.WillBeginMainFrame(current_id_);
   reporting_controller_.WillActivate();
   reporting_controller_.DidActivate();
+  last_activated_id_ = viz::BeginFrameId(current_id_);
   reporting_controller_.WillCommit();
   reporting_controller_.DidCommit();
   reporting_controller_.WillActivate();
   reporting_controller_.DidActivate();
   EXPECT_EQ(1, reporting_controller_.ActiveReporters());
 
-  reporting_controller_.DidSubmitCompositorFrame(0);
+  reporting_controller_.DidSubmitCompositorFrame(0, current_id_,
+                                                 last_activated_id_);
   EXPECT_EQ(0, reporting_controller_.ActiveReporters());
 
   // 4 simultaneous reporters active.
@@ -237,6 +247,30 @@ TEST_F(CompositorFrameReportingControllerTest, ImplFrameCausedNoDamage) {
   SimulateBeginImplFrame();
   histogram_tester.ExpectTotalCount(
       "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 0);
+}
+
+TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted) {
+  base::HistogramTester histogram_tester;
+
+  reporting_controller_.WillBeginImplFrame(current_id_);
+  reporting_controller_.WillBeginMainFrame(current_id_);
+  reporting_controller_.BeginMainFrameAborted(current_id_);
+  reporting_controller_.OnFinishImplFrame(current_id_);
+  reporting_controller_.DidSubmitCompositorFrame(1, current_id_,
+                                                 last_activated_id_);
+
+  viz::FrameTimingDetails details = {};
+  reporting_controller_.DidPresentCompositorFrame(1, details);
+
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.BeginImplFrameToSendBeginMainFrame", 1);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Commit", 0);
+  histogram_tester.ExpectTotalCount("CompositorLatency.Activation", 0);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.EndActivateToSubmitCompositorFrame", 1);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.SubmitCompositorFrameToPresentationCompositorFrame",
+      1);
 }
 
 TEST_F(CompositorFrameReportingControllerTest, BlinkBreakdown) {

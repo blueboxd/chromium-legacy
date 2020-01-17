@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 23
+// Next MinVersion: 24
 
 module arc.mojom;
 
@@ -256,7 +256,7 @@ struct ArcAccountInfo {
   string gaia_id;
 };
 
-// Next Method ID: 18.
+// Next Method ID: 19.
 interface AuthHost {
   // Notifies Chrome that the authorization flow is completed and provides
   // resulting |status|. If |initial_signin| is true then this indicates that
@@ -293,6 +293,13 @@ interface AuthHost {
   // a transition was necessary.
   [MinVersion=13] ReportSupervisionChangeStatus@11(
       SupervisionChangeStatus status);
+
+  // Returns the primary account from Chrome.
+  // |account_name| is the email address of the primary account for consumer and
+  // managed Gaia accounts and empty for all other cases (like demo sessions,
+  // Active Directory sessions, etc).
+  [MinVersion=23] RequestPrimaryAccount@18()
+      => (string account_name, ChromeAccountType account_type);
 
   // Requests an authorization code, as well as the account information for the
   // Primary/Device Account in Chrome OS Account Manager.

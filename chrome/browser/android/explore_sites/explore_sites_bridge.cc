@@ -149,37 +149,9 @@ void IgnoreCatalog(GetCatalogStatus status,
 }  // namespace
 
 // static
-void JNI_ExploreSitesBridge_GetEspCatalog(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& j_profile,
-    const JavaParamRef<jobject>& j_result_obj,
-    const JavaParamRef<jobject>& j_callback_obj) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  DCHECK(profile);
-
-  ExploreSitesService* service =
-      ExploreSitesServiceFactory::GetForBrowserContext(profile);
-  if (!service) {
-    DLOG(ERROR) << "Unable to create the ExploreSitesService!";
-    base::android::RunObjectCallbackAndroid(j_callback_obj, nullptr);
-    return;
-  }
-
-  service->GetCatalog(
-      base::BindOnce(&CatalogReady, ScopedJavaGlobalRef<jobject>(j_result_obj),
-                     ScopedJavaGlobalRef<jobject>(j_callback_obj)));
-}
-
-// static
 jint JNI_ExploreSitesBridge_GetVariation(JNIEnv* env) {
   return static_cast<jint>(
       chrome::android::explore_sites::GetExploreSitesVariation());
-}
-
-// static
-jint JNI_ExploreSitesBridge_GetIconVariation(JNIEnv* env) {
-  return static_cast<jint>(
-      chrome::android::explore_sites::GetMostLikelyVariation());
 }
 
 // static
@@ -320,22 +292,6 @@ void JNI_ExploreSitesBridge_RecordClick(JNIEnv* env,
   service->RecordClick(url, category_type);
 }
 
-void JNI_ExploreSitesBridge_IncrementNtpShownCount(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& j_profile,
-    const jint j_category_id) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  ExploreSitesService* service =
-      ExploreSitesServiceFactory::GetForBrowserContext(profile);
-  if (!service) {
-    DLOG(ERROR) << "Unable to create the ExploreSitesService!";
-    return;
-  }
-
-  int category_id = static_cast<int>(j_category_id);
-  service->IncrementNtpShownCount(category_id);
-}
-
 // static
 void ExploreSitesBridge::ScheduleDailyTask() {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -346,30 +302,6 @@ float ExploreSitesBridge::GetScaleFactorFromDevice() {
   JNIEnv* env = base::android::AttachCurrentThread();
   // Get scale factor from Java as a float.
   return Java_ExploreSitesBridge_getScaleFactorFromDevice(env);
-}
-
-// static
-void JNI_ExploreSitesBridge_GetCategoryImage(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& j_profile,
-    const jint j_category_id,
-    const jint j_pixel_size,
-    const JavaParamRef<jobject>& j_callback_obj) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  DCHECK(profile);
-
-  ExploreSitesService* service =
-      ExploreSitesServiceFactory::GetForBrowserContext(profile);
-  if (!service) {
-    DLOG(ERROR) << "Unable to create the ExploreSitesService!";
-    base::android::RunBooleanCallbackAndroid(j_callback_obj, false);
-    return;
-  }
-
-  service->GetCategoryImage(
-      j_category_id, j_pixel_size,
-      base::BindOnce(&ImageReady,
-                     ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 // static

@@ -17,9 +17,14 @@ import org.chromium.content_public.browser.WebContents;
  * Class for handling tab reparenting operations across multiple activities.
  */
 public class TabReparentingParams implements AsyncTabParams {
+    private static final int TAB_INDEX_NOT_SET = -1;
+
     private final Tab mTabToReparent;
     private final Intent mOriginalIntent;
     private final Runnable mFinalizeCallback;
+
+    private int mTabIndex = TAB_INDEX_NOT_SET;
+    private boolean mIsFromNightModeReparenting;
 
     /**
      * Basic constructor for {@link TabReparentingParams}.
@@ -61,6 +66,10 @@ public class TabReparentingParams implements AsyncTabParams {
         return mTabToReparent;
     }
 
+    public boolean hasTabToReparent() {
+        return mTabToReparent != null;
+    }
+
     /**
      * Returns the callback to be used once Tab reparenting has finished, if any.
      */
@@ -71,5 +80,32 @@ public class TabReparentingParams implements AsyncTabParams {
     @Override
     public void destroy() {
         if (mTabToReparent != null) mTabToReparent.destroy();
+    }
+
+    // Night mode reparenting implementation.
+
+    /** Set the tab index for later retrieval. */
+    public void setTabIndex(int tabIndex) {
+        mTabIndex = tabIndex;
+    }
+
+    /** @return Index of the stored tab. */
+    public int getTabIndex() {
+        return mTabIndex;
+    }
+
+    /** @return Whether this holds a tab index. */
+    public boolean hasTabIndex() {
+        return mTabIndex != TAB_INDEX_NOT_SET;
+    }
+
+    /** Set whether these params are from night mode reparenting. */
+    public void setFromNightModeReparenting(boolean fromNightModeReparenting) {
+        mIsFromNightModeReparenting = fromNightModeReparenting;
+    }
+
+    /** @return Whether these params are from night mode reparenting. */
+    public boolean isFromNightModeReparenting() {
+        return mIsFromNightModeReparenting;
     }
 }

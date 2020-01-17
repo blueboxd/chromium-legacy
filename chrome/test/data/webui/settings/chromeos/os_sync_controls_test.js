@@ -209,10 +209,10 @@ suite('OsSyncControlsNavigationTest', function() {
     const browserProxy = new TestOsSyncBrowserProxy();
     settings.OsSyncBrowserProxyImpl.instance_ = browserProxy;
 
-    settings.navigateTo(settings.routes.OS_SYNC);
+    settings.Router.getInstance().navigateTo(settings.routes.OS_SYNC);
     await browserProxy.methodCalled('didNavigateToOsSyncPage');
 
-    settings.navigateTo(settings.routes.PEOPLE);
+    settings.Router.getInstance().navigateTo(settings.routes.PEOPLE);
     await browserProxy.methodCalled('didNavigateAwayFromOsSyncPage');
   });
 });

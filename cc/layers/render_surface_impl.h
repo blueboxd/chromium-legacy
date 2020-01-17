@@ -122,6 +122,15 @@ class CC_EXPORT RenderSurfaceImpl {
     return is_render_surface_list_member_;
   }
 
+  void set_can_use_cached_backdrop_filtered_result(
+      bool can_use_cached_backdrop_filtered_result) {
+    can_use_cached_backdrop_filtered_result_ =
+        can_use_cached_backdrop_filtered_result;
+  }
+  bool can_use_cached_backdrop_filtered_result() const {
+    return can_use_cached_backdrop_filtered_result_;
+  }
+
   void CalculateContentRectFromAccumulatedContentRect(int max_texture_size);
   void SetContentRectToViewport();
   void SetContentRectForTesting(const gfx::Rect& rect);
@@ -249,6 +258,7 @@ class CC_EXPORT RenderSurfaceImpl {
 
   bool contributes_to_drawn_surface_ : 1;
   bool is_render_surface_list_member_ : 1;
+  bool can_use_cached_backdrop_filtered_result_ : 1;
 
   Occlusion occlusion_in_content_space_;
 

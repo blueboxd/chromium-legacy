@@ -66,9 +66,6 @@ QualifiedName GetCorrespondingARIAAttribute(AOMRelationProperty property) {
     case AOMRelationProperty::kActiveDescendant:
       return html_names::kAriaActivedescendantAttr;
       break;
-    case AOMRelationProperty::kDetails:
-      return html_names::kAriaDetailsAttr;
-      break;
     case AOMRelationProperty::kErrorMessage:
       return html_names::kAriaErrormessageAttr;
       break;
@@ -82,6 +79,9 @@ QualifiedName GetCorrespondingARIAAttribute(AOMRelationListProperty property) {
   switch (property) {
     case AOMRelationListProperty::kDescribedBy:
       return html_names::kAriaDescribedbyAttr;
+      break;
+    case AOMRelationListProperty::kDetails:
+      return html_names::kAriaDetailsAttr;
       break;
     case AOMRelationListProperty::kControls:
       return html_names::kAriaControlsAttr;
@@ -655,12 +655,12 @@ void AccessibleNode::setDescription(const AtomicString& description) {
   NotifyAttributeChanged(html_names::kAriaDescriptionAttr);
 }
 
-AccessibleNode* AccessibleNode::details() const {
-  return GetProperty(element_, AOMRelationProperty::kDetails);
+AccessibleNodeList* AccessibleNode::details() const {
+  return GetProperty(element_, AOMRelationListProperty::kDetails);
 }
 
-void AccessibleNode::setDetails(AccessibleNode* details) {
-  SetRelationProperty(AOMRelationProperty::kDetails, details);
+void AccessibleNode::setDetails(AccessibleNodeList* details) {
+  SetRelationListProperty(AOMRelationListProperty::kDetails, details);
   NotifyAttributeChanged(html_names::kAriaDetailsAttr);
 }
 

@@ -23,6 +23,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "ui/display/screen.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/widget/widget.h"
 
@@ -147,8 +148,8 @@ bool HomeButtonController::IsAssistantVisible() {
              ->visibility() == AssistantVisibility::kVisible;
 }
 
-void HomeButtonController::OnAppListVisibilityChanged(bool shown,
-                                                      int64_t display_id) {
+void HomeButtonController::OnAppListVisibilityWillChange(bool shown,
+                                                         int64_t display_id) {
   if (button_->GetDisplayId() != display_id)
     return;
   if (shown)
@@ -204,7 +205,14 @@ void HomeButtonController::OnAppListShown() {
 }
 
 void HomeButtonController::OnAppListDismissed() {
+  // If ink drop is not hidden already, snap it to active state, so animation to
+  // DEACTIVATED state starts immediately (the animation would otherwise wait
+  // for the current animation to finish).
+  views::InkDrop* const ink_drop = button_->GetInkDrop();
+  if (ink_drop->GetTargetInkDropState() != views::InkDropState::HIDDEN)
+    ink_drop->SnapToActivated();
   button_->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+
   is_showing_app_list_ = false;
   RootWindowController::ForWindow(button_->GetWidget()->GetNativeWindow())
       ->UpdateShelfVisibility();

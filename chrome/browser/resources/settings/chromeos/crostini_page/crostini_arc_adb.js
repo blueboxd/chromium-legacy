@@ -33,7 +33,7 @@ Polymer({
     /** @private {boolean} */
     isOwnerProfile_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isOwnerProfile');
       },
     },
@@ -41,7 +41,7 @@ Polymer({
     /** @private {boolean} */
     isEnterpriseManaged_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isEnterpriseManaged');
       },
     },
@@ -53,7 +53,7 @@ Polymer({
     },
   },
 
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'crostini-arc-adb-sideload-status-changed',
         (enabled, need_powerwash) => {
@@ -71,13 +71,12 @@ Polymer({
    * developer tool.
    * @private
    */
-  shouldDisable_: function(
-      isOwnerProfile, isEnterpriseManaged, arcAdbNeedPowerwash) {
+  shouldDisable_(isOwnerProfile, isEnterpriseManaged, arcAdbNeedPowerwash) {
     return !isOwnerProfile || isEnterpriseManaged || arcAdbNeedPowerwash;
   },
 
   /** @private */
-  getPolicyIndicatorType_: function(isOwnerProfile, isEnterpriseManaged) {
+  getPolicyIndicatorType_(isOwnerProfile, isEnterpriseManaged) {
     if (isEnterpriseManaged) {
       return CrPolicyIndicatorType.DEVICE_POLICY;
     } else if (!isOwnerProfile) {
@@ -88,17 +87,17 @@ Polymer({
   },
 
   /** @private */
-  getToggleAction_: function(arcAdbEnabled) {
+  getToggleAction_(arcAdbEnabled) {
     return arcAdbEnabled ? 'disable' : 'enable';
   },
 
   /** @private */
-  onArcAdbToggleChanged_: function(event) {
+  onArcAdbToggleChanged_(event) {
     this.showConfirmationDialog_ = true;
   },
 
   /** @private */
-  onConfirmationDialogClose_: function() {
+  onConfirmationDialogClose_() {
     this.showConfirmationDialog_ = false;
     this.$.arcAdbEnabledButton.checked = this.arcAdbEnabled_;
   },

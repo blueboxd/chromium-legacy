@@ -32,17 +32,17 @@ Polymer({
   },
 
   // Whether the screen is still loading.
-  isLoading_: function(state) {
+  isLoading_(state) {
     return state == TermsOfServiceScreenState.LOADING;
   },
 
   // Whether the screen has finished loading.
-  isLoaded_: function(state) {
+  isLoaded_(state) {
     return state == TermsOfServiceScreenState.LOADED;
   },
 
   // Whether the screen is in an error state.
-  isInErrorState_: function(state) {
+  isInErrorState_(state) {
     return state == TermsOfServiceScreenState.ERROR;
   },
 
@@ -53,7 +53,7 @@ Polymer({
   ],
 
   /** @override */
-  ready: function() {
+  ready() {
     this.initializeLoginScreen('TermsOfServiceScreen', {
       resetAllowed: true,
       enableDebuggingAllowed: true,
@@ -61,12 +61,12 @@ Polymer({
   },
 
 
-  focus: function() {
+  focus() {
     this.$.termsOfServiceDialog.show();
   },
 
   /** Called when dialog is shown */
-  onBeforeShow: function() {
+  onBeforeShow() {
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
@@ -77,7 +77,7 @@ Polymer({
    * This is called when strings are updated.
    * @override
    */
-  updateLocalizedContent: function(event) {
+  updateLocalizedContent(event) {
     this.i18nUpdateLocale();
   },
 
@@ -85,7 +85,7 @@ Polymer({
    * The 'on-tap' event handler for the 'Accept' button.
    * @private
    */
-  onTermsOfServiceAccepted_: function() {
+  onTermsOfServiceAccepted_() {
     // Ignore on-tap events when disabled.
     // TODO: Polymer Migration - Remove this when the migration is finished.
     // See: https://github.com/Polymer/polymer/issues/4685
@@ -101,7 +101,7 @@ Polymer({
    * The 'on-tap' event handler for the 'Back' button.
    * @private
    */
-  onTosBackButtonPressed_: function() {
+  onTosBackButtonPressed_() {
     // Ignore on-tap events when disabled.
     // TODO: Polymer Migration - Remove this when the migration is finished.
     // See: https://github.com/Polymer/polymer/issues/4685
@@ -118,7 +118,7 @@ Polymer({
    * being shown belong to |domain|.
    * @param {string} domain The domain whose Terms of Service are being shown.
    */
-  setDomain: function(domain) {
+  setDomain(domain) {
     this.tosDomain_ = domain;
   },
 
@@ -126,7 +126,7 @@ Polymer({
    * Displays an error message on the Terms of Service screen. Called when the
    * download of the Terms of Service has failed.
    */
-  setTermsOfServiceLoadError: function() {
+  setTermsOfServiceLoadError() {
     // Disable the accept button, hide the iframe, show warning icon.
     this.uiState = TermsOfServiceScreenState.ERROR;
 
@@ -138,7 +138,7 @@ Polymer({
    * Displays the given |termsOfService| and enables the accept button.
    * @param {string} termsOfService The terms of service, as plain text.
    */
-  setTermsOfService: function(termsOfService) {
+  setTermsOfService(termsOfService) {
     this.$.termsOfServiceFrame.src =
         'data:text/html;charset=utf-8,' +
         encodeURIComponent(

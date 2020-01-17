@@ -80,6 +80,9 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog_factory.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
@@ -532,6 +535,14 @@ bool BlinkTestController::ResetAfterWebTest() {
   waiting_for_main_frame_dump_ = false;
   composite_all_frames_node_queue_ = std::queue<Node*>();
   composite_all_frames_node_storage_.clear();
+  ui::SelectFileDialog::SetFactory(nullptr);
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    if (writable_directory_for_tests_.IsValid()) {
+      if (!writable_directory_for_tests_.Delete())
+        LOG(ERROR) << "Failed to delete temporary directory";
+    }
+  }
   weak_factory_.InvalidateWeakPtrs();
 
   return true;
@@ -567,10 +578,9 @@ void BlinkTestController::OpenURL(const GURL& url) {
 }
 
 void BlinkTestController::OnTestFinishedInSecondaryRenderer() {
-  RenderViewHost* main_render_view_host =
-      main_window_->web_contents()->GetRenderViewHost();
-  main_render_view_host->Send(new BlinkTestMsg_TestFinishedInSecondaryRenderer(
-      main_render_view_host->GetRoutingID()));
+  GetWebTestControlRemote(
+      main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
+      ->TestFinishedInSecondaryRenderer();
 }
 
 void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
@@ -1030,14 +1040,15 @@ void BlinkTestController::OnTestFinished() {
 void BlinkTestController::OnCleanupFinished() {
   if (main_window_) {
     main_window_->web_contents()->Stop();
-    RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
-    rvh->Send(new BlinkTestMsg_Reset(rvh->GetRoutingID()));
+    GetWebTestControlRemote(
+        main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
+        ->Reset();
   }
   if (secondary_window_) {
     secondary_window_->web_contents()->Stop();
-    RenderViewHost* rvh =
-        secondary_window_->web_contents()->GetRenderViewHost();
-    rvh->Send(new BlinkTestMsg_Reset(rvh->GetRoutingID()));
+    GetWebTestControlRemote(
+        secondary_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
+        ->Reset();
   }
 }
 
@@ -1212,10 +1223,9 @@ void BlinkTestController::OnDumpFrameLayoutResponse(int frame_tree_node_id,
   }
 
   // Continue finishing the test.
-  RenderViewHost* render_view_host =
-      main_window_->web_contents()->GetRenderViewHost();
-  render_view_host->Send(new BlinkTestMsg_LayoutDumpCompleted(
-      render_view_host->GetRoutingID(), stitched_layout_dump));
+  GetWebTestControlRemote(
+      main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
+      ->LayoutDumpCompleted(stitched_layout_dump);
 }
 
 void BlinkTestController::OnPrintMessage(const std::string& message) {
@@ -1252,6 +1262,77 @@ void BlinkTestController::OnNavigateSecondaryWindow(const GURL& url) {
 void BlinkTestController::OnInspectSecondaryWindow() {
   if (devtools_bindings_)
     devtools_bindings_->Attach();
+}
+
+base::FilePath BlinkTestController::GetWritableDirectoryForTests() {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  if (writable_directory_for_tests_.IsValid()) {
+    if (!writable_directory_for_tests_.Delete())
+      LOG(ERROR) << "Failed to delete temporary directory";
+  }
+  if (!writable_directory_for_tests_.CreateUniqueTempDir()) {
+    LOG(ERROR) << "Failed to create temporary directory, test might not work "
+                  "correctly";
+  }
+  return writable_directory_for_tests_.GetPath();
+}
+
+namespace {
+
+// A fake ui::SelectFileDialog, which will select a single pre-determined path.
+class FakeSelectFileDialog : public ui::SelectFileDialog {
+ public:
+  FakeSelectFileDialog(base::FilePath result,
+                       Listener* listener,
+                       std::unique_ptr<ui::SelectFilePolicy> policy)
+      : ui::SelectFileDialog(listener, std::move(policy)),
+        result_(std::move(result)) {}
+
+ protected:
+  ~FakeSelectFileDialog() override = default;
+
+  void SelectFileImpl(Type type,
+                      const base::string16& title,
+                      const base::FilePath& default_path,
+                      const FileTypeInfo* file_types,
+                      int file_type_index,
+                      const base::FilePath::StringType& default_extension,
+                      gfx::NativeWindow owning_window,
+                      void* params) override {
+    listener_->FileSelected(result_, 0, params);
+  }
+
+  bool IsRunning(gfx::NativeWindow owning_window) const override {
+    return false;
+  }
+  void ListenerDestroyed() override {}
+  bool HasMultipleFileTypeChoicesImpl() override { return false; }
+
+ private:
+  base::FilePath result_;
+};
+
+class FakeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
+ public:
+  explicit FakeSelectFileDialogFactory(base::FilePath result)
+      : result_(std::move(result)) {}
+  ~FakeSelectFileDialogFactory() override = default;
+
+  ui::SelectFileDialog* Create(
+      ui::SelectFileDialog::Listener* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy) override {
+    return new FakeSelectFileDialog(result_, listener, std::move(policy));
+  }
+
+ private:
+  base::FilePath result_;
+};
+
+}  // namespace
+
+void BlinkTestController::SetFilePathForMockFileDialog(
+    const base::FilePath& path) {
+  ui::SelectFileDialog::SetFactory(new FakeSelectFileDialogFactory(path));
 }
 
 void BlinkTestController::OnGoToOffset(int offset) {
@@ -1322,9 +1403,10 @@ void BlinkTestController::OnGetBluetoothManualChooserEvents() {
         "getBluetoothManualChooserEvents.");
     return;
   }
-  RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
-  rvh->Send(new BlinkTestMsg_ReplyBluetoothManualChooserEvents(
-      rvh->GetRoutingID(), bluetooth_chooser_factory_->GetAndResetEvents()));
+  GetWebTestControlRemote(
+      main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
+      ->ReplyBluetoothManualChooserEvents(
+          bluetooth_chooser_factory_->GetAndResetEvents());
 }
 
 void BlinkTestController::OnSendBluetoothManualChooserEvent(

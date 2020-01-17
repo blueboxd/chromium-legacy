@@ -29,7 +29,8 @@ class CrosHealthdClientImpl : public CrosHealthdClient {
   ~CrosHealthdClientImpl() override = default;
 
   // CrosHealthdClient overrides:
-  mojo::Remote<cros_healthd::mojom::CrosHealthdService> BootstrapMojoConnection(
+  mojo::Remote<cros_healthd::mojom::CrosHealthdServiceFactory>
+  BootstrapMojoConnection(
       base::OnceCallback<void(bool success)> result_callback) override {
     mojo::PlatformChannel platform_channel;
 
@@ -44,9 +45,10 @@ class CrosHealthdClientImpl : public CrosHealthdClient {
 
     // Bind our end of |pipe| to our CrosHealthdService remote. The daemon
     // should bind its end to a CrosHealthdService implementation.
-    mojo::Remote<cros_healthd::mojom::CrosHealthdService> cros_healthd_service;
-    cros_healthd_service.Bind(
-        mojo::PendingRemote<cros_healthd::mojom::CrosHealthdService>(
+    mojo::Remote<cros_healthd::mojom::CrosHealthdServiceFactory>
+        cros_healthd_service_factory;
+    cros_healthd_service_factory.Bind(
+        mojo::PendingRemote<cros_healthd::mojom::CrosHealthdServiceFactory>(
             std::move(pipe), 0u /* version */));
 
     dbus::MethodCall method_call(
@@ -63,7 +65,7 @@ class CrosHealthdClientImpl : public CrosHealthdClient {
             &CrosHealthdClientImpl::OnBootstrapMojoConnectionResponse,
             weak_ptr_factory_.GetWeakPtr(), std::move(result_callback)));
 
-    return cros_healthd_service;
+    return cros_healthd_service_factory;
   }
 
   void Init(dbus::Bus* const bus) {

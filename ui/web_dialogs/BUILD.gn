@@ -41,9 +41,7 @@ jumbo_static_library("test_support") {
     "test/test_web_dialog_delegate.h",
   ]
 
-  public_deps = [
-    ":web_dialogs",
-  ]
+  public_deps = [ ":web_dialogs" ]
   deps = [
     "//base",
     "//content/public/browser",
@@ -56,9 +54,7 @@ jumbo_static_library("test_support") {
 source_set("web_dialogs_unittests") {
   testonly = true
 
-  sources = [
-    "web_dialog_ui_unittest.cc",
-  ]
+  sources = [ "web_dialog_ui_unittest.cc" ]
 
   deps = [
     ":web_dialogs",

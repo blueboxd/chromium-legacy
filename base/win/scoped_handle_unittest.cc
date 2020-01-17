@@ -52,7 +52,7 @@ TEST(ScopedHandleTest, ScopedHandle) {
 TEST(ScopedHandleTest, ActiveVerifierTrackedHasBeenClosed) {
   HANDLE handle = ::CreateMutex(nullptr, false, nullptr);
   ASSERT_NE(HANDLE(nullptr), handle);
-  typedef NTSTATUS(WINAPI * NtCloseFunc)(HANDLE);
+  using NtCloseFunc = decltype(&::NtClose);
   NtCloseFunc ntclose = reinterpret_cast<NtCloseFunc>(
       GetProcAddress(GetModuleHandle(L"ntdll.dll"), "NtClose"));
   ASSERT_NE(nullptr, ntclose);

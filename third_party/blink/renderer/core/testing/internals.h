@@ -204,6 +204,8 @@ class Internals final : public ScriptWrappable {
   void addCompositionMarker(const Range*,
                             const String& underline_color_value,
                             const String& thickness_value,
+                            const String& underline_style_value,
+                            const String& text_color_value,
                             const String& background_color_value,
                             ExceptionState&);
   void addActiveSuggestionMarker(const Range*,

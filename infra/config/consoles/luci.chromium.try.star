@@ -7,6 +7,7 @@ luci.list_view(
         'try/android-oreo-arm64-cts-networkservice-dbg',
         'try/android-pie-arm64-coverage-rel',
         'try/android-pie-arm64-rel',
+        'try/android-10-arm64-rel',
         'try/android-webview-pie-arm64-fyi-rel',
         'try/android_archive_rel_ng',
         'try/android_arm64_dbg_recipe',

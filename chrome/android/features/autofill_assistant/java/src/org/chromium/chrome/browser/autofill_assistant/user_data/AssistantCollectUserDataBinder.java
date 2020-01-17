@@ -148,6 +148,8 @@ class AssistantCollectUserDataBinder
                         < view.mDateRangeStartSection.getCurrentValue().getTimeInUtcMillis()) {
                     view.mDateRangeStartSection.setCurrentValue(newEndValue);
                 }
+                view.mDateRangeEndSection.setErrorVisible(newEndValue.getTimeInUtcMillis()
+                        <= view.mDateRangeStartSection.getCurrentValue().getTimeInUtcMillis());
                 collectUserDataDelegate.onDateTimeRangeEndChanged(
                         year, month, day, hour, minute, second);
             };
@@ -311,6 +313,10 @@ class AssistantCollectUserDataBinder
                 view.mGenericUserInterfaceContainer.addView(
                         model.get(AssistantCollectUserDataModel.GENERIC_USER_INTERFACE));
             }
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_INVALID_ERROR_MESSAGE) {
+            view.mDateRangeEndSection.setErrorMessage(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_INVALID_ERROR_MESSAGE));
             return true;
         }
 

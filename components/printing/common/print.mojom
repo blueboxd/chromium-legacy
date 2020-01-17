@@ -66,4 +66,8 @@ interface PrintRenderFrame {
 
   // Tells the RenderFrame that printing is done so it can clean up.
   PrintingDone(bool success);
+
+  // Tells the RenderFrame to initiate printing or print preview for a
+  // particular node, depending on which mode the RenderFrame is in.
+  PrintNodeUnderContextMenu();
 };

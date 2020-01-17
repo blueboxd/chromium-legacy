@@ -144,7 +144,8 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     const ImageBitmapSourceUnion& bitmap_source,
-    const ImageBitmapOptions* options) {
+    const ImageBitmapOptions* options,
+    ExceptionState& exception_state) {
   WebFeature feature = WebFeature::kCreateImageBitmap;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
   ImageBitmapSource* bitmap_source_internal =
@@ -152,7 +153,7 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
   if (!bitmap_source_internal)
     return ScriptPromise();
   return CreateImageBitmap(script_state, event_target, bitmap_source_internal,
-                           base::Optional<IntRect>(), options);
+                           base::Optional<IntRect>(), options, exception_state);
 }
 
 ScriptPromise ImageBitmapFactories::CreateImageBitmap(
@@ -163,7 +164,8 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     int sy,
     int sw,
     int sh,
-    const ImageBitmapOptions* options) {
+    const ImageBitmapOptions* options,
+    ExceptionState& exception_state) {
   WebFeature feature = WebFeature::kCreateImageBitmap;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
   ImageBitmapSource* bitmap_source_internal =
@@ -172,7 +174,7 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     return ScriptPromise();
   base::Optional<IntRect> crop_rect = IntRect(sx, sy, sw, sh);
   return CreateImageBitmap(script_state, event_target, bitmap_source_internal,
-                           crop_rect, options);
+                           crop_rect, options, exception_state);
 }
 
 ScriptPromise ImageBitmapFactories::CreateImageBitmap(
@@ -180,14 +182,12 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
     EventTarget& event_target,
     ImageBitmapSource* bitmap_source,
     base::Optional<IntRect> crop_rect,
-    const ImageBitmapOptions* options) {
+    const ImageBitmapOptions* options,
+    ExceptionState& exception_state) {
   if (crop_rect && (crop_rect->Width() == 0 || crop_rect->Height() == 0)) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateRangeError(
-            script_state->GetIsolate(),
-            String::Format("The crop rect %s is 0.",
-                           crop_rect->Width() ? "height" : "width")));
+    exception_state.ThrowRangeError(String::Format(
+        "The crop rect %s is 0.", crop_rect->Width() ? "height" : "width"));
+    return ScriptPromise();
   }
 
   if (bitmap_source->IsBlob()) {
@@ -197,18 +197,16 @@ ScriptPromise ImageBitmapFactories::CreateImageBitmap(
 
   if (bitmap_source->BitmapSourceSize().Width() == 0 ||
       bitmap_source->BitmapSourceSize().Height() == 0) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kInvalidStateError,
-            String::Format("The source image %s is 0.",
-                           bitmap_source->BitmapSourceSize().Width()
-                               ? "height"
-                               : "width")));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        String::Format(
+            "The source image %s is 0.",
+            bitmap_source->BitmapSourceSize().Width() ? "height" : "width"));
+    return ScriptPromise();
   }
 
   return bitmap_source->CreateImageBitmap(script_state, event_target, crop_rect,
-                                          options);
+                                          options, exception_state);
 }
 
 const char ImageBitmapFactories::kSupplementName[] = "ImageBitmapFactories";

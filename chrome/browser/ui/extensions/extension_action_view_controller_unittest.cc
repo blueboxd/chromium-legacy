@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/extensions/icon_with_badge_image_source.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
@@ -126,8 +126,8 @@ class ExtensionActionViewControllerUnitTest
   void SetActionWantsToRunOnTab(ExtensionAction* action,
                                 content::WebContents* web_contents,
                                 bool wants_to_run) {
-    action->SetIsVisible(SessionTabHelper::IdForTab(web_contents).id(),
-                         wants_to_run);
+    action->SetIsVisible(
+        sessions::SessionTabHelper::IdForTab(web_contents).id(), wants_to_run);
     extensions::ExtensionActionAPI::Get(profile())->NotifyChange(
         action, web_contents, profile());
   }
@@ -558,7 +558,7 @@ void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(
           *extension);
   extensions::ExtensionActionRunner* action_runner =
       extensions::ExtensionActionRunner::GetForWebContents(web_contents);
-  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
 
   for (size_t i = 0; i < base::size(test_cases); ++i) {
     SCOPED_TRACE(
@@ -673,7 +673,7 @@ TEST_P(ExtensionActionViewControllerUnitTest, RuntimeHostsTooltip) {
       GetViewControllerForId(extension->id());
   ASSERT_TRUE(controller);
   content::WebContents* web_contents = GetActiveWebContents();
-  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
 
   // Page access should already be withheld.
   EXPECT_EQ(extensions::PermissionsData::PageAccess::kWithheld,

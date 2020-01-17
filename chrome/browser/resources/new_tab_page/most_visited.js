@@ -167,8 +167,6 @@ class MostVisitedElement extends PolymerElement {
     this.callbackRouter_ = callbackRouter;
     /** @private {newTabPage.mojom.PageHandlerRemote} */
     this.pageHandler_ = handler;
-    /** @private {?Debouncer} */
-    this.resizeDebouncer_ = null;
     /** @private {?number} */
     this.setMostVisitedInfoListenerId_ = null;
     /** @private {number} */
@@ -416,7 +414,8 @@ class MostVisitedElement extends PolymerElement {
    */
   getFaviconUrl_(url) {
     const faviconUrl = new URL('chrome://favicon2/');
-    faviconUrl.searchParams.set('size', '24');
+    faviconUrl.searchParams.set('size', '32');
+    faviconUrl.searchParams.set('scale_factor', '2x');
     faviconUrl.searchParams.set('show_fallback_monogram', '');
     faviconUrl.searchParams.set('page_url', url.url);
     return faviconUrl.href;

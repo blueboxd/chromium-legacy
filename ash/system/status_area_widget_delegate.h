@@ -41,22 +41,18 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   void OnStatusAreaCollapseStateChanged(
       StatusAreaWidget::CollapseState new_collapse_state);
 
-  // Overridden from views::AccessiblePaneView.
+  // views::AccessiblePaneView:
   View* GetDefaultFocusableChild() override;
-
-  // Overridden from views::View:
   const char* GetClassName() const override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
 
-  // Overridden from ui::EventHandler:
+  // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // views::WidgetDelegate overrides:
+  // views::WidgetDelegate:
   bool CanActivate() const override;
   void DeleteDelegate() override;
 
-  // Overridden from ShelfConfig::Observer:
+  // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
 
   void set_default_last_focusable_child(bool default_last_focusable_child) {
@@ -64,7 +60,7 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   }
 
  protected:
-  // Overridden from views::View:
+  // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
 

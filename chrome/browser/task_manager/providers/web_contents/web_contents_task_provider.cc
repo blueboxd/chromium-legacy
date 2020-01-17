@@ -296,7 +296,7 @@ void WebContentsEntry::CreateTaskForFrame(RenderFrameHost* render_frame_host) {
     if (is_main_frame) {
       const WebContentsTag* tag =
           WebContentsTag::FromWebContents(web_contents());
-      new_task = tag->CreateTask();
+      new_task = tag->CreateTask(provider_);
       main_frame_site_instance_ = site_instance;
     } else {
       new_task =
@@ -440,6 +440,15 @@ void WebContentsTaskProvider::OnWebContentsTagRemoved(
 Task* WebContentsTaskProvider::GetTaskOfUrlRequest(int child_id, int route_id) {
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(child_id, route_id);
+  return GetTaskOfFrame(rfh);
+}
+
+bool WebContentsTaskProvider::HasWebContents(
+    content::WebContents* web_contents) const {
+  return entries_map_.count(web_contents) != 0;
+}
+
+Task* WebContentsTaskProvider::GetTaskOfFrame(content::RenderFrameHost* rfh) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
 
@@ -454,11 +463,6 @@ Task* WebContentsTaskProvider::GetTaskOfUrlRequest(int child_id, int route_id) {
   }
 
   return itr->second->GetTaskForFrame(rfh);
-}
-
-bool WebContentsTaskProvider::HasWebContents(
-    content::WebContents* web_contents) const {
-  return entries_map_.count(web_contents) != 0;
 }
 
 void WebContentsTaskProvider::StartUpdating() {

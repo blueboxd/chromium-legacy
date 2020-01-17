@@ -39,7 +39,6 @@
 <translation id="124678866338384709">현재 탭 닫기</translation>
 <translation id="1258753120186372309">Google 기념일 로고: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">검색 및 탐색</translation>
-<translation id="1264974993859112054">스포츠</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
 <translation id="1272079795634619415">중지</translation>
 <translation id="1283039547216852943">탭하여 펼치기</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">어느 기기에서나 내 북마크를 사용하려면 로그인하고 동기화를 사용 설정하세요.</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" />의 모든 사이트 권한을 재설정하시겠습니까?</translation>
 <translation id="2842985007712546952">상위 폴더</translation>
-<translation id="2858138569776157458">인기 사이트</translation>
 <translation id="2860954141821109167">이 기기에서 전화 앱이 사용 설정되어 있는지 확인하세요.</translation>
 <translation id="2870560284913253234">사이트</translation>
 <translation id="2874939134665556319">이전 트랙</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Chrome에 로그인</translation>
 <translation id="3288003805934695103">페이지 새로고침</translation>
 <translation id="32895400574683172">알림이 허용되었습니다</translation>
+<translation id="3290926146403723641">Google 어시스턴트 통해 웹에서 작업을 완료하기 위해 Chrome에서 사이트 URL, 사이트 콘텐츠, 관련 개인정보를 Google에 전송합니다.</translation>
 <translation id="3295530008794733555">데이터를 절약하면서 웹을 더 빠르게 탐색하세요</translation>
 <translation id="3298243779924642547">라이트</translation>
 <translation id="3303414029551471755">콘텐츠를 다운로드하시겠습니까?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">전화번호</translation>
 <translation id="3819178904835489326">다운로드 <ph name="NUMBER_OF_DOWNLOADS" />개 삭제됨</translation>
 <translation id="3822502789641063741">사이트 저장공간을 삭제하시겠습니까?</translation>
-<translation id="3853625385350850937">계속하려면 기기에서 NFC를 사용 설정하세요.</translation>
 <translation id="3859306556332390985">앞으로 탐색</translation>
 <translation id="388596076286380598">오프라인 상태이거나 연결 상태가 좋지 못할 때도 좋아하는 사이트의 기사, 동영상 및 기타 콘텐츠를 볼 수 있습니다.</translation>
 <translation id="3894427358181296146">폴더 추가</translation>
@@ -764,7 +762,6 @@
 <translation id="6697947395630195233">Chrome이 이 사이트와 위치를 공유하려면 내 위치에 액세스하도록 허용해야 합니다.</translation>
 <translation id="6698801883190606802">동기화된 데이터 관리</translation>
 <translation id="6699370405921460408">Google 서버에서 내가 방문하는 페이지를 최적화합니다.</translation>
-<translation id="6709133671862442373">뉴스</translation>
 <translation id="6710213216561001401">이전</translation>
 <translation id="671481426037969117"><ph name="FQDN" /> 타이머가 종료되었습니다. 타이머는 내일 다시 시작됩니다.</translation>
 <translation id="6738867403308150051">다운로드 중...</translation>
@@ -1079,7 +1076,6 @@
 <translation id="9133397713400217035">오프라인 탐색</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />(<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">원본 보기</translation>
-<translation id="9139318394846604261">쇼핑</translation>
 <translation id="9155898266292537608">단어를 살짝 탭하여 검색할 수도 있습니다</translation>
 <translation id="9169507124922466868">탐색 기록이 절반 높이로 열림</translation>
 <translation id="9204836675896933765">파일 1개가 남았습니다.</translation>

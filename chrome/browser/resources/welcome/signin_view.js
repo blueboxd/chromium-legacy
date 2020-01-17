@@ -33,17 +33,17 @@ Polymer({
   signinViewProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.welcomeBrowserProxy_ = WelcomeBrowserProxyImpl.getInstance();
     this.signinViewProxy_ = SigninViewProxyImpl.getInstance();
   },
 
-  onRouteEnter: function() {
+  onRouteEnter() {
     this.finalized_ = false;
     this.signinViewProxy_.recordPageShown();
   },
 
-  onRouteExit: function() {
+  onRouteExit() {
     if (this.finalized_) {
       return;
     }
@@ -51,7 +51,7 @@ Polymer({
     this.signinViewProxy_.recordNavigatedAwayThroughBrowserHistory();
   },
 
-  onRouteUnload: function() {
+  onRouteUnload() {
     // URL is expected to change when signing in or skipping.
     if (this.finalized_) {
       return;
@@ -61,14 +61,14 @@ Polymer({
   },
 
   /** private */
-  onSignInClick_: function() {
+  onSignInClick_() {
     this.finalized_ = true;
     this.signinViewProxy_.recordSignIn();
     this.welcomeBrowserProxy_.handleActivateSignIn(null);
   },
 
   /** @private */
-  onNoThanksClick_: function() {
+  onNoThanksClick_() {
     this.finalized_ = true;
     this.signinViewProxy_.recordSkip();
     this.welcomeBrowserProxy_.handleUserDecline();

@@ -89,6 +89,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Τομέας εγγραφής:</translation>
 <translation id="1340482604681802745">Διεύθυνση παραλαβής</translation>
+<translation id="1346748346194534595">Δεξιά</translation>
 <translation id="1348198688976932919">Ο ιστότοπος που πρόκειται να επισκεφτείτε περιέχει επικίνδυνες εφαρμογές</translation>
 <translation id="1348779747280417563">Επιβεβαίωση ονόματος</translation>
 <translation id="1357195169723583938">Ποιοι χρησιμοποίησαν πρόσφατα τη συσκευή και πότε τη χρησιμοποίησαν</translation>
@@ -113,6 +114,7 @@
 <translation id="1455413310270022028">Γόμα</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1467432559032391204">Αριστερά</translation>
 <translation id="1472675084647422956">Εμφάνιση περισσότερων</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
@@ -258,6 +260,7 @@
 <translation id="2148613324460538318">Προσθήκη κάρτας</translation>
 <translation id="2154054054215849342">Ο συγχρονισμός δεν είναι διαθέσιμος για τον τομέα σας</translation>
 <translation id="2154484045852737596">Επεξεργασία κάρτας</translation>
+<translation id="2161656808144014275">Κείμενο</translation>
 <translation id="2166049586286450108">Πλήρης πρόσβαση διαχειριστή</translation>
 <translation id="2166378884831602661">Αυτός ο ιστότοπος δεν μπορεί να προσφέρει ασφαλή σύνδεση</translation>
 <translation id="2169984857010174799">Kaku2 (Φάκελος)</translation>
@@ -346,6 +349,7 @@
 <translation id="254947805923345898">Η τιμή πολιτικής δεν είναι έγκυρη.</translation>
 <translation id="255002559098805027">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> έστειλε μια μη έγκυρη απόκριση.</translation>
 <translation id="2556876185419854533">&amp;Αναίρεση επεξεργασίας</translation>
+<translation id="257674075312929031">Ομάδα</translation>
 <translation id="2586657967955657006">Πρόχειρο</translation>
 <translation id="2587730715158995865">Από <ph name="ARTICLE_PUBLISHER" />. Διαβάστε αυτό το άρθρο και <ph name="OTHER_ARTICLE_COUNT" /> ακόμα ιστορίες.</translation>
 <translation id="2587841377698384444">Αναγνωριστικό API καταλόγου:</translation>
@@ -370,6 +374,7 @@
     το αίτημά σας για τον ιστότοπο <ph name="SITE" />. Οι πολιτικές προέλευσης μπορούν να χρησιμοποιηθούν από
     χειριστές ιστοτόπων για τη διαμόρφωση της ασφάλειας και άλλων ιδιοτήτων ενός ιστοτόπου.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Κανένας}=1{1 κωδικός πρόσβασης (για <ph name="DOMAIN_LIST" />)}=2{2 κωδικοί πρόσβασης (για <ph name="DOMAIN_LIST" />)}other{# κωδικοί πρόσβασης (για <ph name="DOMAIN_LIST" />)}}</translation>
+<translation id="2666092431469916601">Κορυφή</translation>
 <translation id="2666117266261740852">Κλείστε τις άλλες καρτέλες ή εφαρμογές</translation>
 <translation id="2674170444375937751">Είστε βέβαιοι ότι θέλετε να διαγράψετε αυτές τις σελίδες από το ιστορικό σας;</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
@@ -453,6 +458,7 @@
 <translation id="3061707000357573562">Υπηρεσία ενημέρωσης κώδικα</translation>
 <translation id="3064966200440839136">Αποχώρηση από την κατάσταση ανώνυμης περιήγησης για πληρωμή μέσω εξωτερικής εφαρμογής. Συνέχεια;</translation>
 <translation id="3086579638707268289">Η δραστηριότητά σας στον ιστό παρακολουθείται</translation>
+<translation id="3087734570205094154">Κάτω</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Προσθήκη διεύθυνσης παραλαβής</translation>
 <translation id="3105172416063519923">Αναγνωριστικό στοιχείο:</translation>
@@ -497,6 +503,7 @@
 <translation id="3303855915957856445">Δεν βρέθηκαν αποτελέσματα αναζήτησης</translation>
 <translation id="3320021301628644560">Προσθήκη διεύθυνσης χρέωσης</translation>
 <translation id="3324983252691184275">Βαθύ κόκκινο</translation>
+<translation id="3329013043687509092">Κορεσμός</translation>
 <translation id="3338095232262050444">Ασφαλές</translation>
 <translation id="3355823806454867987">Αλλαγή ρυθμίσεων διακομιστή μεσολάβησης...</translation>
 <translation id="3360103848165129075">Φύλλο δείκτη χειρισμού πληρωμών</translation>
@@ -533,6 +540,7 @@
 <translation id="3495081129428749620">Εύρεση στη σελίδα
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Αυτή η πολιτική αγνοείται επειδή μια άλλη πολιτική από την ίδια ομάδα πολιτικής έχει υψηλότερη προτεραιότητα.</translation>
+<translation id="3513704683820682405">Επαυξημένη πραγματικότητα</translation>
 <translation id="3528171143076753409">Το πιστοποιητικό του διακομιστή δεν είναι αξιόπιστο.</translation>
 <translation id="3528485271872257980">Σκούρο καφέ</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Τουλάχιστον ένα στοιχείο στις συγχρονισμένες συσκευές}=1{1 στοιχείο (και περισσότερα στις συγχρονισμένες συσκευές)}other{# στοιχεία (και περισσότερα στις συγχρονισμένες συσκευές)}}</translation>
@@ -579,6 +587,7 @@
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Φόρτωση...</translation>
 <translation id="3709599264800900598">Κείμενο που αντιγράψατε</translation>
+<translation id="3711895659073496551">Αναστολή</translation>
 <translation id="3712624925041724820">Οι άδειες έχουν εξαντληθεί</translation>
 <translation id="3714780639079136834">Ενεργοποιήστε τα δεδομένα κινητής τηλεφωνίας ή το Wi-Fi.</translation>
 <translation id="3715597595485130451">Σύνδεση σε Wi-Fi</translation>
@@ -773,6 +782,7 @@
 <translation id="4594403342090139922">&amp;Αναίρεση διαγραφής</translation>
 <translation id="4597348597567598915">Μέγεθος 8</translation>
 <translation id="4600854749408232102">C6/C5 (Φάκελος)</translation>
+<translation id="4628948037717959914">Φωτογραφία</translation>
 <translation id="4635654612248442824">Ο ιστότοπος <ph name="ORIGIN" /> ζήτησε να ισχύει μια πολιτική προέλευσης
     για όλα τα αιτήματά του, αλλά δεν είναι δυνατή η εφαρμογή της πολιτικής αυτήν τη στιγμή.</translation>
 <translation id="464342062220857295">Λειτουργίες αναζήτησης</translation>
@@ -829,6 +839,7 @@
 <translation id="4926049483395192435">Πρέπει να καθοριστεί.</translation>
 <translation id="4926159001844873046">Ο ιστότοπος <ph name="SITE" /> λέει</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943703118917034429">Εικονική πραγματικότητα</translation>
 <translation id="4943872375798546930">Δεν υπάρχουν αποτελέσματα</translation>
 <translation id="4950898438188848926">Κουμπί εναλλαγής καρτέλας, πατήστε Enter για μετάβαση στην ανοιχτή καρτέλα, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Ενέργειες</translation>
@@ -996,6 +1007,7 @@
 <translation id="5689199277474810259">Εξαγωγή σε JSON</translation>
 <translation id="5689516760719285838">Τοποθεσία</translation>
 <translation id="569000877158168851">Η τιμή DnsOverHttpsTemplates δεν είναι σχετική και δεν θα χρησιμοποιηθεί, εκτός αν η πολιτική DnsOverHttpsMode οριστεί είτε σε <ph name="SECURE_DNS_MODE_AUTOMATIC" /> είτε σε <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
+<translation id="5701381305118179107">Κέντρο</translation>
 <translation id="570530837424789914">Διαχείριση…</translation>
 <translation id="57094364128775171">Πρόταση για ισχυρό κωδικό πρόσβασης…</translation>
 <translation id="5710435578057952990">Η ταυτότητα αυτού του ιστότοπου δεν έχει επαληθευτεί.</translation>
@@ -1028,7 +1040,6 @@
 <translation id="5855253129151731373">Το όνομα αυτού του κεντρικού υπολογιστή φαίνεται παρόμοιο με του ιστοτόπου <ph name="LOOKALIKE_DOMAIN" />. Οι εισβολείς απομιμούνται μερικές φορές ιστοτόπους κάνοντας μικρές, δυσδιάκριτες αλλαγές στο όνομα τομέα.
 
     Εάν πιστεύετε ότι αυτό το μήνυμα εμφανίζεται κατά λάθος, επισκεφτείτε τη διεύθυνση https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
-<translation id="5860033963881614850">Απενεργοποιημένη</translation>
 <translation id="5863847714970149516">Η σελίδα που ακολουθεί μπορεί να προσπαθήσει να σας χρεώσει</translation>
 <translation id="5866257070973731571">Προσθήκη αριθμού τηλεφώνου</translation>
 <translation id="5866898949289125849">Προβάλετε μια σελίδα εργαλείων προγραμματιστή.</translation>
@@ -1040,13 +1051,11 @@
 <translation id="5901630391730855834">Κίτρινο</translation>
 <translation id="5905445707201418379">Αποκλείστηκε σύμφωνα με την πολιτική προέλευσης του <ph name="ORIGIN" />.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (συγχρονισμένο)</translation>
-<translation id="5916664084637901428">Ενεργό</translation>
 <translation id="59174027418879706">Ενεργοποιημένο</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Αποθήκευση κάρτας στον Λογαριασμό Google;</translation>
 <translation id="5922853866070715753">Σχεδόν ολοκληρώθηκε</translation>
 <translation id="5932224571077948991">Ο ιστότοπος εμφανίζει παρεμβατικές ή παραπλανητικές διαφημίσεις</translation>
-<translation id="5939847200023027600">Υπηρεσία δημιουργίας PDF</translation>
 <translation id="5946937721014915347">Άνοιγμα <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Δεν είναι δυνατή η εγγραφή με λογαριασμό καταναλωτή (διατίθεται σχετική άδεια).</translation>
 <translation id="5967592137238574583">Επεξεργασία στοιχείων επικοινωνίας</translation>
@@ -1086,6 +1095,7 @@
 <translation id="6080696365213338172">Η πρόσβασή σας στο περιεχόμενο πραγματοποιήθηκε με τη χρήση ενός πιστοποιητικού που παρασχέθηκε από διαχειριστή. Τα δεδομένα που παρέχετε στο <ph name="DOMAIN" /> μπορεί να ελέγχονται από το διαχειριστή σας.</translation>
 <translation id="6094273045989040137">Σχολιασμός</translation>
 <translation id="6104072995492677441">JIS B6</translation>
+<translation id="6106989379647458772">Η ιστοσελίδα στη διεύθυνση <ph name="PAGE" /> μπορεί να βρίσκεται προσωρινά εκτός λειτουργίας ή ίσως έχει μεταφερθεί μόνιμα σε μια νέα διεύθυνση ιστού.</translation>
 <translation id="610911394827799129">Ο Λογαριασμός Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6120179357481664955">Θυμάστε το αναγνωριστικό UPI;</translation>
 <translation id="6132597952260690497">Πληροφορίες σχετικά με εγκατεστημένες επεκτάσεις και προσθήκες</translation>
@@ -1125,6 +1135,7 @@
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">Διακοπή Βοηθού Google στο Chrome</translation>
 <translation id="6305205051461490394">Δεν είναι δυνατή η πρόσβαση στο <ph name="URL" />.</translation>
+<translation id="6312113039770857350">Η ιστοσελίδα δεν είναι διαθέσιμη</translation>
 <translation id="6321917430147971392">Ελέγξτε τις ρυθμίσεις DNS</translation>
 <translation id="6322182122604171028">Δεν ήταν δυνατή η χρήση του Windows Hello</translation>
 <translation id="6328639280570009161">Δοκιμάστε να απενεργοποιήσετε την πρόβλεψη δικτύου</translation>
@@ -1151,6 +1162,7 @@
 <translation id="6410264514553301377">Εισαγάγετε την ημερομηνία λήξης και τον κωδικό CVC για την κάρτα <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Το Chromium μπορεί να σας βοηθήσει να προστατεύσετε τον Λογαριασμό σας Google και να αλλάξετε τον κωδικό πρόσβασής σας.</translation>
 <translation id="6423385022588644828">Επιβεβαιώστε πιο γρήγορα τις κάρτες σας, χρησιμοποιώντας το Touch ID από εδώ και στο εξής</translation>
+<translation id="6425092077175753609">Material</translation>
 <translation id="6427730057873428458">Δίπλωση παράθυρο</translation>
 <translation id="6433490469411711332">Επεξεργασία στοιχείων επαφής</translation>
 <translation id="6433595998831338502">Ο κεντρικός υπολογιστής <ph name="HOST_NAME" /> απέρριψε τη σύνδεση.</translation>
@@ -1418,6 +1430,7 @@
 <translation id="7716147886133743102">Αποκλείστηκε από τον διαχειριστή σας</translation>
 <translation id="7716424297397655342">Δεν είναι δυνατή η φόρτωση αυτού του ιστότοπου από την κρυφή μνήμη</translation>
 <translation id="7723047071702270851">Επεξεργασία κάρτας</translation>
+<translation id="7740996059027112821">Τυπική</translation>
 <translation id="774634243536837715">Το επικίνδυνο περιεχόμενο αποκλείστηκε.</translation>
 <translation id="7752995774971033316">Χωρίς διαχείριση</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
@@ -1523,6 +1536,7 @@
 <translation id="8241707690549784388">Στη σελίδα που αναζητάτε χρησιμοποποιήθηκαν πληροφορίες που καταχωρίσατε. Αν επιστρέψετε σε αυτή τη σελίδα ίσως επαναληφθούν ενέργειες που εκτελέσατε. Θέλετε να συνεχίσετε;</translation>
 <translation id="8241712895048303527">Αποκλεισμός σε αυτόν τον ιστότοπο</translation>
 <translation id="8242426110754782860">Συνέχεια</translation>
+<translation id="8249296373107784235">Ματαίωση</translation>
 <translation id="8249320324621329438">Τελευταία ανάκτηση:</translation>
 <translation id="8253091569723639551">Απαιτείται διεύθυνση χρέωσης</translation>
 <translation id="825929999321470778">Εμφάνιση όλων των αποθηκευμένων κωδικών πρόσβασης</translation>
@@ -1593,6 +1607,7 @@
 <translation id="8647750283161643317">Επαναφορά προεπιλογών</translation>
 <translation id="8663226718884576429">Σύνοψη παραγγελίας, <ph name="TOTAL_LABEL" />, Περισσότερες λεπτομέρειες</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, απάντηση, <ph name="ANSWER" /></translation>
+<translation id="8681531050781943054">Η φόρτωση της ιστοσελίδας στη διεύθυνση <ph name="PAGE" /> δεν ήταν δυνατή επειδή:</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Διαθέσιμο</translation>
 <translation id="869891660844655955">Ημερομηνία λήξης</translation>
@@ -1643,6 +1658,7 @@
 <translation id="8943282376843390568">Λάιμ</translation>
 <translation id="8957210676456822347">Εξουσιοδότηση πύλης υποδοχής</translation>
 <translation id="8962950042226115166">Ύποπτος ιστότοπος</translation>
+<translation id="8963213021028234748"><ph name="MARKUP_1" />Προτάσεις:<ph name="MARKUP_2" />Βεβαιωθείτε ότι έχετε μια σύνδεση δεδομένων<ph name="MARKUP_3" />Επαναλάβετε τη φόρτωση αυτής της ιστοσελίδας αργότερα<ph name="MARKUP_4" />Ελέγξτε τη διεύθυνση που έχετε εισαγάγει<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Αποθήκευση κάρτας</translation>
 <translation id="8971063699422889582">Το πιστοποιητικό του διακομιστή έχει λήξει.</translation>
 <translation id="8975012916872825179">Περιλαμβάνει πληροφορίες, όπως αριθμούς τηλεφώνου, διευθύνσεις ηλεκτρονικού ταχυδρομείου και διευθύνσεις αποστολής</translation>
@@ -1719,6 +1735,7 @@
 <translation id="985199708454569384">&lt;p&gt;Αυτό το σφάλμα θα εμφανιστεί εάν η ημερομηνία και η ώρα του υπολογιστή ή της κινητής συσκευής σας είναι ανακριβείς.&lt;/p&gt;
     &lt;p&gt;Για να διορθώσετε το σφάλμα, ανοίξτε το ρολόι της συσκευής. Βεβαιωθείτε ότι η ώρα και η ημερομηνία είναι σωστές.&lt;/p&gt;</translation>
 <translation id="985956168329721395">Prc-32K</translation>
+<translation id="987264212798334818">Γενικά</translation>
 <translation id="988159990683914416">Έκδοση προγραμματιστή</translation>
 <translation id="989988560359834682">Επεξεργασία διεύθυνσης</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

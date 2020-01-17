@@ -1,0 +1,16 @@
+This is a testharness.js-based test.
+PASS User succesfully selected an empty directory.
+PASS User granted write access.
+PASS getFile(create=false) rejects for non-existing files
+PASS getFile(create=true) creates an empty file for non-existing files
+PASS getFile(create=false) returns existing files
+PASS getFile(create=true) returns existing files without erasing
+PASS getFile(create=false) when a directory already exists with the same name
+FAIL getFile(create=true) when a directory already exists with the same name assert_unreached: Should have rejected: undefined Reached unreachable code
+PASS getFile() with empty name
+PASS getFile() with "." name
+PASS getFile() with ".." name
+PASS getFile(create=false) with a path separator when the file exists.
+PASS getFile(create=true) with a path separator
+Harness: the test ran to completion.
+

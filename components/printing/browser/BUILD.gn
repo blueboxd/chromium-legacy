@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
+if (is_chromeos) {
+  import("//printing/backend/tools/code_generator.gni")
+}
 
 declare_args() {
   # For now, we only enable print media localization on Chrome OS.
@@ -13,6 +16,16 @@ buildflag_header("printing_buildflags") {
   header = "printing_buildflags.h"
 
   flags = [ "PRINT_MEDIA_L10N_ENABLED=$enable_print_media_l10n" ]
+}
+
+if (is_chromeos) {
+  localization_map_path = "$target_gen_dir/ipp_l10n.cc"
+
+  ipp_code_generate("ipp_l10n_generate") {
+    outputs = [ localization_map_path ]
+    args = [ "--localization-map=" +
+             rebase_path(localization_map_path, root_build_dir) ]
+  }
 }
 
 static_library("browser") {
@@ -40,8 +53,8 @@ static_library("browser") {
     "//components/discardable_memory/service",
     "//components/printing/common",
     "//components/printing/common:mojo_interfaces",
-    "//components/services/pdf_compositor/public/cpp",
-    "//components/services/pdf_compositor/public/mojom",
+    "//components/services/print_compositor/public/cpp",
+    "//components/services/print_compositor/public/mojom",
     "//components/strings:components_strings_grit",
     "//printing",
     "//printing/common:common",
@@ -57,9 +70,11 @@ static_library("browser") {
   }
 
   if (is_chromeos) {
+    deps += [ ":ipp_l10n_generate" ]
+
     sources += [
-      "ipp_l10n.cc",
       "ipp_l10n.h",
+      localization_map_path,
     ]
   }
 
@@ -73,9 +88,7 @@ static_library("browser") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "printer_capabilities_unittest.cc",
-  ]
+  sources = [ "printer_capabilities_unittest.cc" ]
 
   deps = [
     "//base",

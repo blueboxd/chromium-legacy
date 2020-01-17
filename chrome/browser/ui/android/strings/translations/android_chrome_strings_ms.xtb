@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Tutup tab semasa</translation>
 <translation id="1258753120186372309">Coretan Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Cari &amp; teroka</translation>
-<translation id="1264974993859112054">Sukan</translation>
 <translation id="1266864766717917324">Tidak dapat berkongsi <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1283039547216852943">Ketik untuk kembangkan</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Log masuk dan hidupkan penyegerakan untuk mendapatkan penanda halaman pada semua peranti anda</translation>
 <translation id="2822354292072154809">Adakah anda pasti mahu menetapkan semula semua kebenaran tapak untuk <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2842985007712546952">Folder induk</translation>
-<translation id="2858138569776157458">Tapak popular</translation>
 <translation id="2860954141821109167">Pastikan apl telefon didayakan pada peranti ini</translation>
 <translation id="2870560284913253234">Tapak</translation>
 <translation id="2874939134665556319">Lagu sebelumnya</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Log masuk ke Chrome</translation>
 <translation id="3288003805934695103">Memuatkan semula halaman</translation>
 <translation id="32895400574683172">Pemberitahuan dibenarkan</translation>
+<translation id="3290926146403723641">Untuk menyelesaikan tugas pada web melalui Google Assistant, Chrome menghantar URL tapak, kandungan tapak dan maklumat peribadi yang berkaitan kepada Google</translation>
 <translation id="3295530008794733555">Semak imbas lebih pantas. Gunakan kurang data.</translation>
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Teruskan memuat turun kandungan?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Nombor telefon</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> muat turun dipadamkan</translation>
 <translation id="3822502789641063741">Hapuskan storan tapak?</translation>
-<translation id="3853625385350850937">Hidupkan NFC pada peranti anda untuk meneruskan</translation>
 <translation id="3859306556332390985">Cari ke hadapan</translation>
 <translation id="388596076286380598">Dapatkan artikel, video dan kandungan lain daripada tapak yang anda sukai, walaupun anda di luar talian atau sambungan anda lemah.</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
@@ -764,7 +762,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6697947395630195233">Chrome memerlukan akses kepada lokasi anda untuk berkongsi lokasi dengan tapak ini.</translation>
 <translation id="6698801883190606802">Urus data yang disegerakkan</translation>
 <translation id="6699370405921460408">Pelayan Google akan mengoptimumkan halaman yang anda lawati.</translation>
-<translation id="6709133671862442373">Berita</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="671481426037969117">Pemasa <ph name="FQDN" /> anda sudah tamat. Pemasa akan bermula lagi esok.</translation>
 <translation id="6738867403308150051">Memuat turun…</translation>
@@ -1079,7 +1076,6 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="9133397713400217035">Teroka Luar Talian</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Paparkan asal</translation>
-<translation id="9139318394846604261">Beli-belah</translation>
 <translation id="9155898266292537608">Anda juga boleh mencari dengan mengetik pantas pada perkataan</translation>
 <translation id="9169507124922466868">Sejarah navigasi separa terbuka</translation>
 <translation id="9204836675896933765">1 fail lagi</translation>

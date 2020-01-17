@@ -517,12 +517,13 @@ class RenderWidgetHostTest : public testing::Test {
     view_ = std::make_unique<TestView>(host_.get());
     ConfigureView(view_.get());
     host_->SetView(view_.get());
-    host_->Init();
     host_->DisableGestureDebounce();
     // Act like we've created a RenderWidget.
     host_->GetInitialVisualProperties();
     EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
         .WillRepeatedly(Return(true));
+    // Init() happens once the navigation completes.
+    host_->Init();
 
     mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
         renderer_render_frame_metadata_observer_remote;
@@ -972,9 +973,8 @@ TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromCrashedRenderer) {
 
   // The renderer is recreated.
   host_->SetView(view_.get());
-  // Make a new RenderWidget when the renderer is recreated. This should get
-  // properties that are intended to be sent to the renderer, obsoleting any
-  // previous SynchronizeVisualProperties() calls.
+  // Make a new RenderWidget when the renderer is recreated and inform that a
+  // RenderWidget is being created.
   VisualProperties props = host_->GetInitialVisualProperties();
   // The RenderWidget is recreated with the initial VisualProperties.
   host_->Init();
@@ -994,15 +994,13 @@ TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromDeletedRenderWidget) {
   // RenderWidgetView is still kept around for another RenderFrame.
   EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
       .WillRepeatedly(Return(false));
-  host_->DidDestroyRenderWidget();
 
   // Receive an in-flight frame token (it needs to monotonically increase)
   // while the RenderWidget is gone.
   host_->DidProcessFrame(3);
 
-  // Make a new RenderWidget for the RenderWidget being recreated. This should
-  // get properties that are intended to be sent to the renderer, obsoleting any
-  // previous SynchronizeVisualProperties() calls.
+  // Make a new RenderWidget when the renderer is recreated and inform that a
+  // RenderWidget is being created.
   VisualProperties props = host_->GetInitialVisualProperties();
   // The RenderWidget is recreated with the initial VisualProperties.
   EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
@@ -1610,31 +1608,139 @@ TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
 }
 
 TEST_F(RenderWidgetHostTest, RendererExitedResetsInputRouter) {
+  EXPECT_EQ(0u, host_->in_flight_event_count());
+  SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
+  EXPECT_EQ(1u, host_->in_flight_event_count());
+
+  EXPECT_FALSE(host_->input_router()->HasPendingEvents());
   blink::WebMouseWheelEvent event;
   event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   host_->input_router()->SendWheelEvent(MouseWheelEventWithLatencyInfo(event));
-  ASSERT_TRUE(host_->input_router()->HasPendingEvents());
+  EXPECT_TRUE(host_->input_router()->HasPendingEvents());
 
   // RendererExited will delete the view.
   host_->SetView(new TestView(host_.get()));
   host_->RendererExited();
 
+  // The renderer is recreated.
+  host_->SetView(view_.get());
+  // Make a new RenderWidget when the renderer is recreated and inform that a
+  // RenderWidget is being created.
+  VisualProperties props = host_->GetInitialVisualProperties();
+  // The RenderWidget is recreated with the initial VisualProperties.
+  host_->Init();
+
   // Make sure the input router is in a fresh state.
   ASSERT_FALSE(host_->input_router()->HasPendingEvents());
+  // There should be no in flight events. https://crbug.com/615090#152.
+  EXPECT_EQ(0u, host_->in_flight_event_count());
 }
 
 TEST_F(RenderWidgetHostTest, DestroyingRenderWidgetResetsInputRouter) {
+  EXPECT_EQ(0u, host_->in_flight_event_count());
+  SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
+  EXPECT_EQ(1u, host_->in_flight_event_count());
+
+  EXPECT_FALSE(host_->input_router()->HasPendingEvents());
   blink::WebMouseWheelEvent event;
   event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   host_->input_router()->SendWheelEvent(MouseWheelEventWithLatencyInfo(event));
-  ASSERT_TRUE(host_->input_router()->HasPendingEvents());
+  EXPECT_TRUE(host_->input_router()->HasPendingEvents());
 
+  // The RenderWidget is destroyed in the renderer process as the main frame
+  // is removed from this RenderWidgetHost's RenderWidgetView, but the
+  // RenderWidgetView is still kept around for another RenderFrame.
   EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
       .WillRepeatedly(Return(false));
-  host_->DidDestroyRenderWidget();
+
+  // Make a new RenderWidget when the renderer is recreated and inform that a
+  // RenderWidget is being created.
+  VisualProperties props = host_->GetInitialVisualProperties();
+  // The RenderWidget is recreated with the initial VisualProperties.
+  EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
+      .WillRepeatedly(Return(true));
 
   // Make sure the input router is in a fresh state.
-  ASSERT_FALSE(host_->input_router()->HasPendingEvents());
+  EXPECT_FALSE(host_->input_router()->HasPendingEvents());
+  // There should be no in flight events. https://crbug.com/615090#152.
+  EXPECT_EQ(0u, host_->in_flight_event_count());
+}
+
+TEST_F(RenderWidgetHostTest, RendererExitedResetsScreenRectsAck) {
+  auto count_screen_rect_messages = [&]() {
+    int count = 0;
+    for (uint32_t i = 0; i < sink_->message_count(); ++i) {
+      if (sink_->GetMessageAt(i)->type() == WidgetMsg_UpdateScreenRects::ID)
+        ++count;
+    }
+    return count;
+  };
+
+  // Screen rects are sent during initialization, but we are waiting for an ack.
+  EXPECT_EQ(1, count_screen_rect_messages());
+  // Waiting for the ack prevents further sending.
+  host_->SendScreenRects();
+  host_->SendScreenRects();
+  EXPECT_EQ(1, count_screen_rect_messages());
+
+  // RendererExited will delete the view.
+  host_->SetView(new TestView(host_.get()));
+  host_->RendererExited();
+
+  // Still can't send until the RenderWidget is replaced.
+  host_->SendScreenRects();
+  EXPECT_EQ(1, count_screen_rect_messages());
+
+  // The renderer is recreated.
+  host_->SetView(view_.get());
+  // Make a new RenderWidget when the renderer is recreated and inform that a
+  // RenderWidget is being created.
+  VisualProperties props = host_->GetInitialVisualProperties();
+  // The RenderWidget is recreated with the initial VisualProperties.
+  host_->Init();
+
+  // The RenderWidget is shown when navigation completes. This sends screen
+  // rects again. The IPC is sent as it's not waiting for an ack.
+  host_->WasShown(base::nullopt);
+  EXPECT_EQ(2, count_screen_rect_messages());
+}
+
+TEST_F(RenderWidgetHostTest, DestroyingRenderWidgetResetsScreenRectsAck) {
+  auto count_screen_rect_messages = [&]() {
+    int count = 0;
+    for (uint32_t i = 0; i < sink_->message_count(); ++i) {
+      if (sink_->GetMessageAt(i)->type() == WidgetMsg_UpdateScreenRects::ID)
+        ++count;
+    }
+    return count;
+  };
+
+  // Screen rects are sent during initialization, but we are waiting for an ack.
+  EXPECT_EQ(1, count_screen_rect_messages());
+  // Waiting for the ack prevents further sending.
+  host_->SendScreenRects();
+  host_->SendScreenRects();
+  EXPECT_EQ(1, count_screen_rect_messages());
+
+  // The RenderWidget has been destroyed in the renderer.
+  EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
+      .WillRepeatedly(Return(false));
+
+  // Still can't send until the RenderWidget is replaced.
+  host_->SendScreenRects();
+  EXPECT_EQ(1, count_screen_rect_messages());
+
+  // Make a new RenderWidget when the renderer is recreated and inform that a
+  // RenderWidget is being created.
+  VisualProperties props = host_->GetInitialVisualProperties();
+  // The RenderWidget is recreated with the initial VisualProperties.
+  EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
+      .WillRepeatedly(Return(true));
+
+  // We are able to send screen rects again. The IPC is sent as it's not waiting
+  // for an ack.
+  host_->SendScreenRects();
+  EXPECT_EQ(2, count_screen_rect_messages());
 }
 
 // Regression test for http://crbug.com/401859 and http://crbug.com/522795.
@@ -1883,18 +1989,6 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
   view_->OnFrameTokenChanged(frame_token2);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
-}
-
-TEST_F(RenderWidgetHostTest, InflightEventCountResetsAfterRebind) {
-  // Simulate a keyboard event.
-  SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
-
-  EXPECT_EQ(1u, host_->in_flight_event_count());
-  mojo::PendingRemote<mojom::Widget> widget;
-  std::unique_ptr<MockWidgetImpl> widget_impl =
-      std::make_unique<MockWidgetImpl>(widget.InitWithNewPipeAndPassReceiver());
-  host_->SetWidget(std::move(widget));
-  EXPECT_EQ(0u, host_->in_flight_event_count());
 }
 
 TEST_F(RenderWidgetHostTest, ForceEnableZoomShouldUpdateAfterRebind) {

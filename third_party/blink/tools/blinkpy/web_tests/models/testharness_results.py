@@ -12,7 +12,7 @@ def is_all_pass_testharness_result(content_text):
     """Returns whether |content_text| is a testharness result that only contains PASS lines."""
     return (is_testharness_output(content_text) and
             is_testharness_output_passing(content_text) and
-            not has_console_errors_or_warnings(content_text))
+            not has_other_useful_output(content_text))
 
 
 def is_testharness_output(content_text):
@@ -59,11 +59,16 @@ def is_testharness_output_passing(content_text):
     return at_least_one_pass
 
 
-def has_console_errors_or_warnings(content_text):
-    """Returns whether |content_text| is has console errors or warnings."""
+def has_other_useful_output(content_text):
+    """Returns whether |content_text| has other useful output.
 
-    def is_warning_or_error(line):
-        return line.startswith('CONSOLE ERROR:') or line.startswith('CONSOLE WARNING:')
+    Namely, console errors/warnings & alerts/confirms/prompts.
+    """
+
+    prefixes = ('CONSOLE ERROR:', 'CONSOLE WARNING:',
+                'ALERT:', 'CONFIRM:', 'PROMPT:')
+    def is_useful(line):
+        return any(line.startswith(prefix) for prefix in prefixes)
 
     lines = content_text.strip().splitlines()
-    return any(is_warning_or_error(line) for line in lines)
+    return any(is_useful(line) for line in lines)

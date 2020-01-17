@@ -1524,7 +1524,7 @@ TEST_F(CloudPolicyClientTest, RealtimeReportMerge) {
     event.SetStringPath("foo.prop3", "value3");
 
     base::Value events(base::Value::Type::LIST);
-    events.GetList().push_back(std::move(event));
+    events.Append(std::move(event));
 
     base::Value report(base::Value::Type::DICTIONARY);
     report.SetPath(RealtimeReportingJobConfiguration::kEventListKey,
@@ -1549,7 +1549,7 @@ TEST_F(CloudPolicyClientTest, RealtimeReportMerge) {
     event.SetStringPath("foo.prop3", "value3");
 
     base::Value events(base::Value::Type::LIST);
-    events.GetList().push_back(std::move(event));
+    events.Append(std::move(event));
 
     base::Value report(base::Value::Type::DICTIONARY);
     report.SetPath(RealtimeReportingJobConfiguration::kEventListKey,

@@ -26,6 +26,9 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   void NotifyReceivedKeyboardFocus();
 
   // TabStripModelObserver:
+  void OnTabGroupChanged(const TabGroupChange& change) override;
+  void TabGroupedStateChanged(base::Optional<tab_groups::TabGroupId> group,
+                              int index) override;
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,

@@ -14,9 +14,7 @@ action("webkit_version") {
   ]
 
   output_file = "$target_gen_dir/webkit_version.h"
-  outputs = [
-    output_file,
-  ]
+  outputs = [ output_file ]
 
   args = [
     # LASTCHANGE contains "<build hash>-<ref>".  The user agent only wants the
@@ -33,13 +31,9 @@ action("webkit_version") {
 action("chrome_version_json") {
   script = "version.py"
   _chrome_version_path = "//chrome/VERSION"
-  inputs = [
-    _chrome_version_path,
-  ]
+  inputs = [ _chrome_version_path ]
   _output_file = "$root_gen_dir/CHROME_VERSION.json"
-  outputs = [
-    _output_file,
-  ]
+  outputs = [ _output_file ]
   args = [
     "--file",
     rebase_path(_chrome_version_path, root_build_dir),

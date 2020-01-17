@@ -31,9 +31,7 @@ static_library("profiling_host") {
 source_set("profiling_browsertests") {
   testonly = true
 
-  sources = [
-    "memlog_browsertest.cc",
-  ]
+  sources = [ "memlog_browsertest.cc" ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 

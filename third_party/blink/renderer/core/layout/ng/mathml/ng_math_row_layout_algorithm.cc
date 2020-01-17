@@ -34,7 +34,6 @@ NGMathRowLayoutAlgorithm::NGMathRowLayoutAlgorithm(
       border_scrollbar_padding_(border_padding_ +
                                 params.fragment_geometry.scrollbar) {
   DCHECK(params.space.IsNewFormattingContext());
-  DCHECK(params.fragment_geometry.scrollbar.IsEmpty());
   DCHECK(!ConstraintSpace().HasBlockFragmentation());
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());

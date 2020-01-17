@@ -47,7 +47,7 @@ Polymer({
     outOfRange: Boolean,
   },
 
-  open: function() {
+  open() {
     const dialog = this.getDialog_();
     if (!dialog.open) {
       this.getDialog_().showModal();
@@ -56,7 +56,7 @@ Polymer({
     this.$.connectButton.focus();
   },
 
-  close: function() {
+  close() {
     const dialog = this.getDialog_();
     if (dialog.open) {
       dialog.close();
@@ -67,12 +67,12 @@ Polymer({
    * @return {!CrDialogElement}
    * @private
    */
-  getDialog_: function() {
+  getDialog_() {
     return /** @type {!CrDialogElement} */ (this.$.dialog);
   },
 
   /** @private */
-  onNotNowTap_: function() {
+  onNotNowTap_() {
     this.getDialog_().cancel();
   },
 
@@ -80,7 +80,7 @@ Polymer({
    * Fires the 'connect-tap' event.
    * @private
    */
-  onConnectTap_: function() {
+  onConnectTap_() {
     this.fire('tether-connect');
   },
 
@@ -89,7 +89,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowDisconnectFromWifi_: function(managedProperties) {
+  shouldShowDisconnectFromWifi_(managedProperties) {
     // TODO(khorimoto): Pipe through a new network property which describes
     // whether the tether host is currently connected to a Wi-Fi network. Return
     // whether it is here.
@@ -102,7 +102,7 @@ Polymer({
    *     string. Note that this will not return a string with a "%" suffix.
    * @private
    */
-  getBatteryPercentageAsString_: function(managedProperties) {
+  getBatteryPercentageAsString_(managedProperties) {
     return managedProperties ?
         managedProperties.typeProperties.tether.batteryPercentage.toString() :
         '0';
@@ -116,7 +116,7 @@ Polymer({
    * @return {string} The name of the icon to be used to represent the network's
    *     signal strength.
    */
-  getSignalStrengthIconName_: function(managedProperties) {
+  getSignalStrengthIconName_(managedProperties) {
     const signalStrength = managedProperties ?
         managedProperties.typeProperties.tether.signalStrength :
         0;
@@ -129,7 +129,7 @@ Polymer({
    * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {string} The localized signal strength label.
    */
-  getSignalStrengthLabel_: function(managedProperties) {
+  getSignalStrengthLabel_(managedProperties) {
     const signalStrength = managedProperties ?
         managedProperties.typeProperties.tether.signalStrength :
         0;
@@ -143,7 +143,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getDeviceName_: function(managedProperties) {
+  getDeviceName_(managedProperties) {
     return managedProperties ? OncMojo.getNetworkName(managedProperties) : '';
   },
 
@@ -152,7 +152,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getBatteryPercentageString_: function(managedProperties) {
+  getBatteryPercentageString_(managedProperties) {
     return managedProperties ?
         this.i18n(
             'tetherConnectionBatteryPercentage',
@@ -165,7 +165,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getExplanation_: function(managedProperties) {
+  getExplanation_(managedProperties) {
     return managedProperties ?
         this.i18n(
             'tetherConnectionExplanation',
@@ -178,7 +178,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getDescriptionTitle_: function(managedProperties) {
+  getDescriptionTitle_(managedProperties) {
     return managedProperties ?
         this.i18n(
             'tetherConnectionDescriptionTitle',
@@ -191,7 +191,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getBatteryDescription_: function(managedProperties) {
+  getBatteryDescription_(managedProperties) {
     return managedProperties ?
         this.i18n(
             'tetherConnectionDescriptionBattery',

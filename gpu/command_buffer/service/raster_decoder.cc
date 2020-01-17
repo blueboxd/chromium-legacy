@@ -931,8 +931,6 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   if (gr_context()) {
     caps.context_supports_distance_field_text =
         gr_context()->supportsDistanceFieldText();
-    caps.glyph_cache_max_texture_bytes =
-        shared_context_state_->glyph_cache_max_texture_bytes();
   }
   return caps;
 }

@@ -87,13 +87,6 @@ ClipboardFormatType ClipboardFormatType::GetType(
 // static
 const ClipboardFormatType& ClipboardFormatType::GetUrlType() {
   static base::NoDestructor<ClipboardFormatType> format(
-      ::RegisterClipboardFormat(CFSTR_INETURLA));
-  return *format;
-}
-
-// static
-const ClipboardFormatType& ClipboardFormatType::GetUrlWType() {
-  static base::NoDestructor<ClipboardFormatType> format(
       ::RegisterClipboardFormat(CFSTR_INETURLW));
   return *format;
 }
@@ -107,25 +100,12 @@ const ClipboardFormatType& ClipboardFormatType::GetMozUrlType() {
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetPlainTextType() {
-  static base::NoDestructor<ClipboardFormatType> format(CF_TEXT);
-  return *format;
-}
-
-// static
-const ClipboardFormatType& ClipboardFormatType::GetPlainTextWType() {
   static base::NoDestructor<ClipboardFormatType> format(CF_UNICODETEXT);
   return *format;
 }
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetFilenameType() {
-  static base::NoDestructor<ClipboardFormatType> format(
-      ::RegisterClipboardFormat(CFSTR_FILENAMEA));
-  return *format;
-}
-
-// static
-const ClipboardFormatType& ClipboardFormatType::GetFilenameWType() {
   static base::NoDestructor<ClipboardFormatType> format(
       ::RegisterClipboardFormat(CFSTR_FILENAMEW));
   return *format;
@@ -155,8 +135,27 @@ const ClipboardFormatType& ClipboardFormatType::GetBitmapType() {
   return *format;
 }
 
-// Firefox text/html
+// static
+const ClipboardFormatType& ClipboardFormatType::GetUrlAType() {
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(CFSTR_INETURLA));
+  return *format;
+}
 
+// static
+const ClipboardFormatType& ClipboardFormatType::GetPlainTextAType() {
+  static base::NoDestructor<ClipboardFormatType> format(CF_TEXT);
+  return *format;
+}
+
+// static
+const ClipboardFormatType& ClipboardFormatType::GetFilenameAType() {
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(CFSTR_FILENAMEA));
+  return *format;
+}
+
+// Firefox text/html
 // static
 const ClipboardFormatType& ClipboardFormatType::GetTextHtmlType() {
   static base::NoDestructor<ClipboardFormatType> format(
@@ -174,14 +173,14 @@ const ClipboardFormatType& ClipboardFormatType::GetCFHDropType() {
 // ANSI format (e.g., it could be that it doesn't support Unicode). So need to
 // register both the ANSI and Unicode file group descriptors.
 // static
-const ClipboardFormatType& ClipboardFormatType::GetFileDescriptorType() {
+const ClipboardFormatType& ClipboardFormatType::GetFileDescriptorAType() {
   static base::NoDestructor<ClipboardFormatType> format(
       ::RegisterClipboardFormat(CFSTR_FILEDESCRIPTORA));
   return *format;
 }
 
 // static
-const ClipboardFormatType& ClipboardFormatType::GetFileDescriptorWType() {
+const ClipboardFormatType& ClipboardFormatType::GetFileDescriptorType() {
   static base::NoDestructor<ClipboardFormatType> format(
       ::RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW));
   return *format;

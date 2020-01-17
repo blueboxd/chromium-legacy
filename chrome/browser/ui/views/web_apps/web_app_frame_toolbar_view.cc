@@ -138,10 +138,12 @@ int WebAppFrameRightMargin() {
 void SetInsetsForWebAppToolbarButton(ToolbarButton* toolbar_button,
                                      bool is_browser_focus_mode) {
   if (!is_browser_focus_mode) {
-    toolbar_button->SetLayoutInsets(gfx::Insets(2));
-
+    // We set the kInternalPaddingKey property first, as SetLayoutInsets caches
+    // the resulting total insets.
     constexpr gfx::Insets kInkDropInsets(2);
     toolbar_button->SetProperty(views::kInternalPaddingKey, kInkDropInsets);
+
+    toolbar_button->SetLayoutInsets(gfx::Insets(2));
   }
 }
 

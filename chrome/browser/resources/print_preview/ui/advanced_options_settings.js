@@ -34,12 +34,12 @@ Polymer({
   },
 
   /** @private */
-  onButtonClick_: function() {
+  onButtonClick_() {
     this.showAdvancedDialog_ = true;
   },
 
   /** @private */
-  onDialogClose_: function() {
+  onDialogClose_() {
     this.showAdvancedDialog_ = false;
     this.$.button.focus();
   },

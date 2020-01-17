@@ -28,7 +28,7 @@ Polymer({
 
     splitSettingsSyncEnabled_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('splitSettingsSyncEnabled');
       },
     },
@@ -78,7 +78,7 @@ Polymer({
      */
     fingerprintUnlockEnabled_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('fingerprintUnlockEnabled');
       },
       readOnly: true,
@@ -90,7 +90,7 @@ Polymer({
      */
     isAccountManagerEnabled_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isAccountManagerEnabled');
       },
       readOnly: true,
@@ -99,7 +99,7 @@ Polymer({
     /** @private */
     showParentalControls_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.valueExists('showParentalControls') &&
             loadTimeData.getBoolean('showParentalControls');
       },
@@ -108,7 +108,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.SYNC) {
           map.set(settings.routes.SYNC.path, '#sync-setup');
@@ -141,7 +141,7 @@ Polymer({
   syncBrowserProxy_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     if (this.isAccountManagerEnabled_) {
       // If we have the Google Account manager, use GAIA name and icon.
       this.addWebUIListener(
@@ -163,13 +163,14 @@ Polymer({
   },
 
   /** @protected */
-  currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.routes.SIGN_OUT) {
+  currentRouteChanged() {
+    if (settings.Router.getInstance().getCurrentRoute() ==
+        settings.routes.SIGN_OUT) {
       // If the sync status has not been fetched yet, optimistically display
       // the sign-out dialog. There is another check when the sync status is
       // fetched. The dialog will be closed when the user is not signed in.
       if (this.syncStatus && !this.syncStatus.signedIn) {
-        settings.navigateToPreviousRoute();
+        settings.Router.getInstance().navigateToPreviousRoute();
       } else {
         this.showSignoutDialog_ = true;
       }
@@ -177,7 +178,7 @@ Polymer({
   },
 
   /** @private */
-  getPasswordState_: function(hasPin, enableScreenLock) {
+  getPasswordState_(hasPin, enableScreenLock) {
     if (!enableScreenLock) {
       return this.i18n('lockScreenNone');
     }
@@ -191,7 +192,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSyncRowLabel_: function() {
+  getSyncRowLabel_() {
     if (this.splitSettingsSyncEnabled_) {
       return this.i18n('osSyncPageTitle');
     } else {
@@ -203,7 +204,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSyncAndGoogleServicesSubtext_: function() {
+  getSyncAndGoogleServicesSubtext_() {
     if (this.syncStatus && this.syncStatus.hasError &&
         this.syncStatus.statusText) {
       return this.syncStatus.statusText;
@@ -216,7 +217,7 @@ Polymer({
    * @private
    * @param {!settings.ProfileInfo} info
    */
-  handleProfileInfo_: function(info) {
+  handleProfileInfo_(info) {
     this.profileName_ = info.name;
     // Extract first frame from image by creating a single frame PNG using
     // url as input if base64 encoded and potentially animated.
@@ -261,7 +262,7 @@ Polymer({
    * @param {?settings.SyncStatus} syncStatus
    * @private
    */
-  handleSyncStatus_: function(syncStatus) {
+  handleSyncStatus_(syncStatus) {
     this.syncStatus = syncStatus;
 
     // When ChromeOSAccountManager is disabled, fall back to using the sync
@@ -273,55 +274,56 @@ Polymer({
   },
 
   /** @private */
-  onSigninTap_: function() {
+  onSigninTap_() {
     this.syncBrowserProxy_.startSignIn();
   },
 
   /** @private */
-  onDisconnectDialogClosed_: function(e) {
+  onDisconnectDialogClosed_(e) {
     this.showSignoutDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$$('#disconnectButton')));
 
-    if (settings.getCurrentRoute() == settings.routes.SIGN_OUT) {
-      settings.navigateToPreviousRoute();
+    if (settings.Router.getInstance().getCurrentRoute() ==
+        settings.routes.SIGN_OUT) {
+      settings.Router.getInstance().navigateToPreviousRoute();
     }
   },
 
   /** @private */
-  onDisconnectTap_: function() {
-    settings.navigateTo(settings.routes.SIGN_OUT);
+  onDisconnectTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.SIGN_OUT);
   },
 
   /** @private */
-  onSyncTap_: function() {
+  onSyncTap_() {
     if (this.splitSettingsSyncEnabled_) {
-      settings.navigateTo(settings.routes.OS_SYNC);
+      settings.Router.getInstance().navigateTo(settings.routes.OS_SYNC);
       return;
     }
 
     // Users can go to sync subpage regardless of sync status.
-    settings.navigateTo(settings.routes.SYNC);
+    settings.Router.getInstance().navigateTo(settings.routes.SYNC);
   },
 
   /**
    * @param {!Event} e
    * @private
    */
-  onConfigureLockTap_: function(e) {
+  onConfigureLockTap_(e) {
     // Navigating to the lock screen will always open the password prompt
     // dialog, so prevent the end of the tap event to focus what is underneath
     // it, which takes focus from the dialog.
     e.preventDefault();
-    settings.navigateTo(settings.routes.LOCK_SCREEN);
+    settings.Router.getInstance().navigateTo(settings.routes.LOCK_SCREEN);
   },
 
   /**
    * @param {!Event} e
    * @private
    */
-  onAccountManagerTap_: function(e) {
+  onAccountManagerTap_(e) {
     if (this.isAccountManagerEnabled_) {
-      settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
+      settings.Router.getInstance().navigateTo(settings.routes.ACCOUNT_MANAGER);
     }
   },
 
@@ -329,13 +331,13 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onKerberosAccountsTap_: function(e) {
-    settings.navigateTo(settings.routes.KERBEROS_ACCOUNTS);
+  onKerberosAccountsTap_(e) {
+    settings.Router.getInstance().navigateTo(settings.routes.KERBEROS_ACCOUNTS);
   },
 
   /** @private */
-  onManageOtherPeople_: function() {
-    settings.navigateTo(settings.routes.ACCOUNTS);
+  onManageOtherPeople_() {
+    settings.Router.getInstance().navigateTo(settings.routes.ACCOUNTS);
   },
 
   /**
@@ -343,7 +345,7 @@ Polymer({
    * @return {string} A CSS image-set for multiple scale factors.
    * @private
    */
-  getIconImageSet_: function(iconUrl) {
+  getIconImageSet_(iconUrl) {
     return cr.icon.getImage(iconUrl);
   },
 
@@ -352,7 +354,7 @@ Polymer({
    * @return {boolean} Whether to show the "Sign in to Chrome" button.
    * @private
    */
-  showSignin_: function(syncStatus) {
+  showSignin_(syncStatus) {
     return !!syncStatus.signinAllowed && !syncStatus.signedIn;
   },
 

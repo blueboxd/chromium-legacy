@@ -14,9 +14,7 @@ js_type_check("closure_compile") {
 }
 
 js_library("pref_util") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 
@@ -32,9 +30,7 @@ js_library("prefs") {
 }
 
 js_library("prefs_behavior") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
+  deps = [ "//ui/webui/resources/js:assert" ]
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 

@@ -40,7 +40,7 @@ Polymer({
    */
   idToItem_: null,
 
-  focus: function() {
+  focus() {
     this.$.select.focus();
   },
 
@@ -48,11 +48,11 @@ Polymer({
    * @param {string} value Option value.
    * @private
    */
-  onSelected_: function(value) {
+  onSelected_(value) {
     this.fire('select-item', this.idToItem_.get(value));
   },
 
-  onItemsChanged_: function(items) {
+  onItemsChanged_(items) {
     // Pass selection handler to setupSelect only during initial setup -
     // Otherwise, given that setupSelect does not remove previously registered
     // listeners, each new item list change would cause additional 'select-item'

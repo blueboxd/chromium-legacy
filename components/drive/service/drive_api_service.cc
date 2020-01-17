@@ -793,18 +793,18 @@ bool DriveAPIService::HasAccessToken() const {
   return sender_->auth_service()->HasAccessToken();
 }
 
-void DriveAPIService::RequestAccessToken(const AuthStatusCallback& callback) {
+void DriveAPIService::RequestAccessToken(AuthStatusCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   const std::string access_token = sender_->auth_service()->access_token();
   if (!access_token.empty()) {
-    callback.Run(google_apis::HTTP_NOT_MODIFIED, access_token);
+    std::move(callback).Run(google_apis::HTTP_NOT_MODIFIED, access_token);
     return;
   }
 
   // Retrieve the new auth token.
-  sender_->auth_service()->StartAuthentication(callback);
+  sender_->auth_service()->StartAuthentication(std::move(callback));
 }
 
 bool DriveAPIService::HasRefreshToken() const {

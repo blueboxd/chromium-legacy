@@ -5,14 +5,14 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":site_settings_page",
-  ]
+  deps = [ ":site_settings_page" ]
 }
 
 js_library("site_settings_page") {
   deps = [
+    "..:metrics_browser_proxy",
     "..:route",
+    "..:router",
     "../site_settings:constants",
     "../site_settings:site_settings_behavior",
     "../site_settings:site_settings_prefs_browser_proxy",

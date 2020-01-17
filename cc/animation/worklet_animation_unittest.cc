@@ -6,6 +6,7 @@
 
 #include <utility>
 #include "base/memory/ptr_util.h"
+#include "cc/animation/keyframe_effect.h"
 #include "cc/animation/scroll_timeline.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/animation_timelines_test_common.h"
@@ -25,7 +26,8 @@ namespace {
 
 class MockKeyframeEffect : public KeyframeEffect {
  public:
-  MockKeyframeEffect() : KeyframeEffect(0) {}
+  explicit MockKeyframeEffect(Animation* animation)
+      : KeyframeEffect(animation) {}
   MOCK_METHOD1(Tick, void(base::TimeTicks monotonic_time));
 };
 
@@ -65,7 +67,7 @@ class MockScrollTimeline : public ScrollTimeline {
 
 TEST_F(WorkletAnimationTest, NonImplInstanceDoesNotTickKeyframe) {
   std::unique_ptr<MockKeyframeEffect> effect =
-      std::make_unique<MockKeyframeEffect>();
+      std::make_unique<MockKeyframeEffect>(worklet_animation_.get());
   MockKeyframeEffect* mock_effect = effect.get();
 
   scoped_refptr<WorkletAnimation> worklet_animation =

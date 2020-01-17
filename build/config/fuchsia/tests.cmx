@@ -1,6 +1,7 @@
 {
   "sandbox": {
     "features": [
+      "config-data",
       "isolated-persistent-storage",
       "isolated-temp",
       "root-ssl-certificates",

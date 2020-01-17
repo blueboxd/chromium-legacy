@@ -36,9 +36,7 @@ source_set("public") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "infobar_banner_view_controller_unittest.mm",
-  ]
+  sources = [ "infobar_banner_view_controller_unittest.mm" ]
   deps = [
     ":banners",
     "//ios/chrome/browser/infobars:public",

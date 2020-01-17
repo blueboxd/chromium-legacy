@@ -18,7 +18,7 @@ ChromeVoxBackgroundKeyboardHandlerTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
   /** @override */
-  setUp: function() {
+  setUp() {
     window.keyboardHandler = new BackgroundKeyboardHandler();
   }
 };

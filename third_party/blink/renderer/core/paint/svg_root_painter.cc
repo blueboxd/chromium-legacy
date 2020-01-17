@@ -53,7 +53,7 @@ void SVGRootPainter::PaintReplaced(const PaintInfo& paint_info,
 
   ScopedSVGPaintState paint_state(layout_svg_root_, paint_info);
   if (paint_state.GetPaintInfo().phase == PaintPhase::kForeground &&
-      !paint_state.ApplyClipMaskAndFilterIfNecessary())
+      !paint_state.ApplyEffects())
     return;
 
   BoxPainter(layout_svg_root_).PaintChildren(paint_state.GetPaintInfo());

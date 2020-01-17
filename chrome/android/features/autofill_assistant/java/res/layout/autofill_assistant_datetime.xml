@@ -4,7 +4,7 @@
      found in the LICENSE file. -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -13,5 +13,12 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:singleLine="true"/>
+
+  <TextView
+      android:id="@+id/error_message"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:textAppearance="@style/TextAppearance.ErrorCaption"
+      android:visibility="gone"/>
 
 </LinearLayout>

@@ -135,9 +135,11 @@ static bool IsClipPathOperationValid(
 
 ClipPathClipper::ClipPathClipper(GraphicsContext& context,
                                  const LayoutObject& layout_object,
+                                 const DisplayItemClient& display_item_client,
                                  const PhysicalOffset& paint_offset)
     : context_(context),
       layout_object_(layout_object),
+      display_item_client_(display_item_client),
       paint_offset_(paint_offset) {
   DCHECK(layout_object.StyleRef().ClipPath());
 }
@@ -166,16 +168,17 @@ ClipPathClipper::~ClipPathClipper() {
     return;
   ScopedPaintChunkProperties scoped_properties(
       context_.GetPaintController(),
-      layout_object_.FirstFragment().ClipPathProperties(), layout_object_,
+      layout_object_.FirstFragment().ClipPathProperties(), display_item_client_,
       DisplayItem::kSVGClip);
 
   bool is_svg_child = layout_object_.IsSVGChild();
   FloatRect reference_box = LocalReferenceBox(layout_object_);
 
-  if (DrawingRecorder::UseCachedDrawingIfPossible(context_, layout_object_,
-                                                  DisplayItem::kSVGClip))
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          context_, display_item_client_, DisplayItem::kSVGClip))
     return;
-  DrawingRecorder recorder(context_, layout_object_, DisplayItem::kSVGClip);
+  DrawingRecorder recorder(context_, display_item_client_,
+                           DisplayItem::kSVGClip);
   context_.Save();
   context_.Translate(paint_offset_.left, paint_offset_.top);
 

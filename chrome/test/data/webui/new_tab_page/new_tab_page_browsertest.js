@@ -98,3 +98,15 @@ var NewTabPageUtilsTest = class extends NewTabPageBrowserTest {
 TEST_F('NewTabPageUtilsTest', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var NewTabPageCustomizeShortcutsTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_shortcuts_test.js';
+  }
+};
+
+TEST_F('NewTabPageCustomizeShortcutsTest', 'All', function() {
+  mocha.run();
+});

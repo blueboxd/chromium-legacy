@@ -34,18 +34,14 @@ action("make_file_types_protobuf") {
     target_arch = "unknown_target_arch"
   }
 
-  inputs = [
-    input_filename,
-  ]
+  inputs = [ input_filename ]
 
   deps = [
     "//chrome/common/safe_browsing:proto",
     "//third_party/protobuf:py_proto",
   ]
 
-  outputs = [
-    "$output_dir/$output_basename",
-  ]
+  outputs = [ "$output_dir/$output_basename" ]
 
   args = [
     "-w",
@@ -75,9 +71,7 @@ action("make_all_file_types_protobuf") {
   python_path_root = "$root_build_dir/pyproto"
   python_path_safe_browsing = "$python_path_root/chrome/common/safe_browsing"
 
-  inputs = [
-    input_filename,
-  ]
+  inputs = [ input_filename ]
 
   deps = [
     "//chrome/common/safe_browsing:proto",
@@ -85,9 +79,7 @@ action("make_all_file_types_protobuf") {
   ]
 
   # A directory, since we can't derive the actual file names here.
-  outputs = [
-    output_dir,
-  ]
+  outputs = [ output_dir ]
 
   args = [
     "-w",

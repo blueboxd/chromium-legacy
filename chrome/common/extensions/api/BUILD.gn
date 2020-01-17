@@ -66,9 +66,7 @@ generated_json_strings("generated_api_json_strings") {
   }
 
   root_namespace = chrome_extensions_api_root_namespace
-  deps = [
-    "//extensions/common/api",
-  ]
+  deps = [ "//extensions/common/api" ]
 
   visibility = [ ":api" ]
 }
@@ -79,9 +77,7 @@ generated_types("generated_api_types") {
   schema_include_rules = chrome_extensions_api_schema_include_rules
 
   root_namespace = chrome_extensions_api_root_namespace
-  deps = [
-    "//extensions/common/api",
-  ]
+  deps = [ "//extensions/common/api" ]
 
   visibility = [ ":api" ]
 }
@@ -89,26 +85,20 @@ generated_types("generated_api_types") {
 json_features("api_features") {
   feature_type = "APIFeature"
   method_name = "AddChromeAPIFeatures"
-  sources = [
-    "_api_features.json",
-  ]
+  sources = [ "_api_features.json" ]
   visibility = [ ":extensions_features" ]
 }
 
 json_features("permission_features") {
   feature_type = "PermissionFeature"
   method_name = "AddChromePermissionFeatures"
-  sources = [
-    "_permission_features.json",
-  ]
+  sources = [ "_permission_features.json" ]
   visibility = [ ":extensions_features" ]
 }
 
 json_features("manifest_features") {
   feature_type = "ManifestFeature"
   method_name = "AddChromeManifestFeatures"
-  sources = [
-    "_manifest_features.json",
-  ]
+  sources = [ "_manifest_features.json" ]
   visibility = [ ":extensions_features" ]
 }

@@ -294,7 +294,13 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
   content_container_->AddChildView(close_button_);
 }
 
-SearchBoxViewBase::~SearchBoxViewBase() = default;
+SearchBoxViewBase::~SearchBoxViewBase() {
+  // |search_box_| tries to call methods on us, and so must be destroyed before
+  // we are.  Remove it from the tree first, which will blur it; it must be
+  // blurred before being deleted.
+  content_container_->RemoveChildView(search_box_);
+  delete search_box_;
+}
 
 void SearchBoxViewBase::Init() {
   SetPaintToLayer();

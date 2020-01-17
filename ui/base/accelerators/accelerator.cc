@@ -133,6 +133,10 @@ bool Accelerator::IsAltDown() const {
   return (modifiers_ & EF_ALT_DOWN) != 0;
 }
 
+bool Accelerator::IsAltGrDown() const {
+  return (modifiers_ & EF_ALTGR_DOWN) != 0;
+}
+
 bool Accelerator::IsCmdDown() const {
   return (modifiers_ & EF_COMMAND_DOWN) != 0;
 }

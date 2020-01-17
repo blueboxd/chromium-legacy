@@ -48,7 +48,7 @@ namespace content {
 
 namespace {
 
-const GURL kOrigin("http://example.com");
+const char kOrigin[] = "http://example.com";
 const storage::FileSystemType kFileSystemType = storage::kFileSystemTypeTest;
 
 const char kData[] = "The quick brown fox jumps over the lazy dog.\n";
@@ -102,8 +102,8 @@ class FileWriterDelegateTest : public PlatformTest {
 
   int64_t usage() {
     return file_system_context_->GetQuotaUtil(kFileSystemType)
-        ->GetOriginUsageOnFileTaskRunner(file_system_context_.get(), kOrigin,
-                                         kFileSystemType);
+        ->GetOriginUsageOnFileTaskRunner(file_system_context_.get(),
+                                         GURL(kOrigin), kFileSystemType);
   }
 
   int64_t GetFileSizeOnDisk(const char* test_file_path) {
@@ -121,7 +121,8 @@ class FileWriterDelegateTest : public PlatformTest {
 
   FileSystemURL GetFileSystemURL(const char* file_name) const {
     return file_system_context_->CreateCrackedFileSystemURL(
-        kOrigin, kFileSystemType, base::FilePath().FromUTF8Unsafe(file_name));
+        GURL(kOrigin), kFileSystemType,
+        base::FilePath().FromUTF8Unsafe(file_name));
   }
 
   std::unique_ptr<storage::SandboxFileStreamWriter> CreateWriter(

@@ -23,18 +23,15 @@ class UpdateRecommendedMessageBox : public views::DialogDelegate {
   UpdateRecommendedMessageBox();
   ~UpdateRecommendedMessageBox() override;
 
-  // Overridden from views::DialogDelegate:
+  // views::DialogDelegate:
   bool Accept() override;
-
-  // Overridden from views::WidgetDelegate:
   bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
   views::View* GetContentsView() override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
+  const views::Widget* GetWidgetImpl() const override;
 
   views::MessageBoxView* message_box_view_;
 

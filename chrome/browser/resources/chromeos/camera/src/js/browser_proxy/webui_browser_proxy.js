@@ -79,8 +79,3 @@ class WebUIBrowserProxy {
 export const browserProxy = new WebUIBrowserProxy();
 
 /* eslint-enable new-cap */
-
-/**
- * @type {!BrowserProxy}
- */
-cca.proxy.browserProxy = browserProxy;

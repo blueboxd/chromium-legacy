@@ -53,14 +53,13 @@ TEST_F('NewTabPageCustomizeDialogFocusTest', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
-var NewTabPageCustomizeThemesFocusTest =
-    class extends NewTabPageInteractiveTest {
+var NewTabPageGridFocusTest = class extends NewTabPageInteractiveTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_themes_focus_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/grid_focus_test.js';
   }
 };
 
-TEST_F('NewTabPageCustomizeThemesFocusTest', 'All', function() {
+TEST_F('NewTabPageGridFocusTest', 'All', function() {
   mocha.run();
 });

@@ -104,7 +104,7 @@ TEST(ComputedStyleTest, FocusRingOutset) {
   style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
   style->SetEffectiveZoom(4.75);
   if (::features::IsFormControlsRefreshEnabled()) {
-    EXPECT_EQ(4, style->OutlineOutsetExtent());
+    EXPECT_EQ(6, style->OutlineOutsetExtent());
   } else {
 #if defined(OS_MACOSX)
     EXPECT_EQ(4, style->OutlineOutsetExtent());

@@ -21,9 +21,11 @@
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/gfx/geometry/size.h"
 
 using content::NavigationEntry;
 using content::RestoreType;
@@ -89,6 +91,32 @@ std::unique_ptr<WebContents> CreateRestoredTab(
   return web_contents;
 }
 
+// Start loading a restored tab after adding it to its browser, if visible.
+//
+// Without this, loading starts when
+// WebContentsImpl::UpdateWebContentsVisibility(VISIBLE) is invoked, which
+// happens at a different time on Mac vs. other desktop platform due to a
+// different windowing system. Starting to load here ensures consistent behavior
+// across desktop platforms and allows FirstWebContentsProfiler to have strict
+// cross-platform expectations about events it observes.
+void LoadRestoredTabIfVisible(Browser* browser,
+                              content::WebContents* web_contents) {
+  if (web_contents->GetVisibility() != content::Visibility::VISIBLE)
+    return;
+
+  DCHECK_EQ(browser->tab_strip_model()->GetActiveWebContents(), web_contents);
+  // A layout should already have been performed to determine the contents size.
+  // The contents size should not be empty, unless the browser size and restored
+  // size are also empty.
+  DCHECK(!browser->window()->GetContentsSize().IsEmpty() ||
+         (browser->window()->GetBounds().IsEmpty() &&
+          browser->window()->GetRestoredBounds().IsEmpty()));
+  DCHECK_EQ(GetWebContentsSize(web_contents),
+            browser->window()->GetContentsSize());
+
+  web_contents->GetController().LoadIfNecessary();
+}
+
 }  // namespace
 
 WebContents* AddRestoredTab(
@@ -105,10 +133,11 @@ WebContents* AddRestoredTab(
     content::SessionStorageNamespace* session_storage_namespace,
     const std::string& user_agent_override,
     bool from_session_restore) {
+  const bool initially_hidden = !select || browser->window()->IsMinimized();
   std::unique_ptr<WebContents> web_contents = CreateRestoredTab(
       browser, navigations, selected_navigation, extension_app_id,
       from_last_session, last_active_time, session_storage_namespace,
-      user_agent_override, !select, from_session_restore);
+      user_agent_override, initially_hidden, from_session_restore);
 
   int add_types = select ? TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE;
   if (pin) {
@@ -126,24 +155,16 @@ WebContents* AddRestoredTab(
                                                      group.value());
   }
 
-  if (select) {
-    if (
-#if defined(OS_MACOSX)
-        // Activating a window on another space causes the system to switch to
-        // that space. Since the session restore process shows and activates
-        // windows itself, activating windows here should be safe to skip.
-        // Cautiously apply only to macOS, for now (https://crbug.com/1019048).
-        !from_session_restore &&
-#endif
-        !browser->window()->IsMinimized())
-      browser->window()->Activate();
-  } else {
+  if (initially_hidden) {
     // We set the size of the view here, before Blink does its initial layout.
     // If we don't, the initial layout of background tabs will be performed
     // with a view width of 0, which may cause script outputs and anchor link
     // location calculations to be incorrect even after a new layout with
     // proper view dimensions. TabStripModel::AddWebContents() contains similar
     // logic.
+    //
+    // TODO(https://crbug.com/1040221): There should be a way to ask the browser
+    // to perform a layout so that size of the hidden WebContents is right.
     gfx::Size size = browser->window()->GetContentsSize();
     // Fallback to the restore bounds if it's empty as the window is not shown
     // yet and the bounds may not be available on all platforms.
@@ -151,11 +172,28 @@ WebContents* AddRestoredTab(
       size = browser->window()->GetRestoredBounds().size();
     ResizeWebContents(raw_web_contents, gfx::Rect(size));
     raw_web_contents->WasHidden();
+  } else {
+    const bool should_activate =
+#if defined(OS_MACOSX)
+        // Activating a window on another space causes the system to switch to
+        // that space. Since the session restore process shows and activates
+        // windows itself, activating windows here should be safe to skip.
+        // Cautiously apply only to macOS, for now (https://crbug.com/1019048).
+        !from_session_restore;
+#else
+        true;
+#endif
+    if (should_activate)
+      browser->window()->Activate();
   }
+
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(browser->profile());
   if (session_service)
     session_service->TabRestored(raw_web_contents, pin);
+
+  LoadRestoredTabIfVisible(browser, raw_web_contents);
+
   return raw_web_contents;
 }
 
@@ -182,6 +220,9 @@ WebContents* ReplaceRestoredTab(
       insertion_index + 1, std::move(web_contents),
       TabStripModel::ADD_ACTIVE | TabStripModel::ADD_INHERIT_OPENER);
   tab_strip->CloseWebContentsAt(insertion_index, TabStripModel::CLOSE_NONE);
+
+  LoadRestoredTabIfVisible(browser, raw_web_contents);
+
   return raw_web_contents;
 }
 

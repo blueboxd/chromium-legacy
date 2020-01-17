@@ -25,14 +25,10 @@ source_set("traits") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "traits.h",
-  ]
+  public = [ "traits.h" ]
   visibility = []
   visibility += [ "../../random/*" ]
-  deps = [
-    "../../base:config",
-  ]
+  deps = [ "../../base:config" ]
 }
 
 source_set("distribution_caller") {
@@ -42,9 +38,7 @@ source_set("distribution_caller") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "distribution_caller.h",
-  ]
+  public = [ "distribution_caller.h" ]
   visibility = []
   visibility += [ "../../random/*" ]
 }
@@ -56,9 +50,7 @@ source_set("distributions") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "distributions.h",
-  ]
+  public = [ "distributions.h" ]
   deps = [
     ":distribution_caller",
     ":fast_uniform_bits",
@@ -78,9 +70,7 @@ source_set("fast_uniform_bits") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "fast_uniform_bits.h",
-  ]
+  public = [ "fast_uniform_bits.h" ]
   visibility = []
   visibility += [ "../../random/*" ]
 }
@@ -92,12 +82,8 @@ source_set("seed_material") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "seed_material.h",
-  ]
-  sources = [
-    "seed_material.cc",
-  ]
+  public = [ "seed_material.h" ]
+  sources = [ "seed_material.cc" ]
   deps = [
     ":fast_uniform_bits",
     "../../base",
@@ -115,12 +101,8 @@ source_set("pool_urbg") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "pool_urbg.h",
-  ]
-  sources = [
-    "pool_urbg.cc",
-  ]
+  public = [ "pool_urbg.h" ]
+  sources = [ "pool_urbg.cc" ]
   deps = [
     ":randen",
     ":seed_material",
@@ -142,9 +124,7 @@ source_set("explicit_seed_seq") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "explicit_seed_seq.h",
-  ]
+  public = [ "explicit_seed_seq.h" ]
 }
 
 source_set("sequence_urbg") {
@@ -155,9 +135,7 @@ source_set("sequence_urbg") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "sequence_urbg.h",
-  ]
+  public = [ "sequence_urbg.h" ]
 }
 
 source_set("salted_seed_seq") {
@@ -167,9 +145,7 @@ source_set("salted_seed_seq") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "salted_seed_seq.h",
-  ]
+  public = [ "salted_seed_seq.h" ]
   deps = [
     ":seed_material",
     "../../container:inlined_vector",
@@ -186,9 +162,7 @@ source_set("iostream_state_saver") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "iostream_state_saver.h",
-  ]
+  public = [ "iostream_state_saver.h" ]
   deps = [
     "../../meta:type_traits",
     "../../numeric:int128",
@@ -202,9 +176,7 @@ source_set("distribution_impl") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "distribution_impl.h",
-  ]
+  public = [ "distribution_impl.h" ]
   deps = [
     ":fastmath",
     ":traits",
@@ -221,12 +193,8 @@ source_set("fastmath") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "fastmath.h",
-  ]
-  deps = [
-    "../../base:bits",
-  ]
+  public = [ "fastmath.h" ]
+  deps = [ "../../base:bits" ]
 }
 
 source_set("nonsecure_base") {
@@ -236,9 +204,7 @@ source_set("nonsecure_base") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "nonsecure_base.h",
-  ]
+  public = [ "nonsecure_base.h" ]
   deps = [
     ":pool_urbg",
     ":salted_seed_seq",
@@ -258,9 +224,7 @@ source_set("pcg_engine") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "pcg_engine.h",
-  ]
+  public = [ "pcg_engine.h" ]
   deps = [
     ":fastmath",
     ":iostream_state_saver",
@@ -277,9 +241,7 @@ source_set("randen_engine") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "randen_engine.h",
-  ]
+  public = [ "randen_engine.h" ]
   deps = [
     ":iostream_state_saver",
     ":randen",
@@ -308,12 +270,8 @@ source_set("randen") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "randen.h",
-  ]
-  sources = [
-    "randen.cc",
-  ]
+  public = [ "randen.h" ]
+  sources = [ "randen.cc" ]
   deps = [
     ":platform",
     ":randen_hwaes",
@@ -329,15 +287,9 @@ source_set("randen_slow") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "randen_slow.h",
-  ]
-  sources = [
-    "randen_slow.cc",
-  ]
-  deps = [
-    ":platform",
-  ]
+  public = [ "randen_slow.h" ]
+  sources = [ "randen_slow.cc" ]
+  deps = [ ":platform" ]
 }
 
 source_set("randen_hwaes") {
@@ -351,9 +303,7 @@ source_set("randen_hwaes") {
     "randen_detect.h",
     "randen_hwaes.h",
   ]
-  sources = [
-    "randen_detect.cc",
-  ]
+  sources = [ "randen_detect.cc" ]
   deps = [
     ":platform",
     ":randen_hwaes_impl",
@@ -371,9 +321,7 @@ source_set("randen_hwaes_impl") {
     "randen_hwaes.cc",
     "randen_hwaes.h",
   ]
-  deps = [
-    ":platform",
-  ]
+  deps = [ ":platform" ]
 }
 
 executable("gaussian_distribution_gentables") {
@@ -383,9 +331,7 @@ executable("gaussian_distribution_gentables") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "gaussian_distribution_gentables.cc",
-  ]
+  sources = [ "gaussian_distribution_gentables.cc" ]
   deps = [
     "../../base:core_headers",
     "../../random:distributions",
@@ -424,9 +370,7 @@ source_set("nanobenchmark") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "nanobenchmark.cc",
-  ]
+  sources = [ "nanobenchmark.cc" ]
   deps = [
     ":platform",
     ":randen_engine",
@@ -441,9 +385,7 @@ source_set("uniform_helper") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "uniform_helper.h",
-  ]
+  public = [ "uniform_helper.h" ]
   deps = [
     ":distribution_impl",
     ":fast_uniform_bits",

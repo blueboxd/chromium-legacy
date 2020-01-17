@@ -344,7 +344,6 @@ TEST_F(MediaEngagementSessionTest,
 
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
-    EXPECT_EQ(expected_playbacks, score.audio_context_playbacks());
   }
 }
 
@@ -378,7 +377,6 @@ TEST_F(MediaEngagementSessionTest,
 
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
-    EXPECT_EQ(expected_playbacks, score.media_element_playbacks());
   }
 }
 
@@ -415,8 +413,6 @@ TEST_F(MediaEngagementSessionTest,
 
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
-    EXPECT_EQ(expected_playbacks, score.audio_context_playbacks());
-    EXPECT_EQ(expected_playbacks, score.media_element_playbacks());
   }
 }
 
@@ -576,13 +572,11 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlayersWhenNeeded) {
       service(), origin(), MediaEngagementSession::RestoreType::kNotRestored,
       ukm_source_id());
 
-  int expected_audible_playbacks = 0;
-  int expected_significant_playbacks = 0;
+  int expected_media_playbacks = 0;
 
   {
     MediaEngagementScore score = service()->CreateEngagementScore(origin());
-    expected_audible_playbacks = score.audible_playbacks();
-    expected_significant_playbacks = score.significant_playbacks();
+    expected_media_playbacks = score.media_playbacks();
   }
 
   EXPECT_FALSE(HasPendingPlayersToCommitForSession(session.get()));
@@ -590,8 +584,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlayersWhenNeeded) {
 
   {
     MediaEngagementScore score = service()->CreateEngagementScore(origin());
-    EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
-    EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
+    EXPECT_EQ(expected_media_playbacks, score.media_playbacks());
   }
 
   session->RegisterAudiblePlayers(0, 0);
@@ -601,8 +594,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlayersWhenNeeded) {
 
   {
     MediaEngagementScore score = service()->CreateEngagementScore(origin());
-    EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
-    EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
+    EXPECT_EQ(expected_media_playbacks, score.media_playbacks());
   }
 
   session->RegisterAudiblePlayers(0, 0);
@@ -612,8 +604,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlayersWhenNeeded) {
 
   {
     MediaEngagementScore score = service()->CreateEngagementScore(origin());
-    EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
-    EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
+    EXPECT_EQ(expected_media_playbacks, score.media_playbacks());
   }
 
   session->RegisterAudiblePlayers(1, 1);
@@ -623,34 +614,7 @@ TEST_F(MediaEngagementSessionTest, CommitPendingData_UpdatePlayersWhenNeeded) {
 
   {
     MediaEngagementScore score = service()->CreateEngagementScore(origin());
-    EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
-    EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
-  }
-
-  session->RegisterAudiblePlayers(0, 0);
-  SetPendingDataToCommitForSession(session.get(), false, false, false, true);
-  EXPECT_TRUE(HasPendingPlayersToCommitForSession(session.get()));
-  CommitPendingDataForSession(session.get());
-
-  ++expected_audible_playbacks;
-  ++expected_significant_playbacks;
-  {
-    MediaEngagementScore score = service()->CreateEngagementScore(origin());
-    EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
-    EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
-  }
-
-  session->RegisterAudiblePlayers(1, 1);
-  SetPendingDataToCommitForSession(session.get(), false, false, false, true);
-  EXPECT_TRUE(HasPendingPlayersToCommitForSession(session.get()));
-  CommitPendingDataForSession(session.get());
-
-  ++expected_audible_playbacks;
-  ++expected_significant_playbacks;
-  {
-    MediaEngagementScore score = service()->CreateEngagementScore(origin());
-    EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
-    EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
+    EXPECT_EQ(expected_media_playbacks, score.media_playbacks());
   }
 }
 
@@ -769,16 +733,12 @@ TEST_F(MediaEngagementSessionTest, DestructorRecordMetrics) {
 TEST_F(MediaEngagementSessionTest, DestructorCommitDataIfNeeded) {
   int expected_visits = 0;
   int expected_playbacks = 0;
-  int expected_audible_playbacks = 0;
-  int expected_significant_playbacks = 0;
 
   {
     MediaEngagementScore score = service()->CreateEngagementScore(origin());
 
     expected_visits = score.visits();
     expected_playbacks = score.media_playbacks();
-    expected_audible_playbacks = score.audible_playbacks();
-    expected_significant_playbacks = score.significant_playbacks();
   }
 
   {
@@ -795,8 +755,6 @@ TEST_F(MediaEngagementSessionTest, DestructorCommitDataIfNeeded) {
     MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
-    EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
-    EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
   }
 
   {
@@ -816,8 +774,6 @@ TEST_F(MediaEngagementSessionTest, DestructorCommitDataIfNeeded) {
     MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
-    EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
-    EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
   }
 
   {
@@ -831,15 +787,11 @@ TEST_F(MediaEngagementSessionTest, DestructorCommitDataIfNeeded) {
   }
 
   ++expected_visits;
-  expected_audible_playbacks += 2;
-  expected_significant_playbacks += 2;
 
   {
     MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
-    EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
-    EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
   }
 
   // Pretend there is nothing to commit, nothing should change.
@@ -857,8 +809,6 @@ TEST_F(MediaEngagementSessionTest, DestructorCommitDataIfNeeded) {
     MediaEngagementScore score = service()->CreateEngagementScore(origin());
     EXPECT_EQ(expected_visits, score.visits());
     EXPECT_EQ(expected_playbacks, score.media_playbacks());
-    EXPECT_EQ(expected_audible_playbacks, score.audible_playbacks());
-    EXPECT_EQ(expected_significant_playbacks, score.significant_playbacks());
   }
 }
 

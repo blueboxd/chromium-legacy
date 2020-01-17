@@ -14,7 +14,7 @@ Polymer({
     enableBioEnrollment_: {
       type: Boolean,
       readOnly: true,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('enableSecurityKeysBioEnrollment');
       }
     },
@@ -42,45 +42,45 @@ Polymer({
   },
 
   /** @private */
-  onSetPIN_: function() {
+  onSetPIN_() {
     this.showSetPINDialog_ = true;
   },
 
   /** @private */
-  onSetPINDialogClosed_: function() {
+  onSetPINDialogClosed_() {
     this.showSetPINDialog_ = false;
     cr.ui.focusWithoutInk(this.$.setPINButton);
   },
 
   /** @private */
-  onCredentialManagement_: function() {
+  onCredentialManagement_() {
     this.showCredentialManagementDialog_ = true;
   },
 
   /** @private */
-  onCredentialManagementDialogClosed_: function() {
+  onCredentialManagementDialogClosed_() {
     this.showCredentialManagementDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$$('#credentialManagementButton')));
   },
 
   /** @private */
-  onReset_: function() {
+  onReset_() {
     this.showResetDialog_ = true;
   },
 
   /** @private */
-  onResetDialogClosed_: function() {
+  onResetDialogClosed_() {
     this.showResetDialog_ = false;
     cr.ui.focusWithoutInk(this.$.resetButton);
   },
 
   /** @private */
-  onBioEnroll_: function() {
+  onBioEnroll_() {
     this.showBioEnrollDialog_ = true;
   },
 
   /** @private */
-  onBioEnrollDialogClosed_: function() {
+  onBioEnrollDialogClosed_() {
     this.showBioEnrollDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$$('#bioEnrollButton')));
   },

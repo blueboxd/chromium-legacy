@@ -12,28 +12,6 @@
 namespace chrome {
 namespace android {
 
-enum CustomTabsVisibilityHistogram {
-  VISIBLE_CUSTOM_TAB,
-  VISIBLE_CHROME_TAB,
-  CUSTOM_TABS_VISIBILITY_MAX
-};
-
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.flags
-enum class ActivityType {
-  kTabbed,
-  kCustomTab,
-  kTrustedWebActivity,
-  kWebapp,
-  kWebApk,
-  kMaxValue = kWebApk,
-};
-
-CustomTabsVisibilityHistogram GetCustomTabsVisibleValue();
-
-ActivityType GetActivityType();
-
-bool GetIsInMultiWindowModeValue();
-
 bool IsDownloadAutoResumptionEnabledInNative();
 
 // Returns a finch group name currently used for the reached code profiler.

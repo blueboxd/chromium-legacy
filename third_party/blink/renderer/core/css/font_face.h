@@ -159,7 +159,6 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   void RunCallbacks();
 
   using LoadedProperty = ScriptPromiseProperty<Member<FontFace>,
-                                               Member<FontFace>,
                                                Member<DOMException>>;
 
   AtomicString family_;

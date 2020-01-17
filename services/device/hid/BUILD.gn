@@ -80,9 +80,7 @@ source_set("mocks") {
 }
 
 fuzzer_test("hid_report_descriptor_fuzzer") {
-  sources = [
-    "hid_report_descriptor_fuzzer.cc",
-  ]
+  sources = [ "hid_report_descriptor_fuzzer.cc" ]
   deps = [
     "//services/device/public/cpp/hid",
     "//services/device/public/mojom",

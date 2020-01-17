@@ -17,10 +17,10 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics;
-import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription;
-import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout;
+import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
+import org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout;
 
 import java.util.ArrayList;
 import java.util.Collections;

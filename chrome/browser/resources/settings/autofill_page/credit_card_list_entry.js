@@ -17,7 +17,7 @@ Polymer({
   properties: {
     /**
      * A saved credit card.
-     * @type {!PaymentsManager.CreditCardEntry}
+     * @type {!settings.PaymentsManager.CreditCardEntry}
      */
     creditCard: Object,
   },
@@ -26,7 +26,7 @@ Polymer({
    * Opens the credit card action menu.
    * @private
    */
-  onDotsMenuClick_: function() {
+  onDotsMenuClick_() {
     this.fire('dots-card-menu-click', {
       creditCard: this.creditCard,
       anchorElement: this.$$('#creditCardMenu'),
@@ -34,7 +34,7 @@ Polymer({
   },
 
   /** @private */
-  onRemoteEditClick_: function() {
+  onRemoteEditClick_() {
     this.fire('remote-card-menu-click');
   },
 
@@ -43,7 +43,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showDots_: function() {
+  showDots_() {
     return !!(
         this.creditCard.metadata.isLocal || this.creditCard.metadata.isCached);
   },

@@ -5,11 +5,18 @@
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 
 #include "base/time/time.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
+#include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/html_frame_element_base.h"
+#include "third_party/blink/renderer/core/input/event_handling_util.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_grip_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_session_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_target_ray_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
@@ -69,7 +76,9 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
     updated_source = MakeGarbageCollected<XRInputSource>(*other);
   }
 
-  updated_source->UpdateGamepad(state->gamepad);
+  if (updated_source->state_.is_visible) {
+    updated_source->UpdateGamepad(state->gamepad);
+  }
 
   // Update the input source's description if this state update includes them.
   if (state->description) {
@@ -79,8 +88,10 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
     updated_source->state_.target_ray_mode = desc->target_ray_mode;
     updated_source->state_.handedness = desc->handedness;
 
-    updated_source->input_from_pointer_ =
-        TryGetTransformationMatrix(desc->input_from_pointer);
+    if (updated_source->state_.is_visible) {
+      updated_source->input_from_pointer_ =
+          TryGetTransformationMatrix(desc->input_from_pointer);
+    }
 
     updated_source->state_.profiles.clear();
     for (const auto& name : state->description->profiles) {
@@ -88,8 +99,10 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
     }
   }
 
-  updated_source->mojo_from_input_ =
-      TryGetTransformationMatrix(state->mojo_from_input);
+  if (updated_source->state_.is_visible) {
+    updated_source->mojo_from_input_ =
+        TryGetTransformationMatrix(state->mojo_from_input);
+  }
 
   updated_source->state_.emulated_position = state->emulated_position;
 
@@ -151,6 +164,9 @@ XRSpace* XRInputSource::targetRaySpace() const {
 }
 
 XRSpace* XRInputSource::gripSpace() const {
+  if (!state_.is_visible)
+    return nullptr;
+
   if (state_.target_ray_mode == device::mojom::XRTargetRayMode::POINTING) {
     return grip_space_;
   }
@@ -189,7 +205,9 @@ bool XRInputSource::InvalidatesSameObject(
 
 void XRInputSource::SetInputFromPointer(
     const TransformationMatrix* input_from_pointer) {
-  input_from_pointer_ = TryGetTransformationMatrix(input_from_pointer);
+  if (state_.is_visible) {
+    input_from_pointer_ = TryGetTransformationMatrix(input_from_pointer);
+  }
 }
 
 void XRInputSource::SetGamepadConnected(bool state) {
@@ -216,6 +234,7 @@ base::Optional<XRNativeOriginInformation> XRInputSource::nativeOrigin() const {
 }
 
 void XRInputSource::OnSelectStart() {
+  DVLOG(3) << __func__;
   // Discard duplicate events and ones after the session has ended.
   if (state_.primary_input_pressed || session_->ended())
     return;
@@ -223,6 +242,7 @@ void XRInputSource::OnSelectStart() {
   state_.primary_input_pressed = true;
   state_.selection_cancelled = false;
 
+  DVLOG(3) << __func__ << ": dispatch selectstart event";
   XRInputSourceEvent* event =
       CreateInputSourceEvent(event_type_names::kSelectstart);
   session_->DispatchEvent(*event);
@@ -235,6 +255,7 @@ void XRInputSource::OnSelectStart() {
 }
 
 void XRInputSource::OnSelectEnd() {
+  DVLOG(3) << __func__;
   // Discard duplicate events and ones after the session has ended.
   if (!state_.primary_input_pressed || session_->ended())
     return;
@@ -245,6 +266,7 @@ void XRInputSource::OnSelectEnd() {
   if (!frame)
     return;
 
+  DVLOG(3) << __func__ << ": dispatch selectend event";
   XRInputSourceEvent* event =
       CreateInputSourceEvent(event_type_names::kSelectend);
   session_->DispatchEvent(*event);
@@ -257,6 +279,7 @@ void XRInputSource::OnSelectEnd() {
 }
 
 void XRInputSource::OnSelect() {
+  DVLOG(3) << __func__;
   // If a select was fired but we had not previously started the selection it
   // indicates a sub-frame or instantaneous select event, and we should fire a
   // selectstart prior to the selectend.
@@ -272,6 +295,7 @@ void XRInputSource::OnSelect() {
   if (!state_.selection_cancelled && !session_->ended()) {
     if (!frame)
       return;
+    DVLOG(3) << __func__ << ": dispatch select event";
     XRInputSourceEvent* event =
         CreateInputSourceEvent(event_type_names::kSelect);
     session_->DispatchEvent(*event);
@@ -284,15 +308,30 @@ void XRInputSource::OnSelect() {
 }
 
 void XRInputSource::UpdateSelectState(
-    const device::mojom::blink::XRInputSourceStatePtr& state) {
-  if (!state)
+    const device::mojom::blink::XRInputSourceStatePtr& new_state) {
+  if (!new_state)
     return;
 
+  if (!state_.is_visible) {
+    DVLOG(3) << __func__ << ": input NOT VISIBLE";
+    return;
+  }
+  if (state_.xr_select_events_suppressed) {
+    if (new_state->primary_input_clicked) {
+      DVLOG(3) << __func__ << ": got click, SUPPRESS end";
+      state_.xr_select_events_suppressed = false;
+    }
+    DVLOG(3) << __func__ << ": overlay input select SUPPRESSED";
+    return;
+  }
+
+  DCHECK(!state_.xr_select_events_suppressed);
+
   // Handle state change of the primary input, which may fire events
-  if (state->primary_input_clicked)
+  if (new_state->primary_input_clicked)
     OnSelect();
 
-  if (state->primary_input_pressed) {
+  if (new_state->primary_input_pressed) {
     OnSelectStart();
   } else if (state_.primary_input_pressed) {
     // May get here if the input source was previously pressed but now isn't,
@@ -302,6 +341,99 @@ void XRInputSource::UpdateSelectState(
     // usual select event.
     OnSelectEnd();
   }
+}
+
+void XRInputSource::ProcessOverlayHitTest(
+    Element* overlay_element,
+    const device::mojom::blink::XRInputSourceStatePtr& new_state) {
+  DCHECK(overlay_element);
+  DCHECK(new_state->overlay_pointer_position);
+
+  // Do a hit test at the overlay pointer position to see if the pointer
+  // intersects a cross origin iframe. If yes, set the visibility to false which
+  // causes targetRaySpace and gripSpace to return null poses.
+  FloatPoint point(new_state->overlay_pointer_position->x(),
+                   new_state->overlay_pointer_position->y());
+
+  HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kTouchEvent |
+                                                HitTestRequest::kReadOnly |
+                                                HitTestRequest::kActive;
+
+  HitTestResult result = event_handling_util::HitTestResultInFrame(
+      overlay_element->GetDocument().GetFrame(), HitTestLocation(point),
+      hit_type);
+  DVLOG(3) << __func__ << ": hit test InnerElement=" << result.InnerElement();
+
+  Element* hit_element = result.InnerElement();
+  if (!hit_element) {
+    return;
+  }
+
+  // Check if the hit element is cross-origin content. In addition to an iframe,
+  // this could potentially be an old-style frame in a frameset, so check for
+  // the common base class to cover both. (There's no intention to actively
+  // support framesets for DOM Overlay, but this helps prevent them from
+  // being used as a mechanism for information leaks.)
+  HTMLFrameElementBase* frame = DynamicTo<HTMLFrameElementBase>(hit_element);
+  if (frame) {
+    Document* hit_document = frame->contentDocument();
+    if (hit_document) {
+      Frame* hit_frame = hit_document->GetFrame();
+      DCHECK(hit_frame);
+      if (hit_frame->IsCrossOriginSubframe()) {
+        // Mark the input source as invisible until the primary button is
+        // released.
+        state_.is_visible = false;
+
+        // If this is the first touch, also suppress events, even if it
+        // ends up being released outside the frame later.
+        if (!state_.primary_input_pressed) {
+          state_.xr_select_events_suppressed = true;
+        }
+
+        return;
+      }
+    }
+  }
+
+  // If we get here, the touch didn't hit a cross origin frame. Set the
+  // controller spaces visible.
+  state_.is_visible = true;
+
+  // Now check if this is a new primary button press. If yes, send a
+  // beforexrselect event to give the application an opportunity to cancel the
+  // XR input "select" sequence that would normally be caused by this.
+
+  if (state_.xr_select_events_suppressed) {
+    DVLOG(3) << __func__ << ": using overlay input provider: SUPPRESS ongoing";
+    return;
+  }
+
+  if (state_.primary_input_pressed) {
+    DVLOG(3) << __func__ << ": ongoing press, not checking again";
+    return;
+  }
+
+  bool is_primary_press =
+      new_state->primary_input_pressed || new_state->primary_input_clicked;
+  if (!is_primary_press) {
+    DVLOG(3) << __func__ << ": no button press, ignoring";
+    return;
+  }
+
+  // The event needs to be cancelable (obviously), bubble (so that parent
+  // elements can handle it), and composed (so that it crosses shadow DOM
+  // boundaries, including UA-added shadow DOM).
+  Event* event = MakeGarbageCollected<XRSessionEvent>(
+      event_type_names::kBeforexrselect, session_, Event::Bubbles::kYes,
+      Event::Cancelable::kYes, Event::ComposedMode::kComposed);
+
+  hit_element->DispatchEvent(*event);
+  bool default_prevented = event->defaultPrevented();
+
+  // Keep the input source visible, so it's exposed in the input sources array,
+  // but don't generate XR select events for the current button sequence.
+  state_.xr_select_events_suppressed = default_prevented;
 }
 
 void XRInputSource::OnRemoved() {

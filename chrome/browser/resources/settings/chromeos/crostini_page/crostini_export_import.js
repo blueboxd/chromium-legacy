@@ -27,31 +27,56 @@ Polymer({
      */
     enableButtons_: {
       type: Boolean,
+      computed: 'setEnableButtons_(installerShowing_, exportImportInProgress_)',
+    },
+
+    /** @private */
+    installerShowing_: {
+      type: Boolean,
       value: false,
     },
+
+    /** @private */
+    exportImportInProgress_: {
+      type: Boolean,
+      value: false,
+    },
+
   },
 
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'crostini-export-import-operation-status-changed', inProgress => {
-          this.enableButtons_ = !inProgress;
+          this.exportImportInProgress_ = inProgress;
         });
+    this.addWebUIListener(
+        'crostini-installer-status-changed', installerShowing => {
+          this.installerShowing_ = installerShowing;
+        });
+
     settings.CrostiniBrowserProxyImpl.getInstance()
         .requestCrostiniExportImportOperationStatus();
+    settings.CrostiniBrowserProxyImpl.getInstance()
+        .requestCrostiniInstallerStatus();
   },
 
   /** @private */
-  onExportClick_: function() {
+  onExportClick_() {
     settings.CrostiniBrowserProxyImpl.getInstance().exportCrostiniContainer();
   },
 
   /** @private */
-  onImportClick_: function() {
+  onImportClick_() {
     this.showImportConfirmationDialog_ = true;
   },
 
   /** @private */
-  onImportConfirmationDialogClose_: function() {
+  onImportConfirmationDialogClose_() {
     this.showImportConfirmationDialog_ = false;
+  },
+
+  /** @private */
+  setEnableButtons_: function(installerShowing, exportImportInProgress) {
+    return !(installerShowing || exportImportInProgress);
   },
 });

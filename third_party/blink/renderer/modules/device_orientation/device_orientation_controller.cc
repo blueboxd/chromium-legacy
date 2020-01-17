@@ -115,7 +115,7 @@ Event* DeviceOrientationController::LastEvent() const {
 }
 
 bool DeviceOrientationController::IsNullEvent(Event* event) const {
-  DeviceOrientationEvent* orientation_event = ToDeviceOrientationEvent(event);
+  auto* orientation_event = To<DeviceOrientationEvent>(event);
   return !orientation_event->Orientation()->CanProvideEventData();
 }
 

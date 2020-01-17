@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #include "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
+#import "ios/chrome/browser/ui/text_zoom/text_zoom_mediator.h"
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
@@ -26,6 +27,8 @@
 @property(nonatomic, strong, readwrite)
     TextZoomViewController* textZoomViewController;
 
+@property(nonatomic, strong) TextZoomMediator* mediator;
+
 @end
 
 @implementation TextZoomCoordinator
@@ -33,9 +36,22 @@
 #pragma mark - ChromeCoordinator
 
 - (void)start {
-  self.textZoomViewController = [[TextZoomViewController alloc] init];
+  DCHECK(self.browser);
+  DCHECK(self.browserState);
+
+  self.mediator = [[TextZoomMediator alloc]
+      initWithWebStateList:self.browser->GetWebStateList()
+            commandHandler:HandlerForProtocol(
+                               self.browser->GetCommandDispatcher(),
+                               BrowserCommands)];
+
+  self.textZoomViewController = [[TextZoomViewController alloc]
+      initWithDarkAppearance:self.browserState->IsOffTheRecord()];
   self.textZoomViewController.commandHandler =
       HandlerForProtocol(self.browser->GetCommandDispatcher(), BrowserCommands);
+
+  self.textZoomViewController.zoomHandler = self.mediator;
+  self.mediator.consumer = self.textZoomViewController;
 
   [self showAnimated:YES];
 }
@@ -43,6 +59,8 @@
 - (void)stop {
   [self.presenter dismissAnimated:YES];
   self.textZoomViewController = nil;
+
+  [self.mediator disconnect];
 }
 
 - (void)showAnimated:(BOOL)animated {

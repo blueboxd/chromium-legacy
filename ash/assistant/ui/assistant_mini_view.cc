@@ -76,11 +76,11 @@ void AssistantMiniView::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Molecule icon.
-  LogoView* molecule_icon = LogoView::Create();
+  std::unique_ptr<LogoView> molecule_icon = LogoView::Create();
   molecule_icon->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
   molecule_icon->SetState(LogoView::State::kMoleculeWavy,
                           /*animate=*/false);
-  AddChildView(molecule_icon);
+  AddChildView(std::move(molecule_icon));
 
   // Label.
   label_->SetAutoColorReadabilityEnabled(false);

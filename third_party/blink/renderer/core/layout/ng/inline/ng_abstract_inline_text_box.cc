@@ -101,6 +101,10 @@ void NGAbstractInlineTextBox::WillDestroy(const NGInlineCursor& cursor) {
   NOTREACHED();
 }
 
+void NGAbstractInlineTextBox::WillDestroy(const NGPaintFragment* fragment) {
+  NGAbstractInlineTextBoxCache<NGPaintFragment>::WillDestroy(fragment);
+}
+
 NGAbstractInlineTextBox::NGAbstractInlineTextBox(
     LineLayoutText line_layout_item,
     const NGPaintFragment& fragment)

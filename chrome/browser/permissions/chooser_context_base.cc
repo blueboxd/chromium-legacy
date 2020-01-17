@@ -153,6 +153,27 @@ void ChooserContextBase::GrantObjectPermission(
   NotifyPermissionChanged();
 }
 
+void ChooserContextBase::UpdateObjectPermission(
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin,
+    base::Value& old_object,
+    base::Value new_object) {
+  base::Value setting =
+      GetWebsiteSetting(requesting_origin, embedding_origin, /*info=*/nullptr);
+  base::Value* objects = setting.FindListKey(kObjectListKey);
+  if (!objects)
+    return;
+
+  base::Value::ListView object_list = objects->GetList();
+  auto it = std::find(object_list.begin(), object_list.end(), old_object);
+  if (it == object_list.end())
+    return;
+
+  *it = std::move(new_object);
+  SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));
+  NotifyPermissionChanged();
+}
+
 void ChooserContextBase::RevokeObjectPermission(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin,

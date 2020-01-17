@@ -5,9 +5,7 @@
 group("all") {
   testonly = true
 
-  deps = [
-    ":display",
-  ]
+  deps = [ ":display" ]
 }
 
 group("all_test") {

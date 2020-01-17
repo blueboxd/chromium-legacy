@@ -5,9 +5,11 @@
 #include "ash/shelf/shelf_navigation_widget.h"
 
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
@@ -17,6 +19,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
@@ -27,7 +30,7 @@ namespace ash {
 namespace {
 
 // The duration of the back button opacity animation.
-constexpr base::TimeDelta kBackButtonOpacityAnimationDuration =
+constexpr base::TimeDelta kButtonOpacityAnimationDuration =
     base::TimeDelta::FromMilliseconds(50);
 
 bool IsTabletMode() {
@@ -61,10 +64,35 @@ gfx::Rect GetSecondButtonBounds() {
 }
 
 bool IsBackButtonShown() {
+  if (!ShelfConfig::Get()->shelf_controls_shown())
+    return false;
   return chromeos::switches::ShouldShowShelfHotseat()
              ? IsTabletMode() && ShelfConfig::Get()->is_in_app()
              : IsTabletMode();
 }
+
+bool IsHomeButtonShown() {
+  return ShelfConfig::Get()->shelf_controls_shown();
+}
+
+// An implicit animation observer that hides a view once the view's opacity
+// animation finishes.
+// It deletes itself when the animation is done.
+class AnimationObserverToHideView : public ui::ImplicitAnimationObserver {
+ public:
+  explicit AnimationObserverToHideView(views::View* view) : view_(view) {}
+  ~AnimationObserverToHideView() override = default;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    if (view_->layer()->GetTargetOpacity() == 0.0f)
+      view_->SetVisible(false);
+    delete this;
+  }
+
+ private:
+  views::View* const view_;
+};
 
 }  // namespace
 
@@ -90,8 +118,6 @@ class ShelfNavigationWidget::Delegate : public views::AccessiblePaneView,
 
   // views::WidgetDelegate:
   bool CanActivate() const override;
-  views::Widget* GetWidget() override { return View::GetWidget(); }
-  const views::Widget* GetWidget() const override { return View::GetWidget(); }
 
   BackButton* back_button() const { return back_button_; }
   HomeButton* home_button() const { return home_button_; }
@@ -161,7 +187,9 @@ void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
 
   // The opaque background does not show up when there are two buttons.
   gfx::Rect opaque_background_bounds = GetFirstButtonBounds();
-  if (base::i18n::IsRTL()) {
+  if (base::i18n::IsRTL() && GetWidget() &&
+      Shelf::ForWindow(GetWidget()->GetNativeWindow())
+          ->IsHorizontalAlignment()) {
     opaque_background_bounds.set_x(
         2 * ShelfConfig::Get()->home_button_edge_spacing());
   }
@@ -214,6 +242,31 @@ void ShelfNavigationWidget::Delegate::SetParentLayer(ui::Layer* layer) {
   ReorderLayers();
 }
 
+ShelfNavigationWidget::TestApi::TestApi(ShelfNavigationWidget* widget)
+    : navigation_widget_(widget) {}
+
+ShelfNavigationWidget::TestApi::~TestApi() = default;
+
+bool ShelfNavigationWidget::TestApi::IsHomeButtonVisible() const {
+  const HomeButton* button = navigation_widget_->delegate_->home_button();
+  const float opacity = button->layer()->GetTargetOpacity();
+  DCHECK(opacity == 0.0f || opacity == 1.0f)
+      << "Unexpected opacity " << opacity;
+  return opacity > 0.0f && button->GetVisible();
+}
+
+bool ShelfNavigationWidget::TestApi::IsBackButtonVisible() const {
+  const BackButton* button = navigation_widget_->delegate_->back_button();
+  const float opacity = button->layer()->GetTargetOpacity();
+  DCHECK(opacity == 0.0f || opacity == 1.0f)
+      << "Unexpected opacity " << opacity;
+  return opacity > 0.0f && button->GetVisible();
+}
+
+views::BoundsAnimator* ShelfNavigationWidget::TestApi::GetBoundsAnimator() {
+  return navigation_widget_->bounds_animator_.get();
+}
+
 ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,
                                              ShelfView* shelf_view)
     : shelf_(shelf),
@@ -247,26 +300,36 @@ void ShelfNavigationWidget::Initialize(aura::Window* container) {
   set_focus_on_creation(false);
   GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
   SetContentsView(delegate_);
-  GetBackButton()->SetBoundsRect(GetFirstButtonBounds());
   SetSize(GetIdealSize());
   UpdateLayout(/*animate=*/false);
 }
 
 gfx::Size ShelfNavigationWidget::GetIdealSize() const {
+  const int button_count =
+      (IsBackButtonShown() ? 1 : 0) + (IsHomeButtonShown() ? 1 : 0);
+
+  if (button_count == 0)
+    return gfx::Size();
+
   const int control_size = ShelfConfig::Get()->control_size();
   const int home_button_edge_spacing =
       ShelfConfig::Get()->home_button_edge_spacing();
 
-  if (!shelf_->IsHorizontalAlignment())
+  if (!shelf_->IsHorizontalAlignment()) {
     return gfx::Size(home_button_edge_spacing + control_size,
                      home_button_edge_spacing + control_size);
+  }
 
-  return gfx::Size(
-      2 * home_button_edge_spacing +
-          (IsBackButtonShown()
-               ? (2 * control_size + ShelfConfig::Get()->button_spacing())
-               : control_size),
-      2 * home_button_edge_spacing + control_size);
+  gfx::Size ideal_size(
+      button_count * control_size +
+          (button_count - 1) * ShelfConfig::Get()->button_spacing(),
+      control_size);
+  if (IsHomeButtonShown()) {
+    ideal_size.Enlarge(2 * home_button_edge_spacing,
+                       2 * home_button_edge_spacing);
+  }
+
+  return ideal_size;
 }
 
 void ShelfNavigationWidget::OnMouseEvent(ui::MouseEvent* event) {
@@ -304,18 +367,11 @@ void ShelfNavigationWidget::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 BackButton* ShelfNavigationWidget::GetBackButton() const {
-  return delegate_->back_button();
+  return IsBackButtonShown() ? delegate_->back_button() : nullptr;
 }
 
 HomeButton* ShelfNavigationWidget::GetHomeButton() const {
-  return delegate_->home_button();
-}
-
-void ShelfNavigationWidget::FocusFirstOrLastFocusableChild(bool last) {
-  views::View* to_focus = GetHomeButton();
-  if (IsTabletMode() && !last)
-    to_focus = GetBackButton();
-  GetFocusManager()->SetFocusedView(to_focus);
+  return IsHomeButtonShown() ? delegate_->home_button() : nullptr;
 }
 
 void ShelfNavigationWidget::SetDefaultLastFocusableChild(
@@ -337,18 +393,25 @@ void ShelfNavigationWidget::OnShelfAlignmentChanged(
   UpdateLayout(/*animate=*/false);
 }
 
-void ShelfNavigationWidget::OnImplicitAnimationsCompleted() {
-  // Hide the back button once it has become fully transparent.
-  if (!IsTabletMode() || !IsBackButtonShown())
-    GetBackButton()->SetVisible(false);
-}
-
 void ShelfNavigationWidget::OnShelfConfigUpdated() {
   UpdateLayout(/*animate=*/true);
 }
 
 void ShelfNavigationWidget::UpdateLayout(bool animate) {
-  bool is_back_button_shown = IsBackButtonShown();
+  const bool back_button_shown = IsBackButtonShown();
+  const bool home_button_shown = IsHomeButtonShown();
+
+  // If the widget is currently active, and all the buttons will be hidden,
+  // focus out to the status area (the widget's focus manager does not properly
+  // handle the case where the widget does not have another view to focus - it
+  // would clear the focus, and hit a DCHECK trying to cycle focus within the
+  // widget).
+  if (IsActive() && !back_button_shown && !home_button_shown) {
+    Shelf::ForWindow(GetNativeWindow())
+        ->shelf_focus_cycler()
+        ->FocusOut(true /*reverse*/, SourceView::kShelfNavigationView);
+  }
+
   // Use the same duration for all parts of the upcoming animation.
   const auto animation_duration =
       animate ? ShelfConfig::Get()->shelf_animation_duration()
@@ -364,26 +427,45 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
 
   SetBounds(shelf_->shelf_layout_manager()->GetNavigationBounds());
 
-  // Show the back button right away so that the animation is visible.
-  if (is_back_button_shown)
-    GetBackButton()->SetVisible(true);
-  GetBackButton()->SetFocusBehavior(is_back_button_shown
-                                        ? views::View::FocusBehavior::ALWAYS
-                                        : views::View::FocusBehavior::NEVER);
-  ui::ScopedLayerAnimationSettings settings(
-      GetBackButton()->layer()->GetAnimator());
-  settings.SetTransitionDuration(kBackButtonOpacityAnimationDuration);
-  settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  settings.AddObserver(this);
-  GetBackButton()->layer()->SetOpacity(is_back_button_shown ? 1 : 0);
+  views::View* const back_button = delegate_->back_button();
+  UpdateButtonVisibility(back_button, back_button_shown, animate);
 
-  bounds_animator_->AnimateViewTo(
-      GetHomeButton(),
-      is_back_button_shown ? GetSecondButtonBounds() : GetFirstButtonBounds());
-  GetBackButton()->SetBoundsRect(GetFirstButtonBounds());
+  views::View* const home_button = delegate_->home_button();
+  UpdateButtonVisibility(home_button, home_button_shown, animate);
+
+  gfx::Rect home_button_bounds =
+      back_button_shown ? GetSecondButtonBounds() : GetFirstButtonBounds();
+  if (animate)
+    bounds_animator_->AnimateViewTo(home_button, home_button_bounds);
+  else
+    home_button->SetBoundsRect(home_button_bounds);
+
+  back_button->SetBoundsRect(GetFirstButtonBounds());
 
   delegate_->UpdateOpaqueBackground();
+}
+
+void ShelfNavigationWidget::UpdateButtonVisibility(views::View* button,
+                                                   bool visible,
+                                                   bool animate) {
+  // Update visibility immediately only if making the button visible. When
+  // hiding the button, the visibility will be updated when the animations
+  // complete (by AnimationObserverToHideView).
+  if (visible)
+    button->SetVisible(true);
+  button->SetFocusBehavior(visible ? views::View::FocusBehavior::ALWAYS
+                                   : views::View::FocusBehavior::NEVER);
+
+  ui::ScopedLayerAnimationSettings opacity_settings(
+      button->layer()->GetAnimator());
+  opacity_settings.SetTransitionDuration(
+      animate ? kButtonOpacityAnimationDuration : base::TimeDelta());
+  opacity_settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  if (!visible)
+    opacity_settings.AddObserver(new AnimationObserverToHideView(button));
+
+  button->layer()->SetOpacity(visible ? 1.0f : 0.0f);
 }
 
 }  // namespace ash

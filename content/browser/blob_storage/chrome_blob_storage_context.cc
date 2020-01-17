@@ -93,12 +93,12 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!context->GetUserData(kBlobStorageContextKeyName)) {
-    scoped_refptr<ChromeBlobStorageContext> blob =
+    scoped_refptr<ChromeBlobStorageContext> blob_storage_context =
         new ChromeBlobStorageContext();
     context->SetUserData(
         kBlobStorageContextKeyName,
         std::make_unique<UserDataAdapter<ChromeBlobStorageContext>>(
-            blob.get()));
+            blob_storage_context.get()));
 
     // Check first to avoid memory leak in unittests.
     bool io_thread_valid =
@@ -131,7 +131,8 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
     if (io_thread_valid) {
       base::PostTask(
           FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&ChromeBlobStorageContext::InitializeOnIOThread, blob,
+          base::BindOnce(&ChromeBlobStorageContext::InitializeOnIOThread,
+                         blob_storage_context, context->GetPath(),
                          std::move(blob_storage_dir),
                          std::move(file_task_runner)));
     }
@@ -161,10 +162,11 @@ ChromeBlobStorageContext::GetRemoteFor(BrowserContext* browser_context) {
 }
 
 void ChromeBlobStorageContext::InitializeOnIOThread(
-    FilePath blob_storage_dir,
+    const FilePath& profile_dir,
+    const FilePath& blob_storage_dir,
     scoped_refptr<base::TaskRunner> file_task_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  context_.reset(new BlobStorageContext(std::move(blob_storage_dir),
+  context_.reset(new BlobStorageContext(profile_dir, blob_storage_dir,
                                         std::move(file_task_runner)));
   // Signal the BlobMemoryController when it's appropriate to calculate its
   // storage limits.

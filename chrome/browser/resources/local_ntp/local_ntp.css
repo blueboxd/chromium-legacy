@@ -2051,12 +2051,7 @@ html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
   margin-inline-end: 16px;
 }
 
-#color-picker-container.visible {
-  display: inline-block;
-}
-
 #color-picker-container {
-  display: none;
   vertical-align: top;
 }
 

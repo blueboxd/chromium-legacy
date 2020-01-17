@@ -28,6 +28,7 @@ class WebContents;
 
 namespace resource_coordinator {
 
+class InterventionPolicyDatabase;
 class TabFreezingEnabledPreferenceMonitor;
 class TabLifecycleObserver;
 class TabLifecycleStateObserver;
@@ -43,6 +44,7 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   class LifecycleStateObserver;
 
   TabLifecycleUnitSource(
+      InterventionPolicyDatabase* intervention_policy_database,
       UsageClock* usage_clock);
   ~TabLifecycleUnitSource() override;
 
@@ -62,6 +64,10 @@ class TabLifecycleUnitSource : public BrowserListObserver,
 
   // Pretend that |tab_strip| is the TabStripModel of the focused window.
   void SetFocusedTabStripModelForTesting(TabStripModel* tab_strip);
+
+  InterventionPolicyDatabase* intervention_policy_database() const {
+    return intervention_policy_database_;
+  }
 
   // Returns the state of the tab lifecycles feature enterprise control. This
   // returns true if the feature should be enabled, false otherwise.
@@ -89,8 +95,6 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   friend class TabManagerTest;
   friend class TabActivityWatcherTest;
   FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitSourceTest,
-                           TabProactiveDiscardedByFrozenCallback);
-  FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitSourceTest,
                            CannotFreezeOriginTrialOptOut);
   FRIEND_TEST_ALL_PREFIXES(TabLifecycleUnitSourceTest,
                            CannotFreezeOriginTrialUnknown);
@@ -99,16 +103,6 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerWasDiscarded);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            TabManagerWasDiscardedCrossSiteSubFrame);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           ProactiveFastShutdownSingleTabProcess);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           ProactiveFastShutdownSharedTabProcess);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           ProactiveFastShutdownWithUnloadHandler);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           ProactiveFastShutdownWithBeforeunloadHandler);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTestWithTwoTabs,
-                           TabFreezeDisallowedWhenProactivelyDiscarding);
 
   // Returns the TabLifecycleUnit instance associated with |web_contents|, or
   // nullptr if |web_contents| isn't a tab.
@@ -186,6 +180,10 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // Observers notified when the discarded or auto-discardable state of a tab
   // changes.
   base::ObserverList<TabLifecycleObserver>::Unchecked tab_lifecycle_observers_;
+
+  // The intervention policy database used to assist freezing/discarding
+  // decisions.
+  InterventionPolicyDatabase* intervention_policy_database_;
 
   // A clock that advances when Chrome is in use.
   UsageClock* const usage_clock_;

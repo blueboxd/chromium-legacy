@@ -43,8 +43,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 - (instancetype)initWithDelegate:(id<InfobarTranslateLanguageSelectionDelegate>)
                                      langageSelectionDelegate
          selectingSourceLanguage:(BOOL)sourceLanguage {
-  self = [super initWithTableViewStyle:UITableViewStylePlain
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     _langageSelectionDelegate = langageSelectionDelegate;
     _selectingSourceLanguage = sourceLanguage;

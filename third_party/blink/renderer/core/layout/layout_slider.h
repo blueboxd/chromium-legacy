@@ -27,7 +27,6 @@
 namespace blink {
 
 class HTMLInputElement;
-class SliderThumbElement;
 
 class CORE_EXPORT LayoutSlider final : public LayoutFlexibleBox {
  public:
@@ -35,8 +34,6 @@ class CORE_EXPORT LayoutSlider final : public LayoutFlexibleBox {
 
   explicit LayoutSlider(HTMLInputElement*);
   ~LayoutSlider() override;
-
-  bool InDragMode() const;
 
   const char* GetName() const override { return "LayoutSlider"; }
 
@@ -53,8 +50,6 @@ class CORE_EXPORT LayoutSlider final : public LayoutFlexibleBox {
   void ComputeIntrinsicLogicalWidths(
       LayoutUnit& min_logical_width,
       LayoutUnit& max_logical_width) const override;
-
-  SliderThumbElement* GetSliderThumbElement() const;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSlider, IsSlider());

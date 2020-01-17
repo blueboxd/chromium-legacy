@@ -18,9 +18,7 @@ source_set("password_protection") {
       "visual_utils.h",
     ]
 
-    public_deps = [
-      "//google_apis:google_apis",
-    ]
+    public_deps = [ "//google_apis:google_apis" ]
 
     deps = [
       ":password_protection_metrics_util",

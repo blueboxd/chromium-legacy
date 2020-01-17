@@ -89,7 +89,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <set>
 #include <utility>
 
 #include "base/macros.h"
@@ -1917,12 +1916,12 @@ std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
   base::UnguessableToken portal_token;
   std::tie(portal_frame, portal_token) = client_->CreatePortal(
       portal_receiver.PassHandle(), portal_client.PassHandle(), portal);
-  return {ToWebRemoteFrameImpl(portal_frame)->GetFrame(), portal_token};
+  return {To<WebRemoteFrameImpl>(portal_frame)->GetFrame(), portal_token};
 }
 
 RemoteFrame* WebLocalFrameImpl::AdoptPortal(HTMLPortalElement* portal) {
-  WebRemoteFrameImpl* portal_frame =
-      ToWebRemoteFrameImpl(client_->AdoptPortal(portal->GetToken(), portal));
+  auto* portal_frame =
+      To<WebRemoteFrameImpl>(client_->AdoptPortal(portal->GetToken(), portal));
   return portal_frame->GetFrame();
 }
 
@@ -2098,6 +2097,16 @@ bool WebLocalFrameImpl::ScrollTo(const gfx::Point& scrollPosition,
   return true;
 }
 
+void WebLocalFrameImpl::SetEmbeddingToken(
+    const base::UnguessableToken& embedding_token) {
+  frame_->SetEmbeddingToken(embedding_token);
+}
+
+const base::Optional<base::UnguessableToken>&
+WebLocalFrameImpl::GetEmbeddingToken() {
+  return frame_->GetEmbeddingToken();
+}
+
 void WebLocalFrameImpl::SendPings(const WebURL& destination_url) {
   DCHECK(GetFrame());
   if (Node* node = ContextMenuNodeInner()) {
@@ -2206,8 +2215,7 @@ void WebLocalFrameImpl::ReportContentSecurityPolicyViolation(
   document->GetContentSecurityPolicy()->ReportViolation(
       violation.directive, directive_type, violation.console_message,
       violation.blocked_url, report_endpoints, violation.use_reporting_api,
-      violation.header,
-      static_cast<ContentSecurityPolicyHeaderType>(violation.disposition),
+      violation.header, violation.disposition,
       ContentSecurityPolicy::ViolationType::kURLViolation,
       std::move(source_location), context_frame,
       violation.after_redirect ? RedirectStatus::kFollowedRedirect
@@ -2244,14 +2252,6 @@ void WebLocalFrameImpl::SetCommittedFirstRealLoad() {
 bool WebLocalFrameImpl::HasCommittedFirstRealLoad() {
   DCHECK(GetFrame());
   return GetFrame()->Loader().StateMachine()->CommittedFirstRealDocumentLoad();
-}
-
-void WebLocalFrameImpl::BlinkFeatureUsageReport(
-    const std::set<blink::mojom::WebFeature>& features) {
-  DCHECK(!features.empty());
-  // Assimilate all features used/performed by the browser into UseCounter.
-  for (const auto& feature : features)
-    UseCounter::Count(GetFrame()->GetDocument(), feature);
 }
 
 void WebLocalFrameImpl::BlinkFeatureUsageReport(
@@ -2392,38 +2392,8 @@ WebFrameWidget* WebLocalFrameImpl::FrameWidget() const {
   return frame_widget_;
 }
 
-void WebLocalFrameImpl::CopyImageAt(const WebPoint& pos_in_viewport) {
-  HitTestResult result = HitTestResultForVisualViewportPos(pos_in_viewport);
-  if (!IsA<HTMLCanvasElement>(result.InnerNodeOrImageMapImage()) &&
-      result.AbsoluteImageURL().IsEmpty()) {
-    // There isn't actually an image at these coordinates.  Might be because
-    // the window scrolled while the context menu was open or because the page
-    // changed itself between when we thought there was an image here and when
-    // we actually tried to retreive the image.
-    //
-    // FIXME: implement a cache of the most recent HitTestResult to avoid having
-    //        to do two hit tests.
-    return;
-  }
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame()->GetDocument()->UpdateStyleAndLayout();
-
-  GetFrame()->GetEditor().CopyImage(result);
-}
-
-void WebLocalFrameImpl::SaveImageAt(const WebPoint& pos_in_viewport) {
-  Node* node = HitTestResultForVisualViewportPos(pos_in_viewport)
-                   .InnerNodeOrImageMapImage();
-  if (!node || !(IsA<HTMLCanvasElement>(*node) || IsA<HTMLImageElement>(*node)))
-    return;
-
-  String url = To<Element>(*node).ImageSourceURL();
-  if (!KURL(NullURL(), url).ProtocolIsData())
-    return;
-
-  client_->SaveImageFromDataURL(url);
+void WebLocalFrameImpl::CopyImageAtForTesting(const WebPoint& pos_in_viewport) {
+  GetFrame()->CopyImageAtViewportPoint(pos_in_viewport);
 }
 
 WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {

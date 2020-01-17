@@ -13,6 +13,10 @@ namespace browser_watcher {
 // collected in the event of an unclean shutdown.
 extern const base::Feature kStabilityDebuggingFeature;
 
+// Name of an experiment parameter that controls whether to record browser
+// activity in-memory only.
+extern const char kInMemoryOnlyParam[];
+
 // Name of an experiment parameter that controls whether to perform an initial
 // flush.
 extern const char kInitFlushParam[];

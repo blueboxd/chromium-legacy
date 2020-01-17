@@ -112,7 +112,7 @@ def WriteFile(contents, full_path):
 
   # Dump the data to disk.
   with open(full_path, "wb") as f:
-    f.write(contents)
+    f.write(contents.encode('utf-8'))
 
 
 def AddComputedData(module):

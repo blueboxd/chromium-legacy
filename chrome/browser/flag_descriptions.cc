@@ -649,6 +649,12 @@ extern const char kDesktopPWAsLocalUpdatingDescription[] =
     "Enable installed PWAs to update their app manifest data when the site "
     "manifest data has changed.";
 
+extern const char kDesktopPWAsLocalUpdatingThrottlePersistenceName[] =
+    "Desktop PWAs local updating throttle persistence";
+extern const char kDesktopPWAsLocalUpdatingThrottlePersistenceDescription[] =
+    "Persist the throttling of local PWA manifest update checks across browser "
+    "restarts.";
+
 extern const char kDesktopPWAsTabStripName[] = "Desktop PWA tab strips";
 extern const char kDesktopPWAsTabStripDescription[] =
     "Experimental UI for exploring what PWA windows would look like with a tab "
@@ -1230,6 +1236,11 @@ const char kIgnoreLitePageRedirectHintsBlacklistDescription[] =
     "Ignore blacklist decisions made by Optimization Hints for Lite Page "
     "Redirect previews";
 
+const char kImprovedCookieControlsName[] =
+    "Enable improved cookie controls UI in incognito mode";
+const char kImprovedCookieControlsDescription[] =
+    "Improved UI in Incognito mode for third-party cookie blocking.";
+
 const char kImprovedCookieControlsForThirdPartyCookieBlockingName[] =
     "Enable improved UI for third-party cookie blocking";
 const char kImprovedCookieControlsForThirdPartyCookieBlockingDescription[] =
@@ -1419,6 +1430,17 @@ const char kOmniboxExperimentalSuggestScoringName[] =
 const char kOmniboxExperimentalSuggestScoringDescription[] =
     "Enables an experimental scoring mode for suggestions when Google is the "
     "default search engine.";
+
+const char kOmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTermsName[] =
+    "Omnibox History Quick Provider Allow but Do Not Score Midword Terms";
+const char
+    kOmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTermsDescription[] =
+        "Midword terms are allowed but not scored.";
+const char kOmniboxHistoryQuickProviderAllowMidwordContinuationsName[] =
+    "Omnibox History Quick Provider Allow Midword Continuations";
+const char kOmniboxHistoryQuickProviderAllowMidwordContinuationsDescription[] =
+    "Midword matches are allowed and scored when the match begins immediately "
+    "after the previous match ends.";
 
 const char kOmniboxLocalEntitySuggestionsName[] =
     "Omnibox Local Entity Suggestions";
@@ -2631,6 +2653,10 @@ const char kInterestFeedContentSuggestionsDescription[] =
 const char kInterestFeedContentSuggestionsName[] =
     "Interest Feed Content Suggestions";
 
+const char kInterestFeedFeedbackDescription[] =
+    "Allow the user to provide feedback from a feed card.";
+const char kInterestFeedFeedbackName[] = "Interest Feed Feedback";
+
 const char kManualPasswordGenerationAndroidName[] =
     "Manual password generation";
 const char kManualPasswordGenerationAndroidDescription[] =
@@ -2886,13 +2912,6 @@ const char kAndroidNightModeDescription[] =
 
 #else  // !defined(OS_ANDROID)
 
-const char kShowSyncPausedReasonCookiesClearedOnExitName[] =
-    "Show sync paused reason is the setup of cookie settings.";
-const char kShowSyncPausedReasonCookiesClearedOnExitDescription[] =
-    "If enabled and the user is in sync paused state because of cookie settings"
-    " set to clear cookies on exit, we show the user a message with the reason"
-    " in the user menu.";
-
 const char kAppManagementName[] = "Enable App Management page";
 const char kAppManagementDescription[] =
     "Shows the new app management page at chrome://apps.";
@@ -2902,24 +2921,11 @@ const char kCastMediaRouteProviderDescription[] =
     "Enables the native Cast Media Route Provider implementation to be used "
     "instead of the implementation in the Media Router component extension.";
 
-const char kChromeColorsName[] = "Chrome Colors menu";
-const char kChromeColorsDescription[] =
-    "Show Chrome Colors menu in the NTP customization menu.";
-
-const char kChromeColorsCustomColorPickerName[] =
-    "Custom color picker for Chrome Colors menu";
-const char kChromeColorsCustomColorPickerDescription[] =
-    "Show custom color picker in Chrome Colors menu.";
-
 const char kNtpConfirmSuggestionRemovalsName[] =
     "Confirm removing \"realbox\" suggestions on New Tab page";
 const char kNtpConfirmSuggestionRemovalsDescription[] =
     "Show a confirmation dialog when removing suggestions from the \"realbox\" "
     "on the New Tab page. Requires #ntp-realbox to be enabled.";
-
-const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
-const char kNtpCustomizationMenuV2Description[] =
-    "Use the second version of the NTP customization menu.";
 
 const char kNtpDismissPromosName[] = "Dismiss promos on the New Tab Page";
 const char kNtpDismissPromosDescription[] =
@@ -2938,10 +2944,10 @@ const char kNtpRealboxMatchOmniboxThemeDescription[] =
     "Themes the real search box in the middle of the NTP to match the omnibox. "
     "Only has an an effect if #ntp-realbox is enabled.";
 
-const char kImprovedCookieControlsName[] =
-    "Enable improved cookie controls UI in incognito mode";
-const char kImprovedCookieControlsDescription[] =
-    "Improved UI in Incognito mode for third-party cookie blocking.";
+const char kNtpWebUIName[] =
+    "Use the WebUI new tab page when opening a new tab";
+const char kNtpWebUIDescription[] =
+    "The WebUI new tab page is a replacement for the local NTP.";
 
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =
@@ -3342,6 +3348,11 @@ const char kCameraSystemWebAppName[] = "Camera System Web App";
 const char kCameraSystemWebAppDescription[] =
     "Run the Chrome Camera App as a System Web App.";
 
+const char kChromeosVideoDecoderName[] = "New Chrome OS Video Decoder";
+const char kChromeosVideoDecoderDescription[] =
+    "Enables the new Chrome OS video decoder pipeline for hardware accelerated"
+    "video decoding.";
+
 const char kCrOSContainerName[] = "Chrome OS Container";
 const char kCrOSContainerDescription[] =
     "Enable the use of Chrome OS Container utility.";
@@ -3368,6 +3379,10 @@ const char kCrostiniDiskResizingName[] = "Allow resizing Crostini disks";
 const char kCrostiniDiskResizingDescription[] =
     "Use preallocated user-resizeable disks for Crostini instead of sparse "
     "automatically sized disks.";
+
+const char kCrostiniUsernameName[] = "Allow picking your Crostini username";
+const char kCrostiniUsernameDescription[] =
+    "Allow picking your Crostini username";
 
 const char kCrostiniUseBusterImageName[] = "New Crostini containers use Buster";
 const char kCrostiniUseBusterImageDescription[] =
@@ -3415,6 +3430,11 @@ const char kDisableExplicitDmaFencesName[] = "Disable explicit dma-fences";
 const char kDisableExplicitDmaFencesDescription[] =
     "Always rely on implicit syncrhonization between GPU and display "
     "controller instead of using dma-fences explcitily when available.";
+
+const char kDisplayChangeModalName[] = "Enable display change modal";
+const char kDisplayChangeModalDescription[] =
+    "If enabled, a modal dialog will be shown when resolution or refresh rate "
+    "is changed rather than a notification.";
 
 const char kEnableUseHDRTransferFunctionName[] =
     "Enable using HDR transfer function";
@@ -3617,8 +3637,14 @@ const char kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[] =
     "Enable ChromeVox language switching, which changes ChromeVox's "
     "output language upon detection of new language.";
 
+const char kExperimentalAccessibilityChromeVoxSearchMenusName[] =
+    "Enable experimental ChromeVox search menus feature.";
+const char kExperimentalAccessibilityChromeVoxSearchMenusDescription[] =
+    "Allows users to search for items in the ChromeVox menu.";
+
 const char kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingName[] =
-    "Enable experimental ChromeVox sub-node (word-level) language switching.";
+    "Enable experimental ChromeVox sub-node (word-level) language "
+    "switching.";
 const char
     kExperimentalAccessibilityChromeVoxSubNodeLanguageSwitchingDescription[] =
         "Enable ChromeVox language switching at the sub-node level, "
@@ -3967,15 +3993,6 @@ const char kRemoteCopyReceiverDescription[] =
 const char kDirectManipulationStylusName[] = "Direct Manipulation Stylus";
 const char kDirectManipulationStylusDescription[] =
     "If enabled, Chrome will scroll web pages on stylus drag.";
-
-const char kAnimatedAvatarButtonName[] = "Animated avatar button";
-const char kAnimatedAvatarButtonDescription[] =
-    "If enabled, Chrome will animate a pill with identity information around "
-    "the avatar button on start-up and on sign-in.";
-
-const char kProfileMenuRevampName[] = "Profile menu revamp";
-const char kProfileMenuRevampDescription[] =
-    "Enables the new version of the profile menu (aka user menu).";
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 

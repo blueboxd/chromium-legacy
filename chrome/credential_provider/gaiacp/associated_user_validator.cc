@@ -33,7 +33,7 @@ const base::TimeDelta
         base::TimeDelta::FromMilliseconds(3000);
 
 const base::TimeDelta AssociatedUserValidator::kTokenHandleValidityLifetime =
-    base::TimeDelta::FromSeconds(30);
+    base::TimeDelta::FromSeconds(60);
 
 const char AssociatedUserValidator::kTokenInfoUrl[] =
     "https://www.googleapis.com/oauth2/v2/tokeninfo";
@@ -231,8 +231,14 @@ bool AssociatedUserValidator::HasInternetConnection() const {
   return InternetAvailabilityChecker::Get()->HasInternetConnection();
 }
 
+bool AssociatedUserValidator::HasInvokedUpdateAssociatedSids() {
+  return has_invoked_update_associated_sids_;
+}
+
 HRESULT AssociatedUserValidator::UpdateAssociatedSids(
     std::map<base::string16, base::string16>* sid_to_handle) {
+  has_invoked_update_associated_sids_ = true;
+
   std::map<base::string16, UserTokenHandleInfo> sids_to_handle_info;
 
   HRESULT hr = GetUserTokenHandles(&sids_to_handle_info);
@@ -290,7 +296,8 @@ bool AssociatedUserValidator::IsUserAccessBlockingEnforced(
 }
 
 bool AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
-    CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
+    CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
+    const std::vector<base::string16>& reauth_sids) {
   base::AutoLock locker(validator_lock_);
 
   if (block_deny_access_update_) {
@@ -313,8 +320,7 @@ bool AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
 
   bool user_denied_signin = false;
   OSUserManager* manager = OSUserManager::Get();
-  for (const auto& user_info : user_to_token_handle_info_) {
-    const base::string16& sid = user_info.first;
+  for (const auto& sid : reauth_sids) {
     if (locked_user_sids_.find(sid) != locked_user_sids_.end())
       continue;
 
@@ -479,15 +485,18 @@ void AssociatedUserValidator::StartTokenValidityQuery(
       token_handle, max_end_time, reinterpret_cast<HANDLE>(wait_thread));
 }
 
-bool AssociatedUserValidator::IsTokenHandleValidForUser(
-    const base::string16& sid) {
+bool AssociatedUserValidator::IsAuthEnforcedForUser(const base::string16& sid) {
   base::AutoLock locker(validator_lock_);
-  return GetAuthEnforceReason(sid) ==
+  return GetAuthEnforceReason(sid) !=
          AssociatedUserValidator::EnforceAuthReason::NOT_ENFORCED;
 }
 
 AssociatedUserValidator::EnforceAuthReason
 AssociatedUserValidator::GetAuthEnforceReason(const base::string16& sid) {
+  // Is user is not associated, then we shouldn't have any auth enforcement.
+  if (!IsUserAssociated(sid))
+    return AssociatedUserValidator::EnforceAuthReason::NOT_ENFORCED;
+
   // All token handles are valid when no internet connection is available.
   if (!HasInternetConnection()) {
     if (!IsOnlineLoginStale(sid)) {
@@ -495,20 +504,6 @@ AssociatedUserValidator::GetAuthEnforceReason(const base::string16& sid) {
     }
     return AssociatedUserValidator::EnforceAuthReason::ONLINE_LOGIN_STALE;
   }
-
-  // If at this point there is no token info entry for this user, assume the
-  // user is not associated and does not need a token handle and is thus always
-  // valid. On initial startup we should have already called
-  // StartRefreshingTokenHandleValidity to create all the token info for all the
-  // current associated users. Between the first creation of all the token infos
-  // and the eventual successful  sign in there should be no new token handles
-  // created so we can immediately assign that an absence of token handle info
-  // for this user means that they are not associated and do not need to
-  // validate any token handles.
-  auto validity_it = user_to_token_handle_info_.find(sid);
-
-  if (validity_it == user_to_token_handle_info_.end())
-    return AssociatedUserValidator::EnforceAuthReason::NOT_ENFORCED;
 
   // If mdm enrollment is needed, then force a reauth for all users so
   // that they enroll.
@@ -526,6 +521,35 @@ AssociatedUserValidator::GetAuthEnforceReason(const base::string16& sid) {
           MISSING_PASSWORD_RECOVERY_INFO;
     }
   }
+
+  if (!IsTokenHandleValidForUser(sid))
+    return AssociatedUserValidator::EnforceAuthReason::INVALID_TOKEN_HANDLE;
+
+  return AssociatedUserValidator::EnforceAuthReason::NOT_ENFORCED;
+}
+
+bool AssociatedUserValidator::IsUserAssociated(const base::string16& sid) {
+  // If at this point there is no token info entry for this user, assume the
+  // user is not associated and does not need a token handle and is thus always
+  // valid. Between the first creation of all the token infos
+  // and the eventual successful sign in, there should be no new token handles
+  // created so we can immediately assign that an absence of token handle info
+  // for this user means that they are not associated and do not need to
+  // validate any token handles.
+  auto validity_it = user_to_token_handle_info_.find(sid);
+  return validity_it != user_to_token_handle_info_.end();
+}
+
+bool AssociatedUserValidator::IsTokenHandleValidForUser(
+    const base::string16& sid) {
+  // Make sure sid mapping in registry is always up to date before checking
+  // for token validity.
+  if (!HasInvokedUpdateAssociatedSids())
+    UpdateAssociatedSids(nullptr);
+
+  auto validity_it = user_to_token_handle_info_.find(sid);
+  if (validity_it == user_to_token_handle_info_.end())
+    return true;
 
   // This function will start a new query if the current info for the token
   // handle is stale or has not yet been queried. At the end of this function,
@@ -566,9 +590,26 @@ AssociatedUserValidator::GetAuthEnforceReason(const base::string16& sid) {
                                            : now;
   }
 
-  return validity_it->second->is_valid
-             ? AssociatedUserValidator::EnforceAuthReason::NOT_ENFORCED
-             : AssociatedUserValidator::EnforceAuthReason::INVALID_TOKEN_HANDLE;
+  return validity_it->second->is_valid;
+}
+
+bool AssociatedUserValidator::IsAuthEnforcedOnAssociatedUsers() {
+  std::map<base::string16, UserTokenHandleInfo> sids_to_handle_info;
+  HRESULT hr = GetUserTokenHandles(&sids_to_handle_info);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "GetUserTokenHandles hr=" << putHR(hr);
+    return hr;
+  }
+
+  for (const auto& sid_to_association : sids_to_handle_info) {
+    const base::string16& sid = sid_to_association.first;
+    // Return true even if one of the associated user sid
+    // has an auth enforced.
+    if (IsAuthEnforcedForUser(sid)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void AssociatedUserValidator::BlockDenyAccessUpdate() {

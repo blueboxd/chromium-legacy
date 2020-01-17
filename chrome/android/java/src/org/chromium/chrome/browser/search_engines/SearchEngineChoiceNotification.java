@@ -8,11 +8,12 @@ import android.content.Context;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omaha.VersionNumber;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.search_engine.SearchEngineSettings;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
@@ -23,16 +24,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Class that prompts the user to change their search engine at the browser startup.
- * User is only meant to be propmpted once, hence the fact of prompting is saved to preferences.
+ * User is only meant to be prompted once, hence the fact of prompting is saved to preferences.
  */
 public final class SearchEngineChoiceNotification {
-    /** Key used to store the date of when search engine choice was requested. */
-    static final String PREF_SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP =
-            "search_engine_choice_requested_timestamp";
-
-    /** Key used to store the version of Chrome in which the choice was presented. */
-    static final String PREF_SEARCH_ENGINE_CHOICE_PRESENTED_VERSION =
-            "search_engine_choice_presented_version";
 
     /** Variations parameter name for notification snackbar duration (in seconds). */
     private static final String PARAM_NOTIFICATION_SNACKBAR_DURATION_SECONDS =
@@ -117,23 +111,19 @@ public final class SearchEngineChoiceNotification {
 
     private static void updateSearchEngineChoiceRequested() {
         long now = System.currentTimeMillis();
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putLong(PREF_SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP, now)
-                .apply();
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP, now);
     }
 
     private static boolean wasSearchEngineChoiceRequested() {
-        return ContextUtils.getAppSharedPreferences().contains(
-                PREF_SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP);
+        return SharedPreferencesManager.getInstance().contains(
+                ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP);
     }
 
     private static void updateSearchEngineChoicePresented() {
         String productVersion = ChromeVersionInfo.getProductVersion();
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putString(PREF_SEARCH_ENGINE_CHOICE_PRESENTED_VERSION, productVersion)
-                .apply();
+        SharedPreferencesManager.getInstance().writeString(
+                ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_PRESENTED_VERSION, productVersion);
     }
 
     private static boolean wasSearchEngineChoicePresented() {
@@ -148,8 +138,8 @@ public final class SearchEngineChoiceNotification {
 
     @Nullable
     private static VersionNumber getLastPresentedVersionNumber() {
-        return VersionNumber.fromString(ContextUtils.getAppSharedPreferences().getString(
-                PREF_SEARCH_ENGINE_CHOICE_PRESENTED_VERSION, null));
+        return VersionNumber.fromString(SharedPreferencesManager.getInstance().readString(
+                ChromePreferenceKeys.SEARCH_ENGINE_CHOICE_PRESENTED_VERSION, null));
     }
 
     @Nullable

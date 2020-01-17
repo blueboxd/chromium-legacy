@@ -217,6 +217,10 @@ class ControllerTest : public content::RenderViewHostTestHarness {
 
   UiDelegate* GetUiDelegate() { return controller_.get(); }
 
+  void SetNavigatingToNewDocument(bool value) {
+    controller_->navigating_to_new_document_ = value;
+  }
+
   // |task_environment_| must be the first field, to make sure that everything
   // runs in the same task environment.
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -422,6 +426,7 @@ TEST_F(ControllerTest, NoRelevantScriptYet) {
   Start("http://a.example.com/path");
   EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
 }
+
 TEST_F(ControllerTest, ReportPromptAndSuggestionsChanged) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "script1");
@@ -950,6 +955,18 @@ TEST_F(ControllerTest, RemoveListener) {
       GURL("http://initialurl.com"), web_contents()->GetMainFrame());
 
   EXPECT_THAT(listener.events, IsEmpty());
+}
+
+TEST_F(ControllerTest, DelayStartupIfLoading) {
+  SetNavigatingToNewDocument(true);
+
+  Start("http://a.example.com/");
+  EXPECT_EQ(AutofillAssistantState::INACTIVE, controller_->GetState());
+
+  content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://b.example.com"), web_contents()->GetMainFrame());
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::STARTING,
+                                   AutofillAssistantState::STOPPED));
 }
 
 TEST_F(ControllerTest, WaitForNavigationActionTimesOut) {

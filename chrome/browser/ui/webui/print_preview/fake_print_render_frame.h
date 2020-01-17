@@ -34,6 +34,7 @@ class FakePrintRenderFrame : public mojom::PrintRenderFrame {
   void PrintFrameContent(mojom::PrintFrameContentParamsPtr params) override;
   void PrintingDone(bool success) override;
   void SetPrintingEnabled(bool enabled) override;
+  void PrintNodeUnderContextMenu() override;
 
   void BindPrintRenderFrameReceiver(mojo::ScopedInterfaceEndpointHandle handle);
 

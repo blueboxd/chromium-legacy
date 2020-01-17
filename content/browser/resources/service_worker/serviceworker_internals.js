@@ -96,8 +96,8 @@ cr.define('serviceworker', function() {
     const logAreas = container.querySelectorAll('textarea.serviceworker-log');
     for (let i = 0; i < logAreas.length; ++i) {
       const logArea = logAreas[i];
-      if (logArea.partition_id == partition_id &&
-          logArea.version_id == version.version_id) {
+      if (logArea.partition_id === partition_id &&
+          logArea.version_id === version.version_id) {
         logArea.value = version.log;
       }
     }
@@ -154,7 +154,7 @@ cr.define('serviceworker', function() {
     // the UI to be updated in-place rather than refreshing the
     // whole page.
     for (let i = 0; i < container.childNodes.length; ++i) {
-      if (container.childNodes[i].partition_id == partition_id) {
+      if (container.childNodes[i].partition_id === partition_id) {
         template = container.childNodes[i];
       }
     }
@@ -233,8 +233,8 @@ cr.define('serviceworker', function() {
     const logAreas = document.querySelectorAll('textarea.serviceworker-log');
     for (let i = 0; i < logAreas.length; ++i) {
       const logArea = logAreas[i];
-      if (logArea.partition_id == partition_id &&
-          logArea.version_id == version_id) {
+      if (logArea.partition_id === partition_id &&
+          logArea.version_id === version_id) {
         logArea.value += message;
       }
     }

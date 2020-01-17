@@ -164,8 +164,8 @@ bool CopyVideoFrame(const VideoFrame* src_frame,
                         false);
   for (size_t i = 0; i < num_planes; ++i) {
     // |width| in libyuv::CopyPlane() is in bytes, not pixels.
-    gfx::Size plane_size = VideoFrame::PlaneSize(dst_frame->format(), i,
-                                                 dst_frame->natural_size());
+    gfx::Size plane_size =
+        VideoFrame::PlaneSize(dst_frame->format(), i, dst_frame->coded_size());
     libyuv::CopyPlane(
         src_frame->data(i), src_frame->layout().planes()[i].stride,
         dst_frame->data(i), dst_frame->layout().planes()[i].stride,

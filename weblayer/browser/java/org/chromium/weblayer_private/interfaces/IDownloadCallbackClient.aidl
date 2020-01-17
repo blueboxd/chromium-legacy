@@ -4,9 +4,19 @@
 
 package org.chromium.weblayer_private.interfaces;
 
+import org.chromium.weblayer_private.interfaces.IClientDownload;
+import org.chromium.weblayer_private.interfaces.IDownload;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+
 /**
  * Used to forward download requests to the client.
  */
 interface IDownloadCallbackClient {
   boolean interceptDownload(in String uriString, in String userAgent, in String contentDisposition, in String mimetype, long contentLength) = 0;
+  void allowDownload(in String uriString, in String requestMethod, in String requestInitiatorString, in IObjectWrapper valueCallback) = 1;
+  IClientDownload createClientDownload(in IDownload impl) = 2;
+  void downloadStarted(IClientDownload download) = 3;
+  void downloadProgressChanged(IClientDownload download) = 4;
+  void downloadCompleted(IClientDownload download) = 5;
+  void downloadFailed(IClientDownload download) = 6;
 }

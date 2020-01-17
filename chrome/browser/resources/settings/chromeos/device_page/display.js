@@ -56,7 +56,7 @@ Polymer({
      */
     selectedModePref_: {
       type: Object,
-      value: function() {
+      value() {
         return {
           key: 'fakeDisplaySliderPref',
           type: chrome.settingsPrivate.PrefType.NUMBER,
@@ -71,7 +71,7 @@ Polymer({
      */
     selectedZoomPref_: {
       type: Object,
-      value: function() {
+      value() {
         return {
           key: 'fakeDisplaySliderZoomPref',
           type: chrome.settingsPrivate.PrefType.NUMBER,
@@ -130,7 +130,7 @@ Polymer({
     /** @private */
     unifiedDesktopAvailable_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('unifiedDesktopAvailable');
       }
     },
@@ -138,7 +138,7 @@ Polymer({
     /** @private */
     ambientColorAvailable_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('deviceSupportsAmbientColor');
       }
     },
@@ -146,7 +146,7 @@ Polymer({
     /** @private */
     listAllDisplayModes_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('listAllDisplayModes');
       }
     },
@@ -160,7 +160,7 @@ Polymer({
     /** @private */
     scheduleTypesList_: {
       type: Array,
-      value: function() {
+      value() {
         return [
           {
             name: loadTimeData.getString('displayNightLightScheduleNever'),
@@ -217,7 +217,7 @@ Polymer({
   displayChangedListener_: undefined,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.displayChangedListener_ =
         this.displayChangedListener_ || this.getDisplayInfo_.bind(this);
     settings.display.systemDisplayApi.onDisplayChanged.addListener(
@@ -228,7 +228,7 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     settings.display.systemDisplayApi.onDisplayChanged.removeListener(
         assert(this.displayChangedListener_));
 
@@ -240,7 +240,7 @@ Polymer({
    * @param {boolean} showOverscan
    * @private
    */
-  showOverscanDialog_: function(showOverscan) {
+  showOverscanDialog_(showOverscan) {
     if (showOverscan) {
       this.$.displayOverscan.open();
       this.$.displayOverscan.focus();
@@ -250,14 +250,14 @@ Polymer({
   },
 
   /** @private */
-  onDisplayIdsChanged_: function() {
+  onDisplayIdsChanged_() {
     // Close any overscan dialog (which will cancel any overscan operation)
     // if displayIds changes.
     this.showOverscanDialog_(false);
   },
 
   /** @private */
-  getDisplayInfo_: function() {
+  getDisplayInfo_() {
     /** @type {chrome.system.display.GetInfoFlags} */ const flags = {
       singleUnified: true
     };
@@ -269,7 +269,7 @@ Polymer({
    * @param {!Array<!chrome.system.display.DisplayUnitInfo>} displays
    * @private
    */
-  displayInfoFetched_: function(displays) {
+  displayInfoFetched_(displays) {
     if (!displays.length) {
       return;
     }
@@ -287,7 +287,7 @@ Polymer({
    * @param {!Array<!chrome.system.display.DisplayLayout>} layouts
    * @private
    */
-  displayLayoutFetched_: function(displays, layouts) {
+  displayLayoutFetched_(displays, layouts) {
     this.layouts = layouts;
     this.displays = displays;
     this.displayTabNames_ = displays.map(({name}) => name);
@@ -300,7 +300,7 @@ Polymer({
    * |selectedDisplay|. If the display has no modes, returns 0.
    * @private
    */
-  getSelectedModeIndex_: function(selectedDisplay) {
+  getSelectedModeIndex_(selectedDisplay) {
     for (let i = 0; i < selectedDisplay.modes.length; ++i) {
       if (selectedDisplay.modes[i].isSelected) {
         return i;
@@ -315,7 +315,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDevicePolicyEnabled_: function(policyPref) {
+  isDevicePolicyEnabled_(policyPref) {
     return policyPref !== undefined && policyPref.value !== null;
   },
 
@@ -325,7 +325,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDisplayResolutionManagedByPolicy_: function(resolutionPref) {
+  isDisplayResolutionManagedByPolicy_(resolutionPref) {
     return this.isDevicePolicyEnabled_(resolutionPref) &&
         (resolutionPref.value.external_use_native !== undefined ||
          (resolutionPref.value.external_width !== undefined &&
@@ -339,7 +339,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDisplayResolutionMandatory_: function(resolutionPref) {
+  isDisplayResolutionMandatory_(resolutionPref) {
     return this.isDisplayResolutionManagedByPolicy_(resolutionPref) &&
         !resolutionPref.value.recommended;
   },
@@ -351,7 +351,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDisplayScaleManagedByPolicy_: function(selectedDisplay, resolutionPref) {
+  isDisplayScaleManagedByPolicy_(selectedDisplay, resolutionPref) {
     if (!this.isDevicePolicyEnabled_(resolutionPref) || !selectedDisplay) {
       return false;
     }
@@ -368,7 +368,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDisplayScaleMandatory_: function(selectedDisplay, resolutionPref) {
+  isDisplayScaleMandatory_(selectedDisplay, resolutionPref) {
     return this.isDisplayScaleManagedByPolicy_(
                selectedDisplay, resolutionPref) &&
         !resolutionPref.value.recommended;
@@ -381,7 +381,7 @@ Polymer({
    * @return {!DropdownMenuOptionList}
    * @private
    */
-  getDisplayModeOptionList_: function(selectedDisplay) {
+  getDisplayModeOptionList_(selectedDisplay) {
     const optionList = [];
 
     const listAllModes = this.listAllDisplayModes_;
@@ -412,7 +412,7 @@ Polymer({
    * @return {number}
    * @private
    */
-  getSelectedDisplayZoom_: function(selectedDisplay) {
+  getSelectedDisplayZoom_(selectedDisplay) {
     const selectedZoom = selectedDisplay.displayZoomFactor;
     let closestMatch = this.zoomValues_[0].value;
     let minimumDiff = Math.abs(closestMatch - selectedZoom);
@@ -434,7 +434,7 @@ Polymer({
    * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
    * @return {!Array<cr_slider.SliderTick>}
    */
-  getZoomValues_: function(selectedDisplay) {
+  getZoomValues_(selectedDisplay) {
     return selectedDisplay.availableDisplayZoomFactors.map(value => {
       const ariaValue = Math.round(value * 100);
       return {
@@ -451,7 +451,7 @@ Polymer({
    * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
    * @private
    */
-  setSelectedDisplay_: function(selectedDisplay) {
+  setSelectedDisplay_(selectedDisplay) {
     // |modeValues_| controls the resolution slider's tick values. Changing it
     // might trigger a change in the |selectedModePref_.value| if the number of
     // modes differs and the current mode index is out of range of the new modes
@@ -492,7 +492,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showDropDownResolutionSetting_: function(display) {
+  showDropDownResolutionSetting_(display) {
     return !display.isInternal;
   },
 
@@ -505,7 +505,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showTouchCalibrationSetting_: function(display) {
+  showTouchCalibrationSetting_(display) {
     return !display.isInternal &&
         loadTimeData.getBoolean('hasExternalTouchDevice') &&
         loadTimeData.getBoolean('enableTouchCalibrationSetting');
@@ -517,7 +517,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showOverscanSetting_: function(display) {
+  showOverscanSetting_(display) {
     return !display.isInternal;
   },
 
@@ -528,7 +528,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showAmbientColorSetting_: function(ambientColorAvailable, display) {
+  showAmbientColorSetting_(ambientColorAvailable, display) {
     return ambientColorAvailable && display && display.isInternal;
   },
 
@@ -536,7 +536,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasMultipleDisplays_: function() {
+  hasMultipleDisplays_() {
     return this.displays.length > 1;
   },
 
@@ -547,7 +547,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showDisplaySelectMenu_: function(displays, selectedDisplay) {
+  showDisplaySelectMenu_(displays, selectedDisplay) {
     if (selectedDisplay) {
       return displays.length > 1 && !selectedDisplay.isPrimary;
     }
@@ -563,7 +563,7 @@ Polymer({
    * @return {number} Returns 0 if the display is primary else returns 1.
    * @private
    */
-  getDisplaySelectMenuIndex_: function(selectedDisplay, primaryDisplayId) {
+  getDisplaySelectMenuIndex_(selectedDisplay, primaryDisplayId) {
     if (selectedDisplay && selectedDisplay.id == primaryDisplayId) {
       return 0;
     }
@@ -576,7 +576,7 @@ Polymer({
    * @return {string} i18n string for mirroring settings text.
    * @private
    */
-  getDisplayMirrorText_: function(displays) {
+  getDisplayMirrorText_(displays) {
     return this.i18n('displayMirror', displays[0].name);
   },
 
@@ -587,8 +587,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showUnifiedDesktop_: function(
-      unifiedDesktopAvailable, unifiedDesktopMode, displays) {
+  showUnifiedDesktop_(unifiedDesktopAvailable, unifiedDesktopMode, displays) {
     if (displays === undefined) {
       return false;
     }
@@ -603,7 +602,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getUnifiedDesktopText_: function(unifiedDesktopMode) {
+  getUnifiedDesktopText_(unifiedDesktopMode) {
     return this.i18n(
         unifiedDesktopMode ? 'displayUnifiedDesktopOn' :
                              'displayUnifiedDesktopOff');
@@ -615,7 +614,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showMirror_: function(unifiedDesktopMode, displays) {
+  showMirror_(unifiedDesktopMode, displays) {
     if (displays === undefined) {
       return false;
     }
@@ -629,7 +628,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isMirrored_: function(displays) {
+  isMirrored_(displays) {
     return displays !== undefined && displays.length > 0 &&
         !!displays[0].mirroringSourceId;
   },
@@ -640,7 +639,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isSelected_: function(display, selectedDisplay) {
+  isSelected_(display, selectedDisplay) {
     return display.id == selectedDisplay.id;
   },
 
@@ -649,7 +648,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  enableSetResolution_: function(selectedDisplay) {
+  enableSetResolution_(selectedDisplay) {
     return selectedDisplay.modes.length > 1;
   },
 
@@ -658,7 +657,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  enableDisplayZoomSlider_: function(selectedDisplay) {
+  enableDisplayZoomSlider_(selectedDisplay) {
     return selectedDisplay.availableDisplayZoomFactors.length > 1;
   },
 
@@ -669,7 +668,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isBestMode_: function(selectedDisplay, mode) {
+  isBestMode_(selectedDisplay, mode) {
     if (!selectedDisplay.isInternal) {
       return mode.isNative;
     }
@@ -688,7 +687,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getResolutionText_: function() {
+  getResolutionText_() {
     if (this.selectedDisplay.modes.length == 0 ||
         this.currentSelectedModeIndex_ == -1) {
       // If currentSelectedModeIndex_ == -1, selectedDisplay and
@@ -716,7 +715,7 @@ Polymer({
    *    display.
    * @private
    */
-  updateLogicalResolutionText_: function(zoomFactor) {
+  updateLogicalResolutionText_(zoomFactor) {
     if (!this.selectedDisplay.isInternal) {
       this.logicalResolutionText_ = '';
       return;
@@ -752,7 +751,7 @@ Polymer({
    * bounds.
    * @private
    */
-  shouldSwapLogicalResolutionText_: function() {
+  shouldSwapLogicalResolutionText_() {
     const mode = this.selectedDisplay.modes[this.currentSelectedModeIndex_];
     const bounds = this.selectedDisplay.bounds;
 
@@ -766,7 +765,7 @@ Polymer({
    * mouse or tap has not been released.
    * @private
    */
-  onDisplaySizeSliderDrag_: function() {
+  onDisplaySizeSliderDrag_() {
     if (!this.selectedDisplay) {
       return;
     }
@@ -782,7 +781,7 @@ Polymer({
    *     display.
    * @private
    */
-  onSelectDisplay_: function(e) {
+  onSelectDisplay_(e) {
     const id = e.detail;
     for (let i = 0; i < this.displays.length; ++i) {
       const display = this.displays[i];
@@ -796,7 +795,7 @@ Polymer({
   },
 
   /** @private */
-  onSelectDisplayTab_: function() {
+  onSelectDisplayTab_() {
     const {selected} = this.$$('cr-tabs');
     if (this.selectedTab_ != selected) {
       this.setSelectedDisplay_(this.displays[selected]);
@@ -808,7 +807,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onTouchCalibrationTap_: function(e) {
+  onTouchCalibrationTap_(e) {
     settings.display.systemDisplayApi.showNativeTouchCalibration(
         this.selectedDisplay.id);
   },
@@ -818,7 +817,7 @@ Polymer({
    * @param {!{target: !HTMLSelectElement}} e
    * @private
    */
-  updatePrimaryDisplay_: function(e) {
+  updatePrimaryDisplay_(e) {
     /** @type {number} */ const PRIMARY_DISP_IDX = 0;
     if (!this.selectedDisplay) {
       return;
@@ -842,7 +841,7 @@ Polymer({
    * Updates the selected mode based on the latest pref value.
    * @private
    */
-  onSelectedModeSliderChange_: function() {
+  onSelectedModeSliderChange_() {
     if (this.currentSelectedModeIndex_ == -1 ||
         this.currentSelectedModeIndex_ == this.selectedModePref_.value) {
       // Don't change the selected display mode until we have received an update
@@ -864,7 +863,7 @@ Polymer({
    *     called.
    * @private
    */
-  onSelectedModeChange_: function(newModeIndex) {
+  onSelectedModeChange_(newModeIndex) {
     // We want to ignore all value changes to the pref due to the slider being
     // dragged. See http://crbug/845712 for more info.
     if (this.currentSelectedModeIndex_ == newModeIndex) {
@@ -879,7 +878,7 @@ Polymer({
    * dragged).
    * @private
    */
-  onSelectedZoomChange_: function() {
+  onSelectedZoomChange_() {
     if (this.currentSelectedModeIndex_ == -1 || !this.selectedDisplay) {
       return;
     }
@@ -901,7 +900,7 @@ Polymer({
    * @return {boolean|undefined}
    * @private
    */
-  showAutoRotateOption_: function(selectedDisplay) {
+  showAutoRotateOption_(selectedDisplay) {
     return selectedDisplay.isInTabletPhysicalState;
   },
 
@@ -909,7 +908,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onOrientationChange_: function(event) {
+  onOrientationChange_(event) {
     const target = /** @type {!HTMLSelectElement} */ (event.target);
     const value = /** @type {number} */ (parseInt(target.value, 10));
 
@@ -924,7 +923,7 @@ Polymer({
   },
 
   /** @private */
-  onMirroredTap_: function(event) {
+  onMirroredTap_(event) {
     // Blur the control so that when the transition animation completes and the
     // UI is focused, the control does not receive focus. crbug.com/785070
     event.target.blur();
@@ -944,7 +943,7 @@ Polymer({
   },
 
   /** @private */
-  onUnifiedDesktopTap_: function() {
+  onUnifiedDesktopTap_() {
     /** @type {!chrome.system.display.DisplayProperties} */ const properties = {
       isUnified: !this.unifiedDesktopMode_,
     };
@@ -957,19 +956,19 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onOverscanTap_: function(e) {
+  onOverscanTap_(e) {
     e.preventDefault();
     this.overscanDisplayId = this.selectedDisplay.id;
     this.showOverscanDialog_(true);
   },
 
   /** @private */
-  onCloseOverscanDialog_: function() {
+  onCloseOverscanDialog_() {
     cr.ui.focusWithoutInk(assert(this.$$('#overscan')));
   },
 
   /** @private */
-  updateDisplayInfo_: function() {
+  updateDisplayInfo_() {
     let displayIds = '';
     let primaryDisplay = undefined;
     let selectedDisplay = undefined;
@@ -996,7 +995,7 @@ Polymer({
   },
 
   /** @private */
-  setPropertiesCallback_: function() {
+  setPropertiesCallback_() {
     if (chrome.runtime.lastError) {
       console.error(
           'setDisplayProperties Error: ' + chrome.runtime.lastError.message);
@@ -1009,7 +1008,7 @@ Polymer({
    * schedule slider, and the schedule sub label.
    * @private
    */
-  updateNightLightScheduleSettings_: function() {
+  updateNightLightScheduleSettings_() {
     const scheduleType = this.getPref('ash.night_light.schedule_type').value;
     this.shouldOpenCustomScheduleCollapse_ =
         scheduleType == NightLightScheduleType.CUSTOM;
@@ -1028,7 +1027,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowArrangementSection_: function() {
+  shouldShowArrangementSection_() {
     if (!this.displays) {
       return false;
     }
@@ -1036,7 +1035,7 @@ Polymer({
   },
 
   /** @private */
-  onDisplaysChanged_: function() {
+  onDisplaysChanged_() {
     Polymer.dom.flush();
     const displayLayout = this.$$('#displayLayout');
     if (displayLayout) {

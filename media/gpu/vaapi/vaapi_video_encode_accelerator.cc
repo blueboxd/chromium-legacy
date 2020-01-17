@@ -1075,8 +1075,8 @@ bool VaapiVideoEncodeAccelerator::H264Accelerator::SubmitFrameParameters(
   rate_control_param.target_percentage = kTargetBitratePercentage;
   rate_control_param.window_size = encode_params.cpb_window_size_ms;
   rate_control_param.initial_qp = pic_param.pic_init_qp;
-  rate_control_param.min_qp = encode_params.min_qp;
-  rate_control_param.max_qp = encode_params.max_qp;
+  rate_control_param.min_qp = encode_params.scaling_settings.min_qp;
+  rate_control_param.max_qp = encode_params.scaling_settings.max_qp;
   rate_control_param.rc_flags.bits.disable_frame_skip = true;
 
   VAEncMiscParameterFrameRate framerate_param = {};
@@ -1263,8 +1263,8 @@ bool VaapiVideoEncodeAccelerator::VP8Accelerator::SubmitFrameParameters(
   }
 
   pic_param.sharpness_level = frame_header->loopfilter_hdr.sharpness_level;
-  pic_param.clamp_qindex_high = encode_params.max_qp;
-  pic_param.clamp_qindex_low = encode_params.min_qp;
+  pic_param.clamp_qindex_high = encode_params.scaling_settings.max_qp;
+  pic_param.clamp_qindex_low = encode_params.scaling_settings.min_qp;
 
   VAQMatrixBufferVP8 qmatrix_buf = {};
   for (size_t i = 0; i < base::size(qmatrix_buf.quantization_index); ++i)
@@ -1287,8 +1287,8 @@ bool VaapiVideoEncodeAccelerator::VP8Accelerator::SubmitFrameParameters(
   rate_control_param.target_percentage = kTargetBitratePercentage;
   rate_control_param.window_size = encode_params.cpb_window_size_ms;
   rate_control_param.initial_qp = encode_params.initial_qp;
-  rate_control_param.min_qp = encode_params.min_qp;
-  rate_control_param.max_qp = encode_params.max_qp;
+  rate_control_param.min_qp = encode_params.scaling_settings.min_qp;
+  rate_control_param.max_qp = encode_params.scaling_settings.max_qp;
   rate_control_param.rc_flags.bits.disable_frame_skip = true;
 
   VAEncMiscParameterFrameRate framerate_param = {};
@@ -1425,8 +1425,8 @@ bool VaapiVideoEncodeAccelerator::VP9Accelerator::SubmitFrameParameters(
   rate_control_param.target_percentage = kTargetBitratePercentage;
   rate_control_param.window_size = encode_params.cpb_window_size_ms;
   rate_control_param.initial_qp = encode_params.initial_qp;
-  rate_control_param.min_qp = encode_params.min_qp;
-  rate_control_param.max_qp = encode_params.max_qp;
+  rate_control_param.min_qp = encode_params.scaling_settings.min_qp;
+  rate_control_param.max_qp = encode_params.scaling_settings.max_qp;
   rate_control_param.rc_flags.bits.disable_frame_skip = true;
 
   VAEncMiscParameterFrameRate framerate_param = {};

@@ -13,6 +13,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/test/task_environment.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -309,6 +310,12 @@ class BluetoothTestBase : public testing::Test {
   // enables tests where the platform attempts to reference device
   // objects after the Chrome objects have been deleted, e.g. with DeleteDevice.
   virtual void RememberDeviceForSubsequentAction(BluetoothDevice* device) {}
+
+  // GetTargetGattService returns the specific GATT service, if any, that was
+  // targeted for discovery, i.e. via the |service_uuid| argument to
+  // |CreateGattConnection|.
+  virtual base::Optional<BluetoothUUID> GetTargetGattService(
+      BluetoothDevice* device);
 
   // Simulates success of implementation details of CreateGattConnection.
   virtual void SimulateGattConnection(BluetoothDevice* device) {}

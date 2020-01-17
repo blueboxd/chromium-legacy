@@ -7,20 +7,13 @@
 
 #include <string>
 
-#include "third_party/boringssl/src/include/openssl/rsa.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace arc {
 
-// Creates a PKCS12 container with RSA private key, generated with p = |blob|,
-// to be able to extract |blob| value from a private key material later.
+// Creates a PKCS12 container named |name| with private key |key|.
 // Returns empty string in case of any error.
-std::string CreatePkcs12FromBlob(const std::string& blob);
-
-// Helper function that creates the RSA private key with p = |blob| to
-// be able to extract |blob| value from a private key material later.
-// Returns nullptr in case of any error.
-// Should be used only for testing.
-RSA* CreateRsaPrivateKeyFromBlob(const std::string& blob);
+std::string CreatePkcs12ForKey(const std::string& name, EVP_PKEY* key);
 
 }  // namespace arc
 

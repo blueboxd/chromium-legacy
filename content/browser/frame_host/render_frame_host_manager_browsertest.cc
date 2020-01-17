@@ -394,6 +394,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstance> noref_blank_site_instance(
       new_shell->web_contents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, noref_blank_site_instance);
+  EXPECT_FALSE(noref_blank_site_instance->IsRelatedSiteInstance(
+      orig_site_instance.get()));
 }
 
 // Same as above, but for 'noopener'
@@ -447,6 +449,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstance> noopener_blank_site_instance(
       new_shell->web_contents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, noopener_blank_site_instance);
+  EXPECT_FALSE(noopener_blank_site_instance->IsRelatedSiteInstance(
+      orig_site_instance.get()));
 }
 
 // 'noopener' also works from 'window.open'
@@ -504,6 +508,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstance> noopener_blank_site_instance(
       new_shell->web_contents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, noopener_blank_site_instance);
+  EXPECT_FALSE(noopener_blank_site_instance->IsRelatedSiteInstance(
+      orig_site_instance.get()));
 }
 
 // As of crbug.com/69267, we create a new BrowsingInstance (and SiteInstance)
@@ -550,6 +556,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstance> noref_blank_site_instance(
       new_shell->web_contents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, noref_blank_site_instance);
+  EXPECT_FALSE(noref_blank_site_instance->IsRelatedSiteInstance(
+      orig_site_instance.get()));
 }
 
 // Same as above, but for 'noopener'
@@ -595,6 +603,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstance> noref_blank_site_instance(
       new_shell->web_contents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, noref_blank_site_instance);
+  EXPECT_FALSE(noref_blank_site_instance->IsRelatedSiteInstance(
+      orig_site_instance.get()));
 }
 
 // Test for crbug.com/24447.  Following a cross-site link with just

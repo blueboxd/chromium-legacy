@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/playback_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    android:clickable="true"
+    android:visibility="gone">
+
+    <VideoView
+        android:id="@+id/video_player"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <FrameLayout
+        android:id="@+id/video_overlay_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="0.1dp"
+        android:clickable="true"
+        android:layout_gravity="center">
+        <FrameLayout
+            android:id="@+id/video_controls_gradient"
+            android:layout_width="match_parent"
+            android:layout_height="128dp"
+            android:layout_gravity="bottom|start"
+            android:background="@drawable/video_player_gradient"/>
+
+        <FrameLayout
+            android:id="@+id/video_controls"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingBottom="15dp"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp">
+            <ImageView
+                android:id="@+id/video_player_play_button"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                app:srcCompat="@drawable/ic_play_circle_filled_white_24dp" />
+            <TextView
+                android:id="@+id/remaining_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|start"
+                android:layout_marginStart="16dp"
+                android:paddingBottom="24dp"
+                style="@style/TextAppearance.WhiteBody" />
+            <ImageView
+                android:id="@+id/mute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="14dp"
+                android:paddingBottom="24dp"
+                app:srcCompat="@drawable/ic_volume_on_white_24dp" />
+            <SeekBar
+                android:id="@+id/seek_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center"
+                style="@style/PhotoPicker.SeekBar" />
+        </FrameLayout>
+    </FrameLayout>
+</FrameLayout>

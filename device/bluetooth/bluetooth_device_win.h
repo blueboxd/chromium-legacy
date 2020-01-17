@@ -26,6 +26,7 @@ class BluetoothAdapterWin;
 class BluetoothRemoteGattServiceWin;
 class BluetoothServiceRecordWin;
 class BluetoothSocketThread;
+class BluetoothUUID;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin
     : public BluetoothDevice,
@@ -102,7 +103,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin
 
  protected:
   // BluetoothDevice override
-  void CreateGattConnectionImpl() override;
+  void CreateGattConnectionImpl(
+      base::Optional<BluetoothUUID> service_uuid) override;
   void DisconnectGatt() override;
 
  private:
@@ -150,7 +152,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin
   // the device.
   bool paired_;
   bool connected_;
-  bool gatt_connected_;
+  bool is_low_energy_;
 
   // Used to send change notifications when a device disappears during
   // discovery.

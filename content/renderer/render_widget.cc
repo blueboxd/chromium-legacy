@@ -410,16 +410,15 @@ std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
     blink::mojom::DisplayMode display_mode,
-    bool is_undead,
     bool never_composited) {
   if (g_create_render_widget_for_frame) {
-    return g_create_render_widget_for_frame(
-        widget_routing_id, compositor_deps, display_mode, is_undead,
-        never_composited, mojo::NullReceiver());
+    return g_create_render_widget_for_frame(widget_routing_id, compositor_deps,
+                                            display_mode, never_composited,
+                                            mojo::NullReceiver());
   }
 
   return std::make_unique<RenderWidget>(
-      widget_routing_id, compositor_deps, display_mode, is_undead,
+      widget_routing_id, compositor_deps, display_mode,
       /*hidden=*/true, never_composited, mojo::NullReceiver());
 }
 
@@ -431,14 +430,12 @@ RenderWidget* RenderWidget::CreateForPopup(
     bool never_composited,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {
   return new RenderWidget(widget_routing_id, compositor_deps, display_mode,
-                          /*is_undead=*/false, hidden, never_composited,
-                          std::move(widget_receiver));
+                          hidden, never_composited, std::move(widget_receiver));
 }
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
                            CompositorDependencies* compositor_deps,
                            blink::mojom::DisplayMode display_mode,
-                           bool is_undead,
                            bool hidden,
                            bool never_composited,
                            mojo::PendingReceiver<mojom::Widget> widget_receiver)
@@ -447,7 +444,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       is_hidden_(hidden),
       never_composited_(never_composited),
       display_mode_(display_mode),
-      is_undead_(is_undead),
       next_previous_flags_(kInvalidNextPreviousFlagsValue),
       frame_swap_message_queue_(new FrameSwapMessageQueue(routing_id_)),
       widget_receiver_(this, std::move(widget_receiver)) {
@@ -492,8 +488,7 @@ void RenderWidget::InitForPopup(ShowCallback show_callback,
                                 blink::WebPagePopup* web_page_popup,
                                 const ScreenInfo& screen_info) {
   popup_ = true;
-  UnconditionalInit(std::move(show_callback));
-  LivingInit(web_page_popup, screen_info);
+  Initialize(std::move(show_callback), web_page_popup, screen_info);
 
   if (opener_widget->device_emulator_) {
     opener_widget_screen_origin_ =
@@ -508,39 +503,20 @@ void RenderWidget::InitForPepperFullscreen(ShowCallback show_callback,
                                            blink::WebWidget* web_widget,
                                            const ScreenInfo& screen_info) {
   pepper_fullscreen_ = true;
-  UnconditionalInit(std::move(show_callback));
-  LivingInit(web_widget, screen_info);
+  Initialize(std::move(show_callback), web_widget, screen_info);
 }
 
 void RenderWidget::InitForMainFrame(ShowCallback show_callback,
                                     blink::WebFrameWidget* web_frame_widget,
-                                    const ScreenInfo* screen_info) {
-  UnconditionalInit(std::move(show_callback));
-  // Main frame widgets can be created as undead. Then LivingInit() is deferred.
-  DCHECK_EQ(is_undead_, !web_frame_widget);
-  if (web_frame_widget)
-    LivingInit(web_frame_widget, *screen_info);
-}
-
-void RenderWidget::InitForRevivedMainFrame(
-    blink::WebFrameWidget* web_frame_widget,
-    const ScreenInfo& screen_info) {
-  DCHECK(web_frame_widget);
-  DCHECK(!is_undead_);
-
-  // UnconditionalInit() has already been done. LivingInit() may have previously
-  // occured if the RenderWidget was living previously, but we call it each time
-  // the RenderWidget transitions out of an undead state.
-  LivingInit(web_frame_widget, screen_info);
+                                    const ScreenInfo& screen_info) {
+  Initialize(std::move(show_callback), web_frame_widget, screen_info);
 }
 
 void RenderWidget::InitForChildLocalRoot(
     blink::WebFrameWidget* web_frame_widget,
     const ScreenInfo& screen_info) {
   for_child_local_root_frame_ = true;
-  UnconditionalInit(base::NullCallback());
-  // Child local roots can not be undead.
-  LivingInit(web_frame_widget, screen_info);
+  Initialize(base::NullCallback(), web_frame_widget, screen_info);
 }
 
 void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
@@ -550,8 +526,11 @@ void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
   Close(std::move(widget));
 }
 
-void RenderWidget::UnconditionalInit(ShowCallback show_callback) {
+void RenderWidget::Initialize(ShowCallback show_callback,
+                              WebWidget* web_widget,
+                              const ScreenInfo& screen_info) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
+  DCHECK(web_widget);
 
   input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
@@ -566,26 +545,19 @@ void RenderWidget::UnconditionalInit(ShowCallback show_callback) {
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
   RenderThread::Get()->AddRoute(routing_id_, this);
-}
 
-void RenderWidget::LivingInit(WebWidget* web_widget,
-                              const ScreenInfo& screen_info) {
-  DCHECK(!is_undead_);
-  DCHECK(!webwidget_);
-  DCHECK(web_widget);
-
-  if (!layer_tree_view_)
-    InitCompositing(screen_info);
+  InitCompositing(screen_info);
 
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
   SetShowFPSCounter(command_line.HasSwitch(cc::switches::kShowFPSCounter));
 
   // If the widget is hidden, delay starting the compositor until the user
-  // shows it. Also if the RenderWidget is undead, we delay starting the
-  // compositor until we expect to use the widget, which will be signaled
-  // through reviving the undead RenderWidget.
-  if (!is_hidden_)
-    StartStopCompositor();
+  // shows it. Otherwise start the compositor immediately. If the widget is
+  // for a provisional frame, this importantly starts the compositor before
+  // the frame is inserted into the frame tree, which impacts first paint
+  // metrics.
+  if (!is_hidden_ && !never_composited_)
+    layer_tree_view_->SetVisible(true);
 
   webwidget_ = web_widget;
   web_widget->SetAnimationHost(layer_tree_view_->animation_host());
@@ -595,14 +567,6 @@ void RenderWidget::LivingInit(WebWidget* web_widget,
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
-  // TODO(https://crbug.com/1000502): Don't process IPC messages on undead
-  // RenderWidgets. We would like to eventually remove them altogether, so they
-  // won't be able to process IPC messages. An undead widget may become
-  // provisional again, so we must check for that too. Provisional frames don't
-  // receive messages until swapped in.
-  if (is_undead_)
-    return false;
-
   // The EnableDeviceEmulation message is sent to a provisional RenderWidget
   // before the navigation completes. Some investigation into why is done in
   // https://chromium-review.googlesource.com/c/chromium/src/+/1853675/5#message-e6edc3fd708d7d267ee981ffe43cae090b37a906
@@ -617,8 +581,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     return true;
 
   // We shouldn't receive IPC messages on provisional frames. It's possible the
-  // message was destined for a RenderWidget that was made undead and then
-  // revived since it keeps the same routing id. Just drop it here if that
+  // message was destined for a RenderWidget that was destroyed and then
+  // recreated since it keeps the same routing id. Just drop it here if that
   // happened.
   if (IsForProvisionalFrame())
     return false;
@@ -666,8 +630,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool RenderWidget::Send(IPC::Message* message) {
-  // Undead RenderWidgets should not be used.
-  CHECK(!is_undead_);
   // Provisional frames don't send IPCs until they are swapped in/committed.
   CHECK(!IsForProvisionalFrame());
   // Don't send any messages during shutdown.
@@ -705,12 +667,6 @@ void RenderWidget::OnClose() {
 void RenderWidget::OnUpdateVisualProperties(
     const VisualProperties& visual_properties_from_browser) {
   TRACE_EVENT0("renderer", "RenderWidget::OnUpdateVisualProperties");
-
-  // TODO(crbug.com/995981): We shouldn't be sending VisualProperties to undead
-  // RenderWidgets already, but if we do we could crash if the RenderWidget
-  // hasn't been initialized yet. So this acts defensively until we destroy
-  // undead RenderWidgets.
-  DCHECK(!is_undead_);
 
   // UpdateVisualProperties is used to receive properties from the browser
   // process for this RenderWidget. There are roughly 4 types of
@@ -795,10 +751,8 @@ void RenderWidget::OnUpdateVisualProperties(
   if (delegate()) {
     if (size_ != visual_properties.new_size) {
       // Only hide popups when the size changes. Eg https://crbug.com/761908.
-      // TODO(danakj): If OnSynchronizeVisualProperties doesn't happen on an
-      // undead widget then this can go through the WebFrameWidget->WebView
-      // instead of through the delegate, letting us delete that delegate API.
-      delegate()->CancelPagePopupForWidget();
+      blink::WebView* web_view = GetFrameWidget()->LocalRoot()->View();
+      web_view->CancelPagePopup();
     }
 
     if (display_mode_ != visual_properties.display_mode) {
@@ -1061,10 +1015,9 @@ void RenderWidget::SetZoomLevel(double zoom_level) {
 }
 
 void RenderWidget::OnWasHidden() {
-  // An undead or provisional main frame widget will never be hidden since that
-  // would require it to be shown first. The main frame must be attached to the
-  // frame tree before changing visibility.
-  DCHECK(!is_undead_);
+  // A provisional frame widget will never be hidden since that would require it
+  // to be shown first. A frame must be attached to the frame tree before
+  // changing visibility.
   DCHECK(!IsForProvisionalFrame());
 
   TRACE_EVENT0("renderer", "RenderWidget::OnWasHidden");
@@ -1082,10 +1035,8 @@ void RenderWidget::OnWasShown(
     bool was_evicted,
     const base::Optional<content::RecordTabSwitchTimeRequest>&
         record_tab_switch_time_request) {
-  // An undead or provisional main frame widget will never be hidden since that
-  // would require it to be shown first. The main frame must be attached to the
-  // frame tree before changing visibility.
-  DCHECK(!is_undead_);
+  // The frame must be attached to the frame tree (which makes it no longer
+  // provisional) before changing visibility.
   DCHECK(!IsForProvisionalFrame());
 
   TRACE_EVENT_WITH_FLOW0("renderer", "RenderWidget::OnWasShown", routing_id(),
@@ -1144,7 +1095,11 @@ bool RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
-  if (IsUndeadOrProvisional())
+  // We shouldn't receive IPC messages on provisional frames. It's possible the
+  // message was destined for a RenderWidget that was destroyed and then
+  // recreated since it keeps the same routing id. Just drop it here if that
+  // happened.
+  if (IsForProvisionalFrame())
     return false;
   input_handler_->HandleInputEvent(input_event, latency_info,
                                    std::move(callback));
@@ -1160,24 +1115,33 @@ scoped_refptr<MainThreadEventQueue> RenderWidget::GetInputEventQueue() {
 }
 
 void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
-  // This is a mojo IPC entry point. We don't want IPCs when undead.
-  if (IsUndeadOrProvisional())
+  // This is a mojo IPC entry point.
+  // TODO(danakj): Since this is for a mojo IPC, it should be dropped
+  // when destroying and recreating the RenderWidget. So this check
+  // should not be needed.
+  if (IsForProvisionalFrame())
     return;
 
   GetWebWidget()->SetCursorVisibilityState(is_visible);
 }
 
 void RenderWidget::OnFallbackCursorModeToggled(bool is_on) {
-  // This is a mojo IPC entry point. We don't want IPCs when undead.
-  if (IsUndeadOrProvisional())
+  // This is a mojo IPC entry point.
+  // TODO(danakj): Since this is for a mojo IPC, it should be dropped
+  // when destroying and recreating the RenderWidget. So this check
+  // should not be needed.
+  if (IsForProvisionalFrame())
     return;
 
   GetWebWidget()->OnFallbackCursorModeToggled(is_on);
 }
 
 void RenderWidget::OnMouseCaptureLost() {
-  // This is a mojo IPC entry point. We don't want IPCs when undead.
-  if (IsUndeadOrProvisional())
+  // This is a mojo IPC entry point.
+  // TODO(danakj): Since this is for a mojo IPC, it should be dropped
+  // when destroying and recreating the RenderWidget. So this check
+  // should not be needed.
+  if (IsForProvisionalFrame())
     return;
 
   GetWebWidget()->MouseCaptureLost();
@@ -1185,8 +1149,11 @@ void RenderWidget::OnMouseCaptureLost() {
 
 void RenderWidget::OnSetEditCommandsForNextKeyEvent(
     const EditCommands& edit_commands) {
-  // This is a mojo IPC entry point. We don't want IPCs when undead.
-  if (IsUndeadOrProvisional())
+  // This is a mojo IPC entry point.
+  // TODO(danakj): Since this is for a mojo IPC, it should be dropped
+  // when destroying and recreating the RenderWidget. So this check
+  // should not be needed.
+  if (IsForProvisionalFrame())
     return;
 
   edit_commands_ = edit_commands;
@@ -1198,8 +1165,11 @@ void RenderWidget::OnSetActive(bool active) {
 }
 
 void RenderWidget::OnSetFocus(bool enable) {
-  // This is a mojo IPC entry point. We don't want IPCs when undead.
-  if (IsUndeadOrProvisional())
+  // This is a mojo IPC entry point.
+  // TODO(danakj): Since this is for a mojo IPC, it should be dropped
+  // when destroying and recreating the RenderWidget. So this check
+  // should not be needed.
+  if (IsForProvisionalFrame())
     return;
 
   if (delegate())
@@ -1237,7 +1207,6 @@ void RenderWidget::SendScrollEndEventFromImplSide(
 }
 
 void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
-  DCHECK(!is_undead_);
   DCHECK(!IsForProvisionalFrame());
 
   // We record metrics only when running in multi-threaded mode, not
@@ -1288,9 +1257,6 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
   // For widgets that are never visible, we don't start the compositor, so we
   // never get a request for a cc::LayerTreeFrameSink.
   DCHECK(!never_composited_);
-  // Undead RenderWidgets should not be doing any compositing. However note that
-  // widgets for provisional frames do start their compositor.
-  DCHECK(!is_undead_);
 
   // TODO(jonross): have this generated by the LayerTreeFrameSink itself, which
   // would then handle binding.
@@ -1333,19 +1299,16 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
 }
 
 void RenderWidget::WillCommitCompositorFrame() {
-  DCHECK(!is_undead_);
   GetWebWidget()->BeginCommitCompositorFrame();
 }
 
 void RenderWidget::DidCommitCompositorFrame() {
-  DCHECK(!is_undead_);
   if (delegate())
     delegate()->DidCommitCompositorFrameForWidget();
   GetWebWidget()->EndCommitCompositorFrame();
 }
 
 void RenderWidget::DidCompletePageScaleAnimation() {
-  DCHECK(!is_undead_);
   if (delegate())
     delegate()->DidCompletePageScaleAnimationForWidget();
 }
@@ -1418,7 +1381,6 @@ void RenderWidget::SetBackgroundColor(SkColor color) {
 }
 
 void RenderWidget::UpdateVisualState() {
-  DCHECK(!is_undead_);
   DCHECK(!IsForProvisionalFrame());
 
   // We record metrics only when running in multi-threaded mode, not
@@ -1461,34 +1423,28 @@ void RenderWidget::RecordTimeToFirstActivePaint() {
 }
 
 void RenderWidget::RecordStartOfFrameMetrics() {
-  DCHECK(!is_undead_);
   GetWebWidget()->RecordStartOfFrameMetrics();
 }
 
 void RenderWidget::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
-  DCHECK(!is_undead_);
   GetWebWidget()->RecordEndOfFrameMetrics(frame_begin_time);
 }
 
 std::unique_ptr<cc::BeginMainFrameMetrics>
 RenderWidget::GetBeginMainFrameMetrics() {
-  DCHECK(!is_undead_);
   return GetWebWidget()->GetBeginMainFrameMetrics();
 }
 
 void RenderWidget::BeginUpdateLayers() {
-  DCHECK(!is_undead_);
   GetWebWidget()->BeginUpdateLayers();
 }
 
 void RenderWidget::EndUpdateLayers() {
-  DCHECK(!is_undead_);
   GetWebWidget()->EndUpdateLayers();
 }
 
 void RenderWidget::WillBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
-  DCHECK(!is_undead_);
 
   GetWebWidget()->SetSuppressFrameRequestsWorkaroundFor704763Only(true);
 
@@ -1922,7 +1878,6 @@ void RenderWidget::Show(WebNavigationPolicy policy) {
 }
 
 void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
-  DCHECK(!is_undead_);
   TRACE_EVENT0("blink", "RenderWidget::InitializeLayerTreeView");
 
   layer_tree_view_ = std::make_unique<LayerTreeView>(
@@ -1971,50 +1926,12 @@ void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
     widget_input_handler_manager_->AllowPreCommitInput();
 }
 
-void RenderWidget::StartStopCompositor() {
-  if (never_composited_)
-    return;
-
-  if (is_undead_) {
-    layer_tree_view_->SetVisible(false);
-    // Drop all gpu resources, this makes SetVisible(true) more expensive/slower
-    // but we don't expect to use this RenderWidget again until some possible
-    // future navigation. This brings us a bit closer to emulating deleting the
-    // RenderWidget instead of just stopping the compositor.
-    layer_tree_host_->ReleaseLayerTreeFrameSink();
-  } else if (is_hidden_) {
-    layer_tree_view_->SetVisible(false);
-  } else {
-    layer_tree_view_->SetVisible(true);
-  }
-}
-
-void RenderWidget::SetIsUndead(bool is_undead) {
-  DCHECK_NE(is_undead, is_undead_);
-  is_undead_ = is_undead;
-
-  if (is_undead_) {
-    StartStopCompositor();
-
-    webwidget_->Close();
-    webwidget_ = nullptr;
-    // Remove undead RenderWidgets from the routing map so that they cannot be
-    // looked up with FromRoutingId().
-    g_routing_id_widget_map.Get().erase(routing_id_);
-  } else {
-    // When revived from undead, act like a "new RenderWidget". This method is
-    // equivalent to the constructor, and initialization comes separately
-    // through InitForRevivedMainFrame().
-    g_routing_id_widget_map.Get().emplace(routing_id_, this);
-  }
-}
-
 // static
 void RenderWidget::DoDeferredClose(int widget_routing_id) {
   // DoDeferredClose() was a posted task, which means the RenderWidget may have
-  // become undead in the meantime. Undead RenderWidgets do not send messages,
-  // so break the dependency on RenderWidget here, by making this method static
-  // and going to RenderThread directly to send.
+  // been destroyed in the meantime. So break the dependency on RenderWidget
+  // here, by making this method static and going to RenderThread directly to
+  // send.
   RenderThread::Get()->Send(new WidgetHostMsg_Close(widget_routing_id));
 }
 
@@ -2056,35 +1973,29 @@ void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
     g_routing_id_widget_map.Get().erase(routing_id_);
   }
 
-  // The |webwidget_| will be null when the main frame RenderWidget is undead.
-  if (webwidget_)
-    webwidget_->Close();
+  webwidget_->Close();
   webwidget_ = nullptr;
 
-  // A RenderWidget can be created as undead and never revived, so never
-  // initialized compositing.
-  if (layer_tree_view_) {
-    // The |input_event_queue_| is refcounted and will live while an event is
-    // being handled. This drops the connection back to this RenderWidget which
-    // is being destroyed.
-    input_event_queue_->ClearClient();
+  // The |input_event_queue_| is refcounted and will live while an event is
+  // being handled. This drops the connection back to this RenderWidget which
+  // is being destroyed.
+  input_event_queue_->ClearClient();
 
-    // The LayerTreeHost may already be in the call stack, if this RenderWidget
-    // is being destroyed during an animation callback for instance. We can not
-    // delete it here and unwind the stack back up to it, or it will crash. So
-    // we post the deletion to another task, but disconnect the LayerTreeHost
-    // (via the LayerTreeView) from the destroying RenderWidget. The
-    // LayerTreeView owns the LayerTreeHost, and is its client, so they are kept
-    // alive together for a clean call stack.
-    layer_tree_view_->Disconnect();
-    compositor_deps_->GetCleanupTaskRunner()->DeleteSoon(
-        FROM_HERE, std::move(layer_tree_view_));
-    // The |widget_input_handler_manager_| is referenced through the
-    // LayerTreeHost on the compositor thread, so must outlive the
-    // LayerTreeHost.
-    compositor_deps_->GetCleanupTaskRunner()->ReleaseSoon(
-        FROM_HERE, std::move(widget_input_handler_manager_));
-  }
+  // The LayerTreeHost may already be in the call stack, if this RenderWidget
+  // is being destroyed during an animation callback for instance. We can not
+  // delete it here and unwind the stack back up to it, or it will crash. So
+  // we post the deletion to another task, but disconnect the LayerTreeHost
+  // (via the LayerTreeView) from the destroying RenderWidget. The
+  // LayerTreeView owns the LayerTreeHost, and is its client, so they are kept
+  // alive together for a clean call stack.
+  layer_tree_view_->Disconnect();
+  compositor_deps_->GetCleanupTaskRunner()->DeleteSoon(
+      FROM_HERE, std::move(layer_tree_view_));
+  // The |widget_input_handler_manager_| is referenced through the
+  // LayerTreeHost on the compositor thread, so must outlive the
+  // LayerTreeHost.
+  compositor_deps_->GetCleanupTaskRunner()->ReleaseSoon(
+      FROM_HERE, std::move(widget_input_handler_manager_));
 
   // Note the ACK is a control message going to the RenderProcessHost.
   RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
@@ -2278,7 +2189,7 @@ void RenderWidget::OnImeSetComposition(
     return;
   }
 #endif
-  ImeEventGuard guard(this);
+  ImeEventGuard guard(weak_ptr_factory_.GetWeakPtr());
   blink::WebInputMethodController* controller = GetInputMethodController();
   if (!controller ||
       !controller->SetComposition(
@@ -2313,7 +2224,7 @@ void RenderWidget::OnImeCommitText(
     return;
   }
 #endif
-  ImeEventGuard guard(this);
+  ImeEventGuard guard(weak_ptr_factory_.GetWeakPtr());
   input_handler_->set_handling_input_event(true);
   if (auto* controller = GetInputMethodController()) {
     controller->CommitText(
@@ -2338,7 +2249,7 @@ void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
   }
 #endif
 
-  ImeEventGuard guard(this);
+  ImeEventGuard guard(weak_ptr_factory_.GetWeakPtr());
   input_handler_->set_handling_input_event(true);
   if (auto* controller = GetInputMethodController()) {
     controller->FinishComposingText(
@@ -2668,10 +2579,8 @@ void RenderWidget::OnOrientationChange() {
 }
 
 void RenderWidget::SetHidden(bool hidden) {
-  // An undead or provisional main frame widget will never be hidden since that
-  // would require it to be shown first. The main frame must be attached to the
-  // frame tree before changing visibility.
-  DCHECK(!is_undead_);
+  // A provisional frame widget will never be shown or hidden, as the frame must
+  // be attached to the frame tree before changing visibility.
   DCHECK(!IsForProvisionalFrame());
 
   if (is_hidden_ == hidden)
@@ -2692,7 +2601,8 @@ void RenderWidget::SetHidden(bool hidden) {
   if (is_hidden_)
     widget_input_handler_manager_->InvokeInputProcessedCallback();
 
-  StartStopCompositor();
+  if (!never_composited_)
+    layer_tree_view_->SetVisible(!is_hidden_);
 }
 
 void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
@@ -3462,7 +3372,6 @@ void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
     return;
   }
 
-  DCHECK(!is_undead_);
   DCHECK(!IsForProvisionalFrame());
 
   // The page scale is controlled by the WebView for the local main frame of

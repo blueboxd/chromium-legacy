@@ -451,10 +451,13 @@ void AudioInputImpl::RecreateAudioInputStream(bool use_dsp) {
       GetChannelLayout(g_current_format), g_current_format.sample_rate,
       g_current_format.sample_rate / 10 /* buffer size for 100 ms */);
 
-  if (use_dsp && !hotword_device_id_.empty()) {
-    param.set_effects(media::AudioParameters::PlatformEffectsMask::HOTWORD);
+  // Set the HOTWORD mask so CRAS knows the device is used for HOTWORD purpose
+  // and is able to conduct the tuning specifically for the scenario. Whether
+  // the HOTWORD is conducted by a hotword device or other devices like internal
+  // mic will be determined by the device_id_ passed to CRAS.
+  param.set_effects(media::AudioParameters::PlatformEffectsMask::HOTWORD);
+  if (use_dsp && !hotword_device_id_.empty())
     device_id_ = hotword_device_id_;
-  }
 
   mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory;
   client_->RequestAudioStreamFactory(

@@ -278,6 +278,32 @@ mojom::XRAnchorsDataPtr FakeArCore::GetAnchorsData() {
   return mojom::XRAnchorsData::New(std::move(result_ids), std::move(result));
 }
 
+mojom::XRLightEstimationDataPtr FakeArCore::GetLightEstimationData() {
+  auto result = mojom::XRLightEstimationData::New();
+
+  // Initialize light probe with a top-down white light
+  result->light_probe = mojom::XRLightProbe::New();
+  result->light_probe->main_light_direction = gfx::Vector3dF(0, -1, 0);
+  result->light_probe->main_light_intensity = device::RgbTupleF32(1, 1, 1);
+
+  // Initialize spherical harmonics to zero-filled array
+  result->light_probe->spherical_harmonics = mojom::XRSphericalHarmonics::New();
+  result->light_probe->spherical_harmonics->coefficients.resize(9);
+
+  // Initialize reflection_probe to black
+  result->reflection_probe = mojom::XRReflectionProbe::New();
+  result->reflection_probe->cube_map = mojom::XRCubeMap::New();
+  result->reflection_probe->cube_map->width_and_height = 16;
+  result->reflection_probe->cube_map->positive_x.resize(16 * 16);
+  result->reflection_probe->cube_map->negative_x.resize(16 * 16);
+  result->reflection_probe->cube_map->positive_y.resize(16 * 16);
+  result->reflection_probe->cube_map->negative_y.resize(16 * 16);
+  result->reflection_probe->cube_map->positive_z.resize(16 * 16);
+  result->reflection_probe->cube_map->negative_z.resize(16 * 16);
+
+  return result;
+}
+
 base::Optional<uint64_t> FakeArCore::CreateAnchor(const mojom::PosePtr& pose,
                                                   uint64_t plane_id) {
   // TODO(992035): Fix this when implementing tests.

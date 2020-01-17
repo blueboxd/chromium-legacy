@@ -26,10 +26,6 @@
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
-#import "ios/chrome/browser/ui/payments/payment_request_error_view_controller.h"
-#import "ios/chrome/browser/ui/payments/payment_request_picker_view_controller.h"
-#import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller.h"
@@ -550,9 +546,8 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
       SubviewWithAccessibilityIdentifier(
           @"SettingNavigationBar",
           [[UIApplication sharedApplication] keyWindow]));
-  return grey_allOf(grey_anyOf(grey_accessibilityLabel(navBar.backItem.title),
-                               grey_accessibilityLabel(@"Back"), nil),
-                    grey_kindOfClass([UIButton class]),
+  return grey_allOf(grey_anyOf(grey_buttonTitle(navBar.backItem.title),
+                               grey_buttonTitle(@"Back"), nil),
                     grey_ancestor(grey_kindOfClass([UINavigationBar class])),
                     nil);
 }
@@ -568,13 +563,14 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
       buttonWithAccessibilityLabelID:(IDS_IOS_PASSWORDS)];
 }
 
+// TODO(crbug.com/1021752): Remove this stub.
 + (id<GREYMatcher>)paymentRequestView {
-  return grey_accessibilityID(kPaymentRequestCollectionViewID);
+  return nil;
 }
 
-// Returns matcher for the error confirmation view for payment request.
+// TODO(crbug.com/1021752): Remove this stub.
 + (id<GREYMatcher>)paymentRequestErrorView {
-  return grey_accessibilityID(kPaymentRequestErrorCollectionViewID);
+  return nil;
 }
 
 + (id<GREYMatcher>)voiceSearchButton {
@@ -634,16 +630,19 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_accessibilityID(kContentSuggestionsCollectionIdentifier);
 }
 
+// TODO(crbug.com/1021752): Remove this stub.
 + (id<GREYMatcher>)warningMessageView {
-  return grey_accessibilityID(kWarningMessageAccessibilityID);
+  return nil;
 }
 
+// TODO(crbug.com/1021752): Remove this stub.
 + (id<GREYMatcher>)paymentRequestPickerRow {
-  return grey_accessibilityID(kPaymentRequestPickerRowAccessibilityID);
+  return nil;
 }
 
+// TODO(crbug.com/1021752): Remove this stub.
 + (id<GREYMatcher>)paymentRequestPickerSearchBar {
-  return grey_accessibilityID(kPaymentRequestPickerSearchBarAccessibilityID);
+  return nil;
 }
 
 + (id<GREYMatcher>)readingListMenuButton {
@@ -793,6 +792,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 
 + (id<GREYMatcher>)settingsBottomToolbarDeleteButton {
   return grey_accessibilityID(kSettingsToolbarDeleteButtonId);
+}
+
++ (id<GREYMatcher>)settingsSearchEngineButton {
+  return grey_accessibilityID(kSettingsSearchEngineCellId);
 }
 
 + (id<GREYMatcher>)contentViewSmallerThanScrollView {

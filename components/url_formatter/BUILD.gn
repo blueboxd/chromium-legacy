@@ -51,9 +51,7 @@ jumbo_static_library("url_formatter") {
     "//url",
   ]
 
-  public_deps = [
-    "//third_party/icu",
-  ]
+  public_deps = [ "//third_party/icu" ]
 
   if (is_android) {
     deps += [ "android:jni_headers" ]

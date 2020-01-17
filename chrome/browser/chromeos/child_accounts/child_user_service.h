@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_report_interface.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_interface.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -18,6 +19,10 @@ class TimeDelta;
 namespace content {
 class BrowserContext;
 }  // namespace content
+
+namespace enterprise_management {
+class ChildStatusReportRequest;
+}  // namespace enterprise_management
 
 class GURL;
 
@@ -31,7 +36,8 @@ class WebTimeLimitEnforcer;
 // TODO(crbug.com/1022231): Migrate ConsumerStatusReportingService,
 // EventBasedStatusReporting and ScreenTimeController to ChildUserService.
 class ChildUserService : public KeyedService,
-                         public app_time::WebTimeLimitInterface {
+                         public app_time::WebTimeLimitInterface,
+                         public app_time::AppActivityReportInterface {
  public:
   // Used for tests to get internal implementation details.
   class TestApi {
@@ -51,9 +57,15 @@ class ChildUserService : public KeyedService,
   ChildUserService& operator=(const ChildUserService&) = delete;
   ~ChildUserService() override;
 
-  // WebTimeLimitInterface:
+  // app_time::WebTimeLimitInterface:
   void PauseWebActivity(const std::string& app_id) override;
   void ResumeWebActivity(const std::string& app_id) override;
+
+  // app_time::AppActivityReportInterface:
+  app_time::AppActivityReportInterface::ReportParams GenerateAppActivityReport(
+      enterprise_management::ChildStatusReportRequest* report) const override;
+  void AppActivityReportSubmitted(
+      base::Time report_generation_timestamp) override;
 
   // Returns whether web time limit was reached for child user.
   // Always returns false if per-app times limits feature is disabled.

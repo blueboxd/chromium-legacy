@@ -147,7 +147,7 @@ SelectToSpeak.prototype = {
    * @param {!AutomationEvent} evt The automation event.
    * @private
    */
-  onAutomationHitTest_: function(evt) {
+  onAutomationHitTest_(evt) {
     // Walk up to the nearest window, web area, toolbar, or dialog that the
     // hit node is contained inside. Only speak objects within that
     // container. In the future we might include other container-like
@@ -194,7 +194,7 @@ SelectToSpeak.prototype = {
    * representing the selection.
    * @private
    */
-  requestSpeakSelectedText_: function(focusedNode) {
+  requestSpeakSelectedText_(focusedNode) {
     // If nothing is selected, return early.
     if (!focusedNode || !focusedNode.root ||
         !focusedNode.root.selectionStartObject ||
@@ -266,7 +266,7 @@ SelectToSpeak.prototype = {
    * @param {AutomationNode} focusedNode The node with user focus.
    * @private
    */
-  readNodesInSelection_: function(firstPosition, lastPosition, focusedNode) {
+  readNodesInSelection_(firstPosition, lastPosition, focusedNode) {
     let nodes = [];
     let selectedNode = firstPosition.node;
     if (selectedNode.name && firstPosition.offset < selectedNode.name.length &&
@@ -353,7 +353,7 @@ SelectToSpeak.prototype = {
    * @param {AutomationNode=} root The root node to listen for events on.
    * @private
    */
-  initializeScrollingToOffscreenNodes_: function(root) {
+  initializeScrollingToOffscreenNodes_(root) {
     if (!root) {
       return;
     }
@@ -377,7 +377,7 @@ SelectToSpeak.prototype = {
    * keystroke but nothing was selected.
    * @private
    */
-  onNullSelection_: function() {
+  onNullSelection_() {
     this.null_selection_tone_.play();
   },
 
@@ -390,7 +390,7 @@ SelectToSpeak.prototype = {
    * focus ring.
    * @private
    */
-  stopAll_: function() {
+  stopAll_() {
     chrome.tts.stop();
     this.clearFocusRing_();
     this.onStateChanged_(SelectToSpeakState.INACTIVE);
@@ -401,7 +401,7 @@ SelectToSpeak.prototype = {
    * not stop the speech.
    * @private
    */
-  clearFocusRingAndNode_: function() {
+  clearFocusRingAndNode_() {
     this.clearFocusRing_();
     // Clear the node and also stop the interval testing.
     this.currentNode_ = null;
@@ -417,7 +417,7 @@ SelectToSpeak.prototype = {
    * node.
    * @private
    */
-  clearFocusRing_: function() {
+  clearFocusRing_() {
     this.setFocusRings_([]);
     chrome.accessibilityPrivate.setHighlights(
         [], this.prefsManager_.highlightColor());
@@ -428,7 +428,7 @@ SelectToSpeak.prototype = {
    * @param {!Array<!chrome.accessibilityPrivate.ScreenRect>} rects
    * @private
    */
-  setFocusRings_: function(rects) {
+  setFocusRings_(rects) {
     chrome.accessibilityPrivate.setFocusRings([{
       rects: rects,
       type: chrome.accessibilityPrivate.FocusType.GLOW,
@@ -445,7 +445,7 @@ SelectToSpeak.prototype = {
    * the Select-to-Speak manifest.
    * @private
    */
-  runContentScripts_: function() {
+  runContentScripts_() {
     chrome.tabs.query(
         {
           url: [
@@ -465,7 +465,7 @@ SelectToSpeak.prototype = {
    * Set up event listeners user input.
    * @private
    */
-  setUpEventListeners_: function() {
+  setUpEventListeners_() {
     this.inputHandler_ = new InputHandler({
       // canStartSelecting: Whether mouse selection can begin.
       canStartSelecting: () => {
@@ -515,7 +515,7 @@ SelectToSpeak.prototype = {
   /**
    * Called when Chrome OS is requesting Select-to-Speak to switch states.
    */
-  onStateChangeRequested_: function() {
+  onStateChangeRequested_() {
     // Switch Select-to-Speak states on request.
     // We will need to track the current state and toggle from one state to
     // the next when this function is called, and then call
@@ -552,7 +552,7 @@ SelectToSpeak.prototype = {
    * @param {string} text The text to speak.
    * @private
    */
-  startSpeech_: function(text) {
+  startSpeech_(text) {
     this.prepareForSpeech_();
     let options = this.prefsManager_.speechOptions();
     options.onEvent = (event) => {
@@ -577,7 +577,7 @@ SelectToSpeak.prototype = {
    * at which to end speech. If this is not passed, will stop at the end.
    * @private
    */
-  startSpeechQueue_: function(nodes, opt_startIndex, opt_endIndex) {
+  startSpeechQueue_(nodes, opt_startIndex, opt_endIndex) {
     this.prepareForSpeech_();
     for (var i = 0; i < nodes.length; i++) {
       let nodeGroup = ParagraphUtils.buildNodeGroup(
@@ -671,7 +671,7 @@ SelectToSpeak.prototype = {
    * Prepares for speech. Call once before chrome.tts.speak is called.
    * @private
    */
-  prepareForSpeech_: function() {
+  prepareForSpeech_() {
     this.cancelIfSpeaking_(true /* clear the focus ring */);
     if (this.intervalRef_ !== undefined) {
       clearInterval(this.intervalRef_);
@@ -690,7 +690,7 @@ SelectToSpeak.prototype = {
    * @param {number=} opt_endIndex The last index for speech, if applicable.
    * @private
    */
-  onTtsWordEvent_: function(event, nodeGroup, opt_endIndex) {
+  onTtsWordEvent_(event, nodeGroup, opt_endIndex) {
     // Not all speech engines include length in the ttsEvent object. If the
     // engine does have it, it makes word highlighting easier and more
     // accurate.
@@ -773,7 +773,7 @@ SelectToSpeak.prototype = {
    * @return {ParagraphUtils.NodeGroupItem}
    * @private
    */
-  incrementCurrentNodeAndGetNext_: function(nodeGroup) {
+  incrementCurrentNodeAndGetNext_(nodeGroup) {
     // Move to the next node.
     this.currentNodeGroupIndex_ += 1;
     this.currentNode_ = nodeGroup.nodes[this.currentNodeGroupIndex_];
@@ -791,7 +791,7 @@ SelectToSpeak.prototype = {
    * @param {!chrome.accessibilityPrivate.SelectToSpeakState} state
    * @private
    */
-  onStateChanged_: function(state) {
+  onStateChanged_(state) {
     if (this.state_ != state) {
       if (this.state_ == SelectToSpeakState.SELECTING &&
           state == SelectToSpeakState.INACTIVE && this.trackingMouse_) {
@@ -820,7 +820,7 @@ SelectToSpeak.prototype = {
    *    as well.
    * @private
    */
-  cancelIfSpeaking_: function(clearFocusRing) {
+  cancelIfSpeaking_(clearFocusRing) {
     chrome.tts.isSpeaking(MetricsUtils.recordCancelIfSpeaking);
     if (clearFocusRing) {
       this.stopAll_();
@@ -839,7 +839,7 @@ SelectToSpeak.prototype = {
    * @param {boolean} inForeground Whether the node is in the foreground window.
    * @private
    */
-  updateFromNodeState_: function(nodeGroupItem, inForeground) {
+  updateFromNodeState_(nodeGroupItem, inForeground) {
     switch (NodeUtils.getNodeState(nodeGroupItem.node)) {
       case NodeUtils.NodeState.NODE_STATE_INVALID:
         // If the node is invalid, continue speech unless readAfterClose_
@@ -878,7 +878,7 @@ SelectToSpeak.prototype = {
    *    updates.
    * @private
    */
-  updateHighlightAndFocus_: function(nodeGroupItem) {
+  updateHighlightAndFocus_(nodeGroupItem) {
     if (!this.visible_) {
       return;
     }
@@ -927,7 +927,7 @@ SelectToSpeak.prototype = {
    * Tests the active node to make sure the bounds are drawn correctly.
    * @private
    */
-  testCurrentNode_: function() {
+  testCurrentNode_() {
     if (this.currentNode_ == null) {
       return;
     }
@@ -952,7 +952,7 @@ SelectToSpeak.prototype = {
    * Uses this information to update Select-To-Speak from node state.
    * @private
    */
-  onHitTestCheckCurrentNodeMatches_: function(evt) {
+  onHitTestCheckCurrentNodeMatches_(evt) {
     if (this.currentNode_ == null) {
       return;
     }
@@ -987,8 +987,7 @@ SelectToSpeak.prototype = {
    * takes precedence over the next word end.
    * @private
    */
-  updateNodeHighlight_: function(
-      text, charIndex, opt_startIndex, opt_endIndex) {
+  updateNodeHighlight_(text, charIndex, opt_startIndex, opt_endIndex) {
     if (charIndex >= text.length) {
       // No need to do work if we are at the end of the paragraph.
       return;
@@ -1027,7 +1026,7 @@ SelectToSpeak.prototype = {
    * must contain at minimum a keyCode.
    * @protected
    */
-  fireMockKeyDownEvent: function(event) {
+  fireMockKeyDownEvent(event) {
     this.inputHandler_.onKeyDown_(event);
   },
 
@@ -1037,7 +1036,7 @@ SelectToSpeak.prototype = {
    * must contain at minimum a keyCode.
    * @protected
    */
-  fireMockKeyUpEvent: function(event) {
+  fireMockKeyUpEvent(event) {
     this.inputHandler_.onKeyUp_(event);
   },
 
@@ -1047,7 +1046,7 @@ SelectToSpeak.prototype = {
    * must contain at minimum a screenX and a screenY.
    * @protected
    */
-  fireMockMouseDownEvent: function(event) {
+  fireMockMouseDownEvent(event) {
     this.inputHandler_.onMouseDown_(event);
   },
 
@@ -1057,7 +1056,7 @@ SelectToSpeak.prototype = {
    * must contain at minimum a screenX and a screenY.
    * @protected
    */
-  fireMockMouseUpEvent: function(event) {
+  fireMockMouseUpEvent(event) {
     this.inputHandler_.onMouseUp_(event);
   },
 

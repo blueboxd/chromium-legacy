@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -70,6 +71,19 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit(const DocumentInit&);
   ~DocumentInit();
 
+  enum class Type {
+    kHTML,
+    kXHTML,
+    kImage,
+    kPlugin,
+    kMedia,
+    kSVG,
+    kXML,
+    kViewSource,
+    kText,
+    kUnspecified
+  };
+
   HTMLImportsController* ImportsController() const {
     return imports_controller_;
   }
@@ -87,6 +101,12 @@ class CORE_EXPORT DocumentInit final {
 
   DocumentInit& WithDocumentLoader(DocumentLoader*);
   LocalFrame* GetFrame() const;
+
+  DocumentInit& WithTypeFrom(const String& type);
+  Type GetType() const { return type_; }
+  const String& GetMimeType() const { return mime_type_; }
+  bool IsForExternalHandler() const { return is_for_external_handler_; }
+  Color GetPluginBackgroundColor() const { return plugin_background_color_; }
 
   // Used by the DOMImplementation and DOMParser to pass their parent Document
   // so that the created Document will return the Document when the
@@ -160,6 +180,9 @@ class CORE_EXPORT DocumentInit final {
   // of its owning Document.
   DocumentLoader* MasterDocumentLoader() const;
 
+  Type type_ = Type::kUnspecified;
+  String mime_type_;
+
   Member<DocumentLoader> document_loader_;
   Member<Document> parent_document_;
 
@@ -223,6 +246,9 @@ class CORE_EXPORT DocumentInit final {
   base::Optional<FramePolicy> frame_policy_ = base::nullopt;
 
   DocumentPolicy::FeatureState document_policy_;
+
+  bool is_for_external_handler_ = false;
+  Color plugin_background_color_;
 };
 
 }  // namespace blink

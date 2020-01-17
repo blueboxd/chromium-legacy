@@ -10,6 +10,7 @@ const tests = [
     chrome.test.assertEq(
         {
           defaultPageOrientation: 0,
+          twoUpViewEnabled: false,
         },
         viewer.viewport.getLayoutOptions());
     chrome.test.succeed();

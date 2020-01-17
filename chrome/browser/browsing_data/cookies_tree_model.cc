@@ -752,8 +752,7 @@ class CookieTreeCacheStorageNode : public CookieTreeNode {
     LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
     if (container) {
-      container->cache_storage_helper_->DeleteCacheStorage(
-          usage_info_->origin.GetURL());
+      container->cache_storage_helper_->DeleteCacheStorage(usage_info_->origin);
       container->cache_storage_info_list_.erase(usage_info_);
     }
   }

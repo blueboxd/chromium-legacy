@@ -53,9 +53,7 @@ source_set("feature_flags") {
     "captive_portal_features.cc",
     "captive_portal_features.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {

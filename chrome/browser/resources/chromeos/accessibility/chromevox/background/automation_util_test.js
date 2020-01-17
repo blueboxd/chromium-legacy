@@ -20,7 +20,7 @@ ChromeVoxAutomationUtilE2ETest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
   /** @override */
-  setUp: function() {
+  setUp() {
     window.Dir = constants.Dir;
     window.RoleType = chrome.automation.RoleType;
 

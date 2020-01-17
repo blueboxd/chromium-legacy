@@ -30,11 +30,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// Minimum favicon size to retrieve.
-const CGFloat kMinFaviconSizePt = 8.0;
-}  // namespace
-
 namespace manual_fill {
 
 NSString* const ManagePasswordsAccessibilityIdentifier =
@@ -255,9 +250,8 @@ BOOL AreCredentialsAtIndexesConnected(
 - (void)faviconForURL:(const GURL&)URL
            completion:(void (^)(FaviconAttributes*))completion {
   DCHECK(completion);
-  self.faviconLoader->FaviconForPageUrl(
-      URL, gfx::kFaviconSize, kMinFaviconSizePt,
-      /*fallback_to_google_server=*/false, completion);
+  self.faviconLoader->FaviconForPageUrlOrHost(URL, gfx::kFaviconSize,
+                                              completion);
 }
 
 @end

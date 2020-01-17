@@ -71,19 +71,13 @@ if (is_component_build) {
 
   # These all just forward to content, which in turn depends on "both_sources".
   group("browser") {
-    public_deps = [
-      "//content",
-    ]
+    public_deps = [ "//content" ]
   }
   group("child") {
-    public_deps = [
-      "//content",
-    ]
+    public_deps = [ "//content" ]
   }
   group("both") {
-    public_deps = [
-      "//content",
-    ]
+    public_deps = [ "//content" ]
   }
 } else {
   # content_main_delegate.cc conditionally includes content_browser_client.h
@@ -163,14 +157,10 @@ if (is_component_build) {
     # When the multi-DLL build is disabled, there is only one type of the
     # "app" target, and "browser" and "child" are the same as "both".
     group("browser") {
-      deps = [
-        ":both",
-      ]
+      deps = [ ":both" ]
     }
     group("child") {
-      deps = [
-        ":both",
-      ]
+      deps = [ ":both" ]
     }
   }
 }
@@ -186,13 +176,9 @@ source_set("content_browser_manifest") {
     "//content/public/common:service_names",
   ]
 
-  public_deps = [
-    "//services/service_manager/public/cpp",
-  ]
+  public_deps = [ "//services/service_manager/public/cpp" ]
 }
 
 group("service_manifests") {
-  public_deps = [
-    ":content_browser_manifest",
-  ]
+  public_deps = [ ":content_browser_manifest" ]
 }

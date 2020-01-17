@@ -152,6 +152,8 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   bool is_dense() const { return is_dense_; }
 
+  bool shelf_controls_shown() const { return shelf_controls_shown_; }
+
   // Gets the current color for the shelf control buttons.
   SkColor GetShelfControlButtonColor() const;
 
@@ -168,6 +170,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Returns the current blur radius to use for the control buttons.
   int GetShelfControlButtonBlurRadius() const;
 
+  // The padding between the app icon and the end of the scrollable shelf.
+  int GetAppIconEndPadding() const;
+
  private:
   friend class ShelfConfigTest;
 
@@ -175,8 +180,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // all observers.
   void OnShelfConfigUpdated();
 
-  // Updates |is_dense_| and returns whether |is_dense_| was changed.
-  bool UpdateIsDense();
+  // Updates |is_dense_|, |is_app_list_visible_|, and |shelf_controls_shown_|
+  // and notifies all observers of the update if the state changes.
+  // |app_list_visible| - The new app list visibility state.
+  void UpdateConfig(bool app_list_visible);
 
   // Gets the current shelf size.
   // |ignore_in_app_state| - Whether the returned shelf size should be
@@ -185,6 +192,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // Whether shelf is currently standard or dense.
   bool is_dense_;
+
+  // Whether the shelf buttons (navigation controls, and overview tray button)
+  // should be shown.
+  bool shelf_controls_shown_;
 
   // Whether the app list (or home launcher in tablet mode) is visible.
   bool is_app_list_visible_;
@@ -255,6 +266,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // The height inset on the control buttons when in-app shelf is shown.
   const int in_app_control_button_height_inset_;
+
+  // The padding between the app icon and the end of the scrollable shelf in
+  // tablet mode.
+  const int app_icon_end_padding_;
 
   base::ObserverList<Observer> observers_;
 

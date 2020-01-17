@@ -35,7 +35,7 @@ Polymer({
     },
   },
 
-  attached: function() {
+  attached() {
     this.watch('apps_', state => state.apps);
     this.updateFromStore();
   },
@@ -45,7 +45,7 @@ Polymer({
    * @param {Array<App>} appList
    * @return {boolean}
    */
-  isAppListEmpty_: function(appList) {
+  isAppListEmpty_(appList) {
     return appList.length === 0;
   },
 
@@ -55,7 +55,7 @@ Polymer({
    * @param {String} searchTerm
    * @return {Array<App>}
    */
-  computeAppList_: function(apps, searchTerm) {
+  computeAppList_(apps, searchTerm) {
     if (!apps) {
       return [];
     }

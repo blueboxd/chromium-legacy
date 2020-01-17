@@ -77,7 +77,8 @@ Document* XSLTProcessor::CreateDocumentFromSource(
       DocumentInit::Create()
           .WithDocumentLoader(frame ? frame->Loader().GetDocumentLoader()
                                     : nullptr)
-          .WithURL(url);
+          .WithURL(url)
+          .WithTypeFrom(source_mime_type);
 
   String document_source = source_string;
   bool force_xhtml = source_mime_type == "text/plain";
@@ -108,8 +109,7 @@ Document* XSLTProcessor::CreateDocumentFromSource(
     // Re-create the LocalFrameView if needed.
     if (has_view)
       frame->Client()->TransitionToCommittedForNewPage();
-    result = frame->DomWindow()->InstallNewDocument(source_mime_type, init,
-                                                    force_xhtml);
+    result = frame->DomWindow()->InstallNewDocument(init, force_xhtml);
 
     if (old_document) {
       DocumentXSLT::From(*result).SetTransformSourceDocument(old_document);
@@ -120,8 +120,7 @@ Document* XSLTProcessor::CreateDocumentFromSource(
       result->InitContentSecurityPolicy(csp);
     }
   } else {
-    result =
-        LocalDOMWindow::CreateDocument(source_mime_type, init, force_xhtml);
+    result = LocalDOMWindow::CreateDocument(init, force_xhtml);
   }
 
   DocumentEncodingData data;

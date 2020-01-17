@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Fermer l'onglet actuel</translation>
 <translation id="1258753120186372309">Doodle : <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Rechercher et explorer</translation>
-<translation id="1264974993859112054">Sports</translation>
 <translation id="1266864766717917324">Impossible de partager le contenu suivant : <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1283039547216852943">Appuyer pour développer</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Connectez-vous et activez la synchronisation pour accéder à vos favoris sur tous vos appareils</translation>
 <translation id="2822354292072154809">Voulez-vous vraiment réinitialiser toutes les autorisations du site pour <ph name="CHOSEN_OBJECT_NAME" /> ?</translation>
 <translation id="2842985007712546952">Dossier parent</translation>
-<translation id="2858138569776157458">Sites populaires</translation>
 <translation id="2860954141821109167">Assurez-vous qu'une application Téléphone est activée sur cet appareil</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Piste précédente</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Connectez-vous à Chrome</translation>
 <translation id="3288003805934695103">Recharger la page</translation>
 <translation id="32895400574683172">Les notifications sont autorisées</translation>
+<translation id="3290926146403723641">Pour que l'Assistant Google puisse effectuer des tâches sur le Web, Chrome envoie l'URL et le contenu du site à Google, ainsi que les informations personnelles pertinentes</translation>
 <translation id="3295530008794733555">Naviguez plus rapidement en consommant moins de données</translation>
 <translation id="3298243779924642547">Simplifié</translation>
 <translation id="3303414029551471755">Poursuivre et télécharger le contenu ?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Numéros de téléphone</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> téléchargements supprimés</translation>
 <translation id="3822502789641063741">Suppr. données de site ?</translation>
-<translation id="3853625385350850937">Pour continuer, activez la fonctionnalité NFC sur votre appareil</translation>
 <translation id="3859306556332390985">Avance rapide</translation>
 <translation id="388596076286380598">Consultez des articles, des vidéos et d'autres contenus sur les sites qui vous intéressent, même si vous êtes hors connexion ou si votre connexion est mauvaise.</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
@@ -764,7 +762,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6697947395630195233">Chrome a besoin d'accéder à votre position pour la partager avec ce site.</translation>
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>
 <translation id="6699370405921460408">Grâce aux serveurs Google, les pages que vous consultez sont optimisées.</translation>
-<translation id="6709133671862442373">Actualités</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="671481426037969117">Votre minuteur <ph name="FQDN" /> a expiré. Il redémarrera demain.</translation>
 <translation id="6738867403308150051">Téléchargement en cours…</translation>
@@ -1079,7 +1076,6 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="9133397713400217035">Consulter hors connexion</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
-<translation id="9139318394846604261">Achats</translation>
 <translation id="9155898266292537608">Vous pouvez également effectuer une recherche en appuyant brièvement sur un mot</translation>
 <translation id="9169507124922466868">L'historique de navigation est ouvert à moitié</translation>
 <translation id="9204836675896933765">1 fichier restant</translation>

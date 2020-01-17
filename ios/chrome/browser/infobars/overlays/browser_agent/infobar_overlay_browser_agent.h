@@ -24,13 +24,12 @@ class InfobarOverlayBrowserAgent
  public:
   ~InfobarOverlayBrowserAgent() override;
 
-  // Sets the InfobarInteractionHandler to make model-layer updates for
-  // interactions with infobars with |type|.  OverlayCallbackInstallers will be
-  // created to forward interaction events to each interaction handler.
-  // |interaction_handler| must not be null.  Must only be set once for each
-  // InfobarType.
-  void SetInfobarInteractionHandler(
-      InfobarType type,
+  // Adds an InfobarInteractionHandler to make model-layer updates for
+  // interactions with infobars.  An OverlayCallbackInstaller will be created
+  // from each added handler for each InfobarOverlayType.  |interaction_handler|
+  // must not be null.  Only one interaction handler for a given InfobarType
+  // can be added.
+  void AddInfobarInteractionHandler(
       std::unique_ptr<InfobarInteractionHandler> interaction_handler);
 
  private:
@@ -40,21 +39,21 @@ class InfobarOverlayBrowserAgent
   BROWSER_USER_DATA_KEY_DECL();
 
   // Returns the interaction handler for the InfobarType of the infobar used to
-  // configure |request|.
+  // configure |request|, or nullptr if |request| is not supported.
   InfobarInteractionHandler* GetInteractionHandler(OverlayRequest* request);
 
-  // Helper object that notifies interaction handler of changes in banner
+  // Helper object that notifies interaction handler of changes in infobar UI
   // visibility.
-  class BannerVisibilityObserver : public OverlayPresenterObserver {
+  class OverlayVisibilityObserver : public OverlayPresenterObserver {
    public:
-    BannerVisibilityObserver(Browser* browser,
-                             InfobarOverlayBrowserAgent* browser_agent);
-    ~BannerVisibilityObserver() override;
+    OverlayVisibilityObserver(Browser* browser,
+                              InfobarOverlayBrowserAgent* browser_agent);
+    ~OverlayVisibilityObserver() override;
 
    private:
     // Notifies the BrowserAgent's interaction handler that the visibility of
-    // |request|'s banner UI has changed.
-    void BannerVisibilityChanged(OverlayRequest* request, bool visible);
+    // |request|'s UI has changed.
+    void OverlayVisibilityChanged(OverlayRequest* request, bool visible);
 
     // OverlayPresenterObserver:
     const OverlayRequestSupport* GetRequestSupport(
@@ -73,7 +72,7 @@ class InfobarOverlayBrowserAgent
   std::map<InfobarType, std::unique_ptr<InfobarInteractionHandler>>
       interaction_handlers_;
   // The observer for infobar banner presentations and dismissals.
-  BannerVisibilityObserver banner_visibility_observer_;
+  OverlayVisibilityObserver overlay_visibility_observer_;
 };
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_OVERLAYS_BROWSER_AGENT_INFOBAR_OVERLAY_BROWSER_AGENT_H_

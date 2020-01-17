@@ -45,6 +45,7 @@ enum TextFieldSelectionDirection {
 enum class TextFieldEventBehavior {
   kDispatchNoEvent,
   kDispatchChangeEvent,
+  kDispatchInputEvent,
   kDispatchInputAndChangeEvent
 };
 

@@ -201,12 +201,6 @@
     // Event handler attributes
     attribute EventHandler onsearch;
 
-    // TODO(crbug.com/999895): Move to global_event_handlers.idl
-    attribute EventHandler onwebkitanimationend;
-    attribute EventHandler onwebkitanimationiteration;
-    attribute EventHandler onwebkitanimationstart;
-    attribute EventHandler onwebkittransitionend;
-
     // https://w3c.github.io/webappsec-secure-contexts/#monkey-patching-global-object
     readonly attribute boolean isSecureContext;
 

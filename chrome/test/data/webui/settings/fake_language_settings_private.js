@@ -114,7 +114,15 @@ cr.define('settings', function() {
           // ui/base/ime/chromeos/extension_ime_util.cc.
           code: '_arc_ime_language_',
           displayName: 'Keyboard apps',
-        }
+        },
+        {
+          // Hebrew. This is used to test that the old language code "iw"
+          // still works.
+          code: 'he',
+          displayName: 'Hebrew',
+          nativeDisplayName: 'Hebrew',
+          supportsUI: true,
+        },
       ];
 
       /** @type {!Array<!chrome.languageSettingsPrivate.InputMethod>} */

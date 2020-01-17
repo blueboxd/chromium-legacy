@@ -110,14 +110,15 @@ bool CheckCertificatesInPinsets(const Pinsets& pinsets) {
 // Checks if there are two or more entries for the same hostname.
 bool CheckDuplicateEntries(const TransportSecurityStateEntries& entries) {
   std::set<std::string> seen_entries;
+  bool has_duplicates = false;
   for (const auto& entry : entries) {
     if (seen_entries.find(entry->hostname) != seen_entries.cend()) {
       LOG(ERROR) << "Duplicate entry for " << entry->hostname;
-      return false;
+      has_duplicates = true;
     }
     seen_entries.insert(entry->hostname);
   }
-  return true;
+  return !has_duplicates;
 }
 
 // Checks for entries which have no effect.

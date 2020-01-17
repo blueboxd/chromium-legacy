@@ -23,6 +23,7 @@
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace {
@@ -392,13 +393,15 @@ TermMatches ScoredHistoryMatch::FilterTermMatchesByWordStarts(
     const WordStarts& terms_to_word_starts_offsets,
     const WordStarts& word_starts,
     size_t start_pos,
-    size_t end_pos) {
+    size_t end_pos,
+    bool allow_midword_continuations) {
   // Return early if no filtering is needed.
   if (start_pos == std::string::npos)
     return term_matches;
   TermMatches filtered_matches;
   auto next_word_starts = word_starts.begin();
   auto end_word_starts = word_starts.end();
+  size_t last_end = 0;
   for (const auto& term_match : term_matches) {
     const size_t term_offset =
         terms_to_word_starts_offsets[term_match.term_num];
@@ -409,14 +412,19 @@ TermMatches ScoredHistoryMatch::FilterTermMatchesByWordStarts(
       ++next_word_starts;
     // Add the match if it's (1) before the position we start filtering at, (2)
     // after the position we stop filtering at (assuming we have a position
-    // to stop filtering at), (3) at a word boundary, or (4) void of words (e.g.
-    // the term '-' contains no words).
+    // to stop filtering at), (3) at a word boundary, (4) void of words (e.g.
+    // the term '-' contains no words), or, (5) if allow_midword_continuations
+    // is true, continues where the previous match left off (e.g. inputs such
+    // as 'stack overflow' will match text such as 'stackoverflow').
     if ((term_match.offset < start_pos) ||
         ((end_pos != std::string::npos) && (term_match.offset >= end_pos)) ||
         ((next_word_starts != end_word_starts) &&
          (*next_word_starts == term_match.offset + term_offset)) ||
-        term_offset == term_match.length)
+        term_offset == term_match.length ||
+        (allow_midword_continuations && term_match.offset == last_end)) {
+      last_end = term_match.offset + term_match.length;
       filtered_matches.push_back(term_match);
+    }
   }
   return filtered_matches;
 }
@@ -476,14 +484,16 @@ float ScoredHistoryMatch::GetTopicalityScore(
   // Loop through all URL matches and score them appropriately.
   // First, filter all matches not at a word boundary and in the path (or
   // later).
+  bool allow_midword_continuations = base::FeatureList::IsEnabled(
+      omnibox::kHistoryQuickProviderAllowMidwordContinuations);
   url_matches = FilterTermMatchesByWordStarts(
       url_matches, terms_to_word_starts_offsets, word_starts.url_word_starts_,
-      path_pos, std::string::npos);
+      path_pos, std::string::npos, allow_midword_continuations);
   if (url.has_scheme()) {
     // Also filter matches not at a word boundary and in the scheme.
     url_matches = FilterTermMatchesByWordStarts(
         url_matches, terms_to_word_starts_offsets, word_starts.url_word_starts_,
-        0, host_pos);
+        0, host_pos, allow_midword_continuations);
   }
   for (const auto& url_match : url_matches) {
     // Calculate the offset in the URL string where the meaningful (word) part
@@ -504,11 +514,13 @@ float ScoredHistoryMatch::GetTopicalityScore(
         url_match.length == terms_to_word_starts_offsets[url_match.term_num];
     if (term_word_offset >= query_pos) {
       // The match is in the query or ref component.
-      DCHECK(at_word_boundary || term_has_no_words);
+      DCHECK(at_word_boundary || allow_midword_continuations ||
+             term_has_no_words);
       term_scores[url_match.term_num] += 5;
     } else if (term_word_offset >= path_pos) {
       // The match is in the path component.
-      DCHECK(at_word_boundary || term_has_no_words);
+      DCHECK(at_word_boundary || allow_midword_continuations ||
+             term_has_no_words);
       term_scores[url_match.term_num] += 8;
     } else if (term_word_offset >= host_pos) {
       if (term_word_offset < last_part_of_host_pos) {
@@ -524,7 +536,8 @@ float ScoredHistoryMatch::GetTopicalityScore(
     } else {
       // The match is in the protocol (a.k.a. scheme).
       // Matches not at a word boundary should have been filtered already.
-      DCHECK(at_word_boundary || term_has_no_words);
+      DCHECK(at_word_boundary || allow_midword_continuations ||
+             term_has_no_words);
       if (allow_scheme_matches_)
         term_scores[url_match.term_num] += 10;
     }
@@ -535,7 +548,8 @@ float ScoredHistoryMatch::GetTopicalityScore(
   size_t word_num = 0;
   title_matches = FilterTermMatchesByWordStarts(
       title_matches, terms_to_word_starts_offsets,
-      word_starts.title_word_starts_, 0, std::string::npos);
+      word_starts.title_word_starts_, 0, std::string::npos,
+      allow_midword_continuations);
   for (const auto& title_match : title_matches) {
     // Calculate the offset in the title string where the meaningful (word) part
     // of the term starts.  This takes into account times when a term starts
@@ -551,8 +565,9 @@ float ScoredHistoryMatch::GetTopicalityScore(
     }
     if (word_num >= num_title_words_to_allow_)
       break;  // only count the first ten words
-    DCHECK(next_word_starts != end_word_starts);
-    DCHECK(*next_word_starts == term_word_offset ||
+    DCHECK(next_word_starts != end_word_starts || allow_midword_continuations);
+    DCHECK(allow_midword_continuations ||
+           *next_word_starts == term_word_offset ||
            title_match.length ==
                terms_to_word_starts_offsets[title_match.term_num])
         << "not at word boundary";
@@ -573,7 +588,9 @@ float ScoredHistoryMatch::GetTopicalityScore(
     // to give it credit for.  For instance, terms that appear in the middle
     // of a CGI parameter get no credit.  Almost all the matches dropped
     // due to this test would look stupid if shown to the user.
-    if (term_score == 0)
+    if (term_score == 0 &&
+        !base::FeatureList::IsEnabled(
+            omnibox::kHistoryQuickProviderAllowButDoNotScoreMidwordTerms))
       return 0;
     topicality_score += raw_term_score_to_topicality_score[std::min(
         term_score, kMaxRawTermScore - 1)];
@@ -584,9 +601,8 @@ float ScoredHistoryMatch::GetTopicalityScore(
   const float final_topicality_score = topicality_score / num_terms;
 
   // Demote the URL if the topicality score is less than threshold.
-  if (final_topicality_score < topicality_threshold_) {
+  if (final_topicality_score < topicality_threshold_)
     return 0.0;
-  }
 
   return final_topicality_score;
 }

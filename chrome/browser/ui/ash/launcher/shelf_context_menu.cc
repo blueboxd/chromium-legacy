@@ -115,8 +115,13 @@ bool ShelfContextMenu::IsCommandIdEnabled(int command_id) const {
   if (command_id == ash::SWAP_WITH_NEXT ||
       command_id == ash::SWAP_WITH_PREVIOUS) {
     // Only show commands to reorder shelf items when ChromeVox is enabled.
-    return chromeos::AccessibilityManager::Get() &&
-           chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
+    if (!chromeos::AccessibilityManager::Get() ||
+        !chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
+      return false;
+    }
+    const ash::ShelfModel* model = controller_->shelf_model();
+    return model->CanSwap(model->ItemIndexByID(item_.id),
+                          /*with_next=*/command_id == ash::SWAP_WITH_NEXT);
   }
 
   DCHECK(command_id < ash::COMMAND_ID_COUNT);

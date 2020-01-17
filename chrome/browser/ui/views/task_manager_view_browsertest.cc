@@ -10,7 +10,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/task_manager/task_manager_tester.h"
 #include "chrome/browser/ui/browser.h"
@@ -28,6 +27,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
@@ -94,7 +94,7 @@ class TaskManagerViewTest : public InProcessBrowserTest {
   content::WebContents* FindWebContentsByTabId(SessionID tab_id) {
     auto& all_tabs = AllTabContentses();
     auto tab_id_matches = [tab_id](content::WebContents* web_contents) {
-      return SessionTabHelper::IdForTab(web_contents) == tab_id;
+      return sessions::SessionTabHelper::IdForTab(web_contents) == tab_id;
     };
     auto it = std::find_if(all_tabs.begin(), all_tabs.end(), tab_id_matches);
 
@@ -104,7 +104,7 @@ class TaskManagerViewTest : public InProcessBrowserTest {
   // Returns the current TaskManagerTableModel index for a particular tab. Don't
   // cache this value, since it can change whenever the message loop runs.
   int FindRowForTab(content::WebContents* tab) {
-    SessionID tab_id = SessionTabHelper::IdForTab(tab);
+    SessionID tab_id = sessions::SessionTabHelper::IdForTab(tab);
     std::unique_ptr<TaskManagerTester> tester =
         TaskManagerTester::Create(base::Closure());
     for (int i = 0; i < tester->GetRowCount(); ++i) {

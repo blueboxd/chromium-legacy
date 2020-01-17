@@ -16,6 +16,8 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(USE_AURA)
+#include "base/optional.h"
+
 #include "ui/base/cursor/cursor.h"
 #endif
 
@@ -27,7 +29,7 @@ namespace content {
 // WebCursor. This class is highly similar to ui::Cursor.
 class CONTENT_EXPORT WebCursor {
  public:
-  WebCursor() = default;
+  WebCursor();
   explicit WebCursor(const CursorInfo& info);
   explicit WebCursor(const WebCursor& other);
   WebCursor& operator=(const WebCursor& other);
@@ -54,6 +56,8 @@ class CONTENT_EXPORT WebCursor {
   void CreateScaledBitmapAndHotspotFromCustomData(SkBitmap* bitmap,
                                                   gfx::Point* hotspot,
                                                   float* scale);
+
+  bool has_custom_cursor_for_test() const { return !!custom_cursor_; }
 #endif
 
  private:
@@ -85,6 +89,10 @@ class CONTENT_EXPORT WebCursor {
   // This matches ozone drm_util.cc's kDefaultCursorWidth/Height.
   static constexpr int kDefaultMaxSize = 64;
   gfx::Size maximum_cursor_size_ = {kDefaultMaxSize, kDefaultMaxSize};
+#endif
+
+#if defined(USE_AURA)
+  base::Optional<ui::Cursor> custom_cursor_;
 #endif
 };
 

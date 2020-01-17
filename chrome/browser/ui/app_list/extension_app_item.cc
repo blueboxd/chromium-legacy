@@ -171,7 +171,7 @@ const char* ExtensionAppItem::GetItemType() const {
 }
 
 bool ExtensionAppItem::IsBadged() const {
-  return icon_ && icon_->icon_is_badged();
+  return icon_ && icon_->has_chrome_badge();
 }
 
 app_list::AppContextMenu* ExtensionAppItem::GetAppContextMenu() {

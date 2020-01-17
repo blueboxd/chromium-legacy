@@ -53,9 +53,7 @@ source_set("cells") {
     "//ui/base",
   ]
 
-  public_deps = [
-    ":clear_browsing_data_constants",
-  ]
+  public_deps = [ ":clear_browsing_data_constants" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

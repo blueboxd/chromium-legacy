@@ -12,16 +12,12 @@ static_library("upload_list") {
     "upload_list.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "text_log_upload_list_unittest.cc",
-  ]
+  sources = [ "text_log_upload_list_unittest.cc" ]
 
   deps = [
     ":upload_list",

@@ -14,7 +14,7 @@ const CrSettingsPrefs = (function() {
     /**
      * Resolves the CrSettingsPrefs.initialized promise.
      */
-    setInitialized: function() {
+    setInitialized() {
       /** @public {boolean} */
       CrSettingsPrefsInternal.isInitialized = true;
       CrSettingsPrefsInternal.resolve_();
@@ -23,7 +23,7 @@ const CrSettingsPrefs = (function() {
     /**
      * Restores state for testing.
      */
-    resetForTesting: function() {
+    resetForTesting() {
       CrSettingsPrefsInternal.setup_();
     },
 
@@ -38,7 +38,7 @@ const CrSettingsPrefs = (function() {
      * Called to set up the promise and resolve methods.
      * @private
      */
-    setup_: function() {
+    setup_() {
       CrSettingsPrefsInternal.isInitialized = false;
       /**
        * Promise to be resolved when all settings have been initialized.

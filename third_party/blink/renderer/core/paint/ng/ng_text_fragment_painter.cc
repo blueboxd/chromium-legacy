@@ -64,6 +64,26 @@ inline const NGPaintFragment& AsDisplayItemClient(
   return cursor.PaintFragment();
 }
 
+inline const NGInlineCursor& InlineCursorForBlockFlow(
+    const NGInlineCursor& cursor,
+    base::Optional<NGInlineCursor>* storage) {
+  if (*storage)
+    return **storage;
+  *storage = cursor;
+  (*storage)->ExpandRootToContainingBlock();
+  return **storage;
+}
+
+inline const NGInlineCursor& InlineCursorForBlockFlow(
+    const NGTextPainterCursor& cursor,
+    base::Optional<NGInlineCursor>* storage) {
+  if (*storage)
+    return **storage;
+  storage->emplace(cursor.RootPaintFragment());
+  (*storage)->MoveTo(cursor.PaintFragment());
+  return **storage;
+}
+
 // TODO(yosin): Remove |GetTextFragmentPaintInfo| once the transition to
 // |NGFragmentItem| is done. http://crbug.com/982194
 inline NGTextFragmentPaintInfo GetTextFragmentPaintInfo(
@@ -98,26 +118,11 @@ inline std::pair<LayoutUnit, LayoutUnit> GetLineLeftAndRightForOffsets(
 // |NGFragmentItem| is done. http://crbug.com/982194
 inline LayoutSelectionStatus ComputeLayoutSelectionStatus(
     const NGInlineCursor& cursor) {
-  return cursor.CurrentItem()
-      ->GetLayoutObject()
+  return cursor.CurrentLayoutObject()
       ->GetDocument()
       .GetFrame()
       ->Selection()
       .ComputeLayoutSelectionStatus(cursor);
-}
-
-inline LayoutSelectionStatus ComputeLayoutSelectionStatus(
-    const NGTextPainterCursor& cursor) {
-  // Note:: Because of this function is hot, we should not use |NGInlineCursor|
-  // on paint fragment which requires traversing ancestors to root.
-  NGInlineCursor inline_cursor(cursor.RootPaintFragment());
-  inline_cursor.MoveTo(cursor.PaintFragment());
-  return cursor.CurrentItem()
-      ->GetLayoutObject()
-      ->GetDocument()
-      .GetFrame()
-      ->Selection()
-      .ComputeLayoutSelectionStatus(inline_cursor);
 }
 
 // TODO(yosin): Remove |ComputeLocalRect| once the transition to
@@ -326,20 +331,11 @@ template <typename Cursor>
 NGTextFragmentPainter<Cursor>::NGTextFragmentPainter(const Cursor& cursor)
     : cursor_(cursor) {}
 
-static PhysicalRect ComputeLocalSelectionRectForText(
-    const NGTextPainterCursor& cursor,
-    const LayoutSelectionStatus& selection_status) {
-  NGInlineCursor inline_cursor(cursor.RootPaintFragment());
-  inline_cursor.MoveTo(cursor.PaintFragment());
-  return ComputeLocalSelectionRectForText(inline_cursor, selection_status);
-}
-
 // Logic is copied from InlineTextBoxPainter::PaintSelection.
 // |selection_start| and |selection_end| should be between
 // [text_fragment.StartOffset(), text_fragment.EndOffset()].
-template <typename Cursor>
 static void PaintSelection(GraphicsContext& context,
-                           const Cursor& cursor,
+                           const NGInlineCursor& cursor,
                            Node* node,
                            const Document& document,
                            const ComputedStyle& style,
@@ -400,7 +396,9 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
                         layout_object->IsSelected();
   base::Optional<LayoutSelectionStatus> selection_status;
   if (have_selection) {
-    selection_status = ComputeLayoutSelectionStatus(cursor_);
+    const NGInlineCursor& root_inline_cursor =
+        InlineCursorForBlockFlow(cursor_, &inline_cursor_for_block_flow_);
+    selection_status = ComputeLayoutSelectionStatus(root_inline_cursor);
     DCHECK_LE(selection_status->start, selection_status->end);
     have_selection = selection_status->start < selection_status->end;
   }
@@ -483,7 +481,9 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
                          markers_to_paint, box_rect.offset, style,
                          DocumentMarkerPaintPhase::kBackground, nullptr);
     if (have_selection) {
-      PaintSelection(context, cursor_, node, document, style,
+      const NGInlineCursor& root_inline_cursor =
+          InlineCursorForBlockFlow(cursor_, &inline_cursor_for_block_flow_);
+      PaintSelection(context, root_inline_cursor, node, document, style,
                      selection_style.fill_color, box_rect, *selection_status);
     }
   }

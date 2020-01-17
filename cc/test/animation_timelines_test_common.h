@@ -18,8 +18,8 @@
 
 namespace cc {
 
+class Animation;
 class KeyframeEffect;
-class SingleKeyframeEffectAnimation;
 
 class TestLayer {
  public:
@@ -311,11 +311,11 @@ class AnimationTimelinesTest : public testing::Test {
   int next_test_layer_id_;
 
   scoped_refptr<AnimationTimeline> timeline_;
-  scoped_refptr<SingleKeyframeEffectAnimation> animation_;
+  scoped_refptr<Animation> animation_;
   scoped_refptr<ElementAnimations> element_animations_;
 
   scoped_refptr<AnimationTimeline> timeline_impl_;
-  scoped_refptr<SingleKeyframeEffectAnimation> animation_impl_;
+  scoped_refptr<Animation> animation_impl_;
   scoped_refptr<ElementAnimations> element_animations_impl_;
 };
 

@@ -19,7 +19,8 @@ AccessibilityTest.define('CrostiniAccessibilityTest', {
   axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
   setup: function() {
-    settings.router.navigateTo(settings.routes.CROSTINI_EXPORT_IMPORT);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.CROSTINI_EXPORT_IMPORT);
     Polymer.dom.flush();
   },
   /** @override */

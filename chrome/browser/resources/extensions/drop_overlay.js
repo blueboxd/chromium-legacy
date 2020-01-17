@@ -26,7 +26,7 @@ Polymer({
   },
 
   /** @override */
-  created: function() {
+  created() {
     this.hidden = true;
     const dragTarget = document.documentElement;
     this.dragWrapperHandler_ = new DragAndDropHandler(true, dragTarget);
@@ -49,7 +49,7 @@ Polymer({
    * @param {boolean} dragEnabled
    * @private
    */
-  dragEnabledChanged_: function(dragEnabled) {
+  dragEnabledChanged_(dragEnabled) {
     this.dragWrapperHandler_.dragEnabled = dragEnabled;
   },
 });

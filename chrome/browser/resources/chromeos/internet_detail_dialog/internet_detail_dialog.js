@@ -41,7 +41,7 @@ Polymer({
      */
     showTechnologyBadge_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.valueExists('showTechnologyBadge') &&
             loadTimeData.getBoolean('showTechnologyBadge');
       }
@@ -65,13 +65,13 @@ Polymer({
   networkConfig_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
                               .getMojoServiceRemote();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     const dialogArgs = chrome.getVariableValue('dialogArguments');
     let type, name;
     if (dialogArgs) {
@@ -101,7 +101,7 @@ Polymer({
   },
 
   /** @private */
-  managedPropertiesChanged_: function() {
+  managedPropertiesChanged_() {
     assert(this.managedProperties_);
 
     // Focus the action button once the initial state is set.
@@ -116,7 +116,7 @@ Polymer({
   },
 
   /** @private */
-  close_: function() {
+  close_() {
     chrome.send('dialogClose');
   },
 
@@ -124,7 +124,7 @@ Polymer({
    * CrosNetworkConfigObserver impl
    * @param {!Array<OncMojo.NetworkStateProperties>} networks
    */
-  onActiveNetworksChanged: function(networks) {
+  onActiveNetworksChanged(networks) {
     if (!this.guid || !this.managedProperties_) {
       return;
     }
@@ -140,7 +140,7 @@ Polymer({
    * CrosNetworkConfigObserver impl
    * @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network
    */
-  onNetworkStateChanged: function(network) {
+  onNetworkStateChanged(network) {
     if (!this.guid || !this.managedProperties_) {
       return;
     }
@@ -150,7 +150,7 @@ Polymer({
   },
 
   /** CrosNetworkConfigObserver impl */
-  onDeviceStateListChanged: function() {
+  onDeviceStateListChanged() {
     if (!this.guid || !this.managedProperties_) {
       return;
     }
@@ -159,7 +159,7 @@ Polymer({
   },
 
   /** @private */
-  getNetworkDetails_: function() {
+  getNetworkDetails_() {
     assert(this.guid);
     this.networkConfig_.getManagedProperties(this.guid).then(response => {
       if (!response.result) {
@@ -176,7 +176,7 @@ Polymer({
   },
 
   /** @private */
-  getDeviceState_: function() {
+  getDeviceState_() {
     if (!this.managedProperties_) {
       return;
     }
@@ -191,7 +191,7 @@ Polymer({
    * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {!OncMojo.NetworkStateProperties}
    */
-  getNetworkState_: function(managedProperties) {
+  getNetworkState_(managedProperties) {
     return OncMojo.managedPropertiesToNetworkState(managedProperties);
   },
 
@@ -199,7 +199,7 @@ Polymer({
    * @return {!chromeos.networkConfig.mojom.ConfigProperties}
    * @private
    */
-  getDefaultConfigProperties_: function() {
+  getDefaultConfigProperties_() {
     return OncMojo.getDefaultConfigProperties(this.managedProperties_.type);
   },
 
@@ -207,7 +207,7 @@ Polymer({
    * @param {!chromeos.networkConfig.mojom.ConfigProperties} config
    * @private
    */
-  setMojoNetworkProperties_: function(config) {
+  setMojoNetworkProperties_(config) {
     if (!this.propertiesReceived_ || !this.guid) {
       return;
     }
@@ -226,7 +226,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getStateText_: function(managedProperties) {
+  getStateText_(managedProperties) {
     if (!managedProperties) {
       return '';
     }
@@ -239,7 +239,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getNameText_: function(managedProperties) {
+  getNameText_(managedProperties) {
     return OncMojo.getNetworkName(managedProperties);
   },
 
@@ -248,7 +248,7 @@ Polymer({
    * @return {boolean} True if the network is connected.
    * @private
    */
-  isConnectedState_: function(managedProperties) {
+  isConnectedState_(managedProperties) {
     return OncMojo.connectionStateIsConnected(
         managedProperties.connectionState);
   },
@@ -258,7 +258,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isRemembered_: function(managedProperties) {
+  isRemembered_(managedProperties) {
     return managedProperties.source !=
         chromeos.networkConfig.mojom.OncSource.kNone;
   },
@@ -268,7 +268,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isRememberedOrConnected_: function(managedProperties) {
+  isRememberedOrConnected_(managedProperties) {
     return this.isRemembered_(managedProperties) ||
         this.isConnectedState_(managedProperties);
   },
@@ -278,7 +278,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isCellular_: function(managedProperties) {
+  isCellular_(managedProperties) {
     return managedProperties.type ==
         chromeos.networkConfig.mojom.NetworkType.kCellular;
   },
@@ -288,7 +288,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showCellularSim_: function(managedProperties) {
+  showCellularSim_(managedProperties) {
     return managedProperties.type ==
         chromeos.networkConfig.mojom.NetworkType.kCellular &&
         managedProperties.typeProperties.cellular.family != 'CDMA';
@@ -299,7 +299,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showCellularChooseNetwork_: function(managedProperties) {
+  showCellularChooseNetwork_(managedProperties) {
     return managedProperties.type ==
         chromeos.networkConfig.mojom.NetworkType.kCellular &&
         managedProperties.typeProperties.cellular.supportNetworkScan;
@@ -310,7 +310,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showForget_: function(managedProperties) {
+  showForget_(managedProperties) {
     const mojom = chromeos.networkConfig.mojom;
     if (!managedProperties ||
         managedProperties.type != mojom.NetworkType.kWiFi) {
@@ -321,7 +321,7 @@ Polymer({
   },
 
   /** @private */
-  onForgetTap_: function() {
+  onForgetTap_() {
     this.networkConfig_.forgetNetwork(this.guid).then(response => {
       if (!response.success) {
         console.error('Forget network failed for: ' + this.guid);
@@ -336,7 +336,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getConnectDisconnectText_: function(managedProperties) {
+  getConnectDisconnectText_(managedProperties) {
     if (this.showConnect_(managedProperties)) {
       return this.i18n('networkButtonConnect');
     }
@@ -348,7 +348,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showConnectDisconnect_: function(managedProperties) {
+  showConnectDisconnect_(managedProperties) {
     return this.showConnect_(managedProperties) ||
         this.showDisconnect_(managedProperties);
   },
@@ -358,7 +358,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showConnect_: function(managedProperties) {
+  showConnect_(managedProperties) {
     return managedProperties.connectable &&
         managedProperties.type !=
         chromeos.networkConfig.mojom.NetworkType.kEthernet &&
@@ -371,7 +371,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showDisconnect_: function(managedProperties) {
+  showDisconnect_(managedProperties) {
     return managedProperties.type !=
         chromeos.networkConfig.mojom.NetworkType.kEthernet &&
         managedProperties.connectionState !=
@@ -383,7 +383,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowProxyPolicyIndicator_: function(managedProperties) {
+  shouldShowProxyPolicyIndicator_(managedProperties) {
     if (!managedProperties.proxySettings) {
       return false;
     }
@@ -395,7 +395,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  enableConnectDisconnect_: function(managedProperties) {
+  enableConnectDisconnect_(managedProperties) {
     if (!this.showConnectDisconnect_(managedProperties)) {
       return false;
     }
@@ -412,12 +412,12 @@ Polymer({
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
-  enableConnect_: function(managedProperties) {
+  enableConnect_(managedProperties) {
     return this.showConnect_(managedProperties);
   },
 
   /** @private */
-  onConnectDisconnectClick_: function() {
+  onConnectDisconnectClick_() {
     if (!this.managedProperties_) {
       return;
     }
@@ -452,7 +452,7 @@ Polymer({
    * @param {!CustomEvent<!chromeos.networkConfig.mojom.ApnProperties>} event
    * @private
    */
-  onApnChange_: function(event) {
+  onApnChange_(event) {
     if (!this.propertiesReceived_) {
       return;
     }
@@ -471,7 +471,7 @@ Polymer({
    * }>} event The network-ip-config or network-nameservers change event.
    * @private
    */
-  onIPConfigChange_: function(event) {
+  onIPConfigChange_(event) {
     if (!this.managedProperties_) {
       return;
     }
@@ -487,7 +487,7 @@ Polymer({
    * @param {!CustomEvent<!chromeos.networkConfig.mojom.ProxySettings>} event
    * @private
    */
-  onProxyChange_: function(event) {
+  onProxyChange_(event) {
     if (!this.propertiesReceived_) {
       return;
     }
@@ -501,7 +501,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasVisibleFields_: function(fields) {
+  hasVisibleFields_(fields) {
     return fields.some((field) => {
       const value = this.get(field, this.managedProperties_);
       return value !== undefined && value !== '';
@@ -512,7 +512,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasInfoFields_: function() {
+  hasInfoFields_() {
     return this.hasVisibleFields_(this.getInfoFields_());
   },
 
@@ -520,7 +520,7 @@ Polymer({
    * @return {!Array<string>} The fields to display in the info section.
    * @private
    */
-  getInfoFields_: function() {
+  getInfoFields_() {
     /** @type {!Array<string>} */ const fields = [];
     const type = this.managedProperties_.type;
     if (type == chromeos.networkConfig.mojom.NetworkType.kCellular) {

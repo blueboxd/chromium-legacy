@@ -383,6 +383,8 @@ void ToolbarActionsModel::AddAction(const ActionId& action_id) {
     if (visible_count_delta)
       SetVisibleIconCount(visible_icon_count() + visible_count_delta);
   }
+
+  UpdatePinnedActionIds();
 }
 
 void ToolbarActionsModel::RemoveAction(const ActionId& action_id) {
@@ -396,6 +398,11 @@ void ToolbarActionsModel::RemoveAction(const ActionId& action_id) {
     SetVisibleIconCount(action_ids_.size() - 1);
 
   action_ids_.erase(pos);
+
+  // TODO(pbos): Remove previously-pinned actions from ExtensionPrefs if this is
+  // an uninstall and not a disable. This might need to be handled in another
+  // place (ExtensionPrefs?) as we don't know the reason for RemoveAction here.
+  UpdatePinnedActionIds();
 
   // If we're in highlight mode, we also have to remove the action from
   // the highlighted list.
@@ -485,8 +492,11 @@ void ToolbarActionsModel::InitializeActionList() {
   else
     Populate();
 
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    // Set |pinned_action_ids_| directly to avoid notifying observers that they
+    // have changed even though they haven't.
     pinned_action_ids_ = GetFilteredPinnedActionIds();
+  }
 }
 
 void ToolbarActionsModel::Populate() {
@@ -658,14 +668,7 @@ void ToolbarActionsModel::OnActionToolbarPrefChange() {
   if (!actions_initialized_)
     return;
 
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    std::vector<ActionId> pinned_extensions = GetFilteredPinnedActionIds();
-    if (pinned_extensions != pinned_action_ids_) {
-      pinned_action_ids_ = pinned_extensions;
-      for (Observer& observer : observers_)
-        observer.OnToolbarPinnedActionsChanged();
-    }
-  }
+  UpdatePinnedActionIds();
 
   // Recalculate |last_known_positions_| to be |pref_positions| followed by
   // ones that are only in |last_known_positions_|.
@@ -782,6 +785,18 @@ bool ToolbarActionsModel::IsActionVisible(const ActionId& action_id) const {
   while (action_ids().size() > index && action_ids()[index] != action_id)
     ++index;
   return index < visible_icon_count();
+}
+
+void ToolbarActionsModel::UpdatePinnedActionIds() {
+  if (!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    return;
+  std::vector<ActionId> pinned_extensions = GetFilteredPinnedActionIds();
+  if (pinned_extensions == pinned_action_ids_)
+    return;
+
+  pinned_action_ids_ = pinned_extensions;
+  for (Observer& observer : observers_)
+    observer.OnToolbarPinnedActionsChanged();
 }
 
 std::vector<ToolbarActionsModel::ActionId>

@@ -24,7 +24,7 @@ using testing::AtLeast;
 
 namespace {
 
-constexpr char kRouteDesc[] = "route description";
+constexpr char kRouteDesc[] = "My App";
 constexpr char kRouteId[] = "route_id";
 constexpr char kSinkName[] = "My Sink";
 
@@ -119,8 +119,9 @@ class CastMediaNotificationItemTest : public testing::Test {
         });
     EXPECT_CALL(view_, UpdateWithMediaMetadata(_))
         .WillOnce([&](const media_session::MediaMetadata& metadata) {
-          EXPECT_EQ(base::UTF8ToUTF16(kRouteDesc), metadata.artist);
-          EXPECT_EQ(base::UTF8ToUTF16(kSinkName), metadata.source_title);
+          const std::string separator = " \xC2\xB7 ";
+          EXPECT_EQ(base::UTF8ToUTF16(kRouteDesc + separator + kSinkName),
+                    metadata.source_title);
         });
     item_->SetView(&view_);
     testing::Mock::VerifyAndClearExpectations(&view_);
@@ -167,11 +168,14 @@ TEST_F(CastMediaNotificationItemTest, UpdateSessionInfo) {
 TEST_F(CastMediaNotificationItemTest, UpdateMetadata) {
   SetView();
   auto status = MediaStatus::New();
-  std::string title = "my title";
+  const std::string title = "my title";
+  const std::string secondary_title = "my artist";
   status->title = title;
+  status->secondary_title = secondary_title;
   EXPECT_CALL(view_, UpdateWithMediaMetadata(_))
       .WillOnce([&](const media_session::MediaMetadata& metadata) {
         EXPECT_EQ(base::UTF8ToUTF16(title), metadata.title);
+        EXPECT_EQ(base::UTF8ToUTF16(secondary_title), metadata.artist);
       });
   item_->OnMediaStatusUpdated(std::move(status));
 }

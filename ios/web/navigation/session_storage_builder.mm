@@ -40,8 +40,6 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
     session_storage.lastCommittedItemIndex =
         navigation_manager->GetItemCount() - 1;
   }
-  session_storage.previousItemIndex =
-      navigation_manager->GetPreviousItemIndex();
   NSMutableArray* item_storages = [[NSMutableArray alloc] init];
   NavigationItemStorageBuilder item_storage_builder;
   size_t originalIndex = session_storage.lastCommittedItemIndex;
@@ -93,8 +91,6 @@ void SessionStorageBuilder::ExtractSessionState(
   }
   web_state->navigation_manager_->Restore(storage.lastCommittedItemIndex,
                                           std::move(items));
-  web_state->navigation_manager_->SetPreviousItemIndex(
-      storage.previousItemIndex);
 
   SessionCertificatePolicyCacheStorageBuilder cert_builder;
   std::unique_ptr<SessionCertificatePolicyCacheImpl> cert_policy_cache =

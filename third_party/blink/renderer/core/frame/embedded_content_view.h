@@ -78,10 +78,6 @@ class CORE_EXPORT EmbeddedContentView : public GarbageCollectedMixin {
   virtual void SelfVisibleChanged() {}
   virtual void ParentVisibleChanged() {}
   void SetAttached(bool attached) { is_attached_ = attached; }
-  // Location() is in frame coordinates, DocumentLocation() is in document
-  // coordinates. For more information:
-  // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
-  IntPoint DocumentLocation() const { return frame_rect_.Location(); }
 
  private:
   // Note that frame_rect_ is actually in document coordinates, but the

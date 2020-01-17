@@ -23,7 +23,7 @@ namespace win {
 // expected behavior for this function is to not return, instead of returning
 // EXCEPTION_EXECUTE_HANDLER or similar, given that in general we are not
 // prepared to handle exceptions.
-typedef int(__cdecl* WinProcExceptionFilter)(EXCEPTION_POINTERS* info);
+using WinProcExceptionFilter = int __cdecl (*)(EXCEPTION_POINTERS* info);
 
 // Sets the filter to deal with exceptions inside a WindowProc. Returns the old
 // exception filter, if any.

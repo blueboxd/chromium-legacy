@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Cierra la pestaña actual</translation>
 <translation id="1258753120186372309">Doodles de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Buscar y explorar</translation>
-<translation id="1264974993859112054">Deportes</translation>
 <translation id="1266864766717917324">No se ha podido compartir: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1283039547216852943">Toca para ampliar</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Inicia sesión y activa la sincronización para ver tus marcadores en todos tus dispositivos</translation>
 <translation id="2822354292072154809">¿Seguro que quieres restablecer todos los permisos de los sitios web de <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
-<translation id="2858138569776157458">Populares</translation>
 <translation id="2860954141821109167">Comprueba que se haya habilitado una aplicación de teléfono en este dispositivo</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
 <translation id="3288003805934695103">Volver a cargar la página</translation>
 <translation id="32895400574683172">Las notificaciones están permitidas</translation>
+<translation id="3290926146403723641">Para completar tareas que se realizan en la Web a través del Asistente de Google, Chrome envía a Google la URL y el contenido de los sitios web, así como información personal pertinente.</translation>
 <translation id="3295530008794733555">Navega más rápido. Usa menos datos.</translation>
 <translation id="3298243779924642547">Básico</translation>
 <translation id="3303414029551471755">¿Quieres continuar para descargar el contenido?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Números de teléfono</translation>
 <translation id="3819178904835489326">Descargas eliminadas: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">¿Borrar almacenamiento web?</translation>
-<translation id="3853625385350850937">Para continuar, activa el NFC en el dispositivo</translation>
 <translation id="3859306556332390985">Buscar hacia delante</translation>
 <translation id="388596076286380598">Consulta artículos, vídeos y otros contenidos de los sitios web que te gusten incluso sin conexión a Internet o con una conexión inestable.</translation>
 <translation id="3894427358181296146">Añadir carpeta</translation>
@@ -764,7 +762,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6697947395630195233">Chrome necesita acceder a tu ubicación para compartirla con este sitio web.</translation>
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>
 <translation id="6699370405921460408">Los servidores de Google optimizan las páginas web que visitas.</translation>
-<translation id="6709133671862442373">Noticias</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="671481426037969117">Se ha agotado el temporizador de <ph name="FQDN" />. Se reiniciará mañana.</translation>
 <translation id="6738867403308150051">Descargando…</translation>
@@ -1079,7 +1076,6 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="9133397713400217035">Explorar sin conexión</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
-<translation id="9139318394846604261">Compras</translation>
 <translation id="9155898266292537608">También puedes tocar rápidamente una palabra para hacer búsquedas</translation>
 <translation id="9169507124922466868">El historial de navegación está medio abierto</translation>
 <translation id="9204836675896933765">1 archivo restante</translation>

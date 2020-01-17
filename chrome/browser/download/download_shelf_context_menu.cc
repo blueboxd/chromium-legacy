@@ -172,6 +172,9 @@ base::string16 DownloadShelfContextMenu::GetLabelForCommandId(
     case DownloadCommands::DEEP_SCAN:
       id = IDS_DOWNLOAD_MENU_DEEP_SCAN;
       break;
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
+      id = IDS_OPEN_DOWNLOAD_NOW;
+      break;
   }
   CHECK(id != -1);
   return l10n_util::GetStringUTF16(id);
@@ -361,7 +364,8 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetDeepScanningMenuModel(
       GetLabelForCommandId(DownloadCommands::DISCARD));
 
   deep_scanning_menu_model_->AddItem(
-      DownloadCommands::KEEP, l10n_util::GetStringUTF16(IDS_OPEN_DOWNLOAD_NOW));
+      DownloadCommands::BYPASS_DEEP_SCANNING,
+      GetLabelForCommandId(DownloadCommands::BYPASS_DEEP_SCANNING));
 
   deep_scanning_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
 

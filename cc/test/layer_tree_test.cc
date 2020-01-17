@@ -17,10 +17,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframe_model.h"
-#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
@@ -212,8 +212,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->BeginMainFrameAbortedOnThread(this, reason);
   }
 
-  void ReadyToCommit() override {
-    LayerTreeHostImpl::ReadyToCommit();
+  void ReadyToCommit(const viz::BeginFrameArgs& commit_args) override {
+    LayerTreeHostImpl::ReadyToCommit(commit_args);
     test_hooks_->ReadyToCommitOnThread(this);
   }
 
@@ -318,7 +318,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     LayerTreeHostImpl::UpdateAnimationState(start_ready_animations);
     bool has_unfinished_animation = false;
     for (const auto& it : animation_host()->ticking_animations_for_testing()) {
-      if (it.get()->TickingKeyframeModelsCount()) {
+      if (it->keyframe_effect()->HasTickingKeyframeModel()) {
         has_unfinished_animation = true;
         break;
       }
@@ -595,8 +595,9 @@ class LayerTreeTestLayerTreeFrameSinkClient
   TestHooks* hooks_;
 };
 
-LayerTreeTest::LayerTreeTest()
-    : initial_root_bounds_(1, 1),
+LayerTreeTest::LayerTreeTest(LayerTreeTest::RendererType renderer_type)
+    : renderer_type_(renderer_type),
+      initial_root_bounds_(1, 1),
       layer_tree_frame_sink_client_(
           new LayerTreeTestLayerTreeFrameSinkClient(this)) {
   main_thread_weak_ptr_ = weak_factory_.GetWeakPtr();
@@ -631,6 +632,16 @@ LayerTreeTest::LayerTreeTest()
 #endif
   if (command_line->HasSwitch(switches::kCCLayerTreeTestLongTimeout))
     timeout_seconds_ = 5 * 60;
+
+  if (use_vulkan()) {
+    bool use_gpu = command_line->HasSwitch(::switches::kUseGpuInTests);
+    command_line->AppendSwitchASCII(
+        ::switches::kUseVulkan,
+        use_gpu ? ::switches::kVulkanImplementationNameNative
+                : ::switches::kVulkanImplementationNameSwiftshader);
+    command_line->AppendSwitchASCII(::switches::kGrContextType,
+                                    ::switches::kGrContextTypeVulkan);
+  }
 }
 
 LayerTreeTest::~LayerTreeTest() {
@@ -672,7 +683,7 @@ void LayerTreeTest::EndTestAfterDelayMs(int delay_milliseconds) {
 }
 
 void LayerTreeTest::PostAddNoDamageAnimationToMainThread(
-    SingleKeyframeEffectAnimation* animation_to_receive_animation) {
+    Animation* animation_to_receive_animation) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&LayerTreeTest::DispatchAddNoDamageAnimation,
@@ -681,7 +692,7 @@ void LayerTreeTest::PostAddNoDamageAnimationToMainThread(
 }
 
 void LayerTreeTest::PostAddOpacityAnimationToMainThread(
-    SingleKeyframeEffectAnimation* animation_to_receive_animation) {
+    Animation* animation_to_receive_animation) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -690,7 +701,7 @@ void LayerTreeTest::PostAddOpacityAnimationToMainThread(
 }
 
 void LayerTreeTest::PostAddOpacityAnimationToMainThreadInstantly(
-    SingleKeyframeEffectAnimation* animation_to_receive_animation) {
+    Animation* animation_to_receive_animation) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&LayerTreeTest::DispatchAddOpacityAnimation,
@@ -699,7 +710,7 @@ void LayerTreeTest::PostAddOpacityAnimationToMainThreadInstantly(
 }
 
 void LayerTreeTest::PostAddOpacityAnimationToMainThreadDelayed(
-    SingleKeyframeEffectAnimation* animation_to_receive_animation) {
+    Animation* animation_to_receive_animation) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&LayerTreeTest::DispatchAddOpacityAnimation,
@@ -924,7 +935,7 @@ void LayerTreeTest::RealEndTest() {
 }
 
 void LayerTreeTest::DispatchAddNoDamageAnimation(
-    SingleKeyframeEffectAnimation* animation_to_receive_animation,
+    Animation* animation_to_receive_animation,
     double animation_duration) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -935,7 +946,7 @@ void LayerTreeTest::DispatchAddNoDamageAnimation(
 }
 
 void LayerTreeTest::DispatchAddOpacityAnimation(
-    SingleKeyframeEffectAnimation* animation_to_receive_animation,
+    Animation* animation_to_receive_animation,
     double animation_duration) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -1037,23 +1048,14 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
       std::make_unique<viz::TestGpuMemoryBufferManager>();
   task_graph_runner_.reset(new TestTaskGraphRunner);
 
-  if (mode == CompositorMode::THREADED)
+  if (mode == CompositorMode::THREADED) {
     settings_.commit_to_active_tree = false;
+    settings_.single_thread_proxy_scheduler = false;
+  }
   // Disable latency recovery to make the scheduler more predictable in its
   // actions and less dependent on timings to make decisions.
   settings_.enable_latency_recovery = false;
   InitializeSettings(&settings_);
-
-  if (use_vulkan()) {
-    auto* command_line = base::CommandLine::ForCurrentProcess();
-    bool use_gpu = command_line->HasSwitch(::switches::kUseGpuInTests);
-    command_line->AppendSwitchASCII(
-        ::switches::kUseVulkan,
-        use_gpu ? ::switches::kVulkanImplementationNameNative
-                : ::switches::kVulkanImplementationNameSwiftshader);
-    command_line->AppendSwitchASCII(
-        ::switches::kGrContextType, ::switches::kGrContextTypeVulkan);
-  }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

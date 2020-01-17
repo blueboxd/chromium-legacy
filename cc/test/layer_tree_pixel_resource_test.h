@@ -25,7 +25,6 @@ struct PixelResourceTestCase {
 class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
  public:
   explicit LayerTreeHostPixelResourceTest(PixelResourceTestCase test_case);
-  LayerTreeHostPixelResourceTest();
 
   RendererType renderer_type() const { return test_case_.renderer_type; }
 
@@ -46,10 +45,7 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
   void RunPixelResourceTestWithLayerList(base::FilePath file_name);
 
  protected:
-  PixelResourceTestCase test_case_;
-  bool initialized_ = false;
-
-  void InitializeFromTestCase(PixelResourceTestCase test_case);
+  const PixelResourceTestCase test_case_;
 };
 
 class ParameterizedPixelResourceTest

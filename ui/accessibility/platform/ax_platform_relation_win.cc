@@ -39,8 +39,6 @@ AXPlatformRelationWin::~AXPlatformRelationWin() {}
 
 base::string16 GetIA2RelationFromIntAttr(ax::mojom::IntAttribute attribute) {
   switch (attribute) {
-    case ax::mojom::IntAttribute::kDetailsId:
-      return IA2_RELATION_DETAILS;
     case ax::mojom::IntAttribute::kMemberOfId:
       return IA2_RELATION_MEMBER_OF;
     case ax::mojom::IntAttribute::kErrormessageId:
@@ -58,6 +56,8 @@ base::string16 GetIA2RelationFromIntListAttr(
       return IA2_RELATION_CONTROLLER_FOR;
     case ax::mojom::IntListAttribute::kDescribedbyIds:
       return IA2_RELATION_DESCRIBED_BY;
+    case ax::mojom::IntListAttribute::kDetailsIds:
+      return IA2_RELATION_DETAILS;
     case ax::mojom::IntListAttribute::kFlowtoIds:
       return IA2_RELATION_FLOWS_TO;
     case ax::mojom::IntListAttribute::kLabelledbyIds:
@@ -71,8 +71,6 @@ base::string16 GetIA2RelationFromIntListAttr(
 base::string16 GetIA2ReverseRelationFromIntAttr(
     ax::mojom::IntAttribute attribute) {
   switch (attribute) {
-    case ax::mojom::IntAttribute::kDetailsId:
-      return IA2_RELATION_DETAILS_FOR;
     case ax::mojom::IntAttribute::kErrormessageId:
       return IA2_RELATION_ERROR_FOR;
     default:
@@ -88,6 +86,8 @@ base::string16 GetIA2ReverseRelationFromIntListAttr(
       return IA2_RELATION_CONTROLLED_BY;
     case ax::mojom::IntListAttribute::kDescribedbyIds:
       return IA2_RELATION_DESCRIPTION_FOR;
+    case ax::mojom::IntListAttribute::kDetailsIds:
+      return IA2_RELATION_DETAILS_FOR;
     case ax::mojom::IntListAttribute::kFlowtoIds:
       return IA2_RELATION_FLOWS_FROM;
     case ax::mojom::IntListAttribute::kLabelledbyIds:

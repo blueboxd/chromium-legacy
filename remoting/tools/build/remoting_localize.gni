@@ -43,13 +43,9 @@ template("remoting_localize") {
     sources = invoker.sources
 
     if (defined(invoker.output)) {
-      outputs = [
-        invoker.output,
-      ]
+      outputs = [ invoker.output ]
     } else {
-      outputs = [
-        "$target_gen_dir/{{source_name_part}}",
-      ]
+      outputs = [ "$target_gen_dir/{{source_name_part}}" ]
     }
 
     args = []

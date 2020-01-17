@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
+import org.chromium.chrome.browser.webapps.WebApkUpdateManager;
 import org.chromium.chrome.browser.webapps.WebappActivityTabController;
 
 import dagger.Subcomponent;
@@ -21,4 +22,5 @@ import dagger.Subcomponent;
 public interface WebappActivityComponent extends BaseCustomTabActivityComponent {
     TrustedWebActivityBrowserControlsVisibilityManager resolveBrowserControlsVisibilityManager();
     WebappActivityTabController resolveTabController();
+    WebApkUpdateManager resolveWebApkUpdateManager();
 }

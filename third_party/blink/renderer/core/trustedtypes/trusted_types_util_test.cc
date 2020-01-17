@@ -28,8 +28,8 @@ void GetStringFromTrustedTypeThrows(
         string_or_trusted_type) {
   auto* document = MakeGarbageCollected<Document>();
   document->GetContentSecurityPolicy()->DidReceiveHeader(
-      "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
-      kContentSecurityPolicyHeaderSourceMeta);
+      "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kMeta);
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
   String s = GetStringFromTrustedType(string_or_trusted_type, document,
@@ -44,8 +44,8 @@ void GetStringFromTrustedHTMLThrows(
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
-      "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
-      kContentSecurityPolicyHeaderSourceMeta);
+      "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
@@ -61,8 +61,8 @@ void GetStringFromTrustedScriptThrows(
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
-      "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
-      kContentSecurityPolicyHeaderSourceMeta);
+      "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
@@ -78,8 +78,8 @@ void GetStringFromTrustedScriptURLThrows(
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
-      "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
-      kContentSecurityPolicyHeaderSourceMeta);
+      "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   ASSERT_FALSE(exception_state.HadException());
@@ -97,8 +97,8 @@ void GetStringFromTrustedTypeWorks(
     String expected) {
   auto* document = MakeGarbageCollected<Document>();
   document->GetContentSecurityPolicy()->DidReceiveHeader(
-      "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
-      kContentSecurityPolicyHeaderSourceMeta);
+      "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kMeta);
   DummyExceptionStateForTesting exception_state;
   String s = GetStringFromTrustedType(string_or_trusted_type, document,
                                       exception_state);
@@ -111,8 +111,8 @@ void GetStringFromTrustedHTMLWorks(
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
-      "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
-      kContentSecurityPolicyHeaderSourceMeta);
+      "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   String s = GetStringFromTrustedHTML(string_or_trusted_html, &document,
@@ -126,8 +126,8 @@ void GetStringFromTrustedScriptWorks(
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
-      "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
-      kContentSecurityPolicyHeaderSourceMeta);
+      "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   String s = GetStringFromTrustedScript(string_or_trusted_script, &document,
@@ -141,8 +141,8 @@ void GetStringFromTrustedScriptURLWorks(
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
   document.GetContentSecurityPolicy()->DidReceiveHeader(
-      "trusted-types *", kContentSecurityPolicyHeaderTypeEnforce,
-      kContentSecurityPolicyHeaderSourceMeta);
+      "trusted-types *", network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kMeta);
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   String s = GetStringFromTrustedScriptURL(string_or_trusted_script_url,

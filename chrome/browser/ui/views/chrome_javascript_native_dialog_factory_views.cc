@@ -5,10 +5,8 @@
 #include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_app_modal_dialog_factory.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/app_modal/javascript_dialog_manager.h"
-#include "components/app_modal/javascript_native_dialog_factory.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -34,53 +32,42 @@ class ChromeJavaScriptAppModalDialogViews
   explicit ChromeJavaScriptAppModalDialogViews(
       app_modal::JavaScriptAppModalDialog* parent)
       : app_modal::JavaScriptAppModalDialogViews(parent),
-        popunder_preventer_(new PopunderPreventer(parent->web_contents())) {}
-  ~ChromeJavaScriptAppModalDialogViews() override {}
+        popunder_preventer_(parent->web_contents()) {}
+  ~ChromeJavaScriptAppModalDialogViews() override = default;
 
  private:
-  std::unique_ptr<PopunderPreventer> popunder_preventer_;
+  PopunderPreventer popunder_preventer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeJavaScriptAppModalDialogViews);
 };
 #endif
 
-class ChromeJavaScriptNativeDialogViewsFactory
-    : public app_modal::JavaScriptNativeDialogFactory {
- public:
-  ChromeJavaScriptNativeDialogViewsFactory() {}
-  ~ChromeJavaScriptNativeDialogViewsFactory() override {}
-
- private:
-  app_modal::NativeAppModalDialog* CreateNativeJavaScriptDialog(
-      app_modal::JavaScriptAppModalDialog* dialog) override {
-    app_modal::JavaScriptAppModalDialogViews* d = nullptr;
+app_modal::NativeAppModalDialog* CreateNativeJavaScriptDialog(
+    app_modal::JavaScriptAppModalDialog* dialog) {
+  app_modal::JavaScriptAppModalDialogViews* d = nullptr;
 #if defined(USE_X11)
-    d = new JavaScriptAppModalDialogViewsX11(dialog);
+  d = new JavaScriptAppModalDialogViewsX11(dialog);
 #else
-    d = new ChromeJavaScriptAppModalDialogViews(dialog);
+  d = new ChromeJavaScriptAppModalDialogViews(dialog);
 #endif
-
-    dialog->web_contents()->GetDelegate()->ActivateContents(
-        dialog->web_contents());
-    gfx::NativeWindow parent_window =
-        dialog->web_contents()->GetTopLevelNativeWindow();
+  dialog->web_contents()->GetDelegate()->ActivateContents(
+      dialog->web_contents());
+  gfx::NativeWindow parent_window =
+      dialog->web_contents()->GetTopLevelNativeWindow();
 #if defined(USE_AURA)
-    if (!parent_window->GetRootWindow()) {
-      // When we are part of a WebContents that isn't actually being displayed
-      // on the screen, we can't actually attach to it.
-      parent_window = NULL;
-    }
-#endif
-    constrained_window::CreateBrowserModalDialogViews(d, parent_window);
-    return d;
+  if (!parent_window->GetRootWindow()) {
+    // When we are part of a WebContents that isn't actually being displayed
+    // on the screen, we can't actually attach to it.
+    parent_window = nullptr;
   }
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeJavaScriptNativeDialogViewsFactory);
-};
+#endif
+  constrained_window::CreateBrowserModalDialogViews(d, parent_window);
+  return d;
+}
 
 }  // namespace
 
 void InstallChromeJavaScriptNativeAppModalDialogFactory() {
   app_modal::JavaScriptDialogManager::GetInstance()->SetNativeDialogFactory(
-      base::WrapUnique(new ChromeJavaScriptNativeDialogViewsFactory));
+      base::BindRepeating(&CreateNativeJavaScriptDialog));
 }

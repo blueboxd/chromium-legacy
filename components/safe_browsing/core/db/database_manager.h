@@ -21,8 +21,11 @@
 #include "components/safe_browsing/core/db/hit_report.h"
 #include "components/safe_browsing/core/db/util.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
-#include "content/public/common/resource_type.h"
 #include "url/gurl.h"
+
+namespace content {
+enum class ResourceType;
+}
 
 namespace network {
 class SharedURLLoaderFactory;

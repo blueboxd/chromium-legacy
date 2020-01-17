@@ -234,13 +234,14 @@ CommandHandler.onCommand = function(command) {
       (new PanelCommand(PanelCommandType.UPDATE_NOTES)).send();
       localStorage['notifications_update_notification_shown'] = true;
       return false;
-    case 'darkenScreen':
-      chrome.accessibilityPrivate.darkenScreen(true);
-      new Output().format('@darken_screen').go();
-      return false;
-    case 'undarkenScreen':
-      chrome.accessibilityPrivate.darkenScreen(false);
-      new Output().format('@undarken_screen').go();
+    case 'toggleDarkScreen':
+      var oldState = sessionStorage.getItem('darkScreen');
+      var newState = (oldState === 'true') ? false : true;
+      sessionStorage.setItem('darkScreen', (newState) ? 'true' : 'false');
+      chrome.accessibilityPrivate.darkenScreen(newState);
+      new Output()
+          .format((newState) ? '@darken_screen' : '@undarken_screen')
+          .go();
       return false;
     case 'toggleSpeechOnOrOff':
       var state = ChromeVox.tts.toggleSpeechOnOrOff();
@@ -586,8 +587,9 @@ CommandHandler.onCommand = function(command) {
       while (node && !node.details) {
         node = node.parent;
       }
-      if (node) {
-        current = cursors.Range.fromNode(node.details);
+      if (node && node.details.length) {
+        // TODO currently can only jump to first detail.
+        current = cursors.Range.fromNode(node.details[0]);
       }
       break;
     case 'readFromHere':

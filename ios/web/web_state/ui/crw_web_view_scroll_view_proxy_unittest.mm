@@ -7,6 +7,8 @@
 #import <UIKit/UIKit.h>
 
 #include "base/compiler_specific.h"
+#include "base/test/scoped_feature_list.h"
+#include "ios/web/common/features.h"
 #import "ios/web/web_state/ui/crw_web_view_scroll_view_delegate_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -570,6 +572,101 @@ TEST_F(CRWWebViewScrollViewProxyTest, RemoveKVObserver) {
   underlying_scroll_view.contentOffset = new_offset;
 
   EXPECT_OCMOCK_VERIFY(static_cast<id>(observer));
+}
+
+// Verifies that properties registered to |propertiesStore| are preserved if:
+//   - the setter is called when the underlying scroll view is nil
+//   - the getter is called after the underlying scroll view is still nil
+TEST_F(CRWWebViewScrollViewProxyTest,
+       PreservePropertiesWhileUnderlyingScrollViewIsNil) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      web::features::kPreserveScrollViewProperties);
+
+  // Recreate CRWWebViewScrollViewProxy with the updated feature flags.
+  web_view_scroll_view_proxy_ = [[CRWWebViewScrollViewProxy alloc] init];
+
+  [web_view_scroll_view_proxy_ setScrollView:nil];
+
+  // A preserved property with a primitive type.
+  [web_view_scroll_view_proxy_ asUIScrollView].directionalLockEnabled = YES;
+  EXPECT_TRUE(
+      [web_view_scroll_view_proxy_ asUIScrollView].directionalLockEnabled);
+  [web_view_scroll_view_proxy_ asUIScrollView].directionalLockEnabled = NO;
+  EXPECT_FALSE(
+      [web_view_scroll_view_proxy_ asUIScrollView].directionalLockEnabled);
+
+  // A preserved property with an object type.
+  [web_view_scroll_view_proxy_ asUIScrollView].tintColor = UIColor.redColor;
+  EXPECT_EQ(UIColor.redColor,
+            [web_view_scroll_view_proxy_ asUIScrollView].tintColor);
+}
+
+// Verifies that properties registered to |propertiesStore| are preserved if:
+//   - the setter is called when the underlying scroll view is nil
+//   - the getter is called after the underlying scroll view is assigned
+TEST_F(CRWWebViewScrollViewProxyTest,
+       PreservePropertiesWhenUnderlyingScrollViewIsNewlyAssigned) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      web::features::kPreserveScrollViewProperties);
+
+  // Recreate CRWWebViewScrollViewProxy with the updated feature flags.
+  web_view_scroll_view_proxy_ = [[CRWWebViewScrollViewProxy alloc] init];
+
+  [web_view_scroll_view_proxy_ setScrollView:nil];
+
+  [web_view_scroll_view_proxy_ asUIScrollView].directionalLockEnabled = YES;
+  [web_view_scroll_view_proxy_ asUIScrollView].tintColor = UIColor.redColor;
+
+  UIScrollView* underlying_scroll_view = [[UIScrollView alloc] init];
+  [web_view_scroll_view_proxy_ setScrollView:underlying_scroll_view];
+
+  // The properties are restored on the underlying scroll view.
+  EXPECT_TRUE(underlying_scroll_view.directionalLockEnabled);
+  EXPECT_EQ(UIColor.redColor, underlying_scroll_view.tintColor);
+
+  // The same property values are available via the scroll view proxy as well.
+  EXPECT_TRUE(
+      [web_view_scroll_view_proxy_ asUIScrollView].directionalLockEnabled);
+  EXPECT_EQ(UIColor.redColor,
+            [web_view_scroll_view_proxy_ asUIScrollView].tintColor);
+
+  [web_view_scroll_view_proxy_ setScrollView:nil];
+}
+
+// Verifies that properties registered to |propertiesStore| are preserved if:
+//   - the setter is called when the underlying scroll view is non-nil
+//   - the getter is called after the underlying scroll view is reassigned
+TEST_F(CRWWebViewScrollViewProxyTest,
+       PreservePropertiesWhenUnderlyingScrollViewIsReassigned) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      web::features::kPreserveScrollViewProperties);
+
+  // Recreate CRWWebViewScrollViewProxy with the updated feature flags.
+  web_view_scroll_view_proxy_ = [[CRWWebViewScrollViewProxy alloc] init];
+
+  UIScrollView* underlying_scroll_view1 = [[UIScrollView alloc] init];
+  [web_view_scroll_view_proxy_ setScrollView:underlying_scroll_view1];
+
+  [web_view_scroll_view_proxy_ asUIScrollView].directionalLockEnabled = YES;
+  [web_view_scroll_view_proxy_ asUIScrollView].tintColor = UIColor.redColor;
+
+  UIScrollView* underlying_scroll_view2 = [[UIScrollView alloc] init];
+  [web_view_scroll_view_proxy_ setScrollView:underlying_scroll_view2];
+
+  // The properties are restored on the underlying scroll view.
+  EXPECT_TRUE(underlying_scroll_view2.directionalLockEnabled);
+  EXPECT_EQ(UIColor.redColor, underlying_scroll_view2.tintColor);
+
+  // The same property values are available via the scroll view proxy as well.
+  EXPECT_TRUE(
+      [web_view_scroll_view_proxy_ asUIScrollView].directionalLockEnabled);
+  EXPECT_EQ(UIColor.redColor,
+            [web_view_scroll_view_proxy_ asUIScrollView].tintColor);
+
+  [web_view_scroll_view_proxy_ setScrollView:nil];
 }
 
 }  // namespace

@@ -13,6 +13,7 @@ import android.provider.Browser;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsIntent;
 
@@ -20,11 +21,11 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -33,12 +34,109 @@ import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.StopSource;
 import org.chromium.ui.UiUtils;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Helper methods for sync preferences.
  */
 public class SyncPreferenceUtils {
     private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
     private static final String MY_ACCOUNT_URL = "https://myaccount.google.com/smartlink/home";
+
+    @IntDef({SyncError.NO_ERROR, SyncError.ANDROID_SYNC_DISABLED, SyncError.AUTH_ERROR,
+            SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE,
+            SyncError.SYNC_SETUP_INCOMPLETE, SyncError.OTHER_ERRORS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SyncError {
+        int NO_ERROR = -1;
+        int ANDROID_SYNC_DISABLED = 0;
+        int AUTH_ERROR = 1;
+        int PASSPHRASE_REQUIRED = 2;
+        int TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING = 3;
+        int TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS = 4;
+        int CLIENT_OUT_OF_DATE = 5;
+        int SYNC_SETUP_INCOMPLETE = 6;
+        int OTHER_ERRORS = 128;
+    }
+
+    /**
+     * Returns the type of the sync error.
+     */
+    @SyncError
+    public static int getSyncError() {
+        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
+            return SyncError.ANDROID_SYNC_DISABLED;
+        }
+
+        if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
+            return SyncError.NO_ERROR;
+        }
+
+        ProfileSyncService profileSyncService = ProfileSyncService.get();
+        if (profileSyncService.getAuthError()
+                == GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS) {
+            return SyncError.AUTH_ERROR;
+        }
+
+        if (profileSyncService.requiresClientUpgrade()) {
+            return SyncError.CLIENT_OUT_OF_DATE;
+        }
+
+        if (profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE
+                || profileSyncService.hasUnrecoverableError()) {
+            return SyncError.OTHER_ERRORS;
+        }
+
+        if (profileSyncService.isEngineInitialized()
+                && profileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
+            return SyncError.PASSPHRASE_REQUIRED;
+        }
+
+        if (profileSyncService.isEngineInitialized()
+                && profileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes()) {
+            return profileSyncService.isEncryptEverythingEnabled()
+                    ? SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING
+                    : SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS;
+        }
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                && !profileSyncService.isFirstSetupComplete()) {
+            return SyncError.SYNC_SETUP_INCOMPLETE;
+        }
+
+        return SyncError.NO_ERROR;
+    }
+
+    /**
+     * Gets hint message to resolve sync error.
+     * @param context The application context.
+     * @param error The sync error.
+     */
+    public static String getSyncErrorHint(Context context, @SyncError int error) {
+        switch (error) {
+            case SyncError.ANDROID_SYNC_DISABLED:
+                return context.getString(R.string.hint_android_sync_disabled);
+            case SyncError.AUTH_ERROR:
+                return context.getString(R.string.hint_sync_auth_error);
+            case SyncError.CLIENT_OUT_OF_DATE:
+                return context.getString(
+                        R.string.hint_client_out_of_date, BuildInfo.getInstance().hostPackageLabel);
+            case SyncError.OTHER_ERRORS:
+                return context.getString(R.string.hint_other_sync_errors);
+            case SyncError.PASSPHRASE_REQUIRED:
+                return context.getString(R.string.hint_passphrase_required);
+            case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING:
+            case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS:
+                return context.getString(R.string.hint_sync_retrieve_keys);
+            case SyncError.SYNC_SETUP_INCOMPLETE:
+                assert ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID);
+                return context.getString(R.string.hint_sync_settings_not_confirmed_description);
+            case SyncError.NO_ERROR:
+            default:
+                return null;
+        }
+    }
 
     /**
      * Return a short summary of the current sync status.

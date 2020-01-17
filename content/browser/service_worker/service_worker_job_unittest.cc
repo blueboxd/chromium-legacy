@@ -43,6 +43,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
@@ -167,6 +168,7 @@ class ServiceWorkerJobTest : public testing::Test {
   ServiceWorkerJobCoordinator* job_coordinator() const {
     return context()->job_coordinator();
   }
+  ServiceWorkerRegistry* registry() const { return context()->registry(); }
   ServiceWorkerStorage* storage() const { return context()->storage(); }
 
  protected:
@@ -235,7 +237,7 @@ ServiceWorkerJobTest::FindRegistrationForScope(
     blink::ServiceWorkerStatusCode expected_status) {
   scoped_refptr<ServiceWorkerRegistration> registration;
   base::RunLoop run_loop;
-  storage()->FindRegistrationForScope(
+  registry()->FindRegistrationForScope(
       scope, SaveFoundRegistration(expected_status, &registration,
                                    run_loop.QuitClosure()));
   run_loop.Run();
@@ -261,12 +263,12 @@ TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
   base::RunLoop run_loop;
   base::RepeatingClosure barrier_closure =
       base::BarrierClosure(2, run_loop.QuitClosure());
-  storage()->FindRegistrationForClientUrl(
+  registry()->FindRegistrationForClientUrl(
       GURL("https://www.example.com/"),
       SaveFoundRegistration(blink::ServiceWorkerStatusCode::kOk, &registration1,
                             barrier_closure));
   scoped_refptr<ServiceWorkerRegistration> registration2;
-  storage()->FindRegistrationForClientUrl(
+  registry()->FindRegistrationForClientUrl(
       GURL("https://www.example.com/"),
       SaveFoundRegistration(blink::ServiceWorkerStatusCode::kOk, &registration2,
                             barrier_closure));
@@ -289,13 +291,13 @@ TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
   base::RunLoop run_loop;
   base::RepeatingClosure barrier_closure =
       base::BarrierClosure(2, run_loop.QuitClosure());
-  storage()->FindRegistrationForClientUrl(
+  registry()->FindRegistrationForClientUrl(
       GURL("https://www.example.com/one"),
       SaveFoundRegistration(blink::ServiceWorkerStatusCode::kOk, &registration1,
                             barrier_closure));
 
   scoped_refptr<ServiceWorkerRegistration> registration2;
-  storage()->FindRegistrationForClientUrl(
+  registry()->FindRegistrationForClientUrl(
       GURL("https://www.example.com/two"),
       SaveFoundRegistration(blink::ServiceWorkerStatusCode::kOk, &registration2,
                             barrier_closure));
@@ -320,11 +322,11 @@ TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
   base::RunLoop run_loop;
   base::RepeatingClosure barrier_closure =
       base::BarrierClosure(2, run_loop.QuitClosure());
-  storage()->FindRegistrationForClientUrl(
+  registry()->FindRegistrationForClientUrl(
       scope1, SaveFoundRegistration(blink::ServiceWorkerStatusCode::kOk,
                                     &registration1, barrier_closure));
   scoped_refptr<ServiceWorkerRegistration> registration2;
-  storage()->FindRegistrationForClientUrl(
+  registry()->FindRegistrationForClientUrl(
       scope2, SaveFoundRegistration(blink::ServiceWorkerStatusCode::kOk,
                                     &registration2, barrier_closure));
 
@@ -1967,6 +1969,109 @@ TEST_F(ServiceWorkerUpdateJobTest, ActivateCancelsOnShutdown) {
   // Dispatch Mojo messages for those Mojo interfaces bound on |runner| to
   // avoid possible memory leak.
   runner->RunUntilIdle();
+}
+
+class ServiceWorkerUpdateJobTestWithCrossOriginIsolation
+    : public ServiceWorkerUpdateJobTest {
+ public:
+  ServiceWorkerUpdateJobTestWithCrossOriginIsolation() {
+    feature_list_.InitAndEnableFeature(
+        ::network::features::kCrossOriginIsolation);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Update job should handle the COEP header appropriately.
+TEST_F(ServiceWorkerUpdateJobTestWithCrossOriginIsolation,
+       Update_CrossOriginEmbedderPolicy) {
+  const char kHeadersWithRequireCorp[] = R"(HTTP/1.1 200 OK
+Content-Type: application/javascript
+Cross-Origin-Embedder-Policy: require-corp
+
+)";
+  const char kHeadersWithNone[] = R"(HTTP/1.1 200 OK
+Content-Type: application/javascript
+Cross-Origin-Embedder-Policy: none
+
+)";
+
+  const base::Time kToday = base::Time::Now();
+  const base::Time kYesterday =
+      kToday - base::TimeDelta::FromDays(1) - base::TimeDelta::FromHours(1);
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      update_helper_->SetupInitialRegistration(kNewVersionOrigin);
+  ASSERT_TRUE(registration.get());
+  EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicy::kNone,
+            registration->active_version()->cross_origin_embedder_policy());
+
+  registration->AddListener(update_helper_);
+
+  // Run an update where the response header is updated but the script did not
+  // change. No update is found but the last update check time is updated.
+  update_helper_->fake_network_.SetResponse(kNewVersionOrigin.Resolve(kScript),
+                                            kHeadersWithRequireCorp, kBody,
+                                            /*network_accessed=*/true, net::OK);
+
+  {
+    base::HistogramTester histogram_tester;
+    registration->set_last_update_check(kYesterday);
+    registration->active_version()->StartUpdate();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_LT(kYesterday, registration->last_update_check());
+    EXPECT_FALSE(update_helper_->update_found_);
+
+    // Update check succeeds but no update is found.
+    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
+                                       blink::ServiceWorkerStatusCode::kOk, 1);
+    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
+                                       false, 1);
+  }
+
+  // Run an update where the COEP value and the script changed.
+  update_helper_->fake_network_.SetResponse(kNewVersionOrigin.Resolve(kScript),
+                                            kHeadersWithRequireCorp, kNewBody,
+                                            /*network_accessed=*/true, net::OK);
+  {
+    base::HistogramTester histogram_tester;
+    registration->set_last_update_check(kYesterday);
+    registration->active_version()->StartUpdate();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_LT(kYesterday, registration->last_update_check());
+    EXPECT_TRUE(update_helper_->update_found_);
+    // Update check succeeds and update is found.
+    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
+                                       blink::ServiceWorkerStatusCode::kOk, 1);
+    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
+                                       true, 1);
+    ASSERT_NE(nullptr, registration->waiting_version());
+    EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicy::kRequireCorp,
+              registration->waiting_version()->cross_origin_embedder_policy());
+  }
+
+  // Run an update again where the COEP value and the body has been updated. The
+  // COEP value should be updated appropriately.
+  update_helper_->fake_network_.SetResponse(kNewVersionOrigin.Resolve(kScript),
+                                            kHeadersWithNone, kBody,
+                                            /*network_accessed=*/true, net::OK);
+  {
+    base::HistogramTester histogram_tester;
+    registration->set_last_update_check(kYesterday);
+    registration->active_version()->StartUpdate();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_LT(kYesterday, registration->last_update_check());
+    EXPECT_TRUE(update_helper_->update_found_);
+    // Update check succeeds and update is found.
+    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
+                                       blink::ServiceWorkerStatusCode::kOk, 1);
+    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
+                                       true, 1);
+    ASSERT_NE(nullptr, registration->waiting_version());
+    EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicy::kNone,
+              registration->waiting_version()->cross_origin_embedder_policy());
+  }
 }
 
 class WaitForeverInstallWorker : public FakeServiceWorker {

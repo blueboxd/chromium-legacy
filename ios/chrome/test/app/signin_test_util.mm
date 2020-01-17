@@ -104,7 +104,8 @@ bool SignOutAndClearAccounts() {
     AuthenticationService* authentication_service =
         AuthenticationServiceFactory::GetForBrowserState(browser_state);
     if (authentication_service->IsAuthenticated()) {
-      authentication_service->SignOut(signin_metrics::SIGNOUT_TEST, nil);
+      authentication_service->SignOut(signin_metrics::SIGNOUT_TEST,
+                                      /*force_clear_browsing_data=*/false, nil);
     }
 
     // Clear last signed in user preference.

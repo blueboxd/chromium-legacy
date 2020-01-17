@@ -27,15 +27,11 @@ js_library("omnibox") {
 }
 
 js_library("omnibox_element") {
-  deps = [
-    "//ui/webui/resources/js:assert.m",
-  ]
+  deps = [ "//ui/webui/resources/js:assert.m" ]
 }
 
 js_library("omnibox_input") {
-  deps = [
-    ":omnibox_element",
-  ]
+  deps = [ ":omnibox_element" ]
 }
 
 js_library("omnibox_output") {
@@ -61,7 +57,5 @@ grit("resources") {
     "-E",
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
-  deps = [
-    "//chrome/browser/ui/webui/omnibox:mojo_bindings_js",
-  ]
+  deps = [ "//chrome/browser/ui/webui/omnibox:mojo_bindings_js" ]
 }

@@ -393,21 +393,21 @@ FakeTranslatorManager.prototype = {
   changeListener: null,
 
   /** @override */
-  getDefaultTranslator: function() {
+  getDefaultTranslator() {
     return this.defaultTranslator;
   },
 
   /** @override */
-  getUncontractedTranslator: function() {
+  getUncontractedTranslator() {
     return this.uncontractedTranslator;
   },
 
   /** @override */
-  addChangeListener: function(listener) {
+  addChangeListener(listener) {
     assertEquals(null, this.changeListener);
   },
 
-  setTranslators: function(defaultTranslator, uncontractedTranslator) {
+  setTranslators(defaultTranslator, uncontractedTranslator) {
     this.defaultTranslator = defaultTranslator;
     this.uncontractedTranslator = uncontractedTranslator;
     if (this.changeListener) {
@@ -463,7 +463,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
    * Creates an editor and establishes a connection from the IME.
    * @return {FakeEditor}
    */
-  createEditor: function() {
+  createEditor() {
     chrome.runtime.onConnectExternal.getListener()(this.port);
     return new FakeEditor(this.port, this.inputHandler);
   },
@@ -474,7 +474,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
    *     {@code cellsToArray}.
    * @return {boolean} {@code true} iff all cells were sent successfully.
    */
-  sendCells: function(cells) {
+  sendCells(cells) {
     return cellsToArray(cells).reduce(function(prevResult, cell) {
       var event = {command: BrailleKeyCommand.DOTS, brailleDots: cell};
       return prevResult && this.inputHandler.onBrailleKeyEvent(event);
@@ -487,7 +487,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
    * @param {string} keyCode The key code name.
    * @return {boolean} Whether the event was handled.
    */
-  sendKeyEvent: function(keyCode) {
+  sendKeyEvent(keyCode) {
     var event = {
       command: BrailleKeyCommand.STANDARD_KEY,
       standardKeyCode: keyCode
@@ -498,7 +498,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
   /**
    * Shortcut for asserting that the value expansion mode is {@code NONE}.
    */
-  assertExpandingNone: function() {
+  assertExpandingNone() {
     assertEquals(
         ExpandingBrailleTranslator.ExpansionType.NONE,
         this.inputHandler.getExpansionType());
@@ -507,7 +507,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
   /**
    * Shortcut for asserting that the value expansion mode is {@code SELECTION}.
    */
-  assertExpandingSelection: function() {
+  assertExpandingSelection() {
     assertEquals(
         ExpandingBrailleTranslator.ExpansionType.SELECTION,
         this.inputHandler.getExpansionType());
@@ -516,13 +516,13 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
   /**
    * Shortcut for asserting that the value expansion mode is {@code ALL}.
    */
-  assertExpandingAll: function() {
+  assertExpandingAll() {
     assertEquals(
         ExpandingBrailleTranslator.ExpansionType.ALL,
         this.inputHandler.getExpansionType());
   },
 
-  storeKeyEvent: function(event, opt_callback) {
+  storeKeyEvent(event, opt_callback) {
     var storedCopy = {keyCode: event.keyCode};
     if (event.type == 'keydown') {
       this.keyEvents.push(storedCopy);
@@ -537,7 +537,7 @@ ChromeVoxBrailleInputHandlerUnitTest.prototype = {
   },
 
   /** @override */
-  setUp: function() {
+  setUp() {
     chrome.runtime.onConnectExternal = new FakeChromeEvent();
     this.port = new FakePort();
     chrome.virtualKeyboardPrivate.getKeyboardConfig = function(callback) {

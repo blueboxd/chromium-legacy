@@ -52,7 +52,7 @@ Polymer({
   },
 
   /** @param {State} newState The state to transition to. */
-  transitTo: function(newState) {
+  transitTo(newState) {
     switch (newState) {
       case (State.NOT_READY):
         assert(

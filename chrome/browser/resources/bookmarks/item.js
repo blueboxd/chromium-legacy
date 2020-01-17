@@ -76,7 +76,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.watch('item_', store => store.nodes[this.itemId]);
     this.watch(
         'isSelectedItem_', store => store.selection.items.has(this.itemId));
@@ -85,12 +85,12 @@ Polymer({
     this.updateFromStore();
   },
 
-  focusMenuButton: function() {
+  focusMenuButton() {
     focusWithoutInk(this.$.menuButton);
   },
 
   /** @return {BookmarksItemElement} */
-  getDropTarget: function() {
+  getDropTarget() {
     return this;
   },
 
@@ -98,7 +98,7 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onContextMenu_: function(e) {
+  onContextMenu_(e) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -125,7 +125,7 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onMenuButtonClick_: function(e) {
+  onMenuButtonClick_(e) {
     e.stopPropagation();
     e.preventDefault();
 
@@ -141,7 +141,7 @@ Polymer({
   },
 
   /** @private */
-  selectThisItem_: function() {
+  selectThisItem_() {
     this.dispatch(selectItem(this.itemId, this.getState(), {
       clear: true,
       range: false,
@@ -150,7 +150,7 @@ Polymer({
   },
 
   /** @private */
-  onItemIdChanged_: function() {
+  onItemIdChanged_() {
     // TODO(tsergeant): Add a histogram to measure whether this assertion fails
     // for real users.
     assert(this.getState().nodes[this.itemId]);
@@ -158,7 +158,7 @@ Polymer({
   },
 
   /** @private */
-  onItemChanged_: function() {
+  onItemChanged_() {
     this.isFolder_ = !this.item_.url;
     this.setAttribute(
         'aria-label',
@@ -170,7 +170,7 @@ Polymer({
    * @param {MouseEvent} e
    * @private
    */
-  onClick_: function(e) {
+  onClick_(e) {
     // Ignore double clicks so that Ctrl double-clicking an item won't deselect
     // the item before opening.
     if (e.detail !== 2) {
@@ -189,7 +189,7 @@ Polymer({
    * @private
    * @param {KeyboardEvent} e
    */
-  onKeydown_: function(e) {
+  onKeydown_(e) {
     if (e.key === 'ArrowLeft') {
       this.focus();
     } else if (e.key === 'ArrowRight') {
@@ -201,7 +201,7 @@ Polymer({
    * @param {MouseEvent} e
    * @private
    */
-  onDblClick_: function(e) {
+  onDblClick_(e) {
     if (!this.isSelectedItem_) {
       this.selectThisItem_();
     }
@@ -217,7 +217,7 @@ Polymer({
    * @param {MouseEvent} e
    * @private
    */
-  onMiddleClick_: function(e) {
+  onMiddleClick_(e) {
     if (e.button !== 1) {
       return;
     }
@@ -239,7 +239,7 @@ Polymer({
    * @param {TouchEvent} e
    * @private
    */
-  onTouchStart_: function(e) {
+  onTouchStart_(e) {
     this.lastTouchPoints_ = e.touches.length;
   },
 
@@ -249,7 +249,7 @@ Polymer({
    * @param {MouseEvent} e
    * @private
    */
-  cancelMiddleMouseBehavior_: function(e) {
+  cancelMiddleMouseBehavior_(e) {
     if (e.button === 1) {
       e.preventDefault();
     }
@@ -259,7 +259,7 @@ Polymer({
    * @param {string} url
    * @private
    */
-  updateFavicon_: function(url) {
+  updateFavicon_(url) {
     this.$.icon.className = url ? 'website-icon' : 'folder-icon';
     this.$.icon.style.backgroundImage =
         url ? getFaviconForPageURL(url, false) : '';
@@ -269,7 +269,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getButtonAriaLabel_: function() {
+  getButtonAriaLabel_() {
     if (!this.item_) {
       return '';  // Item hasn't loaded, skip for now.
     }
@@ -287,7 +287,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isMultiSelectMenu_: function() {
+  isMultiSelectMenu_() {
     return this.isSelectedItem_ && this.isMultiSelect_;
   },
 });

@@ -5702,6 +5702,20 @@ error::Error GLES2DecoderImpl::HandleEndSharedImageAccessDirectCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleBeginBatchReadAccessSharedImageCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  DoBeginBatchReadAccessSharedImageCHROMIUM();
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleEndBatchReadAccessSharedImageCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  DoEndBatchReadAccessSharedImageCHROMIUM();
+  return error::kNoError;
+}
+
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
     case GL_BLEND:

@@ -20,7 +20,6 @@
 <translation id="1587325591171447154">Το αρχείο <ph name="FILE_NAME" /> είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chrome.</translation>
 <translation id="1619887657840448962">Για να κάνουμε το Chrome πιο ασφαλές, απενεργοποιήσαμε τις ακόλουθες επεκτάσεις που δεν αναφέρονται στο <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> και ενδέχεται να έχουν προστεθεί εν αγνοία σας.</translation>
 <translation id="1628000112320670027">Λήψη βοήθειας σχετικά με το Chrome</translation>
-<translation id="1635734105302489219">Τα cookie διαγράφονται κατά τον τερματισμό του Chrome. Αλλάξτε τις <ph name="COOKIE_SETTINGS_LINK" /> για να συνεχίσετε τον συγχρονισμό.</translation>
 <translation id="1662639173275167396">Το Chrome OS έγινε πραγματικότητα χάρη στα πρόσθετα <ph name="BEGIN_LINK_CROS_OSS" />λογισμικά ανοικτού κώδικα<ph name="END_LINK_CROS_OSS" />, όπως το <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1666409074978194368">Σχεδόν ενημερώθηκε! Επανεκκινήστε το Google Chrome για να ολοκληρωθεί η διαδικασία ενημέρωσης. Τα παράθυρα για ανώνυμη περιήγηση δεν θα ανοίξουν ξανά.</translation>
 <translation id="1674870198290878346">Άνοιγμα Συνδέσμου σε Παράθυρο ανών&amp;υμης περιήγησης Chrome</translation>
@@ -75,7 +74,6 @@
 <translation id="3089968997497233615">Υπάρχει μια νέα, ασφαλέστερη έκδοση του Google Chrome.</translation>
 <translation id="3149510190863420837">Εφαρμογές Chrome</translation>
 <translation id="3282568296779691940">Σύνδεση στο Chrome</translation>
-<translation id="3340978935015468852">ρυθμίσεις</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Η επανεκκίνηση του Chrome θα γίνει τώρα}=1{Η επανεκκίνηση του Chrome θα γίνει σε 1 δευτερόλεπτο}other{Η επανεκκίνηση του Chrome θα γίνει σε # δευτερόλεπτα}}</translation>
 <translation id="3395323229510056640">Λήψη βοήθειας σχετικά με το Chrome OS</translation>

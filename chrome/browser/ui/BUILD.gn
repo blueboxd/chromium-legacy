@@ -9,6 +9,7 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
+import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/feature_engagement/features.gni")
@@ -257,6 +258,8 @@ jumbo_static_library("ui") {
     "webui/log_web_ui_url.h",
     "webui/media/media_engagement_ui.cc",
     "webui/media/media_engagement_ui.h",
+    "webui/media/media_history_ui.cc",
+    "webui/media/media_history_ui.h",
     "webui/media/webrtc_logs_ui.cc",
     "webui/media/webrtc_logs_ui.h",
     "webui/memory_internals_ui.cc",
@@ -390,6 +393,7 @@ jumbo_static_library("ui") {
     "//chrome/app/theme:chrome_unscaled_resources",
     "//chrome/app/theme:theme_resources",
     "//chrome/app/vector_icons",
+    "//chrome/browser:buildflags",
     "//chrome/browser:dev_ui_browser_resources",
     "//chrome/browser:resource_prefetch_predictor_proto",
     "//chrome/browser/devtools",
@@ -656,7 +660,6 @@ jumbo_static_library("ui") {
       "android/chrome_http_auth_handler.cc",
       "android/chrome_http_auth_handler.h",
       "android/chrome_javascript_app_modal_dialog_android.cc",
-      "android/chrome_javascript_app_modal_dialog_android.h",
       "android/color_chooser_dialog_android.cc",
       "android/content_settings/ads_blocked_infobar_delegate.cc",
       "android/content_settings/ads_blocked_infobar_delegate.h",
@@ -714,6 +717,8 @@ jumbo_static_library("ui") {
       "android/infobars/simple_confirm_infobar_builder.cc",
       "android/infobars/survey_infobar.cc",
       "android/infobars/survey_infobar.h",
+      "android/infobars/sync_error_infobar.cc",
+      "android/infobars/sync_error_infobar.h",
       "android/infobars/translate_compact_infobar.cc",
       "android/infobars/translate_compact_infobar.h",
       "android/infobars/update_password_infobar.cc",
@@ -804,6 +809,7 @@ jumbo_static_library("ui") {
       "//components/app_modal/android:jni_headers",
       "//components/embedder_support/android:web_contents_delegate",
       "//components/navigation_interception",
+      "//components/optimization_guide/proto:optimization_guide_proto",
       "//components/subresource_filter/core/browser",
       "//crypto:platform",
       "//device/vr/buildflags",
@@ -1315,6 +1321,8 @@ jumbo_static_library("ui") {
       "webui/settings/extension_control_handler.h",
       "webui/settings/font_handler.cc",
       "webui/settings/font_handler.h",
+      "webui/settings/import_data_handler.cc",
+      "webui/settings/import_data_handler.h",
       "webui/settings/languages_handler.cc",
       "webui/settings/languages_handler.h",
       "webui/settings/metrics_reporting_handler.cc",
@@ -1337,8 +1345,6 @@ jumbo_static_library("ui") {
       "webui/settings/settings_clear_browsing_data_handler.h",
       "webui/settings/settings_cookies_view_handler.cc",
       "webui/settings/settings_cookies_view_handler.h",
-      "webui/settings/settings_import_data_handler.cc",
-      "webui/settings/settings_import_data_handler.h",
       "webui/settings/settings_localized_strings_provider.cc",
       "webui/settings/settings_localized_strings_provider.h",
       "webui/settings/settings_media_devices_selection_handler.cc",
@@ -1351,6 +1357,8 @@ jumbo_static_library("ui") {
       "webui/settings/settings_startup_pages_handler.h",
       "webui/settings/settings_ui.cc",
       "webui/settings/settings_ui.h",
+      "webui/settings/shared_settings_localized_strings_provider.cc",
+      "webui/settings/shared_settings_localized_strings_provider.h",
       "webui/settings/site_settings_handler.cc",
       "webui/settings/site_settings_handler.h",
       "webui/settings_utils.cc",
@@ -1453,6 +1461,10 @@ jumbo_static_library("ui") {
     if (use_color_pipeline) {
       deps += [ "//chrome/browser/ui/color:mixers" ]
     }
+  }
+
+  if (enable_kaleidoscope) {
+    deps += [ "//chrome/browser/media/kaleidoscope/internal" ]
   }
 
   if (enable_supervised_users) {
@@ -1939,6 +1951,8 @@ jumbo_static_library("ui") {
       "webui/settings/chromeos/kerberos_accounts_handler.h",
       "webui/settings/chromeos/multidevice_handler.cc",
       "webui/settings/chromeos/multidevice_handler.h",
+      "webui/settings/chromeos/os_settings_localized_strings_provider.cc",
+      "webui/settings/chromeos/os_settings_localized_strings_provider.h",
       "webui/settings/chromeos/os_settings_ui.cc",
       "webui/settings/chromeos/os_settings_ui.h",
       "webui/settings/chromeos/parental_controls_handler.cc",
@@ -4169,9 +4183,7 @@ static_library("test_support") {
     "toolbar/test_toolbar_action_view_controller.cc",
     "toolbar/test_toolbar_action_view_controller.h",
   ]
-  public_deps = [
-    ":ui",
-  ]
+  public_deps = [ ":ui" ]
   deps = [
     "//chrome/app/theme:theme_resources",
     "//chrome/browser",
@@ -4284,16 +4296,12 @@ if (is_chromeos) {
       "ash/keyboard/chrome_keyboard_controller_client_test_helper.cc",
       "ash/keyboard/chrome_keyboard_controller_client_test_helper.h",
     ]
-    deps = [
-      "//ash",
-    ]
+    deps = [ "//ash" ]
   }
 }
 
 if (is_android) {
   java_cpp_enum("tab_model_enums_java") {
-    sources = [
-      "android/tab_model/tab_model.h",
-    ]
+    sources = [ "android/tab_model/tab_model.h" ]
   }
 }

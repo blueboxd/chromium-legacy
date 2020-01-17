@@ -12,9 +12,9 @@
 #include "content/public/browser/browser_thread.h"
 
 TrustedVaultClientAndroid::OngoingFetchKeys::OngoingFetchKeys(
-    const std::string& gaia_id,
+    const CoreAccountInfo& account_info,
     base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> callback)
-    : gaia_id(gaia_id), callback(std::move(callback)) {}
+    : account_info(account_info), callback(std::move(callback)) {}
 
 TrustedVaultClientAndroid::OngoingFetchKeys::~OngoingFetchKeys() = default;
 
@@ -35,7 +35,7 @@ void TrustedVaultClientAndroid::FetchKeysCompleted(
     const base::android::JavaParamRef<jobjectArray>& keys) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(ongoing_fetch_keys_) << "No ongoing FetchKeys() request";
-  DCHECK_EQ(ongoing_fetch_keys_->gaia_id,
+  DCHECK_EQ(ongoing_fetch_keys_->account_info.gaia,
             base::android::ConvertJavaStringToUTF8(env, gaia_id))
       << "User mismatch in FetchKeys() response";
 
@@ -73,7 +73,7 @@ TrustedVaultClientAndroid::AddKeysChangedObserver(
 }
 
 void TrustedVaultClientAndroid::FetchKeys(
-    const std::string& gaia_id,
+    const CoreAccountInfo& account_info,
     base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!ongoing_fetch_keys_)
@@ -83,16 +83,16 @@ void TrustedVaultClientAndroid::FetchKeys(
 
   // Store for later completion when Java invokes FetchKeysCompleted().
   ongoing_fetch_keys_ =
-      std::make_unique<OngoingFetchKeys>(gaia_id, std::move(cb));
+      std::make_unique<OngoingFetchKeys>(account_info, std::move(cb));
 
   JNIEnv* const env = base::android::AttachCurrentThread();
-  const base::android::ScopedJavaLocalRef<jstring> java_gaia_id =
-      base::android::ConvertUTF8ToJavaString(env, gaia_id);
+  const base::android::ScopedJavaLocalRef<jobject> java_account_info =
+      ConvertToJavaCoreAccountInfo(env, account_info);
 
   // Trigger the fetching keys from the implementation in Java, which will
   // eventually call FetchKeysCompleted().
   Java_TrustedVaultClient_fetchKeys(env, reinterpret_cast<intptr_t>(this),
-                                    java_gaia_id);
+                                    java_account_info);
 }
 
 void TrustedVaultClientAndroid::StoreKeys(
@@ -104,7 +104,7 @@ void TrustedVaultClientAndroid::StoreKeys(
 }
 
 void TrustedVaultClientAndroid::MarkKeysAsStale(
-    const std::string& gaia_id,
+    const CoreAccountInfo& account_info,
     base::OnceCallback<void(bool)> cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(cb);
@@ -117,10 +117,10 @@ void TrustedVaultClientAndroid::MarkKeysAsStale(
   ongoing_mark_keys_as_stale_ = std::move(cb);
 
   JNIEnv* const env = base::android::AttachCurrentThread();
-  const base::android::ScopedJavaLocalRef<jstring> java_gaia_id =
-      base::android::ConvertUTF8ToJavaString(env, gaia_id);
+  const base::android::ScopedJavaLocalRef<jobject> java_account_info =
+      ConvertToJavaCoreAccountInfo(env, account_info);
 
   // The Java implementation will eventually call MarkKeysAsStaleCompleted().
   Java_TrustedVaultClient_markKeysAsStale(env, reinterpret_cast<intptr_t>(this),
-                                          java_gaia_id);
+                                          java_account_info);
 }

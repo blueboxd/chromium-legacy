@@ -5,9 +5,7 @@
 import("//build/config/ios/asset_catalog.gni")
 
 colorset("grid_background_color") {
-  sources = [
-    "grid_background_color.colorset/Contents.json",
-  ]
+  sources = [ "grid_background_color.colorset/Contents.json" ]
 }
 
 imageset("new_tab_floating_button") {

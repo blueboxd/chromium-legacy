@@ -52,7 +52,5 @@ source_set("web_request") {
     "//third_party/re2",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

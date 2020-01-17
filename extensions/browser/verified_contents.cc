@@ -170,25 +170,13 @@ std::unique_ptr<VerifiedContents> VerifiedContents::Create(
                                  &root_hash)) {
         return nullptr;
       }
-      base::FilePath file_path =
-          base::FilePath::FromUTF8Unsafe(*file_path_string);
-      base::FilePath::StringType lowercase_file_path =
-          base::ToLowerASCII(file_path.value());
-      auto i = verified_contents->root_hashes_.insert(
-          std::make_pair(lowercase_file_path, std::string()));
-      i->second.swap(root_hash);
 
-#if defined(OS_WIN)
-      // Additionally store a canonicalized filename without (.| )+ suffix, so
-      // that any filename with (.| )+ suffix can be matched later, see
-      // HasTreeHashRoot() and TreeHashRootEquals().
-      base::FilePath::StringType trimmed_path;
-      if (content_verifier_utils::TrimDotSpaceSuffix(lowercase_file_path,
-                                                     &trimmed_path)) {
-        verified_contents->root_hashes_.insert(
-            std::make_pair(trimmed_path, i->second));
-      }
-#endif  // defined(OS_WIN)
+      base::FilePath::StringType canonicalized_path =
+          content_verifier_utils::CanonicalizeFilePath(
+              base::FilePath::FromUTF8Unsafe(*file_path_string));
+      auto i = verified_contents->root_hashes_.insert(
+          std::make_pair(canonicalized_path, std::string()));
+      i->second.swap(root_hash);
     }
 
     break;
@@ -199,40 +187,15 @@ std::unique_ptr<VerifiedContents> VerifiedContents::Create(
 
 bool VerifiedContents::HasTreeHashRoot(
     const base::FilePath& relative_path) const {
-  base::FilePath::StringType path = NormalizeResourcePath(relative_path);
-  if (base::Contains(root_hashes_, path))
-    return true;
-
-#if defined(OS_WIN)
-  base::FilePath::StringType trimmed_path;
-  if (content_verifier_utils::TrimDotSpaceSuffix(path, &trimmed_path))
-    return base::Contains(root_hashes_, trimmed_path);
-#endif  // defined(OS_WIN)
-  return false;
+  return base::Contains(
+      root_hashes_,
+      content_verifier_utils::CanonicalizeFilePath(relative_path));
 }
 
 bool VerifiedContents::TreeHashRootEquals(const base::FilePath& relative_path,
                                           const std::string& expected) const {
-  base::FilePath::StringType normalized_relative_path =
-      NormalizeResourcePath(relative_path);
-  if (TreeHashRootEqualsImpl(normalized_relative_path, expected))
-    return true;
-
-#if defined(OS_WIN)
-  base::FilePath::StringType trimmed_relative_path;
-  if (content_verifier_utils::TrimDotSpaceSuffix(normalized_relative_path,
-                                                 &trimmed_relative_path)) {
-    return TreeHashRootEqualsImpl(trimmed_relative_path, expected);
-  }
-#endif  // defined(OS_WIN)
-  return false;
-}
-
-// static
-base::FilePath::StringType VerifiedContents::NormalizeResourcePath(
-    const base::FilePath& relative_path) {
-  return base::ToLowerASCII(
-      relative_path.NormalizePathSeparatorsTo('/').value());
+  return TreeHashRootEqualsImpl(
+      content_verifier_utils::CanonicalizeFilePath(relative_path), expected);
 }
 
 // We're loosely following the "JSON Web Signature" draft spec for signing

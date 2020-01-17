@@ -432,15 +432,25 @@ public class JniProcessor extends AbstractProcessor {
         // JniStaticTestMocker<ClassNameJni> TEST_HOOKS = new JniStaticTestMocker<>() {
         //      @Override
         //      public static setInstanceForTesting(ClassNameJni instance) {
+        //          if (!GEN_JNI.TESTING_ENABLED) {
+        //              throw new RuntimeException($mocksNotEnabledExceptionString);
+        //          }
         //          testInstance = instance;
         //      }
         // }
-        MethodSpec testHookMockerMethod = MethodSpec.methodBuilder("setInstanceForTesting")
-                                                  .addModifiers(Modifier.PUBLIC)
-                                                  .addAnnotation(Override.class)
-                                                  .addParameter(nativeInterfaceType, "instance")
-                                                  .addStatement("$N = instance", testTarget)
-                                                  .build();
+        String mocksNotEnabledExceptionString =
+                "Tried to set a JNI mock when mocks aren't enabled!";
+        MethodSpec testHookMockerMethod =
+                MethodSpec.methodBuilder("setInstanceForTesting")
+                        .addModifiers(Modifier.PUBLIC)
+                        .addAnnotation(Override.class)
+                        .addParameter(nativeInterfaceType, "instance")
+                        .beginControlFlow("if (!$T.$N)", mNativeClassName, NATIVE_TEST_FIELD_NAME)
+                        .addStatement(
+                                "throw new RuntimeException($S)", mocksNotEnabledExceptionString)
+                        .endControlFlow()
+                        .addStatement("$N = instance", testTarget)
+                        .build();
 
         // Make the anonymous TEST_HOOK class.
         ParameterizedTypeName genericMockerInterface = ParameterizedTypeName.get(

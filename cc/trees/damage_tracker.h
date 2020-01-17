@@ -94,8 +94,14 @@ class CC_EXPORT DamageTracker {
   // These helper functions are used only during UpdateDamageTracking().
   void PrepareForUpdate();
   void AccumulateDamageFromLayer(LayerImpl* layer);
-  void AccumulateDamageFromRenderSurface(RenderSurfaceImpl* render_surface);
-  void ComputeSurfaceDamage(RenderSurfaceImpl* render_surface);
+  void AccumulateDamageFromRenderSurface(
+      RenderSurfaceImpl* render_surface,
+      std::vector<std::pair<RenderSurfaceImpl*, gfx::Rect>>&
+          surfaces_with_backdrop_blur_filter);
+  void ComputeSurfaceDamage(
+      RenderSurfaceImpl* render_surface,
+      std::vector<std::pair<RenderSurfaceImpl*, gfx::Rect>>&
+          surfaces_with_backdrop_blur_filter);
   void ExpandDamageInsideRectWithFilters(const gfx::Rect& pre_filter_rect,
                                          const FilterOperations& filters);
 

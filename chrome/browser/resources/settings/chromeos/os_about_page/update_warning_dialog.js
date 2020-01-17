@@ -24,29 +24,29 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = settings.AboutPageBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.dialog.showModal();
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.close();
   },
 
   /** @private */
-  onContinueTap_: function() {
+  onContinueTap_() {
     this.browserProxy_.requestUpdateOverCellular(
         this.updateInfo.version, this.updateInfo.size);
     this.$.dialog.close();
   },
 
   /** @private */
-  updateInfoChanged_: function() {
+  updateInfoChanged_() {
     this.$$('#update-warning-message').innerHTML = this.i18n(
         'aboutUpdateWarningMessage',
         // Convert bytes to megabytes

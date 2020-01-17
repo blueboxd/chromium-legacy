@@ -64,7 +64,10 @@ class MockCanvas : public SkNoDrawCanvas {
                     SrcRectConstraint));
   MOCK_METHOD5(onDrawArc,
                void(const SkRect&, SkScalar, SkScalar, bool, const SkPaint&));
+  MOCK_METHOD1(didConcat44, void(const SkScalar[16]));
   MOCK_METHOD1(didConcat, void(const SkMatrix&));
+  MOCK_METHOD2(didScale, void(SkScalar, SkScalar));
+  MOCK_METHOD2(didTranslate, void(SkScalar, SkScalar));
   MOCK_METHOD2(onDrawOval, void(const SkRect&, const SkPaint&));
   MOCK_METHOD2(onCustomCallback, void(SkCanvas*, uint32_t));
   MOCK_METHOD0(onFlush, void());

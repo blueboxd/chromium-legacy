@@ -13,7 +13,7 @@ import android.widget.RadioGroup.OnCheckedChangeListener;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
-import org.chromium.chrome.browser.ui.widget.RadioButtonLayout;
+import org.chromium.components.browser_ui.widget.RadioButtonLayout;
 import org.chromium.components.search_engines.TemplateUrl;
 
 import java.util.ArrayList;

@@ -12,12 +12,8 @@ action("ulp_serialized_to_static_c") {
     "geolanguage-data_rank1.bin",
     "geolanguage-data_rank2.bin",
   ]
-  sources = [
-    "ulp_language_code_locator_helper.h.tmpl",
-  ]
-  outputs = [
-    "$target_gen_dir/ulp_language_code_locator_helper.h",
-  ]
+  sources = [ "ulp_language_code_locator_helper.h.tmpl" ]
+  outputs = [ "$target_gen_dir/ulp_language_code_locator_helper.h" ]
 
   args = [
     "--data",

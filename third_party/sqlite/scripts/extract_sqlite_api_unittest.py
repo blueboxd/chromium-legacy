@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -8,7 +8,7 @@
 These tests should be getting picked up by the PRESUBMIT.py in this directory.
 """
 
-import imp
+from importlib.machinery import SourceFileLoader
 import os
 import shutil
 import sys
@@ -20,7 +20,7 @@ class ExtractSqliteApiUnittest(unittest.TestCase):
     self.test_root = tempfile.mkdtemp()
     source_path = os.path.join(
         os.path.dirname(os.path.realpath(__file__)), 'extract_sqlite_api.py')
-    self.extractor = imp.load_source('extract_api', source_path)
+    self.extractor = SourceFileLoader('extract_api', source_path).load_module()
 
   def tearDown(self):
     if self.test_root:
@@ -198,17 +198,21 @@ class ExtractSqliteApiUnittest(unittest.TestCase):
             set(['SQLITE_DEPRECATED']), 'SQLITE_API',
             'NOT_SQLITE_API struct sqlite_type sqlite3_sleep(int ms)'))
 
-    with self.assertRaisesRegexp(ValueError, 'Mixed simple .* and composite'):
+    with self.assertRaisesRegex(self.extractor.ExtractError,
+                                'Mixed simple .* and composite'):
       self.extractor.ExtractApiExport(
           set(), 'SQLITE_API', 'SQLITE_API void int sqlite3_sleep(int ms)')
-    with self.assertRaisesRegexp(ValueError, 'Unsupported keyword struct'):
+    with self.assertRaisesRegex(self.extractor.ExtractError,
+                                'Unsupported keyword struct'):
       self.extractor.ExtractApiExport(
           set(), 'SQLITE_API',
           'SQLITE_API struct sqlite_type sqlite3_sleep(int ms)')
-    with self.assertRaisesRegexp(ValueError, 'int\+\+ parsed as type name'):
+    with self.assertRaisesRegex(self.extractor.ExtractError,
+                                'int\+\+ parsed as type name'):
       self.extractor.ExtractApiExport(
           set(), 'SQLITE_API', 'SQLITE_API int++ sqlite3_sleep(int ms)')
-    with self.assertRaisesRegexp(ValueError, 'sqlite3\+sleep parsed as symbol'):
+    with self.assertRaisesRegex(self.extractor.ExtractError,
+                                'sqlite3\+sleep parsed as symbol'):
       self.extractor.ExtractApiExport(
           set(), 'SQLITE_API', 'SQLITE_API int sqlite3+sleep(int ms)')
 
@@ -228,7 +232,7 @@ class ExtractSqliteApiUnittest(unittest.TestCase):
     self.assertEqual(
         '// TODO: Lines 42-44 -- Something went wrong',
         self.extractor.ExportedExceptionLine(
-            ValueError('Something went wrong'),
+            self.extractor.ExtractError('Something went wrong'),
             (42, 44, 'SQLITE_API int chrome_sqlite3_sleep(int ms)')))
 
   def testProcessSource(self):

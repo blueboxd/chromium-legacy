@@ -44,9 +44,7 @@ source_set("test_support") {
     "//ios/public/provider/chrome/browser",
     "//ui/base:test_support",
   ]
-  public_deps = [
-    "//testing/gmock",
-  ]
+  public_deps = [ "//testing/gmock" ]
 }
 
 source_set("fake_chrome_identity") {
@@ -69,7 +67,5 @@ source_set("constants") {
     "fake_chrome_identity_interaction_manager_constants.h",
     "fake_chrome_identity_interaction_manager_constants.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

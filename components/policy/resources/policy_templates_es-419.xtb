@@ -368,12 +368,6 @@
       Se quitará esta política en Chrome 88.
 
       Consulta https://www.chromestatus.com/feature/5989473649164288.</translation>
-<translation id="1559980755219453326">Esta política controla si se envía información de las extensiones y los complementos.
-
-      Cuando no se establece esta política o se establece como verdadera, se recopilan datos de las extensiones y los complementos.
-      Cuando se establece como falsa, no se recopila información de las extensiones ni de los complementos.
-
-      Esta política solo es válida si se habilita la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1560205870554624777">Determina si se habilita la funcionalidad Kerberos. Kerberos es un protocolo de autenticación que puede usarse para autenticar apps web y archivos compartidos.
 
           Si se habilita esta política, se permitirá la funcionalidad Kerberos. Podrán agregarse las cuentas de Kerberos mediante la política "Configurar cuentas de Kerberos" o la configuración de las cuentas de Kerberos en la página de configuración de personas.
@@ -718,12 +712,6 @@
 
       Si no se establece esta política, es equivalente a que esté habilitada; para obtener más información, consulta la descripción que se encuentra más arriba.</translation>
 <translation id="2113068765175018713">Limita el tiempo de actividad del dispositivo mediante un reinicio automático.</translation>
-<translation id="2116790137063002724">Esta política controla el envío de los datos que permiten identificar a los usuarios, como el acceso al SO, el acceso al perfil de <ph name="PRODUCT_NAME" />, el nombre de perfil de <ph name="PRODUCT_NAME" />, la ruta de acceso al perfil de <ph name="PRODUCT_NAME" /> y la ruta ejecutable de <ph name="PRODUCT_NAME" />.
-
-      Si se establece esta política como verdadera, o no se establece, se recopilará la información que permite identificar a los usuarios.
-      Si se configura como falsa, no se recopilará esta información.
-
-      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>
 <translation id="2134437727173969994">Permite bloquear la pantalla</translation>
@@ -2979,9 +2967,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
         Si se establece la política como falsa, los usuarios no podrán enviar comentarios a Google.
 
         Si no se establece o se establece como verdadera, los usuarios podrán enviar comentarios a Google con una combinación de teclas o mediante Menú &gt; Ayuda &gt; Informar un problema.</translation>
-<translation id="5581292529942108810">Configura las políticas relacionadas con Chrome Reporting Extension.
-
-      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5583806683960333345">Si se habilita esta configuración, los usuarios podrán usar la "Conexión instantánea mediante dispositivo móvil", que permite que sus teléfonos Google compartan sus datos móviles con su dispositivo.
 
       Si se inhabilita esta configuración, los usuarios no podrán usar la "Conexión instantánea mediante dispositivo móvil".
@@ -3628,12 +3613,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Especifica las marcas que se deben aplicar a <ph name="PRODUCT_NAME" /> cuando se inicia. Las marcas especificadas se aplican solo en la pantalla de acceso. Las marcas establecidas mediante esta política no se propagan a las sesiones de usuario.</translation>
 <translation id="685769593149966548">Aplicar el modo restringido estricto para YouTube</translation>
-<translation id="6857824281777105940">Esta política controla si se envía información de "Navegación segura", lo que incluye la cantidad de advertencias de "Navegación segura" y la cantidad de veces que se hace clic en ellas.
-
-      Si no se establece esta política o se establece como verdadera, se recopilan los datos de "Navegación segura".
-      Si se establece como falsa, no se recopilan los datos de "Navegación segura".
-
-      Esta política solo es válida si se habilita la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="686079137349561371">Microsoft Windows 7 o versiones posteriores</translation>
 <translation id="6864244339257535116">Permitir las cargas y descargas de archivos protegidos con contraseña</translation>
 <translation id="687046793986382807">Esta política no está disponible a partir de la versión 35 de <ph name="PRODUCT_NAME" />.
@@ -3978,12 +3957,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7311458740754205918">Si esta política se establece como verdadera o no se establece, la página Nueva pestaña mostrará sugerencias de contenido basadas en la ubicación, los intereses o el historial de navegación del usuario.
 
       Si se establece como falsa, la página Nueva pestaña no mostrará sugerencias de contenido generadas de forma automática.</translation>
-<translation id="7313793931637495417">Esta política controla el envío de los datos de la versión, como la arquitectura, la plataforma y la versión del SO, y la versión de <ph name="PRODUCT_NAME" /> y el canal de <ph name="PRODUCT_NAME" />.
-
-      Si se establece esta política como verdadera, o no se establece, se recopilarán los datos de la versión.
-      Si se configura como falsa, no se recopilarán estos datos.
-
-      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Parámetros de línea de comandos adicionales para <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Similar a Wipe (valor 2), pero intenta preservar los tokens de acceso para que el usuario no tenga que volver a acceder.</translation>
 <translation id="7329968046053403405">Especifica el tipo de cuenta compatible para la autenticación <ph name="HTTP_NEGOTIATE" /> (p. ej., autenticación Kerberos) de las cuentas que proporciona la app de autenticación de Android. El proveedor de la app de autenticación debe tener esta información disponible. Para obtener más detalles, se puede consultar https://goo.gl/hajyfN.
@@ -4004,12 +3977,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7339315111520512972">Forzar el código de red para que se ejecute en el proceso de navegación</translation>
 <translation id="7340034977315324840">Notificar tiempo de actividad del dispositivo</translation>
 <translation id="7343497214039883642">Archivo de configuración de las impresoras empresariales para los dispositivos</translation>
-<translation id="735902178936442460">Esta política controla el envío de datos que se pueden usar para identificar las máquinas, como su nombre y las direcciones de red.
-
-      Si se establece esta política como verdadera, o no se establece, se recopilará la información que permite identificar las máquinas.
-      Si se establece como falsa, no se recopilará esta información.
-
-      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7359307926583593395">
       Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor. Si los valores no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor que especifica la política del usuario.
       </translation>
@@ -4412,12 +4379,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se habilita la configuración o no se establece, los sitios web estarán autorizados a verificar que el usuario tenga formas de pago guardadas.</translation>
 <translation id="8118665053362250806">Configurar el tamaño de caché de disco de medios</translation>
 <translation id="8124468781472887384">Política de acceso para la configuración de las impresoras asociadas a dispositivos</translation>
-<translation id="8138009212169037227">Esta política controla el informe de los datos y la hora de obtención de la política.
-
-      Si esta política se establece como verdadera, o no se establece, se recopilarán los datos y la hora de obtención de la política.
-      Si se configura como falsa, no se recopilarán estos datos.
-
-      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Informa sobre la lista de interfaces de red con sus tipos y direcciones de hardware al servidor.
 
       Si esta política se establece en "False", no se informará sobre la lista de interfaces.</translation>

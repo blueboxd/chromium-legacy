@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credential_cache.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 
@@ -218,6 +219,13 @@ void JNI_ManualFillingComponentBridge_SignalAutoGenerationStatusForTesting(
   // avoid setup overhead, since its logic is currently not needed for tests.
   ManualFillingControllerImpl::GetOrCreate(web_contents)
       ->OnAutomaticGenerationStatusChanged(j_available);
+}
+
+// static
+void JNI_ManualFillingComponentBridge_DisableServerPredictionsForTesting(
+    JNIEnv* env) {
+  password_manager::PasswordFormManager::
+      DisableFillingServerPredictionsForTesting();
 }
 
 // static

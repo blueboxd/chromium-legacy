@@ -33,7 +33,7 @@ var StatsTable = (function(ssrcInfoManager) {
      *     the value.
      */
     addStatsReport: function(peerConnectionElement, report) {
-      if (report.type == 'codec') {
+      if (report.type === 'codec') {
         return;
       }
       var statsTable = this.ensureStatsTable_(peerConnectionElement, report);
@@ -107,7 +107,7 @@ var StatsTable = (function(ssrcInfoManager) {
 
         table.innerHTML = '<tr><th colspan=2></th></tr>';
         table.rows[0].cells[0].textContent = 'Statistics ' + report.id;
-        if (report.type == 'ssrc') {
+        if (report.type === 'ssrc') {
           table.insertRow(1);
           table.rows[1].innerHTML = '<td colspan=2></td>';
           this.ssrcInfoManager_.populateSsrcInfo(
@@ -155,7 +155,7 @@ var StatsTable = (function(ssrcInfoManager) {
       trElement.cells[1].textContent = value;
 
       // Highlights the table for the active connection.
-      if (rowName == 'googActiveConnection') {
+      if (rowName === 'googActiveConnection') {
         if (value === true) {
           statsTable.parentElement.classList.add(activeConnectionClass);
         } else {

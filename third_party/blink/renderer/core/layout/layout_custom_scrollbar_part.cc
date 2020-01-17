@@ -141,7 +141,7 @@ int LayoutCustomScrollbarPart::ComputeScrollbarWidth(
   int min_width = CalcScrollbarThicknessUsing(kMinSize, style->MinWidth(),
                                               visible_size, theme);
   int max_width = w;
-  if (!style->MaxWidth().IsMaxSizeNone()) {
+  if (!style->MaxWidth().IsNone()) {
     max_width = CalcScrollbarThicknessUsing(kMaxSize, style->MaxWidth(),
                                             visible_size, theme);
   }
@@ -158,7 +158,7 @@ int LayoutCustomScrollbarPart::ComputeScrollbarHeight(
   int min_height = CalcScrollbarThicknessUsing(kMinSize, style->MinHeight(),
                                                visible_size, theme);
   int max_height = h;
-  if (!style->MaxHeight().IsMaxSizeNone()) {
+  if (!style->MaxHeight().IsNone()) {
     max_height = CalcScrollbarThicknessUsing(kMaxSize, style->MaxHeight(),
                                              visible_size, theme);
   }

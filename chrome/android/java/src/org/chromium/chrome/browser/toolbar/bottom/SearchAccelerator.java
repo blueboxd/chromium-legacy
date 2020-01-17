@@ -10,7 +10,6 @@ import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -39,9 +38,6 @@ class SearchAccelerator extends ChromeImageButton
     /** A provider that notifies when incognito mode is entered or exited. */
     private IncognitoStateProvider mIncognitoStateProvider;
 
-    /** The wrapper View that contains the search accelerator and the label. */
-    private View mWrapper;
-
     public SearchAccelerator(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -50,15 +46,6 @@ class SearchAccelerator extends ChromeImageButton
         mBackground = ApiCompatibilityUtils.getDrawable(mResources, R.drawable.ntp_search_box);
         mBackground.mutate();
         setBackground(mBackground);
-    }
-
-    @Override
-    public void setOnClickListener(OnClickListener listener) {
-        if (mWrapper != null) {
-            mWrapper.setOnClickListener(listener);
-        } else {
-            super.setOnClickListener(listener);
-        }
     }
 
     void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
@@ -93,6 +80,7 @@ class SearchAccelerator extends ChromeImageButton
     @Override
     public void onTintChanged(ColorStateList tint, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(this, tint);
+        updateBackground();
     }
 
     @Override
@@ -105,7 +93,8 @@ class SearchAccelerator extends ChromeImageButton
 
         mBackground.setColorFilter(ToolbarColors.getTextBoxColorForToolbarBackgroundInNonNativePage(
                                            mResources, mThemeColorProvider.getThemeColor(),
-                                           mIncognitoStateProvider.isIncognitoSelected()),
+                                           mIncognitoStateProvider.isIncognitoSelected()
+                                                   && mThemeColorProvider.useLight()),
                 PorterDuff.Mode.SRC_IN);
     }
 }

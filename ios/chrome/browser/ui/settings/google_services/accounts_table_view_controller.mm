@@ -112,8 +112,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
-  self = [super initWithTableViewStyle:style
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:style];
   if (self) {
     _browser = browser;
     _closeSettingsOnAddAccount = closeSettingsOnAddAccount;
@@ -398,13 +397,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (authService->IsAuthenticated()) {
     _authenticationOperationInProgress = YES;
     [self preventUserInteraction];
-    authService->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, ^{
-      [self allowUserInteraction];
-      _authenticationOperationInProgress = NO;
-      [base::mac::ObjCCastStrict<SettingsNavigationController>(
-          self.navigationController)
-          popViewControllerOrCloseSettingsAnimated:YES];
-    });
+    authService->SignOut(
+        signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+        /*force_clear_browsing_data=*/false, ^{
+          [self allowUserInteraction];
+          _authenticationOperationInProgress = NO;
+          [base::mac::ObjCCastStrict<SettingsNavigationController>(
+              self.navigationController)
+              popViewControllerOrCloseSettingsAnimated:YES];
+        });
   }
 }
 

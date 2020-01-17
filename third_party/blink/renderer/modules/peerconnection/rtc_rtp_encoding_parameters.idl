@@ -12,12 +12,9 @@ enum RTCPriorityType {
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpencodingparameters*
 dictionary RTCRtpEncodingParameters : RTCRtpCodingParameters {
-    //TODO(orphis): Missing codecPayloadType. https://crbug.com/857042
-    //TODO(orphis): Missing dtx. https://crbug.com/857044
     boolean         active = true;
     RTCPriorityType priority = "low";
     RTCPriorityType networkPriority = "low";
-    //TODO(orphis): Missing ptime. https://crbug.com/857046
     unsigned long   maxBitrate;
     //TODO(orphis): Missing maxFramerate. https://crbug.com/857047
     double          scaleResolutionDownBy;

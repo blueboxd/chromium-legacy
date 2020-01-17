@@ -486,10 +486,8 @@ void GestureManager::ShowUnhandledTapUIIfNeeded(
     // e.g. style->GetFontWeight() to return bold.  Need italic, color, etc.
 
     // Notify the Browser.
-    WebPoint point(tapped_position_in_viewport.X(),
-                   tapped_position_in_viewport.Y());
-    auto tapped_info =
-        mojom::blink::UnhandledTapInfo::New(point, font_size, text_run_length);
+    auto tapped_info = mojom::blink::UnhandledTapInfo::New(
+        tapped_position_in_viewport, font_size, text_run_length);
     provider->ShowUnhandledTapUIIfNeeded(std::move(tapped_info));
   }
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)

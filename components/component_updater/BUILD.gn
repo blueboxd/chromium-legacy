@@ -45,9 +45,7 @@ static_library("crl_set_remover") {
     "crl_set_remover.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 static_library("test_support") {

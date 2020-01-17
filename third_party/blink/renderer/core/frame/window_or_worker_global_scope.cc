@@ -261,9 +261,10 @@ ScriptPromise WindowOrWorkerGlobalScope::createImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     const ImageBitmapSourceUnion& bitmap_source,
-    const ImageBitmapOptions* options) {
-  return ImageBitmapFactories::CreateImageBitmap(script_state, event_target,
-                                                 bitmap_source, options);
+    const ImageBitmapOptions* options,
+    ExceptionState& exception_state) {
+  return ImageBitmapFactories::CreateImageBitmap(
+      script_state, event_target, bitmap_source, options, exception_state);
 }
 
 ScriptPromise WindowOrWorkerGlobalScope::createImageBitmap(
@@ -274,9 +275,11 @@ ScriptPromise WindowOrWorkerGlobalScope::createImageBitmap(
     int sy,
     int sw,
     int sh,
-    const ImageBitmapOptions* options) {
-  return ImageBitmapFactories::CreateImageBitmap(
-      script_state, event_target, bitmap_source, sx, sy, sw, sh, options);
+    const ImageBitmapOptions* options,
+    ExceptionState& exception_state) {
+  return ImageBitmapFactories::CreateImageBitmap(script_state, event_target,
+                                                 bitmap_source, sx, sy, sw, sh,
+                                                 options, exception_state);
 }
 
 }  // namespace blink

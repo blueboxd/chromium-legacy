@@ -17,6 +17,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "media/audio/audio_features.h"
 #include "media/base/media_switches.h"
+#include "media/base/supported_types.h"
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -342,6 +343,13 @@ IN_PROC_BROWSER_TEST_F(MediaTest, Navigate) {
   PlayVideo("bear.webm", false);
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaTest, AudioOnly_XHE_AAC_MP4) {
+  if (media::IsSupportedAudioType(
+          {media::kCodecAAC, media::AudioCodecProfile::kXHE_AAC})) {
+    PlayAudio("noise-xhe-aac.mp4", GetParam());
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(File, MediaTest, ::testing::Values(false));

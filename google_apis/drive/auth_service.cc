@@ -42,7 +42,7 @@ class AuthRequest {
   AuthRequest(signin::IdentityManager* identity_manager,
               const CoreAccountId& account_id,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-              const AuthStatusCallback& callback,
+              AuthStatusCallback callback,
               const std::vector<std::string>& scopes);
   ~AuthRequest();
 
@@ -61,11 +61,11 @@ AuthRequest::AuthRequest(
     signin::IdentityManager* identity_manager,
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const AuthStatusCallback& callback,
+    AuthStatusCallback callback,
     const std::vector<std::string>& scopes)
-    : callback_(callback) {
+    : callback_(std::move(callback)) {
   DCHECK(identity_manager);
-  DCHECK(!callback_.is_null());
+  DCHECK(callback_);
 
   access_token_fetcher_ = identity_manager->CreateAccessTokenFetcherForAccount(
       account_id, "auth_service", url_loader_factory,
@@ -84,7 +84,7 @@ void AuthRequest::OnAccessTokenFetchComplete(
 
   if (error.state() == GoogleServiceAuthError::NONE) {
     RecordAuthResultHistogram(kSuccessRatioHistogramSuccess);
-    callback_.Run(HTTP_SUCCESS, token_info.token);
+    std::move(callback_).Run(HTTP_SUCCESS, token_info.token);
   } else {
     LOG(WARNING) << "AuthRequest: token request using refresh token failed: "
                  << error.ToString();
@@ -94,14 +94,14 @@ void AuthRequest::OnAccessTokenFetchComplete(
     // so that the file manager works while off-line.
     if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
       RecordAuthResultHistogram(kSuccessRatioHistogramNoConnection);
-      callback_.Run(DRIVE_NO_CONNECTION, std::string());
+      std::move(callback_).Run(DRIVE_NO_CONNECTION, std::string());
     } else if (error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
       RecordAuthResultHistogram(kSuccessRatioHistogramTemporaryFailure);
-      callback_.Run(HTTP_FORBIDDEN, std::string());
+      std::move(callback_).Run(HTTP_FORBIDDEN, std::string());
     } else {
       // Permanent auth error.
       RecordAuthResultHistogram(kSuccessRatioHistogramFailure);
-      callback_.Run(HTTP_UNAUTHORIZED, std::string());
+      std::move(callback_).Run(HTTP_UNAUTHORIZED, std::string());
     }
   }
 
@@ -130,22 +130,25 @@ AuthService::~AuthService() {
   identity_manager_->RemoveObserver(this);
 }
 
-void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
+void AuthService::StartAuthentication(AuthStatusCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (HasAccessToken()) {
     // We already have access token. Give it back to the caller asynchronously.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS, access_token_));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), HTTP_SUCCESS, access_token_));
   } else if (HasRefreshToken()) {
     // We have refresh token, let's get an access token.
-    new AuthRequest(identity_manager_, account_id_, url_loader_factory_,
-                    base::Bind(&AuthService::OnAuthCompleted,
-                               weak_ptr_factory_.GetWeakPtr(), callback),
-                    scopes_);
+    new AuthRequest(
+        identity_manager_, account_id_, url_loader_factory_,
+        base::BindOnce(&AuthService::OnAuthCompleted,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+        scopes_);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, DRIVE_NOT_READY, std::string()));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), DRIVE_NOT_READY, std::string()));
   }
 }
 
@@ -169,11 +172,11 @@ void AuthService::ClearRefreshToken() {
   OnHandleRefreshToken(false);
 }
 
-void AuthService::OnAuthCompleted(const AuthStatusCallback& callback,
+void AuthService::OnAuthCompleted(AuthStatusCallback callback,
                                   DriveApiErrorCode error,
                                   const std::string& access_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   if (error == HTTP_SUCCESS) {
     access_token_ = access_token;
@@ -188,7 +191,7 @@ void AuthService::OnAuthCompleted(const AuthStatusCallback& callback,
     ClearRefreshToken();
   }
 
-  callback.Run(error, access_token);
+  std::move(callback).Run(error, access_token);
 }
 
 void AuthService::AddObserver(AuthServiceObserver* observer) {

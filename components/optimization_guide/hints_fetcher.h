@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
@@ -43,11 +44,14 @@ enum class HintsFetcherRequestStatus {
   kNetworkOffline,
   // Fetch request not sent because fetcher was busy with another request.
   kFetcherBusy,
-  // Fetch request not sent because the host list was empty.
-  kNoHostsToFetch,
+  // Fetch request not sent because the host and URL lists were empty.
+  kNoHostsOrURLsToFetch,
+  // Fetch request not sent because no supported optimization types were
+  // provided.
+  kNoSupportedOptimizationTypes,
 
   // Insert new values before this line.
-  kMaxValue = kNoHostsToFetch
+  kMaxValue = kNoSupportedOptimizationTypes
 };
 
 // Callback to inform the caller that the remote hints have been fetched and
@@ -75,12 +79,19 @@ class HintsFetcher {
   // Requests hints from the Optimization Guide Service if a request for them is
   // not already in progress. Returns whether a new request was issued.
   // |hints_fetched_callback| is run once when the outcome of this request is
-  // determined (whether a request was actually sent or not).
-  // Virtualized for testing. Hints fetcher may fetch hints for only a subset
-  // of the provided |hosts|. |hosts| should be an ordered list in descending
-  // order of probability that the hints are needed for that host.
+  // determined (whether a request was actually sent or not). Virtualized for
+  // testing. Hints fetcher may fetch hints for only a subset of the provided
+  // |hosts|. |hosts| should be an ordered list in descending order of
+  // probability that the hints are needed for that host. Only supported |urls|
+  // will be included in the fetch. |urls| is an ordered list in descending
+  // order of probability that a hint will be needed for the URL. The supplied
+  // optimization types will be included in the request, if empty no fetch will
+  // be made.
   virtual bool FetchOptimizationGuideServiceHints(
       const std::vector<std::string>& hosts,
+      const std::vector<GURL>& urls,
+      const base::flat_set<optimization_guide::proto::OptimizationType>&
+          optimization_types,
       optimization_guide::proto::RequestContext request_context,
       HintsFetchedCallback hints_fetched_callback);
 

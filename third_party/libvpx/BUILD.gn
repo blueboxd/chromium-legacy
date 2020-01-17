@@ -267,9 +267,7 @@ if (current_cpu == "arm" && arm_assembly_sources != []) {
     gen_file =
         get_label_info("//third_party/libvpx/source/libvpx", "root_gen_dir") +
         "/{{source_root_relative_dir}}/{{source_file_part}}.S"
-    outputs = [
-      gen_file,
-    ]
+    outputs = [ gen_file ]
     if (is_ios) {
       ads2gas_script =
           "//third_party/libvpx/source/libvpx/build/make/ads2gas_apple.pl"
@@ -300,9 +298,7 @@ if (current_cpu == "arm" && arm_assembly_sources != []) {
       include_dirs = [ get_label_info("//third_party/libvpx/source/libvpx",
                                       "target_gen_dir") ]
     }
-    deps = [
-      ":convert_arm_assembly",
-    ]
+    deps = [ ":convert_arm_assembly" ]
   }
 }
 

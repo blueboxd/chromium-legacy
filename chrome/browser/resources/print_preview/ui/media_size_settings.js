@@ -27,7 +27,7 @@ Polymer({
       ['onMediaSizeSettingChange_(settings.mediaSize.*, capability.option)'],
 
   /** @private */
-  onMediaSizeSettingChange_: function() {
+  onMediaSizeSettingChange_() {
     if (!this.capability) {
       return;
     }

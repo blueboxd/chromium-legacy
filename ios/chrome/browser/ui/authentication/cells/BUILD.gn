@@ -36,9 +36,7 @@ source_set("cells") {
     "//ios/public/provider/chrome/browser/signin",
     "//ui/base",
   ]
-  public_deps = [
-    ":constants",
-  ]
+  public_deps = [ ":constants" ]
   libs = [ "UIKit.framework" ]
 }
 

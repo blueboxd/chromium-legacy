@@ -117,6 +117,8 @@ class SmartTokenizerTest(unittest.TestCase):
 
         self.assertEqual(tokenize_name('FileURLs'), ['File', 'URLs'])
 
+        self.assertEqual(tokenize_name('XRDOMOverlay'), ['XR', 'DOM', 'Overlay'])
+
     def test_ignoring_characters(self):
         self.assertEqual(tokenize_name('Animation.idl'), ['Animation', 'idl'])
         self.assertEqual(tokenize_name('-webkit-appearance'), ['webkit', 'appearance'])

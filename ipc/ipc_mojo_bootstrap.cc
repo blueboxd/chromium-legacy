@@ -989,6 +989,12 @@ class ChannelAssociatedGroupController
     return true;
   }
 
+  bool WaitForFlushToComplete(
+      mojo::ScopedMessagePipeHandle flush_pipe) override {
+    // We don't support async flushing on the IPC Channel pipe.
+    return false;
+  }
+
   // Checked in places which must be run on the master endpoint's thread.
   base::ThreadChecker thread_checker_;
 

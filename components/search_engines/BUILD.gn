@@ -103,9 +103,7 @@ static_library("search_engines") {
 }
 
 source_set("search_engine_type") {
-  sources = [
-    "search_engine_type.h",
-  ]
+  sources = [ "search_engine_type.h" ]
 }
 
 static_library("test_support") {
@@ -174,15 +172,11 @@ json_to_struct("prepopulated_engines") {
   source = "prepopulated_engines.json"
   schema_file = "prepopulated_engines_schema.json"
   namespace = "TemplateURLPrepopulateData"
-  deps = [
-    ":search_engine_type",
-  ]
+  deps = [ ":search_engine_type" ]
 }
 
 if (is_android) {
   java_cpp_enum("search_engine_type_java") {
-    sources = [
-      "search_engine_type.h",
-    ]
+    sources = [ "search_engine_type.h" ]
   }
 }

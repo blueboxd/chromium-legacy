@@ -36,189 +36,192 @@ def GetSystemHealthBenchmarksToSmokeTest():
 
 
 _DISABLED_TESTS = frozenset({
-  # crbug.com/983326 - flaky.
-  'system_health.memory_desktop/browse_accessibility:media:youtube',
+    # crbug.com/983326 - flaky.
+    'system_health.memory_desktop/browse_accessibility:media:youtube',
 
-  # crbug.com/878390 - These stories are already covered by their 2018 or
-  # 2019 versions and will later be removed.
-  'system_health.memory_mobile/background:media:imgur',
-  'system_health.memory_mobile/background:news:nytimes',
-  'system_health.memory_mobile/background:social:facebook',
-  'system_health.memory_mobile/background:search:google',
-  'system_health.memory_mobile/browse:chrome:newtab',
-  'system_health.memory_mobile/browse:chrome:omnibox',
-  'system_health.memory_mobile/browse:media:flickr_infinite_scroll'
-  'system_health.memory_mobile/browse:media:imgur'
-  'system_health.memory_mobile/browse:tech:discourse_infinite_scroll',
-  'system_health.memory_mobile/browse:shopping:amazon',
-  'system_health.memory_mobile/browse:social:facebook',
-  'system_health.memory_mobile/browse:social:facebook_infinite_scroll',
-  'system_health.memory_mobile/browse:social:pinterest_infinite_scroll',
-  'system_health.memory_mobile/browse:media:facebook_photos',
-  'system_health.memory_mobile/browse:social:instagram',
-  'system_health.memory_mobile/browse:news:reddit',
-  'system_health.memory_mobile/browse:news:qq',
-  'system_health.memory_mobile/browse:shopping:avito',
-  'system_health.memory_mobile/browse:social:tumblr_infinite_scroll',
-  'system_health.memory_mobile/browse:social:twitter',
-  'system_health.memory_mobile/browse:tools:maps',
-  'system_health.memory_mobile/browse:news:cnn',
-  'system_health.memory_mobile/browse:news:toi',
-  'system_health.memory_mobile/browse:news:washingtonpost',
-  'system_health.memory_mobile/browse:media:youtube',
-  'system_health.memory_mobile/browse:shopping:lazada',
-  'system_health.memory_mobile/load:media:facebook_photos',
-  'system_health.memory_mobile/load:media:dailymotion',
-  'system_health.memory_mobile/load:news:cnn',
-  'system_health.memory_mobile/load:news:irctc',
-  'system_health.memory_mobile/load:news:nytimes',
-  'system_health.memory_mobile/load:news:qq',
-  'system_health.memory_mobile/load:news:reddit',
-  'system_health.memory_mobile/load:news:washingtonpost',
-  'system_health.memory_mobile/load:search:amazon',
-  'system_health.memory_mobile/load:search:taobao',
-  'system_health.memory_mobile/load:tools:docs',
-  'system_health.memory_mobile/load:social:pinterest',
-  'system_health.memory_mobile/load:tools:dropbox',
-  'system_health.memory_mobile/load:tools:stackoverflow',
-  'system_health.memory_mobile/load:tools:weather',
-  'system_health.memory_desktop/load_accessibility:shopping:amazon',
-  'system_health.memory_desktop/browse_accessibility:tech:codesearch',
-  'system_health.memory_desktop/load_accessibility:media:wikipedia',
-  'system_health.memory_desktop/browse:tech:discourse_infinite_scroll',
-  'system_health.memory_desktop/browse:tools:maps',
-  'system_health.memory_desktop/browse:social:facebook_infinite_scroll',
-  'system_health.memory_desktop/browse:social:tumblr_infinite_scroll',
-  'system_health.memory_desktop/browse:news:flipboard',
-  'system_health.memory_desktop/browse:search:google',
-  'system_health.memory_desktop/browse:news:hackernews',
-  'system_health.memory_desktop/load:search:amazon',
-  'system_health.memory_desktop/load:media:dailymotion',
-  'system_health.memory_desktop/load:news:bbc',
-  'system_health.memory_desktop/load:news:hackernews',
-  'system_health.memory_desktop/load:social:instagram',
-  'system_health.memory_desktop/load:news:reddit',
-  'system_health.memory_desktop/load:search:taobao',
-  'system_health.memory_desktop/load:tools:docs',
-  'system_health.memory_desktop/load:social:pinterest',
-  'system_health.memory_desktop/load:tools:weather',
-  'system_health.memory_desktop/multitab:misc:typical24',
-  'system_health.memory_desktop/browse:news:reddit',
-  'system_health.memory_desktop/browse:media:tumblr',
-  'system_health.memory_desktop/browse:social:twitter_infinite_scroll',
-  'system_health.memory_mobile/load:social:twitter',
-  'system_health.memory_desktop/load:social:vk',
+    # crbug.com/878390 - These stories are already covered by their 2018 or
+    # 2019 versions and will later be removed.
+    'system_health.memory_mobile/background:media:imgur',
+    'system_health.memory_mobile/background:news:nytimes',
+    'system_health.memory_mobile/background:social:facebook',
+    'system_health.memory_mobile/background:search:google',
+    'system_health.memory_mobile/background:tools:gmail',
+    'system_health.memory_mobile/browse:chrome:newtab',
+    'system_health.memory_mobile/browse:chrome:omnibox',
+    'system_health.memory_mobile/browse:media:flickr_infinite_scroll'
+    'system_health.memory_mobile/browse:media:imgur'
+    'system_health.memory_mobile/browse:tech:discourse_infinite_scroll',
+    'system_health.memory_mobile/browse:shopping:amazon',
+    'system_health.memory_mobile/browse:social:facebook',
+    'system_health.memory_mobile/browse:social:facebook_infinite_scroll',
+    'system_health.memory_mobile/browse:social:pinterest_infinite_scroll',
+    'system_health.memory_mobile/browse:media:facebook_photos',
+    'system_health.memory_mobile/browse:social:instagram',
+    'system_health.memory_mobile/browse:news:reddit',
+    'system_health.memory_mobile/browse:news:qq',
+    'system_health.memory_mobile/browse:shopping:avito',
+    'system_health.memory_mobile/browse:social:tumblr_infinite_scroll',
+    'system_health.memory_mobile/browse:social:twitter',
+    'system_health.memory_mobile/browse:tools:maps',
+    'system_health.memory_mobile/browse:news:cnn',
+    'system_health.memory_mobile/browse:news:toi',
+    'system_health.memory_mobile/browse:news:washingtonpost',
+    'system_health.memory_mobile/browse:media:youtube',
+    'system_health.memory_mobile/browse:shopping:lazada',
+    'system_health.memory_mobile/load:media:facebook_photos',
+    'system_health.memory_mobile/load:media:dailymotion',
+    'system_health.memory_mobile/load:news:cnn',
+    'system_health.memory_mobile/load:news:irctc',
+    'system_health.memory_mobile/load:news:nytimes',
+    'system_health.memory_mobile/load:news:qq',
+    'system_health.memory_mobile/load:news:reddit',
+    'system_health.memory_mobile/load:news:washingtonpost',
+    'system_health.memory_mobile/load:search:amazon',
+    'system_health.memory_mobile/load:search:taobao',
+    'system_health.memory_mobile/load:tools:docs',
+    'system_health.memory_mobile/load:social:pinterest',
+    'system_health.memory_mobile/load:tools:dropbox',
+    'system_health.memory_mobile/load:tools:stackoverflow',
+    'system_health.memory_mobile/load:tools:weather',
+    'system_health.memory_desktop/load_accessibility:shopping:amazon',
+    'system_health.memory_desktop/browse_accessibility:tech:codesearch',
+    'system_health.memory_desktop/load_accessibility:media:wikipedia',
+    'system_health.memory_desktop/browse:tech:discourse_infinite_scroll',
+    'system_health.memory_desktop/browse:tools:maps',
+    'system_health.memory_desktop/browse:social:facebook_infinite_scroll',
+    'system_health.memory_desktop/browse:social:tumblr_infinite_scroll',
+    'system_health.memory_desktop/browse:news:flipboard',
+    'system_health.memory_desktop/browse:search:google',
+    'system_health.memory_desktop/browse:news:hackernews',
+    'system_health.memory_desktop/load:search:amazon',
+    'system_health.memory_desktop/load:media:dailymotion',
+    'system_health.memory_desktop/load:news:bbc',
+    'system_health.memory_desktop/load:news:hackernews',
+    'system_health.memory_desktop/load:social:instagram',
+    'system_health.memory_desktop/load:news:reddit',
+    'system_health.memory_desktop/load:search:taobao',
+    'system_health.memory_desktop/load:tools:docs',
+    'system_health.memory_desktop/load:tools:gmail',
+    'system_health.memory_desktop/load:social:pinterest',
+    'system_health.memory_desktop/load:tools:weather',
+    'system_health.memory_desktop/multitab:misc:typical24',
+    'system_health.memory_desktop/browse:news:reddit',
+    'system_health.memory_desktop/browse:media:tumblr',
+    'system_health.memory_desktop/browse:social:twitter_infinite_scroll',
+    'system_health.memory_mobile/load:social:twitter',
+    'system_health.memory_desktop/load:social:vk',
 
-  # crbug.com/637230
-  'system_health.memory_desktop/browse:news:cnn',
-  # Permenently disabled from smoke test for being long-running.
-  'system_health.memory_mobile/long_running:tools:gmail-foreground',
-  'system_health.memory_mobile/long_running:tools:gmail-background',
-  'system_health.memory_desktop/long_running:tools:gmail-foreground',
-  'system_health.memory_desktop/long_running:tools:gmail-background',
+    # crbug.com/637230
+    'system_health.memory_desktop/browse:news:cnn',
+    # Permenently disabled from smoke test for being long-running.
+    'system_health.memory_mobile/long_running:tools:gmail-foreground',
+    'system_health.memory_mobile/long_running:tools:gmail-background',
+    'system_health.memory_desktop/long_running:tools:gmail-foreground',
+    'system_health.memory_desktop/long_running:tools:gmail-background',
 
-  # crbug.com/769263
-  'system_health.memory_desktop/play:media:soundcloud',
+    # crbug.com/769263
+    'system_health.memory_desktop/play:media:soundcloud',
 
-  # crbug.com/
-  'system_health.memory_desktop/browse:news:nytimes',
+    # crbug.com/
+    'system_health.memory_desktop/browse:news:nytimes',
 
-  # crbug.com/688190
-  'system_health.memory_mobile/browse:news:washingtonpost',
+    # crbug.com/688190
+    'system_health.memory_mobile/browse:news:washingtonpost',
 
-  # crbug.com/696824
-  'system_health.memory_desktop/load:news:qq',
-  # crbug.com/893615
-  # DESKTOP:
-  'system_health.memory_desktop/browse:media:pinterest',
-  'system_health.memory_desktop/browse:media:youtube',
-  'system_health.memory_desktop/browse:search:google_india',
-  'system_health.memory_desktop/load:games:alphabetty',
-  'system_health.memory_desktop/load:games:bubbles',
-  'system_health.memory_desktop/load:games:miniclip',
-  'system_health.memory_desktop/load:games:spychase',
-  'system_health.memory_desktop/load:media:flickr',
-  'system_health.memory_desktop/load:media:google_images',
-  'system_health.memory_desktop/load:media:imgur',
-  'system_health.memory_desktop/load:media:soundcloud',
-  'system_health.memory_desktop/load:media:youtube',
-  'system_health.memory_desktop/load:news:cnn',
-  'system_health.memory_desktop/load:news:wikipedia',
-  'system_health.memory_desktop/load:search:baidu',
-  'system_health.memory_desktop/load:search:ebay',
-  'system_health.memory_desktop/load:search:google',
-  'system_health.memory_desktop/load:search:yahoo',
-  'system_health.memory_desktop/load:search:yandex',
-  'system_health.memory_desktop/load:tools:stackoverflow',
-  'system_health.memory_mobile/load:media:soundcloud',
-  # MOBILE:
-  'system_health.memory_mobile/load:games:bubbles',
-  'system_health.memory_mobile/load:games:spychase',
-  'system_health.memory_mobile/load:media:flickr',
-  'system_health.memory_mobile/load:media:google_images',
-  'system_health.memory_mobile/load:media:imgur',
-  'system_health.memory_mobile/load:media:youtube',
-  'system_health.memory_mobile/load:news:wikipedia',
-  'system_health.memory_mobile/load:search:baidu',
-  'system_health.memory_mobile/load:search:ebay',
-  'system_health.memory_mobile/load:search:google',
-  'system_health.memory_mobile/load:search:yahoo',
-  'system_health.memory_mobile/load:search:yandex',
+    # crbug.com/696824
+    'system_health.memory_desktop/load:news:qq',
+    # crbug.com/893615
+    # DESKTOP:
+    'system_health.memory_desktop/browse:media:pinterest',
+    'system_health.memory_desktop/browse:media:youtube',
+    'system_health.memory_desktop/browse:search:google_india',
+    'system_health.memory_desktop/load:games:alphabetty',
+    'system_health.memory_desktop/load:games:bubbles',
+    'system_health.memory_desktop/load:games:miniclip',
+    'system_health.memory_desktop/load:games:spychase',
+    'system_health.memory_desktop/load:media:flickr',
+    'system_health.memory_desktop/load:media:google_images',
+    'system_health.memory_desktop/load:media:imgur',
+    'system_health.memory_desktop/load:media:soundcloud',
+    'system_health.memory_desktop/load:media:youtube',
+    'system_health.memory_desktop/load:news:cnn',
+    'system_health.memory_desktop/load:news:wikipedia',
+    'system_health.memory_desktop/load:search:baidu',
+    'system_health.memory_desktop/load:search:ebay',
+    'system_health.memory_desktop/load:search:google',
+    'system_health.memory_desktop/load:search:yahoo',
+    'system_health.memory_desktop/load:search:yandex',
+    'system_health.memory_desktop/load:tools:stackoverflow',
+    'system_health.memory_mobile/load:media:soundcloud',
+    # MOBILE:
+    'system_health.memory_mobile/load:games:bubbles',
+    'system_health.memory_mobile/load:games:spychase',
+    'system_health.memory_mobile/load:media:flickr',
+    'system_health.memory_mobile/load:media:google_images',
+    'system_health.memory_mobile/load:media:imgur',
+    'system_health.memory_mobile/load:media:youtube',
+    'system_health.memory_mobile/load:news:wikipedia',
+    'system_health.memory_mobile/load:search:baidu',
+    'system_health.memory_mobile/load:search:ebay',
+    'system_health.memory_mobile/load:search:google',
+    'system_health.memory_mobile/load:search:yahoo',
+    'system_health.memory_mobile/load:search:yandex',
 
-  # crbug.com/698006
-  'system_health.memory_desktop/load:tools:drive',
-  'system_health.memory_desktop/load:tools:gmail',
+    # crbug.com/698006
+    'system_health.memory_desktop/load:tools:drive',
+    'system_health.memory_desktop/load:tools:gmail',
 
-  # crbug.com/725386
-  'system_health.memory_desktop/browse:social:twitter',
+    # crbug.com/725386
+    'system_health.memory_desktop/browse:social:twitter',
 
-  # crbug.com/816482
-  'system_health.memory_desktop/load:news:nytimes',
+    # crbug.com/816482
+    'system_health.memory_desktop/load:news:nytimes',
 
-  # crbug.com/885320
-  'system_health.memory_desktop/browse:search:google:2018',
+    # crbug.com/885320
+    'system_health.memory_desktop/browse:search:google:2018',
 
-  # crbug.com/893615
-  'system_health.memory_desktop/multitab:misc:typical24:2018',
+    # crbug.com/893615
+    'system_health.memory_desktop/multitab:misc:typical24:2018',
 
-  # crbug.com/903849
-  'system_health.memory_mobile/browse:news:cnn:2018',
+    # crbug.com/903849
+    'system_health.memory_mobile/browse:news:cnn:2018',
 
-  # crbug.com/937006
-  'system_health.memory_mobile/browse:news:toi',
+    # crbug.com/937006
+    'system_health.memory_mobile/browse:news:toi',
 
-  # crbug.com/978358
-  'system_health.memory_desktop/browse:news:flipboard:2018',
+    # crbug.com/978358
+    'system_health.memory_desktop/browse:news:flipboard:2018',
 
-  # crbug.com/1008001
-  'system_health.memory_desktop/browse:tools:sheets:2019',
-  'system_health.memory_desktop/browse:tools:maps:2019',
+    # crbug.com/1008001
+    'system_health.memory_desktop/browse:tools:sheets:2019',
+    'system_health.memory_desktop/browse:tools:maps:2019',
 
-  # crbug.com/1014661
-  'system_health.memory_desktop/browse:social:tumblr_infinite_scroll:2018'
-  'system_health.memory_desktop/browse:search:google_india:2018'
+    # crbug.com/1014661
+    'system_health.memory_desktop/browse:social:tumblr_infinite_scroll:2018'
+    'system_health.memory_desktop/browse:search:google_india:2018'
 
-  # The following tests are disabled because they are disabled on the perf
-  # waterfall (using tools/perf/expectations.config) on one platform or another.
-  # They may run fine on the CQ, but it isn't worth the bot time to run them.
-  # [
-  # crbug.com/799106
-  'system_health.memory_desktop/browse:media:flickr_infinite_scroll'
-  # crbug.com/836407
-  'system_health.memory_desktop/browse:tools:maps'
-  # crbug.com/924330
-  'system_health.memory_desktop/browse:media:pinterest:2018'
-  # crbug.com/899887
-  'system_health.memory_desktop/browse:social:facebook_infinite_scroll:2018'
-  # crbug.com/649392
-  'system_health.memory_desktop/play:media:google_play_music'
-  # crbug.com/934885
-  'system_health.memory_desktop/load_accessibility:media:wikipedia:2018'
-  # crbug.com/942952
-  'system_health.memory_desktop/browse:news:hackernews:2018',
-  # crbug.com/992436
-  'system_health.memory_desktop/browse:social:twitter:2018'
-  # ]
+    # The following tests are disabled because they are disabled on the perf
+    # waterfall (using tools/perf/expectations.config) on one platform or
+    # another. They may run fine on the CQ, but it isn't worth the bot time to
+    # run them.
+    # [
+    # crbug.com/799106
+    'system_health.memory_desktop/browse:media:flickr_infinite_scroll'
+    # crbug.com/836407
+    'system_health.memory_desktop/browse:tools:maps'
+    # crbug.com/924330
+    'system_health.memory_desktop/browse:media:pinterest:2018'
+    # crbug.com/899887
+    'system_health.memory_desktop/browse:social:facebook_infinite_scroll:2018'
+    # crbug.com/649392
+    'system_health.memory_desktop/play:media:google_play_music'
+    # crbug.com/934885
+    'system_health.memory_desktop/load_accessibility:media:wikipedia:2018'
+    # crbug.com/942952
+    'system_health.memory_desktop/browse:news:hackernews:2018',
+    # crbug.com/992436
+    'system_health.memory_desktop/browse:social:twitter:2018'
+    # ]
 })
 
 

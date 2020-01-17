@@ -5,9 +5,7 @@
 import("//remoting/build/config/remoting_build.gni")
 
 source_set("input_monitor") {
-  public = [
-    "local_input_monitor.h",
-  ]
+  public = [ "local_input_monitor.h" ]
 
   sources = [
     "local_hotkey_input_monitor.h",

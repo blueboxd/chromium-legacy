@@ -81,12 +81,12 @@ Polymer({
     const matches = [];
     for (let i = 0; i < nameservers.length; ++i) {
       const nameserver = nameservers[i];
-      if (nameserver == this.EMPTY_NAMESERVER) {
+      if (nameserver === this.EMPTY_NAMESERVER) {
         continue;
       }
       let valid = false;
       for (let j = 0; j < this.GOOGLE_NAMESERVERS.length; ++j) {
-        if (nameserver == this.GOOGLE_NAMESERVERS[j]) {
+        if (nameserver === this.GOOGLE_NAMESERVERS[j]) {
           valid = true;
           matches[j] = true;
           break;
@@ -110,7 +110,7 @@ Polymer({
       return;
     }
 
-    if (!oldValue || newValue.guid != oldValue.guid) {
+    if (!oldValue || newValue.guid !== oldValue.guid) {
       this.savedNameservers_ = [];
     }
 
@@ -125,7 +125,7 @@ Polymer({
     const configType =
         OncMojo.getActiveValue(this.managedProperties.nameServersConfigType);
     let type;
-    if (configType == 'Static') {
+    if (configType === 'Static') {
       if (this.isGoogleNameservers_(nameservers)) {
         type = 'google';
         nameservers = this.GOOGLE_NAMESERVERS;  // Use consistent order.
@@ -147,7 +147,7 @@ Polymer({
    * @private
    */
   setNameservers_(nameserversType, nameservers, sendNameservers) {
-    if (nameserversType == 'custom') {
+    if (nameserversType === 'custom') {
       // Add empty entries for unset custom nameservers.
       for (let i = nameservers.length; i < this.MAX_NAMESERVERS; ++i) {
         nameservers[i] = this.EMPTY_NAMESERVER;
@@ -198,7 +198,7 @@ Polymer({
     if (!managedProperties) {
       return false;
     }
-    if (nameserversType != 'custom') {
+    if (nameserversType !== 'custom') {
       return false;
     }
     if (managedProperties.nameServersConfigType &&
@@ -222,10 +222,10 @@ Polymer({
    * @private
    */
   showNameservers_(nameserversType, type, nameservers) {
-    if (nameserversType != type) {
+    if (nameserversType !== type) {
       return false;
     }
-    return type == 'custom' || nameservers.length > 0;
+    return type === 'custom' || nameservers.length > 0;
   },
 
   /**
@@ -245,7 +245,7 @@ Polymer({
   onTypeChange_() {
     const type = this.$$('#nameserverType').selected;
     this.nameserversType_ = type;
-    if (type == 'custom') {
+    if (type === 'custom') {
       // Restore the saved nameservers.
       this.setNameservers_(type, this.savedNameservers_, true /* send */);
       return;
@@ -258,7 +258,7 @@ Polymer({
    * @private
    */
   onValueChange_() {
-    if (this.nameserversType_ != 'custom') {
+    if (this.nameserversType_ !== 'custom') {
       // If a user inputs Google nameservers in the custom nameservers fields,
       // |nameserversType| will change to 'google' so don't send the values.
       return;
@@ -273,7 +273,7 @@ Polymer({
   sendNameServers_() {
     const type = this.nameserversType_;
 
-    if (type == 'custom') {
+    if (type === 'custom') {
       const nameservers = new Array(this.MAX_NAMESERVERS);
       for (let i = 0; i < this.MAX_NAMESERVERS; ++i) {
         const nameserverInput = this.$$('#nameserver' + i);
@@ -285,13 +285,13 @@ Polymer({
         field: 'nameServers',
         value: nameservers,
       });
-    } else if (type == 'google') {
+    } else if (type === 'google') {
       this.nameservers_ = this.GOOGLE_NAMESERVERS;
       this.fire('nameservers-change', {
         field: 'nameServers',
         value: this.GOOGLE_NAMESERVERS,
       });
-    } else {  // type == automatic
+    } else {  // type === automatic
       // If not connected, properties will clear. Otherwise they may or may not
       // change so leave them as-is.
       if (!OncMojo.connectionStateIsConnected(

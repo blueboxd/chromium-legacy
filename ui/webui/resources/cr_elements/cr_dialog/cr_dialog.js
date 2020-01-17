@@ -270,7 +270,7 @@ Polymer({
    * @private
    */
   onKeypress_(e) {
-    if (e.key != 'Enter') {
+    if (e.key !== 'Enter') {
       return;
     }
 
@@ -281,7 +281,7 @@ Polymer({
     // trigger searching.
     const accept = e.target === this ||
         e.composedPath().some(
-            el => el.tagName == 'CR-INPUT' && el.type != 'search');
+            el => el.tagName === 'CR-INPUT' && el.type !== 'search');
     if (!accept) {
       return;
     }
@@ -304,7 +304,7 @@ Polymer({
       return;
     }
 
-    if (this.ignoreEnterKey && e.key == 'Enter') {
+    if (this.ignoreEnterKey && e.key === 'Enter') {
       return;
     }
 
@@ -316,7 +316,7 @@ Polymer({
   onPointerdown_(e) {
     // Only show pulse animation if user left-clicked outside of the dialog
     // contents.
-    if (e.button != 0 || e.composedPath()[0].tagName !== 'DIALOG') {
+    if (e.button !== 0 || e.composedPath()[0].tagName !== 'DIALOG') {
       return;
     }
 

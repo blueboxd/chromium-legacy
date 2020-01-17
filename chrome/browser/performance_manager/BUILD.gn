@@ -6,7 +6,5 @@ import("//chrome/common/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("site_data_proto") {
-  sources = [
-    "persistence/site_data/site_data.proto",
-  ]
+  sources = [ "persistence/site_data/site_data.proto" ]
 }

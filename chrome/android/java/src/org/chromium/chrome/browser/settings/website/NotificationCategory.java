@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.settings.website;
 import android.content.Context;
 import android.support.v4.app.NotificationManagerCompat;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 /**
  * Enables custom implementation for the notification site settings category, similar to

@@ -9,7 +9,5 @@ source_set("objc") {
     "identity_manager_observer_bridge.mm",
   ]
 
-  public_deps = [
-    "//components/signin/public/identity_manager",
-  ]
+  public_deps = [ "//components/signin/public/identity_manager" ]
 }

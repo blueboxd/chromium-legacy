@@ -176,9 +176,7 @@ class AutocompleteResult {
   // Modifies |matches| such that any duplicate matches are coalesced into
   // representative "best" matches. The erased matches are moved into the
   // |duplicate_matches| members of their representative matches.
-  static void DeduplicateMatches(
-      metrics::OmniboxEventProto::PageClassification page_classification,
-      ACMatches* matches);
+  static void DeduplicateMatches(ACMatches* matches);
 
   // Returns true if |matches| contains a match with the same destination as
   // |match|.
@@ -200,10 +198,8 @@ class AutocompleteResult {
   // Moves matches into this result. |old_matches| gives the matches from the
   // last result, and |new_matches| the results from this result. |old_matches|
   // should not be used afterwards.
-  void MergeMatchesByProvider(
-      metrics::OmniboxEventProto::PageClassification page_classification,
-      ACMatches* old_matches,
-      const ACMatches& new_matches);
+  void MergeMatchesByProvider(ACMatches* old_matches,
+                              const ACMatches& new_matches);
 
   // This pulls the relevant fields out of a match for comparison with other
   // matches for the purpose of deduping. It uses the stripped URL, so that we

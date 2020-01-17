@@ -23,7 +23,5 @@ source_set("test_support") {
     "test_branded_image_provider.h",
     "test_branded_image_provider.mm",
   ]
-  deps = [
-    ":images",
-  ]
+  deps = [ ":images" ]
 }

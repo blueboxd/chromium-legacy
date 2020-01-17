@@ -29,6 +29,7 @@ js_library("autofill_page") {
     ":payments_section",
     "..:open_window_proxy",
     "..:route",
+    "..:router",
     "../prefs:prefs_behavior",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:assert",
@@ -77,9 +78,7 @@ js_library("address_edit_dialog") {
 }
 
 js_library("credit_card_edit_dialog") {
-  deps = [
-    "//ui/webui/resources/js:i18n_behavior",
-  ]
+  deps = [ "//ui/webui/resources/js:i18n_behavior" ]
   externs_list = [ "$externs_path/autofill_private.js" ]
 }
 
@@ -91,9 +90,7 @@ js_library("credit_card_list") {
 }
 
 js_library("credit_card_list_entry") {
-  deps = [
-    "//ui/webui/resources/js:i18n_behavior",
-  ]
+  deps = [ "//ui/webui/resources/js:i18n_behavior" ]
 }
 
 js_library("password_list_item") {
@@ -105,9 +102,7 @@ js_library("password_list_item") {
 }
 
 js_library("password_manager_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/passwords_private.js" ]
 }
 
@@ -117,6 +112,7 @@ js_library("passwords_section") {
     ":password_list_item",
     ":password_manager_proxy",
     "..:global_scroll_target_behavior",
+    "..:route",
     "../people_page:sync_browser_proxy",
     "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior-extracted",
@@ -140,8 +136,6 @@ js_library("password_edit_dialog") {
 }
 
 js_library("show_password_behavior") {
-  deps = [
-    ":blocking_request_manager",
-  ]
+  deps = [ ":blocking_request_manager" ]
   externs_list = [ "$externs_path/passwords_private.js" ]
 }

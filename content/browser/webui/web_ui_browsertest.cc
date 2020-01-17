@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,12 +20,14 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/web_ui_browsertest_util.h"
 #include "content/shell/browser/shell.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
@@ -133,6 +136,8 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnDifferenteWebUITypes) {
   // Capture the SiteInstance before navigating for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       web_contents->GetSiteInstance());
+  int32_t orig_browsing_instance_id =
+      orig_site_instance->GetBrowsingInstanceId();
 
   // Navigate to a different WebUI type and ensure that the SiteInstance
   // has changed and the new process also has WebUI bindings.
@@ -140,7 +145,74 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnDifferenteWebUITypes) {
   EXPECT_TRUE(ContentWebUIControllerFactory::GetInstance()->UseWebUIForURL(
       web_contents->GetBrowserContext(), web_ui_url2));
   ASSERT_TRUE(NavigateToURL(web_contents, web_ui_url2));
-  EXPECT_NE(orig_site_instance, web_contents->GetSiteInstance());
+  auto* new_site_instance = web_contents->GetSiteInstance();
+  EXPECT_NE(orig_site_instance, new_site_instance);
+  EXPECT_NE(orig_browsing_instance_id,
+            new_site_instance->GetBrowsingInstanceId());
+  EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+      web_contents->GetMainFrame()->GetProcess()->GetID()));
+}
+
+// Tests that navigating from chrome:// to chrome-untrusted:// results in
+// SiteInstance swap.
+IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnFromChromeToUntrusted) {
+  WebContents* web_contents = shell()->web_contents();
+  AddUntrustedDataSource(web_contents->GetBrowserContext(), "test-host");
+
+  const GURL web_ui_url(GetWebUIURL(kChromeUIHistogramHost));
+  EXPECT_TRUE(ContentWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+      web_contents->GetBrowserContext(), web_ui_url));
+
+  ASSERT_TRUE(NavigateToURL(web_contents, web_ui_url));
+  EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+      web_contents->GetMainFrame()->GetProcess()->GetID()));
+
+  // Capture the SiteInstance before navigating for later comparison.
+  scoped_refptr<SiteInstance> orig_site_instance(
+      web_contents->GetSiteInstance());
+  int32_t orig_browsing_instance_id =
+      orig_site_instance->GetBrowsingInstanceId();
+
+  // Navigate to chrome-untrusted:// and ensure that the SiteInstance
+  // has changed and the new process has no WebUI bindings.
+  ASSERT_TRUE(NavigateToURL(web_contents,
+                            GetChromeUntrustedUIURL("test-host/title1.html")));
+  auto* new_site_instance = web_contents->GetSiteInstance();
+  EXPECT_NE(orig_site_instance, new_site_instance);
+  EXPECT_NE(orig_browsing_instance_id,
+            new_site_instance->GetBrowsingInstanceId());
+  EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+      web_contents->GetMainFrame()->GetProcess()->GetID()));
+}
+
+// Tests that navigating from chrome-untrusted:// to chrome:// results in
+// SiteInstance swap.
+IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ForceSwapOnFromUntrustedToChrome) {
+  WebContents* web_contents = shell()->web_contents();
+  AddUntrustedDataSource(web_contents->GetBrowserContext(), "test-host");
+
+  ASSERT_TRUE(NavigateToURL(web_contents,
+                            GetChromeUntrustedUIURL("test-host/title1.html")));
+  EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+      web_contents->GetMainFrame()->GetProcess()->GetID()));
+
+  // Capture the SiteInstance before navigating for later comparison.
+  scoped_refptr<SiteInstance> orig_site_instance(
+      web_contents->GetSiteInstance());
+  int32_t orig_browsing_instance_id =
+      orig_site_instance->GetBrowsingInstanceId();
+
+  // Navigate to a WebUI and ensure that the SiteInstance has changed and the
+  // new process has WebUI bindings.
+  const GURL web_ui_url(GetWebUIURL(kChromeUIHistogramHost));
+  EXPECT_TRUE(ContentWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+      web_contents->GetBrowserContext(), web_ui_url));
+
+  ASSERT_TRUE(NavigateToURL(web_contents, web_ui_url));
+  auto* new_site_instance = web_contents->GetSiteInstance();
+  EXPECT_NE(orig_site_instance, new_site_instance);
+  EXPECT_NE(orig_browsing_instance_id,
+            new_site_instance->GetBrowsingInstanceId());
   EXPECT_TRUE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
       web_contents->GetMainFrame()->GetProcess()->GetID()));
 }
@@ -228,6 +300,17 @@ IN_PROC_BROWSER_TEST_F(WebUIRequiringGestureBrowserTest,
   AdvanceClock(base::TimeDelta::FromMicroseconds(1));
   SendMessageAndWaitForFinish();
   EXPECT_EQ(2, test_handler()->message_requiring_gesture_count());
+}
+
+// Verify that we can successfully navigate to a chrome-untrusted:// URL.
+IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, UntrustedSchemeLoads) {
+  auto* web_contents = shell()->web_contents();
+  AddUntrustedDataSource(web_contents->GetBrowserContext(), "test-host");
+
+  const GURL untrusted_url(GetChromeUntrustedUIURL("test-host/title2.html"));
+  EXPECT_TRUE(NavigateToURL(web_contents, untrusted_url));
+  EXPECT_EQ(base::ASCIIToUTF16("Title Of Awesomeness"),
+            web_contents->GetTitle());
 }
 
 }  // namespace content

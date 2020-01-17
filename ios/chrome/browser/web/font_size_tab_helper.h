@@ -13,6 +13,12 @@ namespace web {
 class WebState;
 }  // namespace web
 
+enum Zoom {
+  ZOOM_OUT = -1,
+  ZOOM_RESET = 0,
+  ZOOM_IN = 1,
+};
+
 // Adjusts font size of web page by mapping
 // |UIApplication.sharedApplication.preferredContentSizeCategory| to a scaling
 // percentage and setting it to "-webkit-font-size-adjust" style on <body> when
@@ -22,6 +28,16 @@ class FontSizeTabHelper : public web::WebStateObserver,
  public:
   ~FontSizeTabHelper() override;
 
+  // Performs a zoom in the given direction on the WebState this is attached to.
+  void UserZoom(Zoom zoom);
+
+  // Returns whether the user can still zoom in. (I.e., They have not reached
+  // the max zoom level.).
+  bool CanUserZoomIn() const;
+  // Returns whether the user can still zoom out. (I.e., They have not reached
+  // the min zoom level.).
+  bool CanUserZoomOut() const;
+
  private:
   friend class web::WebStateUserData<FontSizeTabHelper>;
 
@@ -30,9 +46,13 @@ class FontSizeTabHelper : public web::WebStateObserver,
   // Sets font size in web page by scaling percentage.
   void SetPageFontSize(int size);
 
-  // Returns system suggested font size in scaling percentage(e.g. 150 for
-  // 150%).
-  int GetSystemSuggestedFontSize() const;
+  // Returns the true font size in scaling percentage (e.g. 150 for
+  // 150%) taking all sources into account (system level and user zoom).
+  int GetFontSize() const;
+
+  // Returns the current user zoom multiplier (i.e. not counting any additional
+  // zoom due to the system accessibility settings).
+  double GetCurrentUserZoomMultiplier() const;
 
   // web::WebStateObserver overrides:
   void PageLoaded(

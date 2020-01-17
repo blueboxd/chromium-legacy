@@ -310,6 +310,14 @@ BluetoothDevice* BluetoothTestWin::SimulateLowEnergyDevice(int device_ordinal) {
   return adapter_->GetDevice(data.address);
 }
 
+base::Optional<BluetoothUUID> BluetoothTestWin::GetTargetGattService(
+    BluetoothDevice* device) {
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  return ble_device->GetTargetGattService();
+}
+
 void BluetoothTestWin::SimulateGattConnection(BluetoothDevice* device) {
   FinishPendingTasks();
   // We don't actually attempt to discover on Windows, so fake it for testing.

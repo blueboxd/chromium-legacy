@@ -33,7 +33,7 @@
   const shortcutSlash = new cr.ui.KeyboardShortcutList('/');
 
   window.addEventListener('keydown', e => {
-    if (e.defaultPrevented || listeners.length == 0) {
+    if (e.defaultPrevented || listeners.length === 0) {
       return;
     }
 

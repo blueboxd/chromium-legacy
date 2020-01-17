@@ -50,5 +50,4 @@ GinBrowserTest.GinAndGarbageCollection
 MSE_ClearKey/EncryptedMediaTest.ConfigChangeVideo/0
 
 # http://crbug.com/1039450
-*/WebRtcMediaRecorderTest.*/2
-*/WebRtcMediaRecorderTest.*/6
+ProprietaryCodec/WebRtcMediaRecorderTest.*

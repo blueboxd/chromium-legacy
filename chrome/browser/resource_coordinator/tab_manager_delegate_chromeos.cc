@@ -145,8 +145,7 @@ ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
       return ProcessType::FOCUSED_TAB;
     DecisionDetails decision_details;
     if (!lifecycle_unit()->CanDiscard(
-            ::mojom::LifecycleUnitDiscardReason::PROACTIVE,
-            &decision_details)) {
+            ::mojom::LifecycleUnitDiscardReason::EXTERNAL, &decision_details)) {
       return ProcessType::PROTECTED_BACKGROUND;
     }
     return ProcessType::BACKGROUND;

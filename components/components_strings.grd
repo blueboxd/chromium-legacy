@@ -315,6 +315,9 @@
       <if expr="not is_android and not is_ios">
         <part file="management_strings.grdp" />
       </if>
+      <if expr="is_android">
+        <part file="android_system_error_page_strings.grdp" />
+      </if>
 
       <!-- Generic terms -->
       <message name="IDS_CANCEL" desc="Used for Cancel on buttons">

@@ -180,6 +180,10 @@ void RecordButtonClickAction(DownloadCommands::Command command) {
       base::RecordAction(
           UserMetricsAction("DownloadNotification.Button_DeepScan"));
       break;
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
+      base::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_BypassDeepScanning"));
+      break;
   }
 }
 
@@ -688,6 +692,7 @@ base::string16 DownloadItemNotification::GetCommandLabel(
     case DownloadCommands::PLATFORM_OPEN:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::DEEP_SCAN:
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
       // Only for menu.
       NOTREACHED();
       return base::string16();

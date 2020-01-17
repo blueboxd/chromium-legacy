@@ -42,7 +42,7 @@ Polymer({
    * @returns {boolean} true if the app is pinned
    * @private
    */
-  getValue_: function(app) {
+  getValue_(app) {
     if (app === undefined) {
       return false;
     }
@@ -54,7 +54,7 @@ Polymer({
    * @param {App} app
    * @returns {boolean} true if pinning is available.
    */
-  isAvailable_: function(app) {
+  isAvailable_(app) {
     if (app === undefined) {
       return false;
     }
@@ -67,7 +67,7 @@ Polymer({
    * @returns {boolean} true if the pinning is managed by policy.
    * @private
    */
-  isManaged_: function(app) {
+  isManaged_(app) {
     if (app === undefined) {
       return false;
     }
@@ -75,7 +75,7 @@ Polymer({
     return app.isPolicyPinned === OptionalBool.kTrue;
   },
 
-  toggleSetting_: function() {
+  toggleSetting_() {
     const newState =
         assert(app_management.util.toggleOptionalBool(this.app_.isPinned));
     const newStateBool =
@@ -95,7 +95,7 @@ Polymer({
   /**
    * @private
    */
-  onClick_: function() {
+  onClick_() {
     this.$['toggle-row'].click();
   },
 });

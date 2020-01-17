@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
-import org.chromium.chrome.browser.settings.MainPreferences;
 
 /**
  * Launches the UI to edit, create or delete an Autofill profile entry.
@@ -46,7 +45,7 @@ public class AutofillProfileEditorPreference extends Preference {
         Bundle extras = getExtras();
         // We know which profile to edit based on the GUID stuffed in our extras
         // by MainPreferences.
-        mGUID = extras.getString(MainPreferences.AUTOFILL_GUID);
+        mGUID = extras.getString(AutofillEditorBase.AUTOFILL_GUID);
         prepareEditorDialog();
         prepareAddressEditor();
     }

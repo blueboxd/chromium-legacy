@@ -205,14 +205,6 @@ void WidgetDelegateView::DeleteDelegate() {
   delete this;
 }
 
-Widget* WidgetDelegateView::GetWidget() {
-  return View::GetWidget();
-}
-
-const Widget* WidgetDelegateView::GetWidget() const {
-  return View::GetWidget();
-}
-
 views::View* WidgetDelegateView::GetContentsView() {
   return this;
 }

@@ -19,6 +19,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
+#include "ui/ozone/platform/drm/gpu/gbm_pixmap.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 
 namespace ui {
@@ -30,6 +31,10 @@ scoped_refptr<DrmFramebuffer> GetBufferForPageFlipTest(
     const OverlaySurfaceCandidate& overlay_surface,
     std::vector<scoped_refptr<DrmFramebuffer>>* reusable_buffers,
     size_t* total_allocated_memory_size) {
+  if (overlay_surface.native_pixmap) {
+    return static_cast<GbmPixmap*>(overlay_surface.native_pixmap.get())
+        ->framebuffer();
+  }
   uint32_t fourcc_format =
       overlay_surface.is_opaque
           ? GetFourCCFormatForOpaqueFramebuffer(overlay_surface.format)

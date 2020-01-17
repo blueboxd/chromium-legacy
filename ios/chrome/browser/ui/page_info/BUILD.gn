@@ -36,9 +36,7 @@ source_set("page_info") {
     "//ui/gfx",
     "//url",
   ]
-  public_deps = [
-    ":constants",
-  ]
+  public_deps = [ ":constants" ]
   libs = [ "UIKit.framework" ]
 }
 
@@ -56,9 +54,7 @@ source_set("features") {
     "features.h",
     "features.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("coordinator") {
@@ -105,9 +101,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "page_info_egtest.mm",
-  ]
+  sources = [ "page_info_egtest.mm" ]
   deps = [
     ":page_info",
     "//ios/chrome/browser/ui/popup_menu:constants",
@@ -128,9 +122,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "page_info_egtest.mm",
-  ]
+  sources = [ "page_info_egtest.mm" ]
   deps = [
     ":constants",
     "//ios/chrome/browser/ui/popup_menu:constants",

@@ -119,7 +119,7 @@ inline LayoutUnit ResolveMaxInlineLength(
     const base::Optional<MinMaxSize>& min_and_max,
     const Length& length,
     LengthResolvePhase phase) {
-  if (LIKELY(length.IsMaxSizeNone() || InlineLengthUnresolvable(length, phase)))
+  if (LIKELY(length.IsNone() || InlineLengthUnresolvable(length, phase)))
     return LayoutUnit::Max();
 
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,

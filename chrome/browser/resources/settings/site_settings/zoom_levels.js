@@ -35,7 +35,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'onZoomLevelsChanged', this.onZoomLevelsChanged_.bind(this));
     this.browserProxy.fetchZoomLevels();
@@ -46,7 +46,7 @@ Polymer({
    * @param {!Array<ZoomLevelEntry>} sites The up to date list of sites and
    *     their zoom levels.
    */
-  onZoomLevelsChanged_: function(sites) {
+  onZoomLevelsChanged_(sites) {
     this.updateList('sites_', item => item.origin, sites);
     this.showNoSites_ = this.sites_.length == 0;
   },
@@ -56,7 +56,7 @@ Polymer({
    * @param {!{model: !{index: number}}} event
    * @private
    */
-  removeZoomLevel_: function(event) {
+  removeZoomLevel_(event) {
     const site = this.sites_[event.model.index];
     this.browserProxy.removeZoomLevel(site.origin);
   },

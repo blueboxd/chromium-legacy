@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
 import androidx.annotation.CallSuper;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingMetricsRecorder;

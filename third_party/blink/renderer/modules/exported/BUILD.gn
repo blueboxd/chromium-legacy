@@ -17,9 +17,7 @@ blink_modules_sources("exported") {
 
   defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
 
-  deps = [
-    "//ui/accessibility:ax_enums_mojo_blink",
-  ]
+  deps = [ "//ui/accessibility:ax_enums_mojo_blink" ]
 }
 
 static_library("test_support") {
@@ -33,9 +31,7 @@ static_library("test_support") {
     "//v8",
   ]
 
-  sources = [
-    "web_testing_support.cc",
-  ]
+  sources = [ "web_testing_support.cc" ]
 
   configs += [
     "//third_party/blink/renderer:config",

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/debug/activity_analyzer.h"
 #include "base/debug/activity_tracker.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -20,16 +21,17 @@
 
 namespace browser_watcher {
 
-using base::debug::ActivityData;
-using base::debug::ActivityTrackerMemoryAllocator;
-using base::debug::ActivityUserData;
-using base::debug::GlobalActivityTracker;
-using base::debug::ThreadActivityTracker;
 using base::File;
 using base::FilePath;
 using base::FilePersistentMemoryAllocator;
 using base::MemoryMappedFile;
 using base::PersistentMemoryAllocator;
+using base::debug::ActivityData;
+using base::debug::ActivityTrackerMemoryAllocator;
+using base::debug::ActivityUserData;
+using base::debug::GlobalActivityAnalyzer;
+using base::debug::GlobalActivityTracker;
+using base::debug::ThreadActivityTracker;
 
 namespace {
 
@@ -134,6 +136,11 @@ class StabilityReportExtractorThreadTrackerTest : public testing::Test {
 #endif
   }
 
+  std::unique_ptr<GlobalActivityAnalyzer> CreateAnalyzer() {
+    return GlobalActivityAnalyzer::CreateWithFile(debug_file_path());
+  }
+
+ private:
   const FilePath& debug_file_path() const { return debug_file_path_; }
 
  protected:
@@ -175,7 +182,7 @@ TEST_F(StabilityReportExtractorThreadTrackerTest, CollectSuccess) {
 
   // Validate collection returns the expected report.
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, Extract(debug_file_path(), &report));
+  ASSERT_EQ(SUCCESS, Extract(CreateAnalyzer(), &report));
 
   // Validate the report.
   ASSERT_NO_FATAL_FAILURE(PerformBasicReportValidation(report));
@@ -240,7 +247,7 @@ TEST_F(StabilityReportExtractorThreadTrackerTest, CollectException) {
 
   // Collect report and validate.
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, Extract(debug_file_path(), &report));
+  ASSERT_EQ(SUCCESS, Extract(CreateAnalyzer(), &report));
 
   // Validate the presence of the exception.
   ASSERT_NO_FATAL_FAILURE(PerformBasicReportValidation(report));
@@ -263,7 +270,7 @@ TEST_F(StabilityReportExtractorThreadTrackerTest, CollectNoException) {
 
   // Collect report and validate there is no exception.
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, Extract(debug_file_path(), &report));
+  ASSERT_EQ(SUCCESS, Extract(CreateAnalyzer(), &report));
   ASSERT_NO_FATAL_FAILURE(PerformBasicReportValidation(report));
   const ThreadState& thread_state = report.process_states(0).threads(0);
   ASSERT_FALSE(thread_state.has_exception());
@@ -291,6 +298,10 @@ class StabilityReportExtractorTest : public testing::Test {
     debug_file_path_ = temp_dir_.GetPath().AppendASCII("debug.pma");
   }
 
+  std::unique_ptr<GlobalActivityAnalyzer> CreateAnalyzer() {
+    return GlobalActivityAnalyzer::CreateWithFile(debug_file_path());
+  }
+
   const FilePath& debug_file_path() { return debug_file_path_; }
 
  protected:
@@ -307,7 +318,7 @@ TEST_F(StabilityReportExtractorTest, LogCollection) {
 
   // Collect the stability report.
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, Extract(debug_file_path(), &report));
+  ASSERT_EQ(SUCCESS, Extract(CreateAnalyzer(), &report));
 
   // Validate the report's log content.
   ASSERT_EQ(2, report.log_messages_size());
@@ -337,7 +348,7 @@ TEST_F(StabilityReportExtractorTest, ProcessUserDataCollection) {
 
   // Collect the stability report.
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, Extract(debug_file_path(), &report));
+  ASSERT_EQ(SUCCESS, Extract(CreateAnalyzer(), &report));
 
   // We expect a single process.
   ASSERT_EQ(1, report.process_states_size());
@@ -396,7 +407,7 @@ TEST_F(StabilityReportExtractorTest, FieldTrialCollection) {
 
   // Collect the stability report.
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, Extract(debug_file_path(), &report));
+  ASSERT_EQ(SUCCESS, Extract(CreateAnalyzer(), &report));
   ASSERT_EQ(1, report.process_states_size());
 
   // Validate the report's experiment and global data.
@@ -435,7 +446,7 @@ TEST_F(StabilityReportExtractorTest, ModuleCollection) {
 
   // Collect the stability report.
   StabilityReport report;
-  ASSERT_EQ(SUCCESS, Extract(debug_file_path(), &report));
+  ASSERT_EQ(SUCCESS, Extract(CreateAnalyzer(), &report));
 
   // Validate the report's modules content.
   ASSERT_EQ(1, report.process_states_size());

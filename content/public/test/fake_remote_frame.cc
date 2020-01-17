@@ -1,0 +1,62 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/public/test/fake_remote_frame.h"
+
+namespace content {
+
+FakeRemoteFrame::FakeRemoteFrame() = default;
+
+FakeRemoteFrame::~FakeRemoteFrame() = default;
+
+void FakeRemoteFrame::Init(blink::AssociatedInterfaceProvider* provider) {
+  provider->OverrideBinderForTesting(
+      blink::mojom::RemoteFrame::Name_,
+      base::BindRepeating(&FakeRemoteFrame::BindFrameHostReceiver,
+                          base::Unretained(this)));
+}
+
+void FakeRemoteFrame::WillEnterFullscreen() {}
+
+void FakeRemoteFrame::AddReplicatedContentSecurityPolicies(
+    std::vector<network::mojom::ContentSecurityPolicyHeaderPtr> headers) {}
+
+void FakeRemoteFrame::ResetReplicatedContentSecurityPolicy() {}
+
+void FakeRemoteFrame::EnforceInsecureNavigationsSet(
+    const std::vector<uint32_t>& set) {}
+
+void FakeRemoteFrame::SetReplicatedOrigin(
+    const url::Origin& origin,
+    bool is_potentially_trustworthy_unique_origin) {}
+
+void FakeRemoteFrame::DispatchLoadEventForFrameOwner() {}
+
+void FakeRemoteFrame::Collapse(bool collapsed) {}
+
+void FakeRemoteFrame::Focus() {}
+
+void FakeRemoteFrame::SetHadStickyUserActivationBeforeNavigation(bool value) {}
+
+void FakeRemoteFrame::SetNeedsOcclusionTracking(bool needs_tracking) {}
+
+void FakeRemoteFrame::BubbleLogicalScroll(
+    blink::mojom::ScrollDirection direction,
+    ui::input_types::ScrollGranularity granularity) {}
+
+void FakeRemoteFrame::UpdateUserActivationState(
+    blink::mojom::UserActivationUpdateType) {}
+
+void FakeRemoteFrame::SetEmbeddingToken(
+    const base::UnguessableToken& embedding_token) {}
+
+void FakeRemoteFrame::SetPageFocus(bool is_focused) {}
+
+void FakeRemoteFrame::FakeRemoteFrame::BindFrameHostReceiver(
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrame>(
+      std::move(handle)));
+}
+
+}  // namespace content

@@ -57,7 +57,7 @@ class CONTENT_EXPORT PushMessagingService {
   virtual void SubscribeFromDocument(
       const GURL& requesting_origin,
       int64_t service_worker_registration_id,
-      int renderer_id,
+      int render_process_id,
       int render_frame_id,
       blink::mojom::PushSubscriptionOptionsPtr options,
       bool user_gesture,

@@ -16,9 +16,7 @@ jumbo_component("mac") {
 
   defines = [ "IS_UI_BASE_IME_MAC_IMPL" ]
 
-  public_deps = [
-    "//ui/base/ime",
-  ]
+  public_deps = [ "//ui/base/ime" ]
 
   libs = [ "AppKit.framework" ]
 }

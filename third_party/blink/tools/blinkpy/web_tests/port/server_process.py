@@ -66,6 +66,10 @@ def quote_data(data):
     for l in txt.splitlines():
         m = _trailing_spaces_re.match(l)
         if m:
+            # TODO(crbug.com/1021563): Remove this once we can determine why
+            # bots are occasionally crashing with a NoneType + str error.
+            if m.group(1) is None:
+                logging.error(l)
             l = m.group(1) + m.group(2).replace(' ', '\x20')
         lines.append(l)
     return lines

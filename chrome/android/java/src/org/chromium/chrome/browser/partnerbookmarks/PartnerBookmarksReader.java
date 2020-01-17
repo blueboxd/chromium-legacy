@@ -12,7 +12,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.ui.base.ViewUtils;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;

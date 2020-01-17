@@ -14,11 +14,13 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -266,6 +268,10 @@ base::FilePath ThumbnailCache::GetFilePath(TabId tab_id) {
 
 base::FilePath ThumbnailCache::GetJpegFilePath(TabId tab_id) {
   return GetFilePath(tab_id).AddExtension(".jpeg");
+}
+
+double ThumbnailCache::clampAspectRatio(double value, double min, double max) {
+  return std::max(std::min(value, max), min);
 }
 
 bool ThumbnailCache::CheckAndUpdateThumbnailMetaData(TabId tab_id,
@@ -719,8 +725,13 @@ void ThumbnailCache::JpegProcessingTask(
   // It's fine to horizontally center-align thumbnail saved in landscape
   // mode.
   int scale = 2;
-  SkIRect dest_subset = {0, 0, bitmap.width() / scale,
-                         std::min(bitmap.width(), bitmap.height()) / scale};
+  double aspect_ratio = base::GetFieldTrialParamByFeatureAsDouble(
+      chrome::android::kTabGridLayoutAndroid, "thumbnail_aspect_ratio", 1.0);
+  aspect_ratio = clampAspectRatio(aspect_ratio, 0.5, 2.0);
+  SkIRect dest_subset = {
+      0, 0, bitmap.width() / scale,
+      std::min(bitmap.height() / scale,
+               (int)(bitmap.width() / scale / aspect_ratio))};
   SkBitmap result_bitmap = skia::ImageOperations::Resize(
       bitmap, skia::ImageOperations::RESIZE_BETTER, bitmap.width() / scale,
       bitmap.height() / scale, dest_subset);

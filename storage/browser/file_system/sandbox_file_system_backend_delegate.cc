@@ -526,7 +526,7 @@ void SandboxFileSystemBackendDelegate::InvalidateUsageCache(
     FileSystemType type) {
   base::File::Error error = base::File::FILE_OK;
   base::FilePath usage_file_path = GetUsageCachePathForOriginAndType(
-      obfuscated_file_util(), origin, type, &error);
+      obfuscated_file_util(), url::Origin::Create(origin), type, &error);
   if (error != base::File::FILE_OK)
     return;
   usage_cache()->IncrementDirty(usage_file_path);
@@ -595,11 +595,11 @@ bool SandboxFileSystemBackendDelegate::IsAllowedScheme(const GURL& url) const {
 
 base::FilePath
 SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type) {
   base::File::Error error;
   base::FilePath path = GetUsageCachePathForOriginAndType(
-      obfuscated_file_util(), origin_url, type, &error);
+      obfuscated_file_util(), origin, type, &error);
   if (error != base::File::FILE_OK)
     return base::FilePath();
   return path;
@@ -609,14 +609,13 @@ SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
 base::FilePath
 SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
     ObfuscatedFileUtil* sandbox_file_util,
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type,
     base::File::Error* error_out) {
   DCHECK(error_out);
   *error_out = base::File::FILE_OK;
   base::FilePath base_path = sandbox_file_util->GetDirectoryForOriginAndType(
-      url::Origin::Create(origin_url), GetTypeString(type), false /* create */,
-      error_out);
+      origin, GetTypeString(type), false /* create */, error_out);
   if (*error_out != base::File::FILE_OK)
     return base::FilePath();
   return base_path.Append(FileSystemUsageCache::kUsageFileName);

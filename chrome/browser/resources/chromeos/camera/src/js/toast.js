@@ -38,8 +38,3 @@ export function show(message) {
 export function speak(message) {
   update(message, true);
 }
-
-/** @const */
-cca.toast.show = show;
-/** @const */
-cca.toast.speak = speak;

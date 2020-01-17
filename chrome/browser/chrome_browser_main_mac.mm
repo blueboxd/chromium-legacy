@@ -138,9 +138,6 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
-  // Initialize the OSCrypt.
-  OSCrypt::Init(local_state);
-
   // AppKit only restores windows to their original spaces when relaunching
   // apps after a restart, and puts them all on the current space when an app
   // is manually quit and relaunched. If Chrome restarted itself, ask AppKit to

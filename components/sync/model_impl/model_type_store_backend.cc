@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "components/sync/protocol/model_type_store_schema_descriptor.pb.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -26,29 +25,6 @@ const int64_t kInvalidSchemaVersion = -1;
 const int64_t ModelTypeStoreBackend::kLatestSchemaVersion = 1;
 const char ModelTypeStoreBackend::kDBSchemaDescriptorRecordId[] =
     "_mts_schema_descriptor";
-const char ModelTypeStoreBackend::kStoreInitResultHistogramName[] =
-    "Sync.ModelTypeStoreInitResult";
-
-namespace {
-
-StoreInitResultForHistogram LevelDbStatusToStoreInitResult(
-    const leveldb::Status& status) {
-  if (status.ok())
-    return STORE_INIT_RESULT_SUCCESS;
-  if (status.IsNotFound())
-    return STORE_INIT_RESULT_NOT_FOUND;
-  if (status.IsCorruption())
-    return STORE_INIT_RESULT_CORRUPTION;
-  if (status.IsNotSupportedError())
-    return STORE_INIT_RESULT_NOT_SUPPORTED;
-  if (status.IsInvalidArgument())
-    return STORE_INIT_RESULT_INVALID_ARGUMENT;
-  if (status.IsIOError())
-    return STORE_INIT_RESULT_IO_ERROR;
-  return STORE_INIT_RESULT_UNKNOWN;
-}
-
-}  // namespace
 
 // static
 scoped_refptr<ModelTypeStoreBackend>
@@ -89,19 +65,14 @@ base::Optional<ModelError> ModelTypeStoreBackend::Init(
     status = DestroyDatabase(path_str, env_.get());
     if (status.ok())
       status = OpenDatabase(path_str, env_.get());
-    if (status.ok())
-      RecordStoreInitResultHistogram(
-          STORE_INIT_RESULT_RECOVERED_AFTER_CORRUPTION);
   }
   if (!status.ok()) {
     DCHECK(db_ == nullptr);
-    RecordStoreInitResultHistogram(LevelDbStatusToStoreInitResult(status));
     return ModelError(FROM_HERE, status.ToString());
   }
 
   int64_t current_version = GetStoreVersion();
   if (current_version == kInvalidSchemaVersion) {
-    RecordStoreInitResultHistogram(STORE_INIT_RESULT_SCHEMA_DESCRIPTOR_ISSUE);
     return ModelError(FROM_HERE, "Invalid schema descriptor");
   }
 
@@ -109,11 +80,9 @@ base::Optional<ModelError> ModelTypeStoreBackend::Init(
     base::Optional<ModelError> error =
         Migrate(current_version, kLatestSchemaVersion);
     if (error) {
-      RecordStoreInitResultHistogram(STORE_INIT_RESULT_MIGRATION);
       return error;
     }
   }
-  RecordStoreInitResultHistogram(STORE_INIT_RESULT_SUCCESS);
   return base::nullopt;
 }
 
@@ -283,13 +252,6 @@ bool ModelTypeStoreBackend::Migrate0To1() {
       db_->Put(leveldb::WriteOptions(), kDBSchemaDescriptorRecordId,
                schema_descriptor.SerializeAsString());
   return status.ok();
-}
-
-// static
-void ModelTypeStoreBackend::RecordStoreInitResultHistogram(
-    StoreInitResultForHistogram result) {
-  UMA_HISTOGRAM_ENUMERATION(kStoreInitResultHistogramName, result,
-                            STORE_INIT_RESULT_COUNT);
 }
 
 }  // namespace syncer

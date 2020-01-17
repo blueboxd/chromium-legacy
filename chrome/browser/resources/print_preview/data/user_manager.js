@@ -56,7 +56,7 @@ Polymer({
     users: {
       type: Array,
       notify: true,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -69,7 +69,7 @@ Polymer({
   tracker_: new EventTracker(),
 
   /** @override */
-  detached: function() {
+  detached() {
     this.tracker_.removeAll();
     this.initialized_ = false;
   },
@@ -78,7 +78,7 @@ Polymer({
    * @param {?Array<string>} userAccounts
    * @param {boolean} syncAvailable
    */
-  initUserAccounts: function(userAccounts, syncAvailable) {
+  initUserAccounts(userAccounts, syncAvailable) {
     assert(!this.initialized_);
     this.initialized_ = true;
 
@@ -108,7 +108,7 @@ Polymer({
   },
 
   /** @private */
-  onCloudPrintInterfaceSet_: function() {
+  onCloudPrintInterfaceSet_() {
     this.tracker_.add(
         this.cloudPrintInterface.getEventTarget(),
         CloudPrintInterfaceEventType.UPDATE_USERS,
@@ -134,7 +134,7 @@ Polymer({
    *     event Contains the error status
    * @private
    */
-  checkCloudPrintStatus_: function(event) {
+  checkCloudPrintStatus_(event) {
     if (event.detail.status !== 403 ||
         this.cloudPrintInterface.areCookieDestinationsDisabled()) {
       return;
@@ -152,7 +152,7 @@ Polymer({
    *     active user and users.
    * @private
    */
-  onCloudPrintUpdateUsers_: function(e) {
+  onCloudPrintUpdateUsers_(e) {
     this.updateActiveUser(e.detail.activeUser);
     if (e.detail.users) {
       this.updateUsers_(e.detail.users);
@@ -163,7 +163,7 @@ Polymer({
    * @param {!Array<string>} users The full list of signed in users.
    * @private
    */
-  updateUsers_: function(users) {
+  updateUsers_(users) {
     const updateActiveUser = (users.length > 0 && this.users.length === 0) ||
         !users.includes(this.activeUser);
     this.users = users;
@@ -176,7 +176,7 @@ Polymer({
   },
 
   /** @param {string} user The new active user. */
-  updateActiveUser: function(user) {
+  updateActiveUser(user) {
     if (user === this.activeUser) {
       return;
     }

@@ -65,7 +65,7 @@ Polymer({
    * @param {string} newState New connection state (one of screen.CONNECTION).
    * @private
    */
-  calculateState_: function(state, newState) {
+  calculateState_(state, newState) {
     if (newState === undefined)
       return state;
 
@@ -80,7 +80,7 @@ Polymer({
    * @param {string} state Connection state (one of screen.CONNECTION).
    * @private
    */
-  tickIsVisible_: function(state) {
+  tickIsVisible_(state) {
     return (state == this.screen.CONNECTION.USB) ||
         (state == this.screen.CONNECTION.CONNECTED) ||
         (state == this.screen.CONNECTION.PAIRED);
@@ -93,7 +93,7 @@ Polymer({
    * @param {string} string2
    * @private
    */
-  notEq_: function(string1, string2) {
+  notEq_(string1, string2) {
     return string1 != string2;
   },
 
@@ -101,7 +101,7 @@ Polymer({
    * Sets current state in mouse pairing process.
    * @param {string} state Connection state (one of screen.CONNECTION).
    */
-  setMouseState: function(state) {
+  setMouseState(state) {
     this.mouseState_ = this.calculateState_(this.mouseState_, state);
   },
 
@@ -110,7 +110,7 @@ Polymer({
    * @param {string} state Connection state (one of screen.CONNECTION).
    * @private
    */
-  updateKeyboardPincodeVisible_: function(state) {
+  updateKeyboardPincodeVisible_(state) {
     this.keyboardPincodeVisible_ = this.keyboardPincode_ &&
         (this.keyboardState_ == this.screen.CONNECTION.PAIRING);
   },
@@ -119,7 +119,7 @@ Polymer({
    * Sets current state in keyboard pairing process.
    * @param {string} state Connection state (one of screen.CONNECTION).
    */
-  setKeyboardState: function(state) {
+  setKeyboardState(state) {
     this.keyboardState_ = this.calculateState_(this.keyboardState_, state);
     this.updateKeyboardPincodeVisible_();
   },
@@ -131,7 +131,7 @@ Polymer({
    * @param {boolean} expected
    * @param {string} label Connection state displayed description.
    */
-  setPincodeState: function(pincode, entered, expected, label) {
+  setPincodeState(pincode, entered, expected, label) {
     this.keyboardPincode_ = pincode;
     if (!pincode) {
       this.updateKeyboardPincodeVisible_();
@@ -163,7 +163,7 @@ Polymer({
   /**
    * This is 'on-tap' event handler for 'Continue' button.
    */
-  onHIDContinueTap_: function(event) {
+  onHIDContinueTap_(event) {
     chrome.send('HIDDetectionOnContinue');
     event.stopPropagation();
   },

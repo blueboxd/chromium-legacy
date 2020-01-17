@@ -53,14 +53,14 @@ Polymer({
     'dom-change': 'onDomChange_',
   },
 
-  attached: function() {
+  attached() {
     // Hide on reattach.
     this.listExpanded_ = false;
     this.$.collapse.hide();
   },
 
   /** @private */
-  onAppsChanged_: function(change) {},
+  onAppsChanged_(change) {},
 
   /** @private */
   onListTitleChanged_() {
@@ -68,7 +68,7 @@ Polymer({
   },
 
   /** @private */
-  onDomChange_: function() {
+  onDomChange_() {
     let collapsedHeight = 0;
     let numChildren = 0;
     for (const child of this.$.collapse.getContentChildren()) {
@@ -92,7 +92,7 @@ Polymer({
   },
 
   /** @private */
-  toggleListExpanded_: function() {
+  toggleListExpanded_() {
     this.listExpanded_ = !this.listExpanded_;
   },
 
@@ -118,7 +118,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getCollapsedIcon_: function(listExpanded) {
+  getCollapsedIcon_(listExpanded) {
     return listExpanded ? 'cr:expand-less' : 'cr:expand-more';
   },
 
@@ -128,7 +128,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  moreAppsString_: function(numApps, listExpanded) {
+  moreAppsString_(numApps, listExpanded) {
     return listExpanded ?
         loadTimeData.getString('lessApps') :
         loadTimeData.getStringF('moreApps', numApps - this.collapsedSize);

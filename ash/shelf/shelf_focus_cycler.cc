@@ -74,6 +74,11 @@ void ShelfFocusCycler::FocusOut(bool reverse, SourceView source_view) {
 void ShelfFocusCycler::FocusNavigation(bool last_element) {
   ShelfNavigationWidget* navigation_widget =
       shelf_->shelf_widget()->navigation_widget();
+  if (!navigation_widget->GetHomeButton() &&
+      !navigation_widget->GetBackButton()) {
+    FocusOut(last_element, SourceView::kShelfNavigationView);
+    return;
+  }
   navigation_widget->SetDefaultLastFocusableChild(last_element);
   Shell::Get()->focus_cycler()->FocusWidget(navigation_widget);
 }

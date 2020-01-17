@@ -6,9 +6,7 @@ source_set("launchd") {
     "service_management.mm",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   libs = [
     "CoreServices.framework",

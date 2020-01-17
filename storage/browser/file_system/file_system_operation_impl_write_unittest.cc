@@ -40,7 +40,7 @@ namespace content {
 
 namespace {
 
-const GURL kOrigin("http://example.com");
+const char kOrigin[] = "http://example.com";
 const storage::FileSystemType kFileSystemType = storage::kFileSystemTypeTest;
 
 void AssertStatusEq(base::File::Error expected, base::File::Error actual) {
@@ -110,7 +110,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
 
   FileSystemURL URLForPath(const base::FilePath& path) const {
     return file_system_context_->CreateCrackedFileSystemURL(
-        kOrigin, kFileSystemType, path);
+        GURL(kOrigin), kFileSystemType, path);
   }
 
   // Callback function for recording test results.
@@ -254,7 +254,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteDir) {
 TEST_F(FileSystemOperationImplWriteTest, TestWriteFailureByQuota) {
   ScopedTextBlob blob(blob_storage_context(), "blob:success",
                       "Hello, world!\n");
-  quota_manager_->SetQuota(url::Origin::Create(kOrigin),
+  quota_manager_->SetQuota(url::Origin::Create(GURL(kOrigin)),
                            FileSystemTypeToQuotaStorageType(kFileSystemType),
                            10);
   file_system_context_->operation_runner()->Write(URLForPath(virtual_path_),

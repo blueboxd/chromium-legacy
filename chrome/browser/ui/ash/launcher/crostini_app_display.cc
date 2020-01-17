@@ -20,7 +20,7 @@ void CrostiniAppDisplay::Register(const std::string& app_id,
   }
   auto it = app_id_to_display_id_.find(app_id);
   if (it == app_id_to_display_id_.end()) {
-    app_id_to_display_id_.emplace(std::make_pair(app_id, display_id));
+    app_id_to_display_id_.emplace(app_id, display_id);
     app_ids_.push_back(app_id);
   } else {
     it->second = display_id;

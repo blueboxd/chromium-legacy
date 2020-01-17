@@ -1,0 +1,15 @@
+This is a testharness.js-based test.
+PASS User succesfully selected an empty directory.
+PASS User granted write access.
+PASS getDirectory(create=false) rejects for non-existing directories
+PASS getDirectory(create=true) creates an empty directory
+PASS getDirectory(create=false) returns existing directories
+PASS getDirectory(create=true) returns existing directories without erasing
+FAIL getDirectory() when a file already exists with the same name assert_throws: function "function() { throw e }" threw object "InvalidModificationError: An attempt was made to create a file or directory where an element already exists." that is not a DOMException TypeMismatchError: property "code" is equal to 13, expected 17
+PASS getDirectory() with empty name
+PASS getDirectory() with "." name
+PASS getDirectory() with ".." name
+PASS getDirectory(create=false) with a path separator when the directory exists
+PASS getDirectory(create=true) with a path separator
+Harness: the test ran to completion.
+

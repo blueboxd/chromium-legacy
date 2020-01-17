@@ -13,9 +13,17 @@ module chromeos.cros_healthd.mojom;
 import "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom";
 import "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom";
 
-// Interface exposed by the cros_healthd daemon.
-interface CrosHealthdService {
-  // ------------------- Start of diagnostics definitions ---------------------
+// Factory interface which allows remote ends to request implementations of the
+// probe or diagnostics services.
+interface CrosHealthdServiceFactory {
+  // Returns a bound interface to the diagnostics service.
+  GetDiagnosticsService(CrosHealthdDiagnosticsService& service);
+  // Returns a bound interface to the probe service.
+  GetProbeService(CrosHealthdProbeService& service);
+};
+
+// Diagnostics interface exposed by the cros_healthd daemon.
+interface CrosHealthdDiagnosticsService {
   // Returns an array of all diagnostic routines that the platform supports.
   GetAvailableRoutines()
       => (array<DiagnosticRoutineEnum> available_routines);
@@ -98,20 +106,11 @@ interface CrosHealthdService {
   // * |response| - contains a unique identifier and status for the created
   //                routine.
   RunSmartctlCheckRoutine() => (RunRoutineResponse response);
+};
 
-  // ------------------- End of diagnostics definitions -----------------------
-
-  // ------------------- Start of probe definitions ---------------------
-
-  // Returns telemetry information for the desired categories. This IPC is
-  // exposed so that the browser can pull data from cros_healthd. The browser
-  // will periodically call ProbeTelemetryInfo and upload the results to the EMM
-  // API in the cloud, where the data collected from cros_healthd will be made
-  // available to OEMs. Since the browser is making requests and cros_healthd is
-  // replying, we can consider cros_healthd the privileged side of this
-  // communication. ProbeTelemetryInfo only returns parsed data, so the browser
-  // will not do any parsing. cros_healthd does not process input that could be
-  // controlled by a malicious attacker.
+// Probe interface exposed by the cros_healthd daemon.
+interface CrosHealthdProbeService {
+  // Returns telemetry information for the desired categories.
   //
   // The request:
   // * |categories| - list of each of the categories that ProbeTelemetryInfo
@@ -123,6 +122,4 @@ interface CrosHealthdService {
   //                      will be non-null.
   ProbeTelemetryInfo(array<ProbeCategoryEnum> categories)
       => (TelemetryInfo telemetry_info);
-
-  // ------------------- End of probe definitions -----------------------
 };

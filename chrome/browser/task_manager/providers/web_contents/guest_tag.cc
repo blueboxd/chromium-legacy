@@ -6,7 +6,7 @@
 
 namespace task_manager {
 
-GuestTask* GuestTag::CreateTask() const {
+GuestTask* GuestTag::CreateTask(WebContentsTaskProvider*) const {
   return new GuestTask(web_contents());
 }
 

@@ -18,9 +18,11 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -69,6 +71,7 @@ public class WebApkUpdateManagerTest {
     private static final long WEBAPK_THEME_COLOR = 2147483648L;
     private static final long WEBAPK_BACKGROUND_COLOR = 2147483648L;
 
+    private ChromeActivity mActivity;
     private Tab mTab;
 
     /**
@@ -79,8 +82,9 @@ public class WebApkUpdateManagerTest {
         private CallbackHelper mWaiter;
         private boolean mNeedsUpdate;
 
-        public TestWebApkUpdateManager(CallbackHelper waiter, WebappDataStorage storage) {
-            super(storage);
+        public TestWebApkUpdateManager(CallbackHelper waiter, ChromeActivity activity,
+                ActivityLifecycleDispatcher lifecycleDispatcher) {
+            super(activity, lifecycleDispatcher);
             mWaiter = waiter;
         }
 
@@ -141,7 +145,8 @@ public class WebApkUpdateManagerTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
         RecordHistogram.setDisabledForTests(true);
-        mTab = mActivityTestRule.getActivity().getActivityTab();
+        mActivity = mActivityTestRule.getActivity();
+        mTab = mActivity.getActivityTab();
 
         TestFetchStorageCallback callback = new TestFetchStorageCallback();
         WebappRegistry.getInstance().register(WEBAPK_ID, callback);
@@ -156,10 +161,12 @@ public class WebApkUpdateManagerTest {
      /** Checks whether a WebAPK update is needed. */
     private boolean checkUpdateNeeded(final CreationData creationData) throws Exception {
         CallbackHelper waiter = new CallbackHelper();
-        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
-        final TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(waiter, storage);
+        final TestWebApkUpdateManager updateManager =
+                new TestWebApkUpdateManager(waiter, mActivity, mActivity.getLifecycleDispatcher());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            WebappDataStorage storage =
+                    WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
             WebApkInfo info = WebApkInfo.create(
                     "", creationData.scope, null, null, null, creationData.name,
                     creationData.shortName, creationData.displayMode, creationData.orientation, 0,
@@ -172,7 +179,7 @@ public class WebApkUpdateManagerTest {
                     1 /* webApkVersionCode */
 
             );
-            updateManager.updateIfNeeded(mTab, info);
+            updateManager.updateIfNeeded(storage, info);
         });
         waiter.waitForCallback(0);
 

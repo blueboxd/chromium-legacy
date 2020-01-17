@@ -234,6 +234,7 @@ class PrintRenderFrameHelper
   void PrintFrameContent(mojom::PrintFrameContentParamsPtr params) override;
   void PrintingDone(bool success) override;
   void SetPrintingEnabled(bool enabled) override;
+  void PrintNodeUnderContextMenu() override;
 
   // Get |page_size| and |content_area| information from
   // |page_layout_in_points|.

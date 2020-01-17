@@ -201,9 +201,6 @@ CreateServerLitePageInfoFromNavigationHandle(
   if (!navigation_handle->GetWebContents())
     return nullptr;
 
-  server_lite_page_info->original_navigation_start =
-      navigation_handle->NavigationStart();
-
   const net::HttpRequestHeaders& headers =
       navigation_handle->GetRequestHeaders();
 

@@ -17,7 +17,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -32,7 +31,6 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -1521,19 +1519,11 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesSignedInName) {
   EXPECT_EQ(gaia_given_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
 }
-
-TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  // This test is relevant on desktop if |kProfileMenuRevamp| is disabled. If
-  // it is enabled for pre-existing directory with legacy profile name, they
-  // will be migrated to new default profile name |Person %n|. For newly created
-  // profiles, only |Person %n| is considered as a default profile name.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kProfileMenuRevamp);
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
+// GetAvatarNameForProfile() is not defined on Android.
+#if !defined(OS_ANDROID)
+TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
@@ -1565,7 +1555,7 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
 
   ASSERT_TRUE(storage.GetProfileAttributesWithPath(profile2->GetPath(),
                                                    &entry));
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS)
   // (Default profile, Batman,..) are legacy profile names on Desktop and are
   // not considered default profile names for newly created profiles.
   // We use "Person %n" as the default profile name. Set |SetIsUsingDefaultName|
@@ -1601,7 +1591,7 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
   EXPECT_EQ(gaia_given_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
 // These tests are for a Mac-only code path that assumes the browser

@@ -30,9 +30,7 @@ source_set("test_support") {
     "fake_observable_boolean.h",
     "fake_observable_boolean.mm",
   ]
-  deps = [
-    ":utils",
-  ]
+  deps = [ ":utils" ]
 }
 
 source_set("unit_tests") {

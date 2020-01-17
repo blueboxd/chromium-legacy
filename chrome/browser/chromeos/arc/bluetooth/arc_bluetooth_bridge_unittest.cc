@@ -108,7 +108,7 @@ class ArcBluetoothBridgeTest : public testing::Test {
         nullptr, arc_bridge_service_.get());
     fake_bluetooth_instance_ = std::make_unique<FakeBluetoothInstance>();
     arc_bridge_service_->bluetooth()->SetInstance(
-        fake_bluetooth_instance_.get(), 13);
+        fake_bluetooth_instance_.get(), 16);
     base::SysInfo::SetChromeOSVersionInfoForTest(
         "CHROMEOS_ARC_ANDROID_SDK_VERSION=28", base::Time::Now());
     WaitForInstanceReady(arc_bridge_service_->bluetooth());
@@ -218,10 +218,16 @@ class ArcBluetoothBridgeTest : public testing::Test {
 // the correctness of the device properties sent via arc bridge.
 TEST_F(ArcBluetoothBridgeTest, DeviceFound) {
   EXPECT_EQ(0u, fake_bluetooth_instance_->device_found_data().size());
+  EXPECT_EQ(0u,
+            fake_bluetooth_instance_->device_properties_changed_data().size());
   AddTestDevice();
-  EXPECT_EQ(5u, fake_bluetooth_instance_->device_found_data().size());
+  // Only the first one should invoke a device_found callback. The following
+  // device change events should invode the remote_device_properties callback.
+  EXPECT_EQ(1u, fake_bluetooth_instance_->device_found_data().size());
+  EXPECT_EQ(4u,
+            fake_bluetooth_instance_->device_properties_changed_data().size());
   const std::vector<mojom::BluetoothPropertyPtr>& prop =
-      fake_bluetooth_instance_->device_found_data().back();
+      fake_bluetooth_instance_->device_properties_changed_data().back();
 
   EXPECT_EQ(7u, prop.size());
   EXPECT_TRUE(prop[0]->is_bdname());
@@ -249,9 +255,11 @@ TEST_F(ArcBluetoothBridgeTest, DeviceFound) {
   EXPECT_EQ(kTestRssi, prop[6]->get_remote_rssi());
 
   ChangeTestDeviceRssi(kTestRssi2);
-  EXPECT_EQ(6u, fake_bluetooth_instance_->device_found_data().size());
+  EXPECT_EQ(1u, fake_bluetooth_instance_->device_found_data().size());
+  EXPECT_EQ(5u,
+            fake_bluetooth_instance_->device_properties_changed_data().size());
   const std::vector<mojom::BluetoothPropertyPtr>& prop2 =
-      fake_bluetooth_instance_->device_found_data().back();
+      fake_bluetooth_instance_->device_properties_changed_data().back();
   EXPECT_EQ(7u, prop2.size());
   EXPECT_TRUE(prop2[6]->is_remote_rssi());
   EXPECT_EQ(kTestRssi2, prop2[6]->get_remote_rssi());

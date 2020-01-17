@@ -80,9 +80,7 @@ source_set("search_widget") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "search_widget_view_controller_unittest.mm",
-  ]
+  sources = [ "search_widget_view_controller_unittest.mm" ]
   deps = [
     ":search_widget",
     "//testing/gtest",

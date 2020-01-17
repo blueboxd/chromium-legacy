@@ -17,4 +17,7 @@ specific_include_rules = {
   "(object_painter_base|paint_layer_scrollable_area|theme_painter|theme_painter_default)\.cc": [
     "+ui/base/ui_base_features.h",
   ],
+  "video_painter_test.cc": [
+    "+components/paint_preview/common/paint_preview_tracker.h",
+  ],
 }

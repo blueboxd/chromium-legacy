@@ -98,6 +98,14 @@ class ChooserContextBase : public KeyedService {
                              const url::Origin& embedding_origin,
                              base::Value object);
 
+  // Updates |old_object| with |new_object| for |requesting_origin| when
+  // embedded within |embedding_origin|, and writes the value into
+  // |host_content_settings_map_|.
+  void UpdateObjectPermission(const url::Origin& requesting_origin,
+                              const url::Origin& embedding_origin,
+                              base::Value& old_object,
+                              base::Value new_object);
+
   // Revokes |requesting_origin|'s permission to access |object| when embedded
   // within |embedding_origin|.
   //

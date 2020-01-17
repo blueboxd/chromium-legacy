@@ -25,7 +25,7 @@ const CrPolicyPrefBehavior = {
    */
   isPrefEnforced() {
     return !!this.pref &&
-        this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
+        this.pref.enforcement === chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 
   /**
@@ -36,11 +36,12 @@ const CrPolicyPrefBehavior = {
       return false;
     }
     if (this.noExtensionIndicator &&
-        this.pref.controlledBy ==
+        this.pref.controlledBy ===
             chrome.settingsPrivate.ControlledBy.EXTENSION) {
       return false;
     }
     return this.isPrefEnforced() ||
-        this.pref.enforcement == chrome.settingsPrivate.Enforcement.RECOMMENDED;
+        this.pref.enforcement ===
+        chrome.settingsPrivate.Enforcement.RECOMMENDED;
   },
 };

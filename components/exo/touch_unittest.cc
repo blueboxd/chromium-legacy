@@ -245,6 +245,79 @@ TEST_F(TouchTest, OnTouchCancel) {
   touch.reset();
 }
 
+TEST_F(TouchTest, OnTouchCancelWhenSurfaceDestroying) {
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  gfx::Size buffer_size(10, 10);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  MockTouchDelegate delegate;
+  Seat seat;
+  auto touch = std::make_unique<Touch>(&delegate, &seat);
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(delegate, OnTouchShape(testing::_, testing::_, testing::_))
+      .Times(testing::AnyNumber());
+  EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate,
+              OnTouchDown(surface.get(), testing::_, 1, gfx::PointF()));
+  EXPECT_CALL(delegate, OnTouchFrame());
+  const gfx::Point origin = surface->window()->GetBoundsInScreen().origin();
+  generator.set_current_screen_location(origin);
+  generator.PressTouchId(1);
+
+  // Since there is an active touch pointer on the surface, destroying the
+  // surface should cancel touches.
+  EXPECT_CALL(delegate, OnTouchCancel());
+  EXPECT_CALL(delegate, OnTouchFrame());
+  surface.reset();
+
+  EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));
+  touch.reset();
+}
+
+TEST_F(TouchTest, OnTouchCancelNotTriggeredAfterTouchReleased) {
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  gfx::Size buffer_size(10, 10);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  MockTouchDelegate delegate;
+  Seat seat;
+  auto touch = std::make_unique<Touch>(&delegate, &seat);
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(delegate, OnTouchShape(testing::_, testing::_, testing::_))
+      .Times(testing::AnyNumber());
+  EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate,
+              OnTouchDown(surface.get(), testing::_, 1, gfx::PointF()));
+  EXPECT_CALL(delegate, OnTouchFrame());
+  const gfx::Point origin = surface->window()->GetBoundsInScreen().origin();
+  generator.set_current_screen_location(origin);
+  generator.PressTouchId(1);
+
+  EXPECT_CALL(delegate, OnTouchUp(testing::_, 1));
+  EXPECT_CALL(delegate, OnTouchFrame());
+  generator.ReleaseTouchId(1);
+
+  // Since the surface no longer has any active touch pointers, destroying the
+  // surface should not cancel any touches.
+  EXPECT_CALL(delegate, OnTouchCancel()).Times(0);
+  surface.reset();
+
+  EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));
+  touch.reset();
+}
+
 TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
   auto window = exo_test_helper()->CreateWindow(10, 10, false);
   auto modal = exo_test_helper()->CreateWindow(5, 5, true);
@@ -462,6 +535,78 @@ TEST_F(TouchTest, DragDropAbort) {
   EXPECT_FALSE(seat.get_drag_drop_operation_for_testing());
 
   EXPECT_CALL(touch_delegate, OnTouchDestroying(touch.get()));
+  touch.reset();
+}
+
+TEST_F(TouchTest, TouchMultipleSurfaces) {
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  gfx::Size buffer_size(10, 10);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  auto child_surface = std::make_unique<Surface>();
+  auto child_shell_surface = std::make_unique<ShellSurface>(
+      child_surface.get(), gfx::Point(), true, false,
+      ash::desks_util::GetActiveDeskContainerId());
+  child_shell_surface->DisableMovement();
+  child_shell_surface->SetParent(shell_surface.get());
+  gfx::Size child_buffer_size(15, 15);
+  auto child_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  child_surface->Attach(child_buffer.get());
+  child_surface->Commit();
+
+  MockTouchDelegate delegate;
+  Seat seat;
+  auto touch = std::make_unique<Touch>(&delegate, &seat);
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  // Touch down on the two surfaces.
+  EXPECT_CALL(delegate, OnTouchShape(testing::_, testing::_, testing::_))
+      .Times(testing::AnyNumber());
+  EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate,
+              OnTouchDown(surface.get(), testing::_, 1, gfx::PointF()));
+  EXPECT_CALL(delegate, OnTouchFrame());
+  const gfx::Point origin = surface->window()->GetBoundsInScreen().origin();
+  generator.set_current_screen_location(origin);
+  generator.PressTouchId(1);
+
+  EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(child_surface.get()))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate,
+              OnTouchDown(child_surface.get(), testing::_, 2, gfx::PointF()));
+  EXPECT_CALL(delegate, OnTouchFrame());
+  const gfx::Point child_origin =
+      child_surface->window()->GetBoundsInScreen().origin();
+  generator.set_current_screen_location(child_origin);
+  generator.PressTouchId(2);
+
+  // Move the two touch pointers.
+  for (int i = 1; i <= 10; i++) {
+    EXPECT_CALL(delegate, OnTouchMotion(testing::_, 1, gfx::PointF(i, i)));
+    EXPECT_CALL(delegate, OnTouchFrame());
+    generator.MoveTouchId(origin + gfx::Vector2d(i, i), 1);
+
+    EXPECT_CALL(delegate, OnTouchMotion(testing::_, 2, gfx::PointF(i, i)));
+    EXPECT_CALL(delegate, OnTouchFrame());
+    generator.MoveTouchId(child_origin + gfx::Vector2d(i, i), 2);
+  }
+
+  // Release the two touch pointers.
+  EXPECT_CALL(delegate, OnTouchUp(testing::_, 2));
+  EXPECT_CALL(delegate, OnTouchFrame());
+  generator.ReleaseTouchId(2);
+
+  EXPECT_CALL(delegate, OnTouchUp(testing::_, 1));
+  EXPECT_CALL(delegate, OnTouchFrame());
+  generator.ReleaseTouchId(1);
+
+  EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));
   touch.reset();
 }
 

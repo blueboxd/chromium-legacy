@@ -8,9 +8,7 @@ source_set("spotlight") {
     "spotlight_provider.h",
     "spotlight_provider.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   libs = [ "Foundation.framework" ]
 }
 
@@ -21,7 +19,5 @@ source_set("test_support") {
     "test_spotlight_provider.h",
     "test_spotlight_provider.mm",
   ]
-  deps = [
-    ":spotlight",
-  ]
+  deps = [ ":spotlight" ]
 }

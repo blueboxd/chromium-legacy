@@ -173,9 +173,7 @@ source_set("test_support") {
     "position_cache_test_util.cc",
     "position_cache_test_util.h",
   ]
-  public_deps = [
-    ":geolocation",
-  ]
+  public_deps = [ ":geolocation" ]
   deps = [
     "//services/device/public/cpp/geolocation",
     "//testing/gmock",

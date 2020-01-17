@@ -82,6 +82,8 @@ class MockUserModifiableProvider
                           const ContentSettingsPattern&,
                           ContentSettingsType,
                           const content_settings::ResourceIdentifier&));
+
+  MOCK_METHOD1(SetClockForTesting, void(base::Clock*));
 };
 
 class HostContentSettingsMapTest : public testing::Test {

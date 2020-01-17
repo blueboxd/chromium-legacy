@@ -38,12 +38,12 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
-#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
@@ -298,8 +298,8 @@ class BLINK_EXPORT WebLocalFrameClient {
       const WebVector<WebString>& stopped_matching_selectors) {}
 
   // Replicate user activation state updates for this frame to the embedder.
-  virtual void UpdateUserActivationState(UserActivationUpdateType update_type) {
-  }
+  virtual void UpdateUserActivationState(
+      mojom::UserActivationUpdateType update_type) {}
 
   // Called when a frame is capturing mouse input, such as when a scrollbar
   // is being dragged.

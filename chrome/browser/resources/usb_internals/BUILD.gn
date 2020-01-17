@@ -50,7 +50,5 @@ grit("resources") {
     "-E",
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
-  deps = [
-    "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js",
-  ]
+  deps = [ "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js" ]
 }

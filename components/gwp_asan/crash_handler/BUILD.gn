@@ -27,16 +27,12 @@ static_library("crash_handler") {
 }
 
 proto_library("crash_proto") {
-  sources = [
-    "crash.proto",
-  ]
+  sources = [ "crash.proto" ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "crash_analyzer_unittest.cc",
-  ]
+  sources = [ "crash_analyzer_unittest.cc" ]
 
   deps = [
     ":crash_handler",

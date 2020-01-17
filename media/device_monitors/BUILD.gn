@@ -40,9 +40,7 @@ source_set("device_monitors") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "system_message_window_win_unittest.cc",
-  ]
+  sources = [ "system_message_window_win_unittest.cc" ]
 
   deps = [
     "//base",

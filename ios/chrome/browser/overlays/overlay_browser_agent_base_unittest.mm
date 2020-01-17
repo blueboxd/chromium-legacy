@@ -57,10 +57,9 @@ class FakeOverlayBrowserAgent
     // DispatchInfo.
     std::unique_ptr<FakeOverlayRequestCallbackInstaller> installer =
         std::make_unique<FakeOverlayRequestCallbackInstaller>(
-            &mock_callback_receiver_);
-    installer->SetRequestSupport(SupportedConfig::RequestSupport());
-    installer->StartInstallingDispatchCallbacksWithSupport(
-        DispatchInfo::ResponseSupport());
+            &mock_callback_receiver_, std::set<const OverlayResponseSupport*>(
+                                          {DispatchInfo::ResponseSupport()}));
+    installer->set_request_support(SupportedConfig::RequestSupport());
     AddInstaller(std::move(installer), kModality);
   }
 
@@ -131,16 +130,14 @@ TEST_F(OverlayBrowserAgentBaseTest, SupportedRequestCallbackSetup) {
 
   // Dispatch a response through this presented request, expecting the dispatch
   // callback to be executed on the mock receiver.
-  std::unique_ptr<OverlayResponse> response =
-      OverlayResponse::CreateWithInfo<DispatchInfo>();
   EXPECT_CALL(mock_callback_receiver(),
-              DispatchCallback(request, DispatchInfo::ResponseSupport(),
-                               response.get()));
-  request->GetCallbackManager()->DispatchResponse(std::move(response));
+              DispatchCallback(request, DispatchInfo::ResponseSupport()));
+  request->GetCallbackManager()->DispatchResponse(
+      OverlayResponse::CreateWithInfo<DispatchInfo>());
 
   // Cancel the request, expecting the completion callback to be executed on the
   // mock receiver.
-  EXPECT_CALL(mock_callback_receiver(), CompletionCallback(request, nullptr));
+  EXPECT_CALL(mock_callback_receiver(), CompletionCallback(request));
   CancelRequests();
 }
 

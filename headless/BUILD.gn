@@ -23,9 +23,7 @@ config("inside_headless_component") {
 }
 
 group("headless_lib") {
-  deps = [
-    ":headless_non_renderer",
-  ]
+  deps = [ ":headless_non_renderer" ]
 }
 
 repack("pak") {
@@ -78,9 +76,7 @@ action("embed_resources") {
   # TODO(altimin): Consider zipping file here, it can reduce size up to 80%.
   script = "lib/embed_data.py"
 
-  inputs = [
-    "$root_out_dir/headless_lib.pak",
-  ]
+  inputs = [ "$root_out_dir/headless_lib.pak" ]
 
   outputs = [
     "$root_gen_dir/headless/embedded_resource_pak.cc",
@@ -102,9 +98,7 @@ action("embed_resources") {
     "kHeadlessResourcePak",
   ]
 
-  deps = [
-    ":pak",
-  ]
+  deps = [ ":pak" ]
 }
 
 grit("resources") {
@@ -169,9 +163,7 @@ foreach(domain, devtools_domains) {
 
 action("gen_devtools_client_api") {
   script = "lib/browser/devtools_api/client_api_generator.py"
-  deps = [
-    "//third_party/blink/public/devtools_protocol:protocol_version",
-  ]
+  deps = [ "//third_party/blink/public/devtools_protocol:protocol_version" ]
   inputs = [
     "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
   ]
@@ -212,9 +204,7 @@ if (headless_fontconfig_utils && !is_fuchsia) {
 
 inspector_protocol_generate("protocol_sources") {
   visibility = [ "//headless:headless_shared_sources" ]
-  deps = [
-    "//third_party/blink/public/devtools_protocol:protocol_version",
-  ]
+  deps = [ "//third_party/blink/public/devtools_protocol:protocol_version" ]
   _blink_protocol_path = rebase_path(
           "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
           root_build_dir)
@@ -309,9 +299,7 @@ jumbo_source_set("headless_shared_sources") {
 
 # Code that is needed in a renderer process.
 jumbo_component("headless") {
-  deps = [
-    ":headless_shared_sources",
-  ]
+  deps = [ ":headless_shared_sources" ]
 }
 
 # Code that is not needed in a renderer process.
@@ -443,7 +431,7 @@ jumbo_component("headless_non_renderer") {
     deps += [
       "//components/crash/core/common:crash_key",
       "//components/security_state/content",
-      "//components/services/pdf_compositor/public/mojom",
+      "//components/services/print_compositor/public/mojom",
       "//gin",
       "//third_party/blink/public:blink",
       "//third_party/blink/public:blink_headers",
@@ -462,8 +450,8 @@ jumbo_component("headless_non_renderer") {
       deps += [
         "//components/printing/browser",
         "//components/printing/renderer",
-        "//components/services/pdf_compositor",
-        "//components/services/pdf_compositor/public/mojom",
+        "//components/services/print_compositor",
+        "//components/services/print_compositor/public/mojom",
       ]
     }
   }
@@ -556,9 +544,7 @@ if (!is_component_build) {
   # For component builds all dependencies are already included in the headless
   # component.
   group("headless_renderer") {
-    deps = [
-      ":headless_non_renderer",
-    ]
+    deps = [ ":headless_non_renderer" ]
   }
 }
 
@@ -592,7 +578,7 @@ test("headless_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/security_state/content",
-    "//components/services/pdf_compositor/public/mojom",
+    "//components/services/print_compositor/public/mojom",
     "//content/public/app:both",
     "//content/public/child:child",
     "//content/public/common",
@@ -612,7 +598,7 @@ test("headless_unittests") {
     sources += [ "lib/browser/headless_printing_unittest.cc" ]
     deps += [
       "//components/printing/browser",
-      "//components/services/pdf_compositor",
+      "//components/services/print_compositor",
       "//third_party/blink/public:blink",
     ]
   }
@@ -620,17 +606,11 @@ test("headless_unittests") {
 
 if (is_mac) {
   copy("mac_helpers") {
-    sources = [
-      "$root_out_dir/chrome_crashpad_handler",
-    ]
+    sources = [ "$root_out_dir/chrome_crashpad_handler" ]
 
-    deps = [
-      "//components/crash/content/app:chrome_crashpad_handler",
-    ]
+    deps = [ "//components/crash/content/app:chrome_crashpad_handler" ]
 
-    outputs = [
-      "$root_out_dir/Helpers/{{source_file_part}}",
-    ]
+    outputs = [ "$root_out_dir/Helpers/{{source_file_part}}" ]
   }
 }
 
@@ -662,9 +642,7 @@ test("headless_browsertests") {
   ]
 
   if (is_mac) {
-    data_deps = [
-      ":mac_helpers",
-    ]
+    data_deps = [ ":mac_helpers" ]
   }
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -683,7 +661,7 @@ test("headless_browsertests") {
     "//base",
     "//cc:test_support",
     "//components/security_state/content",
-    "//components/services/pdf_compositor/public/mojom",
+    "//components/services/print_compositor/public/mojom",
     "//content/test:test_support",
     "//services/network/public/mojom",
     "//testing/gmock",
@@ -702,7 +680,7 @@ test("headless_browsertests") {
   if (enable_basic_printing) {
     deps += [
       "//components/printing/browser",
-      "//components/services/pdf_compositor",
+      "//components/services/print_compositor",
       "//pdf",
     ]
   }
@@ -723,7 +701,7 @@ if (is_win) {
     deps = [
       ":headless_non_renderer",
       "//build:branding_buildflags",
-      "//components/services/pdf_compositor/public/mojom",
+      "//components/services/print_compositor/public/mojom",
       "//content:sandbox_helper_win",
       "//content/public/browser",
       "//content/public/common",
@@ -806,16 +784,14 @@ jumbo_static_library("headless_shell_lib") {
     "//build:branding_buildflags",
     "//components/os_crypt",
     "//components/security_state/content",
-    "//components/services/pdf_compositor/public/mojom",
+    "//components/services/print_compositor/public/mojom",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/child:child",
     "//content/public/common",
   ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 
   if (!is_component_build) {
     public_deps += [ ":headless_non_renderer" ]
@@ -829,7 +805,7 @@ jumbo_static_library("headless_shell_lib") {
     deps += [
       "//components/printing/browser",
       "//components/printing/renderer",
-      "//components/services/pdf_compositor",
+      "//components/services/print_compositor",
     ]
   }
 
@@ -859,18 +835,12 @@ if (is_fuchsia) {
 }
 
 executable("headless_shell") {
-  sources = [
-    "app/headless_shell_main.cc",
-  ]
+  sources = [ "app/headless_shell_main.cc" ]
 
-  deps = [
-    ":headless_shell_lib",
-  ]
+  deps = [ ":headless_shell_lib" ]
 
   if (!headless_use_embedded_resources) {
-    data = [
-      "$root_out_dir/headless_lib.pak",
-    ]
+    data = [ "$root_out_dir/headless_lib.pak" ]
   }
 
   if (is_win) {
@@ -892,9 +862,7 @@ process_version("version_header") {
 }
 
 executable("headless_example") {
-  sources = [
-    "app/headless_example.cc",
-  ]
+  sources = [ "app/headless_example.cc" ]
 
   deps = [
     ":headless_shell_lib",

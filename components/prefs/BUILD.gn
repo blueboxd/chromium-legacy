@@ -71,9 +71,7 @@ static_library("test_support") {
     "testing_pref_store.h",
   ]
 
-  public_deps = [
-    ":prefs",
-  ]
+  public_deps = [ ":prefs" ]
   deps = [
     "//base",
     "//base/test:test_support",

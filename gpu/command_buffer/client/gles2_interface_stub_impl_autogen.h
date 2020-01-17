@@ -1359,4 +1359,6 @@ void GLES2InterfaceStub::BeginSharedImageAccessDirectCHROMIUM(
     GLenum /* mode */) {}
 void GLES2InterfaceStub::EndSharedImageAccessDirectCHROMIUM(
     GLuint /* texture */) {}
+void GLES2InterfaceStub::BeginBatchReadAccessSharedImageCHROMIUM() {}
+void GLES2InterfaceStub::EndBatchReadAccessSharedImageCHROMIUM() {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

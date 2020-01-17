@@ -238,7 +238,11 @@ def _AddNativeLibraries(out_apk, native_libs, android_abi, uncompress,
         if has_crazy_linker and not has_monochrome:
           basename = 'crazy.' + basename
 
-    apk_path = 'lib/%s/%s' % (android_abi, basename)
+    lib_android_abi = android_abi
+    if path.startswith('android_clang_arm64_hwasan/'):
+      lib_android_abi = 'arm64-v8a-hwasan'
+
+    apk_path = 'lib/%s/%s' % (lib_android_abi, basename)
     zipalign.AddToZipHermetic(
         out_apk,
         apk_path,

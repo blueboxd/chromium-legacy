@@ -39,15 +39,13 @@ class BrowserDMTokenStorageWin : public BrowserDMTokenStorage {
   scoped_refptr<base::SingleThreadTaskRunner> com_sta_task_runner_;
 
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, InitClientId);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, InitEnrollmentToken);
-  // TODO(crbug.com/907589): Remove once no longer in use.
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest,
-                           InitOldEnrollmentToken);
-  // TODO(crbug.com/907589): Remove once no longer in use.
+                           InitEnrollmentTokenFromPreferred);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest,
-                           InitOldEnrollmentTokenPriority);
+                           InitEnrollmentTokenFromSecondary);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, InitDMToken);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, SaveDMToken);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest,
+                           InitDMTokenFromBrowserLocation);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDMTokenStorageWin);
 };

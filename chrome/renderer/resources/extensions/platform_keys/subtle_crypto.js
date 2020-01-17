@@ -42,7 +42,7 @@ function CreateOperationError() {
 // returns true.
 function catchInvalidTokenError(reject) {
   if (bindingUtil.hasLastError() &&
-      chrome.runtime.lastError.message == errorInvalidToken) {
+      chrome.runtime.lastError.message === errorInvalidToken) {
     var error = chrome.runtime.lastError;
     bindingUtil.clearLastError();
     reject(error);
@@ -65,7 +65,7 @@ $Object.setPrototypeOf(SubtleCryptoImpl.prototype, null);
 SubtleCryptoImpl.prototype.sign = function(algorithm, key, dataView) {
   var subtleCrypto = this;
   return new Promise(function(resolve, reject) {
-    if (key.type != 'private' || key.usages.indexOf(KeyUsage.sign) == -1)
+    if (key.type !== 'private' || key.usages.indexOf(KeyUsage.sign) === -1)
       throw CreateInvalidAccessError();
 
     var normalizedAlgorithmParameters =
@@ -99,12 +99,12 @@ SubtleCryptoImpl.prototype.sign = function(algorithm, key, dataView) {
 
 SubtleCryptoImpl.prototype.exportKey = function(format, key) {
   return new Promise(function(resolve, reject) {
-    if (format == 'pkcs8') {
+    if (format === 'pkcs8') {
       // Either key.type is not 'private' or the key is not extractable. In both
       // cases the error is the same.
       throw CreateInvalidAccessError();
-    } else if (format == 'spki') {
-      if (key.type != 'public')
+    } else if (format === 'spki') {
+      if (key.type !== 'public')
         throw CreateInvalidAccessError();
       resolve(getSpki(key));
     } else {

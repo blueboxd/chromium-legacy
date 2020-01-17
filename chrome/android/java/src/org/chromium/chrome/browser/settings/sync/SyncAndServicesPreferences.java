@@ -27,19 +27,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -56,24 +54,22 @@ import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.password.PasswordUIView;
 import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.settings.sync.SyncPreferenceUtils.SyncError;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
-import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.widget.ButtonCompat;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * Settings fragment to enable Sync and other services that communicate with Google.
@@ -115,22 +111,6 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private static final String PREF_CONTEXTUAL_SEARCH = "contextual_search";
     @VisibleForTesting
     public static final String PREF_AUTOFILL_ASSISTANT = "autofill_assistant";
-
-    @IntDef({SyncError.NO_ERROR, SyncError.ANDROID_SYNC_DISABLED, SyncError.AUTH_ERROR,
-            SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE,
-            SyncError.SYNC_SETUP_INCOMPLETE, SyncError.OTHER_ERRORS})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface SyncError {
-        int NO_ERROR = -1;
-        int ANDROID_SYNC_DISABLED = 0;
-        int AUTH_ERROR = 1;
-        int PASSPHRASE_REQUIRED = 2;
-        int TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING = 3;
-        int TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS = 4;
-        int CLIENT_OUT_OF_DATE = 5;
-        int SYNC_SETUP_INCOMPLETE = 6;
-        int OTHER_ERRORS = 128;
-    }
 
     private final ProfileSyncService mProfileSyncService = ProfileSyncService.get();
     private final PrefServiceBridge mPrefServiceBridge = PrefServiceBridge.getInstance();
@@ -334,6 +314,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         mProfileSyncService.addSyncStateChangedListener(this);
         mSigninPreference.registerForUpdates();
 
+        // TODO(crbug.com/1041815): Migrate away from ChromeSigninController and use IdentityManager
+        // instead.
         if (!mIsFromSigninScreen || ChromeSigninController.get().isSignedIn()) {
             return;
         }
@@ -470,46 +452,12 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
 
     @SyncError
     private int getSyncError() {
-        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
-            return SyncError.ANDROID_SYNC_DISABLED;
-        }
-
-        if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
+        @SyncError
+        int error = SyncPreferenceUtils.getSyncError();
+        if (error == SyncError.SYNC_SETUP_INCOMPLETE && mIsFromSigninScreen) {
             return SyncError.NO_ERROR;
         }
-
-        if (mProfileSyncService.getAuthError()
-                == GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS) {
-            return SyncError.AUTH_ERROR;
-        }
-
-        if (mProfileSyncService.requiresClientUpgrade()) {
-            return SyncError.CLIENT_OUT_OF_DATE;
-        }
-
-        if (mProfileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE
-                || mProfileSyncService.hasUnrecoverableError()) {
-            return SyncError.OTHER_ERRORS;
-        }
-
-        if (mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
-            return SyncError.PASSPHRASE_REQUIRED;
-        }
-
-        if (mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes()) {
-            return mProfileSyncService.isEncryptEverythingEnabled()
-                    ? SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING
-                    : SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS;
-        }
-
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
-                && wasSigninFlowInterrupted()) {
-            return SyncError.SYNC_SETUP_INCOMPLETE;
-        }
-
-        return SyncError.NO_ERROR;
+        return error;
     }
 
     /**
@@ -530,35 +478,6 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         }
     }
 
-    /**
-     * Gets hint message to resolve sync error.
-     * @param error The sync error.
-     */
-    private String getSyncErrorHint(@SyncError int error) {
-        switch (error) {
-            case SyncError.ANDROID_SYNC_DISABLED:
-                return getString(R.string.hint_android_sync_disabled);
-            case SyncError.AUTH_ERROR:
-                return getString(R.string.hint_sync_auth_error);
-            case SyncError.CLIENT_OUT_OF_DATE:
-                return getString(
-                        R.string.hint_client_out_of_date, BuildInfo.getInstance().hostPackageLabel);
-            case SyncError.OTHER_ERRORS:
-                return getString(R.string.hint_other_sync_errors);
-            case SyncError.PASSPHRASE_REQUIRED:
-                return getString(R.string.hint_passphrase_required);
-            case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING:
-            case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS:
-                return getString(R.string.hint_sync_retrieve_keys);
-            case SyncError.SYNC_SETUP_INCOMPLETE:
-                assert ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID);
-                return getString(R.string.hint_sync_settings_not_confirmed_description);
-            case SyncError.NO_ERROR:
-            default:
-                return null;
-        }
-    }
-
     private void onSyncErrorCardClicked() {
         if (mCurrentSyncError == SyncError.NO_ERROR) {
             return;
@@ -570,6 +489,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         }
 
         if (mCurrentSyncError == SyncError.AUTH_ERROR) {
+            // TODO(crbug.com/1041815): Migrate away from ChromeSigninController and use
+            // IdentityManager instead.
             AccountManagerFacade.get().updateCredentials(
                     ChromeSigninController.get().getSignedInUser(), getActivity(), null);
             return;
@@ -585,6 +506,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         }
 
         if (mCurrentSyncError == SyncError.OTHER_ERRORS) {
+            // TODO(crbug.com/1041815): Migrate away from ChromeSigninController and use
+            // IdentityManager instead.
             final Account account = ChromeSigninController.get().getSignedInUser();
             // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
             IdentityServicesProvider.get().getSigninManager().signOut(
@@ -603,7 +526,12 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
 
         if (mCurrentSyncError == SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING
                 || mCurrentSyncError == SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS) {
-            TrustedVaultClient.get().displayKeyRetrievalDialog(getContext());
+            CoreAccountInfo primaryAccountInfo =
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+            if (primaryAccountInfo != null) {
+                TrustedVaultClient.get().displayKeyRetrievalDialog(
+                        getActivity(), primaryAccountInfo);
+            }
             return;
         }
     }
@@ -645,6 +573,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
             closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
         }
 
+        // TODO(crbug.com/1041815): Migrate away from ChromeSigninController and use IdentityManager
+        // instead.
         if (!ChromeSigninController.get().isSignedIn()) {
             getPreferenceScreen().removePreference(mManageYourGoogleAccount);
             getPreferenceScreen().removePreference(mSyncCategory);
@@ -669,7 +599,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
             mSyncCategory.removePreference(mSyncErrorCard);
         } else {
             mSyncErrorCard.setTitle(getSyncErrorTitle(mCurrentSyncError));
-            mSyncErrorCard.setSummary(getSyncErrorHint(mCurrentSyncError));
+            mSyncErrorCard.setSummary(
+                    SyncPreferenceUtils.getSyncErrorHint(getActivity(), mCurrentSyncError));
             mSyncCategory.addPreference(mSyncErrorCard);
         }
 

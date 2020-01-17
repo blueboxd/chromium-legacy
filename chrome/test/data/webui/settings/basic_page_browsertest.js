@@ -94,14 +94,17 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
     test('scroll to section', function() {
       const page = self.basicPage;
       // Setting the page and section will cause a scrollToSection_.
-      settings.navigateTo(settings.routes.ON_STARTUP);
+      settings.Router.getInstance().navigateTo(settings.routes.ON_STARTUP);
 
       return new Promise(function(resolve, reject) {
                // This test checks for a regression that occurred with
                // scrollToSection_ failing to find its host element.
                const intervalId = window.setInterval(function() {
                  if (self.getSection(
-                         page, settings.getCurrentRoute().section)) {
+                         page,
+                         settings.Router.getInstance()
+                             .getCurrentRoute()
+                             .section)) {
                    window.clearInterval(intervalId);
                    resolve();
                  }
@@ -113,7 +116,7 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
 
             return new Promise(function(resolve) {
               listenOnce(window, 'popstate', resolve);
-              settings.navigateToPreviousRoute();
+              settings.Router.getInstance().navigateToPreviousRoute();
             });
           })
           .then(function() {
@@ -137,12 +140,12 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
       const searchManager = new TestSearchManager();
       settings.setSearchManagerForTesting(searchManager);
 
-      settings.navigateTo(
+      settings.Router.getInstance().navigateTo(
           settings.routes.BASIC, new URLSearchParams(`search=foobar`),
           /* removeSearch */ false);
       return searchManager.whenCalled('search').then(function() {
         return new Promise(function(resolve) {
-          settings.navigateTo(
+          settings.Router.getInstance().navigateTo(
               settings.routes.ON_STARTUP,
               /* dynamicParams */ null,
               /* removeSearch */ true);
@@ -165,10 +168,10 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
       // Set the viewport small to force the scrollbar to appear on ABOUT.
       Polymer.dom().querySelector('settings-ui').style.height = '200px';
 
-      settings.navigateTo(settings.routes.ON_STARTUP);
+      settings.Router.getInstance().navigateTo(settings.routes.ON_STARTUP);
       assertNotEquals(0, page.scroller.scrollTop);
 
-      settings.navigateTo(settings.routes.ABOUT);
+      settings.Router.getInstance().navigateTo(settings.routes.ABOUT);
       assertEquals(0, page.scroller.scrollTop);
     });
   });

@@ -108,10 +108,8 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/dom_distiller/core_features.json",
     "//components/test/data/dom_distiller/derived_features.json",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 source_set("unit_tests") {
@@ -162,8 +160,6 @@ if (is_android) {
   }
 
   java_cpp_enum("distiller_type_java") {
-    sources = [
-      "experiments.h",
-    ]
+    sources = [ "experiments.h" ]
   }
 }

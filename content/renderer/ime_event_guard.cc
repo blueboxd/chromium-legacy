@@ -12,13 +12,14 @@ namespace content {
 // is set only for OnRequestTextInputStateUpdate() so that we can distinguish
 // it from other updates so that we can wait for it safely. So it is false by
 // default.
-ImeEventGuard::ImeEventGuard(RenderWidget* widget)
-    : widget_(widget), show_virtual_keyboard_(false) {
+ImeEventGuard::ImeEventGuard(base::WeakPtr<RenderWidget> widget)
+    : widget_(std::move(widget)) {
   widget_->OnImeEventGuardStart(this);
 }
 
 ImeEventGuard::~ImeEventGuard() {
-  widget_->OnImeEventGuardFinish(this);
+  if (widget_)
+    widget_->OnImeEventGuardFinish(this);
 }
 
 } //  namespace content

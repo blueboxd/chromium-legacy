@@ -91,7 +91,7 @@ Polymer({
 
   /** @return {boolean} */
   wasCanceled() {
-    return !this.open && this.$.dialog.returnValue == 'canceled';
+    return !this.open && this.$.dialog.returnValue === 'canceled';
   },
 
   /**

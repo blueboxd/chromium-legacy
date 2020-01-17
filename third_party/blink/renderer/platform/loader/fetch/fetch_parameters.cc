@@ -34,20 +34,22 @@
 namespace blink {
 
 FetchParameters::FetchParameters(const ResourceRequest& resource_request)
-    : resource_request_(resource_request),
-      decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
+    : decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       defer_(kNoDefer),
-      image_request_optimization_(kNone) {}
+      image_request_optimization_(kNone) {
+  resource_request_.CopyFrom(resource_request);
+}
 
 FetchParameters::FetchParameters(const ResourceRequest& resource_request,
                                  const ResourceLoaderOptions& options)
-    : resource_request_(resource_request),
-      decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
+    : decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
       options_(options),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       defer_(kNoDefer),
-      image_request_optimization_(kNone) {}
+      image_request_optimization_(kNone) {
+  resource_request_.CopyFrom(resource_request);
+}
 
 FetchParameters::FetchParameters(FetchParameters&&) = default;
 

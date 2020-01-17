@@ -40,9 +40,6 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   // Consults the parent views to see if the button is selected.
   bool IsSelected() const;
 
-  // Produces a path custom to this button for the focus ring to follow.
-  SkPath GetFocusRingPath() const;
-
   // Helper function to translate parent width into goal width, and
   // pass back the text at that width.
   int CalculateGoalWidth(int parent_width, base::string16* goal_text);

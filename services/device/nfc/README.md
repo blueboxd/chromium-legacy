@@ -12,11 +12,11 @@ the `services/device/public/mojom/nfc.mojom` file and implemented by the
 
 NDEFWriter and NDEFReader are the two primary interfaces of the Web NFC APIs.
 
-The NDEFWriter interface has the push method for writing data to NFC devices such as
-tags. This method will return a promise, which will be resolved when the
+The NDEFWriter interface has the write method for writing data to NFC tags.
+This method will return a promise, which will be resolved when the
 message is successfully written to a NFC tag or be rejected when errors
 happened or the process is aborted by setting the AbortSignal in the
-NDEFPushOptions.
+NDEFWriteOptions.
 
 The NDEFReader interface has the scan method to try to read data from any NFC tag
 that comes within proximity. Once there is some data found to be matching the

@@ -123,6 +123,10 @@ class FakeOSUserManager : public OSUserManager {
     should_fail_user_creation_ = should_fail;
   }
 
+  void SetShouldUserCreationFailureReason(HRESULT hr) {
+    fail_user_creation_hr_ = hr;
+  }
+
   void SetIsDeviceDomainJoined(bool is_device_domain_joined) {
     is_device_domain_joined_ = is_device_domain_joined;
   }
@@ -180,12 +184,23 @@ class FakeOSUserManager : public OSUserManager {
   size_t GetUserCount() const { return username_to_info_.size(); }
   std::vector<std::pair<base::string16, base::string16>> GetUsers() const;
 
+  void ShouldFailChangePassword(bool status, HRESULT failure_reason) {
+    fail_change_password_ = status;
+    if (status)
+      failed_change_password_hr_ = failure_reason;
+  }
+
+  bool DoesPasswordChangeFail() { return fail_change_password_; }
+
  private:
   OSUserManager* original_manager_;
   DWORD next_rid_ = 0;
   std::map<base::string16, UserInfo> username_to_info_;
   bool should_fail_user_creation_ = false;
   bool is_device_domain_joined_ = false;
+  bool fail_change_password_ = false;
+  HRESULT failed_change_password_hr_ = E_FAIL;
+  HRESULT fail_user_creation_hr_ = E_FAIL;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

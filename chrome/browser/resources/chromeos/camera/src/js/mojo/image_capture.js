@@ -113,6 +113,3 @@ export class CrosImageCapture {
     }
   }
 }
-
-/** @const */
-cca.mojo.ImageCapture = CrosImageCapture;

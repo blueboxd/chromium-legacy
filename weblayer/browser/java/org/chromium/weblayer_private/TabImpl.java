@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer_private;
 
+import android.os.Build;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.webkit.ValueCallback;
@@ -12,6 +13,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.autofill.AutofillProvider;
+import org.chromium.components.autofill.AutofillProviderImpl;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
@@ -45,6 +48,11 @@ public final class TabImpl extends ITab.Stub {
     private ViewAndroidDelegate mViewAndroidDelegate;
     // BrowserImpl this TabImpl is in. This is only null during creation.
     private BrowserImpl mBrowser;
+    /**
+     * The AutofillProvider that integrates with system-level autofill. This is null until
+     * updateFromBrowser() is invoked.
+     */
+    private AutofillProvider mAutofillProvider;
     private NewTabCallbackProxy mNewTabCallbackProxy;
     private ITabClient mClient;
     private final int mId;
@@ -123,6 +131,21 @@ public final class TabImpl extends ITab.Stub {
     public void updateFromBrowser() {
         mWebContents.setTopLevelNativeWindow(mBrowser.getWindowAndroid());
         mViewAndroidDelegate.setContainerView(mBrowser.getViewAndroidDelegateContainerView());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (mBrowser.getContext() == null) {
+                // The Context and ViewContainer in which Autofill was previously operating have
+                // gone away, so tear down |mAutofillProvider|.
+                mAutofillProvider = null;
+            } else {
+                // Set up |mAutofillProvider| to operate in the new Context.
+                mAutofillProvider = new AutofillProviderImpl(
+                        mBrowser.getContext(), mBrowser.getViewAndroidDelegateContainerView());
+                mAutofillProvider.setWebContents(mWebContents);
+            }
+
+            TabImplJni.get().onAutofillProviderChanged(mNativeTab, mAutofillProvider);
+        }
     }
 
     public BrowserImpl getBrowser() {
@@ -166,6 +189,10 @@ public final class TabImpl extends ITab.Stub {
 
     public WebContents getWebContents() {
         return mWebContents;
+    }
+
+    public AutofillProvider getAutofillProvider() {
+        return mAutofillProvider;
     }
 
     long getNativeTab() {
@@ -293,6 +320,7 @@ public final class TabImpl extends ITab.Stub {
     interface Natives {
         long createTab(long profile, TabImpl caller);
         void setJavaImpl(long nativeTabImpl, TabImpl impl);
+        void onAutofillProviderChanged(long nativeTabImpl, AutofillProvider autofillProvider);
         void setTopControlsContainerView(
                 long nativeTabImpl, TabImpl caller, long nativeTopControlsContainerView);
         void deleteTab(long tab);

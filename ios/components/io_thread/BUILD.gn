@@ -29,9 +29,7 @@ component("io_thread") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "ios_io_thread_unittest.mm",
-  ]
+  sources = [ "ios_io_thread_unittest.mm" ]
   deps = [
     ":io_thread",
     "//base",

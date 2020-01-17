@@ -42,16 +42,16 @@ Polymer({
     'observeLoadErrorChanges_(loadError)',
   ],
 
-  show: function() {
+  show() {
     /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
   },
 
-  close: function() {
+  close() {
     /** @type {!CrDialogElement} */ (this.$.dialog).close();
   },
 
   /** @private */
-  onRetryTap_: function() {
+  onRetryTap_() {
     this.retrying_ = true;
     this.delegate.retryLoadUnpacked(this.loadError.retryGuid)
         .then(
@@ -66,7 +66,7 @@ Polymer({
   },
 
   /** @private */
-  observeLoadErrorChanges_: function() {
+  observeLoadErrorChanges_() {
     assert(this.loadError);
     const source = this.loadError.source;
     // CodeSection expects a RequestFileSourceResponse, rather than an

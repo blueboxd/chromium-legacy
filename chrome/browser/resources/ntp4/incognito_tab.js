@@ -7,7 +7,7 @@ window.addEventListener('load', function() {
     document.documentElement.setAttribute(
         'hascustombackground', themeData.hasCustomBackground);
     $('incognitothemecss').href =
-        'chrome://theme/css/incognito_new_tab_theme.css?' + Date.now();
+        'chrome://theme/css/incognito_tab_theme.css?' + Date.now();
   });
   chrome.send('observeThemeChanges');
 
@@ -30,7 +30,7 @@ window.addEventListener('load', function() {
 // from the C++ side.
 const ntp = {
   /** @param {string} attached */
-  setBookmarkBarAttached: function(attached) {
+  setBookmarkBarAttached(attached) {
     document.documentElement.setAttribute('bookmarkbarattached', attached);
   },
 };

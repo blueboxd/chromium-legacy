@@ -6,6 +6,7 @@
 #define MEDIA_BLINK_POWER_STATUS_HELPER_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "media/base/pipeline_metadata.h"
 #include "media/base/video_codecs.h"
@@ -24,7 +25,7 @@ class MEDIA_BLINK_EXPORT PowerStatusHelper {
   virtual void SetIsPlaying(bool is_playing) = 0;
   virtual void SetMetadata(const PipelineMetadata& metadata) = 0;
   virtual void SetIsFullscreen(bool is_fullscreen) = 0;
-  virtual void SetAverageDuration(base::TimeDelta average_duration) = 0;
+  virtual void SetAverageFrameRate(base::Optional<int> average_fps) = 0;
 
   // Handle notifications about the experiment state from the power experiment.
   // manager.  |state| indicates whether our player is eligible to record power

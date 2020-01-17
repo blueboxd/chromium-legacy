@@ -60,7 +60,7 @@ cr.define('settings_autofill_section', function() {
     // Override the AutofillManagerImpl for testing.
     this.autofillManager = new TestAutofillManager();
     this.autofillManager.data.addresses = addresses;
-    AutofillManagerImpl.instance_ = this.autofillManager;
+    settings.AutofillManagerImpl.instance_ = this.autofillManager;
 
     const section = document.createElement('settings-autofill-section');
     section.prefs = {autofill: prefValues};

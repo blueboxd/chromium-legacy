@@ -48,13 +48,11 @@ ShelfTooltipBubble::ShelfTooltipBubble(views::View* anchor,
   SetLayoutManager(std::make_unique<views::FillLayout>());
   views::Label* label = new views::Label(text);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  ui::NativeTheme* theme = anchor->GetWidget()->GetNativeTheme();
-  SkColor theme_background_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipBackground);
-  set_color(theme_background_color);
-  label->SetEnabledColor(
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipText));
-  label->SetBackgroundColor(theme_background_color);
+  const SkColor tooltip_background = SkColorSetA(gfx::kGoogleGrey900, 0xE6);
+  const SkColor tooltip_text = SkColorSetA(gfx::kGoogleGrey200, 0xFF);
+  set_color(tooltip_background);
+  label->SetEnabledColor(tooltip_text);
+  label->SetBackgroundColor(tooltip_background);
   AddChildView(label);
 
   gfx::Insets insets(kArrowTopBottomOffset, kArrowLeftRightOffset);

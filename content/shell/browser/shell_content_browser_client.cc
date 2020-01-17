@@ -182,10 +182,10 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   if (!url.is_valid())
     return false;
   static const char* const kProtocolList[] = {
-      url::kHttpScheme, url::kHttpsScheme,     url::kWsScheme,
-      url::kWssScheme,  url::kBlobScheme,      url::kFileSystemScheme,
-      kChromeUIScheme,  kChromeDevToolsScheme, url::kDataScheme,
-      url::kFileScheme,
+      url::kHttpScheme, url::kHttpsScheme,        url::kWsScheme,
+      url::kWssScheme,  url::kBlobScheme,         url::kFileSystemScheme,
+      kChromeUIScheme,  kChromeUIUntrustedScheme, kChromeDevToolsScheme,
+      url::kDataScheme, url::kFileScheme,
   };
   for (const char* supported_protocol : kProtocolList) {
     if (url.scheme_piece() == supported_protocol)

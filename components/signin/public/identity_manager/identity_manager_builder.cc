@@ -147,6 +147,7 @@ std::unique_ptr<IdentityManager> BuildIdentityManager(
                            token_service.get(), primary_account_manager.get());
 
   auto accounts_cookie_mutator = std::make_unique<AccountsCookieMutatorImpl>(
+      params->signin_client, token_service.get(),
       gaia_cookie_manager_service.get(), account_tracker_service.get());
 
   auto diagnostics_provider = std::make_unique<DiagnosticsProviderImpl>(

@@ -23,12 +23,12 @@ function ChromeVoxLibLouisTest() {
 ChromeVoxLibLouisTest.prototype = {
   __proto__: ChromeVoxE2ETest.prototype,
 
-  createLiblouis: function() {
+  createLiblouis() {
     return new LibLouis(
         chrome.extension.getURL('braille/liblouis_wrapper.js'), '', () => {});
   },
 
-  withTranslator: function(liblouis, tableNames, callback) {
+  withTranslator(liblouis, tableNames, callback) {
     liblouis.getTranslator(tableNames, this.newCallback(callback));
   },
 };

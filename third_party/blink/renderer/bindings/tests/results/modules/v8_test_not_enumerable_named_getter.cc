@@ -197,14 +197,4 @@ TestNotEnumerableNamedGetter* V8TestNotEnumerableNamedGetter::ToImplWithTypeChec
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestNotEnumerableNamedGetter* NativeValueTraits<TestNotEnumerableNamedGetter>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestNotEnumerableNamedGetter* native_value = V8TestNotEnumerableNamedGetter::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestNotEnumerableNamedGetter"));
-  }
-  return native_value;
-}
-
 }  // namespace blink

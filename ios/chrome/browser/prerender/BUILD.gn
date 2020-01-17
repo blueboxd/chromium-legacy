@@ -28,7 +28,9 @@ source_set("prerender") {
     "//ios/chrome/browser/geolocation:geolocation_internal",
     "//ios/chrome/browser/history:tab_helper",
     "//ios/chrome/browser/itunes_urls:itunes_urls",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/net",
+    "//ios/chrome/browser/sessions:restoration_agent",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/tabs",
@@ -65,9 +67,7 @@ source_set("unit_tests") {
 source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "prerender_egtest.mm",
-  ]
+  sources = [ "prerender_egtest.mm" ]
   deps = [
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
@@ -89,9 +89,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "prerender_egtest.mm",
-  ]
+  sources = [ "prerender_egtest.mm" ]
   deps = [
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",

@@ -141,6 +141,9 @@ void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
     case BinaryUploadService::Result::UNAUTHORIZED:
       // Don't record UMA metrics for this result.
       return;
+    case BinaryUploadService::Result::FILE_ENCRYPTED:
+      result_value = "FileEncrypted";
+      break;
   }
 
   // Update |success| so non-SUCCESS results don't log the bytes/sec metric.

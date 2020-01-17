@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/version.h"
 
-typedef void* HANDLE;
+using HANDLE = void*;
 struct _OSVERSIONINFOEXW;
 struct _SYSTEM_INFO;
 

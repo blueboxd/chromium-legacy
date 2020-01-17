@@ -44,10 +44,9 @@ GURL GetThemeUrl(const std::string& path) {
 }
 
 bool IsNewTabCssPath(const std::string& path) {
-  static const char kNewTabCSSPath[] = "css/new_tab_theme.css";
-  static const char kIncognitoNewTabCSSPath[] =
-      "css/incognito_new_tab_theme.css";
-  return (path == kNewTabCSSPath) || (path == kIncognitoNewTabCSSPath);
+  static const char kNewTabThemeCssPath[] = "css/new_tab_theme.css";
+  static const char kIncognitoTabThemeCssPath[] = "css/incognito_tab_theme.css";
+  return path == kNewTabThemeCssPath || path == kIncognitoTabThemeCssPath;
 }
 
 void ProcessImageOnUiThread(const gfx::ImageSkia& image,

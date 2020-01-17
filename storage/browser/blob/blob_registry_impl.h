@@ -32,7 +32,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobRegistryImpl
     virtual bool CanReadFile(const base::FilePath& file) = 0;
     virtual bool CanReadFileSystemFile(const FileSystemURL& url) = 0;
     virtual bool CanCommitURL(const GURL& url) = 0;
-    virtual bool IsProcessValid() = 0;
   };
 
   BlobRegistryImpl(base::WeakPtr<BlobStorageContext> context,

@@ -9,14 +9,13 @@
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/ui/assistant_card_element.h"
-#include "ash/assistant/model/ui/assistant_text_element.h"
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/main_stage/animated_container_view.h"
 #include "ash/assistant/ui/main_stage/assistant_card_element_view.h"
-#include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
+#include "ash/assistant/ui/main_stage/assistant_ui_element_view_factory.h"
 #include "ash/assistant/ui/main_stage/element_animator.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/callback.h"
@@ -54,7 +53,8 @@ int GetPaddingBottomDip() {
 // UiElementContainerView ------------------------------------------------------
 
 UiElementContainerView::UiElementContainerView(AssistantViewDelegate* delegate)
-    : AnimatedContainerView(delegate) {
+    : AnimatedContainerView(delegate),
+      view_factory_(std::make_unique<AssistantUiElementViewFactory>(delegate)) {
   SetID(AssistantViewID::kUiElementContainer);
   InitLayout();
 }
@@ -110,23 +110,27 @@ void UiElementContainerView::OnCommittedQueryChanged(
 
 void UiElementContainerView::HandleResponse(const AssistantResponse& response) {
   for (const auto& ui_element : response.GetUiElements()) {
-    switch (ui_element->type()) {
-      case AssistantUiElementType::kCard:
-        OnCardElementAdded(
-            static_cast<const AssistantCardElement*>(ui_element.get()));
-        break;
-      case AssistantUiElementType::kText:
-        OnTextElementAdded(
-            static_cast<const AssistantTextElement*>(ui_element.get()));
-        break;
+    // TODO(dmblack): Remove after deprecating standalone UI.
+    if (ui_element->type() == AssistantUiElementType::kCard) {
+      OnCardElementAdded(
+          static_cast<const AssistantCardElement*>(ui_element.get()));
+      continue;
     }
+    // Add a new view for the |ui_element| to the view hierarchy, bind an
+    // animator to handle all of its animations, and prepare its animation layer
+    // for the initial fade-in.
+    auto view = view_factory_->Create(ui_element.get());
+    auto* view_ptr = content_view()->AddChildView(std::move(view));
+    AddElementAnimator(view_ptr->CreateAnimator());
+    view_ptr->GetLayerForAnimating()->SetOpacity(0.f);
   }
 }
 
+// TODO(dmblack): Remove after deprecating standalone UI.
 void UiElementContainerView::OnCardElementAdded(
     const AssistantCardElement* card_element) {
   // The card, for some reason, is not embeddable so we'll have to ignore it.
-  if (!card_element->contents())
+  if (!card_element->contents_view())
     return;
 
   auto* card_element_view =
@@ -154,22 +158,6 @@ void UiElementContainerView::OnCardElementAdded(
 
   // We set the animator to handle all animations for this view.
   AddElementAnimator(card_element_view->CreateAnimator());
-}
-
-void UiElementContainerView::OnTextElementAdded(
-    const AssistantTextElement* text_element) {
-  auto* text_element_view = new AssistantTextElementView(text_element);
-
-  // The view will be animated on its own layer, so we need to do some initial
-  // layer setup. We're going to fade the view in, so hide it.
-  text_element_view->SetPaintToLayer();
-  text_element_view->layer()->SetFillsBoundsOpaquely(false);
-  text_element_view->layer()->SetOpacity(0.f);
-
-  content_view()->AddChildView(text_element_view);
-
-  // We set the animator to handle all animations for this view.
-  AddElementAnimator(text_element_view->CreateAnimator());
 }
 
 void UiElementContainerView::OnAllViewsRemoved() {

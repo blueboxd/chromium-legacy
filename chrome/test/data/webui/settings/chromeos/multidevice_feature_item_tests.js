@@ -53,9 +53,11 @@ suite('Multidevice', function() {
   function checkWhetherClickRoutesAway(element, shouldRouteAway) {
     element.click();
     Polymer.dom.flush();
-    assertEquals(shouldRouteAway, initialRoute !== settings.getCurrentRoute());
-    settings.navigateTo(initialRoute);
-    assertEquals(initialRoute, settings.getCurrentRoute());
+    assertEquals(
+        shouldRouteAway,
+        initialRoute !== settings.Router.getInstance().getCurrentRoute());
+    settings.Router.getInstance().navigateTo(initialRoute);
+    assertEquals(initialRoute, settings.Router.getInstance().getCurrentRoute());
   }
 
   setup(function() {
@@ -79,7 +81,7 @@ suite('Multidevice', function() {
     featureItem.subpageRoute = settings.routes.FREE_CANDY;
 
     resetFeatureData();
-    settings.navigateTo(initialRoute);
+    settings.Router.getInstance().navigateTo(initialRoute);
     Polymer.dom.flush();
   });
 

@@ -82,7 +82,7 @@ const CrPolicyIndicatorBehavior = {
    * @private
    */
   getIndicatorVisible_(type) {
-    return type != CrPolicyIndicatorType.NONE;
+    return type !== CrPolicyIndicatorType.NONE;
   },
 
   /**

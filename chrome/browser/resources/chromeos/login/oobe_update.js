@@ -83,7 +83,7 @@ Polymer({
     },
   },
 
-  onBeforeShow: function() {
+  onBeforeShow() {
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
@@ -98,7 +98,7 @@ Polymer({
   /**
    * This updates "Cancel Update" message.
    */
-  setCancelHint: function(message) {
+  setCancelHint(message) {
     this.$.checkingForUpdateCancelHint.textContent = message;
     this.$.updatingCancelHint.textContent = message;
   },
@@ -109,20 +109,19 @@ Polymer({
    * @param {Boolean} updateCompleted If update is completed and all
    * intermediate status elements are hidden.
    */
-  isNotAllowedOrUpdateCompleted_: function(isAllowed, updateCompleted) {
+  isNotAllowedOrUpdateCompleted_(isAllowed, updateCompleted) {
     return !isAllowed || updateCompleted;
   },
 
-  hideUpdatingScreen_: function(
-      checkingForUpdate, requiresPermissionForCellular) {
+  hideUpdatingScreen_(checkingForUpdate, requiresPermissionForCellular) {
     return checkingForUpdate || requiresPermissionForCellular;
   },
 
-  onBackClicked_: function() {
+  onBackClicked_() {
     chrome.send('login.UpdateScreen.userActed', ['update-reject-cellular']);
   },
 
-  onNextClicked_: function() {
+  onNextClicked_() {
     chrome.send('login.UpdateScreen.userActed', ['update-accept-cellular']);
   },
 });

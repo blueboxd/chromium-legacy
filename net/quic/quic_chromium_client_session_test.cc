@@ -374,7 +374,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   std::unique_ptr<QuicChromiumClientSession::Handle> handle =
       session_->CreateHandle(destination_);
   EXPECT_TRUE(handle->IsConnected());
-  EXPECT_FALSE(handle->IsCryptoHandshakeConfirmed());
+  EXPECT_FALSE(handle->OneRttKeysAvailable());
   EXPECT_EQ(version_, handle->GetQuicVersion());
   EXPECT_EQ(session_key_.server_id(), handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
@@ -387,7 +387,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
 
   CompleteCryptoHandshake();
 
-  EXPECT_TRUE(handle->IsCryptoHandshakeConfirmed());
+  EXPECT_TRUE(handle->OneRttKeysAvailable());
 
   // Request a stream and verify that a stream was created.
   TestCompletionCallback callback;
@@ -402,7 +402,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
 
   // Veirfy that the handle works correctly after the session is closed.
   EXPECT_FALSE(handle->IsConnected());
-  EXPECT_TRUE(handle->IsCryptoHandshakeConfirmed());
+  EXPECT_TRUE(handle->OneRttKeysAvailable());
   EXPECT_EQ(version_, handle->GetQuicVersion());
   EXPECT_EQ(session_key_.server_id(), handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
@@ -415,7 +415,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
     std::unique_ptr<QuicChromiumClientSession::Handle> handle2 =
         session_->CreateHandle(destination_);
     EXPECT_FALSE(handle2->IsConnected());
-    EXPECT_TRUE(handle2->IsCryptoHandshakeConfirmed());
+    EXPECT_TRUE(handle2->OneRttKeysAvailable());
     ASSERT_EQ(ERR_CONNECTION_CLOSED,
               handle2->RequestStream(/*requires_confirmation=*/false,
                                      callback.callback(),
@@ -426,7 +426,7 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
 
   // Veirfy that the handle works correctly after the session is deleted.
   EXPECT_FALSE(handle->IsConnected());
-  EXPECT_TRUE(handle->IsCryptoHandshakeConfirmed());
+  EXPECT_TRUE(handle->OneRttKeysAvailable());
   EXPECT_EQ(version_, handle->GetQuicVersion());
   EXPECT_EQ(session_key_.server_id(), handle->server_id());
   EXPECT_EQ(session_net_log.source().type, handle->net_log().source().type);
@@ -1943,7 +1943,7 @@ TEST_P(QuicChromiumClientSessionTest, DetectPathDegradingDuringHandshake) {
       session_->CreateHandle(destination_);
   TestCompletionCallback callback;
   EXPECT_TRUE(handle->IsConnected());
-  EXPECT_FALSE(handle->IsCryptoHandshakeConfirmed());
+  EXPECT_FALSE(handle->OneRttKeysAvailable());
   EXPECT_EQ(
       ERR_IO_PENDING,
       handle->RequestStream(/*require_handshake_confirmation=*/true,

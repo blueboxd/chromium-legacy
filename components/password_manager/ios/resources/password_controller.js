@@ -90,11 +90,11 @@ const addSubmitButtonTouchEndHandler = function(form) {
   }
   // Try to find buttons of type submit at first.
   let buttons = form.querySelectorAll('button[type="submit"]');
-  if (buttons.length == 0) {
+  if (buttons.length === 0) {
     // Try to check all buttons. If there is only one button, assume that this
     // is the submit button.
     buttons = form.querySelectorAll('button');
-    if (buttons.length != 1) {
+    if (buttons.length !== 1) {
       return;
     }
   }
@@ -126,7 +126,7 @@ const onSubmitButtonTouchEnd = function(evt) {
  */
 const findInputByFieldIdentifier = function(inputs, identifier) {
   for (let i = 0; i < inputs.length; ++i) {
-    if (identifier == __gCrWeb.form.getFieldIdentifier(inputs[i])) {
+    if (identifier === __gCrWeb.form.getFieldIdentifier(inputs[i])) {
       return inputs[i];
     }
   }
@@ -233,12 +233,12 @@ __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
     return false;
   }
   // Avoid resetting if same value, as it moves cursor to the end.
-  if (newPasswordField.value != password) {
+  if (newPasswordField.value !== password) {
     __gCrWeb.fill.setInputElementValue(password, newPasswordField);
   }
   const confirmPasswordField =
       findInputByFieldIdentifier(inputs, confirmPasswordIdentifier);
-  if (confirmPasswordField && confirmPasswordField.value != password) {
+  if (confirmPasswordField && confirmPasswordField.value !== password) {
     __gCrWeb.fill.setInputElementValue(password, confirmPasswordField);
   }
   return true;
@@ -266,13 +266,13 @@ const fillPasswordFormWithData = function(
     const form = forms[i];
     const normalizedFormAction =
         opt_normalizedOrigin || __gCrWeb.fill.getCanonicalActionForForm(form);
-    if (formData.action != normalizedFormAction) {
+    if (formData.action !== normalizedFormAction) {
       continue;
     }
     const inputs = getFormInputElements(form);
     const usernameIdentifier = formData.fields[0].name;
     let usernameInput = null;
-    if (usernameIdentifier != '') {
+    if (usernameIdentifier !== '') {
       usernameInput = findInputByFieldIdentifier(inputs, usernameIdentifier);
       if (!usernameInput || !__gCrWeb.common.isTextField(usernameInput) ||
           usernameInput.disabled) {
@@ -282,7 +282,7 @@ const fillPasswordFormWithData = function(
 
     const passwordInput =
         findInputByFieldIdentifier(inputs, formData.fields[1].name);
-    if (!passwordInput || passwordInput.type != 'password' ||
+    if (!passwordInput || passwordInput.type !== 'password' ||
         passwordInput.readOnly || passwordInput.disabled) {
       continue;
     }
@@ -290,7 +290,7 @@ const fillPasswordFormWithData = function(
     // If username was provided on a read-only field and it matches the
     // requested username, fill the form.
     if (usernameInput && usernameInput.readOnly) {
-      if (usernameInput.value == username) {
+      if (usernameInput.value === username) {
         __gCrWeb.fill.setInputElementValue(password, passwordInput);
         filled = true;
       }

@@ -5,12 +5,16 @@
 #ifndef CHROME_BROWSER_BLUETOOTH_BLUETOOTH_CHOOSER_CONTEXT_H_
 #define CHROME_BROWSER_BLUETOOTH_BLUETOOTH_CHOOSER_CONTEXT_H_
 
+#include <map>
 #include <string>
 
 #include "base/containers/flat_set.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
+#include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "third_party/blink/public/common/bluetooth/web_bluetooth_device_id.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-forward.h"
 
 namespace base {
 class Value;
@@ -37,22 +41,27 @@ class BluetoothChooserContext : public ChooserContextBase {
 
   // Helper methods for converting between a WebBluetoothDeviceId and a
   // Bluetooth device address string for a given origin pair.
-  const blink::WebBluetoothDeviceId GetWebBluetoothDeviceId(
+  blink::WebBluetoothDeviceId GetWebBluetoothDeviceId(
       const url::Origin& requesting_origin,
       const url::Origin& embedding_origin,
       const std::string& device_address);
-  const std::string GetDeviceAddress(
+  std::string GetDeviceAddress(const url::Origin& requesting_origin,
+                               const url::Origin& embedding_origin,
+                               const blink::WebBluetoothDeviceId& device_id);
+
+  // Bluetooth scanning specific interface for generating WebBluetoothDeviceIds
+  // for scanned devices.
+  blink::WebBluetoothDeviceId AddScannedDevice(
       const url::Origin& requesting_origin,
       const url::Origin& embedding_origin,
-      const blink::WebBluetoothDeviceId& device_id);
+      const std::string& device_address);
 
   // Bluetooth-specific interface for granting and checking permissions.
-  const blink::WebBluetoothDeviceId GrantDevicePermission(
+  blink::WebBluetoothDeviceId GrantServiceAccessPermission(
       const url::Origin& requesting_origin,
       const url::Origin& embedding_origin,
-      const std::string& device_address,
-      base::flat_set<device::BluetoothUUID, device::BluetoothUUIDHash>&
-          services);
+      const device::BluetoothDevice* device,
+      const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options);
   bool HasDevicePermission(const url::Origin& requesting_origin,
                            const url::Origin& embedding_origin,
                            const blink::WebBluetoothDeviceId& device_id);
@@ -68,13 +77,15 @@ class BluetoothChooserContext : public ChooserContextBase {
  protected:
   // ChooserContextBase implementation;
   bool IsValidObject(const base::Value& object) override;
-  std::vector<std::unique_ptr<Object>> GetGrantedObjects(
-      const url::Origin& requesting_origin,
-      const url::Origin& embedding_origin) override;
-  std::vector<std::unique_ptr<Object>> GetAllGrantedObjects() override;
-  void RevokeObjectPermission(const url::Origin& requesting_origin,
-                              const url::Origin& embedding_origin,
-                              const base::Value& object) override;
+
+ private:
+  // This map records the generated Web Bluetooth IDs for devices discovered via
+  // the Scanning API. Each requesting/embedding origin pair has its own version
+  // of this map so that IDs cannot be correlated between cross-origin sites.
+  using DeviceAddressToIdMap =
+      std::map<std::string, blink::WebBluetoothDeviceId>;
+  std::map<std::pair<url::Origin, url::Origin>, DeviceAddressToIdMap>
+      scanned_devices_;
 };
 
 #endif  // CHROME_BROWSER_BLUETOOTH_BLUETOOTH_CHOOSER_CONTEXT_H_

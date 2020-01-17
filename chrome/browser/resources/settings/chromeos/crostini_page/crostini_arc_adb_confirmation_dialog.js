@@ -18,27 +18,27 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.dialog.showModal();
   },
 
   /** @override */
-  isEnabling_: function() {
+  isEnabling_() {
     return this.action === 'enable';
   },
 
   /** @override */
-  isDisabling_: function() {
+  isDisabling_() {
     return this.action === 'disable';
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.close();
   },
 
   /** @private */
-  onRestartTap_: function() {
+  onRestartTap_() {
     if (this.isEnabling_()) {
       settings.CrostiniBrowserProxyImpl.getInstance().enableArcAdbSideload();
     } else if (this.isDisabling_()) {

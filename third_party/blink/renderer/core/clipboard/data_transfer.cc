@@ -219,6 +219,7 @@ static String NormalizeType(const String& type,
   return clean_type;
 }
 
+// static
 DataTransfer* DataTransfer::Create() {
   DataTransfer* data = Create(
       kCopyAndPaste, DataTransferAccessPolicy::kWritable, DataObject::Create());
@@ -227,6 +228,7 @@ DataTransfer* DataTransfer::Create() {
   return data;
 }
 
+// static
 DataTransfer* DataTransfer::Create(DataTransferType type,
                                    DataTransferAccessPolicy policy,
                                    DataObject* data_object) {

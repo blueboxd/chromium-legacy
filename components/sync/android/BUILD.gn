@@ -66,7 +66,5 @@ java_cpp_enum("java_enums") {
 }
 
 generate_jni("jni_headers") {
-  sources = [
-    "java/src/org/chromium/components/sync/ModelTypeHelper.java",
-  ]
+  sources = [ "java/src/org/chromium/components/sync/ModelTypeHelper.java" ]
 }

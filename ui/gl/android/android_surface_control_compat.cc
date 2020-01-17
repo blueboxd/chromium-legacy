@@ -5,10 +5,7 @@
 #include "ui/gl/android/android_surface_control_compat.h"
 
 #include <dlfcn.h>
-#include <android/ndk-version.h>
-#if __NDK_MAJOR__ >= 18
 #include <android/data_space.h>
-#endif
 
 #include "base/android/build_info.h"
 #include "base/atomic_sequence_num.h"
@@ -38,22 +35,6 @@ enum {
   ASURFACE_TRANSACTION_TRANSPARENCY_TRANSLUCENT = 1,
   ASURFACE_TRANSACTION_TRANSPARENCY_OPAQUE = 2,
 };
-
-#if __NDK_MAJOR__ < 18
-enum {
-  ADATASPACE_UNKNOWN = 0,
-  ADATASPACE_SCRGB_LINEAR = 406913024,
-  ADATASPACE_SRGB = 142671872,
-  ADATASPACE_DISPLAY_P3 = 143261696,
-  ADATASPACE_BT2020_PQ = 163971072,
-};
-#endif
-
-#if __NDK_MAJOR__ < 20
-enum {
-  AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY = 1ULL << 11,
-};
-#endif
 
 // ASurfaceTransaction
 using pASurfaceTransaction_create = ASurfaceTransaction* (*)(void);

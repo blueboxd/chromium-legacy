@@ -4,10 +4,13 @@
 
 #include "components/viz/service/display/overlay_processor_ozone.h"
 
+#include "components/viz/common/features.h"
 #include "components/viz/service/display/overlay_strategy_fullscreen.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/display/overlay_strategy_underlay_cast.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/service/shared_image_manager.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
@@ -44,6 +47,18 @@ void ConvertToOzoneOverlaySurface(
   ozone_candidate->buffer_size = overlay_candidate.resource_size_in_pixels;
 }
 
+uint32_t MailboxToUInt32(const gpu::Mailbox& mailbox) {
+  return (mailbox.name[0] << 24) + (mailbox.name[1] << 16) +
+         (mailbox.name[2] << 8) + mailbox.name[3];
+}
+
+void ReportSharedImageExists(bool exists) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "Compositing.Display.OverlayProcessorOzone."
+      "SharedImageExists",
+      exists);
+}
+
 }  // namespace
 
 // |overlay_candidates| is an object used to answer questions about possible
@@ -53,11 +68,13 @@ void ConvertToOzoneOverlaySurface(
 OverlayProcessorOzone::OverlayProcessorOzone(
     bool overlay_enabled,
     std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
-    std::vector<OverlayStrategy> available_strategies)
+    std::vector<OverlayStrategy> available_strategies,
+    gpu::SharedImageInterface* shared_image_interface)
     : OverlayProcessorUsingStrategy(),
       overlay_enabled_(overlay_enabled),
       overlay_candidates_(std::move(overlay_candidates)),
-      available_strategies_(std::move(available_strategies)) {
+      available_strategies_(std::move(available_strategies)),
+      shared_image_interface_(shared_image_interface) {
   if (overlay_enabled_) {
     for (OverlayStrategy strategy : available_strategies_) {
       switch (strategy) {
@@ -123,6 +140,32 @@ void OverlayProcessorOzone::CheckOverlaySupport(
          ozone_surface_iterator++, surface_iterator++) {
       ConvertToOzoneOverlaySurface(*surface_iterator,
                                    &(*ozone_surface_iterator));
+      if (shared_image_interface_) {
+        UMA_HISTOGRAM_BOOLEAN(
+            "Compositing.Display.OverlayProcessorOzone."
+            "IsCandidateSharedImage",
+            surface_iterator->mailbox.IsSharedImage());
+        if (surface_iterator->mailbox.IsSharedImage()) {
+          (*ozone_surface_iterator).native_pixmap =
+              shared_image_interface_->GetNativePixmap(
+                  surface_iterator->mailbox);
+          if (!ozone_surface_iterator->native_pixmap) {
+            // SharedImage creation and destruction happens on a different
+            // thread so there is no guarantee that we can always look them up
+            // successfully. If a SharedImage doesn't exist, ignore the
+            // candidate. We will try again next frame.
+            DLOG(ERROR)
+                << "Unable to find the NativePixmap corresponding to the "
+                   "overlay candidate";
+            *ozone_surface_iterator = ui::OverlaySurfaceCandidate();
+            ReportSharedImageExists(false);
+          } else {
+            (*ozone_surface_iterator).native_pixmap_unique_id =
+                MailboxToUInt32(surface_iterator->mailbox);
+            ReportSharedImageExists(true);
+          }
+        }
+      }
     }
   }
   overlay_candidates_->CheckOverlaySupport(&ozone_surface_list);

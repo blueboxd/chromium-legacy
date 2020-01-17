@@ -42,7 +42,7 @@ var MockTts = function() {
 MockTts.prototype = {
   // Functions based on methods in
   // https://developer.chrome.com/extensions/tts
-  speak: function(utterance, options) {
+  speak(utterance, options) {
     this.pendingUtterances_.push(utterance);
     this.currentlySpeaking_ = true;
     if (options && options.onEvent) {
@@ -53,7 +53,7 @@ MockTts.prototype = {
       this.speechCallbackStack_.pop()(utterance);
     }
   },
-  stop: function() {
+  stop() {
     this.pendingUtterances_ = [];
     this.currentlySpeaking_ = false;
     if (this.options_) {
@@ -61,20 +61,20 @@ MockTts.prototype = {
       this.options_ = null;
     }
   },
-  getVoices: function(callback) {
+  getVoices(callback) {
     callback([{voiceName: 'English US', lang: 'English'}]);
   },
-  isSpeaking: function(callback) {
+  isSpeaking(callback) {
     callback(this.currentlySpeaking_);
   },
   // Functions for testing
-  currentlySpeaking: function() {
+  currentlySpeaking() {
     return this.currentlySpeaking_;
   },
-  pendingUtterances: function() {
+  pendingUtterances() {
     return this.pendingUtterances_;
   },
-  setOnSpeechCallbacks: function(callbacks) {
+  setOnSpeechCallbacks(callbacks) {
     this.speechCallbackStack_ = callbacks.reverse();
   }
 };

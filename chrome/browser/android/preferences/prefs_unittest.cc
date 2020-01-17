@@ -91,6 +91,7 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(LATEST_VERSION_WHEN_CLICKED_UPDATE_MENU_ITEM));
   EXPECT_EQ(prefs::kBlockThirdPartyCookies,
             GetPrefName(BLOCK_THIRD_PARTY_COOKIES));
+  EXPECT_EQ(prefs::kCookieControlsMode, GetPrefName(COOKIE_CONTROLS_MODE));
   EXPECT_EQ(prefs::kEnableDoNotTrack, GetPrefName(ENABLE_DO_NOT_TRACK));
   EXPECT_EQ(prefs::kPrintingEnabled, GetPrefName(PRINTING_ENABLED));
   EXPECT_EQ(prefs::kOfferTranslateEnabled,

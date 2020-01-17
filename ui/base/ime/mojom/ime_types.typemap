@@ -21,5 +21,6 @@ deps = [
 type_mappings = [
   "ui.mojom.ImeTextSpan=::ui::ImeTextSpan",
   "ui.mojom.ImeTextSpanThickness=::ui::ImeTextSpan::Thickness",
+  "ui.mojom.ImeTextSpanUnderlineStyle=::ui::ImeTextSpan::UnderlineStyle",
   "ui.mojom.TextInputType=::ui::TextInputType",
 ]

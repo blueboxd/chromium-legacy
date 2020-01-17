@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
@@ -134,6 +135,7 @@ public class NavigationHandlerTest {
     @Test
     @SmallTest
     @RetryOnFailure
+    @FlakyTest(message = "crbug.com/1041233")
     public void testLeftSwipeNavigateBackOnRenderedPage() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),

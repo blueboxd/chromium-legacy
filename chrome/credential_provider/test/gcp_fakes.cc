@@ -160,7 +160,7 @@ HRESULT FakeOSUserManager::AddUser(const wchar_t* username,
     *error = 0;
 
   if (should_fail_user_creation_)
-    return E_FAIL;
+    return fail_user_creation_hr_;
 
   // Username or password cannot be empty.
   if (username == nullptr || !username[0] || password == nullptr ||
@@ -203,6 +203,10 @@ HRESULT FakeOSUserManager::ChangeUserPassword(const wchar_t* domain,
   DCHECK(username);
   DCHECK(old_password);
   DCHECK(new_password);
+
+  if (fail_change_password_) {
+    return failed_change_password_hr_;
+  }
 
   if (username_to_info_.count(username) > 0) {
     if (username_to_info_[username].password != old_password)

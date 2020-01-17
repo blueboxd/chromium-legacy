@@ -53,13 +53,9 @@ source_set("jsoncpp") {
 
 if (build_with_chromium) {
   fuzzer_test("jsoncpp_fuzzer") {
-    sources = [
-      "fuzzers/json_fuzzer.cc",
-    ]
+    sources = [ "fuzzers/json_fuzzer.cc" ]
 
-    deps = [
-      ":jsoncpp",
-    ]
+    deps = [ ":jsoncpp" ]
 
     include_dirs = [ "generated" ]
 

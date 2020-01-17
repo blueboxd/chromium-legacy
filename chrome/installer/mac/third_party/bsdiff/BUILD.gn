@@ -16,15 +16,11 @@ static_library("goobsdiff_sha1_adapter") {
     "sha1_adapter.h",
   ]
 
-  deps = [
-    "//base:logging_buildflags",  # Needed by sha1.cc
-  ]
+  deps = [ "//base:logging_buildflags" ]  # Needed by sha1.cc
 }
 
 executable("goobsdiff") {
-  sources = [
-    "goobsdiff.c",
-  ]
+  sources = [ "goobsdiff.c" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -43,9 +39,7 @@ executable("goobsdiff") {
 }
 
 executable("goobspatch") {
-  sources = [
-    "goobspatch.c",
-  ]
+  sources = [ "goobspatch.c" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]

@@ -121,4 +121,8 @@ bool BaseCheckableInputType::IsCheckable() {
   return true;
 }
 
+bool BaseCheckableInputType::TypeShouldForceLegacyLayout() const {
+  return false;
+}
+
 }  // namespace blink

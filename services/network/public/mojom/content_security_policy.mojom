@@ -26,6 +26,15 @@ enum ContentSecurityPolicySource {
   kOriginPolicy
 };
 
+// Represents a single Content Security Policy header (i.e. coming from a single
+// Content-Security-Policy header in an HTTP response, or from a single <meta
+// http-equiv="Content-Security-Policy"...> element).
+struct ContentSecurityPolicyHeader {
+  string header_value;
+  ContentSecurityPolicyType type = kEnforce;
+  ContentSecurityPolicySource source = kHTTP;
+};
+
 // A CSPSource represents an expression that matches a set of urls.
 // Examples of CSPSource:
 // - domain.example.com
@@ -53,31 +62,27 @@ struct CSPSourceList {
   bool allow_star = false;
 };
 
+enum CSPDirectiveName {
+  DefaultSrc,
+  ChildSrc,
+  FrameSrc,
+  FormAction,
+  UpgradeInsecureRequests,
+  NavigateTo,
+  FrameAncestors,
+
+  Unknown,
+};
+
 struct CSPDirective {
-  enum Name {
-    DefaultSrc,
-    ChildSrc,
-    FrameSrc,
-    FormAction,
-    UpgradeInsecureRequests,
-    NavigateTo,
-    FrameAncestors,
-
-    Unknown,
-  };
-
-  Name name;
+  CSPDirectiveName name;
   CSPSourceList source_list;
 };
 
 struct ContentSecurityPolicy {
   array<CSPDirective> directives;
 
-  // When set to kReport, this CSP will not enforce the directives, just report
-  // the violations.
-  ContentSecurityPolicyType type = kEnforce;
-
-  ContentSecurityPolicySource source = kHTTP;
+  ContentSecurityPolicyHeader header;
 
   // Whether this CSP policy uses the new reporting API.
   // https://w3c.github.io/reporting/

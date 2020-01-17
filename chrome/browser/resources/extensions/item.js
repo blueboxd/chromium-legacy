@@ -153,17 +153,17 @@ Polymer({
   ],
 
   /** @return {!HTMLElement} The "Details" button. */
-  getDetailsButton: function() {
+  getDetailsButton() {
     return /** @type {!HTMLElement} */ (this.$.detailsButton);
   },
 
   /** @return {?HTMLElement} The "Errors" button, if it exists. */
-  getErrorsButton: function() {
+  getErrorsButton() {
     return /** @type {?HTMLElement} */ (this.$$('#errors-button'));
   },
 
   /** @private string */
-  a11yAssociation_: function() {
+  a11yAssociation_() {
     // Don't use I18nBehavior.i18n because of additional checks it performs.
     // Polymer ensures that this string is not stamped into arbitrary HTML.
     // |this.data.name| can contain any data including html tags.
@@ -172,7 +172,7 @@ Polymer({
   },
 
   /** @private */
-  observeIdVisibility_: function(inDevMode, showingDetails, id) {
+  observeIdVisibility_(inDevMode, showingDetails, id) {
     flush();
     const idElement = this.$$('#extension-id');
     if (idElement) {
@@ -185,7 +185,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowErrorsButton_: function() {
+  shouldShowErrorsButton_() {
     // When the error console is disabled (happens when
     // --disable-error-console command line flag is used or when in the
     // Stable/Beta channel), |installWarnings| is populated.
@@ -200,22 +200,22 @@ Polymer({
   },
 
   /** @private */
-  onRemoveTap_: function() {
+  onRemoveTap_() {
     this.delegate.deleteItem(this.data.id);
   },
 
   /** @private */
-  onEnableToggleChange_: function() {
+  onEnableToggleChange_() {
     this.delegate.setItemEnabled(this.data.id, this.$.enableToggle.checked);
   },
 
   /** @private */
-  onEnableButtonClick_: function() {
+  onEnableButtonClick_() {
     this.delegate.setItemEnabled(this.data.id, true);
   },
 
   /** @private */
-  onErrorsTap_: function() {
+  onErrorsTap_() {
     if (this.data.installWarnings && this.data.installWarnings.length > 0) {
       this.fire('show-install-warnings', this.data.installWarnings);
       return;
@@ -225,7 +225,7 @@ Polymer({
   },
 
   /** @private */
-  onDetailsTap_: function() {
+  onDetailsTap_() {
     navigation.navigateTo({page: Page.DETAILS, extensionId: this.data.id});
   },
 
@@ -233,17 +233,17 @@ Polymer({
    * @param {!{model: !{item: !chrome.developerPrivate.ExtensionView}}} e
    * @private
    */
-  onInspectTap_: function(e) {
+  onInspectTap_(e) {
     this.delegate.inspectItemView(this.data.id, this.data.views[0]);
   },
 
   /** @private */
-  onExtraInspectTap_: function() {
+  onExtraInspectTap_() {
     navigation.navigateTo({page: Page.DETAILS, extensionId: this.data.id});
   },
 
   /** @private */
-  onReloadTap_: function() {
+  onReloadTap_() {
     // Don't reload if in the middle of an update.
     if (this.isReloading_) {
       return;
@@ -271,7 +271,7 @@ Polymer({
   },
 
   /** @private */
-  onRepairTap_: function() {
+  onRepairTap_() {
     this.delegate.repairItem(this.data.id);
   },
 
@@ -279,7 +279,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isControlled_: function() {
+  isControlled_() {
     return isControlled(this.data);
   },
 
@@ -287,7 +287,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isEnabled_: function() {
+  isEnabled_() {
     return isEnabled(this.data.state);
   },
 
@@ -295,7 +295,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isEnableToggleEnabled_: function() {
+  isEnableToggleEnabled_() {
     return userCanChangeEnablement(this.data);
   },
 
@@ -304,7 +304,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showReloadButton_: function() {
+  showReloadButton_() {
     return getEnableControl(this.data) === EnableControl.RELOAD;
   },
 
@@ -313,7 +313,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showRepairButton_: function() {
+  showRepairButton_() {
     return getEnableControl(this.data) === EnableControl.REPAIR;
   },
 
@@ -323,7 +323,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showEnableToggle_: function() {
+  showEnableToggle_() {
     return getEnableControl(this.data) === EnableControl.ENABLE_TOGGLE;
   },
 
@@ -332,7 +332,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showEnableButton_: function() {
+  showEnableButton_() {
     return getEnableControl(this.data) === EnableControl.ENABLE_BUTTON;
   },
 
@@ -340,7 +340,7 @@ Polymer({
    * return {string}
    * @private
    */
-  computeClasses_: function() {
+  computeClasses_() {
     let classes = this.isEnabled_() ? 'enabled' : 'disabled';
     if (this.inDevMode) {
       classes += ' dev-mode';
@@ -352,7 +352,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeSourceIndicatorIcon_: function() {
+  computeSourceIndicatorIcon_() {
     switch (getItemSource(this.data)) {
       case SourceType.POLICY:
         return 'extensions-icons:business';
@@ -373,7 +373,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeSourceIndicatorText_: function() {
+  computeSourceIndicatorText_() {
     if (this.data.locationText) {
       return this.data.locationText;
     }
@@ -387,7 +387,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeInspectViewsHidden_: function() {
+  computeInspectViewsHidden_() {
     return !this.data.views || this.data.views.length === 0;
   },
 
@@ -395,7 +395,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeFirstInspectTitle_: function() {
+  computeFirstInspectTitle_() {
     // Note: theoretically, this wouldn't be called without any inspectable
     // views (because it's in a dom-if="!computeInspectViewsHidden_()").
     // However, due to the recycling behavior of iron list, it seems that
@@ -410,7 +410,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeFirstInspectLabel_: function() {
+  computeFirstInspectLabel_() {
     const label = this.computeFirstInspectTitle_();
     return label && this.data.views.length > 1 ? label + ',' : label;
   },
@@ -419,7 +419,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeExtraViewsHidden_: function() {
+  computeExtraViewsHidden_() {
     return this.data.views.length <= 1;
   },
 
@@ -427,7 +427,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeDevReloadButtonHidden_: function() {
+  computeDevReloadButtonHidden_() {
     // Only display the reload spinner if the extension is unpacked and
     // enabled. There's no point in reloading a disabled extension, and we'll
     // show a crashed reload button if it's terminated.
@@ -441,7 +441,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeExtraInspectLabel_: function() {
+  computeExtraInspectLabel_() {
     return this.i18n(
         'itemInspectViewsExtra', (this.data.views.length - 1).toString());
   },
@@ -450,7 +450,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasWarnings_: function() {
+  hasWarnings_() {
     return this.data.disableReasons.corruptInstall ||
         this.data.disableReasons.suspiciousInstall ||
         this.data.runtimeWarnings.length > 0 || !!this.data.blacklistText;
@@ -460,7 +460,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  computeWarningsClasses_: function() {
+  computeWarningsClasses_() {
     return this.data.blacklistText ? 'severe' : 'mild';
   },
 });

@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
+#include "components/dom_distiller/content/browser/test/test_util.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
@@ -83,24 +84,6 @@ namespace dom_distiller {
 
 const char* kSimpleArticlePath = "/simple_article.html";
 const char* kVideoArticlePath = "/video_article.html";
-const char* kDistilledPagePath = "/distilled_page.html";
-
-void ExecuteJsScript(content::WebContents* web_contents,
-                     const std::string& script) {
-  base::Value result;
-  base::RunLoop run_loop;
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16(script),
-      base::BindOnce(
-          [](base::OnceClosure callback, base::Value* out, base::Value result) {
-            (*out) = std::move(result);
-            std::move(callback).Run();
-          },
-          run_loop.QuitClosure(), &result));
-  run_loop.Run();
-  ASSERT_EQ(base::Value::Type::BOOLEAN, result.type());
-  EXPECT_TRUE(result.GetBool());
-}
 
 class DistillerPageWebContentsTest : public ContentBrowserTest {
  public:
@@ -110,7 +93,7 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
       SetDistillerJavaScriptWorldId(content::ISOLATED_WORLD_ID_CONTENT_END);
     }
     AddComponentsResources();
-    SetUpTestServer();
+    SetUpTestServer(embedded_test_server());
     ContentBrowserTest::SetUpOnMainThread();
   }
 
@@ -131,37 +114,6 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
     std::move(quit_closure).Run();
   }
 
- private:
-  void AddComponentsResources() {
-    base::FilePath pak_file;
-    base::FilePath pak_dir;
-#if defined(OS_ANDROID)
-    CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_dir));
-    pak_dir = pak_dir.Append(FILE_PATH_LITERAL("paks"));
-#else
-    base::PathService::Get(base::DIR_MODULE, &pak_dir);
-#endif  // OS_ANDROID
-    pak_file =
-        pak_dir.Append(FILE_PATH_LITERAL("components_tests_resources.pak"));
-    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        pak_file, ui::SCALE_FACTOR_NONE);
-  }
-
-  void SetUpTestServer() {
-    base::FilePath path;
-    base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
-
-    embedded_test_server()->ServeFilesFromDirectory(
-        path.AppendASCII("components/test/data/dom_distiller"));
-    embedded_test_server()->ServeFilesFromDirectory(
-        path.AppendASCII("components/dom_distiller/core/javascript"));
-
-    response_ = std::make_unique<net::test_server::ControllableHttpResponse>(
-        embedded_test_server(), kDistilledPagePath);
-
-    ASSERT_TRUE(embedded_test_server()->Start());
-  }
-
  protected:
   void RunUseCurrentWebContentsTest(const std::string& url,
                                     bool expect_new_web_contents,
@@ -169,8 +121,6 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
 
   DistillerPageWebContents* distiller_page_;
   std::unique_ptr<proto::DomDistillerResult> distiller_result_;
-
-  std::unique_ptr<net::test_server::ControllableHttpResponse> response_;
 };
 
 // Use this class to be able to leak the WebContents, which is needed for when
@@ -532,38 +482,6 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest,
     std::string js = viewer::GetUnsafeArticleContentJs(article_proto.get());
     EXPECT_THAT(js, HasSubstr(no_content));
   }
-}
-
-#if defined(OS_WIN)
-#define MAYBE_TestPinch DISABLED_TestPinch
-#else
-#define MAYBE_TestPinch TestPinch
-#endif
-IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, MAYBE_TestPinch) {
-  // Load the test file in content shell and wait until it has fully loaded.
-  content::WebContents* web_contents = shell()->web_contents();
-  base::RunLoop url_loaded_runner;
-  WebContentsMainFrameHelper main_frame_loaded(
-      web_contents, url_loaded_runner.QuitClosure(), true);
-  web_contents->GetController().LoadURL(
-      embedded_test_server()->GetURL(kDistilledPagePath), content::Referrer(),
-      ui::PAGE_TRANSITION_TYPED, std::string());
-
-  const std::string html_template = viewer::GetArticleTemplateHtml(
-      DistilledPagePrefs::THEME_LIGHT,
-      DistilledPagePrefs::FONT_FAMILY_SANS_SERIF);
-
-  const std::string scripts = R"(
-    <script src='dom_distiller_viewer.js'></script>
-    <script src='pinch_tester.js'></script>
-  )";
-
-  response_->WaitForRequest();
-  response_->Send(net::HTTP_OK, "text/html", html_template + scripts);
-  response_->Done();
-  url_loaded_runner.Run();
-
-  ExecuteJsScript(web_contents, "pinchtest.run()");
 }
 
 }  // namespace dom_distiller

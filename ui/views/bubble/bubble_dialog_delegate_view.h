@@ -197,6 +197,8 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   friend class BubbleWindowTargeter;
   friend class ui_devtools::PageAgentViews;
 
+  class AnchorViewObserver;
+
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, NonClientHitTest);
 
@@ -221,10 +223,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // A flag controlling bubble closure on deactivation.
   bool close_on_deactivate_;
 
-  // The view and widget to which this bubble is anchored. Since an anchor view
-  // can be deleted without notice, we store it in a ViewTracker and retrieve
-  // it from there. It will make sure that the view is still valid.
-  std::unique_ptr<ViewTracker> anchor_view_tracker_;
+  // The view and widget to which this bubble is anchored. AnchorViewObserver
+  // is used to observe bounds changes and view deletion.
+  std::unique_ptr<AnchorViewObserver> anchor_view_observer_;
   Widget* anchor_widget_;
   std::unique_ptr<Widget::PaintAsActiveLock> paint_as_active_lock_;
 

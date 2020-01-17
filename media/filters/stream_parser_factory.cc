@@ -140,15 +140,17 @@ static int GetMP4AudioObjectType(const std::string& codec_id,
 }
 
 // AAC Object Type IDs that Chrome supports.
-static const int kAACLCObjectType = 2;
-static const int kAACSBRObjectType = 5;
-static const int kAACPSObjectType = 29;
+constexpr int kAACLCObjectType = 2;
+constexpr int kAACSBRObjectType = 5;
+constexpr int kAACPSObjectType = 29;
+constexpr int kAACXHEObjectType = 42;
 
 bool ValidateMP4ACodecID(const std::string& codec_id, MediaLog* media_log) {
   int audio_object_type = GetMP4AudioObjectType(codec_id, media_log);
   if (audio_object_type == kAACLCObjectType ||
       audio_object_type == kAACSBRObjectType ||
-      audio_object_type == kAACPSObjectType) {
+      audio_object_type == kAACPSObjectType ||
+      audio_object_type == kAACXHEObjectType) {
     return true;
   }
 

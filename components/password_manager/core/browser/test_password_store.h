@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/password_store.h"
 
 namespace password_manager {
@@ -89,7 +90,8 @@ class TestPasswordStore : public PasswordStore {
       const CompromisedCredentials& compromised_credentials) override;
   void RemoveCompromisedCredentialsImpl(
       const GURL& url,
-      const base::string16& username) override;
+      const base::string16& username,
+      RemoveCompromisedCredentialsReason reason) override;
   std::vector<CompromisedCredentials> GetAllCompromisedCredentialsImpl()
       override;
   void RemoveCompromisedCredentialsByUrlAndTimeImpl(

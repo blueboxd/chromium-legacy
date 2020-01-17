@@ -8,7 +8,5 @@ source_set("shared") {
     "connection_priority.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

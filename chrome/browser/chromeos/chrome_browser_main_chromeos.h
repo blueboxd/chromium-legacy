@@ -71,6 +71,7 @@ class DBusServices;
 }  // namespace internal
 
 namespace power {
+class SmartChargingManager;
 namespace ml {
 class AdaptiveScreenBrightnessManager;
 }  // namespace ml
@@ -152,6 +153,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<lock_screen_apps::StateController>
       lock_screen_apps_state_controller_;
+
+  std::unique_ptr<power::SmartChargingManager> smart_charging_manager_;
 
   std::unique_ptr<power::ml::AdaptiveScreenBrightnessManager>
       adaptive_screen_brightness_manager_;

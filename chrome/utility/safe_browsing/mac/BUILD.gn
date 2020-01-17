@@ -55,9 +55,7 @@ source_set("dmg_common") {
 }
 
 executable("crdmg") {
-  sources = [
-    "crdmg.cc",
-  ]
+  sources = [ "crdmg.cc" ]
 
   deps = [
     ":dmg_common",
@@ -67,9 +65,7 @@ executable("crdmg") {
 }
 
 fuzzer_test("safe_browsing_dmg_fuzzer") {
-  sources = [
-    "dmg_fuzzer.cc",
-  ]
+  sources = [ "dmg_fuzzer.cc" ]
 
   deps = [
     ":dmg_common",
@@ -78,9 +74,7 @@ fuzzer_test("safe_browsing_dmg_fuzzer") {
 }
 
 fuzzer_test("safe_browsing_hfs_fuzzer") {
-  sources = [
-    "hfs_fuzzer.cc",
-  ]
+  sources = [ "hfs_fuzzer.cc" ]
 
   deps = [
     ":dmg_common",

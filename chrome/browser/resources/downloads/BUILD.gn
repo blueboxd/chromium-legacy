@@ -33,9 +33,7 @@ if (optimize_webui) {
     pak_file = downloads_pak_file
     out_folder = unpak_folder
 
-    deps = [
-      ":flattened_resources",
-    ]
+    deps = [ ":flattened_resources" ]
   }
 
   grit("flattened_resources") {

@@ -23,8 +23,9 @@ namespace ash {
 
 class AssistantController;
 class AssistantInteractionController;
-class TestAssistantService;
 class AssistantTestApi;
+class TestAssistantService;
+class TestAssistantWebViewFactory;
 
 // Helper class to make testing the Assistant Ash UI easier.
 class AssistantAshTestBase : public AshTestBase {
@@ -47,6 +48,9 @@ class AssistantAshTestBase : public AshTestBase {
   // Assistant.
   void CloseAssistantUi(
       AssistantExitPoint exit_point = AssistantExitPoint::kUnspecified);
+
+  // Open the launcher (but do not open the Assistant UI).
+  void OpenLauncher();
   // Close the Assistant UI by closing the launcher.
   void CloseLauncher();
 
@@ -71,6 +75,10 @@ class AssistantAshTestBase : public AshTestBase {
   // Can only be used after |ShowAssistantUi| has been called.
   views::View* app_list_view();
 
+  // Return the root view hosting the Assistant page view.
+  // Can only be used after |ShowAssistantUi| has been called.
+  views::View* root_view();
+
   // Spoof sending a request to the Assistant service,
   // and receiving |response_text| as a response to display.
   void MockAssistantInteractionWithResponse(const std::string& response_text);
@@ -85,6 +93,10 @@ class AssistantAshTestBase : public AshTestBase {
   // Simulate the user tapping on the given view.
   // Waits for the event to be processed.
   void TapOnAndWait(views::View* view);
+
+  // Simulate the user tapping at the given position.
+  // Waits for the event to be processed.
+  void TapAndWait(gfx::Point position);
 
   // Simulate a mouse click on the given view.
   // Waits for the event to be processed.
@@ -123,6 +135,9 @@ class AssistantAshTestBase : public AshTestBase {
   // Show the on-screen keyboard.
   void ShowKeyboard();
 
+  // Dismiss the on-screen keyboard.
+  void DismissKeyboard();
+
   // Returns if the on-screen keyboard is being displayed.
   bool IsKeyboardShowing() const;
 
@@ -131,6 +146,7 @@ class AssistantAshTestBase : public AshTestBase {
   TestAssistantService* assistant_service();
 
   std::unique_ptr<AssistantTestApi> test_api_;
+  std::unique_ptr<TestAssistantWebViewFactory> test_web_view_factory_;
   base::test::ScopedFeatureList scoped_feature_list_;
   AssistantController* controller_ = nullptr;
 

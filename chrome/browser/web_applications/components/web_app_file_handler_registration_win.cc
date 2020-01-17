@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
@@ -24,6 +25,39 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/shell_util.h"
+#include "net/base/filename_util.h"
+
+namespace {
+
+// Returns the app-specific-launcher filename to be used for |app_name|.
+base::FilePath GetAppSpecificLauncherFilename(const base::string16& app_name) {
+  // Remove any characters that are illegal in Windows filenames.
+  base::FilePath sanitized_app_name =
+      web_app::internals::GetSanitizedFileName(app_name);
+
+  // If |sanitized_app_name| is a reserved filename, append '_' to allow its use
+  // as the launcher filename (e.g. "nul" => "nul_"). If |sanitized_app_name|
+  // starts with a reserved filename followed by '.', replace all '.' characters
+  // with '_' (e.g. "nul.l" => "nul_l"). This is needed because anything after
+  // '.' is interpreted as part of a file extension for the purpose of
+  // identifying reserved filenames, so appending '_' fails to legitimize a
+  // reserved filename when a '.' is present (e.g. "nul.l_" is rejected).
+  if (net::IsReservedNameOnWindows(sanitized_app_name.value())) {
+    base::string16 allowed_filename = sanitized_app_name.value();
+    if (!base::ReplaceChars(allowed_filename, L".", L"_", &allowed_filename))
+      allowed_filename.append(L"_");
+    sanitized_app_name = base::FilePath(allowed_filename);
+  }
+
+  // On Windows 8+, add .exe extension. On Windows 7, where the launcher
+  // filename is used as the app's display name in the Open With menu, omit the
+  // extension.
+  if (base::win::GetVersion() > base::win::Version::WIN7)
+    return sanitized_app_name.AddExtension(L"exe");
+  return sanitized_app_name;
+}
+
+}  // namespace
 
 namespace web_app {
 
@@ -56,31 +90,27 @@ void RegisterFileHandlersWithOsTask(
     const base::string16& app_prog_id,
     const std::set<std::string>& file_extensions) {
   base::FilePath web_app_path =
-      web_app::GetWebAppDataDirectory(profile_path, app_id, GURL());
+      GetWebAppDataDirectory(profile_path, app_id, GURL());
   base::string16 utf16_app_name = base::UTF8ToUTF16(app_name);
   base::FilePath icon_path =
-      web_app::internals::GetIconFilePath(web_app_path, utf16_app_name);
+      internals::GetIconFilePath(web_app_path, utf16_app_name);
   base::FilePath pwa_launcher_path = GetChromePwaLauncherPath();
-  base::FilePath sanitized_app_name = internals::GetSanitizedFileName(
-      utf16_app_name + STRING16_LITERAL(".exe"));
-  // TODO(jessemckenna): Do we need to do anything differently for Win7, e.g.,
-  // not append .exe to the name? If so, then we should check for reserved
-  // file names like "CON" using net::IsReservedNameOnWindows.
   base::FilePath app_specific_launcher_path =
-      web_app_path.DirName().Append(sanitized_app_name);
+      web_app_path.Append(GetAppSpecificLauncherFilename(utf16_app_name));
+
   // Create a hard link to the chrome pwa launcher app. Delete any pre-existing
   // version of the file first.
   base::DeleteFile(app_specific_launcher_path, /*recursive=*/false);
   if (!base::CreateWinHardLink(app_specific_launcher_path, pwa_launcher_path) &&
       !base::CopyFile(pwa_launcher_path, app_specific_launcher_path)) {
-    DPLOG(ERROR) << "Unable to copy the generic shim";
+    DPLOG(ERROR) << "Unable to copy the generic PWA launcher";
     return;
   }
-  base::CommandLine app_shim_command(app_specific_launcher_path);
-  app_shim_command.AppendArg("%1");
-  app_shim_command.AppendSwitchPath(switches::kProfileDirectory,
-                                    profile_path.BaseName());
-  app_shim_command.AppendSwitchASCII(switches::kAppId, app_id);
+  base::CommandLine app_specific_launcher_command(app_specific_launcher_path);
+  app_specific_launcher_command.AppendArg("%1");
+  app_specific_launcher_command.AppendSwitchPath(switches::kProfileDirectory,
+                                                 profile_path.BaseName());
+  app_specific_launcher_command.AppendSwitchASCII(switches::kAppId, app_id);
   std::set<base::string16> file_exts;
   // Copy |file_extensions| to a string16 set in O(n) time by hinting that
   // the appended elements should go at the end of the set.
@@ -88,9 +118,9 @@ void RegisterFileHandlersWithOsTask(
                  std::inserter(file_exts, file_exts.end()),
                  [](const std::string& ext) { return base::UTF8ToUTF16(ext); });
 
-  ShellUtil::AddFileAssociations(app_prog_id, app_shim_command, utf16_app_name,
-                                 utf16_app_name + STRING16_LITERAL(" File"),
-                                 icon_path, file_exts);
+  ShellUtil::AddFileAssociations(
+      app_prog_id, app_specific_launcher_command, utf16_app_name,
+      utf16_app_name + STRING16_LITERAL(" File"), icon_path, file_exts);
 }
 
 void RegisterFileHandlersWithOs(const AppId& app_id,
@@ -108,24 +138,26 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
 }
 
 void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
-  // Need to delete the shim app file, since uninstall may not remove the
-  // web application directory. This must be done before cleaning up the
-  // registry, since the shim app path is retrieved from the registry.
+  // Need to delete the app-specific-launcher file, since uninstall may not
+  // remove the web application directory. This must be done before cleaning up
+  // the registry, since the app-specific-launcher path is retrieved from the
+  // registry.
 
   base::string16 prog_id = GetProgIdForApp(profile, app_id);
-  base::FilePath shim_app_path =
+  base::FilePath app_specific_launcher_path =
       ShellUtil::GetApplicationPathForProgId(prog_id);
 
   ShellUtil::DeleteFileAssociations(prog_id);
 
   // Need to delete the hardlink file as well, since extension uninstall
   // by default doesn't remove the web application directory.
-  if (!shim_app_path.empty()) {
-    base::PostTask(FROM_HERE,
-                   {base::ThreadPool(), base::MayBlock(),
-                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                   base::BindOnce(IgnoreResult(&base::DeleteFile),
-                                  shim_app_path, /*recursively=*/false));
+  if (!app_specific_launcher_path.empty()) {
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce(IgnoreResult(&base::DeleteFile),
+                       app_specific_launcher_path, /*recursively=*/false));
   }
 }
 

@@ -37,7 +37,6 @@
       <structure name="IDR_CAMERA_MANIFEST" file="manifest.json" type="chrome_html" />
       <structure name="IDR_CAMERA_METRICS_JS" file="src/js/metrics.js" type="chrome_html" />
       <structure name="IDR_CAMERA_MODES_JS" file="src/js/views/camera/modes.js" type="chrome_html" />
-      <structure name="IDR_CAMERA_NAMESPACE_JS" file="src/js/namespace.js" type="chrome_html" />
       <structure name="IDR_CAMERA_NAV_JS" file="src/js/nav.js" type="chrome_html" />
       <structure name="IDR_CAMERA_OPTIONS_JS" file="src/js/views/camera/options.js" type="chrome_html" />
       <structure name="IDR_CAMERA_PERF_JS" file="src/js/perf.js" type="chrome_html" />

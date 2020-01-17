@@ -62,12 +62,8 @@ template("widevine_sign_file") {
     }
 
     script = "//third_party/widevine/scripts/signature_generator.py"
-    sources = [
-      "$file",
-    ]
-    outputs = [
-      "$signature_file",
-    ]
+    sources = [ "$file" ]
+    outputs = [ "$signature_file" ]
     args = [
       "--input_file",
       rebase_path("$file", root_build_dir),

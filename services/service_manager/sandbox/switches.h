@@ -25,7 +25,7 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNetworkSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kUtilitySandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kCdmSandbox[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPdfCompositorSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPrintCompositorSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAudioSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kSodaSandbox[];
 

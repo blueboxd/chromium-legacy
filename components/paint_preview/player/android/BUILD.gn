@@ -20,16 +20,13 @@ source_set("player_android") {
     "//url",
   ]
 
-  public_deps = [
-    "//components/services/paint_preview_compositor/public/mojom",
-  ]
+  public_deps =
+      [ "//components/services/paint_preview_compositor/public/mojom" ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "player_compositor_delegate_android_unittest.cc",
-  ]
+  sources = [ "player_compositor_delegate_android_unittest.cc" ]
   deps = [
     ":player_android",
     "//base",
@@ -44,9 +41,7 @@ source_set("unit_tests") {
 }
 
 generate_jni("jni_headers") {
-  sources = [
-    "java/src/org/chromium/components/paintpreview/player/PlayerCompositorDelegateImpl.java",
-  ]
+  sources = [ "java/src/org/chromium/components/paintpreview/player/PlayerCompositorDelegateImpl.java" ]
 }
 
 android_library("java") {

@@ -38,6 +38,8 @@ class BASE_EXPORT RegKey {
   RegKey();
   explicit RegKey(HKEY key);
   RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access);
+  RegKey(RegKey&& other) noexcept;
+  RegKey& operator=(RegKey&& other);
   ~RegKey();
 
   LONG Create(HKEY rootkey, const wchar_t* subkey, REGSAM access);

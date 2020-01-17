@@ -18,7 +18,7 @@
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner box'",
+      "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",

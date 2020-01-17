@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherTestWithBackgroundLogEnabled,
       browser()->tab_strip_model()->GetWebContentsAt(0);
   resource_coordinator::GetTabLifecycleUnitSource()
       ->GetTabLifecycleUnitExternal(first_contents)
-      ->DiscardTab();
+      ->DiscardTab(LifecycleUnitDiscardReason::URGENT);
 
   // Logs tab@0.
   LogTabFeaturesAt(0);
@@ -493,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherTestWithBackgroundLogEnabled,
       browser()->tab_strip_model()->GetWebContentsAt(1);
   resource_coordinator::GetTabLifecycleUnitSource()
       ->GetTabLifecycleUnitExternal(second_content)
-      ->DiscardTab();
+      ->DiscardTab(LifecycleUnitDiscardReason::URGENT);
 
   CloseBrowserSynchronously(browser());
   {
@@ -666,7 +666,7 @@ IN_PROC_BROWSER_TEST_F(
       browser()->tab_strip_model()->GetWebContentsAt(0);
   resource_coordinator::GetTabLifecycleUnitSource()
       ->GetTabLifecycleUnitExternal(first_contents)
-      ->DiscardTab();
+      ->DiscardTab(LifecycleUnitDiscardReason::URGENT);
 
   // Switching to first tab logs a forgrounded event for test_urls_[0].
   browser()->tab_strip_model()->ActivateTabAt(
@@ -700,7 +700,7 @@ IN_PROC_BROWSER_TEST_F(
       browser()->tab_strip_model()->GetWebContentsAt(1);
   resource_coordinator::GetTabLifecycleUnitSource()
       ->GetTabLifecycleUnitExternal(second_content)
-      ->DiscardTab();
+      ->DiscardTab(LifecycleUnitDiscardReason::URGENT);
 
   CloseBrowserSynchronously(browser());
   {

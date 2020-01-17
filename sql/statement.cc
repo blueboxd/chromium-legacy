@@ -58,7 +58,7 @@ int Statement::StepInternal() {
     return SQLITE_ERROR;
 
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  ref_->InitScopedBlockingCall(&scoped_blocking_call);
+  ref_->InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
   stepped_ = true;
   int ret = sqlite3_step(ref_->stmt());
@@ -76,7 +76,7 @@ bool Statement::Step() {
 
 void Statement::Reset(bool clear_bound_vars) {
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  ref_->InitScopedBlockingCall(&scoped_blocking_call);
+  ref_->InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
   if (is_valid()) {
     if (clear_bound_vars)
       sqlite3_clear_bindings(ref_->stmt());

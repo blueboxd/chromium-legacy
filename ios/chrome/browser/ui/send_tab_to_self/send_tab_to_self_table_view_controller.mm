@@ -88,8 +88,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)initWithModel:
                     (send_tab_to_self::SendTabToSelfModel*)sendTabToSelfModel
                      delegate:(id<SendTabToSelfModalDelegate>)delegate {
-  self = [super initWithTableViewStyle:UITableViewStylePlain
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:UITableViewStylePlain];
 
   if (self) {
     _target_device_list = sendTabToSelfModel->GetTargetDeviceInfoSortedList();

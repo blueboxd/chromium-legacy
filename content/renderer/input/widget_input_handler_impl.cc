@@ -28,9 +28,9 @@ namespace {
 
 void RunClosureIfNotSwappedOut(base::WeakPtr<RenderWidget> render_widget,
                                base::OnceClosure closure) {
-  // Input messages must not be processed if the RenderWidget was undead or is
-  // closing.
-  if (!render_widget || render_widget->IsUndeadOrProvisional()) {
+  // Input messages must not be processed if the RenderWidget was destroyed or
+  // was just recreated for a provisional frame.
+  if (!render_widget || render_widget->IsForProvisionalFrame()) {
     return;
   }
   std::move(closure).Run();

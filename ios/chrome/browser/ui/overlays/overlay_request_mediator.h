@@ -16,7 +16,7 @@ class OverlayRequestSupport;
 // UI via consumer protocols specific to that config type.
 @interface OverlayRequestMediator : NSObject
 
-// Returns the request support for this mediator.
+// Returns the request support for this mediator.  Must return a non-null value.
 @property(class, nonatomic, readonly)
     const OverlayRequestSupport* requestSupport;
 

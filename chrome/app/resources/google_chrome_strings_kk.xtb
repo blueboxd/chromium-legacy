@@ -22,7 +22,6 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> қауіпті болғандықтан, Chrome оны бөгеді.</translation>
 <translation id="1619887657840448962">Chrome браузерін қауіпсіз ету үшін, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> тізімінде жоқ келесі кеңейтім  өшірілді, ол сізге ескертілмей қосылған болуы мүмкін.</translation>
 <translation id="1628000112320670027">Chrome жөнінде анықтама алу</translation>
-<translation id="1635734105302489219">Chrome браузерінен шыққанда, cookie файлдарын тазартасыз. Синхрондай беру үшін <ph name="COOKIE_SETTINGS_LINK" /> параметрін өзгертіңіз.</translation>
 <translation id="1662639173275167396">Chrome OS <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Бета)<ph name="END_LINK_LINUX_OSS" /> сияқты қосымша <ph name="BEGIN_LINK_CROS_OSS" />ашық бастапқы код бағдарламасы<ph name="END_LINK_CROS_OSS" /> арқылы жасалады.</translation>
 <translation id="1666409074978194368">Дайын болып қалды! Жаңартуды аяқтау үшін Google Chrome-ды қайта іске қосыңыз. Инкогнито терезелері қайта ашылмайды.</translation>
 <translation id="1674870198290878346">Сілтемені Chrome инкогнито терезесінде ашу</translation>
@@ -77,7 +76,6 @@
 <translation id="3089968997497233615">Жаңа, қауіпсізірек Google Chrome нұсқасы қолжетімді.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="3282568296779691940">Chrome жүйесіне кіру</translation>
-<translation id="3340978935015468852">параметрлер</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome браузері қазір қайта іске қосылады}=1{Chrome браузері 1 секундтан кейін қайта іске қосылады}other{Chrome браузері # секундтан кейін қайта іске қосылады}}</translation>
 <translation id="3395323229510056640">Chrome ОЖ жөнінде анықтама алу</translation>

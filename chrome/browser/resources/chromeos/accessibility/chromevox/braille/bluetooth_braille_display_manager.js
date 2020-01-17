@@ -20,13 +20,13 @@ BluetoothBrailleDisplayListener.prototype = {
   /**
    * @param {!Array<chrome.bluetooth.Device>} displays
    */
-  onDisplayListChanged: function(displays) {},
+  onDisplayListChanged(displays) {},
   /**
    * Called when a pincode is requested and a response can be made by calling
    * BluetoothBrailleDisplayManager.finishPairing.
    * @param {!chrome.bluetooth.Device} display
    */
-  onPincodeRequested: function(display) {},
+  onPincodeRequested(display) {},
 };
 
 /**
@@ -93,14 +93,14 @@ BluetoothBrailleDisplayManager.prototype = {
    * Adds a new listener.
    * @param {BluetoothBrailleDisplayListener} listener
    */
-  addListener: function(listener) {
+  addListener(listener) {
     this.listeners_.push(listener);
   },
 
   /**
    * Starts discovering bluetooth devices.
    */
-  start: function() {
+  start() {
     chrome.bluetooth.startDiscovery();
 
     // Pick up any devices already in the system including previously paired,
@@ -111,7 +111,7 @@ BluetoothBrailleDisplayManager.prototype = {
   /**
    * Stops discovering bluetooth devices.
    */
-  stop: function() {
+  stop() {
     chrome.bluetooth.stopDiscovery();
   },
 
@@ -119,7 +119,7 @@ BluetoothBrailleDisplayManager.prototype = {
    * Connects to the given display.
    *@param{!chrome.bluetooth.Device} display
    */
-  connect: function(display) {
+  connect(display) {
     if (this.preferredDisplayAddress_ === display.address ||
         !this.preferredDisplayAddress_) {
       this.connectInternal(display);
@@ -135,7 +135,7 @@ BluetoothBrailleDisplayManager.prototype = {
    * @param{!chrome.bluetooth.Device} display
    * @protected *
    */
-  connectInternal: function(display) {
+  connectInternal(display) {
     this.preferredDisplayAddress_ = display.address;
     localStorage['preferredBrailleDisplayAddress'] = display.address;
     if (!display.connected) {
@@ -156,7 +156,7 @@ BluetoothBrailleDisplayManager.prototype = {
    * Disconnects the given display and clears it from Brltty.
    * @param{!chrome.bluetooth.Device} display
    */
-  disconnect: function(display) {
+  disconnect(display) {
     chrome.bluetoothPrivate.disconnectAll(display.address);
     chrome.brailleDisplayPrivate.updateBluetoothBrailleDisplayAddress('');
   },
@@ -165,7 +165,7 @@ BluetoothBrailleDisplayManager.prototype = {
    * Forgets the given display.
    * @param {!chrome.bluetooth.Device} display
    */
-  forget: function(display) {
+  forget(display) {
     chrome.bluetoothPrivate.forgetDevice(display.address);
     chrome.brailleDisplayPrivate.updateBluetoothBrailleDisplayAddress('');
   },
@@ -176,7 +176,7 @@ BluetoothBrailleDisplayManager.prototype = {
    * @param{!chrome.bluetooth.Device} display
    * @param{string} pincode *
    */
-  finishPairing: function(display, pincode) {
+  finishPairing(display, pincode) {
     chrome.bluetoothPrivate.setPairingResponse(
         {response: 'confirm', device: display, pincode: pincode}, () => {});
   },
@@ -185,7 +185,7 @@ BluetoothBrailleDisplayManager.prototype = {
    * @param{ chrome.bluetooth.Device=} opt_device
    * @protected
    */
-  handleDevicesChanged: function(opt_device) {
+  handleDevicesChanged(opt_device) {
     chrome.bluetooth.getDevices((devices) => {
       var displayList = devices.filter((device) => {
         return this.displayNames_.some((name) => {
@@ -214,7 +214,7 @@ BluetoothBrailleDisplayManager.prototype = {
    * @param{chrome.bluetoothPrivate.PairingEvent} pairingEvent
    * @protected
    */
-  handlePairing: function(pairingEvent) {
+  handlePairing(pairingEvent) {
     if (pairingEvent.pairing ==
         chrome.bluetoothPrivate.PairingEventType.REQUEST_PINCODE) {
       this.listeners_.forEach(
@@ -226,7 +226,7 @@ BluetoothBrailleDisplayManager.prototype = {
    * @param{chrome.bluetooth.Device} display
    * @protected
    */
-  handlePreferredDisplayConnectionStateChanged: function(display) {
+  handlePreferredDisplayConnectionStateChanged(display) {
     if (display.connected === this.preferredDisplayConnected_) {
       return;
     }

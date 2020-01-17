@@ -142,13 +142,13 @@ void HttpEquiv::ProcessHttpEquivContentSecurityPolicy(
     return;
   if (EqualIgnoringASCIICase(equiv, "content-security-policy")) {
     document.GetContentSecurityPolicy()->DidReceiveHeader(
-        content, kContentSecurityPolicyHeaderTypeEnforce,
-        kContentSecurityPolicyHeaderSourceMeta);
+        content, network::mojom::ContentSecurityPolicyType::kEnforce,
+        network::mojom::ContentSecurityPolicySource::kMeta);
   } else if (EqualIgnoringASCIICase(equiv,
                                     "content-security-policy-report-only")) {
     document.GetContentSecurityPolicy()->DidReceiveHeader(
-        content, kContentSecurityPolicyHeaderTypeReport,
-        kContentSecurityPolicyHeaderSourceMeta);
+        content, network::mojom::ContentSecurityPolicyType::kReport,
+        network::mojom::ContentSecurityPolicySource::kMeta);
   } else {
     NOTREACHED();
   }

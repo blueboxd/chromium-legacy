@@ -53,9 +53,8 @@ void EnableSyncFromPromo(Browser* browser,
                          bool is_default_promo_account);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-// Returns the list of all accounts that have a token. The default account in
-// the Gaia cookies will be the first account in the list.
-std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile);
+// Returns the account to use in Dice promos.
+AccountInfo GetAccountForDicePromos(Profile* profile);
 
 #endif
 

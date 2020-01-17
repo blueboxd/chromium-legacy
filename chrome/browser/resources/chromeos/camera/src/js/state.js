@@ -5,6 +5,8 @@
 import {assert} from './chrome_util.js';
 import {PerfEvent} from './perf.js';
 import {Mode} from './type.js';
+// eslint-disable-next-line no-unused-vars
+import {PerfInformation} from './type.js';
 import {ViewName} from './views/view.js';
 
 /**
@@ -72,7 +74,7 @@ export function assertState(s) {
 }
 
 /**
- * @typedef {function(boolean, cca.PerfInformation=)}
+ * @typedef {function(boolean, PerfInformation=)}
  */
 let StateObserver;  // eslint-disable-line no-unused-vars
 
@@ -125,7 +127,7 @@ export function get(state) {
  * performance measurement.
  * @param {StateUnion} state State to be set.
  * @param {boolean} val True to set the state on, false otherwise.
- * @param {cca.PerfInformation=} perfInfo Optional information of this state
+ * @param {PerfInformation=} perfInfo Optional information of this state
  *     for performance measurement.
  */
 export function set(state, val, perfInfo = {}) {
@@ -138,18 +140,3 @@ export function set(state, val, perfInfo = {}) {
   const observers = allObservers.get(state) || [];
   observers.forEach((f) => f(val, perfInfo));
 }
-
-/** @const */
-cca.state.State = State;
-/** @const */
-cca.state.StateUnion = StateUnion;
-/** @const */
-cca.state.addObserver = addObserver;
-/** @const */
-cca.state.removeObserver = removeObserver;
-/** @const */
-cca.state.get = get;
-/** @const */
-cca.state.set = set;
-/** @const */
-cca.state.assertState = assertState;

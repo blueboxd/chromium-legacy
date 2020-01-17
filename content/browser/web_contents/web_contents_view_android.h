@@ -121,6 +121,7 @@ class WebContentsViewAndroid : public WebContentsView,
   bool ScrollTo(float x, float y) override;
   void OnSizeChanged() override;
   void OnPhysicalBackingSizeChanged() override;
+  void OnBrowserControlsHeightChanged() override;
 
   void SetFocus(bool focused);
   void set_device_orientation(int orientation) {

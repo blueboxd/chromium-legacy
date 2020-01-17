@@ -16,9 +16,7 @@ jumbo_static_library("js") {
     "sync_js_controller.h",
   ]
 
-  public_deps = [
-    "//components/sync/base",
-  ]
+  public_deps = [ "//components/sync/base" ]
 }
 
 static_library("test_support") {

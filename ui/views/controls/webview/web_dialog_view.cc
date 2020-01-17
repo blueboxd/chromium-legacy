@@ -230,14 +230,6 @@ bool WebDialogView::ShouldShowWindowTitle() const {
   return ShouldShowDialogTitle();
 }
 
-views::Widget* WebDialogView::GetWidget() {
-  return View::GetWidget();
-}
-
-const views::Widget* WebDialogView::GetWidget() const {
-  return View::GetWidget();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogDelegate implementation:
 

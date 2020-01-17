@@ -16,6 +16,7 @@ js_library("os_about_page") {
   deps = [
     "../..:lifetime_browser_proxy",
     "../..:route",
+    "../..:router",
     "../../about_page:about_page_browser_proxy",
     "../../settings_page:main_page_behavior",
     "../../settings_page:settings_animated_pages",

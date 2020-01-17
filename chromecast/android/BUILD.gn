@@ -9,9 +9,7 @@ import("//media/media_options.gni")
 assert(is_android)
 
 cast_shared_library("libcast_shell_android") {
-  sources = [
-    "//chromecast/app/android/cast_jni_loader.cc",
-  ]
+  sources = [ "//chromecast/app/android/cast_jni_loader.cc" ]
 
   deps = [
     "//base",

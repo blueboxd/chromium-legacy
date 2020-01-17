@@ -94,8 +94,6 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;
-  Widget* GetWidget() override;
-  const Widget* GetWidget() const override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeWindow GetNativeWindow() const override;
   Widget* GetTopLevelWidget() override;
@@ -246,6 +244,9 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate,
   friend class test::HitTestNativeWidgetMac;
   friend class views::test::WidgetTest;
   class ZoomFocusMonitor;
+
+  // internal::NativeWidgetPrivate:
+  const Widget* GetWidgetImpl() const override;
 
   internal::NativeWidgetDelegate* delegate_;
   std::unique_ptr<NativeWidgetMacNSWindowHost> ns_window_host_;

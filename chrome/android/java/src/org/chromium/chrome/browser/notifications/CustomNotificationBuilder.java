@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import static org.chromium.chrome.browser.util.ViewUtils.dpToPx;
+import static org.chromium.ui.base.ViewUtils.dpToPx;
 
 import android.content.Context;
 import android.content.res.Resources;

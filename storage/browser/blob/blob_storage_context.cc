@@ -32,6 +32,7 @@
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
+#include "storage/browser/blob/write_blob_to_file.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/blob/data_element.mojom.h"
 #include "url/gurl.h"
@@ -43,15 +44,18 @@ using QuotaAllocationTask = BlobMemoryController::QuotaAllocationTask;
 }  // namespace
 
 BlobStorageContext::BlobStorageContext()
-    : memory_controller_(base::FilePath(), scoped_refptr<base::TaskRunner>()) {
+    : profile_directory_(base::FilePath()),
+      memory_controller_(base::FilePath(), scoped_refptr<base::TaskRunner>()) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "BlobStorageContext", base::ThreadTaskRunnerHandle::Get());
 }
 
 BlobStorageContext::BlobStorageContext(
-    base::FilePath storage_directory,
+    const base::FilePath& profile_directory,
+    const base::FilePath& storage_directory,
     scoped_refptr<base::TaskRunner> file_runner)
-    : memory_controller_(std::move(storage_directory), std::move(file_runner)) {
+    : profile_directory_(profile_directory),
+      memory_controller_(storage_directory, std::move(file_runner)) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "BlobStorageContext", base::ThreadTaskRunnerHandle::Get());
 }
@@ -732,6 +736,47 @@ void BlobStorageContext::RegisterFromMemory(
   builder->AppendData(data.byte_span());
   std::unique_ptr<BlobDataHandle> handle = AddFinishedBlob(std::move(builder));
   BlobImpl::Create(std::move(handle), std::move(blob));
+}
+
+void BlobStorageContext::WriteBlobToFile(
+    mojo::PendingRemote<::blink::mojom::Blob> pending_blob,
+    const base::FilePath& file_path,
+    bool flush_on_write,
+    base::Optional<base::Time> last_modified,
+    BlobStorageContext::WriteBlobToFileCallback callback) {
+  DCHECK(!last_modified || !last_modified.value().is_null());
+  if (profile_directory_.empty()) {
+    std::move(callback).Run(mojom::WriteBlobToFileResult::kBadPath);
+    return;
+  }
+  if (file_path.ReferencesParent()) {
+    std::move(callback).Run(mojom::WriteBlobToFileResult::kBadPath);
+    return;
+  }
+  if (!profile_directory_.IsParent(file_path)) {
+    std::move(callback).Run(mojom::WriteBlobToFileResult::kBadPath);
+    return;
+  }
+
+  GetBlobDataFromBlobRemote(
+      std::move(pending_blob),
+      base::BindOnce(
+          [](base::WeakPtr<BlobStorageContext> blob_context,
+             const base::FilePath& file_path, bool flush_on_write,
+             base::Optional<base::Time> last_modified,
+             BlobStorageContext::WriteBlobToFileCallback callback,
+             std::unique_ptr<BlobDataHandle> handle) {
+            if (!handle || !blob_context) {
+              std::move(callback).Run(
+                  mojom::WriteBlobToFileResult::kInvalidBlob);
+              return;
+            }
+            ::storage::WriteBlobToFile(std::move(handle), file_path,
+                                       flush_on_write, last_modified,
+                                       std::move(callback));
+          },
+          AsWeakPtr(), file_path, flush_on_write, last_modified,
+          std::move(callback)));
 }
 
 }  // namespace storage

@@ -136,14 +136,15 @@ void ServiceWorkerRegisterJob::StartImpl() {
   }
 
   scoped_refptr<ServiceWorkerRegistration> registration =
-      context_->storage()->GetUninstallingRegistration(scope_);
+      context_->registry()->GetUninstallingRegistration(scope_);
   if (registration.get())
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(next_step),
                        blink::ServiceWorkerStatusCode::kOk, registration));
   else
-    context_->storage()->FindRegistrationForScope(scope_, std::move(next_step));
+    context_->registry()->FindRegistrationForScope(scope_,
+                                                   std::move(next_step));
 }
 
 void ServiceWorkerRegisterJob::Abort() {
@@ -477,7 +478,7 @@ void ServiceWorkerRegisterJob::ContinueWithRegistrationForSameScriptUrl(
 }
 
 void ServiceWorkerRegisterJob::StartWorkerForUpdate() {
-  context_->storage()->NotifyInstallingRegistration(registration());
+  context_->registry()->NotifyInstallingRegistration(registration());
 
   int64_t version_id = context_->storage()->NewVersionId();
   if (version_id == blink::mojom::kInvalidServiceWorkerVersionId) {
@@ -512,8 +513,10 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate() {
 
   if (update_checker_) {
     DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
-    new_version()->PrepareForUpdate(update_checker_->TakeComparedResults(),
-                                    update_checker_->updated_script_url());
+    new_version()->PrepareForUpdate(
+        update_checker_->TakeComparedResults(),
+        update_checker_->updated_script_url(),
+        update_checker_->cross_origin_embedder_policy());
     update_checker_.reset();
   }
 
@@ -746,7 +749,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
           context_->storage()->DeleteRegistration(
               registration(), registration()->scope().GetOrigin(),
               base::DoNothing());
-          context_->storage()->NotifyDoneUninstallingRegistration(
+          context_->registry()->NotifyDoneUninstallingRegistration(
               registration(), ServiceWorkerRegistration::Status::kUninstalled);
         }
       }
@@ -756,7 +759,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
   }
   DCHECK(callbacks_.empty());
   if (registration()) {
-    context_->storage()->NotifyDoneInstallingRegistration(
+    context_->registry()->NotifyDoneInstallingRegistration(
         registration(), new_version(), status);
 #if DCHECK_IS_ON()
     switch (registration()->status()) {

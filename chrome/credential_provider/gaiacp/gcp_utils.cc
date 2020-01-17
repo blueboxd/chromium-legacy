@@ -794,8 +794,7 @@ HRESULT SearchForListInStringDictUTF8(
 
   auto* value = json_obj->FindListPath(base::JoinString(path, "."));
   if (value && value->is_list()) {
-    base::Value::ListStorage& string_list = value->GetList();
-    for (const base::Value& entry : string_list) {
+    for (const base::Value& entry : value->GetList()) {
       if (entry.FindKey(list_key) && entry.FindKey(list_key)->is_string()) {
         std::string value = entry.FindKey(list_key)->GetString();
         output->push_back(value);

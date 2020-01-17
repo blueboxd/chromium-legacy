@@ -22,10 +22,6 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
-namespace autofill {
-struct PasswordForm;
-}
-
 namespace content {
 class RenderFrameHost;
 }
@@ -96,13 +92,13 @@ class ContentPasswordManagerDriver
   // For that reason, any access to form data should be validated via
   // bad_message::CheckChildProcessSecurityPolicy.
   void PasswordFormsParsed(
-      const std::vector<autofill::PasswordForm>& forms) override;
+      const std::vector<autofill::FormData>& forms_data) override;
   void PasswordFormsRendered(
-      const std::vector<autofill::PasswordForm>& visible_forms,
+      const std::vector<autofill::FormData>& visible_forms_data,
       bool did_stop_loading) override;
-  void PasswordFormSubmitted(
-      const autofill::PasswordForm& password_form) override;
-  void ShowManualFallbackForSaving(const autofill::PasswordForm& form) override;
+  void PasswordFormSubmitted(const autofill::FormData& form_data) override;
+  void ShowManualFallbackForSaving(
+      const autofill::FormData& form_data) override;
   void HideManualFallbackForSaving() override;
   void SameDocumentNavigation(autofill::mojom::SubmissionIndicatorEvent
                                   submission_indication_event) override;

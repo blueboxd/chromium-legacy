@@ -20,7 +20,6 @@
 <translation id="1587325591171447154">Файл <ph name="FILE_NAME" /> небезпечний, тому Chrome заблокував його.</translation>
 <translation id="1619887657840448962">Щоб зробити Chrome безпечнішим, ми вимкнули наведене нижче розширення, установлене не із сайту <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> і, можливо, додане без вашого відома.</translation>
 <translation id="1628000112320670027">Довідка щодо Chrome</translation>
-<translation id="1635734105302489219">Файли cookie видаляються, коли ви закриваєте Chrome. Щоб продовжити синхронізацію, змініть ці <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="1662639173275167396">ОС Chrome, як і <ph name="BEGIN_LINK_LINUX_OSS" />бета-версія Linux<ph name="END_LINK_LINUX_OSS" />, працюють завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS" />програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="1666409074978194368">Майже готово. Перезапустіть Google Chrome, щоб завершити оновлення. Вікна в режимі анонімного перегляду не відновляться й не відкриються знову.</translation>
 <translation id="1674870198290878346">Відкрити посилання в аноні&amp;мному вікні Chrome</translation>
@@ -73,7 +72,6 @@
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
 <translation id="3149510190863420837">Додатки Chrome</translation>
 <translation id="3282568296779691940">Вхід у Chrome</translation>
-<translation id="3340978935015468852">налаштування</translation>
 <translation id="3360895254066713204">Помічник Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome перезапуститься зараз}=1{Chrome перезапуститься через 1 секунду}one{Chrome перезапуститься через # секунду}few{Chrome перезапуститься через # секунди}many{Chrome перезапуститься через # секунд}other{Chrome перезапуститься через # секунди}}</translation>
 <translation id="3395323229510056640">Отримати довідку щодо ОС Chrome</translation>

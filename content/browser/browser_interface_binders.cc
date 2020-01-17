@@ -14,6 +14,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
+#include "content/browser/frame_host/clipboard_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/image_capture/image_capture_impl.h"
@@ -109,7 +110,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/date_time_chooser_android.h"
-#include "content/browser/android/text_suggestion_host_mojo_impl_android.h"
+#include "content/browser/android/text_suggestion_host_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
@@ -229,8 +230,7 @@ void BindTextSuggestionHostForFrame(
   if (!view->text_suggestion_host())
     return;
 
-  TextSuggestionHostMojoImplAndroid::Create(view->text_suggestion_host(),
-                                            std::move(receiver));
+  view->text_suggestion_host()->BindTextSuggestionHost(std::move(receiver));
 }
 #endif
 
@@ -663,6 +663,9 @@ void PopulateBinderMapWithContext(
   map->Add<blink::mojom::TextSuggestionHost>(
       base::BindRepeating(&BindTextSuggestionHostForFrame));
 #endif  // defined(OS_ANDROID)
+
+  map->Add<blink::mojom::ClipboardHost>(
+      base::BindRepeating(&ClipboardHostImpl::Create));
 
   GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(host,
                                                                          map);

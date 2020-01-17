@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">यह उपयोगकर्ता खाता उस डोमेन से संबंधित नहीं है जिसमें डिवाइस का नाम दर्ज है.  अगर आप किसी दूसरे डोमेन में नाम दर्ज करना चाहते हैं तो, आपको पहले डिवाइस बहाल करना होगा.</translation>
 <translation id="1274977772557788323">Adobe Flash Player जगह सेटिंग</translation>
 <translation id="1274997165432133392">कुकी और साइट का अन्य डेटा</translation>
-<translation id="127668050356036882">अपनी सभी विंडो बंद करें</translation>
 <translation id="1280820357415527819">मोबाइल नेटवर्क खोजे जा रहे हैं</translation>
 <translation id="1282420830958964167">"<ph name="APP_NAME" />" पर आपके अभिभावक ने जो सीमा तय की थी वह खत्म हो गई. आप इसे कल <ph name="TIME_LIMIT" /> के लिए इस्तेमाल कर सकते हैं.</translation>
 <translation id="1285320974508926690">कभी भी इस साइट का अनुवाद न करें</translation>
@@ -518,7 +517,6 @@
 <translation id="1712552549805331520"><ph name="URL" /> आपके स्थानीय कंप्यूटर पर हमेशा के लिए डेटा संग्रहित करना चाहता है</translation>
 <translation id="1714644264617423774">अपने डिवाइस को आसानी से इस्तेमाल करने के लिए सुलभता सुविधाएं चालू करें. <ph name="LINK_BEGIN" />ज़्यादा जानें<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">मोशन सेंसर</translation>
-<translation id="171824261579749339">ऑस्ट्रेलियाई <ph name="LINK_BEGIN" />ज़्यादा जानें<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">पिछला घंटा</translation>
 <translation id="1719312230114180055">ध्यान दें: आपका फ़िंगरप्रिंट किसी मज़बूत पासवर्ड या पिन की तुलना में कम सुरक्षित हो सकता है.</translation>
 <translation id="1720318856472900922">TLS WWW सर्वर प्रमाणीकरण</translation>
@@ -729,7 +727,6 @@
 <translation id="2006638907958895361"><ph name="APP" /> में लिंक खोलें</translation>
 <translation id="2007404777272201486">किसी समस्या की रिपोर्ट करें...</translation>
 <translation id="2010501376126504057">इसके साथ काम करने वाले डिवाइस</translation>
-<translation id="2016430552235416146">परंपरागत</translation>
 <translation id="2017334798163366053">'परफ़ॉर्मेंस डेटा' इकट्ठा करना बंद करें</translation>
 <translation id="2017836877785168846">इतिहास साफ़ करता है और पता बार मेंअपने-आपपूर्णता को साफ़ करता है.</translation>
 <translation id="2018352199541442911">क्षमा करें, आपका बाह्य मेमोरी डिवाइस इस समय समर्थित नहीं है.</translation>
@@ -770,7 +767,6 @@
 <translation id="2076672359661571384">मध्यम (सुझाया गया)</translation>
 <translation id="2077129598763517140">उपलब्ध होने पर 'हार्डवेयर से तेज़ी लाएं' सुविधा का उपयोग करें</translation>
 <translation id="2078019350989722914">छोड़ने के पहले चेतावनी दें (<ph name="KEY_EQUIVALENT" />)</translation>
-<translation id="2078494137444990774">बंद करें</translation>
 <translation id="2079053412993822885">अगर आप अपने प्रमाणपत्रों में से किसी एक को मिटाते हैं, तो इसके बाद आप इसका इस्तेमाल खुद की पहचान करने के लिए नहीं कर पाएंगे.</translation>
 <translation id="2079545284768500474">वापस लाएं</translation>
 <translation id="2080070583977670716">ज़्यादा सेटिंग</translation>
@@ -1209,7 +1205,6 @@
 <translation id="2665647207431876759">समय खत्म</translation>
 <translation id="2665717534925640469">यह पेज अब फ़ुल स्‍क्रीन है और आपका माउस कर्सर बंद कर दिया गया है.</translation>
 <translation id="2665919335226618153">हे भगवान! फ़ॉर्मेटिंग के दौरान गड़बड़ी आई.</translation>
-<translation id="2666990579225592931">मेहमान विंडो खोलें</translation>
 <translation id="2667463864537187133">वर्तनी जाँच प्रबंधित करें</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" />, Chrome टैब को शेयर कर रहा है.</translation>
 <translation id="2670429602441959756">इस पेज में ऐसी सुविधाएं मौजूद हैं जो अभी तक VR में काम नहीं करती हैं. बाहर निकाला जा रहा है...</translation>
@@ -2205,7 +2200,7 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{पेज से बाहर निकलें}one{पेज से बाहर निकलें}other{पेज से बाहर निकलें}}</translation>
 <translation id="4044612648082411741">अपना प्रमाणपत्र पासवर्ड डालें</translation>
 <translation id="404493185430269859">डिफ़ॉल्ट सर्च इंजन</translation>
-<translation id="4046013316139505482">इन एक्सटेंशन को साइट की जानकारी देखने या बदलने की ज़रूरत नहीं है.</translation>
+<translation id="4046013316139505482">इन एक्सटेंशन को साइट की जानकारी देखने या बदलने की ज़रूरत नहीं होती है.</translation>
 <translation id="4046123991198612571">अगला ट्रैक</translation>
 <translation id="4050225813016893843">पुष्टि करने का तरीका</translation>
 <translation id="4052120076834320548">छोटा</translation>
@@ -2405,7 +2400,6 @@
 <translation id="4364327530094270451">खरबूजा</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> किसी विंडो को शेयर कर रहा है.</translation>
 <translation id="4364830672918311045">डिसप्ले नोटिफ़िकेशन</translation>
-<translation id="436499142539576997">ऐप्लिकेशन का डेटा नहीं मिल सका, ऐप्लिकेशन चलाने की अब भी कोशिश की जा रही है...</translation>
 <translation id="4370975561335139969">  डाले गए ईमेल और पासवर्ड का मिलान नहीं हो रहा</translation>
 <translation id="437184764829821926">बेहतर फ़ॉन्ट सेटिंग</translation>
 <translation id="4374831787438678295">Linux इंस्टॉलर</translation>
@@ -2547,7 +2541,7 @@
 <translation id="4570387585180509432">पते, फ़ोन नंबर और दूसरी जानकारी</translation>
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" से कनेक्ट होते समय प्रमाणीकरण रद्द हो गया.</translation>
 <translation id="4572779512957829735">अपनी 'सुरक्षा कुंजी' का पिन डालें</translation>
-<translation id="4573515936045019911">Linux अपग्रेड करने के लिए, नेटवर्क कनेक्शन की ज़रूरत है. कृपया इंटरनेट से कनेक्ट करें और फिर से कोशिश करें.</translation>
+<translation id="4573515936045019911">Linux अपग्रेड करने के लिए, नेटवर्क कनेक्शन होना ज़रूरी है. कृपया इंटरनेट से कनेक्ट करें और फिर से कोशिश करें.</translation>
 <translation id="457386861538956877">ज़्यादा...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> को कास्ट करने में असमर्थ.</translation>
@@ -3309,7 +3303,7 @@
 <translation id="5700836101007545240">आपके व्यवस्थापक ने कनेक्शन जोड़ने की सुविधा बंद कर दी है</translation>
 <translation id="5701080607174488915">सर्वर से नीति लाते समय गड़बडी हुई.</translation>
 <translation id="5701381305118179107">मध्य</translation>
-<translation id="5701441174893770082">Linux को अपग्रेड करने से आपकी बैटरी जल्दी खत्म हो सकती है. अपना डिवाइस चार्ज करें और फिर से कोशिश करें.</translation>
+<translation id="5701441174893770082">Linux को अपग्रेड करने से आपकी बैटरी जल्दी खत्म हो सकती है. कृपया अपने डिवाइस को चार्जर से कनेक्ट करें और फिर से कोशिश करें.</translation>
 <translation id="5702898740348134351">और सर्च इंजन में बदलाव करें...</translation>
 <translation id="570302979952009979">इस फ़िंगरप्रिंट के लिए कोई नाम चुनें</translation>
 <translation id="5704875434923668958">इससे सिंक हो रहा है:</translation>
@@ -3432,7 +3426,6 @@
 <translation id="5867841422488265304">वेब पता खोजें या लिखें</translation>
 <translation id="5869029295770560994">ठीक है, समझ लिया</translation>
 <translation id="5869522115854928033">सेव किए गए पासवर्ड</translation>
-<translation id="5869948122057593679">'अपनी सभी विंडो बंद करें'</translation>
 <translation id="5870086504539785141">सुलभता मेन्यू बंद करें</translation>
 <translation id="5870155679953074650">हार्ड फ़ॉल्ट</translation>
 <translation id="5876851302954717356">दाईं ओर नया टैब खोलें</translation>
@@ -3924,7 +3917,7 @@
 <translation id="6582080224869403177">अपनी सुरक्षा बेहतर बनाने के लिए अपना <ph name="DEVICE_TYPE" /> रीसेट करें.</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6586451623538375658">प्राथमिक माउस बटन स्वैप करें</translation>
-<translation id="6586604979641883411">Linux अपग्रेड करने के लिए, डिस्क में कम से कम <ph name="REQUIRED_SPACE" /> खाली जगह की ज़रूरत है. कृपया अपने डिवाइस की कुछ जगह खाली करें और फिर से कोशिश करें.</translation>
+<translation id="6586604979641883411">Linux अपग्रेड करने के लिए, डिस्क में कम से कम <ph name="REQUIRED_SPACE" /> खाली जगह होनी चाहिए. कृपया अपने डिवाइस में कुछ जगह खाली करें और फिर से कोशिश करें.</translation>
 <translation id="6590458744723262880">फ़ोल्‍डर का नाम बदलें</translation>
 <translation id="6592267180249644460">WebRTC लॉग कैप्चर किया गया <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">आपका फ़िंगरप्रिंट कैप्चर कर लिया गया</translation>
@@ -4481,7 +4474,6 @@
 <translation id="7385854874724088939">प्रिंट करने की कोशिश करते समय कुछ गड़बड़ी हो गई.  कृपया अपना प्रिंटर जाँचें और फिर से कोशिश करें.</translation>
 <translation id="7385896526023870365">इस एक्सटेंशन में कोई भी दूसरा साइट ऐक्सेस नहीं है.</translation>
 <translation id="7388044238629873883">आप करीब पूरा कर चुके हैं!</translation>
-<translation id="7388222713940428051">मेहमान विंडो खोलें</translation>
 <translation id="7392118418926456391">वायरस स्कैन विफल रहा</translation>
 <translation id="7392915005464253525">बंद की गई विंडो पु&amp;न: खोलें</translation>
 <translation id="7396845648024431313">सिस्‍टम प्रारंभ होने पर <ph name="APP_NAME" /> लॉन्‍च होगा और   सभी अन्‍य <ph name="PRODUCT_NAME" /> विंडो बंद कर देने के बाद भी पृष्‍ठभूमि में चलता रहेगा.</translation>
@@ -4746,7 +4738,6 @@
 <translation id="7784067724422331729">आपके कंप्यूटर की सुरक्षा सेटिंग ने इस फ़ाइल को अवरोधित किया है.</translation>
 <translation id="7784796923038949829">साइट का डेटा पढ़ा या बदला नहीं जा सकता</translation>
 <translation id="778480864305029524">इंस्टैंट टेदरिंग का इस्तेमाल करने के लिए, Google Play सेवाओं के लिए सूचनाएं चालू करें.</translation>
-<translation id="7786207843293321886">मेहमान मोड से बाहर निकलें</translation>
 <translation id="7786889348652477777">और ऐप्लिकेशन रीलोड करें</translation>
 <translation id="7787308148023287649">किसी दूसरी स्क्रीन पर दिखाएं</translation>
 <translation id="7788298548579301890">आपके कंप्‍यूटर पर किसी दूसरे प्रोग्राम ने ऐसा ऐप्लिकेशन जोड़ा है जो Chrome के काम करने के तरीके को बदल सकता है.
@@ -4859,7 +4850,6 @@
 <translation id="7908378463497120834">क्षमा करें, आपके बाह्य मेमोरी डिवाइस पर कम-से-कम एक विभाजन माउंट नहीं हो सका.</translation>
 <translation id="7909969815743704077">गुप्त मोड में डाउनलोड किया गया</translation>
 <translation id="7910768399700579500">&amp;नया फ़ोल्डर</translation>
-<translation id="7910831464510799808">चालू करें</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">सर्वर पर आपका पासवर्ड बदल दिया गया है. कृपया साइन आउट करके फिर से साइन इन करें.</translation>
 <translation id="7915457674565721553">'माता-पिता के नियंत्रण में' सुविधा सेट करने के लिए इंटरनेट से कनेक्ट करें</translation>

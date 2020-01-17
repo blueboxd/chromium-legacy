@@ -31,12 +31,12 @@ Polymer({
   idleCallback_: 0,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.idleCallback_ = requestIdleCallback(this.get.bind(this));
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     // No-op if callback already fired.
     cancelIdleCallback(this.idleCallback_);
   },
@@ -45,7 +45,7 @@ Polymer({
    * @return {!Promise<Element>} Child element which has been stamped into the
    *     DOM tree.
    */
-  get: function() {
+  get() {
     if (this.loading_) {
       return this.loading_;
     }
@@ -75,7 +75,7 @@ Polymer({
    * @param {string} prop
    * @param {Object} value
    */
-  _forwardHostPropV2: function(prop, value) {
+  _forwardHostPropV2(prop, value) {
     if (this.instance_) {
       this.instance_.forwardHostProp(prop, value);
     }

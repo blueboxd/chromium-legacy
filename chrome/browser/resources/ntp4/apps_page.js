@@ -41,7 +41,7 @@ cr.define('ntp', function() {
   cr.addSingletonGetter(AppContextMenu);
 
   AppContextMenu.prototype = {
-    initialize: function() {
+    initialize() {
       const menu = new cr.ui.Menu;
       cr.ui.decorate(menu, cr.ui.Menu);
       menu.classList.add('app-context-menu');
@@ -103,7 +103,7 @@ cr.define('ntp', function() {
      *     that acts as the item's label.
      * @private
      */
-    appendMenuItem_: function(opt_textId) {
+    appendMenuItem_(opt_textId) {
       const button =
           /** @type {!HTMLButtonElement} */ (document.createElement('button'));
       this.menu.appendChild(button);
@@ -121,7 +121,7 @@ cr.define('ntp', function() {
      *     the associated launch ID.
      * @private
      */
-    forAllLaunchTypes_: function(f) {
+    forAllLaunchTypes_(f) {
       // Order matters: index matches launchType id.
       const launchTypes = [
         this.launchPinnedTab_, this.launchRegularTab_, this.launchFullscreen_,
@@ -141,7 +141,7 @@ cr.define('ntp', function() {
      * Does all the necessary setup to show the menu for the given app.
      * @param {ntp.App} app The App object that will be showing a context menu.
      */
-    setupForApp: function(app) {
+    setupForApp(app) {
       this.app_ = app;
 
       this.launch_.textContent = app.appData.title;
@@ -181,7 +181,7 @@ cr.define('ntp', function() {
     },
 
     /** @private */
-    onActivate_: function() {
+    onActivate_() {
       chrome.send('launchApp', [this.app_.appId, APP_LAUNCH.NTP_APPS_MENU]);
     },
 
@@ -189,7 +189,7 @@ cr.define('ntp', function() {
      * @param {Event} e
      * @private
      */
-    onLaunchTypeChanged_: function(e) {
+    onLaunchTypeChanged_(e) {
       const pressed = e.currentTarget;
       const app = this.app_;
       let targetLaunchType = pressed;
@@ -209,34 +209,34 @@ cr.define('ntp', function() {
     },
 
     /** @private */
-    onShowOptions_: function() {
+    onShowOptions_() {
       window.location = this.app_.appData.optionsUrl;
     },
 
     /** @private */
-    onShowDetails_: function() {
+    onShowDetails_() {
       let url = this.app_.appData.detailsUrl;
       url = appendParam(url, 'utm_source', 'chrome-ntp-launcher');
       window.location = url;
     },
 
     /** @private */
-    onUninstall_: function() {
+    onUninstall_() {
       chrome.send('uninstallApp', [this.app_.appData.id]);
     },
 
     /** @private */
-    onCreateShortcut_: function() {
+    onCreateShortcut_() {
       chrome.send('createAppShortcut', [this.app_.appData.id]);
     },
 
     /** @private */
-    onInstallLocally_: function() {
+    onInstallLocally_() {
       chrome.send('installAppLocally', [this.app_.appData.id]);
     },
 
     /** @private */
-    onShowAppInfo_: function() {
+    onShowAppInfo_() {
       chrome.send('showAppInfo', [this.app_.appData.id]);
     }
   };
@@ -266,7 +266,7 @@ cr.define('ntp', function() {
      * setter functions.
      * @suppress {deprecated}
      */
-    initialize: function(appData) {
+    initialize(appData) {
       this.appData = appData;
       assert(this.appData_.id, 'Got an app without an ID');
       this.id = this.appData_.id;
@@ -349,7 +349,7 @@ cr.define('ntp', function() {
      *
      * @param {boolean=} opt_animate Whether the removal should be animated.
      */
-    remove: function(opt_animate) {
+    remove(opt_animate) {
       // Unset the ID immediately, because the app is already gone. But leave
       // the tile on the page as it animates out.
       this.id = '';
@@ -361,7 +361,7 @@ cr.define('ntp', function() {
      * icon until loadIcon() is called (for performance reasons; we don't want
      * to load icons until we have to).
      */
-    setIcon: function() {
+    setIcon() {
       let src = this.useSmallIcon_ ? this.appData_.icon_small :
                                      this.appData_.icon_big;
       if (!this.appData_.enabled || !this.appData_.isLocallyInstalled ||
@@ -377,7 +377,7 @@ cr.define('ntp', function() {
      * Shows the icon for the app. That is, it causes chrome to load the app
      * icon resource.
      */
-    loadIcon: function() {
+    loadIcon() {
       if (this.appImgSrc_) {
         this.appImg_.src = this.appImgSrc_;
         this.appImg_.classList.remove('invisible');
@@ -394,7 +394,7 @@ cr.define('ntp', function() {
      * @param {number} y The y-position.
      *     animate.
      */
-    setBounds: function(size, x, y) {
+    setBounds(size, x, y) {
       const imgSize = size * APP_IMG_SIZE_FRACTION;
       this.appImgContainer_.style.width = this.appImgContainer_.style.height =
           toCssPx(this.useSmallIcon_ ? 16 : imgSize);
@@ -418,7 +418,7 @@ cr.define('ntp', function() {
     },
 
     /** @private */
-    onBlur_: function() {
+    onBlur_() {
       this.classList.remove('click-focus');
       this.appContents_.classList.remove('suppress-active');
     },
@@ -428,7 +428,7 @@ cr.define('ntp', function() {
      * @param {Event} e The click/auxclick event.
      * @private
      */
-    onClick_: function(e) {
+    onClick_(e) {
       if (/** @type {MouseEvent} */ (e).button > 1) {
         return;
       }
@@ -447,7 +447,7 @@ cr.define('ntp', function() {
      * @param {Event} e The key event.
      * @private
      */
-    onKeydown_: function(e) {
+    onKeydown_(e) {
       if (e.key == 'Enter') {
         chrome.send('launchApp', [
           this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED, '', 0, e.altKey, e.ctrlKey,
@@ -467,7 +467,7 @@ cr.define('ntp', function() {
      * @param {HTMLElement} node The node that should be clickable.
      * @private
      */
-    addLaunchClickTarget_: function(node) {
+    addLaunchClickTarget_(node) {
       node.classList.add('launch-click-target');
       node.addEventListener('click', this.onClick_.bind(this));
       node.addEventListener('auxclick', this.onClick_.bind(this));
@@ -481,7 +481,7 @@ cr.define('ntp', function() {
      * @param {Event} e The mousedown event.
      * @private
      */
-    onMousedown_: function(e) {
+    onMousedown_(e) {
       // If the current platform uses middle click to autoscroll and this
       // mousedown isn't handled, onClick_() will never fire. crbug.com/142939
       if (e.button == 1) {
@@ -505,7 +505,7 @@ cr.define('ntp', function() {
      * Change the appData and update the appearance of the app.
      * @param {AppInfo} appData The new data object that describes the app.
      */
-    replaceAppData: function(appData) {
+    replaceAppData(appData) {
       this.appData_ = appData;
       this.setIcon();
       this.loadIcon();
@@ -544,14 +544,14 @@ cr.define('ntp', function() {
      * the user can drag it onto the trash and expect something to happen).
      * @return {boolean} True if the app can be uninstalled.
      */
-    canBeRemoved: function() {
+    canBeRemoved() {
       return this.appData_.mayDisable;
     },
 
     /**
      * Uninstalls the app after it's been dropped on the trash.
      */
-    removeFromChrome: function() {
+    removeFromChrome() {
       chrome.send('uninstallApp', [this.appData_.id, true]);
       this.tile.tilePage.removeTile(this.tile, true);
     },
@@ -560,7 +560,7 @@ cr.define('ntp', function() {
      * Called when a drag is starting on the tile. Updates dataTransfer with
      * data for this tile.
      */
-    setDragData: function(dataTransfer) {
+    setDragData(dataTransfer) {
       dataTransfer.setData('Text', this.appData_.title);
       dataTransfer.setData('URL', this.appData_.url);
     },
@@ -600,7 +600,7 @@ cr.define('ntp', function() {
   AppsPage.prototype = {
     __proto__: TilePage.prototype,
 
-    initialize: function() {
+    initialize() {
       this.classList.add('apps-page');
 
       this.addEventListener('cardselected', this.onCardSelected_);
@@ -614,7 +614,7 @@ cr.define('ntp', function() {
      * Highlight a newly installed app as it's added to the NTP.
      * @param {AppInfo} appData The data object that describes the app.
      */
-    insertAndHighlightApp: function(appData) {
+    insertAndHighlightApp(appData) {
       ntp.getCardSlider().selectCardByValue(this);
       this.content_.scrollTop = this.content_.scrollHeight;
       this.insertApp(appData, true);
@@ -626,7 +626,7 @@ cr.define('ntp', function() {
      * @param {Object} appData The data that describes the app.
      * @param {boolean} animate Whether to animate the insertion.
      */
-    insertApp: function(appData, animate) {
+    insertApp(appData, animate) {
       let index = this.tileElements_.length;
       for (let i = 0; i < this.tileElements_.length; i++) {
         if (appData.app_launch_ordinal <
@@ -644,7 +644,7 @@ cr.define('ntp', function() {
      * first time this is called, we load all the app icons.
      * @private
      */
-    onCardSelected_: function() {
+    onCardSelected_() {
       const apps = /** @type {NodeList<ntp.App>} */ (
           this.querySelectorAll('.app.icon-loading'));
       for (let i = 0; i < apps.length; i++) {
@@ -657,7 +657,7 @@ cr.define('ntp', function() {
      * @param {Event} e The tilePage:tile_added event.
      * @private
      */
-    onTileAdded_: function(e) {
+    onTileAdded_(e) {
       assert(e.currentTarget == this);
       assert(e.addedTile.firstChild instanceof App);
       if (this.classList.contains('selected-card')) {
@@ -670,7 +670,7 @@ cr.define('ntp', function() {
      * the bubbles.
      * @private
      */
-    onScroll_: function() {
+    onScroll_() {
       if (!this.selected) {
         return;
       }
@@ -681,7 +681,7 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    doDragOver: function(e) {
+    doDragOver(e) {
       // Only animatedly re-arrange if the user is currently dragging an app.
       const tile = ntp.getCurrentlyDraggingTile();
       if (tile && tile.querySelector('.app')) {
@@ -693,7 +693,7 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    shouldAcceptDrag: function(e) {
+    shouldAcceptDrag(e) {
       if (ntp.getCurrentlyDraggingTile()) {
         return true;
       }
@@ -705,7 +705,7 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    addDragData: function(dataTransfer, index) {
+    addDragData(dataTransfer, index) {
       let sourceId = -1;
       const currentlyDraggingTile = ntp.getCurrentlyDraggingTile();
       if (currentlyDraggingTile) {
@@ -740,7 +740,7 @@ cr.define('ntp', function() {
      *     data.
      * @private
      */
-    addOutsideData_: function(dataTransfer) {
+    addOutsideData_(dataTransfer) {
       const url = dataTransfer.getData('url');
       assert(url);
 
@@ -774,7 +774,7 @@ cr.define('ntp', function() {
      * @param {Object} data The data object describing the link. Must have |url|
      *     and |title| members.
      */
-    generateAppForLink: function(data) {
+    generateAppForLink(data) {
       assert(data.url != undefined);
       assert(data.title != undefined);
       const pageIndex = ntp.getAppsPageIndex(this);
@@ -782,7 +782,7 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    tileMoved: function(draggedTile) {
+    tileMoved(draggedTile) {
       if (!(draggedTile.firstChild instanceof App)) {
         return;
       }
@@ -802,7 +802,7 @@ cr.define('ntp', function() {
     },
 
     /** @override */
-    setDropEffect: function(dataTransfer) {
+    setDropEffect(dataTransfer) {
       const tile = ntp.getCurrentlyDraggingTile();
       if (tile && tile.querySelector('.app')) {
         ntp.setCurrentDropEffect(dataTransfer, 'move');

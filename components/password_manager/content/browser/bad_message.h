@@ -6,6 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_BAD_MESSAGE_H_
 
 #include <vector>
+#include "components/autofill/core/common/form_data.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -49,17 +50,32 @@ enum class BadMessageReason {
 
 namespace bad_message {
 // Returns true if the renderer for |frame| is allowed to perform an operation
+// on password form with given URL. Renderer-side logic should prevent any
+// password manager usage for about:blank frames as well as data URLs.
+// If that's not the case, kill the renderer, as it might be exploited.
+bool CheckChildProcessSecurityPolicyForURL(content::RenderFrameHost* frame,
+                                           const GURL& form_url,
+                                           BadMessageReason reason);
+
+// Returns true if the renderer for |frame| is allowed to perform an operation
 // on |password_form|. If the origin mismatches, the process for |frame| is
 // terminated and the function returns false.
+// TODO: Delete this signature after transferring all driver calls to FormData
 bool CheckChildProcessSecurityPolicy(
     content::RenderFrameHost* frame,
     const autofill::PasswordForm& password_form,
     BadMessageReason reason);
 
 // Same as above but checks every form in |forms|.
+// TODO: Delete this signature after transferring all driver calls to FormData
 bool CheckChildProcessSecurityPolicy(
     content::RenderFrameHost* frame,
     const std::vector<autofill::PasswordForm>& forms,
+    BadMessageReason reason);
+
+bool CheckChildProcessSecurityPolicy(
+    content::RenderFrameHost* frame,
+    const std::vector<autofill::FormData>& forms_data,
     BadMessageReason reason);
 
 }  // namespace bad_message

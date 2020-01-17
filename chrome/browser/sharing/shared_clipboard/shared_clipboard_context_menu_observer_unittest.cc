@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/mock_render_view_context_menu.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_constants.h"
@@ -134,10 +135,12 @@ TEST_F(SharedClipboardContextMenuObserverTest, SingleDevice_ShowMenu) {
             item.command_id);
 
   // Emulate click on the device.
-  EXPECT_CALL(*service(),
-              SendMessageToDevice(Property(&syncer::DeviceInfo::guid, guid),
-                                  Eq(kSendMessageTimeout),
-                                  ProtoEquals(sharing_message), _))
+  EXPECT_CALL(
+      *service(),
+      SendMessageToDevice(
+          Property(&syncer::DeviceInfo::guid, guid),
+          Eq(base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get())),
+          ProtoEquals(sharing_message), _))
       .Times(1);
   menu_.ExecuteCommand(
       IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE, 0);
@@ -171,10 +174,12 @@ TEST_F(SharedClipboardContextMenuObserverTest, MultipleDevices_ShowMenu) {
   // assigned.
   for (int i = 0; i < kMaxDevicesShown; i++) {
     if (i < device_count) {
-      EXPECT_CALL(*service(),
-                  SendMessageToDevice(
-                      Property(&syncer::DeviceInfo::guid, guids[i]),
-                      Eq(kSendMessageTimeout), ProtoEquals(sharing_message), _))
+      EXPECT_CALL(
+          *service(),
+          SendMessageToDevice(
+              Property(&syncer::DeviceInfo::guid, guids[i]),
+              Eq(base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get())),
+              ProtoEquals(sharing_message), _))
           .Times(1);
     } else {
       EXPECT_CALL(*service(), SendMessageToDevice(_, _, _, _)).Times(0);
@@ -213,10 +218,12 @@ TEST_F(SharedClipboardContextMenuObserverTest,
   // range too.
   for (int i = 0; i < device_count; i++) {
     if (i < kMaxDevicesShown) {
-      EXPECT_CALL(*service(),
-                  SendMessageToDevice(
-                      Property(&syncer::DeviceInfo::guid, guids[i]),
-                      Eq(kSendMessageTimeout), ProtoEquals(sharing_message), _))
+      EXPECT_CALL(
+          *service(),
+          SendMessageToDevice(
+              Property(&syncer::DeviceInfo::guid, guids[i]),
+              Eq(base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get())),
+              ProtoEquals(sharing_message), _))
           .Times(1);
     } else {
       EXPECT_CALL(*service(), SendMessageToDevice(_, _, _, _)).Times(0);

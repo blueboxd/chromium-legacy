@@ -10,7 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/services/media_gallery_util/public/cpp/safe_media_metadata_parser.h"
-#include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
+#include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom-forward.h"
 
 namespace base {
 class FilePath;

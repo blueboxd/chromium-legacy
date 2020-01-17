@@ -113,7 +113,6 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
   LoadGAIAPictureIfNeeded();
 
   bool migrate_legacy_profile_names =
-      ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName() &&
       (!prefs_->GetBoolean(kLegacyProfileNameMigrated) ||
        migration_enabled_for_testing);
   if (migrate_legacy_profile_names) {
@@ -480,7 +479,6 @@ void ProfileInfoCache::LoadGAIAPictureIfNeeded() {
 }
 
 void ProfileInfoCache::MigrateLegacyProfileNamesAndRecomputeIfNeeded() {
-  DCHECK(ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName());
   std::vector<ProfileAttributesEntry*> entries = GetAllProfilesAttributes();
   for (size_t i = 0; i < entries.size(); i++) {
     base::string16 profile_name = entries[i]->GetLocalProfileName();

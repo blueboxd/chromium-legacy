@@ -7,15 +7,19 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-@class CommandDispatcher;
-
 // Presents and stops the Password Breach feature, which consists in alerting
 // the user that Chrome detected a leaked credential. In some scenarios it
 // prompts for a checkup of the stored passwords.
 @interface PasswordBreachCoordinator : ChromeCoordinator
 
-// The dispatcher used to register commands.
-@property(nonatomic, weak) CommandDispatcher* dispatcher;
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 @end
 

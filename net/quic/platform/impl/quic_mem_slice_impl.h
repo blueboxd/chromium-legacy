@@ -51,7 +51,7 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceImpl {
  private:
   scoped_refptr<net::IOBuffer> io_buffer_;
   // Length of io_buffer_.
-  size_t length_;
+  size_t length_ = 0;
 };
 
 }  // namespace quic

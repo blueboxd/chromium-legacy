@@ -19,6 +19,10 @@ class AuthenticationServiceDelegate {
   virtual void ClearBrowsingData(ProceduralBlock completion) = 0;
 
  private:
+  friend class AuthenticationServiceTest;
+  friend class AuthenticationServiceDelegateFake;
+
+  int clear_browsing_data_counter_ = 0;
   DISALLOW_COPY_AND_ASSIGN(AuthenticationServiceDelegate);
 };
 

@@ -378,29 +378,29 @@ class OncMojo {
    * @return {number|string}
    */
   static getTypeString(key, value) {
-    if (key == 'activationState') {
+    if (key === 'activationState') {
       return OncMojo.getActivationStateTypeString(
           /** @type {!chromeos.networkConfig.mojom.ActivationStateType} */ (
               value));
     }
-    if (key == 'connectionState') {
+    if (key === 'connectionState') {
       return OncMojo.getConnectionStateTypeString(
           /** @type {!chromeos.networkConfig.mojom.ConnectionStateType} */ (
               value));
     }
-    if (key == 'deviceState') {
+    if (key === 'deviceState') {
       return OncMojo.getDeviceStateTypeString(
           /** @type {!chromeos.networkConfig.mojom.DeviceStateType} */ (value));
     }
-    if (key == 'type') {
+    if (key === 'type') {
       return OncMojo.getNetworkTypeString(
           /** @type {!chromeos.networkConfig.mojom.NetworkType} */ (value));
     }
-    if (key == 'source') {
+    if (key === 'source') {
       return OncMojo.getOncSourceString(
           /** @type {!chromeos.networkConfig.mojom.OncSource} */ (value));
     }
-    if (key == 'security') {
+    if (key === 'security') {
       return OncMojo.getSecurityTypeString(
           /** @type {!chromeos.networkConfig.mojom.SecurityType} */ (value));
     }
@@ -463,7 +463,7 @@ class OncMojo {
       return OncMojo.getNetworkTypeDisplayName(network.type);
     }
     const mojom = chromeos.networkConfig.mojom;
-    if (network.type == mojom.NetworkType.kVPN &&
+    if (network.type === mojom.NetworkType.kVPN &&
         network.typeState.vpn.providerName) {
       return OncMojo.getVpnDisplayName(
           network.name, network.typeState.vpn.providerName);
@@ -480,7 +480,7 @@ class OncMojo {
       return OncMojo.getNetworkTypeDisplayName(network.type);
     }
     const mojom = chromeos.networkConfig.mojom;
-    if (network.type == mojom.NetworkType.kVPN &&
+    if (network.type === mojom.NetworkType.kVPN &&
         network.typeProperties.vpn.providerName) {
       return OncMojo.getVpnDisplayName(
           network.name.activeValue, network.typeProperties.vpn.providerName);
@@ -626,13 +626,14 @@ class OncMojo {
         networkState.typeState.cellular.networkTechnology =
             cellularProperties.networkTechnology || '';
         networkState.typeState.cellular.roaming =
-            cellularProperties.roamingState == 'Roaming';
+            cellularProperties.roamingState === 'Roaming';
         networkState.typeState.cellular.signalStrength =
             cellularProperties.signalStrength;
         break;
       case mojom.NetworkType.kEthernet:
         networkState.typeState.ethernet.authentication =
-            properties.typeProperties.ethernet.authentication == '8021X' ?
+            OncMojo.getActiveValue(
+                properties.typeProperties.ethernet.authentication) === '8021X' ?
             mojom.AuthenticationType.k8021x :
             mojom.AuthenticationType.kNone;
         break;
@@ -827,14 +828,14 @@ class OncMojo {
     const ipConfigs = properties.ipConfigs;
     let ipConfig;
     if (ipConfigs) {
-      ipConfig = ipConfigs.find(ipconfig => ipconfig.type == desiredType);
-      if (ipConfig && desiredType != 'IPv4') {
+      ipConfig = ipConfigs.find(ipconfig => ipconfig.type === desiredType);
+      if (ipConfig && desiredType !== 'IPv4') {
         return ipConfig;
       }
     }
 
     // Only populate static ip config properties for IPv4.
-    if (desiredType != 'IPv4') {
+    if (desiredType !== 'IPv4') {
       return undefined;
     }
 
@@ -849,7 +850,7 @@ class OncMojo {
 
     // Merge the appropriate static values into the result.
     if (properties.ipAddressConfigType &&
-        properties.ipAddressConfigType.activeValue == 'Static') {
+        properties.ipAddressConfigType.activeValue === 'Static') {
       if (staticIpConfig.gateway) {
         ipConfig.gateway = staticIpConfig.gateway.activeValue;
       }
@@ -864,7 +865,7 @@ class OncMojo {
       }
     }
     if (properties.nameServersConfigType &&
-        properties.nameServersConfigType.activeValue == 'Static') {
+        properties.nameServersConfigType.activeValue === 'Static') {
       if (staticIpConfig.nameServers) {
         ipConfig.nameServers = staticIpConfig.nameServers.activeValue;
       }
@@ -885,21 +886,21 @@ class OncMojo {
    */
   static ipConfigPropertiesMatch(staticValue, newValue) {
     // If the existing type is unset, or the types do not match, return false.
-    if (!staticValue.type || staticValue.type.activeValue != newValue.type) {
+    if (!staticValue.type || staticValue.type.activeValue !== newValue.type) {
       return false;
     }
     if (newValue.gateway !== undefined &&
         (!staticValue.gateway ||
-         staticValue.gateway.activeValue != newValue.gateway)) {
+         staticValue.gateway.activeValue !== newValue.gateway)) {
       return false;
     }
     if (newValue.ipAddress !== undefined &&
         (!staticValue.ipAddress ||
-         staticValue.ipAddress.activeValue != newValue.ipAddress)) {
+         staticValue.ipAddress.activeValue !== newValue.ipAddress)) {
       return false;
     }
     if (!staticValue.routingPrefix ||
-        staticValue.routingPrefix.activeValue != newValue.routingPrefix) {
+        staticValue.routingPrefix.activeValue !== newValue.routingPrefix) {
       return false;
     }
     return true;
@@ -927,38 +928,38 @@ class OncMojo {
         'DHCP';
     let staticIpConfig = OncMojo.getIPConfigForType(managedProperties, 'IPv4');
     let nameServers = staticIpConfig ? staticIpConfig.nameServers : undefined;
-    if (field == 'ipAddressConfigType') {
+    if (field === 'ipAddressConfigType') {
       const newIpConfigType = /** @type {string} */ (newValue);
-      if (newIpConfigType == ipConfigType) {
+      if (newIpConfigType === ipConfigType) {
         return null;
       }
       ipConfigType = newIpConfigType;
-    } else if (field == 'nameServersConfigType') {
+    } else if (field === 'nameServersConfigType') {
       const newNsConfigType = /** @type {string} */ (newValue);
-      if (newNsConfigType == nsConfigType) {
+      if (newNsConfigType === nsConfigType) {
         return null;
       }
       nsConfigType = newNsConfigType;
-    } else if (field == 'staticIpConfig') {
+    } else if (field === 'staticIpConfig') {
       const ipConfigValue =
           /** @type {!mojom.IPConfigProperties} */ (newValue);
       if (!ipConfigValue.type || !ipConfigValue.ipAddress) {
         console.error('Invalid StaticIPConfig: ' + JSON.stringify(newValue));
         return null;
       }
-      if (ipConfigType == 'Static' && staticIpConfig &&
+      if (ipConfigType === 'Static' && staticIpConfig &&
           OncMojo.ipConfigPropertiesMatch(staticIpConfig, ipConfigValue)) {
         return null;
       }
       ipConfigType = 'Static';
       staticIpConfig = ipConfigValue;
-    } else if (field == 'nameServers') {
+    } else if (field === 'nameServers') {
       const newNameServers = /** @type {!Array<string>} */ (newValue);
       if (!newNameServers || !newNameServers.length) {
         console.error('Invalid NameServers: ' + JSON.stringify(newValue));
       }
-      if (nsConfigType == 'Static' &&
-          JSON.stringify(nameServers) == JSON.stringify(newNameServers)) {
+      if (nsConfigType === 'Static' &&
+          JSON.stringify(nameServers) === JSON.stringify(newNameServers)) {
         return null;
       }
       nsConfigType = 'Static';
@@ -972,11 +973,11 @@ class OncMojo {
     const config = OncMojo.getDefaultConfigProperties(managedProperties.type);
     config.ipAddressConfigType = ipConfigType;
     config.nameServersConfigType = nsConfigType;
-    if (ipConfigType == 'Static') {
+    if (ipConfigType === 'Static') {
       assert(staticIpConfig && staticIpConfig.type && staticIpConfig.ipAddress);
       config.staticIpConfig = staticIpConfig;
     }
-    if (nsConfigType == 'Static') {
+    if (nsConfigType === 'Static') {
       assert(nameServers && nameServers.length);
       config.staticIpConfig = config.staticIpConfig ||
           /** @type{!mojom.IPConfigProperties}*/ ({routingPrefix: 0});

@@ -642,6 +642,27 @@ TEST_F(VideoFrameSubmitterTest, RecreateCompositorFrameSinkAfterContextLost) {
   task_environment_.RunUntilIdle();
 }
 
+// Test that after context is lost, the CompositorFrameSink is recreated but the
+// SurfaceEmbedder isn't even with software compositing.
+TEST_F(VideoFrameSubmitterTest,
+       RecreateCompositorFrameSinkAfterContextLostSoftwareCompositing) {
+  MockEmbeddedFrameSinkProvider mock_embedded_frame_sink_provider;
+  mojo::Receiver<mojom::blink::EmbeddedFrameSinkProvider>
+      embedded_frame_sink_provider_binding(&mock_embedded_frame_sink_provider);
+  auto override =
+      mock_embedded_frame_sink_provider.CreateScopedOverrideMojoInterface(
+          &embedded_frame_sink_provider_binding);
+
+  EXPECT_CALL(*resource_provider_, Initialize(_, _));
+  EXPECT_CALL(mock_embedded_frame_sink_provider, ConnectToEmbedder(_, _))
+      .Times(0);
+  EXPECT_CALL(mock_embedded_frame_sink_provider, CreateCompositorFrameSink_(_))
+      .Times(1);
+  submitter_->OnContextLost();
+  OnReceivedContextProvider(false, nullptr);
+  task_environment_.RunUntilIdle();
+}
+
 // This test simulates a race condition in which the |video_frame_provider_| is
 // destroyed before OnReceivedContextProvider returns.
 TEST_F(VideoFrameSubmitterTest, StopUsingProviderDuringContextLost) {

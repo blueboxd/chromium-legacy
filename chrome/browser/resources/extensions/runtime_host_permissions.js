@@ -115,7 +115,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onHostAccessChange_: function(event) {
+  onHostAccessChange_(event) {
     const group = /** @type {!HTMLElement} */ (this.$['host-access']);
     const access = group.selected;
 
@@ -141,7 +141,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showSpecificSites_: function() {
+  showSpecificSites_() {
     return this.permissions.hostAccess ===
         chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES;
   },
@@ -151,7 +151,7 @@ Polymer({
    * @return {!Array<string>}
    * @private
    */
-  getRuntimeHosts_: function() {
+  getRuntimeHosts_() {
     if (!this.permissions.hosts) {
       return [];
     }
@@ -168,7 +168,7 @@ Polymer({
    * @param {Event} e
    * @private
    */
-  onAddHostClick_: function(e) {
+  onAddHostClick_(e) {
     const target = /** @type {!HTMLElement} */ (e.target);
     this.doShowHostDialog_(target, null);
   },
@@ -180,14 +180,14 @@ Polymer({
    *     edited, or null if this is to add a new entry.
    * @private
    */
-  doShowHostDialog_: function(anchorElement, currentSite) {
+  doShowHostDialog_(anchorElement, currentSite) {
     this.hostDialogAnchorElement_ = anchorElement;
     this.hostDialogModel_ = currentSite;
     this.showHostDialog_ = true;
   },
 
   /** @private */
-  onHostDialogClose_: function() {
+  onHostDialogClose_() {
     this.hostDialogModel_ = null;
     this.showHostDialog_ = false;
     focusWithoutInk(assert(this.hostDialogAnchorElement_, 'Host Anchor'));
@@ -196,7 +196,7 @@ Polymer({
   },
 
   /** @private */
-  onHostDialogCancel_: function() {
+  onHostDialogCancel_() {
     // The user canceled the dialog. Set host-access back to the old value,
     // if the dialog was shown when just transitioning to a new state.
     if (this.oldHostAccess_) {
@@ -210,7 +210,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  dialogShouldUpdateHostAccess_: function() {
+  dialogShouldUpdateHostAccess_() {
     return !!this.oldHostAccess_;
   },
 
@@ -221,7 +221,7 @@ Polymer({
    * }} e
    * @private
    */
-  onEditHostClick_: function(e) {
+  onEditHostClick_(e) {
     this.actionMenuModel_ = e.model.item;
     this.actionMenuAnchorElement_ = e.target;
     const actionMenu =
@@ -230,7 +230,7 @@ Polymer({
   },
 
   /** @private */
-  onActionMenuEditClick_: function() {
+  onActionMenuEditClick_() {
     // Cache the site before closing the action menu, since it's cleared.
     const site = this.actionMenuModel_;
 
@@ -245,21 +245,21 @@ Polymer({
   },
 
   /** @private */
-  onActionMenuRemoveClick_: function() {
+  onActionMenuRemoveClick_() {
     this.delegate.removeRuntimeHostPermission(
         this.itemId, assert(this.actionMenuModel_, 'Action Menu Model'));
     this.closeActionMenu_();
   },
 
   /** @private */
-  closeActionMenu_: function() {
+  closeActionMenu_() {
     const menu = this.$.hostActionMenu;
     assert(menu.open);
     menu.close();
   },
 
   /** @private */
-  onActionMenuClose_: function() {
+  onActionMenuClose_() {
     this.actionMenuModel_ = null;
     this.actionMenuAnchorElement_ = null;
   },

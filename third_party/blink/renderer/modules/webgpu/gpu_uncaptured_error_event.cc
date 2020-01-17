@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_uncaptured_error_event.h"
 
-#include "third_party/blink/renderer/modules/webgpu/gpu_uncaptured_error_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_uncaptured_error_event_init.h"
 
 namespace blink {
 

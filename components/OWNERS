@@ -1,11 +1,13 @@
 blundell@chromium.org
 caitkp@chromium.org
 jochen@chromium.org
+tedchoc@chromium.org
 
 # For build configuration things and simple changes.
 thakis@chromium.org
 
 per-file app_modal_strings.grdp=file://components/app_modal/OWNERS
+per-file android_system_error_page_strings.grdp=file://components/android_system_error_page/OWNERS
 per-file autofill_assistant_strings.grdp=file://components/autofill_assistant/OWNERS
 per-file autofill_payments_strings.grdp=file://components/autofill/core/browser/payments/OWNERS
 per-file autofill_strings.grdp=file://components/autofill/OWNERS

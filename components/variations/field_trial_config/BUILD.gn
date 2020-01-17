@@ -60,16 +60,12 @@ static_library("field_trial_config") {
     "//ui/base",
   ]
 
-  public_deps = [
-    "//third_party/protobuf:protobuf_lite",
-  ]
+  public_deps = [ "//third_party/protobuf:protobuf_lite" ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "field_trial_util_unittest.cc",
-  ]
+  sources = [ "field_trial_util_unittest.cc" ]
   deps = [
     ":field_trial_config",
     "//base",

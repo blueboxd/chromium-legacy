@@ -13,8 +13,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
 #include "components/signin/internal/identity_manager/oauth_multilogin_token_fetcher.h"
+#include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -23,7 +23,6 @@
 class GaiaAuthFetcher;
 class GoogleServiceAuthError;
 class ProfileOAuth2TokenService;
-class SigninClient;
 
 namespace signin {
 
@@ -37,12 +36,14 @@ enum class SetAccountsInCookieResult;
 // It is safe to delete this object from within the callbacks.
 class OAuthMultiloginHelper : public GaiaAuthConsumer {
  public:
+  using AccountIdGaiaIdPair = std::pair<CoreAccountId, std::string>;
+
   OAuthMultiloginHelper(
       SigninClient* signin_client,
+      AccountsCookieMutator::PartitionDelegate* partition_delegate,
       ProfileOAuth2TokenService* token_service,
       gaia::MultiloginMode mode,
-      const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair>&
-          accounts,
+      const std::vector<AccountIdGaiaIdPair>& accounts,
       const std::string& external_cc_result,
       base::OnceCallback<void(SetAccountsInCookieResult)> callback);
 
@@ -73,13 +74,14 @@ class OAuthMultiloginHelper : public GaiaAuthConsumer {
                    net::CanonicalCookie::CookieInclusionStatus status);
 
   SigninClient* signin_client_;
+  AccountsCookieMutator::PartitionDelegate* partition_delegate_;
   ProfileOAuth2TokenService* token_service_;
 
   int fetcher_retries_ = 0;
 
   gaia::MultiloginMode mode_;
   // Account ids to set in the cookie.
-  const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair> accounts_;
+  const std::vector<AccountIdGaiaIdPair> accounts_;
   // See GaiaCookieManagerService::ExternalCcResultFetcher for details.
   const std::string external_cc_result_;
   // Access tokens, in the same order as the account ids.

@@ -125,6 +125,12 @@ class SyncScheduler : public SyncCycle::Delegate {
   // Called when credentials are updated by the user.
   virtual void OnCredentialsUpdated() = 0;
 
+  // Called when credentials are cleared.
+  // TODO(crbug.com/1041871): this function used only for temporary UMA
+  // metrics. Clean it up once Nigori metrics descrepancy investigation
+  // completed.
+  virtual void OnCredentialsInvalidated() = 0;
+
   // Called when the network layer detects a connection status change.
   virtual void OnConnectionStatusChange(
       network::mojom::ConnectionType type) = 0;

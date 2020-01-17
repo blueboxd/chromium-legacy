@@ -12,19 +12,21 @@ import android.os.Bundle;
 import android.provider.Browser;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.UserData;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -33,6 +35,27 @@ import org.chromium.ui.base.WindowAndroid;
  * Takes care of reparenting a Tab object from one Activity to another.
  */
 public class ReparentingTask implements UserData {
+    /** Provides data to {@link ReparentingTask} facilitate reparenting tabs. */
+    public interface Delegate {
+        /**
+         * Gets a {@link CompositorViewHolder} which is passed on to {@link ReparentingTask}, used
+         * in the reparenting process.
+         */
+        CompositorViewHolder getCompositorViewHolder();
+
+        /**
+         * Gets a {@link WindowAndroid} which is passed on to {@link ReparentingTask}, used in the
+         * reparenting process.
+         */
+        WindowAndroid getWindowAndroid();
+
+        /**
+         * Gets a {@link TabDelegateFactory} which is passed on to {@link ReparentingTask}, used in
+         * the reparenting process.
+         */
+        TabDelegateFactory getTabDelegateFactory();
+    }
+
     private static final Class<ReparentingTask> USER_DATA_KEY = ReparentingTask.class;
 
     private final Tab mTab;
@@ -52,7 +75,7 @@ public class ReparentingTask implements UserData {
     }
 
     @Nullable
-    private static ReparentingTask get(Tab tab) {
+    public static ReparentingTask get(Tab tab) {
         return tab.getUserDataHost().getUserData(USER_DATA_KEY);
     }
 
@@ -96,7 +119,7 @@ public class ReparentingTask implements UserData {
             AsyncTabParamsManager.add(
                     mTab.getId(), new TabReparentingParams(mTab, intent, finalizeCallback));
 
-            detach(mTab);
+            detach();
         }
 
         context.startActivity(intent, startActivityOptions);
@@ -110,16 +133,16 @@ public class ReparentingTask implements UserData {
      * - Removes the tab from its current {@link TabModelSelector}, effectively severing
      *   the {@link Activity} to {@link Tab} link.
      */
-    public static void detach(Tab tab) {
+    public void detach() {
         // TODO(yusufo): We can't call tab.updateWindowAndroid that sets |mWindowAndroid| to null
         // because many code paths (including navigation) expect the tab to always be associated
         // with an activity, and will crash. crbug.com/657007
-        WebContents webContents = tab.getWebContents();
+        WebContents webContents = mTab.getWebContents();
         if (webContents != null) webContents.setTopLevelNativeWindow(null);
 
         // TabModelSelector of this Tab, if present, gets notified to remove the tab from
         // the TabModel it belonged to.
-        tab.updateAttachment(null, null);
+        mTab.updateAttachment(null, null);
     }
 
     /**
@@ -127,14 +150,12 @@ public class ReparentingTask implements UserData {
      * the tab and related objects to reference it. This updates many delegates inside the tab
      * and {@link WebContents} both on java and native sides.
      *
-     * @param activity A new {@link ChromeActivity} to attach this Tab instance to.
-     * @param tabDelegateFactory The new delegate factory this tab should be using.
+     * @param delegate A delegate that provides dependencies.
      * @param finalizeCallback A Callback to be called after the Tab has been reparented.
      */
-    public void finish(ChromeActivity activity, TabDelegateFactory tabDelegateFactory,
-            @Nullable Runnable finalizeCallback) {
-        activity.getCompositorViewHolder().prepareForTabReparenting();
-        attach(activity.getWindowAndroid(), tabDelegateFactory);
+    public void finish(@NonNull Delegate delegate, @Nullable Runnable finalizeCallback) {
+        delegate.getCompositorViewHolder().prepareForTabReparenting();
+        attach(delegate.getWindowAndroid(), delegate.getTabDelegateFactory());
         ((TabImpl) mTab).setIsTabStateDirty(true);
         if (finalizeCallback != null) finalizeCallback.run();
     }

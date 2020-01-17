@@ -74,25 +74,25 @@ Polymer({
   keyBindings: {'enter': 'onEnter_', 'space': 'onSpace_'},
 
   /** @override */
-  attached: function() {
+  attached() {
     this.keyEventTarget = this.$.item;
   },
 
   /** @private */
-  bookmarkChanged_: function() {
+  bookmarkChanged_() {
     this.$.expand.style.visibility =
         this.bookmark.children.length > 0 ? 'visible' : 'hidden';
   },
 
   /** @private */
-  depthChanged_: function() {
+  depthChanged_() {
     this.childDepth_ = this.depth + 1;
     this.$.item.style.paddingInlineStart =
         (this.depth * BOOKMARK_INDENT) + 'px';
   },
 
   /** @private */
-  onClick_: function() {
+  onClick_() {
     if (this.bookmark.page != null) {
       if (this.bookmark.zoom != null) {
         this.fire('change-zoom', {zoom: this.bookmark.zoom});
@@ -118,7 +118,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onEnter_: function(e) {
+  onEnter_(e) {
     // Don't allow events which have propagated up from the expand button to
     // trigger a click.
     if (e.detail.keyboardEvent.target != this.$.expand) {
@@ -130,7 +130,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onSpace_: function(e) {
+  onSpace_(e) {
     // cr-icon-button stops propagation of space events, so there's no need
     // to check the event source here.
     this.onClick_();
@@ -142,7 +142,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  toggleChildren_: function(e) {
+  toggleChildren_(e) {
     this.childrenShown_ = !this.childrenShown_;
     e.stopPropagation();  // Prevent the above onClick_ handler from firing.
   }

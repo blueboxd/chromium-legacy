@@ -4,6 +4,9 @@ body {
     Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans,
     Droid Sans, Helvetica Neue, sans-serif;
+
+  /* turn off text selection since it interferes with DOM overlay drags */
+  user-select: none;
 }
 
 header {

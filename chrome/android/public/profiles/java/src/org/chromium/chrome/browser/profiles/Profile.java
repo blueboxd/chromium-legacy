@@ -26,12 +26,28 @@ public class Profile {
         mIsOffTheRecord = ProfileJni.get().isOffTheRecord(mNativeProfileAndroid, Profile.this);
     }
 
+    /**
+     * Returns the original profile, even if it is called in an incognito context.
+     *
+     * https://crbug.com/1041781: Remove after auditing and replacing all usecases.
+     *
+     * @deprecated use {@link #getMainProfile()} instead.
+     */
+    @Deprecated
     public static Profile getLastUsedProfile() {
+        return getMainProfile();
+    }
+
+    /**
+     * Returns the main profile. Note that it returns the original profile even
+     * if it is called in an incognito context.
+     */
+    public static Profile getMainProfile() {
         // TODO(crbug.com/704025): turn this into an assert once the bug is fixed
         if (!ProfileManager.isInitialized()) {
             throw new IllegalStateException("Browser hasn't finished initialization yet!");
         }
-        return (Profile) ProfileJni.get().getLastUsedProfile();
+        return (Profile) ProfileJni.get().getMainProfile();
     }
 
     /**
@@ -106,6 +122,8 @@ public class Profile {
         if (mIsOffTheRecord) {
             CookiesFetcher.deleteCookiesIfNecessary();
         }
+
+        ProfileManager.onProfileDestroyed(this);
     }
 
     @CalledByNative
@@ -115,7 +133,7 @@ public class Profile {
 
     @NativeMethods
     interface Natives {
-        Object getLastUsedProfile();
+        Object getMainProfile();
         Object fromWebContents(WebContents webContents);
         void destroyWhenAppropriate(long nativeProfileAndroid, Profile caller);
         Object getOriginalProfile(long nativeProfileAndroid, Profile caller);

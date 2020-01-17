@@ -32,25 +32,6 @@ public class ExploreSitesBridge {
     }
 
     /**
-     * @Deprecated Please use getCatalog instead.
-     *
-     * Fetches the catalog data from disk for Explore surfaces.
-     *
-     * Callback will be called with |null| if an error occurred.
-     */
-    @Deprecated
-    public static void getEspCatalog(
-            Profile profile, Callback<List<ExploreSitesCategory>> callback) {
-        if (sCatalogForTesting != null) {
-            callback.onResult(sCatalogForTesting);
-            return;
-        }
-
-        List<ExploreSitesCategory> result = new ArrayList<>();
-        ExploreSitesBridgeJni.get().getEspCatalog(profile, result, callback);
-    }
-
-    /**
      * Retrieves the catalog data for Explore surfaces by attempting to retrieve the data from disk.
      *
      * If the catalog is not available on the disk, then loads the catalog from the network onto the
@@ -101,19 +82,6 @@ public class ExploreSitesBridge {
     }
 
     /**
-     * Returns a Bitmap representing a summary of the sites available in the catalog for a specific
-     * category.
-     */
-    public static void getCategoryImage(
-            Profile profile, int categoryID, int pixelSize, Callback<Bitmap> callback) {
-        if (sCatalogForTesting != null) {
-            callback.onResult(null);
-            return;
-        }
-        ExploreSitesBridgeJni.get().getCategoryImage(profile, categoryID, pixelSize, callback);
-    }
-
-    /**
      * Returns a Bitmap representing a summary of the sites available in the catalog.
      */
     public static void getSummaryImage(Profile profile, int pixelSize, Callback<Bitmap> callback) {
@@ -157,15 +125,6 @@ public class ExploreSitesBridge {
     }
 
     /**
-     * Gets the current Finch variation for last MostLikely icon that is configured by flag or
-     * experiment.
-     */
-    @MostLikelyVariation
-    public static int getIconVariation() {
-        return ExploreSitesBridgeJni.get().getIconVariation();
-    }
-
-    /**
      * Gets the current Finch variation for dense that is configured by flag or experiment.
      * */
     @DenseVariation
@@ -174,9 +133,7 @@ public class ExploreSitesBridge {
     }
 
     public static boolean isEnabled(@ExploreSitesVariation int variation) {
-        return variation == ExploreSitesVariation.ENABLED
-                || variation == ExploreSitesVariation.PERSONALIZED
-                || variation == ExploreSitesVariation.MOST_LIKELY;
+        return variation == ExploreSitesVariation.ENABLED;
     }
 
     public static boolean isExperimental(@ExploreSitesVariation int variation) {
@@ -185,18 +142,6 @@ public class ExploreSitesBridge {
 
     public static boolean isDense(@DenseVariation int variation) {
         return variation != DenseVariation.ORIGINAL;
-    }
-
-    public static boolean isIntegratedWithMostLikely(@ExploreSitesVariation int variation) {
-        return variation == ExploreSitesVariation.MOST_LIKELY;
-    }
-
-    /**
-     * Increments the ntp_shown_count for a particular category.
-     * @param categoryId the row id of the category to increment show count for.
-     */
-    public static void incrementNtpShownCount(Profile profile, int categoryId) {
-        ExploreSitesBridgeJni.get().incrementNtpShownCount(profile, categoryId);
     }
 
     @CalledByNative
@@ -222,19 +167,13 @@ public class ExploreSitesBridge {
     @NativeMethods
     interface Natives {
         int getVariation();
-        int getIconVariation();
         int getDenseVariation();
-        void getEspCatalog(Profile profile, List<ExploreSitesCategory> result,
-                Callback<List<ExploreSitesCategory>> callback);
         void getIcon(Profile profile, int siteID, Callback<Bitmap> callback);
         void updateCatalogFromNetwork(
                 Profile profile, boolean isImmediateFetch, Callback<Boolean> callback);
-        void getCategoryImage(
-                Profile profile, int categoryID, int pixelSize, Callback<Bitmap> callback);
         void getSummaryImage(Profile profile, int pixelSize, Callback<Bitmap> callback);
         void blacklistSite(Profile profile, String url);
         void recordClick(Profile profile, String url, int type);
-        void incrementNtpShownCount(Profile profile, int categoryId);
         void getCatalog(Profile profile, int source, List<ExploreSitesCategory> result,
                 Callback<List<ExploreSitesCategory>> callback);
         void initializeCatalog(Profile profile, int source);

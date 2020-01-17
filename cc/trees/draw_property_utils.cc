@@ -191,7 +191,7 @@ bool ApplyClipNodeToAccumulatedClip(const PropertyTrees* property_trees,
 
       // Do the expansion.
       gfx::RectF expanded_clip_in_expanding_space =
-          gfx::RectF(clip_node->clip_expander->MapRectReverse(
+          gfx::RectF(clip_node->clip_expander->MapRect(
               ToEnclosingClipRect(accumulated_clip_rect_in_expanding_space),
               property_trees));
 

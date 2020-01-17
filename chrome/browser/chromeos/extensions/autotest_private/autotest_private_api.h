@@ -1137,6 +1137,17 @@ class AutotestPrivateStopTracingFunction : public ExtensionFunction {
   void OnTracingComplete(std::unique_ptr<std::string> trace);
 };
 
+class AutotestPrivateSetArcTouchModeFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateSetArcTouchModeFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setArcTouchMode",
+                             AUTOTESTPRIVATE_SETARCTOUCHMODE)
+
+ private:
+  ~AutotestPrivateSetArcTouchModeFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

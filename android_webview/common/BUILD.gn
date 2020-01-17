@@ -6,9 +6,7 @@ import("//build/config/android/rules.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("common_mojom") {
-  sources = [
-    "js_java_interaction/interfaces.mojom",
-  ]
+  sources = [ "js_java_interaction/interfaces.mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",

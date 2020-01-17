@@ -6,6 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/infobars/core/infobar_feature.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_badge_model.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
@@ -22,7 +23,6 @@
 #import "ios/chrome/browser/ui/badges/badge_consumer.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #include "ios/chrome/browser/ui/badges/badge_type_util.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -76,7 +76,7 @@ class BadgeMediatorTest : public testing::TestWithParam<TestParam> {
       : badge_consumer_([[FakeBadgeConsumer alloc] init]),
         browser_state_(TestChromeBrowserState::Builder().Build()),
         web_state_list_(&web_state_list_delegate_) {
-    feature_list_.InitAndEnableFeature(kInfobarUIReboot);
+    feature_list_.InitAndEnableFeature(kIOSInfobarUIReboot);
     OverlayPresenter::FromBrowser(browser(), OverlayModality::kInfobarBanner)
         ->SetPresentationContext(&overlay_presentation_context_);
     badge_mediator_ = [[BadgeMediator alloc] initWithBrowser:browser()];
@@ -303,7 +303,8 @@ TEST_P(BadgeMediatorTest, InfobarBannerOverlayObserving) {
   OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
       web_state(), OverlayModality::kInfobarBanner);
   queue->AddRequest(
-      OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(infobar));
+      OverlayRequest::CreateWithConfig<InfobarOverlayRequestConfig>(
+          infobar, InfobarOverlayType::kBanner));
   EXPECT_TRUE(item.badgeState & BadgeStatePresented);
 
   // Simulate dismissal of the banner and verify that the badge state is no

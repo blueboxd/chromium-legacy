@@ -201,7 +201,10 @@ class CORE_EXPORT DisplayLockContext final
   // find-in-page, scrolling, etc.
   // This issues a before activate signal with the given element as the
   // activated element.
-  void CommitForActivationWithSignal(Element* activated_element);
+  // The reason is specified for metrics.
+  void CommitForActivationWithSignal(
+      Element* activated_element,
+      DisplayLockActivationReason reason_for_metrics);
 
   bool ShouldCommitForActivation(DisplayLockActivationReason reason) const;
 

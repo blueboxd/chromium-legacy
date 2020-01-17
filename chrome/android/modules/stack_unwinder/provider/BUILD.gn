@@ -11,7 +11,5 @@ android_library("java") {
     "//chrome/android/features/stack_unwinder/public:java",
     "//chrome/android/modules/stack_unwinder/public:java",
   ]
-  sources = [
-    "java/src/org/chromium/chrome/modules/stack_unwinder/StackUnwinderModuleProvider.java",
-  ]
+  sources = [ "java/src/org/chromium/chrome/modules/stack_unwinder/StackUnwinderModuleProvider.java" ]
 }

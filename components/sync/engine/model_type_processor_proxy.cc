@@ -54,10 +54,12 @@ void ModelTypeProcessorProxy::GetLocalChanges(
 
 void ModelTypeProcessorProxy::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
-    const CommitResponseDataList& response_list) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(&ModelTypeProcessor::OnCommitCompleted,
-                                        processor_, type_state, response_list));
+    const CommitResponseDataList& committed_response_list,
+    const FailedCommitResponseDataList& error_response_list) {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ModelTypeProcessor::OnCommitCompleted, processor_,
+                     type_state, committed_response_list, error_response_list));
 }
 
 void ModelTypeProcessorProxy::OnUpdateReceived(

@@ -138,6 +138,23 @@ Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
   return nullptr;
 }
 
+void ThreadHeap::MarkRememberedSets(MarkingVisitor* visitor) {
+  static_assert(BlinkGC::kLargeObjectArenaIndex + 1 == BlinkGC::kNumberOfArenas,
+                "LargeObject arena must be the last one.");
+  const auto visit_header = [visitor](HeapObjectHeader* header) {
+    // Process only old objects.
+    if (header->IsMarked<HeapObjectHeader::AccessMode::kNonAtomic>()) {
+      visitor->VisitMarkedHeader(header);
+    }
+  };
+  for (size_t i = 0; i < BlinkGC::kLargeObjectArenaIndex; ++i) {
+    static_cast<NormalPageArena*>(arenas_[i])
+        ->IterateAndClearCardTables(visit_header);
+  }
+  static_cast<LargeObjectArena*>(arenas_[BlinkGC::kLargeObjectArenaIndex])
+      ->IterateAndClearRememberedPages(visit_header);
+}
+
 void ThreadHeap::SetupWorklists() {
   marking_worklist_.reset(new MarkingWorklist());
   write_barrier_worklist_.reset(new WriteBarrierWorklist());
@@ -301,6 +318,21 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
       ThreadHeapStatsCollector::Scope stats_scope(
           stats_collector(), ThreadHeapStatsCollector::kMarkProcessWorklist);
 
+      // Start with mutator-thread-only worklists (not fully constructed).
+      // If time runs out, concurrent markers can take care of the rest.
+
+      // Convert |previously_not_fully_constructed_worklist_| to
+      // |marking_worklist_|. This merely re-adds items with the proper
+      // callbacks.
+      finished = DrainWorklistWithDeadline(
+          deadline, previously_not_fully_constructed_worklist_.get(),
+          [visitor](const NotFullyConstructedItem& item) {
+            visitor->DynamicallyMarkAddress(reinterpret_cast<Address>(item));
+          },
+          WorklistTaskId::MutatorThread);
+      if (!finished)
+        break;
+
       finished = DrainWorklistWithDeadline(
           deadline, marking_worklist_.get(),
           [visitor](const MarkingItem& item) {
@@ -322,18 +354,6 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
                 .GCInfoFromIndex(header->GcInfoIndex())
                 ->trace(visitor, header->Payload());
             visitor->AccountMarkedBytes(header);
-          },
-          WorklistTaskId::MutatorThread);
-      if (!finished)
-        break;
-
-      // Convert |previously_not_fully_constructed_worklist_| to
-      // |marking_worklist_|. This merely re-adds items with the proper
-      // callbacks.
-      finished = DrainWorklistWithDeadline(
-          deadline, previously_not_fully_constructed_worklist_.get(),
-          [visitor](const NotFullyConstructedItem& item) {
-            visitor->DynamicallyMarkAddress(reinterpret_cast<Address>(item));
           },
           WorklistTaskId::MutatorThread);
       if (!finished)
@@ -436,14 +456,23 @@ BasePage* ThreadHeap::LookupPageForAddress(Address address) {
 
 void ThreadHeap::MakeConsistentForGC() {
   DCHECK(thread_state_->InAtomicMarkingPause());
-  for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
-    arenas_[i]->MakeConsistentForGC();
+  for (BaseArena* arena : arenas_) {
+    arena->MakeConsistentForGC();
+  }
 }
 
 void ThreadHeap::MakeConsistentForMutator() {
   DCHECK(thread_state_->InAtomicMarkingPause());
-  for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
-    arenas_[i]->MakeConsistentForMutator();
+  for (BaseArena* arena : arenas_) {
+    arena->MakeConsistentForMutator();
+  }
+}
+
+void ThreadHeap::Unmark() {
+  DCHECK(thread_state_->InAtomicMarkingPause());
+  for (BaseArena* arena : arenas_) {
+    arena->Unmark();
+  }
 }
 
 void ThreadHeap::Compact() {

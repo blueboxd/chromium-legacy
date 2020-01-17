@@ -20,7 +20,7 @@ public class AndroidUiNavigationGlow extends NavigationGlow {
      * Amount of time we wait before {@link GlowView} gets detached from parent view
      * after the glow effect is completed.
      */
-    private final static int REMOVE_RUNNABLE_DELAY_MS = 500;
+    private static final int REMOVE_RUNNABLE_DELAY_MS = 500;
 
     private final Runnable mRemoveGlowViewRunnable;
 

@@ -72,6 +72,7 @@ using CrashKeyString = crashpad::StringAnnotation<MaxLength>;
 
 namespace internal {
 
+constexpr size_t kCrashKeyStorageKeySize = 40;
 constexpr size_t kCrashKeyStorageNumEntries = 200;
 constexpr size_t kCrashKeyStorageValueSize = 128;
 

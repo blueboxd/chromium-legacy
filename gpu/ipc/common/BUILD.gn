@@ -9,25 +9,17 @@ import("//ui/ozone/ozone.gni")
 
 group("common") {
   if (is_component_build) {
-    public_deps = [
-      "//gpu",
-    ]
+    public_deps = [ "//gpu" ]
   } else {
-    public_deps = [
-      ":ipc_common_sources",
-    ]
+    public_deps = [ ":ipc_common_sources" ]
   }
 }
 
 group("command_buffer_traits") {
   if (is_component_build) {
-    public_deps = [
-      "//gpu",
-    ]
+    public_deps = [ "//gpu" ]
   } else {
-    public_deps = [
-      ":command_buffer_traits_sources",
-    ]
+    public_deps = [ ":command_buffer_traits_sources" ]
   }
 }
 
@@ -180,13 +172,9 @@ if (is_android) {
 
 # Depend on this to use surface_handle.h without pulling in all of gpu ipc.
 source_set("surface_handle_type") {
-  public = [
-    "surface_handle.h",
-  ]
+  public = [ "surface_handle.h" ]
 
-  public_deps = [
-    "//ui/gfx:native_widget_types",
-  ]
+  public_deps = [ "//ui/gfx:native_widget_types" ]
 }
 
 component("vulkan_ycbcr_info") {
@@ -194,19 +182,13 @@ component("vulkan_ycbcr_info") {
     "vulkan_ycbcr_info.cc",
     "vulkan_ycbcr_info.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   configs += [ "//gpu:gpu_implementation" ]
 }
 
 source_set("vulkan_types") {
-  sources = [
-    "vulkan_types.h",
-  ]
-  public_deps = [
-    "//ui/gfx",
-  ]
+  sources = [ "vulkan_types.h" ]
+  public_deps = [ "//ui/gfx" ]
   all_dependent_configs = [ "//third_party/vulkan:vulkan_config" ]
   configs += [ "//gpu:gpu_implementation" ]
 }
@@ -242,9 +224,7 @@ mojom("interfaces") {
 
 mojom("gpu_preferences_interface") {
   generate_java = true
-  sources = [
-    "gpu_preferences.mojom",
-  ]
+  sources = [ "gpu_preferences.mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",
@@ -264,18 +244,14 @@ mojom("vulkan_interface") {
     "vulkan_types.mojom",
   ]
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 
   js_generate_struct_deserializers = true
 }
 
 mojom("test_interfaces") {
   testonly = true
-  sources = [
-    "traits_test_service.mojom",
-  ]
+  sources = [ "traits_test_service.mojom" ]
 
   public_deps = [
     ":gpu_preferences_interface",
@@ -288,9 +264,7 @@ mojom("test_interfaces") {
 }
 
 source_set("vulkan_types_mojom_traits") {
-  sources = [
-    "vulkan_types_mojom_traits.h",
-  ]
+  sources = [ "vulkan_types_mojom_traits.h" ]
 
   deps = [
     ":vulkan_interface_shared_cpp_sources",

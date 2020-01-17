@@ -23,7 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/features.h"
 
-namespace {
+namespace features {
 
 // A holdback that prevents the preconnect to measure benefit of the feature.
 const base::Feature kNavigationPredictorPreconnectHoldback {
@@ -34,6 +34,9 @@ const base::Feature kNavigationPredictorPreconnectHoldback {
       base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
+}  // namespace features
+
+namespace {
 
 // Experiment with which event triggers the preconnect after commit.
 const base::Feature kPreconnectOnDidFinishNavigation{
@@ -110,7 +113,8 @@ void NavigationPredictorPreconnectClient::DidFinishLoad(
 }
 
 void NavigationPredictorPreconnectClient::MaybePreconnectNow() {
-  if (base::FeatureList::IsEnabled(kNavigationPredictorPreconnectHoldback))
+  if (base::FeatureList::IsEnabled(
+          features::kNavigationPredictorPreconnectHoldback))
     return;
 
   if (browser_context_->IsOffTheRecord())

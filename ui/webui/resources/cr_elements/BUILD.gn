@@ -75,15 +75,11 @@ js_type_check("cr_elements_resources") {
 }
 
 js_library("cr_scrollable_behavior") {
-  deps = [
-    "//third_party/polymer/v1_0/components-chromium/iron-list:iron-list-extracted",
-  ]
+  deps = [ "//third_party/polymer/v1_0/components-chromium/iron-list:iron-list-extracted" ]
 }
 
 js_library("cr_container_shadow_behavior") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
+  deps = [ "//ui/webui/resources/js:assert" ]
 }
 
 # Targets for auto-generating Polymer 3 JS Modules.
@@ -199,17 +195,11 @@ group("polymer3_elements") {
 
 js_type_check("cr_elements_module_resources") {
   uses_js_modules = true
-  deps = [
-    ":cr_container_shadow_behavior.m",
-  ]
+  deps = [ ":cr_container_shadow_behavior.m" ]
 }
 
 js_library("cr_container_shadow_behavior.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_container_shadow_behavior.m.js",
-  ]
-  deps = [
-    "//ui/webui/resources/js:assert.m",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_container_shadow_behavior.m.js" ]
+  deps = [ "//ui/webui/resources/js:assert.m" ]
   extra_deps = [ ":modulize" ]
 }

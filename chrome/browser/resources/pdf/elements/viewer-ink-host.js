@@ -90,7 +90,7 @@ Polymer({
   },
 
   /** @param {PointerEvent} e */
-  isActivePointer_: function(e) {
+  isActivePointer_(e) {
     return this.activePointer_ && this.activePointer_.pointerId == e.pointerId;
   },
 
@@ -99,7 +99,7 @@ Polymer({
    *
    * @param {PointerEvent} e
    */
-  dispatchPointerEvent_: function(e) {
+  dispatchPointerEvent_(e) {
     // TODO(dstockwell) come up with a solution to propagate e.timeStamp.
     this.ink_.dispatchPointerEvent(e.type, {
       pointerId: e.pointerId,
@@ -112,7 +112,7 @@ Polymer({
   },
 
   /** @param {TouchEvent} e */
-  onTouchStart_: function(e) {
+  onTouchStart_(e) {
     if (e.timeStamp !== this.allowTouchStartTimeStamp_) {
       e.preventDefault();
     }
@@ -120,7 +120,7 @@ Polymer({
   },
 
   /** @param {PointerEvent} e */
-  onPointerDown_: function(e) {
+  onPointerDown_(e) {
     if (e.pointerType == 'mouse' && e.buttons != 1 || this.pointerGesture_) {
       return;
     }
@@ -162,7 +162,7 @@ Polymer({
   },
 
   /** @param {PointerEvent} e */
-  onPointerLeave_: function(e) {
+  onPointerLeave_(e) {
     if (e.pointerType != 'mouse' || !this.isActivePointer_(e)) {
       return;
     }
@@ -170,7 +170,7 @@ Polymer({
   },
 
   /** @param {PointerEvent} e */
-  onPointerUpOrCancel_: function(e) {
+  onPointerUpOrCancel_(e) {
     if (!this.isActivePointer_(e)) {
       return;
     }
@@ -202,7 +202,7 @@ Polymer({
   },
 
   /** @param {PointerEvent} e */
-  onPointerMove_: function(e) {
+  onPointerMove_(e) {
     if (!this.isActivePointer_(e) || this.pointerGesture_) {
       return;
     }
@@ -246,7 +246,7 @@ Polymer({
     this.style.visibility = 'visible';
   },
 
-  viewportChanged: function() {
+  viewportChanged() {
     if (this.state_ != State.ACTIVE) {
       return;
     }

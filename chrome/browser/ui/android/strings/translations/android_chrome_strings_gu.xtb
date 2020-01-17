@@ -39,7 +39,6 @@
 <translation id="124678866338384709">વર્તમાન ટૅબ બંધ કરો</translation>
 <translation id="1258753120186372309">Google ડૂડલ: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">શોધો તેમજ શોધખોળ કરો</translation>
-<translation id="1264974993859112054">રમત-ગમત</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> શેર કરી શકાયો નથી</translation>
 <translation id="1272079795634619415">રોકો</translation>
 <translation id="1283039547216852943">વિસ્તૃત કરવા માટે ટૅપ કરો</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">તમારા બધા ઉપકરણો પર તમારા બુકમાર્ક મેળવવા માટે, સાઇન ઇન કરો અને સિંક કરવાનું ચાલુ કરો</translation>
 <translation id="2822354292072154809">શું તમે ખરેખર <ph name="CHOSEN_OBJECT_NAME" />ની બધી સાઇટ પસંદગીઓને રીસેટ કરવા માગો છે?</translation>
 <translation id="2842985007712546952">પેરન્ટ ફોલ્ડર</translation>
-<translation id="2858138569776157458">લોકપ્રિય સાઇટ</translation>
 <translation id="2860954141821109167">ખાતરી કરો કે આ ડિવાઇસ પર ફોન ઍપ ચાલુ કરેલી છે</translation>
 <translation id="2870560284913253234">સાઇટ</translation>
 <translation id="2874939134665556319">પાછલું ટ્રૅક</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Chrome માં સાઇન ઇન કરો</translation>
 <translation id="3288003805934695103">પૃષ્ઠ ફરીથી લોડ કરીને</translation>
 <translation id="32895400574683172">નોટિફિકેશનોની મંજૂરી છે</translation>
+<translation id="3290926146403723641">Google આસિસ્ટંટ મારફતે વેબ પરના કાર્યો પૂરા કરવા માટે, Chrome સાઇટનું URL, સાઇટનું કન્ટેન્ટ અને સંબંધિત વ્યક્તિગત માહિતી Googleને મોકલે છે</translation>
 <translation id="3295530008794733555">વધુ ઝડપથી બ્રાઉઝ કરો. ઓછા ડેટાનો ઉપયોગ કરો.</translation>
 <translation id="3298243779924642547">લાઇટ</translation>
 <translation id="3303414029551471755">કન્ટેન્ટ ડાઉનલોડ કરવા માટે આગળ વધીએ?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">ફોન નંબર</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ડાઉનલોડ કાઢી નાખ્યાં</translation>
 <translation id="3822502789641063741">સાઇટ સ્ટોરેજ સાફ કરીએ?</translation>
-<translation id="3853625385350850937">ચાલુ રાખવા માટે, તમારા ડિવાઇસ પર NFC ચાલુ કરો</translation>
 <translation id="3859306556332390985">આગળ કરો</translation>
 <translation id="388596076286380598">તમારું ઇન્ટરનેટ કનેક્શન ઉપલબ્ધ ન હોય અથવા ધીમું હોય ત્યારે પણ તમને ગમતી સાઇટ તરફથી લેખ, વીડિયો અને અન્ય કન્ટેન્ટ મેળવો.</translation>
 <translation id="3894427358181296146">ફોલ્ડર ઉમેરો</translation>
@@ -764,7 +762,6 @@
 <translation id="6697947395630195233">Chromeને આ સાઇટ સાથે તમારું સ્થાન શેર કરવા માટે તમારા સ્થાનના ઍક્સેસની જરૂર પડે છે.</translation>
 <translation id="6698801883190606802">સમન્વયિત ડેટા સંચાલિત કરો</translation>
 <translation id="6699370405921460408">Google સર્વર, તમે મુલાકાત લો છો તે પેજને ઑપ્ટિમાઇઝ કરશે.</translation>
-<translation id="6709133671862442373">News</translation>
 <translation id="6710213216561001401">પાછલી</translation>
 <translation id="671481426037969117">તમારું <ph name="FQDN" /> ટાઇમર સમાપ્ત થયું. તે આવતી કાલે ફરી શરૂ થશે.</translation>
 <translation id="6738867403308150051">ડાઉનલોડ કરી રહ્યું છે...</translation>
@@ -1079,7 +1076,6 @@
 <translation id="9133397713400217035">ઑફલાઇનમાં શોધખોળ કરો</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">મૂળ બતાવો</translation>
-<translation id="9139318394846604261">ખરીદી</translation>
 <translation id="9155898266292537608">તમે કોઈએક શબ્દ પર ટૅપ કરીને પણ ઝડપથી શોધી શકો છો</translation>
 <translation id="9169507124922466868">નૅવિગેશન ઇતિહાસ અડધા ભાગમાં ખુલ્લો છે</translation>
 <translation id="9204836675896933765">1 ફાઇલ બાકી છે</translation>

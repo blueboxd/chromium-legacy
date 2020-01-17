@@ -512,7 +512,11 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
 
   element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
                              kWebFocusTypeSpatialNavigation, nullptr));
-  DispatchMouseMoveAt(element);
+  // The focused element could be changed due to elm.focus() on focus handlers.
+  // So we need to update the current focused element before DispatchMouseMove.
+  // This is tested in snav-applies-hover-with-focused.html.
+  Element* current_interest = GetInterestedElement();
+  DispatchMouseMoveAt(current_interest);
 }
 
 void SpatialNavigationController::DispatchMouseMoveAt(Element* element) {

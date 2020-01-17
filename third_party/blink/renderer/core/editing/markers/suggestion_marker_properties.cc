@@ -70,4 +70,17 @@ SuggestionMarkerProperties::Builder::SetThickness(
   return *this;
 }
 
+SuggestionMarkerProperties::Builder&
+SuggestionMarkerProperties::Builder::SetUnderlineStyle(
+    ui::mojom::ImeTextSpanUnderlineStyle underline_style) {
+  data_.underline_style_ = underline_style;
+  return *this;
+}
+
+SuggestionMarkerProperties::Builder&
+SuggestionMarkerProperties::Builder::SetTextColor(Color text_color) {
+  data_.text_color_ = text_color;
+  return *this;
+}
+
 }  // namespace blink

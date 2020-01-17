@@ -1015,7 +1015,7 @@ tab_groups::TabGroupId TabStripModel::AddToNewGroup(
 }
 
 void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
-                                       tab_groups::TabGroupId group) {
+                                       const tab_groups::TabGroupId& group) {
   ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   AddToExistingGroupImpl(indices, group);
@@ -1023,14 +1023,14 @@ void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
 
 void TabStripModel::MoveTabsAndSetGroup(const std::vector<int>& indices,
                                         int destination_index,
-                                        tab_groups::TabGroupId group) {
+                                        const tab_groups::TabGroupId& group) {
   ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   MoveTabsAndSetGroupImpl(indices, destination_index, group);
 }
 
 void TabStripModel::AddToGroupForRestore(const std::vector<int>& indices,
-                                         tab_groups::TabGroupId group) {
+                                         const tab_groups::TabGroupId& group) {
   ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   const bool group_exists = group_model_->ContainsTabGroup(group);
@@ -1319,7 +1319,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
 
 void TabStripModel::ExecuteAddToExistingGroupCommand(
     int context_index,
-    tab_groups::TabGroupId group) {
+    const tab_groups::TabGroupId& group) {
   base::RecordAction(UserMetricsAction("TabContextMenu_AddToExistingGroup"));
 
   AddToExistingGroup(GetIndicesForCommand(context_index), group);
@@ -1759,7 +1759,7 @@ void TabStripModel::MoveSelectedTabsToImpl(int index,
 }
 
 void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
-                                      tab_groups::TabGroupId new_group) {
+                                      const tab_groups::TabGroupId& new_group) {
   DCHECK(!std::any_of(
       contents_data_.cbegin(), contents_data_.cend(),
       [new_group](const auto& datum) { return datum->group() == new_group; }));
@@ -1787,8 +1787,9 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
   MoveTabsAndSetGroupImpl(new_indices, destination_index, new_group);
 }
 
-void TabStripModel::AddToExistingGroupImpl(const std::vector<int>& indices,
-                                           tab_groups::TabGroupId group) {
+void TabStripModel::AddToExistingGroupImpl(
+    const std::vector<int>& indices,
+    const tab_groups::TabGroupId& group) {
   // Do nothing if the "existing" group can't be found. This would only happen
   // if the existing group is closed programmatically while the user is
   // interacting with the UI - e.g. if a group close operation is started by an
@@ -1888,7 +1889,7 @@ base::Optional<tab_groups::TabGroupId> TabStripModel::UngroupTab(int index) {
   return group;
 }
 
-void TabStripModel::GroupTab(int index, tab_groups::TabGroupId group) {
+void TabStripModel::GroupTab(int index, const tab_groups::TabGroupId& group) {
   // Check for an old group first, so that any groups that are changed can be
   // notified appropriately.
   base::Optional<tab_groups::TabGroupId> old_group = GetTabGroupForTab(index);

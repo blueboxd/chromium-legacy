@@ -22,8 +22,6 @@ class WebThreadScheduler;
 
 namespace content {
 
-class MockClipboardHost;
-
 // An implementation of BlinkPlatformImpl for tests.
 class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
  public:
@@ -71,7 +69,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
  private:
   void BindClipboardHost(mojo::ScopedMessagePipeHandle handle);
 
-  std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
   std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   bool threaded_animation_ = true;

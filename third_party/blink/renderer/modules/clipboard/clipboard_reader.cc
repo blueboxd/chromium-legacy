@@ -20,12 +20,13 @@ namespace {  // anonymous namespace for ClipboardReader's derived classes.
 // Reads an image from the System Clipboard as a blob with image/png content.
 class ClipboardImageReader final : public ClipboardReader {
  public:
-  ClipboardImageReader() = default;
+  ClipboardImageReader(SystemClipboard* system_clipboard)
+      : ClipboardReader(system_clipboard) {}
   ~ClipboardImageReader() override = default;
 
   Blob* ReadFromSystem() override {
-    SkBitmap bitmap = SystemClipboard::GetInstance().ReadImage(
-        mojom::ClipboardBuffer::kStandard);
+    SkBitmap bitmap =
+        system_clipboard()->ReadImage(mojom::ClipboardBuffer::kStandard);
 
     // Encode bitmap to Vector<uint8_t> on the main thread.
     SkPixmap pixmap;
@@ -47,12 +48,13 @@ class ClipboardImageReader final : public ClipboardReader {
 // Reads an image from the System Clipboard as a blob with text/plain content.
 class ClipboardTextReader final : public ClipboardReader {
  public:
-  ClipboardTextReader() = default;
+  ClipboardTextReader(SystemClipboard* system_clipboard)
+      : ClipboardReader(system_clipboard) {}
   ~ClipboardTextReader() override = default;
 
   Blob* ReadFromSystem() override {
-    String plain_text = SystemClipboard::GetInstance().ReadPlainText(
-        mojom::ClipboardBuffer::kStandard);
+    String plain_text =
+        system_clipboard()->ReadPlainText(mojom::ClipboardBuffer::kStandard);
 
     // Encode WTF String to UTF-8, the standard text format for blobs.
     StringUTF8Adaptor utf_text(plain_text);
@@ -66,18 +68,24 @@ class ClipboardTextReader final : public ClipboardReader {
 // ClipboardReader functions.
 
 // static
-std::unique_ptr<ClipboardReader> ClipboardReader::Create(
-    const String& mime_type) {
+ClipboardReader* ClipboardReader::Create(SystemClipboard* system_clipboard,
+                                         const String& mime_type) {
   if (mime_type == kMimeTypeImagePng)
-    return std::make_unique<ClipboardImageReader>();
+    return MakeGarbageCollected<ClipboardImageReader>(system_clipboard);
   if (mime_type == kMimeTypeTextPlain)
-    return std::make_unique<ClipboardTextReader>();
+    return MakeGarbageCollected<ClipboardTextReader>(system_clipboard);
 
   // The MIME type is not supported.
   return nullptr;
 }
 
-ClipboardReader::ClipboardReader() = default;
+ClipboardReader::ClipboardReader(SystemClipboard* system_clipboard)
+    : system_clipboard_(system_clipboard) {}
+
 ClipboardReader::~ClipboardReader() = default;
+
+void ClipboardReader::Trace(Visitor* visitor) {
+  visitor->Trace(system_clipboard_);
+}
 
 }  // namespace blink

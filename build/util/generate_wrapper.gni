@@ -70,9 +70,7 @@ template("generate_wrapper") {
       data = []
     }
     data += [ _wrapper_script ]
-    outputs = [
-      _wrapper_script,
-    ]
+    outputs = [ _wrapper_script ]
 
     _rebased_executable_to_wrap =
         rebase_path(_executable_to_wrap, root_build_dir)

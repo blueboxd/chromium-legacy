@@ -10,6 +10,7 @@
 #include <ios>
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "base/base64.h"
 #include "base/command_line.h"
@@ -488,16 +489,26 @@ TEST(SetupUtilTest, StoreDMTokenToRegistrySuccess) {
   ASSERT_EQ(kExpectedSize, token.length());
   EXPECT_TRUE(installer::StoreDMToken(token));
 
-  std::wstring path;
-  std::wstring name;
-  InstallUtil::GetMachineLevelUserCloudPolicyDMTokenRegistryPath(&path, &name);
   base::win::RegKey key;
-  ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_LOCAL_MACHINE, path.c_str(),
-                                    KEY_QUERY_VALUE | KEY_WOW64_64KEY));
+  std::wstring name;
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(false));
+  ASSERT_TRUE(key.Valid());
 
   DWORD size = kExpectedSize;
   std::vector<char> raw_value(size);
   DWORD dtype;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.ReadValue(name.c_str(), raw_value.data(), &size, &dtype));
+  EXPECT_EQ(REG_BINARY, dtype);
+  ASSERT_EQ(kExpectedSize, size);
+  EXPECT_EQ(0, memcmp(token.data(), raw_value.data(), kExpectedSize));
+
+  std::tie(key, name) = InstallUtil::GetCloudManagementDmTokenLocation(
+      InstallUtil::ReadOnly(true), InstallUtil::BrowserLocation(true));
+  ASSERT_TRUE(key.Valid());
+
+  size = kExpectedSize;
   ASSERT_EQ(ERROR_SUCCESS,
             key.ReadValue(name.c_str(), raw_value.data(), &size, &dtype));
   EXPECT_EQ(REG_BINARY, dtype);

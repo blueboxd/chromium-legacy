@@ -16,12 +16,8 @@ group("md5sum") {
 }
 
 executable("md5sum_bin") {
-  sources = [
-    "md5sum.cc",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "md5sum.cc" ]
+  deps = [ "//base" ]
 }
 
 if (current_toolchain == default_toolchain) {
@@ -30,9 +26,7 @@ if (current_toolchain == default_toolchain) {
   create_native_executable_dist("md5sum_prepare_dist") {
     dist_dir = "$root_build_dir/md5sum_dist"
     binary = "$root_build_dir/md5sum_bin"
-    deps = [
-      ":md5sum_bin",
-    ]
+    deps = [ ":md5sum_bin" ]
   }
 
   binary_symlink("md5sum_bin_host") {

@@ -363,7 +363,7 @@ void DOMStorageContextWrapper::OpenLocalStorage(
   DCHECK(local_storage_control_);
   local_storage_control_->BindStorageArea(origin, std::move(receiver));
   if (storage_policy_) {
-    EnsureLocalStorageOriginIsTracked(origin.GetURL());
+    EnsureLocalStorageOriginIsTracked(origin);
     OnStoragePolicyChanged();
   }
 }
@@ -452,12 +452,12 @@ void DOMStorageContextWrapper::PurgeMemory(PurgeOption purge_option) {
 void DOMStorageContextWrapper::OnStartupUsageRetrieved(
     std::vector<storage::mojom::LocalStorageUsageInfoPtr> usage) {
   for (const auto& info : usage)
-    EnsureLocalStorageOriginIsTracked(info->origin.GetURL());
+    EnsureLocalStorageOriginIsTracked(info->origin);
   OnStoragePolicyChanged();
 }
 
 void DOMStorageContextWrapper::EnsureLocalStorageOriginIsTracked(
-    const GURL& origin) {
+    const url::Origin& origin) {
   DCHECK(storage_policy_);
   auto it = local_storage_origins_.find(origin);
   if (it == local_storage_origins_.end())
@@ -472,13 +472,13 @@ void DOMStorageContextWrapper::OnStoragePolicyChanged() {
   // managing.
   std::vector<storage::mojom::LocalStoragePolicyUpdatePtr> policy_updates;
   for (auto& entry : local_storage_origins_) {
-    const GURL& origin = entry.first;
+    const url::Origin& origin = entry.first;
     LocalStorageOriginState& state = entry.second;
     state.should_purge_on_shutdown = ShouldPurgeLocalStorageOnShutdown(origin);
     if (state.should_purge_on_shutdown != state.will_purge_on_shutdown) {
       state.will_purge_on_shutdown = state.should_purge_on_shutdown;
       policy_updates.push_back(storage::mojom::LocalStoragePolicyUpdate::New(
-          url::Origin::Create(origin), state.should_purge_on_shutdown));
+          origin, state.should_purge_on_shutdown));
     }
   }
 
@@ -487,11 +487,11 @@ void DOMStorageContextWrapper::OnStoragePolicyChanged() {
 }
 
 bool DOMStorageContextWrapper::ShouldPurgeLocalStorageOnShutdown(
-    const GURL& origin) {
+    const url::Origin& origin) {
   if (!storage_policy_)
     return false;
-  return storage_policy_->IsStorageSessionOnly(origin) &&
-         !storage_policy_->IsStorageProtected(origin);
+  return storage_policy_->IsStorageSessionOnly(origin.GetURL()) &&
+         !storage_policy_->IsStorageProtected(origin.GetURL());
 }
 
 }  // namespace content

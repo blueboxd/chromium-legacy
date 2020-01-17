@@ -19,13 +19,9 @@ template("chrome_cleaner_mojom") {
 }
 
 chrome_cleaner_mojom("chrome_prompt_interface") {
-  sources = [
-    "chrome_prompt.mojom",
-  ]
+  sources = [ "chrome_prompt.mojom" ]
 
-  deps = [
-    ":footprints_interface",
-  ]
+  deps = [ ":footprints_interface" ]
 
   # NOTE: We avoid scrambling message IDs here because these messages cross an
   # IPC boundary to an external program built from a different source tree.
@@ -33,9 +29,7 @@ chrome_cleaner_mojom("chrome_prompt_interface") {
 }
 
 chrome_cleaner_mojom("footprints_interface") {
-  sources = [
-    "footprints.mojom",
-  ]
+  sources = [ "footprints.mojom" ]
 }
 
 chrome_cleaner_mojom("engine_sandbox_interface") {
@@ -55,18 +49,12 @@ chrome_cleaner_mojom("engine_sandbox_interface") {
 }
 
 chrome_cleaner_mojom("parser_interface") {
-  sources = [
-    "parser_interface.mojom",
-  ]
-  deps = [
-    "//mojo/public/mojom/base",
-  ]
+  sources = [ "parser_interface.mojom" ]
+  deps = [ "//mojo/public/mojom/base" ]
 }
 
 chrome_cleaner_mojom("zip_archiver_interface") {
-  sources = [
-    "zip_archiver.mojom",
-  ]
+  sources = [ "zip_archiver.mojom" ]
 }
 
 chrome_cleaner_mojom("engine_sandbox_test_interface") {
@@ -77,15 +65,11 @@ chrome_cleaner_mojom("engine_sandbox_test_interface") {
     "test_string16_embedded_nulls.mojom",
   ]
 
-  deps = [
-    ":engine_sandbox_interface",
-  ]
+  deps = [ ":engine_sandbox_interface" ]
 }
 
 chrome_cleaner_mojom("mojo_sandbox_hooks_test_interface") {
   testonly = true
 
-  sources = [
-    "test_mojo_sandbox_hooks.mojom",
-  ]
+  sources = [ "test_mojo_sandbox_hooks.mojom" ]
 }

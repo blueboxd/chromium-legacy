@@ -265,8 +265,9 @@ void AppServiceProxy::OnUninstallDialogClosed(
     bool clear_site_data,
     bool report_abuse,
     UninstallDialog* uninstall_dialog) {
-  if (uninstall)
+  if (uninstall) {
     app_service_->Uninstall(app_type, app_id, clear_site_data, report_abuse);
+  }
 
   DCHECK(uninstall_dialog);
   auto it = uninstall_dialogs_.find(uninstall_dialog);
@@ -276,8 +277,9 @@ void AppServiceProxy::OnUninstallDialogClosed(
 
 void AppServiceProxy::PauseApps(
     const std::map<std::string, PauseData>& pause_data) {
-  if (!app_service_.is_connected())
+  if (!app_service_.is_connected()) {
     return;
+  }
 
   for (auto& data : pause_data) {
     apps::mojom::AppType app_type = cache_.GetAppType(data.first);
@@ -296,8 +298,9 @@ void AppServiceProxy::PauseApps(
 }
 
 void AppServiceProxy::UnpauseApps(const std::set<std::string>& app_ids) {
-  if (!app_service_.is_connected())
+  if (!app_service_.is_connected()) {
     return;
+  }
 
   for (auto& app_id : app_ids) {
     apps::mojom::AppType app_type = cache_.GetAppType(app_id);
@@ -311,6 +314,20 @@ void AppServiceProxy::UnpauseApps(const std::set<std::string>& app_ids) {
 void AppServiceProxy::OnPauseDialogClosed(apps::mojom::AppType app_type,
                                           const std::string& app_id) {
   app_service_->PauseApp(app_type, app_id);
+}
+
+void AppServiceProxy::GetMenuModel(const std::string& app_id,
+                                   apps::mojom::MenuType menu_type,
+                                   GetMenuModelCallback callback) {
+  if (!app_service_.is_connected()) {
+    return;
+  }
+
+  // TODO(crbug.com/1038487): change to use below code to call
+  // AppService->GetMenuModel when GetMenuModel is added to mojom.
+  // apps::mojom::AppType app_type = cache_.GetAppType(app_id);
+  // app_service_->GetMenuModel(app_type, app_id, menu_type,
+  //                            std::move(callback));
 }
 
 void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {

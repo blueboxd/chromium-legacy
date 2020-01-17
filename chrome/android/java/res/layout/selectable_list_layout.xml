@@ -21,7 +21,7 @@
         android:layout_height="@dimen/toolbar_height_no_shadow"
         android:background="@color/default_primary_color" />
 
-    <org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout
+    <FrameLayout
         android:id="@+id/list_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -59,14 +59,14 @@
 
         </FrameLayout>
 
-        <org.chromium.chrome.browser.ui.widget.LoadingView
+        <org.chromium.components.browser_ui.widget.LoadingView
             android:id="@+id/loading_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center" />
-    </org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout>
+    </FrameLayout>
 
-    <org.chromium.chrome.browser.ui.widget.FadingShadowView
+    <org.chromium.components.browser_ui.widget.FadingShadowView
         android:id="@+id/shadow"
         android:layout_width="match_parent"
         android:layout_height="@dimen/action_bar_shadow_height"

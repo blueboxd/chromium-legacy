@@ -32,7 +32,7 @@ function MockFeedbackUnitTest() {
 MockFeedbackUnitTest.prototype = {
   __proto__: ChromeVoxUnitTestBase.prototype,
 
-  setUp: function() {
+  setUp() {
     window.ChromeVox = window.ChromeVox || {};
   },
 
@@ -60,7 +60,7 @@ TEST_F('MockFeedbackUnitTest', 'speechAndCallbacks', function() {
         assertFalse(afterThirdStringCalled);
         afterThirdStringCalled = true;
         speak('Spurious string', {
-          endCallback: function() {
+          endCallback() {
             assertFalse(spruiousStringEndCallbackCalled);
             spruiousStringEndCallbackCalled = true;
           }
@@ -83,14 +83,14 @@ TEST_F('MockFeedbackUnitTest', 'startAndEndCallbacks', function() {
   mock.install();
   speak('No callbacks', {});
   speak('Only start callback', {
-    startCallback: function() {
+    startCallback() {
       assertFalse(onlyStartCallbackCalled);
       onlyStartCallbackCalled = true;
       assertFalse(onlyEndCallbackCalled);
     }
   });
   speak('Only end callback', {
-    endCallback: function() {
+    endCallback() {
       assertTrue(onlyStartCallbackCalled);
       assertFalse(onlyEndCallbackCalled);
       onlyEndCallbackCalled = true;
@@ -98,13 +98,13 @@ TEST_F('MockFeedbackUnitTest', 'startAndEndCallbacks', function() {
     }
   });
   speak('Both callbacks', {
-    startCallback: function() {
+    startCallback() {
       assertTrue(onlyEndCallbackCalled);
       assertFalse(bothCallbacksStartCalled);
       bothCallbacksStartCalled = true;
       assertFalse(bothCallbacksEndCalled);
     },
-    endCallback: function() {
+    endCallback() {
       assertTrue(bothCallbacksStartCalled);
       assertFalse(bothCallbacksEndCalled);
       bothCallbacksEndCalled = true;
@@ -192,7 +192,7 @@ TEST_F('MockFeedbackUnitTest', 'SpeechAndEarcons', function() {
   mock.install();
   mock.call(function() {
         speak('MyButton', {
-          startCallback: function() {
+          startCallback() {
             earcon('BUTTON');
           }
         });
@@ -202,7 +202,7 @@ TEST_F('MockFeedbackUnitTest', 'SpeechAndEarcons', function() {
       .call(function() {
         earcon('ALERT_MODAL');
         speak('MyTextField', {
-          startCallback: function() {
+          startCallback() {
             earcon('EDITABLE_TEXT');
           }
         });

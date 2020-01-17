@@ -403,7 +403,7 @@ ProcessDataCollector::ProcessSampleMap ProcessDataCollector::GetValidProcesses(
     // iteration of this loop, |proc| will correspond to the PID of a different
     // process. Thus, this call to |std::unordered_map::emplace| should never be
     // called with the same key twice.
-    procs.emplace(std::make_pair(proc, std::move(psample)));
+    procs.emplace(proc, std::move(psample));
   }
 
   return procs;

@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabGroupUi;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
-import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsViewBinder.ViewHolder;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
@@ -174,44 +173,6 @@ public class BottomControlsCoordinator {
         if (mBottomToolbarCoordinator != null) {
             mBottomToolbarCoordinator.setBottomToolbarVisible(isVisible);
         }
-    }
-
-    /**
-     * Show the update badge over the bottom toolbar's app menu.
-     */
-    public void showAppMenuUpdateBadge() {
-        if (mBottomToolbarCoordinator != null) {
-            mBottomToolbarCoordinator.showAppMenuUpdateBadge();
-        }
-    }
-
-    /**
-     * Remove the update badge.
-     */
-    public void removeAppMenuUpdateBadge() {
-        if (mBottomToolbarCoordinator != null) {
-            mBottomToolbarCoordinator.removeAppMenuUpdateBadge();
-        }
-    }
-
-    /**
-     * @return Whether the update badge is showing.
-     */
-    public boolean isShowingAppMenuUpdateBadge() {
-        if (mBottomToolbarCoordinator != null) {
-            return mBottomToolbarCoordinator.isShowingAppMenuUpdateBadge();
-        }
-        return false;
-    }
-
-    /**
-     * @return The wrapper for the browsing mode toolbar's app menu button.
-     */
-    public MenuButton getMenuButtonWrapper() {
-        if (mBottomToolbarCoordinator != null) {
-            return mBottomToolbarCoordinator.getMenuButtonWrapper();
-        }
-        return null;
     }
 
     /**

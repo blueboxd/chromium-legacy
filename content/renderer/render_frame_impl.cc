@@ -51,7 +51,6 @@
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_security_policy/content_security_policy.h"
-#include "content/common/content_security_policy_header.h"
 #include "content/common/edit_command.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
@@ -163,7 +162,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
-#include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
@@ -172,6 +170,7 @@
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
@@ -1420,7 +1419,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   render_view->render_widget_ = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
       params->visual_properties.display_mode,
-      /*is_undead=*/false, render_view->widgets_never_composited());
+      render_view->widgets_never_composited());
 
   RenderWidget* render_widget = render_view->GetWidget();
   render_widget->set_delegate(render_view);
@@ -1432,9 +1431,13 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       blink::WebFrameWidget::CreateForMainFrame(render_widget, web_frame);
 
   render_widget->InitForMainFrame(std::move(show_callback), web_frame_widget,
-                                  &params->visual_properties.screen_info);
-  // AttachWebFrameWidget() is not needed here since InitForMainFrame() received
-  // the WebFrameWidget.
+                                  params->visual_properties.screen_info);
+  // The RenderWidget should start with valid VisualProperties, including a
+  // non-zero size. While RenderWidget would not normally receive IPCs and
+  // thus would not get VisualProperty updates while the frame is provisional,
+  // we need at least one update to them in order to meet expectations in the
+  // renderer, and that update comes as part of the CreateFrame message.
+  // TODO(crbug.com/419087): This could become part of RenderWidget Init.
   render_widget->OnUpdateVisualProperties(params->visual_properties);
 
   // The WebFrame created here was already attached to the Page as its
@@ -1561,66 +1564,48 @@ void RenderFrameImpl::CreateFrame(
   // We now have a WebLocalFrame for the new frame. The next step is to set
   // up a RenderWidget for it, if it is needed.
   if (is_main_frame) {
-    // For a main frame, we use the RenderWidget already attached to the
-    // RenderView (this is being changed by https://crbug.com/419087).
-
     // Main frames are always local roots, so they should always have a
     // |widget_params| (and it always comes with a routing id). Surprisingly,
     // this routing id is *not* used though, as the routing id on the existing
-    // RenderWidget is not changed. (I don't know why.)
+    // RenderWidget is not changed (since the RenderWidgetHost objects are not
+    // destroyed along with the RenderWidget if the RenderView is kept alive).
     // TODO(crbug.com/888105): It's a bug that the RenderWidget is not using
-    // this routing id.
+    // this routing id, but it should be the same routing id at the moment
+    // anyway.
     DCHECK(widget_params);
     DCHECK_NE(widget_params->routing_id, MSG_ROUTING_NONE);
 
-    // We revive the undead main frame RenderWidget at the same time we would
-    // create the RenderWidget if the RenderFrame owned it instead of having the
-    // RenderWidget live for eternity on the RenderView (after setting up the
-    // WebFrameWidget since that would be part of creating the RenderWidget).
-    //
-    // This is equivalent to creating a new RenderWidget if it wasn't undead.
-    RenderWidget* render_widget =
-        render_view->ReviveUndeadMainFrameRenderWidget();
-    if (render_widget) {
-      DCHECK(!render_widget->GetWebWidget());
+    // TODO(crbug.com/419087): Can we merge this code with
+    // RenderFrameImpl::CreateMainFrame()?
 
-      // Non-owning pointer that is self-referencing and destroyed by calling
-      // Close(). The RenderViewImpl has a RenderWidget already, but not a
-      // WebFrameWidget, which is now attached here.
-      auto* web_frame_widget = blink::WebFrameWidget::CreateForMainFrame(
-          render_view->GetWidget(), web_frame);
-      // This is equivalent to calling InitForMainFrame() on a new RenderWidget
-      // if it wasn't undead.
-      render_widget->InitForRevivedMainFrame(
-          web_frame_widget, widget_params->visual_properties.screen_info);
-    } else {
-      // If RenderView was initialized with a remote main frame then it won't
-      // have an undead widget. We only have an undead widget after the first
-      // time a local main frame was created.
-      //
-      // This block of code mimics RenderFrameImpl::CreateMainFrame().
-      render_view->render_widget_ = RenderWidget::CreateForFrame(
-          widget_params->routing_id, compositor_deps,
-          widget_params->visual_properties.display_mode,
-          /*is_undead=*/false, render_view->widgets_never_composited());
+    render_view->render_widget_ = RenderWidget::CreateForFrame(
+        widget_params->routing_id, compositor_deps,
+        widget_params->visual_properties.display_mode,
+        render_view->widgets_never_composited());
 
-      render_widget = render_view->GetWidget();
-      render_widget->set_delegate(render_view);
+    RenderWidget* render_widget = render_view->GetWidget();
+    render_widget->set_delegate(render_view);
 
-      // Non-owning pointer that is self-referencing and destroyed by calling
-      // Close(). The RenderViewImpl has a RenderWidget already, but not a
-      // WebFrameWidget, which is now attached here.
-      auto* web_frame_widget =
-          blink::WebFrameWidget::CreateForMainFrame(render_widget, web_frame);
+    // Non-owning pointer that is self-referencing and destroyed by calling
+    // Close(). The RenderViewImpl has a RenderWidget already, but not a
+    // WebFrameWidget, which is now attached here.
+    auto* web_frame_widget =
+        blink::WebFrameWidget::CreateForMainFrame(render_widget, web_frame);
 
-      render_widget->InitForMainFrame(
-          RenderWidget::ShowCallback(), web_frame_widget,
-          &widget_params->visual_properties.screen_info);
-    }
+    render_widget->InitForMainFrame(
+        RenderWidget::ShowCallback(), web_frame_widget,
+        widget_params->visual_properties.screen_info);
+    // The RenderWidget should start with valid VisualProperties, including a
+    // non-zero size. While RenderWidget would not normally receive IPCs and
+    // thus would not get VisualProperty updates while the frame is provisional,
+    // we need at least one update to them in order to meet expectations in the
+    // renderer, and that update comes as part of the CreateFrame message.
+    // TODO(crbug.com/419087): This could become part of RenderWidget Init.
+    render_widget->OnUpdateVisualProperties(widget_params->visual_properties);
 
     // Note that we do *not* call WebViewImpl's DidAttachLocalMainFrame() here
-    // yet because this frame is provisional and not attached to the Page yet.
-    // We will tell WebViewImpl about it once it is swapped in.
+    // for yet because this frame is provisional and not attached to the Page
+    // yet. We will tell WebViewImpl about it once it is swapped in.
 
     render_frame->render_widget_ = render_widget;
     DCHECK(!render_frame->owned_render_widget_);
@@ -1644,7 +1629,7 @@ void RenderFrameImpl::CreateFrame(
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params->routing_id, compositor_deps,
         widget_params->visual_properties.display_mode,
-        /*is_undead=*/false, render_view->widgets_never_composited());
+        render_view->widgets_never_composited());
 
     // Non-owning pointer that is self-referencing and destroyed by calling
     // Close(). We use the new RenderWidget as the client for this
@@ -1658,20 +1643,16 @@ void RenderFrameImpl::CreateFrame(
     // and run.
     render_widget->InitForChildLocalRoot(
         web_frame_widget, widget_params->visual_properties.screen_info);
-
-    render_frame->render_widget_ = render_widget.get();
-    render_frame->owned_render_widget_ = std::move(render_widget);
-  }
-
-  if (widget_params) {
-    DCHECK(render_frame->render_widget_);
     // The RenderWidget should start with valid VisualProperties, including a
     // non-zero size. While RenderWidget would not normally receive IPCs and
     // thus would not get VisualProperty updates while the frame is provisional,
     // we need at least one update to them in order to meet expectations in the
     // renderer, and that update comes as part of the CreateFrame message.
-    render_frame->render_widget_->OnUpdateVisualProperties(
-        widget_params->visual_properties);
+    // TODO(crbug.com/419087): This could become part of RenderWidget Init.
+    render_widget->OnUpdateVisualProperties(widget_params->visual_properties);
+
+    render_frame->render_widget_ = render_widget.get();
+    render_frame->owned_render_widget_ = std::move(render_widget);
   }
 
   if (has_committed_real_load)
@@ -2216,8 +2197,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FrameMsg_SetPepperVolume, OnSetPepperVolume)
 #endif
-    IPC_MESSAGE_HANDLER(FrameMsg_CopyImageAt, OnCopyImageAt)
-    IPC_MESSAGE_HANDLER(FrameMsg_SaveImageAt, OnSaveImageAt)
     IPC_MESSAGE_HANDLER(FrameMsg_VisualStateRequest,
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
@@ -2237,8 +2216,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnGetSavableResourceLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
                         OnGetSerializedHtmlWithLocalLinks)
-    IPC_MESSAGE_HANDLER(FrameMsg_BlinkFeatureUsageReport,
-                        OnBlinkFeatureUsageReport)
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
     IPC_MESSAGE_HANDLER(FrameMsg_SetOverlayRoutingToken,
                         OnSetOverlayRoutingToken)
@@ -2528,18 +2505,6 @@ void RenderFrameImpl::OnClipboardHostError() {
   clipboard_host_.reset();
 }
 #endif
-
-void RenderFrameImpl::OnCopyImageAt(int x, int y) {
-  blink::WebFloatRect viewport_position(x, y, 0, 0);
-  GetLocalRootRenderWidget()->ConvertWindowToViewport(&viewport_position);
-  frame_->CopyImageAt(WebPoint(viewport_position.x, viewport_position.y));
-}
-
-void RenderFrameImpl::OnSaveImageAt(int x, int y) {
-  blink::WebFloatRect viewport_position(x, y, 0, 0);
-  GetLocalRootRenderWidget()->ConvertWindowToViewport(&viewport_position);
-  frame_->SaveImageAt(WebPoint(viewport_position.x, viewport_position.y));
-}
 
 void RenderFrameImpl::JavaScriptExecuteRequest(
     const base::string16& javascript,
@@ -4121,6 +4086,7 @@ RenderFrameImpl::CreatePortal(
     mojo::ScopedInterfaceEndpointHandle client_endpoint,
     const blink::WebElement& portal_element) {
   int proxy_routing_id = MSG_ROUTING_NONE;
+  FrameReplicationState initial_replicated_state;
   base::UnguessableToken portal_token;
   base::UnguessableToken devtools_frame_token;
   GetFrameHost()->CreatePortal(
@@ -4128,9 +4094,11 @@ RenderFrameImpl::CreatePortal(
           std::move(portal_endpoint)),
       mojo::PendingAssociatedRemote<blink::mojom::PortalClient>(
           std::move(client_endpoint), blink::mojom::PortalClient::Version_),
-      &proxy_routing_id, &portal_token, &devtools_frame_token);
+      &proxy_routing_id, &initial_replicated_state, &portal_token,
+      &devtools_frame_token);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
       this, proxy_routing_id, devtools_frame_token, portal_element);
+  proxy->SetReplicatedState(initial_replicated_state);
   return std::make_pair(proxy->web_frame(), portal_token);
 }
 
@@ -4190,11 +4158,8 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
   GetLocalRootRenderWidget()->UnregisterRenderFrame(this);
   if (is_main_frame_) {
     DCHECK(!owned_render_widget_);
-    // TODO(crbug.com/419087): The RenderWidget for the main frame can't be
-    // closed/destroyed here, since there is no way to recreate it without also
-    // fixing the lifetimes of the related browser side objects. Closing is
-    // delegated to the RenderViewImpl which will stash the RenderWidget away
-    // as undead if needed.
+    // TODO(crbug.com/419087): Move ownership of the main frame RenderWidget to
+    // RenderFrameImpl.
     render_view_->CloseMainFrameRenderWidget();
   } else if (render_widget_) {
     DCHECK(owned_render_widget_);
@@ -4292,7 +4257,7 @@ void RenderFrameImpl::DidMatchCSS(
 }
 
 void RenderFrameImpl::UpdateUserActivationState(
-    blink::UserActivationUpdateType update_type) {
+    blink::mojom::UserActivationUpdateType update_type) {
   Send(new FrameHostMsg_UpdateUserActivationState(routing_id_, update_type));
 }
 
@@ -4410,12 +4375,40 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   NavigationState* navigation_state = internal_data->navigation_state();
   DCHECK(!navigation_state->WasWithinSameDocument());
 
+  base::Optional<base::UnguessableToken> embedding_token = base::nullopt;
   if (previous_routing_id_ != MSG_ROUTING_NONE) {
     // If this is a provisional frame associated with a proxy (i.e., a frame
     // created for a remote-to-local navigation), swap it into the frame tree
     // now.
     if (!SwapIn())
       return;
+
+    // Main frames don't require an embedding token since they aren't embedded
+    // in anything. Frames local to their parent also aren't considered to be
+    // embedded.
+    if (!is_main_frame_ && frame_->Parent()->IsWebRemoteFrame()) {
+      embedding_token = base::UnguessableToken::Create();
+      GetWebFrame()->SetEmbeddingToken(embedding_token.value());
+    }
+  } else {
+    // If this is not a provisional frame then use the old embedding token. This
+    // will be base::nullopt if there was no old embedding token.
+    embedding_token = GetWebFrame()->GetEmbeddingToken();
+
+    // In the case a crashed subframe is navigating to the same site
+    // e.g. https://crbug.com/634368 then generate a new embedding token to
+    // restore a sane state.
+    //
+    // Logic behind this behavior:
+    // - Main frames don't have embedding tokens.
+    // - A remote subframe *must* have an embedding token.
+    // - If a remote subframe doesn't have an embedding token to re-use we
+    //   need to create one.
+    if (!is_main_frame_ && frame_->Parent()->IsWebRemoteFrame() &&
+        !embedding_token.has_value()) {
+      embedding_token = base::UnguessableToken::Create();
+      GetWebFrame()->SetEmbeddingToken(embedding_token.value());
+    }
   }
 
   // Navigations that change the document represent a new content source.  Keep
@@ -4514,7 +4507,8 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
           ? mojom::DidCommitProvisionalLoadInterfaceParams::New(
                 std::move(remote_interface_provider_receiver),
                 std::move(browser_interface_broker_receiver))
-          : nullptr);
+          : nullptr,
+      embedding_token);
 
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.
@@ -4769,7 +4763,8 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
                               // was_within_same_document
                               true, transition,
                               // interface_params
-                              nullptr);
+                              nullptr,
+                              /*embedding_token=*/base::nullopt);
 
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.
@@ -5357,7 +5352,8 @@ const RenderFrameImpl* RenderFrameImpl::GetLocalRoot() const {
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
 RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
     blink::WebHistoryCommitType commit_type,
-    ui::PageTransition transition) {
+    ui::PageTransition transition,
+    const base::Optional<base::UnguessableToken>& embedding_token) {
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
   const WebURLResponse& response = document_loader->GetResponse();
 
@@ -5377,6 +5373,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
       document_loader->ReplacesCurrentHistoryItem();
   params->post_id = -1;
   params->nav_entry_id = navigation_state->commit_params().nav_entry_id;
+  params->embedding_token = embedding_token;
 
   // Pass the navigation token back to the browser process, or generate a new
   // one if this navigation is committing without the browser process asking for
@@ -5631,7 +5628,8 @@ void RenderFrameImpl::DidCommitNavigationInternal(
     blink::WebHistoryCommitType commit_type,
     bool was_within_same_document,
     ui::PageTransition transition,
-    mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
+    mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params,
+    const base::Optional<base::UnguessableToken>& embedding_token) {
   DCHECK(!(was_within_same_document && interface_params));
   UpdateStateForCommit(item, commit_type, transition);
 
@@ -5643,7 +5641,8 @@ void RenderFrameImpl::DidCommitNavigationInternal(
   // call chrome::ContentSettingsManager::OnContentBlocked, those calls arrive
   // after the browser process has already been informed of the provisional
   // load committing.
-  auto params = MakeDidCommitProvisionalLoadParams(commit_type, transition);
+  auto params = MakeDidCommitProvisionalLoadParams(commit_type, transition,
+                                                   embedding_token);
   if (was_within_same_document) {
     GetFrameHost()->DidCommitSameDocumentNavigation(std::move(params));
   } else {
@@ -5769,8 +5768,7 @@ bool RenderFrameImpl::SwapIn() {
   in_frame_tree_ = true;
 
   // If this is the main frame going from a remote frame to a local frame,
-  // it needs to set RenderViewImpl's pointer for the main frame to itself,
-  // ensure RenderWidget is no longer undead.
+  // it needs to set RenderViewImpl's pointer for the main frame to itself.
   if (is_main_frame_) {
     CHECK(!render_view_->main_render_frame_);
     render_view_->main_render_frame_ = this;
@@ -5941,6 +5939,13 @@ void RenderFrameImpl::BeginNavigation(
     int cumulative_bindings = RenderProcess::current()->GetEnabledBindings();
     bool should_fork = HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
                        (cumulative_bindings & kWebUIBindingsPolicyMask);
+    if (!should_fork && url.SchemeIs(url::kFileScheme)) {
+      // Fork non-file to file opens (see https://crbug.com/1031119).  Note that
+      // this may fork unnecessarily if another tab (hosting a file or not)
+      // targeted this one before its initial navigation, but that shouldn't
+      // cause a problem.
+      should_fork = !old_url.SchemeIs(url::kFileScheme);
+    }
 
     if (!should_fork) {
       // Give the embedder a chance.
@@ -6186,11 +6191,6 @@ void RenderFrameImpl::OnWriteMHTMLComplete(
                 "mismatching enums: " #a)
 #undef STATIC_ASSERT_ENUM
 #endif
-
-void RenderFrameImpl::OnBlinkFeatureUsageReport(
-    const std::set<blink::mojom::WebFeature>& features) {
-  frame_->BlinkFeatureUsageReport(features);
-}
 
 void RenderFrameImpl::OnMixedContentFound(
     const FrameMsg_MixedContentFound_Params& params) {

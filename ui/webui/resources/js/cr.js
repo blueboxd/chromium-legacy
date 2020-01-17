@@ -157,7 +157,7 @@ var cr = cr || function(global) {
         return function(value) {
           const oldValue = this[name];
           if (value !== oldValue) {
-            if (value == undefined) {
+            if (value === undefined) {
               this.removeAttribute(attributeName);
             } else {
               this.setAttribute(attributeName, value);
@@ -206,7 +206,7 @@ var cr = cr || function(global) {
    * @suppress {deprecated}
    */
   function defineProperty(obj, name, opt_kind, opt_setHook) {
-    if (typeof obj == 'function') {
+    if (typeof obj === 'function') {
       obj = obj.prototype;
     }
 

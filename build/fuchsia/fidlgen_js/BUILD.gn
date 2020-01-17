@@ -8,9 +8,7 @@ import("//testing/test.gni")
 test("fidlgen_js_unittests") {
   testonly = true
 
-  sources = [
-    "test/fidlgen_js_unittest.cc",
-  ]
+  sources = [ "test/fidlgen_js_unittest.cc" ]
 
   deps = [
     ":fidljstest",
@@ -26,13 +24,9 @@ test("fidlgen_js_unittests") {
     "//v8:external_startup_data",
   ]
 
-  data_deps = [
-    "//tools/v8_context_snapshot:v8_context_snapshot",
-  ]
+  data_deps = [ "//tools/v8_context_snapshot:v8_context_snapshot" ]
 
-  data = [
-    "runtime/fidl.mjs",
-  ]
+  data = [ "runtime/fidl.mjs" ]
 }
 
 static_library("runtime") {
@@ -52,9 +46,7 @@ static_library("runtime") {
 
 fidl_library("fidljstest") {
   testonly = true
-  sources = [
-    "test/simple.fidl",
-  ]
+  sources = [ "test/simple.fidl" ]
 
   languages = [
     "cpp",

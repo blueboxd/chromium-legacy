@@ -8,9 +8,9 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
@@ -159,7 +159,8 @@ TEST_F(SBNavigationObserverTest, BasicNavigationAndCommit) {
                              WindowOpenDisposition::CURRENT_TAB,
                              ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
   CommitPendingLoad(controller);
-  SessionID tab_id = SessionTabHelper::IdForTab(controller->GetWebContents());
+  SessionID tab_id =
+      sessions::SessionTabHelper::IdForTab(controller->GetWebContents());
   auto* nav_list = navigation_event_list();
   ASSERT_EQ(1U, nav_list->Size());
   VerifyNavigationEvent(GURL(),                // source_url
@@ -181,7 +182,7 @@ TEST_F(SBNavigationObserverTest, ServerRedirect) {
   navigation->Start();
   navigation->Redirect(GURL("http://redirect/1"));
   navigation->Commit();
-  SessionID tab_id = SessionTabHelper::IdForTab(
+  SessionID tab_id = sessions::SessionTabHelper::IdForTab(
       browser()->tab_strip_model()->GetWebContentsAt(0));
   auto* nav_list = navigation_event_list();
   ASSERT_EQ(1U, nav_list->Size());

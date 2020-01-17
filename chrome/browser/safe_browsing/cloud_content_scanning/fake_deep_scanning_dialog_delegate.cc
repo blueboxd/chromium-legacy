@@ -12,6 +12,7 @@ namespace safe_browsing {
 FakeDeepScanningDialogDelegate::FakeDeepScanningDialogDelegate(
     base::RepeatingClosure delete_closure,
     StatusCallback status_callback,
+    EncryptionStatusCallback encryption_callback,
     std::string dm_token,
     content::WebContents* web_contents,
     Data data,
@@ -21,6 +22,7 @@ FakeDeepScanningDialogDelegate::FakeDeepScanningDialogDelegate(
                                  std::move(callback)),
       delete_closure_(delete_closure),
       status_callback_(status_callback),
+      encryption_callback_(encryption_callback),
       dm_token_(std::move(dm_token)) {}
 
 FakeDeepScanningDialogDelegate::~FakeDeepScanningDialogDelegate() {
@@ -30,15 +32,17 @@ FakeDeepScanningDialogDelegate::~FakeDeepScanningDialogDelegate() {
 
 // static
 std::unique_ptr<DeepScanningDialogDelegate>
-FakeDeepScanningDialogDelegate::Create(base::RepeatingClosure delete_closure,
-                                       StatusCallback status_callback,
-                                       std::string dm_token,
-                                       content::WebContents* web_contents,
-                                       Data data,
-                                       CompletionCallback callback) {
+FakeDeepScanningDialogDelegate::Create(
+    base::RepeatingClosure delete_closure,
+    StatusCallback status_callback,
+    EncryptionStatusCallback encryption_callback,
+    std::string dm_token,
+    content::WebContents* web_contents,
+    Data data,
+    CompletionCallback callback) {
   auto ret = std::make_unique<FakeDeepScanningDialogDelegate>(
-      delete_closure, status_callback, std::move(dm_token), web_contents,
-      std::move(data), std::move(callback));
+      delete_closure, status_callback, encryption_callback, std::move(dm_token),
+      web_contents, std::move(data), std::move(callback));
   return ret;
 }
 
@@ -116,6 +120,16 @@ void FakeDeepScanningDialogDelegate::Response(
     StringRequestCallback(BinaryUploadService::Result::SUCCESS, response);
   else
     FileRequestCallback(path, BinaryUploadService::Result::SUCCESS, response);
+}
+
+void FakeDeepScanningDialogDelegate::PrepareFileRequest(
+    base::FilePath path,
+    AnalyzeCallback callback) {
+  safe_browsing::ArchiveAnalyzerResults results;
+  if (!encryption_callback_.is_null() && encryption_callback_.Run(path))
+    results.archived_binary.Add()->set_is_encrypted(true);
+
+  std::move(callback).Run(results);
 }
 
 void FakeDeepScanningDialogDelegate::UploadTextForDeepScanning(

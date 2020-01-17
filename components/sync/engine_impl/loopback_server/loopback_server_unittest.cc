@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "components/sync/engine_impl/loopback_server/loopback_connection_manager.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -31,6 +32,7 @@ SyncEntity NewBookmarkEntity(const std::string& url,
   SyncEntity entity;
   entity.mutable_specifics()->mutable_bookmark()->set_url(url);
   entity.set_parent_id_string(parent_id);
+  entity.set_id_string(base::GenerateGUID());
   return entity;
 }
 

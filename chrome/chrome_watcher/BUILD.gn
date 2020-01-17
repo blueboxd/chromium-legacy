@@ -10,9 +10,7 @@ source_set("client") {
     "chrome_watcher_main_api.cc",
     "chrome_watcher_main_api.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("hang_util") {
@@ -20,17 +18,13 @@ source_set("hang_util") {
     "system_load_estimator.cc",
     "system_load_estimator.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   libs = [ "pdh.lib" ]  # Used by system_load_estimator.h.
   ldflags = [ "/DELAYLOAD:pdh.dll" ]  # Only used on report capture.
 }
 
 test("system_load_estimator_unittests") {
-  sources = [
-    "system_load_estimator_unittest.cc",
-  ]
+  sources = [ "system_load_estimator_unittest.cc" ]
   deps = [
     ":client",
     ":hang_util",
@@ -41,9 +35,7 @@ test("system_load_estimator_unittests") {
 }
 
 process_version_rc_template("chrome_watcher_resources") {
-  sources = [
-    "chrome_watcher.ver",
-  ]
+  sources = [ "chrome_watcher.ver" ]
   output = "$target_gen_dir/chrome_watcher_version.rc"
 }
 

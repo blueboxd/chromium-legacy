@@ -66,7 +66,7 @@ public class JavascriptAppModalDialog extends JavascriptModalDialog {
         assert window != null;
         Context context = window.getContext().get();
         // If the context has gone away, then just clean up the native pointer.
-        if (context == null) {
+        if (context == null || window.getModalDialogManager() == null) {
             JavascriptAppModalDialogJni.get().didCancelAppModalDialog(
                     nativeDialogPointer, JavascriptAppModalDialog.this, false);
             return;

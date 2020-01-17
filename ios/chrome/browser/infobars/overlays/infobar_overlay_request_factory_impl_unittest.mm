@@ -8,11 +8,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_feature.h"
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_password_infobar_banner_overlay.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/test/fake_infobar_ui_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +29,7 @@ using infobars::InfoBarDelegate;
 class InfobarOverlayRequestFactoryImplTest : public PlatformTest {
  public:
   InfobarOverlayRequestFactoryImplTest() {
-    feature_list_.InitWithFeatures({kInfobarUIReboot}, {});
+    feature_list_.InitWithFeatures({kIOSInfobarUIReboot}, {});
   }
 
   InfobarOverlayRequestFactory* factory() { return &factory_; }

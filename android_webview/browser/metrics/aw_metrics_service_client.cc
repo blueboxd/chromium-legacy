@@ -28,6 +28,7 @@
 #include "components/metrics/cpu_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/enabled_state_provider.h"
+#include "components/metrics/entropy_state_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -130,6 +131,8 @@ std::unique_ptr<metrics::MetricsService> CreateMetricsService(
       std::make_unique<metrics::AndroidMetricsProvider>());
   service->RegisterMetricsProvider(
       std::make_unique<metrics::CPUMetricsProvider>());
+  service->RegisterMetricsProvider(
+      std::make_unique<metrics::EntropyStateProvider>(prefs));
   service->RegisterMetricsProvider(
       std::make_unique<metrics::GPUMetricsProvider>());
   service->RegisterMetricsProvider(

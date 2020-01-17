@@ -500,21 +500,33 @@ class FakeRendererGL : public GLRenderer {
   FakeRendererGL(const RendererSettings* settings,
                  OutputSurface* output_surface,
                  DisplayResourceProvider* resource_provider)
-      : GLRenderer(settings, output_surface, resource_provider, nullptr) {}
+      : GLRenderer(settings,
+                   output_surface,
+                   resource_provider,
+                   nullptr,
+                   nullptr) {}
+
+  FakeRendererGL(const RendererSettings* settings,
+                 OutputSurface* output_surface,
+                 DisplayResourceProvider* resource_provider,
+                 OverlayProcessorInterface* overlay_processor)
+      : GLRenderer(settings,
+                   output_surface,
+                   resource_provider,
+                   overlay_processor,
+                   nullptr) {}
 
   FakeRendererGL(
       const RendererSettings* settings,
       OutputSurface* output_surface,
       DisplayResourceProvider* resource_provider,
+      OverlayProcessorInterface* overlay_processor,
       scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
       : GLRenderer(settings,
                    output_surface,
                    resource_provider,
+                   overlay_processor,
                    std::move(current_task_runner)) {}
-
-  void SetOverlayProcessor(OverlayProcessorInterface* processor) {
-    overlay_processor_.reset(processor);
-  }
 
   // GLRenderer methods.
 
@@ -564,7 +576,7 @@ class GLRendererShaderTest : public GLRendererTest {
         DisplayResourceProvider::kGpu, output_surface_->context_provider(),
         shared_bitmap_manager_.get());
     renderer_.reset(new FakeRendererGL(&settings_, output_surface_.get(),
-                                       resource_provider_.get()));
+                                       resource_provider_.get(), nullptr));
     renderer_->Initialize();
     renderer_->SetVisible(true);
 
@@ -2367,14 +2379,13 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   ResourceId parent_resource_id = resource_map[list[0].id];
 
   RendererSettings settings;
+  auto processor = std::make_unique<TestOverlayProcessor>();
   FakeRendererGL renderer(&settings, output_surface.get(),
-                          parent_resource_provider.get(),
+                          parent_resource_provider.get(), processor.get(),
                           base::ThreadTaskRunnerHandle::Get());
   renderer.Initialize();
   renderer.SetVisible(true);
 
-  TestOverlayProcessor* processor = new TestOverlayProcessor();
-  renderer.SetOverlayProcessor(processor);
 #if defined(OS_MACOSX)
   const MockCALayerOverlayProcessor* mock_ca_processor =
       processor->GetTestProcessor();
@@ -2558,14 +2569,12 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   ResourceId parent_resource_id = resource_map[list[0].id];
 
   RendererSettings settings;
+  auto processor = std::make_unique<SingleOverlayOnTopProcessor>();
   FakeRendererGL renderer(&settings, output_surface.get(),
-                          parent_resource_provider.get(),
+                          parent_resource_provider.get(), processor.get(),
                           base::ThreadTaskRunnerHandle::Get());
   renderer.Initialize();
   renderer.SetVisible(true);
-
-  SingleOverlayOnTopProcessor* processor = new SingleOverlayOnTopProcessor();
-  renderer.SetOverlayProcessor(processor);
 
   gfx::Size viewport_size(1, 1);
   RenderPass* root_pass = cc::AddRenderPass(
@@ -2938,14 +2947,13 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
 
   RendererSettings settings;
   settings.partial_swap_enabled = true;
+  auto processor = std::make_unique<OverlayProcessorWin>(
+      true /* enable_dc_overlay */,
+      std::make_unique<DCLayerOverlayProcessor>());
   FakeRendererGL renderer(&settings, output_surface.get(),
-                          parent_resource_provider.get());
+                          parent_resource_provider.get(), processor.get());
   renderer.Initialize();
   renderer.SetVisible(true);
-  OverlayProcessorWin* processor =
-      new OverlayProcessorWin(true /* enable_dc_overlay */,
-                              std::make_unique<DCLayerOverlayProcessor>());
-  renderer.SetOverlayProcessor(processor);
 
   gfx::Size viewport_size(100, 100);
 
@@ -3030,7 +3038,8 @@ class GLRendererWithMockContextTest : public ::testing::Test {
         DisplayResourceProvider::kGpu, output_surface_->context_provider(),
         nullptr);
     renderer_ = std::make_unique<GLRenderer>(&settings_, output_surface_.get(),
-                                             resource_provider_.get(), nullptr);
+                                             resource_provider_.get(), nullptr,
+                                             nullptr);
     renderer_->Initialize();
   }
 
@@ -3126,15 +3135,13 @@ class GLRendererSwapWithBoundsTest : public GLRendererTest {
             nullptr);
 
     RendererSettings settings;
+    auto processor =
+        std::make_unique<ContentBoundsOverlayProcessor>(content_bounds);
     FakeRendererGL renderer(&settings, output_surface.get(),
-                            resource_provider.get());
+                            resource_provider.get(), processor.get());
     renderer.Initialize();
     EXPECT_EQ(true, renderer.use_swap_with_bounds());
     renderer.SetVisible(true);
-
-    OverlayProcessorInterface* processor =
-        new ContentBoundsOverlayProcessor(content_bounds);
-    renderer.SetOverlayProcessor(processor);
 
     gfx::Size viewport_size(100, 100);
 
@@ -3221,17 +3228,16 @@ class CALayerGLRendererTest : public GLRendererTest {
     settings_ = std::make_unique<RendererSettings>();
     // This setting is enabled to use CALayer overlays.
     settings_->release_overlay_resources_after_gpu_query = true;
-    renderer_ = std::make_unique<FakeRendererGL>(
-        settings_.get(), output_surface_.get(),
-        display_resource_provider_.get(), base::ThreadTaskRunnerHandle::Get());
-    renderer_->Initialize();
-    renderer_->SetVisible(true);
-
     // The Mac TestOverlayProcessor default to enable CALayer overlays, then all
     // damage is removed and we can skip the root RenderPass, swapping empty.
-    OverlayProcessorMac* processor =
-        new OverlayProcessorMac(std::make_unique<CALayerOverlayProcessor>());
-    renderer_->SetOverlayProcessor(processor);
+    overlay_processor_ = std::make_unique<OverlayProcessorMac>(
+        std::make_unique<CALayerOverlayProcessor>());
+    renderer_ = std::make_unique<FakeRendererGL>(
+        settings_.get(), output_surface_.get(),
+        display_resource_provider_.get(), overlay_processor_.get(),
+        base::ThreadTaskRunnerHandle::Get());
+    renderer_->Initialize();
+    renderer_->SetVisible(true);
   }
 
   void TearDown() override {
@@ -3249,6 +3255,7 @@ class CALayerGLRendererTest : public GLRendererTest {
   std::unique_ptr<FakeOutputSurface> output_surface_;
   std::unique_ptr<DisplayResourceProvider> display_resource_provider_;
   std::unique_ptr<RendererSettings> settings_;
+  std::unique_ptr<OverlayProcessorInterface> overlay_processor_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
@@ -4221,16 +4228,13 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
         DisplayResourceProvider::kGpu, output_surface_->context_provider(),
         nullptr);
-
+    overlay_processor_ = std::make_unique<SingleOverlayOnTopProcessor>();
+    overlay_processor_->AllowMultipleCandidates();
     renderer_ = std::make_unique<FakeRendererGL>(
         &settings_, output_surface_.get(), resource_provider_.get(),
-        base::ThreadTaskRunnerHandle::Get());
+        overlay_processor_.get(), base::ThreadTaskRunnerHandle::Get());
     renderer_->Initialize();
     renderer_->SetVisible(true);
-
-    auto* processor = new SingleOverlayOnTopProcessor();
-    processor->AllowMultipleCandidates();
-    renderer_->SetOverlayProcessor(processor);
 
     test_context_support_->SetScheduleOverlayPlaneCallback(
         base::BindRepeating(&MockOverlayScheduler::Schedule,
@@ -4272,6 +4276,7 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
   scoped_refptr<TestContextProvider> child_context_provider_;
   std::unique_ptr<ClientResourceProvider> child_resource_provider_;
   RendererSettings settings_;
+  std::unique_ptr<SingleOverlayOnTopProcessor> overlay_processor_;
   std::unique_ptr<FakeRendererGL> renderer_;
   MockOverlayScheduler overlay_scheduler_;
 };

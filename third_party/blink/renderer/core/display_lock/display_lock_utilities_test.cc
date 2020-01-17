@@ -70,7 +70,7 @@ TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
 
   LockElement(outer, true);
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
   // Querying from every element gives |outer|.
   HeapVector<Member<Element>> result_for_outer =
       DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
@@ -105,7 +105,7 @@ TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
   // Lock innermost with activatable flag.
   LockElement(innermost, true);
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
 
   result_for_outer = DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
       outer, DisplayLockActivationReason::kAny);
@@ -141,7 +141,7 @@ TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {
   CommitElement(innermost, false);
   CommitElement(outer);
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
-  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().DisplayLockBlockingAllActivationCount(), 0);
 
   EXPECT_EQ(DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
                 outer, DisplayLockActivationReason::kAny)

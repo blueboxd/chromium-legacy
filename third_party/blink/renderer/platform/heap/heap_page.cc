@@ -215,6 +215,15 @@ void BaseArena::MakeConsistentForMutator() {
   VerifyObjectStartBitmap();
 }
 
+void BaseArena::Unmark() {
+  DCHECK(GetThreadState()->InAtomicMarkingPause());
+  DCHECK(SweepingAndFinalizationCompleted());
+
+  for (BasePage* page : swept_pages_) {
+    page->Unmark();
+  }
+}
+
 size_t BaseArena::ObjectPayloadSizeForTesting() {
 #if DCHECK_IS_ON()
   DCHECK(IsConsistentForGC());
@@ -413,6 +422,17 @@ NormalPageArena::NormalPageArena(ThreadState* state, int index)
       last_remaining_allocation_size_(0),
       promptly_freed_size_(0) {
   ClearFreeLists();
+}
+
+void NormalPageArena::AddToFreeList(Address address, size_t size) {
+#if DCHECK_IS_ON()
+  DCHECK(FindPageFromAddress(address));
+  DCHECK(FindPageFromAddress(address + size - 1));
+#endif
+  free_list_.Add(address, size);
+  static_cast<NormalPage*>(PageFromObject(address))
+      ->object_start_bit_map()
+      ->SetBit(address);
 }
 
 void NormalPageArena::MakeConsistentForGC() {
@@ -790,9 +810,9 @@ bool NormalPageArena::ShrinkObject(HeapObjectHeader* header, size_t new_size) {
   DCHECK_GE(shrink_size, sizeof(HeapObjectHeader));
   DCHECK_GT(header->GcInfoIndex(), 0u);
   Address shrink_address = header->PayloadEnd() - shrink_size;
-  HeapObjectHeader* freed_header =
-      new (NotNull, shrink_address) HeapObjectHeader(
-          shrink_size, header->GcInfoIndex(), HeapObjectHeader::kNormalPage);
+  HeapObjectHeader* freed_header = new (NotNull, shrink_address)
+      HeapObjectHeader(shrink_size, header->GcInfoIndex());
+  // Since only size has been changed, we don't need to update object starts.
   PromptlyFreeObjectInFreeList(freed_header, shrink_size);
 #if DCHECK_IS_ON()
   DCHECK_EQ(PageFromObject(reinterpret_cast<Address>(header)),
@@ -985,8 +1005,8 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
   DCHECK_GT(gc_info_index, 0u);
   LargeObjectPage* large_object = new (large_object_address)
       LargeObjectPage(page_memory, this, allocation_size);
-  HeapObjectHeader* header = new (NotNull, header_address) HeapObjectHeader(
-      kLargeObjectSizeInHeader, gc_info_index, HeapObjectHeader::kLargePage);
+  HeapObjectHeader* header = new (NotNull, header_address)
+      HeapObjectHeader(kLargeObjectSizeInHeader, gc_info_index);
   Address result = header_address + sizeof(*header);
   DCHECK(!(reinterpret_cast<uintptr_t>(result) & kAllocationMask));
 
@@ -1062,15 +1082,15 @@ void FreeList::Add(Address address, size_t size) {
   DCHECK(!((reinterpret_cast<uintptr_t>(address) + sizeof(HeapObjectHeader)) &
            kAllocationMask));
   DCHECK(!(size & kAllocationMask));
+  DCHECK(!PageFromObject(address)->IsLargeObjectPage());
   ASAN_UNPOISON_MEMORY_REGION(address, size);
   FreeListEntry* entry;
   if (size < sizeof(*entry)) {
     // Create a dummy header with only a size and freelist bit set.
     DCHECK_GE(size, sizeof(HeapObjectHeader));
     // Free list encode the size to mark the lost memory as freelist memory.
-    new (NotNull, address) HeapObjectHeader(size, kGcInfoIndexForFreeListHeader,
-                                            HeapObjectHeader::kNormalPage);
-
+    new (NotNull, address)
+        HeapObjectHeader(size, kGcInfoIndexForFreeListHeader);
     ASAN_POISON_MEMORY_REGION(address, size);
     // This memory gets lost. Sweeping can reclaim it.
     return;
@@ -1385,7 +1405,6 @@ void NormalPage::FinalizeSweep(SweepResult action) {
     object.Finalize();
   }
   to_be_finalized_objects_.clear();
-
   if (action == SweepResult::kPageNotEmpty) {
     MergeFreeLists();
     MarkAsSwept();
@@ -1407,6 +1426,7 @@ void NormalPage::AddToFreeList(Address start,
     unfinalized_freelist_.push_back(std::move(entry));
   } else {
     cached_freelist_.Add(start, size);
+    object_start_bit_map()->SetBit(start);
 #if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
     if (Arena()->GetThreadState()->IsMemoryReducingGC()) {
       DiscardPages(start + sizeof(FreeListEntry), start + size);
@@ -1479,7 +1499,9 @@ bool NormalPage::Sweep(FinalizeType finalize_type) {
       found_finalizer = false;
     }
     object_start_bit_map()->SetBit(header_address);
+#if !BUILDFLAG(BLINK_HEAP_YOUNG_GENERATION)
     header->Unmark<HeapObjectHeader::AccessMode::kAtomic>();
+#endif
     header_address += size;
     start_of_gap = header_address;
   }
@@ -1543,7 +1565,9 @@ void NormalPage::SweepAndCompact(CompactionContext& context) {
       header_address += size;
       continue;
     }
+#if !BUILDFLAG(BLINK_HEAP_YOUNG_GENERATION)
     header->Unmark();
+#endif
     // Allocate and copy over the live object.
     Address compact_frontier = current_page->Payload() + allocation_point;
     if (compact_frontier + size > current_page->PayloadEnd()) {
@@ -1633,6 +1657,29 @@ void NormalPage::MakeConsistentForMutator() {
     normal_arena->AddToFreeList(start_of_gap, PayloadEnd() - start_of_gap);
 
   VerifyObjectStartBitmapIsConsistentWithPayload();
+}
+
+// This is assumed to be called from the atomic pause, so no concurrency should
+// be involved here.
+void NormalPage::Unmark() {
+  const Address current_allocation_point =
+      ArenaForNormalPage()->CurrentAllocationPoint();
+  const size_t allocation_area_size =
+      ArenaForNormalPage()->RemainingAllocationSize();
+  for (Address header_address = Payload(); header_address < PayloadEnd();) {
+    // Since unmarking can happen inside IncrementalMarkingStart, the current
+    // allocation point can be set and we need to skip over it.
+    if (header_address == current_allocation_point && allocation_area_size) {
+      header_address += allocation_area_size;
+      continue;
+    }
+    HeapObjectHeader* header =
+        reinterpret_cast<HeapObjectHeader*>(header_address);
+    if (header->IsMarked()) {
+      header->Unmark();
+    }
+    header_address += header->size();
+  }
 }
 
 #if defined(ADDRESS_SANITIZER)
@@ -1791,15 +1838,21 @@ bool LargeObjectPage::Sweep(FinalizeType) {
   if (!ObjectHeader()->IsMarked()) {
     return true;
   }
+#if !BUILDFLAG(BLINK_HEAP_YOUNG_GENERATION)
   ObjectHeader()->Unmark();
+#endif
   return false;
 }
 
-void LargeObjectPage::MakeConsistentForMutator() {
+void LargeObjectPage::Unmark() {
   HeapObjectHeader* header = ObjectHeader();
   if (header->IsMarked()) {
     header->Unmark();
   }
+}
+
+void LargeObjectPage::MakeConsistentForMutator() {
+  Unmark();
 }
 
 void LargeObjectPage::FinalizeSweep(SweepResult action) {

@@ -1362,6 +1362,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     SetPreferredLogicalWidthsDirty();
   }
 
+  void InvalidateIntersectionObserverCachedRects();
+
   void SetPositionState(EPosition position) {
     DCHECK(
         (position != EPosition::kAbsolute && position != EPosition::kFixed) ||
@@ -1484,6 +1486,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual void AddAnnotatedRegions(Vector<AnnotatedRegionValue>&);
 
   CompositingState GetCompositingState() const;
+
+  // True for object types which override |AdditionalCompositingReasons|.
+  virtual bool CanHaveAdditionalCompositingReasons() const;
   virtual CompositingReasons AdditionalCompositingReasons() const;
 
   // |accumulated_offset| is accumulated physical offset of this object from
@@ -1865,6 +1870,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       TransformState&,
       VisualRectFlags = kDefaultVisualRectFlags) const;
 
+  // Returns the nearest ancestor in the containing block chain that
+  // HasLocalBorderBoxProperties. If AncestorSkipInfo* is non-null and the
+  // ancestor was skipped, returns nullptr. If PropertyTreeState* is non-null,
+  // it will be populated with paint property nodes suitable for mapping upward
+  // from the coordinate system of the property container.
+  const LayoutObject* GetPropertyContainer(AncestorSkipInfo*,
+                                           PropertyTreeState* = nullptr) const;
+
   // Do a rect-based hit test with this object as the stop node.
   HitTestResult HitTestForOcclusion(const PhysicalRect&) const;
   HitTestResult HitTestForOcclusion() const {
@@ -2189,8 +2202,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Returns the bounding box of the visual rects of all fragments.
   IntRect FragmentsVisualRectBoundingBox() const;
 
-  void SetNeedsOverflowRecalc();
-  void SetNeedsVisualOverflowAndPaintInvalidation();
+  enum OverflowRecalcType {
+    kOnlyVisualOverflowRecalc,
+    kLayoutAndVisualOverflowRecalc,
+  };
+  void SetNeedsOverflowRecalc(
+      OverflowRecalcType = OverflowRecalcType::kLayoutAndVisualOverflowRecalc);
 
   void InvalidateClipPathCache();
 
@@ -2316,6 +2333,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.UpdateInsideBlockingTouchEventHandler(inside);
     }
 
+    void InvalidateIntersectionObserverCachedRects() {
+      layout_object_.InvalidateIntersectionObserverCachedRects();
+    }
+
 #if DCHECK_IS_ON()
     // Same as setNeedsPaintPropertyUpdate() but does not mark ancestors as
     // having a descendant needing a paint property update.
@@ -2365,6 +2386,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // updated, SetNeedsPaintPropertyUpdate marks all ancestors as having a
   // descendant needing a paint property update too.
   void SetNeedsPaintPropertyUpdate();
+  void SetNeedsPaintPropertyUpdatePreservingCachedRects();
   bool NeedsPaintPropertyUpdate() const {
     return bitfields_.NeedsPaintPropertyUpdate();
   }
@@ -2724,7 +2746,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // scroll anchoring on.
   void SetScrollAnchorDisablingStyleChangedOnAncestor();
 
-  inline void MarkContainerChainForOverflowRecalcIfNeeded();
+  bool SelfPaintingLayerNeedsVisualOverflowRecalc() const;
+  inline void MarkContainerChainForOverflowRecalcIfNeeded(
+      bool mark_container_chain_layout_overflow_recalc,
+      bool mark_container_chain_visual_overflow_recalc);
 
   inline void SetNeedsPaintOffsetAndVisualRectUpdate();
 

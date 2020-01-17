@@ -24,10 +24,6 @@ class Display;
 class DisplayAndroidManager;
 }  // namespace display
 
-namespace viz {
-class BeginFrameSource;
-}  // namespace viz
-
 namespace ui {
 
 extern UI_ANDROID_EXPORT const float kDefaultMouseWheelTickMultiplier;
@@ -64,22 +60,12 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   void RemoveObserver(WindowAndroidObserver* observer);
 
   WindowAndroidCompositor* GetCompositor() { return compositor_; }
-  viz::BeginFrameSource* GetBeginFrameSource();
   float GetRefreshRate();
   std::vector<float> GetSupportedRefreshRates();
   void SetPreferredRefreshRate(float refresh_rate);
 
-  // Runs the provided callback as soon as the current vsync was handled.
-  // This call is only allowed from inside the OnBeginFrame call from the
-  // BeginFrameSource of this window.
-  void AddBeginFrameCompletionCallback(base::OnceClosure callback);
-
   void SetNeedsAnimate();
   void Animate(base::TimeTicks begin_frame_time);
-  void OnVSync(JNIEnv* env,
-               const base::android::JavaParamRef<jobject>& obj,
-               jlong time_micros,
-               jlong period_micros);
   void OnVisibilityChanged(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            bool visible);
@@ -149,8 +135,6 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   friend class DisplayAndroidManager;
   friend class WindowBeginFrameSource;
 
-  void SetNeedsBeginFrames(bool needs_begin_frames);
-  void RequestVSyncUpdate();
   void Force60HzRefreshRateIfNeeded();
 
   // ViewAndroid overrides.
@@ -166,8 +150,6 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
 
   base::ObserverList<WindowAndroidObserver>::Unchecked observer_list_;
 
-  std::unique_ptr<WindowBeginFrameSource> begin_frame_source_;
-  bool needs_begin_frames_;
   float mouse_wheel_scroll_factor_;
   bool vsync_paused_ = false;
 

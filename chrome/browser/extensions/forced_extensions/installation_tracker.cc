@@ -243,6 +243,25 @@ void InstallationTracker::ReportResults() {
                                      ExtensionDownloader::kMaxRetries);
         }
 
+        // In case of MANIFEST_FETCH_FAILURE, report the network error code,
+        // HTTP error code and number of fetch tries made.
+        if (failure_reason ==
+            InstallationReporter::FailureReason::MANIFEST_FETCH_FAILED) {
+          base::UmaHistogramSparse(
+              "Extensions.ForceInstalledManifestFetchFailedNetworkErrorCode",
+              installation.network_error_code.value());
+
+          if (installation.response_code) {
+            base::UmaHistogramSparse(
+                "Extensions.ForceInstalledManifestFetchFailedHttpErrorCode",
+                installation.response_code.value());
+          }
+          UMA_HISTOGRAM_EXACT_LINEAR(
+              "Extensions.ForceInstalledManifestFetchFailedFetchTries",
+              installation.fetch_tries.value(),
+              ExtensionDownloader::kMaxRetries);
+        }
+
         VLOG(2) << "Forced extension " << extension_id
                 << " failed to install with data="
                 << InstallationReporter::GetFormattedInstallationData(

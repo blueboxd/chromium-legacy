@@ -46,13 +46,9 @@ if (!use_system_libwayland) {
   }
 
   static_library("wayland_protocol") {
-    sources = [
-      "protocol/wayland-protocol.c",
-    ]
+    sources = [ "protocol/wayland-protocol.c" ]
 
-    deps = [
-      ":wayland_util",
-    ]
+    deps = [ ":wayland_util" ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -114,9 +110,7 @@ if (!use_system_libwayland) {
   }
 
   executable("wayland_scanner") {
-    sources = [
-      "src/src/scanner.c",
-    ]
+    sources = [ "src/src/scanner.c" ]
 
     deps = [
       ":wayland_util",

@@ -123,6 +123,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   IntRect ViewportToScreen(const IntRect&,
                            const LocalFrameView*) const override;
   float WindowToViewportScalar(LocalFrame*, const float) const override;
+  void WindowToViewportRect(LocalFrame& frame,
+                            WebFloatRect* viewport_rect) const override;
   WebScreenInfo GetScreenInfo(LocalFrame&) const override;
   void OverrideVisibleRectForMainFrame(LocalFrame& frame,
                                        IntRect* paint_rect) const override;
@@ -270,6 +272,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void DocumentDetached(Document&) override;
 
+  void SaveImageFromDataURL(LocalFrame& frame, const String& data_url) override;
+
  private:
   bool IsChromeClientImpl() const override { return true; }
 
@@ -290,11 +294,12 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   FRIEND_TEST_ALL_PREFIXES(FileChooserQueueTest, DerefQueuedChooser);
 };
 
-DEFINE_TYPE_CASTS(ChromeClientImpl,
-                  ChromeClient,
-                  client,
-                  client->IsChromeClientImpl(),
-                  client.IsChromeClientImpl());
+template <>
+struct DowncastTraits<ChromeClientImpl> {
+  static bool AllowFrom(const ChromeClient& client) {
+    return client.IsChromeClientImpl();
+  }
+};
 
 }  // namespace blink
 

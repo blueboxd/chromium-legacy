@@ -354,9 +354,13 @@ public class WebApkUma {
 
     /**
      * Records whether a WebAPK navigation is within the WebAPK's scope.
+     * @param isChildTab Whether {@link Tab#getParentId()} is non-empty.
+     * @param isNavigationInScope
      */
-    public static void recordNavigation(boolean isNavigationInScope) {
-        RecordHistogram.recordBooleanHistogram("WebApk.Navigation.InScope", isNavigationInScope);
+    public static void recordNavigation(boolean isChildTab, boolean isNavigationInScope) {
+        RecordHistogram.recordBooleanHistogram(
+                isChildTab ? "WebApk.Navigation.ChildTab.InScope" : "WebApk.Navigation.InScope",
+                isNavigationInScope);
     }
 
     /**

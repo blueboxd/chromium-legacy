@@ -38,7 +38,7 @@ cr.define('cr_slider', function() {
   function getAriaValue(tick) {
     if (Number.isFinite(/** @type {number} */ (tick))) {
       return /** @type {number} */ (tick);
-    } else if (tick.ariaValue != undefined) {
+    } else if (tick.ariaValue !== undefined) {
       return /** @type {number} */ (tick.ariaValue);
     } else {
       return tick.value;
@@ -209,7 +209,7 @@ cr.define('cr_slider', function() {
      * @private
      */
     computeDisabled_() {
-      return this.disabled || this.ticks.length == 1;
+      return this.disabled || this.ticks.length === 1;
     },
 
     /**
@@ -291,15 +291,15 @@ cr.define('cr_slider', function() {
 
       /** @type {number|undefined} */
       let newValue;
-      if (event.key == 'Home') {
+      if (event.key === 'Home') {
         newValue = this.min;
-      } else if (event.key == 'End') {
+      } else if (event.key === 'End') {
         newValue = this.max;
       } else if (this.deltaKeyMap_.has(event.key)) {
         newValue = this.value + this.deltaKeyMap_.get(event.key);
       }
 
-      if (newValue == undefined) {
+      if (newValue === undefined) {
         return;
       }
 
@@ -317,7 +317,7 @@ cr.define('cr_slider', function() {
      * @private
      */
     onKeyUp_(event) {
-      if (event.key == 'Home' || event.key == 'End' ||
+      if (event.key === 'Home' || event.key === 'End' ||
           this.deltaKeyMap_.has(event.key)) {
         setTimeout(() => {
           this.updatingFromKey = false;
@@ -333,7 +333,7 @@ cr.define('cr_slider', function() {
      */
     onPointerDown_(event) {
       if (this.disabled_ ||
-          event.buttons != 1 && event.pointerType == 'mouse') {
+          event.buttons !== 1 && event.pointerType === 'mouse') {
         return;
       }
 
@@ -353,7 +353,7 @@ cr.define('cr_slider', function() {
         // If the left-button on the mouse is pressed by itself, then update.
         // Otherwise stop capturing the mouse events because the drag operation
         // is complete.
-        if (e.buttons != 1 && e.pointerType == 'mouse') {
+        if (e.buttons !== 1 && e.pointerType === 'mouse') {
           stopDragging();
           return;
         }
@@ -363,8 +363,8 @@ cr.define('cr_slider', function() {
       this.draggingEventTracker_.add(this, 'pointerdown', stopDragging);
       this.draggingEventTracker_.add(this, 'pointerup', stopDragging);
       this.draggingEventTracker_.add(this, 'keydown', e => {
-        if (e.key == 'Escape' || e.key == 'Tab' || e.key == 'Home' ||
-            e.key == 'End' || this.deltaKeyMap_.has(e.key)) {
+        if (e.key === 'Escape' || e.key === 'Tab' || e.key === 'Home' ||
+            e.key === 'End' || this.deltaKeyMap_.has(e.key)) {
           stopDragging();
         }
       });
@@ -389,8 +389,8 @@ cr.define('cr_slider', function() {
 
     /** @private */
     onValueMinMaxChange_() {
-      if (this.value == undefined || this.min == undefined ||
-          this.max == undefined) {
+      if (this.value === undefined || this.min === undefined ||
+          this.max === undefined) {
         return;
       }
       this.updateValue_(this.value);
@@ -437,7 +437,7 @@ cr.define('cr_slider', function() {
         value = Math.round(value);
       }
       value = clamp(this.min, this.max, value);
-      if (this.value == value) {
+      if (this.value === value) {
         return false;
       }
       this.value = value;

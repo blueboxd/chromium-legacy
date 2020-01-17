@@ -41,7 +41,7 @@ Polymer({
    * @param {!Object<!Array<string>>} paths
    * @private
    */
-  onPluginVmSharedPathsChanged_: function(paths) {
+  onPluginVmSharedPathsChanged_(paths) {
     const vmPaths = [];
     for (const path in paths) {
       const vms = paths[path];
@@ -61,7 +61,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onRemoveSharedPathClick_: function(event) {
+  onRemoveSharedPathClick_(event) {
     settings.PluginVmBrowserProxyImpl.getInstance().removePluginVmSharedPath(
         PLUGIN_VM, event.model.item.path);
   },

@@ -403,6 +403,12 @@ int64_t CalculateResponsePaddingInternal(
                                          loaded_with_credentials);
 }
 
+net::RequestPriority GetDiskCachePriority(
+    CacheStorageSchedulerPriority priority) {
+  return priority == CacheStorageSchedulerPriority::kHigh ? net::HIGHEST
+                                                          : net::MEDIUM;
+}
+
 }  // namespace
 
 struct LegacyCacheStorageCache::QueryCacheResult {
@@ -543,7 +549,7 @@ void LegacyCacheStorageCache::Match(
       priority,
       base::BindOnce(
           &LegacyCacheStorageCache::MatchImpl, weak_ptr_factory_.GetWeakPtr(),
-          std::move(request), std::move(match_options), trace_id,
+          std::move(request), std::move(match_options), trace_id, priority,
           scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
 }
 
@@ -568,6 +574,7 @@ void LegacyCacheStorageCache::MatchAll(
           &LegacyCacheStorageCache::MatchAllImpl,
           weak_ptr_factory_.GetWeakPtr(), std::move(request),
           std::move(match_options), trace_id,
+          CacheStorageSchedulerPriority::kNormal,
           scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
 }
 
@@ -966,6 +973,7 @@ void LegacyCacheStorageCache::QueryCache(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr options,
     QueryTypes query_types,
+    CacheStorageSchedulerPriority priority,
     QueryCacheCallback callback) {
   DCHECK_NE(
       QUERY_CACHE_ENTRIES | QUERY_CACHE_RESPONSES_WITH_BODIES,
@@ -1004,8 +1012,9 @@ void LegacyCacheStorageCache::QueryCache(
     auto open_entry_callback = base::AdaptCallbackForRepeating(base::BindOnce(
         &LegacyCacheStorageCache::QueryCacheDidOpenFastPath,
         weak_ptr_factory_.GetWeakPtr(), std::move(query_cache_context)));
-    disk_cache::EntryResult result =
-        backend_->OpenEntry(request_url, net::HIGHEST, open_entry_callback);
+
+    disk_cache::EntryResult result = backend_->OpenEntry(
+        request_url, GetDiskCachePriority(priority), open_entry_callback);
     if (result.net_error() != net::ERR_IO_PENDING)
       std::move(open_entry_callback).Run(std::move(result));
     return;
@@ -1261,9 +1270,10 @@ void LegacyCacheStorageCache::MatchImpl(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr match_options,
     int64_t trace_id,
+    CacheStorageSchedulerPriority priority,
     ResponseCallback callback) {
   MatchAllImpl(
-      std::move(request), std::move(match_options), trace_id,
+      std::move(request), std::move(match_options), trace_id, priority,
       base::BindOnce(&LegacyCacheStorageCache::MatchDidMatchAll,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -1290,6 +1300,7 @@ void LegacyCacheStorageCache::MatchAllImpl(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr options,
     int64_t trace_id,
+    CacheStorageSchedulerPriority priority,
     ResponsesCallback callback) {
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
   TRACE_EVENT_WITH_FLOW2("CacheStorage",
@@ -1310,7 +1321,7 @@ void LegacyCacheStorageCache::MatchAllImpl(
   callback = WrapCallbackWithHandle(std::move(callback));
 
   QueryCache(std::move(request), std::move(options),
-             QUERY_CACHE_REQUESTS | QUERY_CACHE_RESPONSES_WITH_BODIES,
+             QUERY_CACHE_REQUESTS | QUERY_CACHE_RESPONSES_WITH_BODIES, priority,
              base::BindOnce(&LegacyCacheStorageCache::MatchAllDidQueryCache,
                             weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                             trace_id));
@@ -1406,10 +1417,11 @@ void LegacyCacheStorageCache::WriteSideDataImpl(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      expected_response_time, trace_id, buffer, buf_len));
 
-  // Use LOWEST priority here as writing side data is less important than
-  // loading resources on the page.
+  // Note, the simple disk_cache priority is not important here because we
+  // only allow one write operation at a time.  Therefore there will be no
+  // competing operations in the disk_cache queue.
   disk_cache::EntryResult result =
-      backend_->OpenEntry(url.spec(), net::LOWEST, open_entry_callback);
+      backend_->OpenEntry(url.spec(), net::MEDIUM, open_entry_callback);
   if (result.net_error() != net::ERR_IO_PENDING)
     std::move(open_entry_callback).Run(std::move(result));
 }
@@ -1650,7 +1662,7 @@ void LegacyCacheStorageCache::PutDidDeleteEntry(
 
   DCHECK(scheduler_->IsRunningExclusiveOperation());
   disk_cache::EntryResult result = backend_ptr->OpenOrCreateEntry(
-      request_.url.spec(), net::HIGHEST, create_entry_callback);
+      request_.url.spec(), net::MEDIUM, create_entry_callback);
 
   if (result.net_error() != net::ERR_IO_PENDING)
     std::move(create_entry_callback).Run(std::move(result));
@@ -1936,6 +1948,7 @@ void LegacyCacheStorageCache::CalculateCacheSizePaddingGotSize(
   options->ignore_search = true;
   QueryCache(std::move(request), std::move(options),
              QUERY_CACHE_RESPONSES_NO_BODIES,
+             CacheStorageSchedulerPriority::kNormal,
              base::BindOnce(&LegacyCacheStorageCache::PaddingDidQueryCache,
                             weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                             cache_size));
@@ -2054,6 +2067,7 @@ void LegacyCacheStorageCache::GetAllMatchedEntriesImpl(
   QueryCache(
       std::move(request), std::move(options),
       QUERY_CACHE_REQUESTS | QUERY_CACHE_RESPONSES_WITH_BODIES,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(
           &LegacyCacheStorageCache::GetAllMatchedEntriesDidQueryCache,
           weak_ptr_factory_.GetWeakPtr(), trace_id, std::move(callback)));
@@ -2130,6 +2144,7 @@ void LegacyCacheStorageCache::DeleteImpl(
   QueryCache(
       std::move(request), std::move(match_options),
       QUERY_CACHE_ENTRIES | QUERY_CACHE_RESPONSES_NO_BODIES,
+      CacheStorageSchedulerPriority::kNormal,
       base::BindOnce(&LegacyCacheStorageCache::DeleteDidQueryCache,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -2187,6 +2202,7 @@ void LegacyCacheStorageCache::KeysImpl(
   callback = WrapCallbackWithHandle(std::move(callback));
 
   QueryCache(std::move(request), std::move(options), QUERY_CACHE_REQUESTS,
+             CacheStorageSchedulerPriority::kNormal,
              base::BindOnce(&LegacyCacheStorageCache::KeysDidQueryCache,
                             weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                             trace_id));

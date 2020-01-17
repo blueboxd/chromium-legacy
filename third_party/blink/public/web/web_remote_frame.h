@@ -9,7 +9,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
-#include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-shared.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -128,8 +128,6 @@ class WebRemoteFrame : public WebFrame {
   // Reports resource timing info for a navigation in this frame.
   virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) = 0;
 
-  virtual void SetNeedsOcclusionTracking(bool) = 0;
-
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;
 
@@ -138,7 +136,7 @@ class WebRemoteFrame : public WebFrame {
 
   // Update the user activation state in appropriate part of this frame's
   // "local" frame tree (ancestors-only vs all-nodes).
-  virtual void UpdateUserActivationState(UserActivationUpdateType) = 0;
+  virtual void UpdateUserActivationState(mojom::UserActivationUpdateType) = 0;
 
   // Transfers user activation state from |source_frame| to this frame, which
   // must be in the same frame tree as |source_frame|.

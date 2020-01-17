@@ -10,7 +10,7 @@
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;

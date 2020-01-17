@@ -22,7 +22,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'crostini-shared-usb-devices-changed',
         this.onCrostiniSharedUsbDevicesChanged_.bind(this));
@@ -35,7 +35,7 @@ Polymer({
    * @param {!Array<CrostiniSharedUsbDevice>} devices
    * @private
    */
-  onCrostiniSharedUsbDevicesChanged_: function(devices) {
+  onCrostiniSharedUsbDevicesChanged_(devices) {
     this.sharedUsbDevices_ = devices;
   },
 
@@ -43,7 +43,7 @@ Polymer({
    * @param {!CustomEvent<!CrostiniSharedUsbDevice>} event
    * @private
    */
-  onDeviceSharedChange_: function(event) {
+  onDeviceSharedChange_(event) {
     const deviceInfo = event.model.item;
     settings.CrostiniBrowserProxyImpl.getInstance().setCrostiniUsbDeviceShared(
         deviceInfo.guid, event.target.checked);

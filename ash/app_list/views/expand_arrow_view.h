@@ -54,6 +54,11 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
+  // Calculates vertical offset between expand arrow circle's positions with app
+  // list view drag progress |progress| and the current app list progress
+  // (calculated without taking app list animation state into account).
+  float CalculateOffsetFromCurrentAppListProgress(double progress) const;
+
   void MaybeEnableHintingAnimation(bool enabled);
 
   bool IsHintingAnimationRunningForTest() {

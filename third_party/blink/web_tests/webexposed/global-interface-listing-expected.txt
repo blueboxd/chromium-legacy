@@ -1710,8 +1710,12 @@ interface Document : Node
     getter onvisibilitychange
     getter onvolumechange
     getter onwaiting
+    getter onwebkitanimationend
+    getter onwebkitanimationiteration
+    getter onwebkitanimationstart
     getter onwebkitfullscreenchange
     getter onwebkitfullscreenerror
+    getter onwebkittransitionend
     getter onwheel
     getter pictureInPictureElement
     getter pictureInPictureEnabled
@@ -1907,8 +1911,12 @@ interface Document : Node
     setter onvisibilitychange
     setter onvolumechange
     setter onwaiting
+    setter onwebkitanimationend
+    setter onwebkitanimationiteration
+    setter onwebkitanimationstart
     setter onwebkitfullscreenchange
     setter onwebkitfullscreenerror
+    setter onwebkittransitionend
     setter onwheel
     setter rootScroller
     setter title
@@ -1998,7 +2006,7 @@ interface Element : Node
     getter ariaControlsElements
     getter ariaCurrent
     getter ariaDescribedByElements
-    getter ariaDetailsElement
+    getter ariaDetailsElements
     getter ariaDisabled
     getter ariaErrorMessageElement
     getter ariaExpanded
@@ -2056,6 +2064,7 @@ interface Element : Node
     getter onbeforecopy
     getter onbeforecut
     getter onbeforepaste
+    getter onbeforexrselect
     getter onfullscreenchange
     getter onfullscreenerror
     getter onsearch
@@ -2141,7 +2150,7 @@ interface Element : Node
     setter ariaControlsElements
     setter ariaCurrent
     setter ariaDescribedByElements
-    setter ariaDetailsElement
+    setter ariaDetailsElements
     setter ariaDisabled
     setter ariaErrorMessageElement
     setter ariaExpanded
@@ -2183,6 +2192,7 @@ interface Element : Node
     setter onbeforecopy
     setter onbeforecut
     setter onbeforepaste
+    setter onbeforexrselect
     setter onfullscreenchange
     setter onfullscreenerror
     setter onsearch
@@ -2208,7 +2218,7 @@ interface ElementInternals
     getter ariaControlsElements
     getter ariaCurrent
     getter ariaDescribedByElements
-    getter ariaDetailsElement
+    getter ariaDetailsElements
     getter ariaDisabled
     getter ariaErrorMessageElement
     getter ariaExpanded
@@ -2264,7 +2274,7 @@ interface ElementInternals
     setter ariaControlsElements
     setter ariaCurrent
     setter ariaDescribedByElements
-    setter ariaDetailsElement
+    setter ariaDetailsElements
     setter ariaDisabled
     setter ariaErrorMessageElement
     setter ariaExpanded
@@ -2510,6 +2520,9 @@ interface FormData
 interface FormDataEvent : Event
     attribute @@toStringTag
     getter formData
+    method constructor
+interface FragmentDirective
+    attribute @@toStringTag
     method constructor
 interface GainNode : AudioNode
     attribute @@toStringTag
@@ -3050,6 +3063,10 @@ interface HTMLElement : Element
     getter ontransitionend
     getter onvolumechange
     getter onwaiting
+    getter onwebkitanimationend
+    getter onwebkitanimationiteration
+    getter onwebkitanimationstart
+    getter onwebkittransitionend
     getter onwheel
     getter outerText
     getter spellcheck
@@ -3163,6 +3180,10 @@ interface HTMLElement : Element
     setter ontransitionend
     setter onvolumechange
     setter onwaiting
+    setter onwebkitanimationend
+    setter onwebkitanimationiteration
+    setter onwebkitanimationstart
+    setter onwebkittransitionend
     setter onwheel
     setter outerText
     setter spellcheck
@@ -4651,6 +4672,7 @@ interface LinearAccelerationSensor : Accelerometer
     method constructor
 interface Location
     attribute @@toStringTag
+    getter fragmentDirective
     method constructor
 interface Lock
     attribute @@toStringTag
@@ -4822,6 +4844,10 @@ interface MathMLElement : Element
     getter ontransitionend
     getter onvolumechange
     getter onwaiting
+    getter onwebkitanimationend
+    getter onwebkitanimationiteration
+    getter onwebkitanimationstart
+    getter onwebkittransitionend
     getter onwheel
     getter style
     getter tabIndex
@@ -4918,6 +4944,10 @@ interface MathMLElement : Element
     setter ontransitionend
     setter onvolumechange
     setter onwaiting
+    setter onwebkitanimationend
+    setter onwebkitanimationiteration
+    setter onwebkitanimationstart
+    setter onwebkittransitionend
     setter onwheel
     setter style
     setter tabIndex
@@ -5349,7 +5379,7 @@ interface NDEFRecord
 interface NDEFWriter
     attribute @@toStringTag
     method constructor
-    method push
+    method write
 interface NamedNodeMap
     attribute @@toStringTag
     getter length
@@ -6174,6 +6204,8 @@ interface QuicTransport
     attribute @@toStringTag
     method close
     method constructor
+    method receiveDatagrams
+    method sendDatagrams
 interface RTCCertificate
     attribute @@toStringTag
     getter expires
@@ -6203,6 +6235,7 @@ interface RTCDataChannel : EventTarget
     getter negotiated
     getter onbufferedamountlow
     getter onclose
+    getter onclosing
     getter onerror
     getter onmessage
     getter onopen
@@ -6217,6 +6250,7 @@ interface RTCDataChannel : EventTarget
     setter bufferedAmountLowThreshold
     setter onbufferedamountlow
     setter onclose
+    setter onclosing
     setter onerror
     setter onmessage
     setter onopen
@@ -6349,9 +6383,11 @@ interface RTCPeerConnection : EventTarget
     setter ontrack
 interface RTCPeerConnectionIceErrorEvent : Event
     attribute @@toStringTag
+    getter address
     getter errorCode
     getter errorText
     getter hostCandidate
+    getter port
     getter url
     method constructor
 interface RTCPeerConnectionIceEvent : Event
@@ -6860,6 +6896,10 @@ interface SVGElement : Element
     getter ontransitionend
     getter onvolumechange
     getter onwaiting
+    getter onwebkitanimationend
+    getter onwebkitanimationiteration
+    getter onwebkitanimationstart
+    getter onwebkittransitionend
     getter onwheel
     getter ownerSVGElement
     getter style
@@ -6958,6 +6998,10 @@ interface SVGElement : Element
     setter ontransitionend
     setter onvolumechange
     setter onwaiting
+    setter onwebkitanimationend
+    setter onwebkitanimationiteration
+    setter onwebkitanimationstart
+    setter onwebkittransitionend
     setter onwheel
     setter style
     setter tabIndex
@@ -11111,6 +11155,14 @@ interface XRBoundedReferenceSpace : XRReferenceSpace
     attribute @@toStringTag
     getter boundsGeometry
     method constructor
+interface XRCubeMap
+    attribute @@toStringTag
+    method constructor
+    method updateWebGLEnvironmentCube
+interface XRDOMOverlayState
+    attribute @@toStringTag
+    getter type
+    method constructor
 interface XRFrame
     attribute @@toStringTag
     getter session
@@ -11162,6 +11214,21 @@ interface XRInputSourcesChangeEvent : Event
     getter removed
     getter session
     method constructor
+interface XRLightEstimation
+    attribute @@toStringTag
+    getter lightProbe
+    getter reflectionProbe
+    method constructor
+interface XRLightEstimationState
+    attribute @@toStringTag
+    getter enabled
+    method constructor
+interface XRLightProbe
+    attribute @@toStringTag
+    getter mainLightDirection
+    getter mainLightIntensity
+    getter sphericalHarmonics
+    method constructor
 interface XRPlane
     attribute @@toStringTag
     getter lastChangedTime
@@ -11206,6 +11273,10 @@ interface XRReferenceSpaceEvent : Event
     getter referenceSpace
     getter transform
     method constructor
+interface XRReflectionProbe
+    attribute @@toStringTag
+    getter cubeMap
+    method constructor
 interface XRRenderState
     attribute @@toStringTag
     getter baseLayer
@@ -11222,6 +11293,7 @@ interface XRRigidTransform
     method constructor
 interface XRSession : EventTarget
     attribute @@toStringTag
+    getter domOverlayState
     getter environmentBlendMode
     getter inputSources
     getter onend
@@ -11257,6 +11329,11 @@ interface XRSessionEvent : Event
     method constructor
 interface XRSpace : EventTarget
     attribute @@toStringTag
+    method constructor
+interface XRSphericalHarmonics
+    attribute @@toStringTag
+    getter coefficients
+    getter orientation
     method constructor
 interface XRTransientInputHitTestResult
     attribute @@toStringTag
@@ -11297,9 +11374,11 @@ interface XRWebGLLayer
 interface XRWorldInformation
     attribute @@toStringTag
     getter detectedPlanes
+    getter lightEstimation
     method constructor
 interface XRWorldTrackingState
     attribute @@toStringTag
+    getter lightEstimationState
     getter planeDetectionState
     method constructor
 interface XSLTProcessor

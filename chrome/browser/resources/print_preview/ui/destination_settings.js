@@ -165,7 +165,7 @@ Polymer({
   tracker_: new EventTracker(),
 
   /** @override */
-  attached: function() {
+  attached() {
     this.destinationStore_ =
         new DestinationStore(this.addWebUIListener.bind(this));
     this.invitationStore_ = new InvitationStore();
@@ -198,21 +198,21 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.invitationStore_.resetTracker();
     this.destinationStore_.resetTracker();
     this.tracker_.removeAll();
   },
 
   /** @private */
-  onCloudPrintInterfaceSet_: function() {
+  onCloudPrintInterfaceSet_() {
     const cloudPrintInterface = assert(this.cloudPrintInterface);
     this.destinationStore_.setCloudPrintInterface(cloudPrintInterface);
     this.invitationStore_.setCloudPrintInterface(cloudPrintInterface);
   },
 
   /** @private */
-  updateDriveDestinationReady_: function() {
+  updateDriveDestinationReady_() {
     const key = createDestinationKey(
         Destination.GooglePromotedId.DOCS, DestinationOrigin.COOKIES,
         this.activeUser_);
@@ -221,7 +221,7 @@ Polymer({
   },
 
   /** @private */
-  onActiveUserChanged_: function() {
+  onActiveUserChanged_() {
     this.destinationStore_.startLoadCookieDestination(
         Destination.GooglePromotedId.DOCS);
     this.updateDriveDestinationReady_();
@@ -290,7 +290,7 @@ Polymer({
    *     determine whether to wait for user info updates from the handler, or
    *     to always send requests to the Google Cloud Print server.
    */
-  init: function(
+  init(
       defaultPrinter, pdfPrinterDisabled, serializedDefaultDestinationRulesStr,
       userAccounts, syncAvailable) {
     this.pdfPrinterDisabled_ = pdfPrinterDisabled;
@@ -303,7 +303,7 @@ Polymer({
   },
 
   /** @private */
-  onDestinationSelect_: function() {
+  onDestinationSelect_() {
     // If the user selected a destination in the dialog after changing the
     // active user, do the UI updates that were previously deferred.
     if (this.isDialogOpen_ && this.lastUser_ !== this.activeUser_) {
@@ -330,7 +330,7 @@ Polymer({
   },
 
   /** @private */
-  onDestinationCapabilitiesReady_: function() {
+  onDestinationCapabilitiesReady_() {
     this.notifyPath('destination.capabilities');
     this.updateRecentDestinations_();
     if (this.destinationState === DestinationState.SET) {
@@ -342,7 +342,7 @@ Polymer({
    * @param {!CustomEvent<!DestinationErrorType>} e
    * @private
    */
-  onDestinationError_: function(e) {
+  onDestinationError_(e) {
     let errorType = Error.NONE;
     switch (e.detail) {
       case DestinationErrorType.INVALID:
@@ -362,7 +362,7 @@ Polymer({
   },
 
   /** @private */
-  onErrorChanged_: function() {
+  onErrorChanged_() {
     if (this.error === Error.INVALID_PRINTER ||
         this.error === Error.UNSUPPORTED_PRINTER ||
         this.error === Error.NO_DESTINATIONS) {
@@ -375,13 +375,13 @@ Polymer({
    * @return {boolean} Whether the destination is Save as PDF or Save to
    *     Drive.
    */
-  destinationIsDriveOrPdf_: function(destination) {
+  destinationIsDriveOrPdf_(destination) {
     return destination.id === Destination.GooglePromotedId.SAVE_AS_PDF ||
         destination.id === Destination.GooglePromotedId.DOCS;
   },
 
   /** @private */
-  updateRecentDestinations_: function() {
+  updateRecentDestinations_() {
     if (!this.destination) {
       return;
     }
@@ -422,7 +422,7 @@ Polymer({
   },
 
   /** @private */
-  updateDropdownDestinations_: function() {
+  updateDropdownDestinations_() {
     const recentDestinations = /** @type {!Array<!RecentDestination>} */ (
         this.getSettingValue('recentDestinations'));
 
@@ -444,14 +444,14 @@ Polymer({
    * @return {boolean} Whether the destinations dropdown should be disabled.
    * @private
    */
-  shouldDisableDropdown_: function() {
+  shouldDisableDropdown_() {
     return this.state === State.FATAL_ERROR ||
         (this.destinationState === DestinationState.UPDATED && this.disabled &&
          this.state !== State.NOT_READY);
   },
 
   /** @private */
-  computeShouldHideSpinner_: function() {
+  computeShouldHideSpinner_() {
     return this.destinationState === DestinationState.ERROR ||
         this.destinationState === DestinationState.UPDATED ||
         (this.destinationState === DestinationState.SET && !!this.destination &&
@@ -463,7 +463,7 @@ Polymer({
    * @return {string} The connection status text to display.
    * @private
    */
-  computeStatusText_: function() {
+  computeStatusText_() {
     // |destination| can be either undefined, or null here.
     if (!this.destination) {
       return '';
@@ -479,7 +479,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeHasPinSetting_: function() {
+  computeHasPinSetting_() {
     return this.getSetting('pin').available;
   },
   // </if>
@@ -489,7 +489,7 @@ Polymer({
    *     destination that was selected, or "seeMore".
    * @private
    */
-  onSelectedDestinationOptionChange_: function(e) {
+  onSelectedDestinationOptionChange_(e) {
     const value = e.detail;
     if (value === 'seeMore') {
       this.destinationStore_.startLoadAllDestinations();
@@ -509,13 +509,13 @@ Polymer({
    *     account.
    * @private
    */
-  onAccountChange_: function(e) {
+  onAccountChange_(e) {
     this.$.userManager.updateActiveUser(e.detail, true);
     this.updateDriveDestinationReady_();
   },
 
   /** @private */
-  onDialogClose_: function() {
+  onDialogClose_() {
     if (this.lastUser_ !== this.activeUser_) {
       this.updateDropdownDestinations_();
     }
@@ -527,7 +527,7 @@ Polymer({
   },
 
   /** @private */
-  updateDestinationSelect_: function() {
+  updateDestinationSelect_() {
     if (this.destinationState === DestinationState.ERROR && !this.destination) {
       return;
     }
@@ -552,7 +552,7 @@ Polymer({
    * @param {!CustomEvent<string>} e Event containing the current destination's
    * EULA URL.
    */
-  updateDestinationEulaUrl_: function(e) {
+  updateDestinationEulaUrl_(e) {
     if (!this.destination) {
       return;
     }

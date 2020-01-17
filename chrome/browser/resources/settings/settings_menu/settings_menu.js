@@ -26,12 +26,12 @@ Polymer({
   },
 
   /** @param {!settings.Route} newRoute */
-  currentRouteChanged: function(newRoute) {
+  currentRouteChanged(newRoute) {
     // Focus the initially selected path.
     const anchors = this.root.querySelectorAll('a');
     for (let i = 0; i < anchors.length; ++i) {
-      const anchorRoute =
-          settings.router.getRouteForPath(anchors[i].getAttribute('href'));
+      const anchorRoute = settings.Router.getInstance().getRouteForPath(
+          anchors[i].getAttribute('href'));
       if (anchorRoute && anchorRoute.contains(newRoute)) {
         this.setSelectedUrl_(anchors[i].href);
         return;
@@ -42,7 +42,7 @@ Polymer({
   },
 
   /** @private */
-  onAdvancedButtonToggle_: function() {
+  onAdvancedButtonToggle_() {
     this.advancedOpened = !this.advancedOpened;
   },
 
@@ -52,7 +52,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onLinkClick_: function(event) {
+  onLinkClick_(event) {
     if (event.target.matches('a:not(#extensionsLink)')) {
       event.preventDefault();
     }
@@ -63,7 +63,7 @@ Polymer({
    * |iron-list| uses the entire url. Using |getAttribute| will not work.
    * @param {string} url
    */
-  setSelectedUrl_: function(url) {
+  setSelectedUrl_(url) {
     this.$.topMenu.selected = this.$.subMenu.selected = url;
   },
 
@@ -71,13 +71,13 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onSelectorActivate_: function(event) {
+  onSelectorActivate_(event) {
     this.setSelectedUrl_(event.detail.selected);
 
     const path = new URL(event.detail.selected).pathname;
-    const route = settings.getRouteForPath(path);
+    const route = settings.Router.getInstance().getRouteForPath(path);
     assert(route, 'settings-menu has an entry with an invalid route.');
-    settings.navigateTo(
+    settings.Router.getInstance().navigateTo(
         route, /* dynamicParams */ null, /* removeSearch */ true);
   },
 
@@ -86,12 +86,12 @@ Polymer({
    * @return {string} Which icon to use.
    * @private
    * */
-  arrowState_: function(opened) {
+  arrowState_(opened) {
     return opened ? 'cr:arrow-drop-up' : 'cr:arrow-drop-down';
   },
 
   /** @private */
-  onExtensionsLinkClick_: function() {
+  onExtensionsLinkClick_() {
     chrome.metricsPrivate.recordUserAction(
         'SettingsMenu_ExtensionsLinkClicked');
   },
@@ -101,7 +101,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  boolToString_: function(bool) {
+  boolToString_(bool) {
     return bool.toString();
   },
 });

@@ -567,6 +567,8 @@ class ArcBluetoothBridge
   scoped_refptr<bluez::BluetoothAdapterBlueZ> bluetooth_adapter_;
   scoped_refptr<device::BluetoothAdvertisement> advertisment_;
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
+  // Discovered devices in the current discovery session.
+  std::set<std::string> discovered_devices_;
   std::unordered_map<std::string,
                      std::unique_ptr<device::BluetoothGattNotifySession>>
       notification_session_;

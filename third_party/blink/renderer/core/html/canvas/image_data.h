@@ -156,7 +156,8 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
                                   base::Optional<IntRect> crop_rect,
-                                  const ImageBitmapOptions*) override;
+                                  const ImageBitmapOptions*,
+                                  ExceptionState&) override;
 
   void Trace(Visitor*) override;
 

@@ -41,6 +41,7 @@ class NewTabPageHandler : public content::WebContentsObserver,
   void DeleteMostVisitedTile(const GURL& url) override;
   void RestoreMostVisitedDefaults() override;
   void ReorderMostVisitedTile(const GURL& url, uint8_t new_pos) override;
+  void SetMostVisitedSettings(bool custom_links_enabled, bool visible) override;
   void UndoMostVisitedTileAction() override;
   void UpdateMostVisitedInfo() override;
   void UpdateMostVisitedTile(const GURL& url,

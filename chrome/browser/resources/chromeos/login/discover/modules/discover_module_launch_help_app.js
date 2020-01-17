@@ -7,7 +7,7 @@ Polymer({
 
   behaviors: [DiscoverModuleBehavior],
 
-  onClick_: function() {
+  onClick_() {
     chrome.send('discover.launch-help-app.handleLaunchHelpApp');
   },
 });

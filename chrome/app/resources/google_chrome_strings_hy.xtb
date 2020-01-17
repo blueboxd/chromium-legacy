@@ -22,7 +22,6 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ֆայլը վտանգավոր է, և Chrome-ն արգելափակել է այն:</translation>
 <translation id="1619887657840448962">Chrome-ն ավելի ապահով դարձնելու համար հետևյալ ընդլայնումներն անջատվել են, որոնք նշված չեն <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />-ում և կարող են ավելացված լինել առանց ձեր իմացության:</translation>
 <translation id="1628000112320670027">Chrome-ի օգնության էջ</translation>
-<translation id="1635734105302489219">Երբ Chrome-ից դուրս եք գալիս, քուքիները մաքրվում են: Համաժամացումը շարունակելու համար փոխեք <ph name="COOKIE_SETTINGS_LINK" />ը:</translation>
 <translation id="1662639173275167396">Chrome OS-ը ստեղծվել է <ph name="BEGIN_LINK_CROS_OSS" />բաց կոդով ծրագրակազմի<ph name="END_LINK_CROS_OSS" /> շնորհիվ, ինչպիսին է <ph name="BEGIN_LINK_LINUX_OSS" />Լինուքսը (բետա)<ph name="END_LINK_LINUX_OSS" />:</translation>
 <translation id="1666409074978194368">Գրեթե պատրաստ է։ Վերագործարկեք Google Chrome դիտարկիչը՝ թարմացումն ավարտելու համար։ Ինկոգնիտո պատուհանները նորից չեն բացվի։</translation>
 <translation id="1674870198290878346">Բացել հղումը Chrome-ի ինկ&amp;ոգնիտո պատուհանում</translation>
@@ -75,7 +74,6 @@
 <translation id="3089968997497233615">Մատչելի է Google Chrome-ի նոր, ավելի ապահով տարբերակը:</translation>
 <translation id="3149510190863420837">Chrome-ի հավելվածներ</translation>
 <translation id="3282568296779691940">Մուտք գործել Chrome</translation>
-<translation id="3340978935015468852">կարգավորումներ</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome-ը հիմա կվերագործարկվի}=1{Chrome-ը կվերագործարկվի 1 վայրկյանից}one{Chrome-ը կվերագործարկվի # վայրկյանից}other{Chrome-ը կվերագործարկվի # վայրկյանից}}</translation>
 <translation id="3395323229510056640">Chrome OS-ի օգնության էջ</translation>

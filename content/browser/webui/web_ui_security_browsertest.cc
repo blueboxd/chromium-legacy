@@ -12,7 +12,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/browser/webui/web_ui_browsertest_util.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_ui.h"
@@ -26,6 +25,7 @@
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/web_ui_browsertest_util.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/base/url_util.h"
@@ -48,6 +48,19 @@ class WebUISecurityTest : public ContentBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(WebUISecurityTest);
 };
+
+// Verify chrome-untrusted:// have no bindings.
+IN_PROC_BROWSER_TEST_F(WebUISecurityTest, UntrustedNoBindings) {
+  auto* web_contents = shell()->web_contents();
+  AddUntrustedDataSource(web_contents->GetBrowserContext(), "test-host");
+
+  const GURL untrusted_url(GetChromeUntrustedUIURL("test-host/title1.html"));
+  EXPECT_TRUE(NavigateToURL(web_contents, untrusted_url));
+
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
+  EXPECT_EQ(0, shell()->web_contents()->GetMainFrame()->GetEnabledBindings());
+}
 
 // Loads a WebUI which does not have any bindings.
 IN_PROC_BROWSER_TEST_F(WebUISecurityTest, NoBindings) {

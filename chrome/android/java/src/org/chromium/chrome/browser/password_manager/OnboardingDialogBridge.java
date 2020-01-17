@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.password_manager;
 
-import static org.chromium.chrome.browser.ChromeFeatureList.PASSWORD_MANAGER_ONBOARDING_ANDROID;
-import static org.chromium.chrome.browser.ChromeFeatureList.getFieldTrialParamByFeature;
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.PASSWORD_MANAGER_ONBOARDING_ANDROID;
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.getFieldTrialParamByFeature;
 
 import android.content.Context;
 

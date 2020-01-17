@@ -73,6 +73,44 @@ ax::mojom::Event ToAXEvent(
   return ax::mojom::Event::kChildrenChanged;
 }
 
+base::Optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
+    ax::mojom::Action action) {
+  switch (action) {
+    case ax::mojom::Action::kDoDefault:
+      return arc::mojom::AccessibilityActionType::CLICK;
+    case ax::mojom::Action::kFocus:
+      return arc::mojom::AccessibilityActionType::ACCESSIBILITY_FOCUS;
+    case ax::mojom::Action::kScrollToMakeVisible:
+      return arc::mojom::AccessibilityActionType::SHOW_ON_SCREEN;
+    case ax::mojom::Action::kScrollBackward:
+      return arc::mojom::AccessibilityActionType::SCROLL_BACKWARD;
+    case ax::mojom::Action::kScrollForward:
+      return arc::mojom::AccessibilityActionType::SCROLL_FORWARD;
+    case ax::mojom::Action::kScrollUp:
+      return arc::mojom::AccessibilityActionType::SCROLL_UP;
+    case ax::mojom::Action::kScrollDown:
+      return arc::mojom::AccessibilityActionType::SCROLL_DOWN;
+    case ax::mojom::Action::kScrollLeft:
+      return arc::mojom::AccessibilityActionType::SCROLL_LEFT;
+    case ax::mojom::Action::kScrollRight:
+      return arc::mojom::AccessibilityActionType::SCROLL_RIGHT;
+    case ax::mojom::Action::kCustomAction:
+      return arc::mojom::AccessibilityActionType::CUSTOM_ACTION;
+    case ax::mojom::Action::kSetAccessibilityFocus:
+      return arc::mojom::AccessibilityActionType::ACCESSIBILITY_FOCUS;
+    case ax::mojom::Action::kClearAccessibilityFocus:
+      return arc::mojom::AccessibilityActionType::CLEAR_ACCESSIBILITY_FOCUS;
+    case ax::mojom::Action::kGetTextLocation:
+      return arc::mojom::AccessibilityActionType::GET_TEXT_LOCATION;
+    case ax::mojom::Action::kShowTooltip:
+      return arc::mojom::AccessibilityActionType::SHOW_TOOLTIP;
+    case ax::mojom::Action::kHideTooltip:
+      return arc::mojom::AccessibilityActionType::HIDE_TOOLTIP;
+    default:
+      return base::nullopt;
+  }
+}
+
 bool GetBooleanProperty(mojom::AccessibilityNodeInfoData* node,
                         mojom::AccessibilityBooleanProperty prop) {
   if (!node || !node->boolean_properties)

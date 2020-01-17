@@ -213,6 +213,8 @@ jumbo_component("gl") {
       "gl_image_egl.h",
       "gl_surface_egl.cc",
       "gl_surface_egl.h",
+      "shared_gl_fence_egl.cc",
+      "shared_gl_fence_egl.h",
     ]
 
     if (is_linux || use_ozone) {
@@ -410,9 +412,7 @@ if (is_mac && use_egl) {
       "$root_out_dir/libEGL.dylib",
       "$root_out_dir/libGLESv2.dylib",
     ]
-    outputs = [
-      "$root_out_dir/egl_intermediates/{{source_file_part}}",
-    ]
+    outputs = [ "$root_out_dir/egl_intermediates/{{source_file_part}}" ]
     deps = [
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
@@ -425,9 +425,7 @@ if (is_mac && use_egl) {
         "$root_out_dir/libswiftshader_libEGL.dylib",
         "$root_out_dir/libswiftshader_libGLESv2.dylib",
       ]
-      outputs = [
-        "$root_out_dir/egl_intermediates/{{source_file_part}}",
-      ]
+      outputs = [ "$root_out_dir/egl_intermediates/{{source_file_part}}" ]
       deps = [
         "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
@@ -504,17 +502,11 @@ jumbo_static_library("test_support") {
 source_set("run_all_unittests") {
   testonly = true
 
-  sources = [
-    "test/run_all_unittests.cc",
-  ]
+  sources = [ "test/run_all_unittests.cc" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
-  public_deps = [
-    "//base/test:test_support",
-  ]
+  public_deps = [ "//base/test:test_support" ]
 
   if (use_ozone) {
     deps += [
@@ -591,9 +583,7 @@ test("gl_unittests") {
     "//ui/platform_window:platform_impls",
   ]
 
-  data_deps = [
-    "//third_party/mesa_headers",
-  ]
+  data_deps = [ "//third_party/mesa_headers" ]
 
   if (use_x11) {
     sources += [ "gl_context_glx_unittest.cc" ]
@@ -605,9 +595,7 @@ test("gl_unittests") {
 # We can't run this test on real Chrome OS hardware for Ozone, so new target.
 group("gl_unittests_ozone") {
   testonly = true
-  data_deps = [
-    ":gl_unittests",
-  ]
+  data_deps = [ ":gl_unittests" ]
 }
 
 if (is_android) {
@@ -621,8 +609,6 @@ if (is_android) {
       "../android/java/src/org/chromium/ui/gl/SurfaceTextureListener.java",
       "../android/java/src/org/chromium/ui/gl/SurfaceTexturePlatformWrapper.java",
     ]
-    public_deps = [
-      ":surface_jni_headers",
-    ]
+    public_deps = [ ":surface_jni_headers" ]
   }
 }

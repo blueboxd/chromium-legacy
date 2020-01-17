@@ -33,6 +33,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -49,6 +50,8 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
@@ -90,8 +93,8 @@ public class ShareHelper {
     public static final String EXTRA_TASK_ID = "org.chromium.chrome.extra.TASK_ID";
 
     private static final String JPEG_EXTENSION = ".jpg";
-    private static final String PACKAGE_NAME_KEY = "last_shared_package_name";
-    private static final String CLASS_NAME_KEY = "last_shared_class_name";
+    private static final String PACKAGE_NAME_KEY_SUFFIX = "last_shared_package_name";
+    private static final String CLASS_NAME_KEY_SUFFIX = "last_shared_class_name";
     private static final String EXTRA_SHARE_SCREENSHOT_AS_STREAM = "share_screenshot_as_stream";
 
     /**
@@ -666,11 +669,24 @@ public class ShareHelper {
     @VisibleForTesting
     public static void setLastShareComponentName(
             ComponentName component, @Nullable String sourcePackageName) {
-        SharedPreferences preferences = getSharePreferences(sourcePackageName);
+        if (sourcePackageName == null) {
+            setLastShareComponentNameForChrome(component);
+            return;
+        }
+
+        SharedPreferences preferences = getExternalAppSharingSharedPreferences();
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(getPackageNameKey(sourcePackageName), component.getPackageName());
         editor.putString(getClassNameKey(sourcePackageName), component.getClassName());
         editor.apply();
+    }
+
+    private static void setLastShareComponentNameForChrome(ComponentName component) {
+        SharedPreferencesManager preferencesManager = SharedPreferencesManager.getInstance();
+        preferencesManager.writeString(
+                ChromePreferenceKeys.SHARING_LAST_SHARED_PACKAGE_NAME, component.getPackageName());
+        preferencesManager.writeString(
+                ChromePreferenceKeys.SHARING_LAST_SHARED_CLASS_NAME, component.getClassName());
     }
 
     @VisibleForTesting
@@ -756,25 +772,44 @@ public class ShareHelper {
      */
     @Nullable
     public static ComponentName getLastShareComponentName(@Nullable String sourcePackageName) {
-        SharedPreferences preferences = getSharePreferences(sourcePackageName);
+        if (sourcePackageName == null) {
+            return getLastShareByChromeComponentName();
+        }
+
+        SharedPreferences preferences = getExternalAppSharingSharedPreferences();
         String packageName = preferences.getString(getPackageNameKey(sourcePackageName), null);
         String className = preferences.getString(getClassNameKey(sourcePackageName), null);
+        return createComponentName(packageName, className);
+    }
+
+    /**
+     * Gets the {@link ComponentName} of the app that was used to last share by Chrome.
+     */
+    @Nullable
+    public static ComponentName getLastShareByChromeComponentName() {
+        SharedPreferencesManager preferencesManager = SharedPreferencesManager.getInstance();
+        String packageName = preferencesManager.readString(
+                ChromePreferenceKeys.SHARING_LAST_SHARED_PACKAGE_NAME, null);
+        String className = preferencesManager.readString(
+                ChromePreferenceKeys.SHARING_LAST_SHARED_CLASS_NAME, null);
+        return createComponentName(packageName, className);
+    }
+
+    private static ComponentName createComponentName(String packageName, String className) {
         if (packageName == null || className == null) return null;
         return new ComponentName(packageName, className);
     }
 
-    private static SharedPreferences getSharePreferences(@Nullable String sourcePackageName) {
-        return sourcePackageName != null
-                ? ContextUtils.getApplicationContext().getSharedPreferences(
-                          EXTERNAL_APP_SHARING_PREF_FILE_NAME, Context.MODE_PRIVATE)
-                : ContextUtils.getAppSharedPreferences();
+    private static SharedPreferences getExternalAppSharingSharedPreferences() {
+        return ContextUtils.getApplicationContext().getSharedPreferences(
+                EXTERNAL_APP_SHARING_PREF_FILE_NAME, Context.MODE_PRIVATE);
     }
 
-    private static String getPackageNameKey(@Nullable String sourcePackageName) {
-        return (TextUtils.isEmpty(sourcePackageName) ? "" : sourcePackageName) + PACKAGE_NAME_KEY;
+    private static String getPackageNameKey(@NonNull String sourcePackageName) {
+        return sourcePackageName + PACKAGE_NAME_KEY_SUFFIX;
     }
 
-    private static String getClassNameKey(@Nullable String sourcePackageName) {
-        return (TextUtils.isEmpty(sourcePackageName) ? "" : sourcePackageName) + CLASS_NAME_KEY;
+    private static String getClassNameKey(@NonNull String sourcePackageName) {
+        return sourcePackageName + CLASS_NAME_KEY_SUFFIX;
     }
 }

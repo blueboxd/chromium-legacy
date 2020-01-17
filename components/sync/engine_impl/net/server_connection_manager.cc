@@ -142,12 +142,15 @@ void ServerConnectionManager::NotifyStatusChanged() {
 }
 
 bool ServerConnectionManager::PostBufferWithCachedAuth(
-    PostBufferParams* params) {
+    const std::string& buffer_in,
+    std::string* buffer_out,
+    HttpResponse* http_response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string path =
       MakeSyncServerPath(proto_sync_path(), MakeSyncQueryString(client_id_));
-  bool result = PostBufferToPath(params, path, access_token_);
-  SetServerResponse(params->response);
+  bool result = PostBufferToPath(buffer_in, path, access_token_, buffer_out,
+                                 http_response);
+  SetServerResponse(*http_response);
   return result;
 }
 

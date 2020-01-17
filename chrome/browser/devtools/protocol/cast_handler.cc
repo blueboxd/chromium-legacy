@@ -10,10 +10,10 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/media_router/media_router_ui_helper.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 
@@ -217,7 +217,7 @@ MediaRoute::Id CastHandler::GetRouteIdForSink(
 void CastHandler::StartObservingForSinks(
     protocol::Maybe<std::string> presentation_url) {
   media_router::MediaSource mirroring_source(media_router::MediaSource::ForTab(
-      SessionTabHelper::IdForTab(web_contents_).id()));
+      sessions::SessionTabHelper::IdForTab(web_contents_).id()));
   query_result_manager_->SetSourcesForCastMode(
       media_router::MediaCastMode::TAB_MIRROR, {mirroring_source},
       url::Origin::Create(GURL()));

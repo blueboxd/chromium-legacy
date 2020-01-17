@@ -22,12 +22,12 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -247,7 +247,7 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
   // Make sure either we have been granted permission to capture through an
   // extension icon click or our extension is whitelisted.
   if (!extension()->permissions_data()->HasAPIPermissionForTab(
-          SessionTabHelper::IdForTab(target_contents).id(),
+          sessions::SessionTabHelper::IdForTab(target_contents).id(),
           APIPermission::kTabCaptureForTab) &&
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id &&
@@ -434,7 +434,7 @@ ExtensionFunction::ResponseAction TabCaptureGetMediaStreamIdFunction::Run() {
   // Make sure either we have been granted permission to capture through an
   // extension icon click or our extension is whitelisted.
   if (!extension()->permissions_data()->HasAPIPermissionForTab(
-          SessionTabHelper::IdForTab(target_contents).id(),
+          sessions::SessionTabHelper::IdForTab(target_contents).id(),
           APIPermission::kTabCaptureForTab) &&
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id) {

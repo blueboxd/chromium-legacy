@@ -29,6 +29,11 @@ class XRSessionEvent final : public Event {
 
   XRSessionEvent();
   XRSessionEvent(const AtomicString& type, XRSession*);
+  XRSessionEvent(const AtomicString& type,
+                 XRSession*,
+                 Event::Bubbles,
+                 Event::Cancelable,
+                 Event::ComposedMode);
   XRSessionEvent(const AtomicString& type, const XRSessionEventInit*);
   ~XRSessionEvent() override;
 

@@ -43,16 +43,4 @@ TEST(SingleThreadTaskExecutorTest,
   run_loop.Run();
 }
 
-TEST(SingleThreadTaskExecutorTest, CurrentThread) {
-  SingleThreadTaskExecutor single_thread_task_executor;
-
-  EXPECT_EQ(single_thread_task_executor.task_runner(),
-            base::CreateSingleThreadTaskRunner({base::CurrentThread()}));
-
-  // There's only one task queue so priority is ignored.
-  EXPECT_EQ(single_thread_task_executor.task_runner(),
-            base::CreateSingleThreadTaskRunner(
-                {base::CurrentThread(), base::TaskPriority::BEST_EFFORT}));
-}
-
 }  // namespace base

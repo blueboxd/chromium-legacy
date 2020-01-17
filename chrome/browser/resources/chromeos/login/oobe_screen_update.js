@@ -22,7 +22,7 @@ login.createScreen('UpdateScreen', 'update', function() {
     ],
 
     /** @param {boolean} enabled */
-    setCancelUpdateShortcutEnabled: function(enabled) {
+    setCancelUpdateShortcutEnabled(enabled) {
       $('oobe-update-md').cancelAllowed = enabled;
     },
 
@@ -37,7 +37,7 @@ login.createScreen('UpdateScreen', 'update', function() {
     /**
      * Cancels the screen.
      */
-    cancel: function() {
+    cancel() {
       $('oobe-update-md')
           .setCancelHint(loadTimeData.getString('cancelledUpdateMessage'));
       this.send(
@@ -48,11 +48,11 @@ login.createScreen('UpdateScreen', 'update', function() {
      * Sets update's progress bar value.
      * @param {number} progress Percentage of the progress bar.
      */
-    setUpdateProgress: function(progress) {
+    setUpdateProgress(progress) {
       $('oobe-update-md').progressValue = progress;
     },
 
-    setRequiresPermissionForCellular: function(requiresPermission) {
+    setRequiresPermissionForCellular(requiresPermission) {
       $('oobe-update-md').requiresPermissionForCellular = requiresPermission;
     },
 
@@ -60,7 +60,7 @@ login.createScreen('UpdateScreen', 'update', function() {
      * Shows or hides downloading ETA message.
      * @param {boolean} visible Are ETA message visible?
      */
-    showEstimatedTimeLeft: function(visible) {
+    showEstimatedTimeLeft(visible) {
       $('oobe-update-md').estimatedTimeLeftShown = visible;
       $('oobe-update-md').progressMessageShown = !visible;
     },
@@ -69,7 +69,7 @@ login.createScreen('UpdateScreen', 'update', function() {
      * Sets estimated time left until download will complete.
      * @param {number} seconds Time left in seconds.
      */
-    setEstimatedTimeLeft: function(seconds) {
+    setEstimatedTimeLeft(seconds) {
       var minutes = Math.ceil(seconds / 60);
       var message = '';
       if (minutes > 60) {
@@ -94,7 +94,7 @@ login.createScreen('UpdateScreen', 'update', function() {
      * string.
      * @param {string} message Message that should be shown.
      */
-    setProgressMessage: function(message) {
+    setProgressMessage(message) {
       var visible = !!message;
       $('oobe-update-md').progressMessage = message;
       $('oobe-update-md').estimatedTimeLeftShown = !visible;
@@ -105,7 +105,7 @@ login.createScreen('UpdateScreen', 'update', function() {
      * Marks update completed. Shows "update completed" message.
      * @param {boolean} is_completed True if update process is completed.
      */
-    setUpdateCompleted: function(is_completed) {
+    setUpdateCompleted(is_completed) {
       $('oobe-update-md').updateCompleted = is_completed;
     },
 
@@ -113,7 +113,7 @@ login.createScreen('UpdateScreen', 'update', function() {
      * Shows or hides update curtain.
      * @param {boolean} visible Are curtains visible?
      */
-    showUpdateCurtain: function(visible) {
+    showUpdateCurtain(visible) {
       $('oobe-update-md').checkingForUpdate = visible;
     },
   };

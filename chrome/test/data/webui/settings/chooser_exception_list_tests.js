@@ -533,9 +533,7 @@ suite('ChooserExceptionList', function() {
               const siteListEntry =
                   chooserExceptionListEntry.$$('site-list-entry');
               assertTrue(!!siteListEntry);
-              assertNotEquals(
-                  siteListEntry.$.siteDescription.textContext,
-                  'Current incognito session');
+              assertTrue(siteListEntry.$.incognitoTooltip.hidden);
 
               // Simulate an incognito session being created.
               browserProxy.resetResolver('getChooserExceptionList');
@@ -557,11 +555,29 @@ suite('ChooserExceptionList', function() {
                   chooserExceptionListEntry.root.querySelectorAll(
                       'site-list-entry');
               assertEquals(2, siteListEntries.length);
-              assertTrue(Array.from(siteListEntries)
-                             .some(
-                                 entry => entry.$.siteDescription.textContent ==
-                                     'Current incognito session ' +
-                                         '(embedded on https://foo.com)'));
+
+              const tooltip = testElement.$.tooltip;
+              assertTrue(!!tooltip);
+              const innerTooltip = tooltip.$.tooltip;
+              assertTrue(!!innerTooltip);
+              const text =
+                  'This exception will be automatically removed after you ' +
+                  'exit the current Incognito session';
+              // This filtered array should be non-empty due to above test that
+              // checks for incognito exception.
+              Array.from(siteListEntries)
+                  .filter(entry => entry.incognito)
+                  .forEach(entry => {
+                    const incognitoTooltip = entry.$.incognitoTooltip;
+                    // Make sure it is not hidden if it is an incognito
+                    // exception
+                    assertFalse(incognitoTooltip.hidden);
+                    // Trigger mouse enter and check tooltip text
+                    incognitoTooltip.dispatchEvent(
+                        new MouseEvent('mouseenter'));
+                    assertFalse(innerTooltip.classList.contains('hidden'));
+                    assertEquals(text, tooltip.innerHTML.trim());
+                  });
             });
       });
 });

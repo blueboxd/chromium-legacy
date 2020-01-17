@@ -26,7 +26,7 @@ ChromeVoxCursorsTest.prototype = {
   RANGE: 'range',
 
   /** @override */
-  setUp: function() {
+  setUp() {
     // Various aliases.
     window.BACKWARD = constants.Dir.BACKWARD;
     window.FORWARD = constants.Dir.FORWARD;
@@ -50,7 +50,7 @@ ChromeVoxCursorsTest.prototype = {
    *     moves An array of arrays. Each inner array contains 4 items: unit,
    *     movement, direction, and assertions object. See example below.
    */
-  cursorMoveAndAssert: function(cursor, moves) {
+  cursorMoveAndAssert(cursor, moves) {
     var move = null;
     while (move = moves.shift()) {
       cursor = cursor.move(move[0], move[1], move[2]);
@@ -70,7 +70,7 @@ ChromeVoxCursorsTest.prototype = {
    *     moves An array of arrays. Each inner array contains 4 items: unit,
    *     direction, start and end assertions objects. See example below.
    */
-  rangeMoveAndAssert: function(range, moves) {
+  rangeMoveAndAssert(range, moves) {
     var move = null;
     while (move = moves.shift()) {
       range = range.move(move[0], move[1]);
@@ -87,7 +87,7 @@ ChromeVoxCursorsTest.prototype = {
    * @param {Object} expected
    * @param {Cursor} cursor
    */
-  makeCursorAssertion: function(expected, cursor) {
+  makeCursorAssertion(expected, cursor) {
     if (goog.isDef(expected.value)) {
       assertEquals(expected.value, cursor.node.name);
     }
@@ -101,7 +101,7 @@ ChromeVoxCursorsTest.prototype = {
    * @param {function} doc
    * @param {string=} opt_testType Either CURSOR or RANGE.
    */
-  runCursorMovesOnDocument: function(doc, moves, opt_testType) {
+  runCursorMovesOnDocument(doc, moves, opt_testType) {
     this.runWithLoadedTree(doc, function(root) {
       var start = null;
 

@@ -164,15 +164,16 @@ class TestDesktopWidgetDelegate : public WidgetDelegate {
   }
   bool can_close() const { return can_close_; }
 
-  // WidgetDelegate overrides:
+  // WidgetDelegate:
   void WindowClosing() override;
-  Widget* GetWidget() override;
-  const Widget* GetWidget() const override;
   View* GetContentsView() override;
   bool ShouldAdvanceFocusToTopLevelWidget() const override;
   bool OnCloseRequested(Widget::ClosedReason close_reason) override;
 
  private:
+  // WidgetDelegate:
+  const Widget* GetWidgetImpl() const override;
+
   Widget* widget_;
   View* contents_view_ = nullptr;
   int window_closing_count_ = 0;

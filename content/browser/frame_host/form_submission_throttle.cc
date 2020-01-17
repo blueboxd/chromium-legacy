@@ -81,8 +81,8 @@ FormSubmissionThrottle::CheckContentSecurityPolicyFormAction(
   // check report-only CSP, (2) upgrade request if needed, (3) check enforced
   // CSP to match how frame-src works. https://crbug.com/713388
   if (render_frame->IsAllowedByCsp(
-          CSPDirective::FormAction, url, was_server_redirect,
-          false /* is_response_check */,
+          network::mojom::CSPDirectiveName::FormAction, url,
+          was_server_redirect, false /* is_response_check */,
           request->common_params().source_location.value_or(SourceLocation()),
           CSPContext::CHECK_ALL_CSP, true /* is_form_submission */)) {
     return NavigationThrottle::PROCEED;

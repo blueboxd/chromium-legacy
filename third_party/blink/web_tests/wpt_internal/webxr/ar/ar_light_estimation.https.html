@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script>let additionalChromiumResources = ["../resources/xr-internal-device-mocking.js"];</script>
+<script src="/webxr/resources/webxr_util.js"></script>
+<script src="/webxr/resources/webxr_test_constants.js"></script>
+<script src="/webxr/resources/webxr_test_asserts.js"></script>
+<canvas />
+
+<script>
+// Because AR is not yet in the core webxr spec, this is an internal-chrome only test.
+let fakeDeviceInitParams = { supportedModes: ["immersive-ar"],
+                             views: VALID_VIEWS,
+                             supportedFeatures: ALL_FEATURES };
+
+function assert_defined(v, description) {
+  assert_not_equals(v, undefined, description);
+}
+
+// Verifies the structure of |XRCubeMap|
+// Defined in 'third_party/blink/renderer/modules/xr/xr_cube_map.idl'
+function verifyXRCubeMap(cubeMap) {
+  assert_defined(cubeMap.updateWebGLEnvironmentCube);
+}
+
+// Verifies the structure of |XRReflectionProbe|
+// Defined in 'third_party/blink/renderer/modules/xr/xr_reflection_probe.idl'
+function verifyXRReflectionProbe(reflectionProbe) {
+  assert_defined(reflectionProbe.cubeMap);
+  verifyXRCubeMap(reflectionProbe.cubeMap);
+}
+
+// Verifies the structure of |XRSphericalHarmonics|
+// Defined in 'third_party/blink/renderer/modules/xr/xr_spherical_harmonics.idl'
+function verifyXRSphericalHarmonics(sphericalHarmonics) {
+  assert_equals(sphericalHarmonics.orientation.x, 0);
+  assert_equals(sphericalHarmonics.orientation.y, 0);
+  assert_equals(sphericalHarmonics.orientation.z, 0);
+  assert_equals(sphericalHarmonics.orientation.w, 1);
+  assert_array_equals(Array.from(sphericalHarmonics.coefficients), new Array(9).fill().map((x, i) => [i, i, i]).flat());
+}
+
+// Verifies the structure of |XRLightProbe|
+// Defined in 'third_party/blink/renderer/modules/xr/xr_light_probe.idl'
+function verifyXRLightProbe(lightProbe) {
+  assert_defined(lightProbe.sphericalHarmonics);
+  verifyXRSphericalHarmonics(lightProbe.sphericalHarmonics);
+
+  assert_equals(lightProbe.mainLightDirection.x, 0);
+  assert_equals(lightProbe.mainLightDirection.y, 1);
+  assert_equals(lightProbe.mainLightDirection.z, 0);
+  assert_equals(lightProbe.mainLightDirection.w, 0);
+
+  assert_equals(lightProbe.mainLightIntensity.x, 1);
+  assert_equals(lightProbe.mainLightIntensity.y, 1);
+  assert_equals(lightProbe.mainLightIntensity.z, 1);
+  assert_equals(lightProbe.mainLightIntensity.w, 1);
+}
+
+// Verifies the structure of |XRLightEstimationData| 
+// Defined in 'third_party/blink/renderer/modules/xr/xr_light_estimation.idl'
+function verifyXRLightEstimationData(lightEstimation) {
+  assert_defined(lightEstimation.lightProbe);
+  if (lightEstimation.lightProbe !== null) {
+    verifyXRLightProbe(lightEstimation.lightProbe);
+  }
+
+  assert_defined(lightEstimation.reflectionProbe);
+  if (lightEstimation.reflectionProbe !== null) {
+    verifyXRReflectionProbe(lightEstimation.reflectionProbe);
+  }
+}
+
+// Verifies the structure of |XRFrame| (as it relates to light estimation)
+// for a session that's expected to suppot light estimation.
+// Defined in 'third_party/blink/renderer/modules/xr/xr_frame.idl'
+function verifyLightEstimationExists(t, resolve, count, session, frame) {
+  t.step(() => {
+    assert_not_equals(count, 0, "Did not get lighting information with a reasonable number of frames");
+    assert_defined(frame.worldInformation);
+    assert_defined(frame.worldInformation.lightEstimation);
+
+    if (frame.worldInformation.lightEstimation === null) {
+      // Check if we get lighting information next frame
+      session.requestAnimationFrame((time, frame) => {
+        verifyLightEstimationExists(t, resolve, count - 1, session, frame);
+      });
+    } else {
+      verifyXRLightEstimationData(frame.worldInformation.lightEstimation);
+      resolve();
+    }
+  });
+}
+
+let lightingInformationExistsName = "Ensures lighting estimation feature works when enabled";
+function lightingInformationExists(session, fakeDeviceController, t) {
+  session.updateWorldTrackingState({ lightEstimationState: { enabled: true }});
+
+  return new Promise((resolve, reject) => {
+    session.requestAnimationFrame((time, frame) => {
+      verifyLightEstimationExists(t, resolve, 10, session, frame);
+    });
+  });
+}
+
+function verifyLightEstimationDoesNotExist(t, resolve, count, session, frame) {
+  t.step(() => {
+    if (count === 0) {
+      resolve();
+      return;
+    }
+
+    // Lighting estimation should exist, but be null
+    assert_defined(frame.worldInformation);
+    assert_equals(frame.worldInformation.lightEstimation, null);
+
+    // Run another frame
+    session.requestAnimationFrame((time, frame) => {
+      verifyLightEstimationDoesNotExist(t, resolve, count - 1, session, frame);
+    });
+  });
+}
+
+let lightingInformationDoesNotExistName = "Ensure lighting estimation feature does not work when not explicitly enabled";
+function lightingInformationDoesNotExist(session, fakeDeviceController, t) {
+  return new Promise((resolve, reject) => {
+    session.requestAnimationFrame((time, frame) => {
+      verifyLightEstimationDoesNotExist(t, resolve, 10, session, frame);
+    });
+  });
+}
+
+xr_session_promise_test(
+  lightingInformationExistsName,
+  lightingInformationExists,
+  fakeDeviceInitParams,
+  'immersive-ar',
+  {}
+);
+xr_session_promise_test(
+  lightingInformationDoesNotExistName,
+  lightingInformationDoesNotExist,
+  fakeDeviceInitParams,
+  'immersive-ar',
+  {}
+);
+
+</script>

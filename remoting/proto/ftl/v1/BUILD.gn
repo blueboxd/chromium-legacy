@@ -13,10 +13,6 @@ proto_library("ftl_messages") {
 }
 
 cc_grpc_library("ftl_grpc_library") {
-  sources = [
-    "ftl_services.proto",
-  ]
-  deps = [
-    ":ftl_messages",
-  ]
+  sources = [ "ftl_services.proto" ]
+  deps = [ ":ftl_messages" ]
 }

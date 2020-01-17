@@ -28,13 +28,13 @@ Polymer({
    * @param {*} newValue The new value of the layout setting.
    * @private
    */
-  onLayoutSettingChange_: function(newValue) {
+  onLayoutSettingChange_(newValue) {
     this.selectedValue =
         /** @type {boolean} */ (newValue) ? 'landscape' : 'portrait';
   },
 
   /** @param {string} value The new select value. */
-  onProcessSelectChange: function(value) {
+  onProcessSelectChange(value) {
     this.setSetting('layout', value === 'landscape');
   },
 });

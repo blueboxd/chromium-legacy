@@ -201,6 +201,9 @@ bool IsProcessTypeInitialized();
 // process. False otherwise.
 bool IsNonBrowserProcess();
 
+// Returns true if invoked in a Crashpad handler process. False otherwise.
+bool IsCrashpadHandlerProcess();
+
 // Returns true if the |process_type| has the rights to access the profile.
 // False otherwise.
 bool ProcessNeedsProfileDir(const std::string& process_type);

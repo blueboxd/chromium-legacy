@@ -28,9 +28,7 @@ source_set("fakes") {
     "//ui/base",
   ]
 
-  public_deps = [
-    "//ios/web/public",
-  ]
+  public_deps = [ "//ios/web/public" ]
 
   sources = [
     "crw_fake_find_in_page_manager_delegate.h",

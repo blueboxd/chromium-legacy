@@ -37,7 +37,6 @@ class AccountChooserDialogView : public views::BubbleDialogDelegateView,
 
   // DialogDelegate:
   bool Accept() override;
-  int GetDialogButtons() const override;
 
   // ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -48,10 +47,6 @@ class AccountChooserDialogView : public views::BubbleDialogDelegateView,
   // A weak pointer to the controller.
   CredentialManagerDialogController* controller_;
   content::WebContents* web_contents_;
-  // The "Sign in" button is shown for one credential only. The variable is
-  // cached because the framework can call GetDialogButtons() after the
-  // controller is gone.
-  bool show_signin_button_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountChooserDialogView);
 };

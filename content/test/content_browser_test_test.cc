@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RunMockTests) {
   ASSERT_TRUE(val);
   ASSERT_EQ(1u, val->GetList().size());
 
-  base::Value* iteration_val = &(val->GetList().at(0));
+  base::Value* iteration_val = &(val->GetList()[0]);
   ASSERT_TRUE(iteration_val);
   ASSERT_TRUE(iteration_val->is_dict());
   EXPECT_EQ(3u, iteration_val->DictSize());

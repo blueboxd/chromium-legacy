@@ -32,16 +32,12 @@ static_library("web_ui") {
     "//url",
   ]
 
-  public_deps = [
-    "//components/safe_browsing/core:webui_proto",
-  ]
+  public_deps = [ "//components/safe_browsing/core:webui_proto" ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "safe_browsing_ui_unittest.cc",
-  ]
+  sources = [ "safe_browsing_ui_unittest.cc" ]
 
   deps = [
     ":web_ui",

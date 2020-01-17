@@ -633,7 +633,7 @@ Output.SpeechProperties = function() {};
 Output.Action = function() {};
 
 Output.Action.prototype = {
-  run: function() {}
+  run() {}
 };
 
 /**
@@ -655,12 +655,12 @@ Output.EarconAction.prototype = {
   __proto__: Output.Action.prototype,
 
   /** @override */
-  run: function() {
+  run() {
     ChromeVox.earcons.playEarcon(Earcon[this.earconId], this.location);
   },
 
   /** @override */
-  toJSON: function() {
+  toJSON() {
     return {earconId: this.earconId};
   }
 };
@@ -803,7 +803,7 @@ Output.prototype = {
    * @param {EventType|Output.EventType} type
    * @return {!Output}
    */
-  withSpeech: function(range, prevRange, type) {
+  withSpeech(range, prevRange, type) {
     this.formatOptions_ = {speech: true, braille: false, auralStyle: false};
     this.render_(
         range, prevRange, type, this.speechBuffer_, this.speechRulesStr_);
@@ -817,7 +817,7 @@ Output.prototype = {
    * @param {EventType|Output.EventType} type
    * @return {!Output}
    */
-  withRichSpeech: function(range, prevRange, type) {
+  withRichSpeech(range, prevRange, type) {
     this.formatOptions_ = {speech: true, braille: false, auralStyle: true};
     this.render_(
         range, prevRange, type, this.speechBuffer_, this.speechRulesStr_);
@@ -831,7 +831,7 @@ Output.prototype = {
    * @param {EventType|Output.EventType} type
    * @return {!Output}
    */
-  withBraille: function(range, prevRange, type) {
+  withBraille(range, prevRange, type) {
     this.formatOptions_ = {speech: false, braille: true, auralStyle: false};
 
     // Braille sometimes shows contextual information depending on role.
@@ -862,7 +862,7 @@ Output.prototype = {
    * @param {EventType|Output.EventType} type
    * @return {!Output}
    */
-  withLocation: function(range, prevRange, type) {
+  withLocation(range, prevRange, type) {
     this.formatOptions_ = {speech: false, braille: false, auralStyle: false};
     this.render_(
         range, prevRange, type, [] /*unused output*/,
@@ -877,7 +877,7 @@ Output.prototype = {
    * @param {EventType|Output.EventType} type
    * @return {!Output}
    */
-  withSpeechAndBraille: function(range, prevRange, type) {
+  withSpeechAndBraille(range, prevRange, type) {
     this.withSpeech(range, prevRange, type);
     this.withBraille(range, prevRange, type);
     return this;
@@ -890,7 +890,7 @@ Output.prototype = {
    * @param {EventType|Output.EventType} type
    * @return {!Output}
    */
-  withRichSpeechAndBraille: function(range, prevRange, type) {
+  withRichSpeechAndBraille(range, prevRange, type) {
     this.withRichSpeech(range, prevRange, type);
     this.withBraille(range, prevRange, type);
     return this;
@@ -901,7 +901,7 @@ Output.prototype = {
    * @param {TtsCategory} category
    * @return {!Output}
    */
-  withSpeechCategory: function(category) {
+  withSpeechCategory(category) {
     this.speechCategory_ = category;
     return this;
   },
@@ -911,7 +911,7 @@ Output.prototype = {
    * @param {QueueMode} queueMode The queueMode for the speech.
    * @return {!Output}
    */
-  withQueueMode: function(queueMode) {
+  withQueueMode(queueMode) {
     this.queueMode_ = queueMode;
     return this;
   },
@@ -921,7 +921,7 @@ Output.prototype = {
    * @param {string} value
    * @return {!Output}
    */
-  withString: function(value) {
+  withString(value) {
     this.append_(this.speechBuffer_, value);
     this.append_(this.brailleBuffer_, value);
     this.speechRulesStr_.write('withString: ' + value + '\n');
@@ -934,7 +934,7 @@ Output.prototype = {
    * Outputs formatting nodes after this will contain context first.
    * @return {!Output}
    */
-  withContextFirst: function() {
+  withContextFirst() {
     this.outputContextFirst_ = true;
     return this;
   },
@@ -943,7 +943,7 @@ Output.prototype = {
    * Don't include hints in subsequent output.
    * @return {!Output}
    */
-  withoutHints: function() {
+  withoutHints() {
     this.enableHints_ = false;
     return this;
   },
@@ -953,7 +953,7 @@ Output.prototype = {
    * @param {!Object} speechProps
    * @return {!Output}
    */
-  withInitialSpeechProperties: function(speechProps) {
+  withInitialSpeechProperties(speechProps) {
     this.initialSpeechProps_ = speechProps;
     return this;
   },
@@ -963,7 +963,7 @@ Output.prototype = {
    * @param {string} token
    * @return {!Output}
    */
-  suppress: function(token) {
+  suppress(token) {
     this.suppressions_[token] = true;
     return this;
   },
@@ -976,7 +976,7 @@ Output.prototype = {
    *     formatting to.
    * @return {!Output} |this| for chaining
    */
-  format: function(formatStr, opt_node) {
+  format(formatStr, opt_node) {
     return this.formatForSpeech(formatStr, opt_node)
         .formatForBraille(formatStr, opt_node);
   },
@@ -989,7 +989,7 @@ Output.prototype = {
    *     formatting to.
    * @return {!Output} |this| for chaining
    */
-  formatForSpeech: function(formatStr, opt_node) {
+  formatForSpeech(formatStr, opt_node) {
     var node = opt_node || null;
 
     this.formatOptions_ = {speech: true, braille: false, auralStyle: false};
@@ -1011,7 +1011,7 @@ Output.prototype = {
    *     formatting to.
    * @return {!Output} |this| for chaining
    */
-  formatForBraille: function(formatStr, opt_node) {
+  formatForBraille(formatStr, opt_node) {
     var node = opt_node || null;
 
     this.formatOptions_ = {speech: false, braille: true, auralStyle: false};
@@ -1029,7 +1029,7 @@ Output.prototype = {
    * @param {function()} callback
    * @return {!Output}
    */
-  onSpeechEnd: function(callback) {
+  onSpeechEnd(callback) {
     this.speechEndCallback_ = function(opt_cleanupOnly) {
       if (!opt_cleanupOnly) {
         callback();
@@ -1041,7 +1041,7 @@ Output.prototype = {
   /**
    * Executes all specified output.
    */
-  go: function() {
+  go() {
     // Speech.
     var queueMode = QueueMode.QUEUE;
     if (Output.forceModeForNextSpeechUtterance_ !== undefined) {
@@ -1146,7 +1146,7 @@ Output.prototype = {
   /**
    * @return {boolean} True if this object is equal to |rhs|.
    */
-  equals: function(rhs) {
+  equals(rhs) {
     if (this.speechBuffer_.length != rhs.speechBuffer_.length ||
         this.brailleBuffer_.length != rhs.brailleBuffer_.length) {
       return false;
@@ -1178,7 +1178,7 @@ Output.prototype = {
    * @param {!OutputRulesStr} ruleStr
    * @private
    */
-  render_: function(range, prevRange, type, buff, ruleStr) {
+  render_(range, prevRange, type, buff, ruleStr) {
     if (prevRange && !prevRange.isValid()) {
       prevRange = null;
     }
@@ -1232,7 +1232,7 @@ Output.prototype = {
    * }} params An object containing all required and optional parameters.
    * @private
    */
-  format_: function(params) {
+  format_(params) {
     var node = params['node'];
     var format = params['outputFormat'];
     var buff = params['outputBuffer'];
@@ -1669,7 +1669,7 @@ Output.prototype = {
                 related, related, Output.EventType.NAVIGATE, buff, ruleStr);
           }
         } else if (token == 'nameOrTextContent') {
-          if (node.name && node.nameFrom != NameFromType.CONTENTS) {
+          if (node.name) {
             ruleStr.writeToken(token);
             this.format_({
               node: node,
@@ -1933,7 +1933,7 @@ Output.prototype = {
    * @return {!Set}
    * @private
    */
-  createRoles_: function(tree) {
+  createRoles_(tree) {
     var roles = new Set();
     var currentNode = tree.firstChild;
     for (; currentNode; currentNode = currentNode.nextSibling) {
@@ -1950,7 +1950,7 @@ Output.prototype = {
    * @param {!OutputRulesStr} ruleStr
    * @private
    */
-  range_: function(range, prevRange, type, rangeBuff, ruleStr) {
+  range_(range, prevRange, type, rangeBuff, ruleStr) {
     if (!range.start.node || !range.end.node) {
       return;
     }
@@ -2024,7 +2024,7 @@ Output.prototype = {
    * @param {!OutputRulesStr} ruleStr
    * @private
    */
-  ancestry_: function(node, prevNode, type, buff, ruleStr) {
+  ancestry_(node, prevNode, type, buff, ruleStr) {
     if (Output.ROLE_INFO_[node.role] &&
         Output.ROLE_INFO_[node.role].ignoreAncestry) {
       return;
@@ -2152,7 +2152,7 @@ Output.prototype = {
    * @param {!OutputRulesStr} ruleStr
    * @private
    */
-  node_: function(node, prevNode, type, buff, ruleStr) {
+  node_(node, prevNode, type, buff, ruleStr) {
     var originalBuff = buff;
 
     if (this.formatOptions_.braille) {
@@ -2213,7 +2213,7 @@ Output.prototype = {
    * @param {!Array<Spannable>} buff
    * @private
    */
-  subNode_: function(range, prevRange, type, buff, ruleStr) {
+  subNode_(range, prevRange, type, buff, ruleStr) {
     if (!prevRange) {
       prevRange = range;
     }
@@ -2296,7 +2296,7 @@ Output.prototype = {
    * @param {!OutputRulesStr} ruleStr
    * @private
    */
-  hint_: function(range, uniqueAncestors, type, buff, ruleStr) {
+  hint_(range, uniqueAncestors, type, buff, ruleStr) {
     if (!this.enableHints_ || localStorage['useVerboseMode'] != 'true') {
       return;
     }
@@ -2499,7 +2499,7 @@ Output.prototype = {
    * @param {{isUnique: (boolean|undefined),
    *      annotation: !Array<*>}=} opt_options
    */
-  append_: function(buff, value, opt_options) {
+  append_(buff, value, opt_options) {
     opt_options = opt_options || {isUnique: false, annotation: []};
 
     // Reject empty values without meaningful annotations.
@@ -2552,7 +2552,7 @@ Output.prototype = {
    * @return {Object}
    * @private
    */
-  createParseTree_: function(inputStr) {
+  createParseTree_(inputStr) {
     var root = {value: ''};
     var currentNode = root;
     var index = 0;
@@ -2595,7 +2595,7 @@ Output.prototype = {
    * @return {!Spannable}
    * @private
    */
-  mergeBraille_: function(spans) {
+  mergeBraille_(spans) {
     var separator = '';  // Changes to space as appropriate.
     var prevHasInlineNode = false;
     var prevIsName = false;
@@ -2661,7 +2661,7 @@ Output.prototype = {
    * @param {!AutomationNode=} opt_prevNode
    * @return {Output.Action}
    */
-  findEarcon_: function(node, opt_prevNode) {
+  findEarcon_(node, opt_prevNode) {
     if (node === opt_prevNode) {
       return null;
     }
@@ -2692,7 +2692,7 @@ Output.prototype = {
    * Gets a human friendly string with the contents of output.
    * @return {string}
    */
-  toString: function() {
+  toString() {
     return this.speechBuffer_.reduce(function(prev, cur) {
       if (prev === null) {
         return cur.toString();

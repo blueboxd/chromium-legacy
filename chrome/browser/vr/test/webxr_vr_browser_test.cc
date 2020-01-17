@@ -98,6 +98,9 @@ WebXrVrRuntimelessBrowserTest::WebXrVrRuntimelessBrowserTest() {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
   disable_features_.push_back(features::kWindowsMixedReality);
 #endif
+#if BUILDFLAG(ENABLE_OPENXR)
+  disable_features_.push_back(features::kOpenXR);
+#endif
 }
 
 WebXrVrRuntimelessBrowserTestSensorless::
@@ -116,6 +119,9 @@ WebXrVrOpenVrBrowserTestBase::WebXrVrOpenVrBrowserTestBase() {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
   disable_features_.push_back(features::kWindowsMixedReality);
 #endif
+#if BUILDFLAG(ENABLE_OPENXR)
+  disable_features_.push_back(features::kOpenXR);
+#endif
 }
 
 XrBrowserTestBase::RuntimeType WebXrVrOpenVrBrowserTestBase::GetRuntimeType()
@@ -130,7 +136,11 @@ gfx::Vector3dF WebXrVrOpenVrBrowserTestBase::GetControllerOffset() const {
   return gfx::Vector3dF(0, 0, 0.08f);
 }
 
-WebXrVrWmrBrowserTestBase::WebXrVrWmrBrowserTestBase() {}
+WebXrVrWmrBrowserTestBase::WebXrVrWmrBrowserTestBase() {
+#if BUILDFLAG(ENABLE_OPENXR)
+  disable_features_.push_back(features::kOpenXR);
+#endif
+}
 
 WebXrVrWmrBrowserTestBase::~WebXrVrWmrBrowserTestBase() = default;
 

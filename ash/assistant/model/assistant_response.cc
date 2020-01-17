@@ -55,11 +55,8 @@ AssistantResponse::GetSuggestions() const {
   return suggestions;
 }
 
-void AssistantResponse::Process(
-    mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory,
-    ProcessingCallback callback) {
-  processor_ = std::make_unique<Processor>(*this, std::move(contents_factory),
-                                           std::move(callback));
+void AssistantResponse::Process(ProcessingCallback callback) {
+  processor_ = std::make_unique<Processor>(*this, std::move(callback));
   processor_->Process();
 }
 
@@ -67,10 +64,8 @@ void AssistantResponse::Process(
 
 AssistantResponse::Processor::Processor(
     AssistantResponse& response,
-    mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory,
     ProcessingCallback callback)
     : response_(response),
-      contents_factory_(std::move(contents_factory)),
       callback_(std::move(callback)) {}
 
 AssistantResponse::Processor::~Processor() {
@@ -89,10 +84,9 @@ void AssistantResponse::Processor::Process() {
         ++processing_count_;
         // Start asynchronous processing of the card element.
         static_cast<AssistantCardElement*>(ui_element.get())
-            ->Process(contents_factory_.get(),
-                      base::BindOnce(
-                          &AssistantResponse::Processor::OnFinishedProcessing,
-                          base::Unretained(this)));
+            ->Process(base::BindOnce(
+                &AssistantResponse::Processor::OnFinishedProcessing,
+                base::Unretained(this)));
         break;
       case AssistantUiElementType::kText:
         // No processing necessary.

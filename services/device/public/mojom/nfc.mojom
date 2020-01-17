@@ -87,8 +87,8 @@ struct NDEFMessage {
   const uint32 kMaxSize = 32768;
 };
 
-struct NDEFPushOptions {
-  // If the property is true, the push operation will suspend active watchers
+struct NDEFWriteOptions {
+  // If the property is true, the write operation will suspend active watchers
   // until its completion.
   bool ignore_read;
 };
@@ -113,8 +113,8 @@ interface NFC {
   SetClient(pending_remote<NFCClient> client);
 
   // Pushes data to NFC device.
-  // NDEFPushOptions specify type of device where data should be pushed.
-  Push(NDEFMessage message, NDEFPushOptions? options) => (NDEFError? error);
+  // NDEFWriteOptions specify options of the pending push operation.
+  Push(NDEFMessage message, NDEFWriteOptions? options) => (NDEFError? error);
 
   // Cancels pending push request.
   CancelPush() => (NDEFError? error);

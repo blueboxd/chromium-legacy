@@ -2,62 +2,60 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('policy');
-
-/**
- * @typedef {{
- *    [id: string]: {
- *      name: string,
- *      policyNames: !Array<string>,
- * }}
- */
-policy.PolicyNamesResponse;
-
-/**
- * @typedef {!Array<{
- *  name: string,
- *  id: ?String,
- *  policies: {[name: string]: policy.Policy}
- * }>}
- */
-policy.PolicyValuesResponse;
-
-/**
- * @typedef {{
- *    level: string,
- *    scope: string,
- *    source: string,
- *    value: any,
- * }}
- */
-policy.Conflict;
-
-/**
- * @typedef {{
- *    ignored?: boolean,
- *    name: string,
- *    level: string,
- *    link: ?string,
- *    scope: string,
- *    source: string,
- *    error: string,
- *    value: any,
- *    allSourcesMerged: ?boolean,
- *    conflicts: ?Array<!Conflict>,
- * }}
- */
-policy.Policy;
-
-/**
- * @typedef {{
- *     id: ?string,
- *     name: string,
- *     policies: !Array<!Policy>
- * }}
- */
-policy.PolicyTableModel;
-
 cr.define('policy', function() {
+  /**
+   * @typedef {{
+   *    [id: string]: {
+   *      name: string,
+   *      policyNames: !Array<string>,
+   * }}
+   */
+  let PolicyNamesResponse;
+
+  /**
+   * @typedef {!Array<{
+   *  name: string,
+   *  id: ?String,
+   *  policies: {[name: string]: policy.Policy}
+   * }>}
+   */
+  let PolicyValuesResponse;
+
+  /**
+   * @typedef {{
+   *    level: string,
+   *    scope: string,
+   *    source: string,
+   *    value: any,
+   * }}
+   */
+  let Conflict;
+
+  /**
+   * @typedef {{
+   *    ignored?: boolean,
+   *    name: string,
+   *    level: string,
+   *    link: ?string,
+   *    scope: string,
+   *    source: string,
+   *    error: string,
+   *    value: any,
+   *    allSourcesMerged: ?boolean,
+   *    conflicts: ?Array<!Conflict>,
+   * }}
+   */
+  let Policy;
+
+  /**
+   * @typedef {{
+   *     id: ?string,
+   *     name: string,
+   *     policies: !Array<!Policy>
+   * }}
+   */
+  let PolicyTableModel;
+
   /**
    * A box that shows the status of cloud policy for a device, machine or user.
    * @constructor
@@ -76,7 +74,7 @@ cr.define('policy', function() {
     /**
      * Initialization function for the cr.ui framework.
      */
-    decorate: function() {},
+    decorate() {},
 
     /**
      * Sets the text of a particular named label element in the status box
@@ -87,7 +85,7 @@ cr.define('policy', function() {
      * @param {boolean=} needsToBeShown True if we want to show the label
      *     False otherwise.
      */
-    setLabelAndShow_: function(labelName, labelValue, needsToBeShown = true) {
+    setLabelAndShow_(labelName, labelValue, needsToBeShown = true) {
       const labelElement = this.querySelector(labelName);
       labelElement.textContent = labelValue || '';
       if (needsToBeShown) {
@@ -100,9 +98,9 @@ cr.define('policy', function() {
      *     "user".
      * @param {Object} status Dictionary with information about the status.
      */
-    initialize: function(scope, status) {
+    initialize(scope, status) {
       const notSpecifiedString = loadTimeData.getString('notSpecified');
-      if (scope == 'device') {
+      if (scope === 'device') {
         // For device policy, set the appropriate title and populate the topmost
         // status item with the domain the device is enrolled into.
         this.querySelector('.legend').textContent =
@@ -133,7 +131,7 @@ cr.define('policy', function() {
                   status.isOffHoursActive ? 'offHoursActive' :
                                             'offHoursNotActive'));
         }
-      } else if (scope == 'machine') {
+      } else if (scope === 'machine') {
         // For machine policy, set the appropriate title and populate
         // machine enrollment status with the information that applies
         // to this machine.
@@ -188,15 +186,15 @@ cr.define('policy', function() {
     // Set up the prototype chain.
     __proto__: HTMLDivElement.prototype,
 
-    decorate: function() {},
+    decorate() {},
 
     /** @param {Conflict} conflict */
     initialize(conflict) {
       this.querySelector('.scope').textContent = loadTimeData.getString(
-          conflict.scope == 'user' ? 'scopeUser' : 'scopeDevice');
+          conflict.scope === 'user' ? 'scopeUser' : 'scopeDevice');
       this.querySelector('.level').textContent = loadTimeData.getString(
-          conflict.level == 'recommended' ? 'levelRecommended' :
-                                            'levelMandatory');
+          conflict.level === 'recommended' ? 'levelRecommended' :
+                                             'levelMandatory');
       this.querySelector('.source').textContent =
           loadTimeData.getString(conflict.source);
       this.querySelector('.value.row .value').textContent = conflict.value;
@@ -204,24 +202,24 @@ cr.define('policy', function() {
   };
 
   /**
-   * A single policy's entry in the policy table.
+   * A single policy's row entry in the policy table.
    * @constructor
    * @extends {HTMLDivElement}
    */
-  const Policy = cr.ui.define(function() {
+  const PolicyRow = cr.ui.define(function() {
     const node = $('policy-template').cloneNode(true);
     node.removeAttribute('id');
     return node;
   });
 
-  Policy.prototype = {
+  PolicyRow.prototype = {
     // Set up the prototype chain.
     __proto__: HTMLDivElement.prototype,
 
     /**
      * Initialization function for the cr.ui framework.
      */
-    decorate: function() {
+    decorate() {
       const toggle = this.querySelector('.policy.row .toggle');
       toggle.addEventListener('click', this.toggleExpanded_.bind(this));
     },
@@ -262,12 +260,12 @@ cr.define('policy', function() {
       if (!this.unset_) {
         const scopeDisplay = this.querySelector('.scope');
         scopeDisplay.textContent = loadTimeData.getString(
-            policy.scope == 'user' ? 'scopeUser' : 'scopeDevice');
+            policy.scope === 'user' ? 'scopeUser' : 'scopeDevice');
 
         const levelDisplay = this.querySelector('.level');
         levelDisplay.textContent = loadTimeData.getString(
-            policy.level == 'recommended' ? 'levelRecommended' :
-                                            'levelMandatory');
+            policy.level === 'recommended' ? 'levelRecommended' :
+                                             'levelMandatory');
 
         const sourceDisplay = this.querySelector('.source');
         sourceDisplay.textContent = loadTimeData.getString(policy.source);
@@ -325,7 +323,7 @@ cr.define('policy', function() {
      * Toggle the visibility of an additional row containing the complete text.
      * @private
      */
-    toggleExpanded_: function() {
+    toggleExpanded_() {
       const warningRowDisplay = this.querySelector('.warnings.row');
       const errorRowDisplay = this.querySelector('.errors.row');
       const valueRowDisplay = this.querySelector('.value.row');
@@ -368,7 +366,7 @@ cr.define('policy', function() {
     /**
      * Initialization function for the cr.ui framework.
      */
-    decorate: function() {
+    decorate() {
       this.policies_ = {};
       this.filterPattern_ = '';
     },
@@ -400,7 +398,7 @@ cr.define('policy', function() {
             return a.value !== undefined ? -1 : 1;
           })
           .forEach(policy => {
-            const policyRow = new Policy;
+            const policyRow = new PolicyRow;
             policyRow.initialize(policy);
             mainContent.appendChild(policyRow);
           });
@@ -413,7 +411,7 @@ cr.define('policy', function() {
      * disabled by setting |pattern| to an empty string.
      * @param {string} pattern The filter pattern.
      */
-    setFilterPattern: function(pattern) {
+    setFilterPattern(pattern) {
       this.filterPattern_ = pattern.toLowerCase();
       this.filter();
     },
@@ -423,7 +421,7 @@ cr.define('policy', function() {
      * shown in the table. Furthermore, policies whose value is not currently
      * set are only shown if the corresponding checkbox is checked.
      */
-    filter: function() {
+    filter() {
       const showUnset = $('show-unset').checked;
       const policies = this.querySelectorAll('.policy-data');
       for (let i = 0; i < policies.length; i++) {
@@ -451,7 +449,7 @@ cr.define('policy', function() {
     /**
      * Main initialization function. Called by the browser on page load.
      */
-    initialize: function() {
+    initialize() {
       cr.ui.FocusOutlineManager.forDocument(document);
 
       this.mainSection = $('main-section');
@@ -545,7 +543,7 @@ cr.define('policy', function() {
      * status.
      * @param {Object} status Dictionary containing the current policy status.
      */
-    setStatus: function(status) {
+    setStatus(status) {
       // Remove any existing status boxes.
       const container = $('status-box-container');
       while (container.firstChild) {
@@ -569,10 +567,19 @@ cr.define('policy', function() {
      * Re-enable the reload policies button when the previous request to reload
      * policies values has completed.
      */
-    reloadPoliciesDone: function() {
+    reloadPoliciesDone() {
       $('reload-policies').disabled = false;
     },
   };
 
-  return {Page: Page, PolicyTable: PolicyTable, Policy: Policy};
+  return {
+    Page,
+    PolicyTable,
+    Policy,
+    PolicyNamesResponse,
+    PolicyValuesResponse,
+    Conflict,
+    PolicyRow,
+    PolicyTableModel
+  };
 });

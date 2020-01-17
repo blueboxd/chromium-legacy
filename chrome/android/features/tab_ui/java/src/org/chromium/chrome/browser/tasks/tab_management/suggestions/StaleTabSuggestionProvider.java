@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 import java.util.ArrayList;
 import java.util.Arrays;

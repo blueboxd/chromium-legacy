@@ -238,12 +238,8 @@ template("manifest") {
       version_file,
       version_script,
     ]
-    sources = [
-      template_file,
-    ]
-    outputs = [
-      output_file,
-    ]
+    sources = [ template_file ]
+    outputs = [ output_file ]
     args = [
       "--key=$key",
       "--version_file=" + rebase_path(version_file, root_build_dir),
@@ -285,9 +281,7 @@ template("generate_deps_js") {
     script = "tools/generate_deps.py"
     inputs = jsbundler_modules
     sources = invoker.sources
-    outputs = [
-      invoker.output_file,
-    ]
+    outputs = [ invoker.output_file ]
     args = [
       "-o",
       rebase_path(invoker.output_file, root_build_dir),
@@ -317,44 +311,32 @@ if (chromevox_compress_js) {
   }
 
   compress_js("chromevox_learn_mode_script") {
-    sources = [
-      chromevox_learn_mode_loader_file,
-    ]
+    sources = [ chromevox_learn_mode_loader_file ]
     output_file = "$chromevox_out_dir/chromeVoxKbExplorerScript.js"
   }
 
   compress_js("chromevox_log_script") {
-    sources = [
-      chromevox_log_loader_file,
-    ]
+    sources = [ chromevox_log_loader_file ]
     output_file = "$chromevox_out_dir/chromeVoxLogScript.js"
   }
 
   compress_js("chromevox_options_script") {
-    sources = [
-      chromevox_options_script_loader_file,
-    ]
+    sources = [ chromevox_options_script_loader_file ]
     output_file = "$chromevox_out_dir/chromeVoxChromeOptionsScript.js"
   }
 
   compress_js("chromevox_background_script") {
-    sources = [
-      chromevox_background_script_loader_file,
-    ]
+    sources = [ chromevox_background_script_loader_file ]
     output_file = "$chromevox_out_dir/chromeVoxChromeBackgroundScript.js"
   }
 
   compress_js("chromevox_min_content_script") {
-    sources = [
-      chromevox_min_content_script_loader_file,
-    ]
+    sources = [ chromevox_min_content_script_loader_file ]
     output_file = "$chromevox_out_dir/chromeVoxChromePageScript.js"
   }
 
   compress_js("chromevox_panel_script") {
-    sources = [
-      chromevox_panel_script_loader_file,
-    ]
+    sources = [ chromevox_panel_script_loader_file ]
     output_file = "$chromevox_out_dir/chromeVoxPanelScript.js"
   }
 } else {
@@ -399,16 +381,10 @@ if (is_chromeos) {
 
 action("chromevox_test_messages_js") {
   script = "tools/generate_test_messages.py"
-  sources = [
-    "$chromevox_out_dir/_locales/en/messages.json.gz",
-  ]
+  sources = [ "$chromevox_out_dir/_locales/en/messages.json.gz" ]
   output_file = "$root_out_dir/test_data/chrome/browser/resources/chromeos/accessibility/chromevox/host/testing/test_messages.js"
-  outputs = [
-    output_file,
-  ]
-  deps = [
-    ":chromevox_strings",
-  ]
+  outputs = [ output_file ]
+  deps = [ ":chromevox_strings" ]
   args = [
            "-o",
            rebase_path(output_file, root_build_dir),
@@ -425,9 +401,7 @@ generate_deps_js("chromevox_test_deps_js") {
     rebase_path("//", root_build_dir) + ":",
     rebase_path("$root_out_dir/test_data", root_build_dir) + ":",
   ]
-  deps = [
-    ":chromevox_test_messages_js",
-  ]
+  deps = [ ":chromevox_test_messages_js" ]
 }
 
 js2gtest("chromevox_unitjs_tests") {
@@ -451,9 +425,7 @@ js2gtest("chromevox_unitjs_tests") {
   ]
   test_deps_js_outputs = get_target_outputs(":chromevox_test_deps_js")
   deps_js = test_deps_js_outputs[0]
-  deps = [
-    ":chromevox_test_deps_js",
-  ]
+  deps = [ ":chromevox_test_deps_js" ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
 
@@ -502,9 +474,7 @@ if (is_chromeos) {
 }
 
 js_library("tree_walker") {
-  sources = [
-    "background/tree_walker.js",
-  ]
+  sources = [ "background/tree_walker.js" ]
   deps = [
     ":automation_predicate",
     ":constants",
@@ -516,12 +486,8 @@ js_library("tree_walker") {
 }
 
 js_library("automation_predicate") {
-  sources = [
-    "background/automation_predicate.js",
-  ]
-  deps = [
-    ":constants",
-  ]
+  sources = [ "background/automation_predicate.js" ]
+  deps = [ ":constants" ]
   externs_list = [
     "$externs_path/automation.js",
     "$externs_path/chrome_extensions.js",
@@ -529,7 +495,5 @@ js_library("automation_predicate") {
 }
 
 js_library("constants") {
-  sources = [
-    "background/constants.js",
-  ]
+  sources = [ "background/constants.js" ]
 }

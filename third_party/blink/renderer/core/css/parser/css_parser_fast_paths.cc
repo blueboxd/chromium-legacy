@@ -963,6 +963,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyID::kOverscrollBehaviorY:
       return value_id == CSSValueID::kAuto ||
              value_id == CSSValueID::kContain || value_id == CSSValueID::kNone;
+    case CSSPropertyID::kOriginTrialTestProperty:
+      return value_id == CSSValueID::kNormal || value_id == CSSValueID::kNone;
     default:
       NOTREACHED();
       return false;
@@ -1077,6 +1079,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kWordBreak:
     case CSSPropertyID::kWritingMode:
     case CSSPropertyID::kScrollSnapStop:
+    case CSSPropertyID::kOriginTrialTestProperty:
       return true;
     default:
       return false;

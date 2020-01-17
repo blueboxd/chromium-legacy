@@ -29,7 +29,6 @@ class Animation;
 class AnimationTimeline;
 class ElementAnimations;
 class LayerTreeHost;
-class KeyframeEffect;
 class ScrollOffsetAnimations;
 class ScrollOffsetAnimationsImpl;
 class WorkletAnimation;
@@ -66,10 +65,9 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void RemoveAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
   AnimationTimeline* GetTimelineById(int timeline_id) const;
 
-  void RegisterKeyframeEffectForElement(ElementId element_id,
-                                        KeyframeEffect* keyframe_effect);
-  void UnregisterKeyframeEffectForElement(ElementId element_id,
-                                          KeyframeEffect* keyframe_effect);
+  void RegisterAnimationForElement(ElementId element_id, Animation* animation);
+  void UnregisterAnimationForElement(ElementId element_id,
+                                     Animation* animation);
 
   scoped_refptr<ElementAnimations> GetElementAnimationsForElementId(
       ElementId element_id) const;

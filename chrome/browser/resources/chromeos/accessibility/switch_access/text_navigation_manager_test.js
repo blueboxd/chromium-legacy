@@ -16,7 +16,7 @@ SwitchAccessTextNavigationManagerTest.prototype = {
   __proto__: SwitchAccessE2ETest.prototype,
 
   /** @override */
-  setUp: function() {
+  setUp() {
     this.textNavigationManager =
         switchAccess.navigationManager_.menuManager_.textNavigationManager_;
     this.navigationManager = switchAccess.navigationManager_;

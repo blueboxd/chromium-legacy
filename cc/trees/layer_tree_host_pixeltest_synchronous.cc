@@ -20,6 +20,8 @@ class LayerTreeHostSynchronousPixelTest
     : public LayerTreePixelTest,
       public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
  protected:
+  LayerTreeHostSynchronousPixelTest() : LayerTreePixelTest(renderer_type()) {}
+
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreePixelTest::InitializeSettings(settings);
     settings->single_thread_proxy_scheduler = false;
@@ -28,7 +30,7 @@ class LayerTreeHostSynchronousPixelTest
     settings->use_zero_copy = use_zero_copy_;
   }
 
-  LayerTreeTest::RendererType renderer_type() { return GetParam(); }
+  RendererType renderer_type() const { return GetParam(); }
 
   void BeginTest() override {
     LayerTreePixelTest::BeginTest();
@@ -47,7 +49,7 @@ class LayerTreeHostSynchronousPixelTest
     root->SetBounds(bounds);
     root->SetIsDrawable(true);
 
-    RunSingleThreadedPixelTest(renderer_type(), root,
+    RunSingleThreadedPixelTest(root,
                                base::FilePath(FILE_PATH_LITERAL("green.png")));
   }
 

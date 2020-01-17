@@ -6,9 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/polymer.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":cr_searchable_drop_down",
-  ]
+  deps = [ ":cr_searchable_drop_down" ]
 }
 
 js_library("cr_searchable_drop_down") {
@@ -28,15 +26,11 @@ polymer_modulizer("cr_searchable_drop_down") {
 
 js_type_check("closure_compile_module") {
   is_polymer3 = true
-  deps = [
-    ":cr_searchable_drop_down.m",
-  ]
+  deps = [ ":cr_searchable_drop_down.m" ]
 }
 
 js_library("cr_searchable_drop_down.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.m.js" ]
   deps = [
     "//third_party/polymer/v3_0/components-chromium/iron-dropdown",
     "//third_party/polymer/v3_0/components-chromium/iron-icon",

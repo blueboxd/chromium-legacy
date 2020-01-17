@@ -461,9 +461,9 @@ float NightLightControllerImpl::RemapAmbientColorTemperature(
   constexpr struct {
     int32_t input_temperature;
     int32_t output_temperature;
-  } kTable[] = {{2700, 5700}, {3100, 6000}, {3700, 6050},
-                {4200, 6300}, {4800, 6300}, {5300, 6300},
-                {6000, 6400}, {7000, 6850}, {8000, 7450}};
+  } kTable[] = {{2700, 4500}, {3100, 5000}, {3700, 5300},
+                {4200, 5500}, {4800, 5800}, {5300, 6000},
+                {6000, 6400}, {7000, 6800}, {8000, 7500}};
 
   constexpr size_t kTableSize = base::size(kTable);
   // We clamp to a range defined by the minimum possible input value and the

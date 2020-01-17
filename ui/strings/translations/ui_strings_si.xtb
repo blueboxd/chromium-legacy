@@ -80,7 +80,7 @@
 <translation id="3068711042108640621">රාක්කය වමට</translation>
 <translation id="3087734570205094154">පතුල</translation>
 <translation id="3126026824346185272">Ctrl</translation>
-<translation id="3157931365184549694">නැවත තැන්පත් කරන්න</translation>
+<translation id="3157931365184549694">ප්‍රතිසාධනය</translation>
 <translation id="3183922693828471536">මෙතැනට ස්ක්‍රෝල් කරන්න</translation>
 <translation id="3234408098842461169">පහල ඊතලය</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{දින 1}one{දින #}other{දින #}}</translation>
@@ -144,7 +144,7 @@
 <translation id="5763338081255973061">{DAYS,plural, =0{අද ක්‍රියාත්මකයි}=1{1 දිනකට පෙර ක්‍රියාත්මකයි}one{දින #-කට පෙර ක්‍රියාත්මකයි}other{දින #-කට පෙර ක්‍රියාත්මකයි}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{දින 1 ක් සහ }one{දින # ක් සහ }other{දින # ක් සහ }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 වසරකින්}one{වසර #කින්}other{වසර #කින්}}</translation>
-<translation id="5895138241574237353">නැවත අරඹන්න</translation>
+<translation id="5895138241574237353">යළි අරඹන්න</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{තත්පර 1 ක් ඉතිරියි}one{තත්පර # ක් ඉතිරියි}other{තත්පර # ක් ඉතිරියි}}</translation>
 <translation id="5941711191222866238">කුඩා කරන්න</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{පැය 1}one{පැය #}other{පැය #}}</translation>
@@ -156,7 +156,7 @@
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">සියලු යෙදුම්වලට දිග හරින්න</translation>
-<translation id="6165508094623778733">තවත් දැනගන්න</translation>
+<translation id="6165508094623778733">තව දැන ගන්න</translation>
 <translation id="6264365405983206840">සියල්ල තෝරන්න</translation>
 <translation id="6351032674660237738">යෙදුම් යෝජනා</translation>
 <translation id="6364916375976753737">වමට ස්ක්‍රෝල් කරන්න</translation>
@@ -248,7 +248,7 @@
 <translation id="9059834730836941392">දැනුම්දීම හකුළන්න</translation>
 <translation id="9150735707954472829">ටැබ යතුර</translation>
 <translation id="9161053988251441839">යෝජිත යෙදුම්</translation>
-<translation id="9170848237812810038">අවලංගු (&amp;U)</translation>
+<translation id="9170848237812810038">&amp;පසුගමනය</translation>
 <translation id="9178475906033259337"><ph name="QUERY" /> සඳහා ප්‍රතිඵල 1ක් දක්වමින්</translation>
 <translation id="932327136139879170">මුල් පිටුව</translation>
 <translation id="944069440740578670">නොකියවූ දැනුම්දීම්</translation>

@@ -7,8 +7,6 @@
  * the browser.
  */
 
-cr.exportPath('settings');
-
 cr.define('settings', function() {
   /** @interface */
   class OpenWindowProxy {
@@ -29,8 +27,5 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(OpenWindowProxyImpl);
 
-  return {
-    OpenWindowProxy: OpenWindowProxy,
-    OpenWindowProxyImpl: OpenWindowProxyImpl,
-  };
+  return {OpenWindowProxy, OpenWindowProxyImpl};
 });

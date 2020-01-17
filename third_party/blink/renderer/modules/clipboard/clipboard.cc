@@ -6,29 +6,35 @@
 
 #include <utility>
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_promise.h"
 
 namespace blink {
 
-Clipboard::Clipboard(ExecutionContext* context)
-    : ContextLifecycleObserver(context) {}
+Clipboard::Clipboard(SystemClipboard* system_clipboard,
+                     ExecutionContext* context)
+    : ContextLifecycleObserver(context), system_clipboard_(system_clipboard) {
+  DCHECK(system_clipboard);
+}
 
 ScriptPromise Clipboard::read(ScriptState* script_state) {
-  return ClipboardPromise::CreateForRead(script_state);
+  return ClipboardPromise::CreateForRead(system_clipboard_, script_state);
 }
 
 ScriptPromise Clipboard::readText(ScriptState* script_state) {
-  return ClipboardPromise::CreateForReadText(script_state);
+  return ClipboardPromise::CreateForReadText(system_clipboard_, script_state);
 }
 
 ScriptPromise Clipboard::write(ScriptState* script_state,
                                const HeapVector<Member<ClipboardItem>>& data) {
-  return ClipboardPromise::CreateForWrite(script_state, std::move(data));
+  return ClipboardPromise::CreateForWrite(system_clipboard_, script_state,
+                                          std::move(data));
 }
 
 ScriptPromise Clipboard::writeText(ScriptState* script_state,
                                    const String& data) {
-  return ClipboardPromise::CreateForWriteText(script_state, data);
+  return ClipboardPromise::CreateForWriteText(system_clipboard_, script_state,
+                                              data);
 }
 
 const AtomicString& Clipboard::InterfaceName() const {
@@ -40,6 +46,7 @@ ExecutionContext* Clipboard::GetExecutionContext() const {
 }
 
 void Clipboard::Trace(blink::Visitor* visitor) {
+  visitor->Trace(system_clipboard_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }

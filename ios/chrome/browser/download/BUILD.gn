@@ -24,9 +24,7 @@ source_set("download") {
     "pass_kit_tab_helper_delegate.h",
   ]
 
-  public_deps = [
-    ":mime_types",
-  ]
+  public_deps = [ ":mime_types" ]
 
   deps = [
     "//base",
@@ -57,9 +55,7 @@ source_set("mime_types") {
     "usdz_mime_type.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -100,7 +96,5 @@ source_set("test_support") {
     "download_test_util.cc",
     "download_test_util.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

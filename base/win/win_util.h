@@ -35,7 +35,7 @@
 
 struct IPropertyStore;
 struct _tagpropertykey;
-typedef _tagpropertykey PROPERTYKEY;
+using PROPERTYKEY = _tagpropertykey;
 
 namespace base {
 

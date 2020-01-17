@@ -31,9 +31,7 @@ if (!is_ios) {
   source_set("unit_tests") {
     testonly = true
 
-    sources = [
-      "paint_preview_recorder_utils_unittest.cc",
-    ]
+    sources = [ "paint_preview_recorder_utils_unittest.cc" ]
 
     deps = [
       ":renderer",

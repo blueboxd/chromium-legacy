@@ -138,12 +138,8 @@ if (is_win) {
 # component will result in an immediate crash. (crbug.com/700120)
 if (is_component_build && is_desktop_linux) {
   shared_library("mirclient") {
-    inputs = [
-      "mirclient.map",
-    ]
-    sources = [
-      "mirclient.cc",
-    ]
+    inputs = [ "mirclient.map" ]
+    sources = [ "mirclient.cc" ]
     ldflags =
         [ "-Wl,--version-script=" +
           rebase_path("//third_party/protobuf/mirclient.map", root_build_dir) ]
@@ -187,9 +183,7 @@ component("protobuf_lite") {
   cflags = protobuf_lite_cflags
 
   if (is_component_build && is_desktop_linux) {
-    deps = [
-      ":mirclient",
-    ]
+    deps = [ ":mirclient" ]
   }
 
   # Required for component builds. See http://crbug.com/172800.
@@ -226,6 +220,10 @@ static_library("protobuf_full") {
     # Some tests inside ChromeOS need reflection to parse golden files.
     # Not included in production code.
     "//chrome/test:usage_time_limit_unittests",
+
+    # Catapult converts protos to JSON. Only used in tests.
+    "//third_party/catapult/tracing/tracing:histogram",
+    "//third_party/catapult/tracing/tracing:proto_test_driver",
 
     # The protobuf-based SQLite and GPU fuzzers need protobuf_full and are not
     # included in Chrome.
@@ -352,9 +350,7 @@ static_library("protobuf_full") {
               "src/google/protobuf/wrappers.pb.h",
             ]
 
-  deps = [
-    "//third_party/zlib",
-  ]
+  deps = [ "//third_party/zlib" ]
 
   if (is_android) {
     libs = [ "log" ]  # Used by src/google/protobuf/stubs/common.cc
@@ -582,15 +578,11 @@ if (current_toolchain == host_toolchain) {
 
     cflags = protobuf_lite_cflags
 
-    public_deps = [
-      ":protobuf_full",
-    ]
+    public_deps = [ ":protobuf_full" ]
   }
 
   executable("protoc") {
-    sources = [
-      "src/google/protobuf/compiler/main.cc",
-    ]
+    sources = [ "src/google/protobuf/compiler/main.cc" ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -609,21 +601,13 @@ if (current_toolchain == host_toolchain) {
 google_python_dir = "$root_out_dir/pyproto/google"
 
 copy("copy_google") {
-  sources = [
-    "__init__.py",
-  ]
-  outputs = [
-    "$google_python_dir/{{source_file_part}}",
-  ]
+  sources = [ "__init__.py" ]
+  outputs = [ "$google_python_dir/{{source_file_part}}" ]
 }
 
 copy("copy_six") {
-  sources = [
-    "third_party/six/six.py",
-  ]
-  outputs = [
-    "$google_python_dir/third_party/six/{{source_file_part}}",
-  ]
+  sources = [ "third_party/six/six.py" ]
+  outputs = [ "$google_python_dir/third_party/six/{{source_file_part}}" ]
 }
 
 copy("copy_google_protobuf") {
@@ -650,9 +634,7 @@ copy("copy_google_protobuf") {
     # descriptor_pb2.py.
     "python/google/protobuf/descriptor_pb2.py",
   ]
-  outputs = [
-    "$google_python_dir/protobuf/{{source_file_part}}",
-  ]
+  outputs = [ "$google_python_dir/protobuf/{{source_file_part}}" ]
 }
 
 copy("copy_google_protobuf_internal") {
@@ -671,9 +653,7 @@ copy("copy_google_protobuf_internal") {
     "python/google/protobuf/internal/well_known_types.py",
     "python/google/protobuf/internal/wire_format.py",
   ]
-  outputs = [
-    "$google_python_dir/protobuf/internal/{{source_file_part}}",
-  ]
+  outputs = [ "$google_python_dir/protobuf/internal/{{source_file_part}}" ]
 }
 
 # Build time dependency for action rules.
@@ -688,9 +668,7 @@ group("py_proto") {
 
 # Runtime dependency if the target needs the python scripts.
 group("py_proto_runtime") {
-  deps = [
-    ":py_proto",
-  ]
+  deps = [ ":py_proto" ]
 
   # Targets that depend on this should depend on the copied data files.
   data = get_target_outputs(":copy_google")

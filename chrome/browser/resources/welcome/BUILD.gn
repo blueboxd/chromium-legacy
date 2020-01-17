@@ -38,9 +38,7 @@ js_library("landing_view") {
 }
 
 js_library("landing_view_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
@@ -54,9 +52,7 @@ js_library("signin_view") {
 }
 
 js_library("signin_view_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
@@ -81,9 +77,7 @@ js_library("welcome_app") {
 }
 
 js_library("welcome_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 

@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_util.h"
 #include "chrome/browser/profiles/reporting_util.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -123,9 +124,10 @@ class AppInstallEventLogUploaderTest : public testing::Test {
 
   void CompleteUpload(bool success) {
     ClearReportDict();
+    base::Value context = reporting::GetContext(/*profile=*/nullptr);
     value_report_ = RealtimeReportingJobConfiguration::BuildReport(
-        ConvertProtoToValue(&log_, /*profile=*/nullptr),
-        reporting::GetContext(/*profile=*/nullptr));
+        ConvertProtoToValue(&log_, context, /*profile=*/nullptr),
+        std::move(context));
 
     EXPECT_CALL(client_, UploadRealtimeReport_(MatchValue(&value_report_), _))
         .WillOnce(WithArgs<1>(
@@ -136,9 +138,10 @@ class AppInstallEventLogUploaderTest : public testing::Test {
 
   void CaptureUpload(CloudPolicyClient::StatusCallback* callback) {
     ClearReportDict();
+    base::Value context = reporting::GetContext(/*profile=*/nullptr);
     value_report_ = RealtimeReportingJobConfiguration::BuildReport(
-        ConvertProtoToValue(&log_, /*profile=*/nullptr),
-        reporting::GetContext(/*profile=*/nullptr));
+        ConvertProtoToValue(&log_, context, /*profile=*/nullptr),
+        std::move(context));
 
     CloudPolicyClient::StatusCallback status_callback;
     EXPECT_CALL(client_, UploadRealtimeReport_(MatchValue(&value_report_), _))
@@ -164,6 +167,9 @@ class AppInstallEventLogUploaderTest : public testing::Test {
   MockCloudPolicyClient client_;
   MockAppInstallEventLogUploaderDelegate delegate_;
   std::unique_ptr<AppInstallEventLogUploader> uploader_;
+
+  chromeos::system::ScopedFakeStatisticsProvider
+      scoped_fake_statistics_provider_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppInstallEventLogUploaderTest);
@@ -456,6 +462,40 @@ TEST_F(AppInstallEventLogUploaderTest, RequestAndRemoveDelegate) {
 
   EXPECT_CALL(client_, CancelAppInstallReportUpload());
   uploader_->SetDelegate(nullptr);
+}
+
+// When there is more than one identical event in the log, ensure that only one
+// of those duplicate events is in the created report.
+TEST_F(AppInstallEventLogUploaderTest, DuplicateEvents) {
+  RegisterClient();
+  CreateUploader();
+
+  em::AppInstallReport* report = log_.add_app_install_reports();
+  report->set_package(kPackageName);
+
+  // Adding 3 events, but the first two are identical, so the final report
+  // should only contain 2 events.
+  em::AppInstallReportLogEvent* ev1 = report->add_logs();
+  ev1->set_event_type(em::AppInstallReportLogEvent::SUCCESS);
+  ev1->set_timestamp(0);
+
+  em::AppInstallReportLogEvent* ev2 = report->add_logs();
+  ev2->set_event_type(em::AppInstallReportLogEvent::SUCCESS);
+  ev2->set_timestamp(0);
+
+  em::AppInstallReportLogEvent* ev3 = report->add_logs();
+  ev3->set_event_type(em::AppInstallReportLogEvent::SUCCESS);
+  ev3->set_timestamp(1000);
+
+  CompleteSerializeAndUpload(true /* success */);
+  EXPECT_CALL(delegate_, OnUploadSuccess());
+  uploader_->RequestUpload();
+
+  EXPECT_EQ(2u,
+            value_report_
+                .FindListKey(RealtimeReportingJobConfiguration::kEventListKey)
+                ->GetList()
+                .size());
 }
 
 }  // namespace policy

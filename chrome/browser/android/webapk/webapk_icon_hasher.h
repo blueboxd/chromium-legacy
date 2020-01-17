@@ -25,7 +25,7 @@ class URLLoaderFactory;
 class WebApkIconHasher {
  public:
   using Murmur2HashCallback =
-      base::Callback<void(const std::string& /* icon_murmur2_hash */)>;
+      base::OnceCallback<void(const std::string& /* icon_murmur2_hash */)>;
 
   // Creates a self-owned WebApkIconHasher instance. The instance downloads
   // |icon_url| and calls |callback| with the Murmur2 hash of the downloaded
@@ -36,21 +36,21 @@ class WebApkIconHasher {
       network::mojom::URLLoaderFactory* url_loader_factory,
       const url::Origin& request_initiator,
       const GURL& icon_url,
-      const Murmur2HashCallback& callback);
+      Murmur2HashCallback callback);
 
   static void DownloadAndComputeMurmur2HashWithTimeout(
       network::mojom::URLLoaderFactory* url_loader_factory,
       const url::Origin& request_initiator,
       const GURL& icon_url,
       int timeout_ms,
-      const Murmur2HashCallback& callback);
+      Murmur2HashCallback callback);
 
  private:
   WebApkIconHasher(network::mojom::URLLoaderFactory* url_loader_factory,
                    const url::Origin& request_initiator,
                    const GURL& icon_url,
                    int timeout_ms,
-                   const Murmur2HashCallback& callback);
+                   Murmur2HashCallback callback);
   ~WebApkIconHasher();
 
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);

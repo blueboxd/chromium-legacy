@@ -369,12 +369,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Diese Richtlinie wird in Chrome 88 entfernt.
 
       Siehe https://www.chromestatus.com/feature/5989473649164288.</translation>
-<translation id="1559980755219453326">Mit dieser Richtlinie wird gesteuert, ob Daten von Erweiterungen und Plug-ins erfasst werden.
-
-      Wenn die Richtlinie nicht festgelegt oder auf "True" gesetzt ist, werden Daten von Erweiterungen und Plug-ins erfasst.
-      Ist die Richtlinie auf "False" festgelegt, werden Daten von Erweiterungen und Plug-ins nicht erfasst.
-
-      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät bei "<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />" registriert ist.</translation>
 <translation id="1560205870554624777">Diese Richtlinie steuert, ob die Kerberos-Funktion aktiviert ist. Kerberos ist ein Authentifizierungsprotokoll, das bei Web-Apps und Dateifreigaben zur Authentifizierung verwendet werden kann.
 
           Wenn diese Richtlinie aktiviert wird, ist die Kerberos-Funktion aktiviert. Kerberos-Konten können entweder über die Richtlinie "Kerberos-Konten konfigurieren" oder über die Einstellungen für Kerberos-Konten auf der Seite "Personen" hinzugefügt werden.
@@ -720,12 +714,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
       Wird die Richtlinie nicht konfiguriert, ist die Funktion aktiviert (siehe Beschreibung oben).</translation>
 <translation id="2113068765175018713">Betriebsdauer der Geräte durch automatische Neustarts begrenzen</translation>
-<translation id="2116790137063002724">Mit dieser Richtlinie wird festgelegt, ob personenbezogene Daten erfasst werden, zum Beispiel die Anmeldedaten für das Betriebssystem oder das <ph name="PRODUCT_NAME" />-Profil, der <ph name="PRODUCT_NAME" />-Profilname, der <ph name="PRODUCT_NAME" />-Profilpfad und der ausführbare Pfad für <ph name="PRODUCT_NAME" />.
-
-Wenn die Richtlinie auf "true" gesetzt oder gar nicht festgelegt ist, werden personenbezogene Daten erfasst.
-Wenn die Richtlinie auf "false" gesetzt ist, werden keine personenbezogenen Daten erfasst.
-
-Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="2127599828444728326">Benachrichtigungen auf diesen Websites zulassen</translation>
 <translation id="2131902621292742709">Verzögerung für die Bildschirmabdunkelung im Akkubetrieb</translation>
 <translation id="2134437727173969994">Sperren des Bildschirms erlauben</translation>
@@ -2996,9 +2984,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
         Wenn die Richtlinie auf "false" gesetzt ist, können Nutzer kein Feedback an Google senden.
 
         Ist sie nicht konfiguriert oder auf "true" gesetzt, dann können Nutzer über das Menü &gt; "Hilfe" &gt; "Problem melden" oder die entsprechende Tastenkombination Feedback an Google senden.</translation>
-<translation id="5581292529942108810">Richtlinien für die Chrome Reporting Extension konfigurieren.
-
-Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="5583806683960333345">Wenn diese Einstellung aktiviert ist, können Nutzer Instant Tethering verwenden, wodurch ihr Gerät die mobile Datenverbindung ihres Google-Smartphones nutzen kann.
 
       Ist die Einstellung deaktiviert, können Nutzer Instant Tethering nicht verwenden.
@@ -3626,12 +3611,6 @@ Hinweis: Nutzer können Cookies blockieren und so auf Google-Dienste zugreifen, 
 
       Hiermit werden die Parameter angegeben, die beim Starten von <ph name="PRODUCT_NAME" /> angewendet werden sollen. Sie gelten nur auf dem Anmeldebildschirm. Über diese Richtlinie festgelegte Parameter haben keine Auswirkungen auf Nutzersitzungen.</translation>
 <translation id="685769593149966548">Strikt eingeschränkten Modus auf YouTube erzwingen</translation>
-<translation id="6857824281777105940">Mit dieser Richtlinie wird festgelegt, ob Safe Browsing-Daten erfasst werden, etwa die Anzahl der Safe Browsing-Warnungen und die Anzahl der Klicks auf Safe Browsing-Warnungen.
-
-      Wenn die Richtlinie nicht festgelegt oder auf "True" gesetzt ist, werden Safe Browsing-Daten erfasst.
-      Ist die Richtlinie auf "False" festgelegt, werden keine Safe Browsing-Daten erfasst.
-
-      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät bei "<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />" registriert ist.</translation>
 <translation id="686079137349561371">Microsoft Windows 7 oder höher</translation>
 <translation id="6864244339257535116">Upload und Download von passwortgeschützten Dateien zulassen</translation>
 <translation id="687046793986382807">Diese Richtlinie gilt ab <ph name="PRODUCT_NAME" /> Version 35 nicht mehr.
@@ -3973,12 +3952,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="7311458740754205918">Wenn für diese Richtlinie "true" festgelegt wird oder wenn sie nicht konfiguriert wird, werden auf der "Neuer Tab"-Seite unter Umständen Inhaltsvorschläge auf Basis des Browserverlaufs, der Interessen oder des Standorts des Nutzers angezeigt.
 
       Wenn für diese Richtlinie "false" festgelegt wird, werden auf der "Neuer Tab"-Seite keine automatisch generierten Inhaltsvorschläge angezeigt.</translation>
-<translation id="7313793931637495417">Mit dieser Richtlinie wird festgelegt, ob Versionsinformationen wie die Betriebssystemversion, das Betriebssystem, die Architektur des Betriebssystems, die <ph name="PRODUCT_NAME" />-Version und der <ph name="PRODUCT_NAME" />-Kanal erfasst werden.
-
-Wenn die Richtlinie auf "true" gesetzt oder gar nicht festgelegt ist, werden Versionsinformationen erfasst.
-Wenn die Richtlinie auf "false" gesetzt ist, werden keine Versionsinformationen erfasst.
-
-Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="7323896582714668701">Zusätzliche Befehlszeilenparameter für <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Ähnlich wie bei den Werkseinstellungen (Wert 2); hier wird jedoch versucht, die Log-in-Tokens zu übernehmen, sodass der Nutzer sich nicht noch einmal anmelden muss.</translation>
 <translation id="7329968046053403405">Legt den Kontotyp für die Konten der Android-Authentifizierungs-App fest, die die Authentifizierung durch <ph name="HTTP_NEGOTIATE" /> unterstützt, z. B. die Kerberos-Authentifizierung. Diese Informationen sollten vom Anbieter der Authentifizierungs-App bereitgestellt werden. Weitere Informationen finden Sie unter https://goo.gl/hajyfN.
@@ -3999,12 +3972,6 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="7339315111520512972">Ausführung des Netzwerkcodes im Browserprozess erzwingen</translation>
 <translation id="7340034977315324840">Aktivitätszeit von Geräten melden</translation>
 <translation id="7343497214039883642">Unternehmensdrucker-Konfigurationsdatei für Geräte</translation>
-<translation id="735902178936442460">Mit dieser Richtlinie wird festgelegt, ob Daten erfasst werden, mit denen Geräte identifiziert werden können, etwa Gerätenamen und Netzwerkadressen.
-
-Wenn die Richtlinie auf "true" gesetzt oder gar nicht festgelegt wird, werden Daten, mit denen Geräte identifiziert werden können, erfasst.
-Wenn die Richtlinie auf "false" gesetzt wird, werden keine Daten erfasst, mit denen Geräte identifiziert werden können.
-
-Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="7359307926583593395">
       Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="SITE_PER_PROCESS_POLICY_NAME" />" für die eigentliche Nutzersitzung an. Es wird empfohlen, für beide Richtlinien denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
       </translation>
@@ -4407,12 +4374,6 @@ Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</
       Wenn die Einstellung aktiviert oder nicht konfiguriert ist, dürfen Websites prüfen, ob ein Nutzer Zahlungsmethoden gespeichert hat.</translation>
 <translation id="8118665053362250806">Cache-Größe für Mediendatenträger festlegen</translation>
 <translation id="8124468781472887384">Richtlinie für den Zugriff auf die Konfiguration von an Geräte gebundenen Druckern.</translation>
-<translation id="8138009212169037227">Mit dieser Richtlinie wird festgelegt, ob Richtliniendaten und die Abrufzeit der Richtlinie erfasst werden.
-
-Wenn die Richtlinie auf "true" gesetzt oder gar nicht festgelegt ist, werden Richtliniendaten und die Abrufzeit der Richtlinie erfasst.
-Ist die Richtlinie auf "false" gesetzt, werden Richtliniendaten und die Abrufzeit der Richtlinie nicht erfasst.
-
-Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="8140204717286305802">Meldet eine Liste der Netzwerkschnittstellen mit deren Typen und Hardwareadressen an den Server
 
       Wird die Richtlinie auf "False" gesetzt, wird die Liste der Netzwerkschnittstellen nicht gemeldet.</translation>

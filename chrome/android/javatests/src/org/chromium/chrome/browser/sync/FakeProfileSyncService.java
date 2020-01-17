@@ -16,6 +16,7 @@ public class FakeProfileSyncService extends ProfileSyncService {
     private boolean mEngineInitialized;
     private int mNumberOfSyncedDevices;
     private boolean mPassphraseRequiredForPreferredDataTypes;
+    private boolean mTrustedVaultKeyRequired;
     private boolean mTrustedVaultKeyRequiredForPreferredDataTypes;
     private Set<Integer> mChosenTypes = new HashSet<>();
     private boolean mCanSyncFeatureStart;
@@ -65,6 +66,15 @@ public class FakeProfileSyncService extends ProfileSyncService {
     public void setPassphraseRequiredForPreferredDataTypes(
             boolean passphraseRequiredForPreferredDataTypes) {
         mPassphraseRequiredForPreferredDataTypes = passphraseRequiredForPreferredDataTypes;
+    }
+
+    @Override
+    public boolean isTrustedVaultKeyRequired() {
+        return mTrustedVaultKeyRequired;
+    }
+
+    public void setTrustedVaultKeyRequired(boolean trustedVaultKeyRequired) {
+        mTrustedVaultKeyRequired = trustedVaultKeyRequired;
     }
 
     @Override

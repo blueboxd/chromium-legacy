@@ -95,6 +95,14 @@ class MESSAGE_CENTER_PUBLIC_EXPORT HandleNotificationClickDelegate
   explicit HandleNotificationClickDelegate(
       const base::RepeatingClosure& closure);
 
+  // Overrides the callback with one that handles clicks on a button or on the
+  // body.
+  void SetCallback(const ButtonClickCallback& callback);
+
+  // Overrides the callback with one that only handles clicks on the body of the
+  // notification.
+  void SetCallback(const base::RepeatingClosure& closure);
+
   // NotificationDelegate overrides:
   void Click(const base::Optional<int>& button_index,
              const base::Optional<base::string16>& reply) override;

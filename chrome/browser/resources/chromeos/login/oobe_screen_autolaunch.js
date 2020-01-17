@@ -42,7 +42,7 @@ login.createScreen('AutolaunchScreen', 'autolaunch', function() {
     /**
      * Event handler invoked when the page is shown and ready.
      */
-    onBeforeShow: function() {
+    onBeforeShow() {
       chrome.send('autolaunchVisible');
     },
 
@@ -56,7 +56,7 @@ login.createScreen('AutolaunchScreen', 'autolaunch', function() {
     /**
      * Cancels the reset and drops the user back to the login screen.
      */
-    cancel: function() {
+    cancel() {
       chrome.send('autolaunchOnCancel');
     },
 
@@ -64,7 +64,7 @@ login.createScreen('AutolaunchScreen', 'autolaunch', function() {
      * Sets app to be displayed in the auto-launch warning.
      * @param {!Object} app An dictionary with app info.
      */
-    updateApp: function(app) {
+    updateApp(app) {
       if (app.appIconUrl && app.appIconUrl.length)
         $('autolaunch-app-icon').src = app.appIconUrl;
 
@@ -75,7 +75,7 @@ login.createScreen('AutolaunchScreen', 'autolaunch', function() {
      * Initiates confirm/cancel response for testing.
      * @param {boolean} confirm True if the screen should confirm auto-launch.
      */
-    confirmAutoLaunchForTesting: function(confirm) {
+    confirmAutoLaunchForTesting(confirm) {
       var button = confirm ? $('autolaunch-confirm-button') :
                              $('autolaunch-cancel-button');
       var clickEvent = document.createEvent('Event');

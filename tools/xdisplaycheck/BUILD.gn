@@ -3,9 +3,7 @@
 # found in the LICENSE file.
 
 executable("xdisplaycheck") {
-  sources = [
-    "xdisplaycheck.cc",
-  ]
+  sources = [ "xdisplaycheck.cc" ]
 
   configs += [ "//build/config/linux:x11" ]
 }

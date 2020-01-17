@@ -160,11 +160,12 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
     layer_->SetBounds(gfx::Size(Size()));
     layer_->SetIsDrawable(true);
     layer_->SetHitTestable(true);
+    auto offset = GetLayoutEmbeddedContent()->ReplacedContentRect().offset;
     // When compositing is after paint, composited plugins should have their
     // layers inserted rather than invoking WebPlugin::paint.
     RecordForeignLayer(context, *element_->GetLayoutObject(),
                        DisplayItem::kForeignLayerPlugin, layer_,
-                       FloatPoint(DocumentLocation()));
+                       FloatPoint(offset));
     return;
   }
 
@@ -398,9 +399,10 @@ void WebPluginContainerImpl::Copy() {
   if (!web_plugin_->HasSelection())
     return;
 
-  SystemClipboard::GetInstance().WriteHTML(
+  LocalFrame* frame = element_->GetDocument().GetFrame();
+  frame->GetSystemClipboard()->WriteHTML(
       web_plugin_->SelectionAsMarkup(), KURL(), web_plugin_->SelectionAsText());
-  SystemClipboard::GetInstance().CommitWrite();
+  frame->GetSystemClipboard()->CommitWrite();
 }
 
 bool WebPluginContainerImpl::ExecuteEditCommand(const WebString& name) {

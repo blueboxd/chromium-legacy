@@ -96,7 +96,7 @@ suite('AllSites', function() {
   teardown(function() {
     // The code being tested changes the Route. Reset so that state is not
     // leaked across tests.
-    settings.resetRouteForTesting();
+    settings.Router.getInstance().resetRouteForTesting();
     loadTimeData.overrideValues({enableStoragePressureUI: false});
   });
 
@@ -110,11 +110,12 @@ suite('AllSites', function() {
     browserProxy.setPrefs(prefs);
     if (sortOrder) {
       loadTimeData.overrideValues({enableStoragePressureUI: true});
-      settings.navigateTo(
+      settings.Router.getInstance().navigateTo(
           settings.routes.SITE_SETTINGS_ALL,
           new URLSearchParams(`sort=${sortOrder}`));
     } else {
-      settings.navigateTo(settings.routes.SITE_SETTINGS_ALL);
+      settings.Router.getInstance().navigateTo(
+          settings.routes.SITE_SETTINGS_ALL);
     }
   }
 

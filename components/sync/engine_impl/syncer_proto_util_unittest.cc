@@ -210,15 +210,17 @@ class DummyConnectionManager : public ServerConnectionManager {
  public:
   DummyConnectionManager() : send_error_(false) {}
 
-  bool PostBufferToPath(PostBufferParams* params,
+  bool PostBufferToPath(const std::string& buffer_in,
                         const std::string& path,
-                        const std::string& access_token) override {
+                        const std::string& access_token,
+                        std::string* buffer_out,
+                        HttpResponse* response) override {
     if (send_error_) {
       return false;
     }
 
-    sync_pb::ClientToServerResponse response;
-    response.SerializeToString(&params->buffer_out);
+    sync_pb::ClientToServerResponse client_to_server_response;
+    client_to_server_response.SerializeToString(buffer_out);
 
     return true;
   }

@@ -98,7 +98,9 @@
 
 - (void)setupViews {
   // For Regular(V) x Compact(H) layout, display UIToolbar.
-  _toolbar = [[UIToolbar alloc] init];
+  // In iOS 13, constraints break if the UIToolbar is initialized with a null or
+  // zero rect frame. An arbitrary non-zero frame fixes this issue.
+  _toolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
   _toolbar.translatesAutoresizingMaskIntoConstraints = NO;
   _toolbar.barStyle = UIBarStyleBlack;
   _toolbar.translucent = YES;

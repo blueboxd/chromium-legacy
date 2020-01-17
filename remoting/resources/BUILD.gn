@@ -32,9 +32,7 @@ action("verify_resources") {
   inputs = [ "remoting_strings.grd" ] + sources_to_verify
 
   stampfile = "$root_out_dir/remoting_resources_verified_stamp"
-  outputs = [
-    stampfile,
-  ]
+  outputs = [ stampfile ]
 
   args = [
            "-t",
@@ -60,9 +58,7 @@ grit("strings") {
   # generated file root.
   output_dir = root_gen_dir
 
-  outputs = [
-    "remoting/base/string_resources.h",
-  ]
+  outputs = [ "remoting/base/string_resources.h" ]
 
   # The grd produces a *.pak file and a messages.json file (this one uses
   # underscores instead of hyphens) for each locale.
@@ -86,9 +82,7 @@ if (is_android) {
     grit_output_dir = "$root_gen_dir/remoting/android/res"
     generated_files =
         rebase_path(android_string_outputs, "remoting/android/res", ".")
-    deps = [
-      ":strings",
-    ]
+    deps = [ ":strings" ]
   }
 }
 
@@ -125,7 +119,5 @@ action("copy_locales") {
            rebase_path(root_out_dir, root_build_dir),
          ] + remoting_locales
 
-  deps = [
-    ":strings",
-  ]
+  deps = [ ":strings" ]
 }

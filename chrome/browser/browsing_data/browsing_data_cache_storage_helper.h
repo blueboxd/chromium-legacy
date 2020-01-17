@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/public/browser/cache_storage_context.h"
-#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
@@ -43,7 +42,7 @@ class BrowsingDataCacheStorageHelper
   // |callback|. This must be called only in the UI thread.
   virtual void StartFetching(FetchCallback callback);
   // Requests the Cache Storage data for an origin be deleted.
-  virtual void DeleteCacheStorage(const GURL& origin);
+  virtual void DeleteCacheStorage(const url::Origin& origin);
 
  protected:
   virtual ~BrowsingDataCacheStorageHelper();
@@ -84,7 +83,7 @@ class CannedBrowsingDataCacheStorageHelper
 
   // BrowsingDataCacheStorageHelper methods.
   void StartFetching(FetchCallback callback) override;
-  void DeleteCacheStorage(const GURL& origin) override;
+  void DeleteCacheStorage(const url::Origin& origin) override;
 
  private:
   ~CannedBrowsingDataCacheStorageHelper() override;

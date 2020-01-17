@@ -8,9 +8,7 @@ import("//tools/grit/grit_rule.gni")
 
 group("resources") {
   if (!is_android) {
-    public_deps = [
-      ":devtools_resources",
-    ]
+    public_deps = [ ":devtools_resources" ]
   }
 }
 
@@ -46,9 +44,7 @@ grit("devtools_resources") {
 
 inspector_protocol_generate("protocol_sources") {
   visibility = [ "//content/browser" ]
-  deps = [
-    "//third_party/blink/public/devtools_protocol:protocol_version",
-  ]
+  deps = [ "//third_party/blink/public/devtools_protocol:protocol_version" ]
   _blink_protocol_path = rebase_path(
           "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
           root_build_dir)
@@ -118,7 +114,5 @@ inspector_protocol_generate("protocol_sources") {
 }
 
 proto_library("devtools_background_services_proto") {
-  sources = [
-    "devtools_background_services.proto",
-  ]
+  sources = [ "devtools_background_services.proto" ]
 }

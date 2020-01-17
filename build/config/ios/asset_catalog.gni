@@ -48,9 +48,7 @@ template("asset_catalog") {
 
   if (current_toolchain != default_toolchain) {
     group(target_name) {
-      public_deps = [
-        ":$target_name($default_toolchain)",
-      ]
+      public_deps = [ ":$target_name($default_toolchain)" ]
     }
   } else {
     _copy_target_name = target_name + "__copy"
@@ -108,12 +106,8 @@ template("asset_catalog") {
                              ])
 
       sources = _outputs
-      outputs = [
-        "{{bundle_resources_dir}}/{{source_file_part}}",
-      ]
-      public_deps = [
-        ":$_copy_target_name",
-      ]
+      outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
+      public_deps = [ ":$_copy_target_name" ]
     }
   }
 }

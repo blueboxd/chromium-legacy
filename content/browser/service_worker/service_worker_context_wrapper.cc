@@ -950,7 +950,7 @@ void ServiceWorkerContextWrapper::FindReadyRegistrationForClientUrlOnCoreThread(
                        blink::ServiceWorkerStatusCode::kErrorAbort, nullptr));
     return;
   }
-  context_core_->storage()->FindRegistrationForClientUrl(
+  context_core_->registry()->FindRegistrationForClientUrl(
       net::SimplifyUrlForRequest(client_url),
       base::BindOnce(
           &ServiceWorkerContextWrapper::DidFindRegistrationForFindReady, this,
@@ -1006,7 +1006,7 @@ void ServiceWorkerContextWrapper::FindReadyRegistrationForIdOnCoreThread(
                        blink::ServiceWorkerStatusCode::kErrorAbort, nullptr));
     return;
   }
-  context_core_->storage()->FindRegistrationForId(
+  context_core_->registry()->FindRegistrationForId(
       registration_id, origin.GetOrigin(),
       base::BindOnce(
           &ServiceWorkerContextWrapper::DidFindRegistrationForFindReady, this,
@@ -1035,7 +1035,7 @@ void ServiceWorkerContextWrapper::FindReadyRegistrationForIdOnlyOnCoreThread(
                        blink::ServiceWorkerStatusCode::kErrorAbort, nullptr));
     return;
   }
-  context_core_->storage()->FindRegistrationForIdOnly(
+  context_core_->registry()->FindRegistrationForIdOnly(
       registration_id,
       base::BindOnce(
           &ServiceWorkerContextWrapper::DidFindRegistrationForFindReady, this,
@@ -1413,7 +1413,7 @@ void ServiceWorkerContextWrapper::StartServiceWorker(const GURL& scope,
                                   blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
   }
-  context_core_->storage()->FindRegistrationForScope(
+  context_core_->registry()->FindRegistrationForScope(
       net::SimplifyUrlForRequest(scope),
       base::BindOnce(&StartActiveWorkerOnCoreThread, std::move(callback)));
 }
@@ -1428,7 +1428,7 @@ void ServiceWorkerContextWrapper::SkipWaitingWorker(const GURL& scope) {
   }
   if (!context_core_)
     return;
-  context_core_->storage()->FindRegistrationForScope(
+  context_core_->registry()->FindRegistrationForScope(
       net::SimplifyUrlForRequest(scope),
       base::BindOnce(&SkipWaitingWorkerOnCoreThread));
 }
@@ -1443,7 +1443,7 @@ void ServiceWorkerContextWrapper::UpdateRegistration(const GURL& scope) {
   }
   if (!context_core_)
     return;
-  context_core_->storage()->FindRegistrationForScope(
+  context_core_->registry()->FindRegistrationForScope(
       net::SimplifyUrlForRequest(scope),
       base::BindOnce(&ServiceWorkerContextWrapper::DidFindRegistrationForUpdate,
                      this));
@@ -1523,7 +1523,7 @@ void ServiceWorkerContextWrapper::FindRegistrationForScopeOnCoreThread(
                        blink::ServiceWorkerStatusCode::kErrorAbort, nullptr));
     return;
   }
-  context_core_->storage()->FindRegistrationForScope(
+  context_core_->registry()->FindRegistrationForScope(
       net::SimplifyUrlForRequest(scope),
       base::BindOnce(
           &ServiceWorkerContextWrapper::DidFindRegistrationForFindImpl, this,
@@ -1734,7 +1734,7 @@ void ServiceWorkerContextWrapper::
     std::move(callback).Run(StartServiceWorkerForNavigationHintResult::FAILED);
     return;
   }
-  context_core_->storage()->FindRegistrationForClientUrl(
+  context_core_->registry()->FindRegistrationForClientUrl(
       net::SimplifyUrlForRequest(document_url),
       base::BindOnce(
           &ServiceWorkerContextWrapper::DidFindRegistrationForNavigationHint,

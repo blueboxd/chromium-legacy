@@ -27,13 +27,17 @@ import android.widget.Spinner;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
-import org.chromium.chrome.browser.settings.MainPreferences;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.components.browser_ui.widget.FadingEdgeScrollView;
 
 /** Base class for Autofill editors (e.g. credit cards and profiles). */
 public abstract class AutofillEditorBase
         extends Fragment implements OnItemSelectedListener, OnTouchListener, TextWatcher {
+    /** We know which profile to edit based on the GUID stuffed in extras. */
+    public static final String AUTOFILL_GUID = "guid";
+
+    /** Needs to be in sync with autofill::kSettingsOrigin[]. */
+    public static final String SETTINGS_ORIGIN = "Chrome settings";
 
     /** GUID of the profile we are editing.  Empty if creating a new profile. */
     protected String mGUID;
@@ -51,11 +55,9 @@ public abstract class AutofillEditorBase
         setHasOptionsMenu(true);
         mContext = container.getContext();
 
-        // We know which profile to edit based on the GUID stuffed in
-        // our extras by MainPreferences.
         Bundle extras = getArguments();
         if (extras != null) {
-            mGUID = extras.getString(MainPreferences.AUTOFILL_GUID);
+            mGUID = extras.getString(AUTOFILL_GUID);
         }
         if (mGUID == null) {
             mGUID = "";

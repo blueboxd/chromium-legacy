@@ -332,6 +332,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void OnVerticalScrollDirectionChanged(
       viz::VerticalScrollDirection scroll_direction) {}
 
+  // Returns true if the delegate is a portal.
+  virtual bool IsPortal() const;
+
  protected:
   virtual ~RenderWidgetHostDelegate() {}
 };

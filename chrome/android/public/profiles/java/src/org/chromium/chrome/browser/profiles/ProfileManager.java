@@ -21,6 +21,12 @@ public class ProfileManager {
          * @param profile The profile that has just been created.
          */
         public void onProfileAdded(Profile profile);
+
+        /**
+         * Called whenever a profile is destroyed.
+         * @param profile The profile that has just been created.
+         */
+        public void onProfileDestroyed(Profile profile);
     }
 
     /**
@@ -50,6 +56,12 @@ public class ProfileManager {
         sInitialized = true;
         for (Observer observer : sObservers) {
             observer.onProfileAdded(profile);
+        }
+    }
+
+    static void onProfileDestroyed(Profile profile) {
+        for (Observer observer : sObservers) {
+            observer.onProfileDestroyed(profile);
         }
     }
 }

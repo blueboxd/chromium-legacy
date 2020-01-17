@@ -329,6 +329,10 @@ android_builder(
     name = 'android-pie-arm64-rel',
 )
 
+android_builder(
+    name = 'android-10-arm64-rel',
+)
+
 
 def android_fyi_builder(*, name, **kwargs):
   return builder(
@@ -404,28 +408,24 @@ chromium_builder(
 chromium_builder(
     name = 'win-archive-dbg',
     cores = 32,
-    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
 chromium_builder(
     name = 'win-archive-rel',
     cores = 32,
-    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
 chromium_builder(
     name = 'win32-archive-dbg',
     cores = 32,
-    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
 chromium_builder(
     name = 'win32-archive-rel',
     cores = 32,
-    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -444,32 +444,26 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-asan-rel',
-    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-cfi-thin-lto-rel',
-    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-amd64-generic-dbg',
-    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-arm-generic-dbg',
-    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-arm-generic-rel',
-    goma_enable_ats = True,
 )
 
 chromiumos_builder(
     name = 'chromeos-kevin-rel',
-    goma_enable_ats = True,
 )
 
 chromiumos_builder(
@@ -759,13 +753,11 @@ dawn_builder(
 
 dawn_builder(
     name = 'Dawn Win10 x86 Builder',
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
 dawn_builder(
     name = 'Dawn Win10 x64 Builder',
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -797,13 +789,11 @@ dawn_builder(
 
 dawn_builder(
     name = 'Dawn Win10 x86 DEPS Builder',
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
 dawn_builder(
     name = 'Dawn Win10 x64 DEPS Builder',
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -915,14 +905,12 @@ fuzz_builder(
 fuzz_builder(
     name = 'Win ASan Release',
     builderless = False,
-    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
 fuzz_builder(
     name = 'Win ASan Release Media',
     builderless = False,
-    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT
 )
 
@@ -989,7 +977,6 @@ fuzz_libfuzzer_builder(
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Windows ASan',
-    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -1051,12 +1038,10 @@ fyi_builder(
 
 fyi_builder(
     name = 'chromeos-amd64-generic-rel-vm-tests',
-    goma_enable_ats = True,
 )
 
 fyi_builder(
     name = 'chromeos-kevin-rel-hw-tests',
-    goma_enable_ats = True,
 )
 
 fyi_builder(
@@ -1118,8 +1103,7 @@ fyi_builder(
 
 fyi_builder(
     name = 'win-pixel-builder-rel',
-    goma_enable_ats = True,
-    os = None,
+    os = os.WINDOWS_10,
 )
 
 fyi_builder(
@@ -1146,7 +1130,6 @@ def fyi_celab_builder(*, name, **kwargs):
 
 fyi_celab_builder(
     name = 'win-celab-builder-rel',
-    goma_enable_ats = True,
 )
 
 fyi_celab_builder(
@@ -1214,7 +1197,6 @@ fyi_coverage_builder(
 fyi_coverage_builder(
     name = 'win10-code-coverage',
     builderless = True,
-    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
     use_clang_coverage = True,
 )
@@ -1320,7 +1302,6 @@ def fyi_windows_builder(*, name, os=os.WINDOWS_DEFAULT, **kwargs):
   return fyi_builder(
       name = name,
       goma_backend = goma.backend.RBE_PROD,
-      goma_enable_ats = True,
       os = os,
       **kwargs
   )
@@ -1696,7 +1677,6 @@ def gpu_fyi_windows_builder(*, name, **kwargs):
       name = name,
       builderless = True,
       goma_backend = goma.backend.RBE_PROD,
-      goma_enable_ats = True,
       os = os.WINDOWS_ANY,
       **kwargs
   )
@@ -1759,7 +1739,6 @@ gpu_builder(
 gpu_builder(
     name = 'GPU Win x64 Builder (dbg)',
     builderless = True,
-    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -2066,7 +2045,6 @@ memory_builder(
 memory_builder(
     name = 'win-asan',
     cores = 32,
-    goma_enable_ats = True,
     builderless = True,
     os = os.WINDOWS_DEFAULT,
 )
@@ -2122,7 +2100,6 @@ def swangle_windows_builder(*, name, **kwargs):
   return swangle_builder(
       name = name,
       goma_backend = goma.backend.RBE_PROD,
-      goma_enable_ats = True,
       os = os.WINDOWS_DEFAULT,
       **kwargs
   )
@@ -2156,7 +2133,6 @@ def win_builder(*, name, os=os.WINDOWS_DEFAULT, **kwargs):
   return builder(
       name = name,
       goma_backend = goma.backend.RBE_PROD,
-      goma_enable_ats = True,
       mastername = 'chromium.win',
       os = os,
       **kwargs

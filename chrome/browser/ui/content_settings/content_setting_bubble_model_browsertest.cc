@@ -128,11 +128,6 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsMixedScriptIgnoreCertErrorsTest,
 
   EXPECT_FALSE(GetActiveTabSpecificContentSettings()->IsContentBlocked(
       ContentSettingsType::MIXEDSCRIPT));
-
-  // Check that the UMA counts are as expected.
-  histograms.ExpectBucketCount(
-      "ContentSettings.MixedScript",
-      content_settings::MIXED_SCRIPT_ACTION_CLICKED_ALLOW, 1);
 }
 
 // Tests that a MIXEDSCRIPT type ContentSettingBubbleModel does not work

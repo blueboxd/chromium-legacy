@@ -11,7 +11,7 @@ var normalizeAlgorithm =
 // Any unknown parameters will be ignored.
 function normalizeImportParams(importParams) {
   if (!importParams.name ||
-      Object.prototype.toString.call(importParams.name) != '[object String]') {
+      Object.prototype.toString.call(importParams.name) !== '[object String]') {
     throw new Error('Algorithm: name: Missing or not a String');
   }
 

@@ -34,7 +34,8 @@ AccessibilityTest.define('TtsAccessibilityTest', {
   axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
   setup: function() {
-    settings.router.navigateTo(settings.routes.MANAGE_TTS_SETTINGS);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.MANAGE_TTS_SETTINGS);
     Polymer.dom.flush();
   },
   /** @override */

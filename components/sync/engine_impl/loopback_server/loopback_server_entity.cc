@@ -141,6 +141,18 @@ ModelType LoopbackServerEntity::GetModelTypeFromId(const string& id) {
   return syncer::GetModelTypeFromSpecificsFieldNumber(field_number);
 }
 
+// static
+std::string LoopbackServerEntity::GetInnerIdFromId(const std::string& id) {
+  vector<base::StringPiece> tokens = base::SplitStringPiece(
+      id, kIdSeparator, base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  if (tokens.size() != 2) {
+    return std::string();
+  }
+
+  return tokens[1].as_string();
+}
+
 LoopbackServerEntity::LoopbackServerEntity(const string& id,
                                            const ModelType& model_type,
                                            int64_t version,

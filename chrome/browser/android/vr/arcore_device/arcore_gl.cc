@@ -427,7 +427,8 @@ void ArCoreGl::GetFrameData(
   gl_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ArCoreGl::ProcessFrame, weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(&frame_data), base::Passed(&callback)));
+                     std::move(options), std::move(frame_data),
+                     std::move(callback)));
 }
 
 bool ArCoreGl::IsSubmitFrameExpected(int16_t frame_index) {
@@ -775,6 +776,7 @@ void ArCoreGl::SetFrameDataRestricted(bool frame_data_restricted) {
 }
 
 void ArCoreGl::ProcessFrame(
+    mojom::XRFrameDataRequestOptionsPtr options,
     mojom::XRFrameDataPtr frame_data,
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   DVLOG(3) << __func__ << " frame=" << frame_data->frame_id;
@@ -798,6 +800,11 @@ void ArCoreGl::ProcessFrame(
 
   // Get anchors data, including anchors created this frame.
   frame_data->anchors_data = arcore_->GetAnchorsData();
+
+  // Get lighting estimation data
+  if (options && options->include_lighting_estimation_data) {
+    frame_data->light_estimation_data = arcore_->GetLightEstimationData();
+  }
 
   // The timing requirements for hit-test are documented here:
   // https://github.com/immersive-web/hit-test/blob/master/explainer.md#timing
@@ -857,6 +864,10 @@ mojom::XRInputSourceStatePtr ArCoreGl::GetInputSourceState() {
     state->primary_input_clicked = true;
     screen_touch_pending_ = false;
   }
+
+  // Save the touch point for use in Blink's XR input event deduplication.
+  state->overlay_pointer_position = base::make_optional<gfx::PointF>(
+      screen_last_touch_.x(), screen_last_touch_.y());
 
   state->description = device::mojom::XRInputSourceDescription::New();
 

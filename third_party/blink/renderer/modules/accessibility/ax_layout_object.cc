@@ -269,13 +269,6 @@ Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
   if (layout_object_->IsListMarker())
     return ToLayoutListMarker(layout_object_)->ListItem()->GetNode();
 
-  if (layout_object_->IsLayoutNGListMarkerIncludingInside()) {
-    if (LayoutNGListItem* list_item =
-            LayoutNGListItem::FromMarker(*layout_object_))
-      return list_item->GetNode();
-    return nullptr;
-  }
-
   if (layout_object_->IsAnonymous() && layout_object_->ContainingBlock()) {
     return layout_object_->ContainingBlock()->GetNode();
   }
@@ -1637,10 +1630,6 @@ ax::mojom::Dropeffect AXLayoutObject::ParseDropeffect(
   if (EqualIgnoringASCIICase(dropeffect, "popup"))
     return ax::mojom::Dropeffect::kPopup;
   return ax::mojom::Dropeffect::kNone;
-}
-
-bool AXLayoutObject::SupportsARIAFlowTo() const {
-  return !GetAttribute(html_names::kAriaFlowtoAttr).IsEmpty();
 }
 
 bool AXLayoutObject::SupportsARIAOwns() const {
@@ -3082,15 +3071,7 @@ void AXLayoutObject::AddImageMapChildren() {
 
 void AXLayoutObject::AddListMarker() {
   if (!CanHaveChildren() || !GetLayoutObject() || AccessibilityIsIgnored() ||
-      !GetLayoutObject()->IsListItemIncludingNG()) {
-    return;
-  }
-  if (GetLayoutObject()->IsLayoutNGListItem()) {
-    LayoutNGListItem* list_item = ToLayoutNGListItem(GetLayoutObject());
-    LayoutObject* list_marker = list_item->Marker();
-    AXObject* list_marker_obj = AXObjectCache().GetOrCreate(list_marker);
-    if (list_marker_obj)
-      children_.push_back(list_marker_obj);
+      !GetLayoutObject()->IsListItem()) {
     return;
   }
   LayoutListItem* list_item = ToLayoutListItem(GetLayoutObject());

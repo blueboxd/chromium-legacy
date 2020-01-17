@@ -232,9 +232,7 @@ template("nacl_irt_toolchain") {
     }
 
     # TODO(ncbray): depend on link script
-    deps = [
-      tls_edit_label,
-    ]
+    deps = [ tls_edit_label ]
   }
 }
 

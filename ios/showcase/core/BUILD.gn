@@ -26,9 +26,7 @@ source_set("core") {
 
 source_set("main_eg2") {
   testonly = true
-  sources = [
-    "main.mm",
-  ]
+  sources = [ "main.mm" ]
   deps = [
     ":core",
     "//base",
@@ -46,9 +44,7 @@ source_set("main_eg2") {
 }
 
 source_set("main") {
-  sources = [
-    "main.mm",
-  ]
+  sources = [ "main.mm" ]
   deps = [
     ":core",
     "//base",
@@ -68,9 +64,7 @@ source_set("main") {
 source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "showcase_egtest.mm",
-  ]
+  sources = [ "showcase_egtest.mm" ]
   deps = [
     "//ios/showcase/test",
     "//ios/testing/earl_grey:earl_grey_support",
@@ -86,9 +80,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "showcase_egtest.mm",
-  ]
+  sources = [ "showcase_egtest.mm" ]
   deps = [
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/showcase/test:eg2_test",

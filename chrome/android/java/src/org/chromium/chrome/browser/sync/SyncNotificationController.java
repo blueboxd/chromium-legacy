@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.StringRes;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
@@ -24,8 +26,10 @@ import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.PassphraseType;
 
@@ -84,12 +88,24 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
             }
         } else if (mProfileSyncService.isEngineInitialized()
                 && mProfileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes()) {
-            Intent intent = TrustedVaultClient.get().createKeyRetrievalIntent();
-            if (intent != null) {
-                showSyncNotification(mProfileSyncService.isEncryptEverythingEnabled()
-                                ? R.string.sync_error_card_title
-                                : R.string.sync_passwords_error_card_title,
-                        intent);
+            CoreAccountInfo primaryAccountInfo =
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+            if (primaryAccountInfo != null) {
+                int flags = Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP;
+                TrustedVaultClient.get()
+                        .createKeyRetrievalIntent(primaryAccountInfo)
+                        .then(
+                                (pendingIntent)
+                                        -> {
+                                    showSyncNotificationForPendingIntent(
+                                            mProfileSyncService.isEncryptEverythingEnabled()
+                                                    ? R.string.sync_error_card_title
+                                                    : R.string.sync_passwords_error_card_title,
+                                            new PendingIntentProvider(pendingIntent, flags));
+                                },
+                                (exception) -> {
+                                    Log.w(TAG, "Error creating key retrieval intent: ", exception);
+                                });
             }
         } else {
             mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_SYNC);
@@ -101,9 +117,10 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      * Builds and shows a notification for the |message|.
      *
      * @param message Resource id of the message to display in the notification.
-     * @param intent Intent to send when the user activates the notification.
+     * @param contentIntent represents intent to send when the user activates the notification.
      */
-    private void showSyncNotification(int message, Intent intent) {
+    private void showSyncNotificationForPendingIntent(
+            @StringRes int message, PendingIntentProvider contentIntent) {
         Context applicationContext = ContextUtils.getApplicationContext();
         String title = null;
         String text = null;
@@ -117,9 +134,6 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
             text = applicationContext.getString(R.string.sign_in_sync) + ": "
                     + applicationContext.getString(message);
         }
-
-        PendingIntentProvider contentIntent =
-                PendingIntentProvider.getActivity(applicationContext, 0, intent, 0);
 
         // There is no need to provide a group summary notification because the NOTIFICATION_ID_SYNC
         // notification id ensures there's only one sync notification at a time.
@@ -144,6 +158,19 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         mNotificationManager.notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
                 NotificationUmaTracker.SystemNotificationType.SYNC, notification.getNotification());
+    }
+
+    /**
+     * Builds and shows a notification for the |message|.
+     *
+     * @param message Resource id of the message to display in the notification.
+     * @param intent Intent to send when the user activates the notification.
+     */
+    private void showSyncNotification(@StringRes int message, Intent intent) {
+        Context applicationContext = ContextUtils.getApplicationContext();
+        PendingIntentProvider contentIntent =
+                PendingIntentProvider.getActivity(applicationContext, 0, intent, 0);
+        showSyncNotificationForPendingIntent(message, contentIntent);
     }
 
     private boolean shouldSyncAuthErrorBeShown() {

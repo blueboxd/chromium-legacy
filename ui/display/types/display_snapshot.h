@@ -35,6 +35,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
                   DisplayConnectionType type,
                   bool is_aspect_preserving_scaling,
                   bool has_overscan,
+                  bool has_privacy_screen,
                   bool has_color_correction_matrix,
                   bool color_correction_in_linear_space,
                   const gfx::ColorSpace& color_space,
@@ -60,6 +61,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
     return is_aspect_preserving_scaling_;
   }
   bool has_overscan() const { return has_overscan_; }
+  bool has_privacy_screen() const { return has_privacy_screen_; }
   bool has_color_correction_matrix() const {
     return has_color_correction_matrix_;
   }
@@ -109,6 +111,8 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   const bool is_aspect_preserving_scaling_;
 
   const bool has_overscan_;
+
+  const bool has_privacy_screen_;
 
   // Whether this display has advanced color correction available.
   const bool has_color_correction_matrix_;

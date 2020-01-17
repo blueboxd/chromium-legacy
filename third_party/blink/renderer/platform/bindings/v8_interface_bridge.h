@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_INTERFACE_BRIDGE_H_
 
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -54,7 +55,16 @@ class V8InterfaceBridge : public V8InterfaceBridgeBase {
     return ToScriptWrappable(receiver)->ToImpl<T>();
   }
 
+  static bool HasInstance(v8::Isolate* isolate, v8::Local<v8::Value> value) {
+    return V8PerIsolateData::From(isolate)->HasInstance(
+        V8T::GetWrapperTypeInfo(), value);
+  }
+
   // Migration adapter
+  static bool HasInstance(v8::Local<v8::Value> value, v8::Isolate* isolate) {
+    return HasInstance(isolate, value);
+  }
+
   static void InstallContextDependentAdapter(
       v8::Local<v8::Context> context,
       const DOMWrapperWorld& world,

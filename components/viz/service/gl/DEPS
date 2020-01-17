@@ -5,6 +5,7 @@ include_rules = [
   "+components/chromeos_camera",
   "+components/crash/core/common/crash_key.h",
   "+components/viz/service/service_jni_headers",
+  "+components/viz/common",
   "+gpu/command_buffer",
   "+gpu/config",
   "+gpu/ipc",

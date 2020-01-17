@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -72,6 +73,9 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
   webui::SetupBundledWebUIDataSource(source, "extensions.js",
                                      IDR_EXTENSIONS_EXTENSIONS_ROLLUP_JS,
                                      IDR_EXTENSIONS_EXTENSIONS_HTML);
+  source->AddResourcePath("checkup_image.svg", IDR_EXTENSIONS_CHECKUP_IMAGE);
+  source->AddResourcePath("checkup_image_dark.svg",
+                          IDR_EXTENSIONS_CHECKUP_IMAGE_DARK);
 #else
   webui::SetupWebUIDataSource(
       source, base::make_span(kExtensionsResources, kExtensionsResourcesSize),
@@ -353,7 +357,8 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
 }  // namespace
 
 ExtensionsUI::ExtensionsUI(content::WebUI* web_ui)
-    : WebUIController(web_ui),
+    : WebContentsObserver(web_ui->GetWebContents()),
+      WebUIController(web_ui),
       webui_load_timer_(web_ui->GetWebContents(),
                         "Extensions.WebUi.DocumentLoadedInMainFrameTime.MD",
                         "Extensions.WebUi.LoadCompletedInMainFrame.MD") {
@@ -392,7 +397,15 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui)
   }
 }
 
-ExtensionsUI::~ExtensionsUI() {}
+ExtensionsUI::~ExtensionsUI() {
+  if (timer_.has_value() &&
+      base::FeatureList::IsEnabled(extensions_features::kExtensionsCheckup))
+    UMA_HISTOGRAM_LONG_TIMES("Extensions.Checkup.TimeSpent", timer_->Elapsed());
+}
+
+void ExtensionsUI::DidStopLoading() {
+  timer_ = base::ElapsedTimer();
+}
 
 // static
 base::RefCountedMemory* ExtensionsUI::GetFaviconResourceBytes(

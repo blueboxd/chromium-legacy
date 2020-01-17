@@ -62,7 +62,7 @@ const LockStateBehaviorImpl = {
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.boundOnActiveModesChanged_ = this.updateUnlockType.bind(this);
     this.quickUnlockPrivate.onActiveModesChanged.addListener(
         this.boundOnActiveModesChanged_);
@@ -81,7 +81,7 @@ const LockStateBehaviorImpl = {
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.quickUnlockPrivate.onActiveModesChanged.removeListener(
         this.boundOnActiveModesChanged_);
   },
@@ -91,7 +91,7 @@ const LockStateBehaviorImpl = {
    * after preferences are initialized, after the quick unlock mode has been
    * changed, and after the lockscreen preference has changed.
    */
-  updateUnlockType: function() {
+  updateUnlockType() {
     this.quickUnlockPrivate.getActiveModes(modes => {
       if (modes.includes(chrome.quickUnlockPrivate.QuickUnlockMode.PIN)) {
         this.hasPin = true;
@@ -112,7 +112,7 @@ const LockStateBehaviorImpl = {
    * Handler for when the pin login available state has been updated.
    * @private
    */
-  handlePinLoginAvailableChanged_: function(isAvailable) {
+  handlePinLoginAvailableChanged_(isAvailable) {
     this.hasPinLogin = isAvailable;
     cachedHasPinLogin = this.hasPinLogin;
   },

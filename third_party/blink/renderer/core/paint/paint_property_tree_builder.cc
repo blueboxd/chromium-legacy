@@ -502,7 +502,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
         IsAffectedByOuterViewportBoundsDelta();
     state.direct_compositing_reasons =
         full_context_.direct_compositing_reasons &
-        CompositingReason::kScrollDependentPosition;
+        CompositingReason::kDirectReasonsForPaintOffsetTranslationProperty;
     state.rendering_context_id = context_.current.rendering_context_id;
     OnUpdate(properties_->UpdatePaintOffsetTranslation(
         *context_.current.transform, std::move(state)));
@@ -2382,6 +2382,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     fragment_data_.SetPaintOffset(context_.current.paint_offset);
     fragment_data_.InvalidateClipPathCache();
 
+    object_.GetMutableForPainting().InvalidateIntersectionObserverCachedRects();
     object_.GetFrameView()->SetIntersectionObservationState(
         LocalFrameView::kDesired);
   }

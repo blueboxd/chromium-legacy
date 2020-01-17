@@ -99,6 +99,7 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   void DispatchSimulatedClickIfActive(KeyboardEvent&) const;
 
   virtual void SubtreeHasChanged();
+  virtual bool TypeShouldForceLegacyLayout() const;
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&,
                                            LegacyLayout) const;
   virtual scoped_refptr<ComputedStyle> CustomStyleForLayoutObject(
@@ -106,9 +107,14 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual TextDirection ComputedTextDirection();
   virtual void StartResourceLoading();
   virtual void ClosePopupView();
+
+  // Functions for shadow trees
+
   virtual bool NeedsShadowSubtree() const;
   virtual void CreateShadowSubtree();
   virtual void DestroyShadowSubtree();
+  virtual HTMLInputElement* UploadButton() const;
+
   virtual void MinOrMaxAttributeChanged();
   virtual void StepAttributeChanged();
   virtual void AltAttributeChanged();
@@ -129,6 +135,7 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual bool HasFallbackContent() const { return false; }
   virtual FormControlState SaveFormControlState() const;
   virtual void RestoreFormControlState(const FormControlState&);
+  virtual bool IsDraggedSlider() const;
 
   // Validation functions
   virtual bool HasBadInput() const;

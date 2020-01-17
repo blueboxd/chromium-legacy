@@ -16,23 +16,23 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.dialog.showModal();
   },
 
   /** @private */
-  onOkTap_: function() {
+  onOkTap_() {
     this.$.dialog.cancel();
   },
 
   /** @private */
-  onCancel_: function() {
+  onCancel_() {
     settings.ResetBrowserProxyImpl.getInstance().onHideResetProfileBanner();
   },
 
   /** @private */
-  onResetTap_: function() {
+  onResetTap_() {
     this.$.dialog.close();
-    settings.navigateTo(settings.routes.RESET_DIALOG);
+    settings.Router.getInstance().navigateTo(settings.routes.RESET_DIALOG);
   },
 });

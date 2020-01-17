@@ -88,6 +88,7 @@
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
@@ -694,7 +695,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebVector<blink::WebString>& stopped_matching_selectors)
       override;
   void UpdateUserActivationState(
-      blink::UserActivationUpdateType update_type) override;
+      blink::mojom::UserActivationUpdateType update_type) override;
   void SetMouseCapture(bool capture) override;
   bool ShouldReportDetailedMessageForSource(
       const blink::WebString& source) override;
@@ -1074,8 +1075,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnMoveCaret(const gfx::Point& point);
   void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
   void OnSelectRange(const gfx::Point& base, const gfx::Point& extent);
-  void OnCopyImageAt(int x, int y);
-  void OnSaveImageAt(int x, int y);
   void OnVisualStateRequest(uint64_t key);
   // TODO(https://crbug.com/995428): Deprecated.
   void OnReload();
@@ -1095,8 +1094,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const std::map<int, base::FilePath>& frame_routing_id_to_local_path,
       bool save_with_empty_url);
   void OnSuppressFurtherDialogs();
-  void OnBlinkFeatureUsageReport(
-      const std::set<blink::mojom::WebFeature>& features);
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
   void OnSetOverlayRoutingToken(const base::UnguessableToken& token);
   void OnMediaPlayerActionAt(const gfx::PointF&,
@@ -1255,8 +1252,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Build DidCommitProvisionalLoad_Params based on the frame internal state.
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
-  MakeDidCommitProvisionalLoadParams(blink::WebHistoryCommitType commit_type,
-                                     ui::PageTransition transition);
+  MakeDidCommitProvisionalLoadParams(
+      blink::WebHistoryCommitType commit_type,
+      ui::PageTransition transition,
+      const base::Optional<base::UnguessableToken>& embedding_token);
 
   // Updates the navigation history depending on the passed parameters.
   // This could result either in the creation of a new entry or a modification
@@ -1283,7 +1282,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebHistoryCommitType commit_type,
       bool was_within_same_document,
       ui::PageTransition transition,
-      mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params,
+      const base::Optional<base::UnguessableToken>& embedding_token);
 
   blink::WebComputedAXTree* GetOrCreateWebComputedAXTree() override;
 

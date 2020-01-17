@@ -305,8 +305,8 @@ bool LocationBarView::IsInitialized() const {
 }
 
 SkColor LocationBarView::GetColor(OmniboxPart part) const {
-  return GetOmniboxColor(&ThemeService::GetThemeProviderForProfile(profile_),
-                         part);
+  DCHECK(GetWidget());
+  return GetOmniboxColor(GetThemeProvider(), part);
 }
 
 SkColor LocationBarView::GetOpaqueBorderColor() const {
@@ -611,8 +611,6 @@ void LocationBarView::OnThemeChanged() {
     image_view->SetIconColor(icon_color);
 
   RefreshBackground();
-
-  location_icon_view_->Update(/*suppress_animations=*/false);
   RefreshClearAllButtonIcon();
 }
 

@@ -95,10 +95,6 @@ views::View* UpdateRecommendedMessageBox::GetContentsView() {
   return message_box_view_;
 }
 
-views::Widget* UpdateRecommendedMessageBox::GetWidget() {
-  return message_box_view_->GetWidget();
-}
-
-const views::Widget* UpdateRecommendedMessageBox::GetWidget() const {
+const views::Widget* UpdateRecommendedMessageBox::GetWidgetImpl() const {
   return message_box_view_->GetWidget();
 }

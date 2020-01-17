@@ -98,7 +98,7 @@ Polymer({
      */
     vpnProviders_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       }
     },
@@ -112,7 +112,7 @@ Polymer({
     /** @private {!Map<string, Element>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         return new Map();
       },
     },
@@ -141,14 +141,14 @@ Polymer({
   networkConfig_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.InternetPageBrowserProxyImpl.getInstance();
     this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
                               .getMojoServiceRemote();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.networkConfig_.getGlobalPolicy().then(response => {
       this.globalPolicy_ = response.result;
     });
@@ -161,11 +161,11 @@ Polymer({
    * @param {!settings.Route} oldRoute
    * @protected
    */
-  currentRouteChanged: function(route, oldRoute) {
+  currentRouteChanged(route, oldRoute) {
     if (route == settings.routes.INTERNET_NETWORKS) {
       // Handle direct navigation to the networks page,
       // e.g. chrome://settings/internet/networks?type=WiFi
-      const queryParams = settings.getQueryParameters();
+      const queryParams = settings.Router.getInstance().getQueryParameters();
       const type = queryParams.get('type');
       if (type) {
         this.subpageType_ = OncMojo.getNetworkTypeFromString(type);
@@ -173,7 +173,7 @@ Polymer({
     } else if (route == settings.routes.KNOWN_NETWORKS) {
       // Handle direct navigation to the known networks page,
       // e.g. chrome://settings/internet/knownNetworks?type=WiFi
-      const queryParams = settings.getQueryParameters();
+      const queryParams = settings.Router.getInstance().getQueryParameters();
       const type = queryParams.get('type');
       if (type) {
         this.knownNetworksType_ = OncMojo.getNetworkTypeFromString(type);
@@ -218,7 +218,7 @@ Polymer({
   },
 
   /** NetworkListenerBehavior override */
-  onVpnProvidersChanged: function() {
+  onVpnProvidersChanged() {
     this.networkConfig_.getVpnProviders().then(response => {
       const providers = response.providers;
       providers.sort(this.compareVpnProviders_);
@@ -234,7 +234,7 @@ Polymer({
    * }>} event
    * @private
    */
-  onDeviceEnabledToggled_: function(event) {
+  onDeviceEnabledToggled_(event) {
     this.networkConfig_.setNetworkTypeEnabledState(
         event.detail.type, event.detail.enabled);
   },
@@ -243,7 +243,7 @@ Polymer({
    * @param {!CustomEvent<!{type: string, guid: ?string, name: ?string}>} event
    * @private
    */
-  onShowConfig_: function(event) {
+  onShowConfig_(event) {
     const type = OncMojo.getNetworkTypeFromString(event.detail.type);
     if (!event.detail.guid) {
       // New configuration
@@ -262,7 +262,7 @@ Polymer({
    * @param {?string=} opt_name
    * @private
    */
-  showConfig_: function(configAndConnect, type, opt_guid, opt_name) {
+  showConfig_(configAndConnect, type, opt_guid, opt_name) {
     assert(
         type != chromeos.networkConfig.mojom.NetworkType.kCellular &&
         type != chromeos.networkConfig.mojom.NetworkType.kTether);
@@ -284,7 +284,7 @@ Polymer({
   },
 
   /** @private */
-  onInternetConfigClose_: function() {
+  onInternetConfigClose_() {
     this.showInternetConfig_ = false;
   },
 
@@ -292,21 +292,22 @@ Polymer({
    * @param {!CustomEvent<!OncMojo.NetworkStateProperties>} event
    * @private
    */
-  onShowDetail_: function(event) {
+  onShowDetail_(event) {
     const networkState = event.detail;
     this.detailType_ = networkState.type;
     const params = new URLSearchParams;
     params.append('guid', networkState.guid);
     params.append('type', OncMojo.getNetworkTypeString(networkState.type));
     params.append('name', OncMojo.getNetworkStateDisplayName(networkState));
-    settings.navigateTo(settings.routes.NETWORK_DETAIL, params);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.NETWORK_DETAIL, params);
   },
 
   /**
    * @param {!CustomEvent<chromeos.networkConfig.mojom.NetworkType>} event
    * @private
    */
-  onShowNetworks_: function(event) {
+  onShowNetworks_(event) {
     this.showNetworksSubpage_(event.detail);
   },
 
@@ -314,7 +315,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getNetworksPageTitle_: function() {
+  getNetworksPageTitle_() {
     // The shared Cellular/Tether subpage is referred to as "Mobile".
     // TODO(khorimoto): Remove once Cellular/Tether are split into their own
     // sections.
@@ -332,7 +333,7 @@ Polymer({
    * @return {!OncMojo.DeviceStateProperties|undefined}
    * @private
    */
-  getDeviceState_: function(subpageType, deviceStates) {
+  getDeviceState_(subpageType, deviceStates) {
     if (subpageType === undefined) {
       return undefined;
     }
@@ -350,7 +351,7 @@ Polymer({
    * @return {!OncMojo.DeviceStateProperties|undefined}
    * @private
    */
-  getTetherDeviceState_: function(deviceStates) {
+  getTetherDeviceState_(deviceStates) {
     return deviceStates[mojom.NetworkType.kTether];
   },
 
@@ -359,7 +360,7 @@ Polymer({
    * @param {!OncMojo.DeviceStateProperties|undefined} oldValue
    * @private
    */
-  onDeviceStatesChanged_: function(newValue, oldValue) {
+  onDeviceStatesChanged_(newValue, oldValue) {
     const wifiDeviceState =
         this.getDeviceState_(mojom.NetworkType.kWiFi, newValue);
     let managedNetworkAvailable = false;
@@ -387,24 +388,25 @@ Polymer({
    * @param {!CustomEvent<chromeos.networkConfig.mojom.NetworkType>} event
    * @private
    */
-  onShowKnownNetworks_: function(event) {
+  onShowKnownNetworks_(event) {
     const type = event.detail;
     this.detailType_ = type;
     this.knownNetworksType_ = type;
     const params = new URLSearchParams;
     params.append('type', OncMojo.getNetworkTypeString(type));
-    settings.navigateTo(settings.routes.KNOWN_NETWORKS, params);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.KNOWN_NETWORKS, params);
   },
 
   /** @private */
-  onAddWiFiTap_: function() {
+  onAddWiFiTap_() {
     this.showConfig_(
         true /* configAndConnect */,
         chromeos.networkConfig.mojom.NetworkType.kWiFi);
   },
 
   /** @private */
-  onAddVPNTap_: function() {
+  onAddVPNTap_() {
     this.showConfig_(
         true /* configAndConnect */,
         chromeos.networkConfig.mojom.NetworkType.kVPN);
@@ -414,7 +416,7 @@ Polymer({
    * @param {!{model: !{item: !mojom.VpnProvider}}} event
    * @private
    */
-  onAddThirdPartyVpnTap_: function(event) {
+  onAddThirdPartyVpnTap_(event) {
     const provider = event.model.item;
     this.browserProxy_.addThirdPartyVpn(provider.appId);
   },
@@ -423,12 +425,13 @@ Polymer({
    * @param {chromeos.networkConfig.mojom.NetworkType} type
    * @private
    */
-  showNetworksSubpage_: function(type) {
+  showNetworksSubpage_(type) {
     this.detailType_ = type;
     const params = new URLSearchParams;
     params.append('type', OncMojo.getNetworkTypeString(type));
     this.subpageType_ = type;
-    settings.navigateTo(settings.routes.INTERNET_NETWORKS, params);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.INTERNET_NETWORKS, params);
   },
 
   /**
@@ -436,7 +439,7 @@ Polymer({
    * @param {!mojom.VpnProvider} vpnProvider2
    * @return {number}
    */
-  compareVpnProviders_: function(vpnProvider1, vpnProvider2) {
+  compareVpnProviders_(vpnProvider1, vpnProvider2) {
     // Show Extension VPNs before Arc VPNs.
     if (vpnProvider1.type < vpnProvider2.type) {
       return -1;
@@ -461,7 +464,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  wifiIsEnabled_: function(deviceStates) {
+  wifiIsEnabled_(deviceStates) {
     const wifi = deviceStates[mojom.NetworkType.kWiFi];
     return !!wifi &&
         wifi.deviceState ==
@@ -473,7 +476,7 @@ Polymer({
    * @param {boolean} managedNetworkAvailable
    * @return {boolean}
    */
-  allowAddConnection_: function(globalPolicy, managedNetworkAvailable) {
+  allowAddConnection_(globalPolicy, managedNetworkAvailable) {
     if (!globalPolicy) {
       return true;
     }
@@ -487,7 +490,7 @@ Polymer({
    * @param {!mojom.VpnProvider} provider
    * @return {string}
    */
-  getAddThirdPartyVpnLabel_: function(provider) {
+  getAddThirdPartyVpnLabel_(provider) {
     return this.i18n('internetAddThirdPartyVPN', provider.providerName || '');
   },
 
@@ -500,7 +503,7 @@ Polymer({
    * }>} event
    * @private
    */
-  onNetworkConnect_: function(event) {
+  onNetworkConnect_(event) {
     const networkState = event.detail.networkState;
     const type = networkState.type;
     const displayName = OncMojo.getNetworkStateDisplayName(networkState);
@@ -514,7 +517,8 @@ Polymer({
       params.append('name', displayName);
       params.append('showConfigure', true.toString());
 
-      settings.navigateTo(settings.routes.NETWORK_DETAIL, params);
+      settings.Router.getInstance().navigateTo(
+          settings.routes.NETWORK_DETAIL, params);
       return;
     }
 

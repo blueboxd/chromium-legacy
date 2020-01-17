@@ -31,7 +31,7 @@ Polymer({
      */
     timeZoneList_: {
       type: Array,
-      value: function() {
+      value() {
         return [{
           name: loadTimeData.getString('timeZoneName'),
           value: loadTimeData.getString('timeZoneID'),
@@ -51,7 +51,7 @@ Polymer({
   ],
 
   /** @override */
-  attached: function() {
+  attached() {
     this.maybeGetTimeZoneList_();
   },
 
@@ -67,7 +67,7 @@ Polymer({
    * @private
    * @suppress {missingProperties} Property finally never defined on
    */
-  maybeGetTimeZoneList_: function(perUserTimeZoneMode) {
+  maybeGetTimeZoneList_(perUserTimeZoneMode) {
     if (typeof (perUserTimeZoneMode) !== 'undefined') {
       /* This method is called as observer. Skip if if current mode does not
        * match expected.
@@ -114,7 +114,7 @@ Polymer({
    * Prefs observer for Per-user time zone enabled mode.
    * @private
    */
-  maybeGetTimeZoneListPerUser_: function() {
+  maybeGetTimeZoneListPerUser_() {
     this.maybeGetTimeZoneList_(true);
   },
 
@@ -122,7 +122,7 @@ Polymer({
    * Prefs observer for Per-user time zone disabled mode.
    * @private
    */
-  maybeGetTimeZoneListPerSystem_: function() {
+  maybeGetTimeZoneListPerSystem_() {
     this.maybeGetTimeZoneList_(false);
   },
 
@@ -131,7 +131,7 @@ Polymer({
    * @param {!Array<!Array<string>>} timeZones C++ time zones response.
    * @private
    */
-  setTimeZoneList_: function(timeZones) {
+  setTimeZoneList_(timeZones) {
     this.timeZoneList_ = timeZones.map(function(timeZonePair) {
       return {
         name: timeZonePair[1],
@@ -147,7 +147,7 @@ Polymer({
    * @param {!String} activeTimeZoneId value of cros.system.timezone preference.
    * @private
    */
-  updateActiveTimeZoneName_: function(activeTimeZoneId) {
+  updateActiveTimeZoneName_(activeTimeZoneId) {
     const activeTimeZone = this.timeZoneList_.find(
         (timeZone) => timeZone.value == activeTimeZoneId);
     if (activeTimeZone) {
@@ -165,8 +165,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isUserTimeZoneSelectorHidden_: function(
-      prefUserTimezone, prefResolveOnOffValue) {
+  isUserTimeZoneSelectorHidden_(prefUserTimezone, prefResolveOnOffValue) {
     return (prefUserTimezone && prefUserTimezone.controlledBy != null) ||
         prefResolveOnOffValue;
   },

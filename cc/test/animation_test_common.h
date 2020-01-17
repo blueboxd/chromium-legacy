@@ -7,7 +7,6 @@
 
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_timeline.h"
-#include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframe_model.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/paint/element_id.h"
@@ -72,46 +71,39 @@ class FakeFloatTransition : public FloatAnimationCurve {
 
 int AddScrollOffsetAnimationToAnimation(Animation* animation,
                                         gfx::ScrollOffset initial_value,
-                                        gfx::ScrollOffset target_value,
-                                        KeyframeEffectId effect_id = 0);
+                                        gfx::ScrollOffset target_value);
 
 int AddAnimatedTransformToAnimation(Animation* animation,
                                     double duration,
                                     int delta_x,
-                                    int delta_y,
-                                    KeyframeEffectId effect_id = 0);
+                                    int delta_y);
 
 int AddAnimatedTransformToAnimation(Animation* animation,
                                     double duration,
                                     TransformOperations start_operations,
-                                    TransformOperations operations,
-                                    KeyframeEffectId effect_id = 0);
+                                    TransformOperations operations);
 
 int AddOpacityTransitionToAnimation(Animation* animation,
                                     double duration,
                                     float start_opacity,
                                     float end_opacity,
-                                    bool use_timing_function,
-                                    KeyframeEffectId effect_id = 0);
+                                    bool use_timing_function);
 
 int AddAnimatedFilterToAnimation(Animation* animation,
                                  double duration,
                                  float start_brightness,
-                                 float end_brightness,
-                                 KeyframeEffectId effect_id = 0);
+                                 float end_brightness);
 
 int AddAnimatedBackdropFilterToAnimation(Animation* animation,
                                          double duration,
                                          float start_invert,
-                                         float end_invert,
-                                         KeyframeEffectId effect_id = 0);
+                                         float end_invert);
 
 int AddOpacityStepsToAnimation(Animation* animation,
                                double duration,
                                float start_opacity,
                                float end_opacity,
-                               int num_steps,
-                               KeyframeEffectId effect_id = 0);
+                               int num_steps);
 
 void AddKeyframeModelToElementWithAnimation(
     ElementId element_id,

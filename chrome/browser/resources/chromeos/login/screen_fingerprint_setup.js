@@ -18,7 +18,7 @@ login.createScreen('FingerprintSetupScreen', 'fingerprint-setup', function() {
 
 
     /** @override */
-    decorate: function() {
+    decorate() {
       this.fingerprintSetupModule_ = $('fingerprint-setup-impl');
     },
 
@@ -32,7 +32,7 @@ login.createScreen('FingerprintSetupScreen', 'fingerprint-setup', function() {
     /*
      * Executed on language change.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       this.fingerprintSetupModule_.i18nUpdateLocale();
     },
 
@@ -42,7 +42,7 @@ login.createScreen('FingerprintSetupScreen', 'fingerprint-setup', function() {
      * @param {boolean} isComplete Whether fingerprint enrollment is complete.
      * @param {number} percentComplete Percentage of completion of enrollment.
      */
-    onEnrollScanDone: function(scanResult, isComplete, percentComplete) {
+    onEnrollScanDone(scanResult, isComplete, percentComplete) {
       this.fingerprintSetupModule_.onEnrollScanDone(
           scanResult, isComplete, percentComplete);
     },
@@ -51,7 +51,7 @@ login.createScreen('FingerprintSetupScreen', 'fingerprint-setup', function() {
      * Enable/disable add another finger.
      * @param {boolean} enable True if add another fingerprint is enabled.
      */
-    enableAddAnotherFinger: function(enable) {
+    enableAddAnotherFinger(enable) {
       this.fingerprintSetupModule_.canAddFinger = enable;
     },
   };

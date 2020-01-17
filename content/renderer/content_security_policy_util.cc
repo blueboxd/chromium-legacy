@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/renderer/content_security_policy_util.h"
+#include "services/network/public/cpp/content_security_policy.h"
 
 namespace content {
 
@@ -33,8 +34,8 @@ CSPSourceList BuildCSPSourceList(
 CSPDirective BuildCSPDirective(
     const blink::WebContentSecurityPolicyDirective& directive) {
   return CSPDirective(
-      CSPDirective::StringToName(directive.name.Utf8()),  // name
-      BuildCSPSourceList(directive.source_list));         // source_list
+      network::ContentSecurityPolicy::ToDirectiveName(directive.name.Utf8()),
+      BuildCSPSourceList(directive.source_list));
 }
 
 ContentSecurityPolicy BuildContentSecurityPolicy(
@@ -48,8 +49,8 @@ ContentSecurityPolicy BuildContentSecurityPolicy(
     report_endpoints.push_back(endpoint.Utf8());
 
   return ContentSecurityPolicy(
-      ContentSecurityPolicyHeader(policy.header.Utf8(), policy.disposition,
-                                  policy.source),
+      network::mojom::ContentSecurityPolicyHeader(
+          policy.header.Utf8(), policy.disposition, policy.source),
       directives, report_endpoints, policy.use_reporting_api);
 }
 

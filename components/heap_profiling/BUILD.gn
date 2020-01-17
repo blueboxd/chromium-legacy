@@ -26,21 +26,15 @@ static_library("heap_profiling") {
 if (is_android) {
   generate_jni("jni_headers") {
     testonly = true
-    sources = [
-      "javatests/src/org/chromium/components/heap_profiling/HeapProfilingTestShim.java",
-    ]
+    sources = [ "javatests/src/org/chromium/components/heap_profiling/HeapProfilingTestShim.java" ]
   }
 
   # This library must be included by the apk_under_test in order for the JNI
   # shim to function correctly.
   android_library("heap_profiling_java_test_support") {
     testonly = true
-    sources = [
-      "javatests/src/org/chromium/components/heap_profiling/HeapProfilingTestShim.java",
-    ]
-    deps = [
-      "//base:base_java",
-    ]
+    sources = [ "javatests/src/org/chromium/components/heap_profiling/HeapProfilingTestShim.java" ]
+    deps = [ "//base:base_java" ]
   }
 }
 

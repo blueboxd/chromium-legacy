@@ -84,5 +84,10 @@ const char kReadDynamicRulesJSONStatusHistogram[] =
 const char kActionCountPlaceholderBadgeText[] =
     "<<declarativeNetRequestActionCount>>";
 
+const char kErrorGetMatchedRulesMissingPermissions[] =
+    "The extension must have the declarativeNetRequestFeedback permission or "
+    "have activeTab granted for the specified tab ID in order to call this "
+    "function.";
+
 }  // namespace declarative_net_request
 }  // namespace extensions

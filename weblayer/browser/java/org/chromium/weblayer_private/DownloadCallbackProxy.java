@@ -5,11 +5,13 @@
 package org.chromium.weblayer_private;
 
 import android.os.RemoteException;
+import android.webkit.ValueCallback;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 /**
  * Owns the c++ DownloadCallbackProxy class, which is responsible for forwarding all
@@ -45,9 +47,56 @@ public final class DownloadCallbackProxy {
                 url, userAgent, contentDisposition, mimetype, contentLength);
     }
 
+    @CalledByNative
+    private void allowDownload(String url, String requestMethod, String requestInitiator,
+            long callbackId) throws RemoteException {
+        if (WebLayerFactoryImpl.getClientMajorVersion() < 81) {
+            DownloadCallbackProxyJni.get().allowDownload(callbackId, true);
+            return;
+        }
+
+        ValueCallback<Boolean> callback = new ValueCallback<Boolean>() {
+            @Override
+            public void onReceiveValue(Boolean result) {
+                if (mNativeDownloadCallbackProxy == 0) {
+                    throw new IllegalStateException("Called after destroy()");
+                }
+                DownloadCallbackProxyJni.get().allowDownload(callbackId, result);
+            }
+        };
+
+        mClient.allowDownload(url, requestMethod, requestInitiator, ObjectWrapper.wrap(callback));
+    }
+
+    @CalledByNative
+    private DownloadImpl createDownload(long nativeDownloadImpl) {
+        return new DownloadImpl(mClient, nativeDownloadImpl);
+    }
+
+    @CalledByNative
+    private void downloadStarted(DownloadImpl download) throws RemoteException {
+        mClient.downloadStarted(download.getClientDownload());
+    }
+
+    @CalledByNative
+    private void downloadProgressChanged(DownloadImpl download) throws RemoteException {
+        mClient.downloadProgressChanged(download.getClientDownload());
+    }
+
+    @CalledByNative
+    private void downloadCompleted(DownloadImpl download) throws RemoteException {
+        mClient.downloadCompleted(download.getClientDownload());
+    }
+
+    @CalledByNative
+    private void downloadFailed(DownloadImpl download) throws RemoteException {
+        mClient.downloadFailed(download.getClientDownload());
+    }
+
     @NativeMethods
     interface Natives {
         long createDownloadCallbackProxy(DownloadCallbackProxy proxy, long tab);
         void deleteDownloadCallbackProxy(long proxy);
+        void allowDownload(long callbackId, boolean allow);
     }
 }

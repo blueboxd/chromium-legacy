@@ -61,8 +61,7 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
     sk_sp<SkColorSpace> color_space,
     bool can_use_lcd_text,
     bool context_supports_distance_field_text,
-    int max_texture_size,
-    size_t max_texture_bytes)
+    int max_texture_size)
     : serialize_cb_(std::move(serialize_cb)),
       image_provider_(image_provider),
       transfer_cache_(transfer_cache),
@@ -73,7 +72,6 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
       context_supports_distance_field_text_(
           context_supports_distance_field_text),
       max_texture_size_(max_texture_size),
-      max_texture_bytes_(max_texture_bytes),
       text_blob_canvas_(kMaxExtent,
                         kMaxExtent,
                         ComputeSurfaceProps(can_use_lcd_text),
@@ -417,7 +415,7 @@ PaintOp::SerializeOptions PaintOpBufferSerializer::MakeSerializeOptions() {
       image_provider_, transfer_cache_, paint_cache_, &text_blob_canvas_,
       strike_server_, color_space_, can_use_lcd_text_,
       context_supports_distance_field_text_, max_texture_size_,
-      max_texture_bytes_, text_blob_canvas_.getTotalMatrix());
+      text_blob_canvas_.getTotalMatrix());
 }
 
 SimpleBufferSerializer::SimpleBufferSerializer(
@@ -430,8 +428,7 @@ SimpleBufferSerializer::SimpleBufferSerializer(
     sk_sp<SkColorSpace> color_space,
     bool can_use_lcd_text,
     bool context_supports_distance_field_text,
-    int max_texture_size,
-    size_t max_texture_bytes)
+    int max_texture_size)
     : PaintOpBufferSerializer(
           base::BindRepeating(&SimpleBufferSerializer::SerializeToMemory,
                               base::Unretained(this)),
@@ -442,8 +439,7 @@ SimpleBufferSerializer::SimpleBufferSerializer(
           std::move(color_space),
           can_use_lcd_text,
           context_supports_distance_field_text,
-          max_texture_size,
-          max_texture_bytes),
+          max_texture_size),
       memory_(memory),
       total_(size) {}
 

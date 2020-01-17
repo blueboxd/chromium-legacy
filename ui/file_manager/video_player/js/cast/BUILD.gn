@@ -27,9 +27,7 @@ js_library("closure_compile_externs") {
 }
 
 js_library("cast_extension_discoverer") {
-  deps = [
-    "//ui/file_manager/video_player/js:error_util",
-  ]
+  deps = [ "//ui/file_manager/video_player/js:error_util" ]
 }
 
 js_library("cast_video_element") {

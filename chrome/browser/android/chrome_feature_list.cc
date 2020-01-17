@@ -66,8 +66,10 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillRefreshStyleAndroid,
     &autofill::features::kAutofillEnableCompanyName,
     &autofill_assistant::features::kAutofillAssistant,
+    &autofill_assistant::features::kAutofillAssistantChromeEntry,
     &autofill_assistant::features::kAutofillAssistantDirectActions,
     &autofill::features::kAutofillTouchToFill,
+    &content_settings::kImprovedCookieControls,
     &content_settings::kImprovedCookieControlsForThirdPartyCookieBlocking,
     &download::features::kDownloadAutoResumptionNative,
     &download::features::kUseDownloadOfflineContentProvider,
@@ -91,6 +93,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &feature_engagement::kIPHChromeDuetSearchFeature,
     &feature_engagement::kIPHChromeDuetTabSwitcherFeature,
     &feed::kInterestFeedContentSuggestions,
+    &feed::kInterestFeedFeedback,
     &kAdjustWebApkInstallationSpace,
     &kAllowNewIncognitoTabIntents,
     &kAllowRemoteContextForNotifications,
@@ -159,7 +162,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kImmersiveUiMode,
     &kInlineUpdateFlow,
     &kIntentBlockExternalFormRedirectsNoGesture,
-    &kJellyBeanSupported,
+    &kKitKatSupported,
     &kNewPhotoPicker,
     &kNotificationSuspender,
     &kNTPLaunchAfterInactivity,
@@ -477,8 +480,8 @@ const base::Feature kIntentBlockExternalFormRedirectsNoGesture{
     "IntentBlockExternalFormRedirectsNoGesture",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kJellyBeanSupported{"JellyBeanSupported",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kKitKatSupported{"KitKatSupported",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSearchEnginePromoExistingDevice{
     "SearchEnginePromo.ExistingDevice", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -504,14 +507,12 @@ const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOverlayNewLayout{"OverlayNewLayout",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // TODO(rouslan): Remove this.
 const base::Feature kPayWithGoogleV1{"PayWithGoogleV1",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-// TODO(finnur): Before enabling by default, the issue of where decoding should
-// take place needs to be resolved.
 const base::Feature kPhotoPickerVideoSupport{"PhotoPickerVideoSupport",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 

@@ -66,7 +66,7 @@ cr.define('cr.ui.Oobe', function() {
      * Initializes the OOBE flow.  This will cause all C++ handlers to
      * be invoked to do final setup.
      */
-    initialize: function() {
+    initialize() {
       cr.ui.login.DisplayManager.initialize();
       login.HIDDetectionScreen.register();
       login.WrongHWIDScreen.register();
@@ -115,7 +115,7 @@ cr.define('cr.ui.Oobe', function() {
      * Sets usage statistics checkbox.
      * @param {boolean} checked Is the checkbox checked?
      */
-    setUsageStats: function(checked) {
+    setUsageStats(checked) {
       $('oobe-eula-md').usageStatsChecked = checked;
     },
 
@@ -123,7 +123,7 @@ cr.define('cr.ui.Oobe', function() {
      * Sets TPM password.
      * @param {text} password TPM password to be shown.
      */
-    setTpmPassword: function(password) {
+    setTpmPassword(password) {
       $('eula').setTpmPassword(password);
     },
 
@@ -131,7 +131,7 @@ cr.define('cr.ui.Oobe', function() {
      * Refreshes a11y menu state.
      * @param {!Object} data New dictionary with a11y features state.
      */
-    refreshA11yInfo: function(data) {
+    refreshA11yInfo(data) {
       $('connect').a11yStatus = data;
     },
 
@@ -140,7 +140,7 @@ cr.define('cr.ui.Oobe', function() {
      * controls).
      * @param {!Object} data New dictionary with i18n values.
      */
-    reloadContent: function(data) {
+    reloadContent(data) {
       // Reload global local strings, process DOM tree again.
       loadTimeData.overrideValues(data);
       i18nTemplate.process(document, loadTimeData);
@@ -153,7 +153,7 @@ cr.define('cr.ui.Oobe', function() {
      * Updates "device in tablet mode" state when tablet mode is changed.
      * @param {Boolean} isInTabletMode True when in tablet mode.
      */
-    setTabletModeState: function(isInTabletMode) {
+    setTabletModeState(isInTabletMode) {
       Oobe.getInstance().setTabletModeState_(isInTabletMode);
     },
 
@@ -161,7 +161,7 @@ cr.define('cr.ui.Oobe', function() {
      * Reloads localized strings for the eula page.
      * @param {!Object} data New dictionary with changed eula i18n values.
      */
-    reloadEulaContent: function(data) {
+    reloadEulaContent(data) {
       loadTimeData.overrideValues(data);
       i18nTemplate.process(document, loadTimeData);
     },
@@ -170,7 +170,7 @@ cr.define('cr.ui.Oobe', function() {
      * Updates localized content of the screens.
      * Should be executed on language change.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       // Buttons, headers and links.
       Oobe.getInstance().updateLocalizedContent_();
     },
@@ -179,7 +179,7 @@ cr.define('cr.ui.Oobe', function() {
      * Updates OOBE configuration when it is loaded.
      * @param {!OobeTypes.OobeConfiguration} configuration OOBE configuration.
      */
-    updateOobeConfiguration: function(configuration) {
+    updateOobeConfiguration(configuration) {
       Oobe.getInstance().updateOobeConfiguration_(configuration);
     },
   };

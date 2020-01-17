@@ -135,7 +135,7 @@ Polymer({
   isValidUrl_(maybeValidUrl) {
     const url = new URL(maybeValidUrl, document.location.href);
     return url.protocol === 'chrome:' ||
-        (url.protocol == 'data:' &&
+        (url.protocol === 'data:' &&
          url.pathname.startsWith('application/json;'));
   },
 
@@ -156,7 +156,7 @@ Polymer({
     xhr.responseType = responseType;
     xhr.send();
     xhr.onreadystatechange = function() {
-      if (xhr.readyState == 4 && xhr.status == 200) {
+      if (xhr.readyState === 4 && xhr.status === 200) {
         successCallback(xhr.response);
       }
     };
@@ -196,14 +196,14 @@ Polymer({
    * @private
    */
   onMessage_(event) {
-    if (event.data.name == 'initialized' && event.data.success) {
+    if (event.data.name === 'initialized' && event.data.success) {
       this.isAnimationLoaded_ = true;
       this.fire('cr-lottie-initialized');
-    } else if (event.data.name == 'playing') {
+    } else if (event.data.name === 'playing') {
       this.fire('cr-lottie-playing');
-    } else if (event.data.name == 'paused') {
+    } else if (event.data.name === 'paused') {
       this.fire('cr-lottie-paused');
-    } else if (event.data.name == 'resized') {
+    } else if (event.data.name === 'resized') {
       this.fire('cr-lottie-resized', event.data.size);
     }
   },

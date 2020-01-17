@@ -344,8 +344,6 @@ void DataTypeManagerImpl::Restart() {
 void DataTypeManagerImpl::OnAllDataTypesReadyForConfigure() {
   DCHECK(!download_started_);
   download_started_ = true;
-  UMA_HISTOGRAM_LONG_TIMES("Sync.USSLoadModelsTime",
-                           base::Time::Now() - last_restart_time_);
   // TODO(pavely): By now some of datatypes in |download_types_queue_| could
   // have failed loading and should be excluded from configuration. I need to
   // adjust |download_types_queue_| for such types.

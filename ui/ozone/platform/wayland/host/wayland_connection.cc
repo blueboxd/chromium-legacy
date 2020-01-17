@@ -281,6 +281,7 @@ void WaylandConnection::Global(void* data,
   if (!connection->compositor_ && strcmp(interface, "wl_compositor") == 0) {
     connection->compositor_ = wl::Bind<wl_compositor>(
         registry, name, std::min(version, kMaxCompositorVersion));
+    connection->compositor_version_ = version;
     if (!connection->compositor_)
       LOG(ERROR) << "Failed to bind to wl_compositor global";
   } else if (!connection->subcompositor_ &&

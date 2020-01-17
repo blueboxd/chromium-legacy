@@ -190,9 +190,7 @@ jumbo_static_library("renderer") {
     "//v8",
   ]
 
-  data_deps = [
-    "//tools/v8_context_snapshot",
-  ]
+  data_deps = [ "//tools/v8_context_snapshot" ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
@@ -347,9 +345,7 @@ jumbo_static_library("renderer") {
       "//media/cast:sender",
       "//services/network/public/cpp",
     ]
-    public_deps = [
-      "//ipc",
-    ]
+    public_deps = [ "//ipc" ]
   }
   if (enable_extensions) {
     sources += [

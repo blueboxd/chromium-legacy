@@ -17,23 +17,11 @@
 #import "ios/chrome/browser/ui/overlays/infobar_banner/passwords/save_password_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/overlays/overlay_request_mediator_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// Creates a vector containing the OverlayRequestSupports for each
-// OverlayRequestMediator class in |mediator_classes|
-const std::vector<const OverlayRequestSupport*> GetSupportsForMediatorClasses(
-    NSArray<Class>* mediator_classes) {
-  std::vector<const OverlayRequestSupport*> supports(mediator_classes.count);
-  for (NSUInteger index = 0; index < mediator_classes.count; ++index) {
-    supports[index] = [mediator_classes[index] requestSupport];
-  }
-  return supports;
-}
-}  // namespace
 
 @interface InfobarBannerOverlayCoordinator ()
 // The list of supported mediator classes.
@@ -54,8 +42,8 @@ const std::vector<const OverlayRequestSupport*> GetSupportsForMediatorClasses(
   static std::unique_ptr<const OverlayRequestSupport> _requestSupport;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    _requestSupport = std::make_unique<OverlayRequestSupport>(
-        GetSupportsForMediatorClasses(self.supportedMediatorClasses));
+    _requestSupport =
+        CreateAggregateSupportForMediators(self.supportedMediatorClasses);
   });
   return _requestSupport.get();
 }

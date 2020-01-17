@@ -5,7 +5,9 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -54,7 +56,7 @@ class TestNavigationPredictor : public NavigationPredictor {
   double CalculateAnchorNavigationScore(
       const blink::mojom::AnchorElementMetrics& metrics,
       int area_rank) const override {
-    area_rank_map_.emplace(std::make_pair(metrics.target_url, area_rank));
+    area_rank_map_.emplace(metrics.target_url, area_rank);
     return 100 * metrics.ratio_area;
   }
 
@@ -474,7 +476,6 @@ TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch_NotSameOrigin) {
   predictor_service()->ReportAnchorElementMetricsOnClick(
       std::move(metrics_clicked));
   base::RunLoop().RunUntilIdle();
-
 }
 
 TEST_F(NavigationPredictorTest,
@@ -871,7 +872,6 @@ TEST_F(NavigationPredictorPrefetchDisabledTest,
   predictor_service()->ReportAnchorElementMetricsOnClick(
       std::move(metrics_clicked));
   base::RunLoop().RunUntilIdle();
-
 }
 
 // Framework for testing cases where preconnect and prefetch are effectively
@@ -917,5 +917,4 @@ TEST_F(NavigationPredictorPreconnectPrefetchDisabledTest,
   predictor_service()->ReportAnchorElementMetricsOnClick(
       std::move(metrics_clicked));
   base::RunLoop().RunUntilIdle();
-
 }

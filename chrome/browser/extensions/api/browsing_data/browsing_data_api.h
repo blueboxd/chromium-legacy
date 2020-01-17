@@ -9,7 +9,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BROWSING_DATA_BROWSING_DATA_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BROWSING_DATA_BROWSING_DATA_API_H_
 
-#include <string>
+#include <memory>
 #include <vector>
 
 #include "base/scoped_observer.h"
@@ -18,6 +18,7 @@
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "ppapi/buildflags/buildflags.h"
 
 class PluginPrefs;
 class PrefService;
@@ -123,10 +124,12 @@ class BrowsingDataRemoverFunction
   // pausing Sync would prevent the data from being deleted on the server.
   virtual bool IsPauseSyncAllowed();
 
+#if BUILDFLAG(ENABLE_PLUGINS)
   // Updates the removal bitmask according to whether removing plugin data is
   // supported or not.
   void CheckRemovingPluginDataSupported(
       scoped_refptr<PluginPrefs> plugin_prefs);
+#endif
 
   // Parse the developer-provided |origin_types| object into |origin_type_mask|
   // that can be used with the BrowsingDataRemover.

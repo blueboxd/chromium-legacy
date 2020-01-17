@@ -37,7 +37,7 @@ class EmptyTrustedVaultClient : public TrustedVaultClient {
   }
 
   void FetchKeys(
-      const std::string& gaia_id,
+      const CoreAccountInfo& account_info,
       base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb)
       override {
     std::move(cb).Run({});
@@ -50,7 +50,7 @@ class EmptyTrustedVaultClient : public TrustedVaultClient {
     NOTREACHED();
   }
 
-  void MarkKeysAsStale(const std::string& gaia_id,
+  void MarkKeysAsStale(const CoreAccountInfo& account_info,
                        base::OnceCallback<void(bool)> cb) override {
     std::move(cb).Run(false);
   }
@@ -583,7 +583,7 @@ void SyncServiceCrypto::FetchTrustedVaultKeys() {
   state_.deferred_trusted_vault_fetch_keys_pending = false;
 
   trusted_vault_client_->FetchKeys(
-      state_.account_info.gaia,
+      state_.account_info,
       base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetchedFromClient,
                      weak_factory_.GetWeakPtr()));
 }
@@ -624,7 +624,7 @@ void SyncServiceCrypto::TrustedVaultKeysAdded() {
   // triggered, so the fetched trusted vault keys were insufficient. Let the
   // trusted vault client know.
   trusted_vault_client_->MarkKeysAsStale(
-      state_.account_info.gaia,
+      state_.account_info,
       base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysMarkedAsStale,
                      weak_factory_.GetWeakPtr()));
 }

@@ -304,7 +304,7 @@ WebRemoteFrameImpl* CreateRemoteChild(
     TestWebRemoteFrameClient* client) {
   std::unique_ptr<TestWebRemoteFrameClient> owned_client;
   client = CreateDefaultClientIfNeeded(client, owned_client);
-  auto* frame = ToWebRemoteFrameImpl(parent.CreateRemoteChild(
+  auto* frame = To<WebRemoteFrameImpl>(parent.CreateRemoteChild(
       WebTreeScopeType::kDocument, name, FramePolicy(),
       FrameOwnerElementType::kIframe, client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
@@ -463,7 +463,7 @@ WebLocalFrameImpl* WebViewHelper::LocalMainFrame() const {
 }
 
 WebRemoteFrameImpl* WebViewHelper::RemoteMainFrame() const {
-  return ToWebRemoteFrameImpl(web_view_->MainFrame());
+  return To<WebRemoteFrameImpl>(web_view_->MainFrame());
 }
 
 void WebViewHelper::Resize(WebSize size) {

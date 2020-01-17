@@ -24,12 +24,8 @@ source_set("compressed_tuple") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/compressed_tuple.h",
-  ]
-  deps = [
-    "../utility",
-  ]
+  public = [ "internal/compressed_tuple.h" ]
+  deps = [ "../utility" ]
 }
 
 source_set("fixed_array") {
@@ -39,9 +35,7 @@ source_set("fixed_array") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "fixed_array.h",
-  ]
+  public = [ "fixed_array.h" ]
   deps = [
     ":compressed_tuple",
     "../algorithm",
@@ -59,9 +53,7 @@ source_set("inlined_vector_internal") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/inlined_vector.h",
-  ]
+  public = [ "internal/inlined_vector.h" ]
   deps = [
     ":compressed_tuple",
     "../base:core_headers",
@@ -78,9 +70,7 @@ source_set("inlined_vector") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "inlined_vector.h",
-  ]
+  public = [ "inlined_vector.h" ]
   deps = [
     ":inlined_vector_internal",
     "../algorithm",
@@ -98,9 +88,7 @@ source_set("counting_allocator") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/counting_allocator.h",
-  ]
+  public = [ "internal/counting_allocator.h" ]
   visibility = []
   visibility += [ ":*" ]
 }
@@ -113,15 +101,9 @@ source_set("test_instance_tracker") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/test_instance_tracker.cc",
-  ]
-  public = [
-    "internal/test_instance_tracker.h",
-  ]
-  deps = [
-    "../types:compare",
-  ]
+  sources = [ "internal/test_instance_tracker.cc" ]
+  public = [ "internal/test_instance_tracker.h" ]
+  deps = [ "../types:compare" ]
   visibility = []
   visibility += [ "../*" ]
 }
@@ -133,9 +115,7 @@ source_set("flat_hash_map") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "flat_hash_map.h",
-  ]
+  public = [ "flat_hash_map.h" ]
   deps = [
     ":container_memory",
     ":hash_function_defaults",
@@ -152,9 +132,7 @@ source_set("flat_hash_set") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "flat_hash_set.h",
-  ]
+  public = [ "flat_hash_set.h" ]
   deps = [
     ":container_memory",
     ":hash_function_defaults",
@@ -172,9 +150,7 @@ source_set("node_hash_map") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "node_hash_map.h",
-  ]
+  public = [ "node_hash_map.h" ]
   deps = [
     ":container_memory",
     ":hash_function_defaults",
@@ -192,9 +168,7 @@ source_set("node_hash_set") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "node_hash_set.h",
-  ]
+  public = [ "node_hash_set.h" ]
   deps = [
     ":container_memory",
     ":hash_function_defaults",
@@ -212,9 +186,7 @@ source_set("container_memory") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/container_memory.h",
-  ]
+  public = [ "internal/container_memory.h" ]
   deps = [
     "../memory",
     "../utility",
@@ -228,9 +200,7 @@ source_set("hash_function_defaults") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/hash_function_defaults.h",
-  ]
+  public = [ "internal/hash_function_defaults.h" ]
   deps = [
     "../base:config",
     "../hash",
@@ -246,12 +216,8 @@ source_set("hash_generator_testing") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/hash_generator_testing.cc",
-  ]
-  public = [
-    "internal/hash_generator_testing.h",
-  ]
+  sources = [ "internal/hash_generator_testing.cc" ]
+  public = [ "internal/hash_generator_testing.h" ]
   deps = [
     ":hash_policy_testing",
     "../meta:type_traits",
@@ -267,9 +233,7 @@ source_set("hash_policy_testing") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/hash_policy_testing.h",
-  ]
+  public = [ "internal/hash_policy_testing.h" ]
   deps = [
     "../hash",
     "../strings",
@@ -283,12 +247,8 @@ source_set("hash_policy_traits") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/hash_policy_traits.h",
-  ]
-  deps = [
-    "../meta:type_traits",
-  ]
+  public = [ "internal/hash_policy_traits.h" ]
+  deps = [ "../meta:type_traits" ]
 }
 
 source_set("hashtable_debug") {
@@ -298,12 +258,8 @@ source_set("hashtable_debug") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/hashtable_debug.h",
-  ]
-  deps = [
-    ":hashtable_debug_hooks",
-  ]
+  public = [ "internal/hashtable_debug.h" ]
+  deps = [ ":hashtable_debug_hooks" ]
 }
 
 source_set("hashtable_debug_hooks") {
@@ -313,9 +269,7 @@ source_set("hashtable_debug_hooks") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/hashtable_debug_hooks.h",
-  ]
+  public = [ "internal/hashtable_debug_hooks.h" ]
 }
 
 source_set("hashtablez_sampler") {
@@ -325,9 +279,7 @@ source_set("hashtablez_sampler") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/hashtablez_sampler.h",
-  ]
+  public = [ "internal/hashtablez_sampler.h" ]
   sources = [
     "internal/hashtablez_sampler.cc",
     "internal/hashtablez_sampler_force_weak_definition.cc",
@@ -350,9 +302,7 @@ source_set("node_hash_policy") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/node_hash_policy.h",
-  ]
+  public = [ "internal/node_hash_policy.h" ]
 }
 
 source_set("raw_hash_map") {
@@ -362,9 +312,7 @@ source_set("raw_hash_map") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/raw_hash_map.h",
-  ]
+  public = [ "internal/raw_hash_map.h" ]
   deps = [
     ":container_memory",
     ":raw_hash_set",
@@ -379,9 +327,7 @@ source_set("have_sse") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/have_sse.h",
-  ]
+  public = [ "internal/have_sse.h" ]
   visibility = []
   visibility += [ ":*" ]
 }
@@ -393,9 +339,7 @@ source_set("common") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/common.h",
-  ]
+  public = [ "internal/common.h" ]
   deps = [
     "../meta:type_traits",
     "../types:optional",
@@ -409,12 +353,8 @@ source_set("raw_hash_set") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/raw_hash_set.cc",
-  ]
-  public = [
-    "internal/raw_hash_set.h",
-  ]
+  sources = [ "internal/raw_hash_set.cc" ]
+  public = [ "internal/raw_hash_set.h" ]
   deps = [
     ":common",
     ":compressed_tuple",
@@ -441,9 +381,7 @@ source_set("layout") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/layout.h",
-  ]
+  public = [ "internal/layout.h" ]
   deps = [
     "../base:core_headers",
     "../meta:type_traits",
@@ -461,9 +399,7 @@ source_set("tracked") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/tracked.h",
-  ]
+  public = [ "internal/tracked.h" ]
 }
 
 source_set("unordered_map_constructor_test") {
@@ -474,9 +410,7 @@ source_set("unordered_map_constructor_test") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/unordered_map_constructor_test.h",
-  ]
+  public = [ "internal/unordered_map_constructor_test.h" ]
   deps = [
     ":hash_generator_testing",
     ":hash_policy_testing",
@@ -492,9 +426,7 @@ source_set("unordered_map_lookup_test") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/unordered_map_lookup_test.h",
-  ]
+  public = [ "internal/unordered_map_lookup_test.h" ]
   deps = [
     ":hash_generator_testing",
     ":hash_policy_testing",
@@ -510,9 +442,7 @@ source_set("unordered_map_modifiers_test") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/unordered_map_modifiers_test.h",
-  ]
+  public = [ "internal/unordered_map_modifiers_test.h" ]
   deps = [
     ":hash_generator_testing",
     ":hash_policy_testing",
@@ -528,9 +458,7 @@ source_set("unordered_set_constructor_test") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/unordered_set_constructor_test.h",
-  ]
+  public = [ "internal/unordered_set_constructor_test.h" ]
   deps = [
     ":hash_generator_testing",
     ":hash_policy_testing",
@@ -547,9 +475,7 @@ source_set("unordered_set_members_test") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/unordered_set_members_test.h",
-  ]
+  public = [ "internal/unordered_set_members_test.h" ]
   deps = [
     "../meta:type_traits",
     "//testing/gtest",
@@ -564,9 +490,7 @@ source_set("unordered_map_members_test") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/unordered_map_members_test.h",
-  ]
+  public = [ "internal/unordered_map_members_test.h" ]
   deps = [
     "../meta:type_traits",
     "//testing/gtest",
@@ -581,9 +505,7 @@ source_set("unordered_set_lookup_test") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/unordered_set_lookup_test.h",
-  ]
+  public = [ "internal/unordered_set_lookup_test.h" ]
   deps = [
     ":hash_generator_testing",
     ":hash_policy_testing",
@@ -599,9 +521,7 @@ source_set("unordered_set_modifiers_test") {
     "//third_party/abseil-cpp:absl_default_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  public = [
-    "internal/unordered_set_modifiers_test.h",
-  ]
+  public = [ "internal/unordered_set_modifiers_test.h" ]
   deps = [
     ":hash_generator_testing",
     ":hash_policy_testing",

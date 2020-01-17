@@ -325,14 +325,4 @@ TestInterfaceConstructor2* V8TestInterfaceConstructor2::ToImplWithTypeCheck(
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInterfaceConstructor2* NativeValueTraits<TestInterfaceConstructor2>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestInterfaceConstructor2* native_value = V8TestInterfaceConstructor2::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestInterfaceConstructor2"));
-  }
-  return native_value;
-}
-
 }  // namespace blink

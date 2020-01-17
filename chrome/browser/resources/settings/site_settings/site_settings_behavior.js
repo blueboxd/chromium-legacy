@@ -52,13 +52,13 @@ const SiteSettingsBehaviorImpl = {
   },
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy =
         settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.ContentSetting = settings.ContentSetting;
   },
 
@@ -67,7 +67,7 @@ const SiteSettingsBehaviorImpl = {
    * @param {string} url The URL with or without a scheme.
    * @return {string} The URL with a scheme, or an empty string.
    */
-  ensureUrlHasScheme: function(url) {
+  ensureUrlHasScheme(url) {
     if (url.length == 0) {
       return url;
     }
@@ -79,7 +79,7 @@ const SiteSettingsBehaviorImpl = {
    * @param {string} url The URL to sanitize.
    * @return {string} The URL without redundant ports, if any.
    */
-  sanitizePort: function(url) {
+  sanitizePort(url) {
     const urlWithScheme = this.ensureUrlHasScheme(url);
     if (urlWithScheme.startsWith('https://') &&
         urlWithScheme.endsWith(':443')) {
@@ -97,7 +97,7 @@ const SiteSettingsBehaviorImpl = {
    * @return {boolean}
    * @protected
    */
-  computeIsSettingEnabled: function(setting) {
+  computeIsSettingEnabled(setting) {
     return setting != settings.ContentSetting.BLOCK;
   },
 
@@ -107,7 +107,7 @@ const SiteSettingsBehaviorImpl = {
    * @return {URL} The URL to return (or null if origin is not a valid URL).
    * @protected
    */
-  toUrl: function(originOrPattern) {
+  toUrl(originOrPattern) {
     if (originOrPattern.length == 0) {
       return null;
     }
@@ -128,7 +128,7 @@ const SiteSettingsBehaviorImpl = {
    * @return {!SiteException} The expanded (full) SiteException.
    * @protected
    */
-  expandSiteException: function(exception) {
+  expandSiteException(exception) {
     const origin = exception.origin;
     const embeddingOrigin = exception.embeddingOrigin;
 
@@ -161,7 +161,7 @@ const SiteSettingsBehaviorImpl = {
    * currently enabled.
    * @return {!Array<!settings.ContentSettingsTypes>}
    */
-  getCategoryList: function() {
+  getCategoryList() {
     if (this.contentTypes_.length == 0) {
       for (const typeName in settings.ContentSettingsTypes) {
         const contentType = settings.ContentSettingsTypes[typeName];
@@ -210,6 +210,10 @@ const SiteSettingsBehaviorImpl = {
     addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.HID_DEVICES,
         'enableExperimentalWebPlatformFeatures');
+    addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.AR, 'enableWebXrContentSetting');
+    addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.VR, 'enableWebXrContentSetting');
     return this.contentTypes_.slice(0);
   },
 

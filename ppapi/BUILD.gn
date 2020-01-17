@@ -156,18 +156,12 @@ copy("copy_test_files") {
     "tests/test_page.css",
     "tests/test_page.css.mock-http-headers",
   ]
-  outputs = [
-    "$root_out_dir/{{source_file_part}}",
-  ]
+  outputs = [ "$root_out_dir/{{source_file_part}}" ]
 }
 
 copy("copy_test_files2") {
-  sources = [
-    "tests/test_url_loader_data/hello.txt",
-  ]
-  outputs = [
-    "$root_out_dir/test_url_loader_data/{{source_file_part}}",
-  ]
+  sources = [ "tests/test_url_loader_data/hello.txt" ]
+  outputs = [ "$root_out_dir/test_url_loader_data/{{source_file_part}}" ]
 }
 
 source_set("ppapi_tests_sources") {
@@ -242,9 +236,7 @@ if (is_mac) {
   ppapi_tests_target_type = "shared_library"
 }
 target(ppapi_tests_target_type, "ppapi_tests") {
-  deps = [
-    ":ppapi_tests_sources",
-  ]
+  deps = [ ":ppapi_tests_sources" ]
 }
 
 # Test plugin for power saver tests.
@@ -277,32 +269,22 @@ source_set("corb_test_plugin_sources") {
 
 if (!is_mac) {
   shared_library("corb_test_plugin") {
-    deps = [
-      ":corb_test_plugin_sources",
-    ]
+    deps = [ ":corb_test_plugin_sources" ]
   }
   shared_library("power_saver_test_plugin") {
-    deps = [
-      ":power_saver_test_plugin_sources",
-    ]
+    deps = [ ":power_saver_test_plugin_sources" ]
   }
 } else {
   mac_plugin_bundle("corb_test_plugin") {
-    deps = [
-      ":corb_test_plugin_sources",
-    ]
+    deps = [ ":corb_test_plugin_sources" ]
   }
   mac_plugin_bundle("power_saver_test_plugin") {
-    deps = [
-      ":power_saver_test_plugin_sources",
-    ]
+    deps = [ ":power_saver_test_plugin_sources" ]
   }
 }
 
 source_set("blink_deprecated_test_plugin_sources") {
-  sources = [
-    "tests/blink_deprecated_test_plugin.cc",
-  ]
+  sources = [ "tests/blink_deprecated_test_plugin.cc" ]
 
   deps = [
     "//base",
@@ -313,22 +295,16 @@ source_set("blink_deprecated_test_plugin_sources") {
 
 if (!is_mac) {
   loadable_module("blink_deprecated_test_plugin") {
-    deps = [
-      ":blink_deprecated_test_plugin_sources",
-    ]
+    deps = [ ":blink_deprecated_test_plugin_sources" ]
   }
 } else {
   mac_plugin_bundle("blink_deprecated_test_plugin") {
-    deps = [
-      ":blink_deprecated_test_plugin_sources",
-    ]
+    deps = [ ":blink_deprecated_test_plugin_sources" ]
   }
 }
 
 source_set("blink_test_plugin_sources") {
-  sources = [
-    "tests/blink_test_plugin.cc",
-  ]
+  sources = [ "tests/blink_test_plugin.cc" ]
 
   deps = [
     "//base",
@@ -339,15 +315,11 @@ source_set("blink_test_plugin_sources") {
 
 if (!is_mac) {
   loadable_module("blink_test_plugin") {
-    deps = [
-      ":blink_test_plugin_sources",
-    ]
+    deps = [ ":blink_test_plugin_sources" ]
   }
 } else {
   mac_plugin_bundle("blink_test_plugin") {
-    deps = [
-      ":blink_test_plugin_sources",
-    ]
+    deps = [ ":blink_test_plugin_sources" ]
   }
 }
 
@@ -425,9 +397,7 @@ test("ppapi_perftests") {
 }
 
 executable("pepper_hash_for_uma") {
-  sources = [
-    "tools/pepper_hash_for_uma.cc",
-  ]
+  sources = [ "tools/pepper_hash_for_uma.cc" ]
 
   deps = [
     "//base",
@@ -442,9 +412,7 @@ source_set("ppapi_gles2_lib") {
     "lib/gl/gles2/gl2ext_ppapi.h",
     "lib/gl/gles2/gles2.c",
   ]
-  deps = [
-    "//ppapi/cpp",
-  ]
+  deps = [ "//ppapi/cpp" ]
 }
 
 if (enable_nacl) {
@@ -470,9 +438,7 @@ if (enable_nacl) {
         "GL_GLEXT_PROTOTYPES",
         "PPAPI_TEST_IMPLEMENTATION",
       ]
-      deps = [
-        "//ppapi/cpp",
-      ]
+      deps = [ "//ppapi/cpp" ]
       if (current_cpu == "pnacl") {
         pretranslate_pexe = true
       }

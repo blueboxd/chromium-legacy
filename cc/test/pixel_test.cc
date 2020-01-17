@@ -242,7 +242,7 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   SetUpGLWithoutRenderer(flipped_output_surface);
   renderer_ = std::make_unique<viz::GLRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get(),
-      base::ThreadTaskRunnerHandle::Get());
+      nullptr, base::ThreadTaskRunnerHandle::Get());
   renderer_->Initialize();
   renderer_->SetVisible(true);
 }
@@ -277,7 +277,7 @@ void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface,
       /*shared_bitmap_manager=*/nullptr);
   renderer_ = std::make_unique<viz::SkiaRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get(),
-      static_cast<viz::SkiaOutputSurface*>(output_surface_.get()),
+      nullptr, static_cast<viz::SkiaOutputSurface*>(output_surface_.get()),
       viz::SkiaRenderer::DrawMode::DDL);
   renderer_->Initialize();
   renderer_->SetVisible(true);
@@ -320,7 +320,8 @@ void PixelTest::SetUpSoftwareRenderer() {
   child_resource_provider_ = std::make_unique<viz::ClientResourceProvider>();
 
   auto renderer = std::make_unique<viz::SoftwareRenderer>(
-      &renderer_settings_, output_surface_.get(), resource_provider_.get());
+      &renderer_settings_, output_surface_.get(), resource_provider_.get(),
+      nullptr);
   software_renderer_ = renderer.get();
   renderer_ = std::move(renderer);
   renderer_->Initialize();

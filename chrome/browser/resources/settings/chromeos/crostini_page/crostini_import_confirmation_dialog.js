@@ -11,17 +11,17 @@ Polymer({
   is: 'settings-crostini-import-confirmation-dialog',
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.dialog.showModal();
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.close();
   },
 
   /** @private */
-  onContinueTap_: function() {
+  onContinueTap_() {
     settings.CrostiniBrowserProxyImpl.getInstance().importCrostiniContainer();
     this.$.dialog.close();
   },

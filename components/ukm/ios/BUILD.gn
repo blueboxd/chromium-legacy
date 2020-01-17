@@ -16,9 +16,7 @@ source_set("features") {
     "features.cc",
     "features.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("ukm_url_recorder") {
@@ -27,9 +25,7 @@ source_set("ukm_url_recorder") {
     "ukm_url_recorder.h",
     "ukm_url_recorder.mm",
   ]
-  public_deps = [
-    "//services/metrics/public/cpp:metrics_cpp",
-  ]
+  public_deps = [ "//services/metrics/public/cpp:metrics_cpp" ]
   deps = [
     "//base",
     "//ios/web",
@@ -40,9 +36,7 @@ source_set("ukm_url_recorder") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "ukm_url_recorder_unittest.mm",
-  ]
+  sources = [ "ukm_url_recorder_unittest.mm" ]
   deps = [
     ":ukm_url_recorder",
     "//base",

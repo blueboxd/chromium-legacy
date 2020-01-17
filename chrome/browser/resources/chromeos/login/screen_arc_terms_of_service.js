@@ -15,7 +15,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     ],
 
     /** @override */
-    decorate: function(element) {
+    decorate(element) {
       this.countryCode_ = null;
       this.language_ = null;
       this.pageReady_ = false;
@@ -32,7 +32,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      *
      * @private
      */
-    getCurrentLanguage_: function() {
+    getCurrentLanguage_() {
       const LANGUAGE_LIST_ID = 'languageList';
       if (loadTimeData.valueExists(LANGUAGE_LIST_ID)) {
         var languageList = loadTimeData.getValue(LANGUAGE_LIST_ID);
@@ -51,7 +51,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      *
      * @private
      */
-    ensureInitialized_: function() {
+    ensureInitialized_() {
       if (this.pageReady_) {
         return;
       }
@@ -140,7 +140,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * @param {string} text Describes current metrics state.
      * @param {boolean} visible If metrics text is visible.
      */
-    setMetricsMode: function(text, visible) {
+    setMetricsMode(text, visible) {
       var metrics = this.getElement_('arc-text-metrics');
       metrics.innerHTML = text;
       // This element is wrapped by div.
@@ -177,7 +177,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      *                          checkbox.
      * @param {boolean} managed Defines whether this setting is set by policy.
      */
-    setBackupAndRestoreMode: function(enabled, managed) {
+    setBackupAndRestoreMode(enabled, managed) {
       this.setPreference('arc-enable-backup-restore', enabled, managed);
     },
 
@@ -186,14 +186,14 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * @param {boolean} enabled Defines the value for location service opt in.
      * @param {boolean} managed Defines whether this setting is set by policy.
      */
-    setLocationServicesMode: function(enabled, managed) {
+    setLocationServicesMode(enabled, managed) {
       this.setPreference('arc-enable-location-service', enabled, managed);
     },
 
     /**
      * Hides the "Skip" button in the ToS screen.
      */
-    hideSkipButton: function() {
+    hideSkipButton() {
       this.addClass_('arc-tos-disable-skip');
     },
 
@@ -202,7 +202,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * attempt failed.
      * @param {string} countryCode Country code based on current timezone.
      */
-    loadPlayStoreToS: function(countryCode) {
+    loadPlayStoreToS(countryCode) {
       // Make sure page is initialized for login mode. For OOBE mode, page is
       // initialized as result of handling updateLocalizedContent.
       this.ensureInitialized_();
@@ -257,7 +257,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * Sets Play Store terms of service for testing.
      * @param {string} terms Fake Play Store terms of service.
      */
-    setTosForTesting: function(terms) {
+    setTosForTesting(terms) {
       this.tosContent_ = terms;
       this.usingOfflineTerms_ = true;
       this.setTermsViewContentLoadedState_();
@@ -267,7 +267,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * Sets Play Store hostname url used to fetch terms of service for testing.
      * @param {string} hostname hostname used to fetch terms of service.
      */
-    setTosHostNameForTesting: function(hostname) {
+    setTosHostNameForTesting(hostname) {
       this.termsOfServiceHostName_ = hostname;
 
       // Enable loading content script 'playstore.js' when fetching ToS from
@@ -288,7 +288,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * manged.
      * @param {boolean} managed Defines whether this setting is set by policy.
      */
-    setArcManaged: function(managed) {
+    setArcManaged(managed) {
       var visibility = managed ? 'hidden' : 'visible';
       this.getElement_('arc-tos-view-container').style.visibility = visibility;
     },
@@ -296,7 +296,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     /**
      * Handles Next button click.
      */
-    onNext: function() {
+    onNext() {
       var isDemoModeSetup = this.isDemoModeSetup_();
       this.getElement_('arc-location-service').hidden = false;
       this.getElement_('arc-pai-service').hidden = false;
@@ -313,7 +313,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     /**
      * Handles Accept button click.
      */
-    onAccept: function() {
+    onAccept() {
       this.enableButtons_(false);
 
       var isBackupRestoreEnabled =
@@ -331,7 +331,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     /**
      * Handles Skip button click.
      */
-    onSkip: function() {
+    onSkip() {
       this.enableButtons_(false);
 
       chrome.send('arcTermsOfServiceSkip', [this.tosContent_]);
@@ -343,7 +343,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      *
      * @private
      */
-    enableButtons_: function(enable) {
+    enableButtons_(enable) {
       $('arc-tos-root').arcTosButtonsDisabled = !enable;
     },
 
@@ -351,7 +351,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * Shows overlay dialog.
      * @param {string} defines overlay type, text or url.
      */
-    showOverlay: function(overlayType) {
+    showOverlay(overlayType) {
       this.lastFocusedElement = document.activeElement;
       if (this.lastFocusedElement == $('arc-tos-root')) {
         this.lastFocusedElement = this.lastFocusedElement.getActiveElement();
@@ -369,7 +369,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * Sets learn more content text and shows it as overlay dialog.
      * @param {string} content HTML formatted text to show.
      */
-    showLearnMoreOverlay: function(content) {
+    showLearnMoreOverlay(content) {
       $('arc-learn-more-content').innerHTML = content;
       this.showOverlay('arc-overlay-text');
     },
@@ -378,7 +378,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * Opens external URL in popup overlay.
      * @param {string} targetUrl URL to open.
      */
-    showUrlOverlay: function(targetUrl) {
+    showUrlOverlay(targetUrl) {
       var webView = $('arc-tos-overlay-webview');
       if (this.usingOfflineTerms_) {
         const TERMS_URL = 'chrome://terms/arc/privacy_policy';
@@ -394,7 +394,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     /**
      * Hides overlay dialog.
      */
-    hideOverlay: function() {
+    hideOverlay() {
       $('arc-tos-overlay').hidden = true;
       if (this.lastFocusedElement) {
         this.lastFocusedElement.focus();
@@ -405,7 +405,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     /**
      * Reloads Play Store ToS.
      */
-    reloadPlayStoreToS: function() {
+    reloadPlayStoreToS() {
       this.termsError = false;
       this.usingOfflineTerms_ = false;
       var termsView = this.getElement_('arc-tos-view');
@@ -419,14 +419,14 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     /**
      * Sets up the variant of the screen dedicated for demo mode.
      */
-    setupForDemoMode: function() {
+    setupForDemoMode() {
       this.addClass_('arc-tos-for-demo-mode');
     },
 
     /**
      * Sets up the variant of the screen dedicated for demo mode.
      */
-    clearDemoMode: function() {
+    clearDemoMode() {
       this.removeClass_('arc-tos-for-demo-mode');
     },
 
@@ -436,7 +436,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      *
      * @private
      */
-    addClass_: function(className) {
+    addClass_(className) {
       $('arc-tos-root').getElement('arc-tos-dialog').classList.add(className);
     },
 
@@ -446,7 +446,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      *
      * @private
      */
-    removeClass_: function(className) {
+    removeClass_(className) {
       $('arc-tos-root')
           .getElement('arc-tos-dialog')
           .classList.remove(className);
@@ -458,7 +458,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      *
      * @private
      */
-    hasClass_: function(className) {
+    hasClass_(className) {
       return $('arc-tos-root')
           .getElement('arc-tos-dialog')
           .classList.contains(className);
@@ -471,14 +471,14 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * @return {string}
      * @private
      */
-    getTermsOfServiceHostNameForMatchPattern_: function() {
+    getTermsOfServiceHostNameForMatchPattern_() {
       return this.termsOfServiceHostName_.replace(/:[0-9]+/, '');
     },
 
     /**
      * Handles event when terms view is loaded.
      */
-    onTermsViewContentLoad: function() {
+    onTermsViewContentLoad() {
       if (this.termsError) {
         return;
       }
@@ -504,7 +504,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     /**
      * Handles callback for getToSContent.
      */
-    onGetToSContent_: function(results) {
+    onGetToSContent_(results) {
       if (!results || results.length != 1 || typeof results[0] !== 'string') {
         this.showError_();
         return;
@@ -519,7 +519,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * were loaded.
      * @private
      */
-    setTermsViewContentLoadedState_: function() {
+    setTermsViewContentLoadedState_() {
       this.removeClass_('arc-tos-loading');
       this.removeClass_('error');
       this.addClass_('arc-tos-loaded');
@@ -537,7 +537,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     /**
      * Handles event when terms view cannot be loaded.
      */
-    onTermsViewErrorOccurred: function(details) {
+    onTermsViewErrorOccurred(details) {
       // If in demo mode fallback to offline Terms of Service copy.
       if (this.isDemoModeSetup_()) {
         this.usingOfflineTerms_ = true;
@@ -554,7 +554,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * Shows error UI when terms view cannot be loaded or terms content cannot
      * be fetched from webview.
      */
-    showError_: function() {
+    showError_() {
       this.termsError = true;
       this.removeClass_('arc-tos-loading');
       this.removeClass_('arc-tos-loaded');
@@ -568,7 +568,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * Event handler that is invoked just before the screen is shown.
      * @param {object} data Screen init payload.
      */
-    onBeforeShow: function(data) {
+    onBeforeShow(data) {
       this.setLearnMoreHandlers_();
 
       this.hideOverlay();
@@ -593,7 +593,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /** @override */
-    onBeforeHide: function() {
+    onBeforeHide() {
       this.reset_();
     },
 
@@ -601,7 +601,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * Resets UI elements to their initial state.
      * @private
      */
-    reset_: function() {
+    reset_() {
       this.getElement_('arc-location-service').hidden = true;
       this.getElement_('arc-pai-service').hidden = true;
       this.getElement_('arc-google-service-confirmation').hidden = true;
@@ -640,14 +640,14 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      *
      * @private
      */
-    getElement_: function(id) {
+    getElement_(id) {
       return $('arc-tos-root').getElement(id);
     },
 
     /**
      * Updates localized content of the screen that is not updated via template.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       this.ensureInitialized_();
       this.setLearnMoreHandlers_();
 
@@ -663,7 +663,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      *
      * @private
      */
-    setLearnMoreHandlers_: function() {
+    setLearnMoreHandlers_() {
       var self = this;
 
       var learnMoreBackupAndRestoreText =
@@ -701,7 +701,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * @return {boolean}
      * @private
      */
-    isDemoModeSetup_: function() {
+    isDemoModeSetup_() {
       return this.hasClass_('arc-tos-for-demo-mode');
     }
   };

@@ -9,7 +9,6 @@
     <title>&#xfeff;</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="../css/main.css">
-    <script src="../js/namespace.js"></script>
     <script src="../js/google-analytics-bundle.js"></script>
     <script src="../js/mojo/mojo_bindings_lite.js"></script>
     <script src="../js/mojo/camera_metadata_tags.mojom-lite.js"></script>
@@ -24,7 +23,7 @@
     <script type="module" src="../js/main.js"></script>
   </head>
   <body class="sound mirror mic _3x3">
-    <div id="camera">
+    <div id="view-camera">
       <div id="preview-wrapper">
         <img id="review-photo-result" class="preview-content"
           aria-hidden="true">
@@ -155,7 +154,7 @@
         <div id="timer-tick-msg"></div>
       </div>
     </div>
-    <div id="settings">
+    <div id="view-settings">
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -208,7 +207,7 @@
         </button>
       </div>
     </div>
-    <div id="gridsettings">
+    <div id="view-grid-settings">
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -231,7 +230,7 @@
         </label>
       </div>
     </div>
-    <div id="timersettings">
+    <div id="view-timer-settings">
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -250,7 +249,7 @@
         </label>
       </div>
     </div>
-    <div id="resolutionsettings">
+    <div id="view-resolution-settings">
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -307,7 +306,7 @@
         </button>
       </div>
     </div>
-    <div id="photoresolutionsettings">
+    <div id="view-photo-resolution-settings">
       <div class="menu" data-name="photores">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -315,7 +314,7 @@
         </div>
       </div>
     </div>
-    <div id="videoresolutionsettings">
+    <div id="view-video-resolution-settings">
       <div class="menu" data-name="videores">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -323,7 +322,7 @@
         </div>
       </div>
     </div>
-    <div id="expertsettings">
+    <div id="view-expert-settings">
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -344,10 +343,10 @@
       </div>
     </div>
     <div class="centered-overlay" id="spinner"></div>
-    <div id="warning">
+    <div id="view-warning">
       <div id="error-msg" aria-live="polite"></div>
     </div>
-    <div id="message-dialog" class="dialog">
+    <div id="view-message-dialog" class="dialog">
       <div class="dialog-popup" role="dialog" aria-labelledby="dialog-msg">
         <div class="dialog-msg dialog-msg-holder"></div>
         <div class="dialog-buttons">

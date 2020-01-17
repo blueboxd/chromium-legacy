@@ -474,6 +474,14 @@ float ChromeClientImpl::WindowToViewportScalar(LocalFrame* frame,
   return viewport_rect.width;
 }
 
+void ChromeClientImpl::WindowToViewportRect(LocalFrame& frame,
+                                            WebFloatRect* viewport_rect) const {
+  WebLocalFrameImpl::FromFrame(frame)
+      ->LocalRootFrameWidget()
+      ->Client()
+      ->ConvertWindowToViewport(viewport_rect);
+}
+
 WebScreenInfo ChromeClientImpl::GetScreenInfo(LocalFrame& frame) const {
   WebWidgetClient* client =
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget()->Client();
@@ -1282,6 +1290,12 @@ void ChromeClientImpl::DocumentDetached(Document& document) {
     if (it->FrameOrNull() == document.GetFrame())
       it->DisconnectClient();
   }
+}
+
+void ChromeClientImpl::SaveImageFromDataURL(LocalFrame& frame,
+                                            const String& data_url) {
+  WebLocalFrameImpl::FromFrame(frame)->Client()->SaveImageFromDataURL(
+      WebString(data_url));
 }
 
 }  // namespace blink

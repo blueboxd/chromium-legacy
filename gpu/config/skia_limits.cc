@@ -15,12 +15,7 @@ void DetermineGrCacheLimitsFromAvailableMemory(
     size_t* max_resource_cache_bytes,
     size_t* max_glyph_cache_texture_bytes) {
   // Default limits.
-#if defined(OS_FUCHSIA)
-  // Reduce protected budget on fuchsia due to https://fxb/36620.
-  constexpr size_t kMaxGaneshResourceCacheBytes = 24 * 1024 * 1024;
-#else
   constexpr size_t kMaxGaneshResourceCacheBytes = 96 * 1024 * 1024;
-#endif  // defined(OS_FUCHSIA)
   constexpr size_t kMaxDefaultGlyphCacheTextureBytes = 2048 * 1024 * 4;
 
   *max_resource_cache_bytes = kMaxGaneshResourceCacheBytes;
@@ -41,13 +36,12 @@ void DetermineGrCacheLimitsFromAvailableMemory(
   constexpr size_t kMaxLowEndGlyphCacheTextureBytes = 1024 * 512 * 4;
   // High-end / low-end memory cutoffs.
   constexpr int64_t kHighEndMemoryThreshold = 4096LL * 1024 * 1024;
-  constexpr int64_t kLowEndMemoryThreshold = 512LL * 1024 * 1024;
 
-  int64_t amount_of_physical_memory = base::SysInfo::AmountOfPhysicalMemory();
-  if (amount_of_physical_memory <= kLowEndMemoryThreshold) {
+  if (base::SysInfo::IsLowEndDevice()) {
     *max_resource_cache_bytes = kMaxLowEndGaneshResourceCacheBytes;
     *max_glyph_cache_texture_bytes = kMaxLowEndGlyphCacheTextureBytes;
-  } else if (amount_of_physical_memory >= kHighEndMemoryThreshold) {
+  } else if (base::SysInfo::AmountOfPhysicalMemory() >=
+             kHighEndMemoryThreshold) {
     *max_resource_cache_bytes = kMaxHighEndGaneshResourceCacheBytes;
   }
 #endif

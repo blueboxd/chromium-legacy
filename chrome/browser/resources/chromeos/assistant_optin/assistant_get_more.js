@@ -51,7 +51,7 @@ Polymer({
    *
    * @private
    */
-  onNextTap_: function() {
+  onNextTap_() {
     if (this.buttonsDisabled) {
       return;
     }
@@ -71,7 +71,7 @@ Polymer({
   /**
    * Reloads the page.
    */
-  reloadPage: function() {
+  reloadPage() {
     this.fire('loading');
     this.buttonsDisabled = true;
   },
@@ -79,7 +79,7 @@ Polymer({
   /**
    * Reload the page with the given consent string text data.
    */
-  reloadContent: function(data) {
+  reloadContent(data) {
     this.consentStringLoaded_ = true;
     if (this.settingZippyLoaded_) {
       this.onPageLoaded();
@@ -89,7 +89,7 @@ Polymer({
   /**
    * Add a setting zippy with the provided data.
    */
-  addSettingZippy: function(zippy_data) {
+  addSettingZippy(zippy_data) {
     assert(zippy_data.length <= 3);
 
     if (this.settingZippyLoaded_) {
@@ -148,7 +148,7 @@ Polymer({
   /**
    * Handles event when all the page content has been loaded.
    */
-  onPageLoaded: function() {
+  onPageLoaded() {
     this.fire('loaded');
     this.buttonsDisabled = false;
     this.$['next-button'].focus();
@@ -161,7 +161,7 @@ Polymer({
   /**
    * Signal from host to show the screen.
    */
-  onShow: function() {
+  onShow() {
     if (!this.settingZippyLoaded_ || !this.consentStringLoaded_) {
       this.reloadPage();
     } else {

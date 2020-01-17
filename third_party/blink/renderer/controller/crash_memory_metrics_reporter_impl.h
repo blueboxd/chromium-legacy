@@ -31,9 +31,6 @@ class CONTROLLER_EXPORT CrashMemoryMetricsReporterImpl
   void SetSharedMemory(
       base::UnsafeSharedMemoryRegion shared_metrics_buffer) override;
 
-  // MemoryUsageMonitor::Observer:
-  void OnMemoryPing(MemoryUsage) override;
-
   // This method tracks when an allocation failure occurs. It should be hooked
   // into all platform allocation failure handlers in a process such as
   // base::TerminateBecauseOutOfMemory() and OOM_CRASH() in Partition Alloc.
@@ -47,8 +44,12 @@ class CONTROLLER_EXPORT CrashMemoryMetricsReporterImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(OomInterventionImplTest, CalculateProcessFootprint);
 
-  void WriteIntoSharedMemory(const OomInterventionMetrics& metrics);
+  // MemoryUsageMonitor::Observer:
+  void OnMemoryPing(MemoryUsage) override;
 
+  void WriteIntoSharedMemory();
+
+  OomInterventionMetrics last_reported_metrics_;
   base::WritableSharedMemoryMapping shared_metrics_mapping_;
   mojo::Receiver<mojom::blink::CrashMemoryMetricsReporter> receiver_{this};
 };

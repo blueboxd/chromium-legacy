@@ -123,6 +123,7 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsRenderedLegend() const {
     return IsBlock() && box_->IsRenderedLegend();
   }
+  bool IsTable() const { return IsBlock() && box_->IsTable(); }
 
   bool IsMathRoot() const { return box_->IsMathMLRoot(); }
 

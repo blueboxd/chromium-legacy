@@ -20,6 +20,7 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_pixmap.h"
 
 namespace base {
 namespace trace_event {
@@ -102,6 +103,10 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Reports the estimated size of the backing for the purpose of memory
   // tracking.
   virtual size_t EstimatedSizeForMemTracking() const;
+
+  // Returns the NativePixmap backing the SharedImageBacking. Returns null if
+  // the SharedImage is not backed by a NativePixmap.
+  virtual scoped_refptr<gfx::NativePixmap> GetNativePixmap();
 
   // Helper to determine if the entire SharedImage is cleared.
   bool IsCleared() const { return ClearedRect() == gfx::Rect(size()); }

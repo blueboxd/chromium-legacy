@@ -117,7 +117,7 @@ Polymer({
   visiblePrinterCounter_: kMinVisiblePrinters,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.CupsPrintersBrowserProxyImpl.getInstance();
   },
 
@@ -125,7 +125,7 @@ Polymer({
    * Redoes the search whenever |searchTerm| or |savedPrinters| changes.
    * @private
    */
-  onSearchOrPrintersChanged_: function() {
+  onSearchOrPrintersChanged_() {
     if (!this.savedPrinters) {
       return;
     }
@@ -141,7 +141,7 @@ Polymer({
    * @param {!CustomEvent<{target: !HTMLElement, item: !PrinterListEntry}>} e
    * @private
    */
-  onOpenActionMenu_: function(e) {
+  onOpenActionMenu_(e) {
     const item = /** @type {!PrinterListEntry} */ (e.detail.item);
     this.activePrinterListEntryIndex_ = this.savedPrinters.findIndex(
         printer => printer.printerInfo.printerId == item.printerInfo.printerId);
@@ -154,14 +154,14 @@ Polymer({
   },
 
   /** @private */
-  onEditTap_: function() {
+  onEditTap_() {
     // Event is caught by 'settings-cups-printers'.
     this.fire('edit-cups-printer-details');
     this.closeActionMenu_();
   },
 
   /** @private */
-  onRemoveTap_: function() {
+  onRemoveTap_() {
     this.browserProxy_.removeCupsPrinter(
         this.activePrinter.printerId, this.activePrinter.printerName);
     this.activePrinter = null;
@@ -170,7 +170,7 @@ Polymer({
   },
 
   /** @private */
-  onShowMoreTap_: function() {
+  onShowMoreTap_() {
     this.hasShowMoreBeenTapped_ = true;
   },
 
@@ -181,7 +181,7 @@ Polymer({
    * @return {!Array<!PrinterListEntry>} Returns only the visible printers.
    * @private
    */
-  getVisiblePrinters_: function() {
+  getVisiblePrinters_() {
     // Filter printers through |searchTerm|. If |searchTerm| is empty,
     // |filteredPrinters_| is just |savedPrinters|.
     const updatedPrinters = this.searchTerm ?
@@ -204,7 +204,7 @@ Polymer({
   },
 
   /** @private */
-  closeActionMenu_: function() {
+  closeActionMenu_() {
     this.$$('cr-action-menu').close();
   },
 
@@ -212,12 +212,12 @@ Polymer({
    * @return {boolean} Returns true if the no search message should be visible.
    * @private
    */
-  showNoSearchResultsMessage_: function() {
+  showNoSearchResultsMessage_() {
     return !!this.searchTerm && !this.filteredPrinters_.length;
   },
 
   /** @param{!Array<!PrinterListEntry>} addedPrinters */
-  onSavedPrintersAdded: function(addedPrinters) {
+  onSavedPrintersAdded(addedPrinters) {
     const currArr = this.newPrinters_.slice();
     for (const printer of addedPrinters) {
       this.visiblePrinterCounter_++;
@@ -228,7 +228,7 @@ Polymer({
   },
 
   /** @param{!Array<!PrinterListEntry>} removedPrinters */
-  onSavedPrintersRemoved: function(removedPrinters) {
+  onSavedPrintersRemoved(removedPrinters) {
     const currArr = this.newPrinters_.slice();
     for (const printer of removedPrinters) {
       const newPrinterRemovedIdx = currArr.findIndex(
@@ -254,7 +254,7 @@ Polymer({
    * @return {boolean} True if the printer list should be collapsed.
    * @private
    */
-  shouldPrinterListBeCollapsed_: function() {
+  shouldPrinterListBeCollapsed_() {
     // If |searchTerm| is set, never collapse the list.
     if (this.searchTerm) {
       return false;
@@ -282,7 +282,7 @@ Polymer({
    * @param {number} toIndex
    * @private
    */
-  moveNewlyAddedPrinters_: function(printerArr, toIndex) {
+  moveNewlyAddedPrinters_(printerArr, toIndex) {
     if (!this.newPrinters_.length) {
       return;
     }
@@ -301,7 +301,7 @@ Polymer({
    * @private
    * @return {number} Length of |filteredPrinters_|.
    */
-  getFilteredPrintersLength_: function() {
+  getFilteredPrintersLength_() {
     return this.filteredPrinters_.length;
   },
 });

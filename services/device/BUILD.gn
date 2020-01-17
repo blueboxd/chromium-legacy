@@ -97,9 +97,7 @@ is_linux_without_udev = is_linux && !use_udev
 source_set("perftests") {
   testonly = true
 
-  sources = [
-    "geolocation/position_cache_impl_perftest.cc",
-  ]
+  sources = [ "geolocation/position_cache_impl_perftest.cc" ]
 
   deps = [
     ":test_support",

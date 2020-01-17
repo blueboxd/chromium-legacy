@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/generation/password_generator.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -79,6 +81,42 @@ class PasswordGeneratorTest : public testing::Test {
 
 TEST_F(PasswordGeneratorTest, PasswordLengthDefault) {
   EXPECT_EQ(kDefaultPasswordLength, GeneratePassword(spec_).length());
+}
+
+TEST_F(PasswordGeneratorTest, ConditionallyAddNumericDigitsToAlphabet) {
+  // Check if '0' and '1' is added to the numeric alphabet if the password
+  // does not contain letters.
+  spec_.mutable_lower_case()->set_max(0);
+  spec_.mutable_upper_case()->set_max(0);
+  ConditionallyAddNumericDigitsToAlphabet(&spec_);
+  EXPECT_TRUE(spec_.numeric().character_set().find('0') != std::string::npos);
+  EXPECT_TRUE(spec_.numeric().character_set().find('1') != std::string::npos);
+}
+
+TEST_F(PasswordGeneratorTest, ConditionallyDoNotAddNumericDigitsToAlphabet) {
+  // Check if '0' and '1' is not added to the numeric alphabet if the password
+  // does contain letters lower and/or upper case letters.
+
+  // Check for only lower case letters.
+  spec_.mutable_lower_case()->set_max(1);
+  spec_.mutable_upper_case()->set_max(0);
+  ConditionallyAddNumericDigitsToAlphabet(&spec_);
+  EXPECT_TRUE(spec_.numeric().character_set().find('0') == std::string::npos);
+  EXPECT_TRUE(spec_.numeric().character_set().find('1') == std::string::npos);
+
+  // Check for only upper case letters.
+  spec_.mutable_lower_case()->set_max(0);
+  spec_.mutable_upper_case()->set_max(1);
+  ConditionallyAddNumericDigitsToAlphabet(&spec_);
+  EXPECT_TRUE(spec_.numeric().character_set().find('0') == std::string::npos);
+  EXPECT_TRUE(spec_.numeric().character_set().find('1') == std::string::npos);
+
+  // Mixed case with lower and upper case letters.
+  spec_.mutable_lower_case()->set_max(1);
+  spec_.mutable_upper_case()->set_max(1);
+  ConditionallyAddNumericDigitsToAlphabet(&spec_);
+  EXPECT_TRUE(spec_.numeric().character_set().find('0') == std::string::npos);
+  EXPECT_TRUE(spec_.numeric().character_set().find('1') == std::string::npos);
 }
 
 TEST_F(PasswordGeneratorTest, PasswordLengthMaxLength) {

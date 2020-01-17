@@ -310,12 +310,12 @@ bool OSExchangeDataProviderWin::DidOriginateFromRenderer() const {
 void OSExchangeDataProviderWin::SetString(const base::string16& data) {
   STGMEDIUM* storage = GetStorageForString(data);
   data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
-      ClipboardFormatType::GetPlainTextWType().ToFormatEtc(), storage));
+      ClipboardFormatType::GetPlainTextType().ToFormatEtc(), storage));
 
   // Also add the UTF8-encoded version.
   storage = GetStorageForString(base::UTF16ToUTF8(data));
   data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
-      ClipboardFormatType::GetPlainTextType().ToFormatEtc(), storage));
+      ClipboardFormatType::GetPlainTextAType().ToFormatEtc(), storage));
 }
 
 void OSExchangeDataProviderWin::SetURL(const GURL& url,
@@ -344,10 +344,10 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
   // Add a UniformResourceLocator link for apps like IE and Word.
   storage = GetStorageForString(base::UTF8ToUTF16(url.spec()));
   data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
-      ClipboardFormatType::GetUrlWType().ToFormatEtc(), storage));
+      ClipboardFormatType::GetUrlType().ToFormatEtc(), storage));
   storage = GetStorageForString(url.spec());
   data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
-      ClipboardFormatType::GetUrlType().ToFormatEtc(), storage));
+      ClipboardFormatType::GetUrlAType().ToFormatEtc(), storage));
 
   // TODO(https://crbug.com/6767): add CF_HTML.
 
@@ -406,7 +406,7 @@ void OSExchangeDataProviderWin::SetVirtualFileContentsForTesting(
   storage->pUnkForRelease = NULL;
 
   data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
-      ClipboardFormatType::GetFileDescriptorWType().ToFormatEtc(), storage));
+      ClipboardFormatType::GetFileDescriptorType().ToFormatEtc(), storage));
 
   for (size_t i = 0; i < num_files; i++) {
     // Fill in each FILEDESCRIPTORW with file name.
@@ -508,7 +508,7 @@ void OSExchangeDataProviderWin::SetFileContents(
   // Add CFSTR_FILEDESCRIPTORW.
   STGMEDIUM* storage = GetStorageForFileDescriptor(filename);
   data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
-      ClipboardFormatType::GetFileDescriptorWType().ToFormatEtc(), storage));
+      ClipboardFormatType::GetFileDescriptorType().ToFormatEtc(), storage));
 
   // Add CFSTR_FILECONTENTS.
   storage = GetStorageForBytes(file_contents.data(), file_contents.length());

@@ -80,10 +80,13 @@ class APP_LIST_EXPORT AssistantDialogPlate
   void InitKeyboardLayoutContainer();
   void InitVoiceLayoutContainer();
 
+  void UpdateModalityVisibility();
+  void UpdateKeyboardVisibility();
+
   void OnAnimationStarted(const ui::CallbackLayerAnimationObserver& observer);
   bool OnAnimationEnded(const ui::CallbackLayerAnimationObserver& observer);
 
-  void SetFocus(InputModality modality);
+  InputModality input_modality() const;
 
   AssistantViewDelegate* const delegate_;
 

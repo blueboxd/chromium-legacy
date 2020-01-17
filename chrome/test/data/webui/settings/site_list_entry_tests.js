@@ -67,7 +67,7 @@ suite('SiteListEntry', function() {
       enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
       origin: 'example.com',
     };
-    settings.navigateTo(settings.routes.SITE_SETTINGS);
+    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
     return browserProxy.whenCalled('isOriginValid').then((args) => {
       assertEquals('example.com', args);
       Polymer.dom.flush();
@@ -79,7 +79,8 @@ suite('SiteListEntry', function() {
       assertTrue(!separator);
       settingsRow.click();
       assertEquals(
-          settings.routes.SITE_SETTINGS.path, settings.getCurrentRoute().path);
+          settings.routes.SITE_SETTINGS.path,
+          settings.Router.getInstance().getCurrentRoute().path);
     });
   });
 
@@ -90,7 +91,7 @@ suite('SiteListEntry', function() {
       enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
       origin: 'http://example.com',
     };
-    settings.navigateTo(settings.routes.SITE_SETTINGS);
+    settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
     return browserProxy.whenCalled('isOriginValid').then((args) => {
       assertEquals('http://example.com', args);
       Polymer.dom.flush();
@@ -103,7 +104,7 @@ suite('SiteListEntry', function() {
       settingsRow.click();
       assertEquals(
           settings.routes.SITE_SETTINGS_SITE_DETAILS.path,
-          settings.getCurrentRoute().path);
+          settings.Router.getInstance().getCurrentRoute().path);
     });
   });
 });

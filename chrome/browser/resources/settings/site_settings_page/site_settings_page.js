@@ -22,7 +22,7 @@ Polymer({
      */
     default_: {
       type: Object,
-      value: function() {
+      value() {
         return {};
       },
     },
@@ -30,7 +30,7 @@ Polymer({
     /** @private */
     isGuest_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isGuest');
       }
     },
@@ -38,7 +38,7 @@ Polymer({
     /** @private */
     enableSafeBrowsingSubresourceFilter_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter');
       }
     },
@@ -46,7 +46,7 @@ Polymer({
     /** @private */
     enableExperimentalWebPlatformFeatures_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures');
       },
     },
@@ -54,7 +54,7 @@ Polymer({
     /** @private */
     enablePaymentHandlerContentSetting_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('enablePaymentHandlerContentSetting');
       }
     },
@@ -62,15 +62,23 @@ Polymer({
     /** @private */
     enableInsecureContentContentSetting_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('enableInsecureContentContentSetting');
+      }
+    },
+
+    /** @private */
+    enableWebXrContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableWebXrContentSetting');
       }
     },
 
     /** @private */
     enableNativeFileSystemWriteContentSetting_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean(
             'enableNativeFileSystemWriteContentSetting');
       }
@@ -88,7 +96,7 @@ Polymer({
    * @param {?Map<string, string>} oldConfig
    * @private
    */
-  focusConfigChanged_: function(newConfig, oldConfig) {
+  focusConfigChanged_(newConfig, oldConfig) {
     // focusConfig is set only once on the parent, so this observer should only
     // fire once.
     assert(!oldConfig);
@@ -143,6 +151,11 @@ Polymer({
       pairs.push([R.SITE_SETTINGS_MIXEDSCRIPT, 'mixed-script']);
     }
 
+    if (this.enableWebXrContentSetting_) {
+      pairs.push([R.SITE_SETTINGS_AR, 'ar']);
+      pairs.push([R.SITE_SETTINGS_VR, 'vr']);
+    }
+
     pairs.forEach(([route, id]) => {
       this.focusConfig.set(route.path, () => this.async(() => {
         cr.ui.focusWithoutInk(assert(this.$$(`#${id}`)));
@@ -151,9 +164,11 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
     this.ALL_SITES = settings.ALL_SITES;
+
+    this.metricsBrowserProxy_ = settings.MetricsBrowserProxyImpl.getInstance();
 
     const keys = Object.keys(settings.ContentSettingsTypes);
     for (let i = 0; i < keys.length; ++i) {
@@ -191,7 +206,7 @@ Polymer({
    * @param {?string} other Tristate value (maybe, 'session only').
    * @private
    */
-  defaultSettingLabel_: function(setting, enabled, disabled, other) {
+  defaultSettingLabel_(setting, enabled, disabled, other) {
     if (setting == settings.ContentSetting.BLOCK) {
       return disabled;
     }
@@ -208,7 +223,7 @@ Polymer({
    * @param {string} category The category to update.
    * @private
    */
-  updateDefaultValueLabel_: function(category) {
+  updateDefaultValueLabel_(category) {
     this.browserProxy.getDefaultValueForContentType(category).then(
         defaultValue => {
           this.set(
@@ -222,7 +237,7 @@ Polymer({
    * @param {boolean} enabled
    * @private
    */
-  updateHandlersEnabled_: function(enabled) {
+  updateHandlersEnabled_(enabled) {
     const category = settings.ContentSettingsTypes.PROTOCOL_HANDLERS;
     this.set(
         'default_.' + Polymer.CaseMap.dashToCamelCase(category),
@@ -235,9 +250,11 @@ Polymer({
    * @param {!Event} event The tap event.
    * @private
    */
-  onTapNavigate_: function(event) {
+  onTapNavigate_(event) {
     const dataSet =
         /** @type {{route: string}} */ (event.currentTarget.dataset);
-    settings.navigateTo(settings.routes[dataSet.route]);
+    settings.Router.getInstance().navigateTo(settings.routes[dataSet.route]);
+    this.metricsBrowserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions['PRIVACY_' + dataSet.route]);
   },
 });

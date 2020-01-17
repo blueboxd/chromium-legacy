@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
+#include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_dialog.h"
@@ -25,6 +27,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/component_extension_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/arc/app_permissions/arc_app_permissions_bridge.h"
 #include "components/arc/arc_service_manager.h"
@@ -487,6 +490,44 @@ void ArcApps::UnpauseApps(const std::string& app_id) {
   SetIconEffect(app_id);
 }
 
+void ArcApps::GetMenuModel(const std::string& app_id,
+                           apps::mojom::MenuType menu_type,
+                           GetMenuModelCallback callback) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    std::move(callback).Run(apps::mojom::MenuItems::New());
+    return;
+  }
+  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs->GetApp(app_id);
+  if (!app_info) {
+    std::move(callback).Run(apps::mojom::MenuItems::New());
+    return;
+  }
+
+  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
+
+  // Add Open item if the app is not opened and not suspended.
+  if (!base::Contains(app_id_to_task_ids_, app_id) && !app_info->suspended) {
+    AddCommandItem(ash::LAUNCH_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC,
+                   &menu_items);
+  }
+
+  if (app_info->shortcut) {
+    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_REMOVE_SHORTCUT, &menu_items);
+  } else if (app_info->ready && !app_info->sticky) {
+    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, &menu_items);
+  }
+
+  // App Info item.
+  if (app_info->ready) {
+    AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
+                   &menu_items);
+  }
+
+  std::move(callback).Run(std::move(menu_items));
+}
+
 void ArcApps::OpenNativeSettings(const std::string& app_id) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (!prefs) {
@@ -850,7 +891,7 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
     IconEffects icon_effects = IconEffects::kNone;
     if (app_info.suspended) {
       icon_effects =
-          static_cast<IconEffects>(icon_effects | IconEffects::kGray);
+          static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
     }
     app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
   }
@@ -927,7 +968,8 @@ void ArcApps::SetIconEffect(const std::string& app_id) {
 
   IconEffects icon_effects = IconEffects::kNone;
   if (app_info->suspended) {
-    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kGray);
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
   }
   if (paused_apps_.find(app_id) != paused_apps_.end()) {
     icon_effects =

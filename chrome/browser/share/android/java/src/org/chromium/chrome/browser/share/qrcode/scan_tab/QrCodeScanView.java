@@ -71,6 +71,7 @@ class QrCodeScanView {
         if (mHasCameraPermission) {
             mCameraPreview = new CameraPreview(mContext, mCameraCallback);
             mView.addView(mCameraPreview);
+            mView.addView(new CameraPreviewOverlay(mContext));
 
             updateCameraPreviewState();
         }

@@ -3010,6 +3010,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Describes a command to turn the visual display on for accessibility undoing any previous request to turn off the visual display." name="IDS_CHROMEVOX_UNDARKEN_SCREEN">
         Undarken screen
       </message>
+      <message desc="Describes a command to toggle on/off the visual display for accessibility." name="IDS_CHROMEVOX_TOGGLE_DARK_SCREEN">
+        Toggle dark screen
+      </message>
       <message desc="Describes a command that turns text to speech feedback off." name="IDS_CHROMEVOX_SPEECH_OFF">
         Speech off
       </message>

@@ -199,7 +199,9 @@ cr.define('settings_people_page', function() {
 
       // Sub-page trigger navigates to Google account manager.
       subpageTrigger.click();
-      assertEquals(settings.getCurrentRoute(), settings.routes.ACCOUNT_MANAGER);
+      assertEquals(
+          settings.Router.getInstance().getCurrentRoute(),
+          settings.routes.ACCOUNT_MANAGER);
     });
   });
 });

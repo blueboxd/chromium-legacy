@@ -221,7 +221,7 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
       substitute_font, platform_data.size(), synthetic_bold,
       (traits & NSFontItalicTrait) &&
           !(substitute_font_traits & NSFontItalicTrait),
-      platform_data.Orientation(),
+      platform_data.Orientation(), font_description.FontOpticalSizing(),
       nullptr);  // No variation paramaters in fallback.
 
   return FontDataFromFontPlatformData(alternate_font.get(), kDoNotRetain);
@@ -295,7 +295,8 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
   // the returned FontPlatformData since it will not have a valid SkTypeface.
   std::unique_ptr<FontPlatformData> platform_data = FontPlatformDataFromNSFont(
       platform_font, size, synthetic_bold, synthetic_italic,
-      font_description.Orientation(), font_description.VariationSettings());
+      font_description.Orientation(), font_description.FontOpticalSizing(),
+      font_description.VariationSettings());
   if (!platform_data->Typeface()) {
     return nullptr;
   }

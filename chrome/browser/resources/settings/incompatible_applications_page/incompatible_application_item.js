@@ -65,7 +65,7 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ =
         settings.IncompatibleApplicationsBrowserProxyImpl.getInstance();
   },
@@ -75,7 +75,7 @@ Polymer({
    * actionType.
    * @private
    */
-  onActionTap_: function() {
+  onActionTap_() {
     if (this.actionType === settings.ActionTypes.UNINSTALL) {
       this.browserProxy_.startApplicationUninstallation(this.applicationName);
     } else if (
@@ -91,7 +91,7 @@ Polymer({
    * @return {string} The label that should be applied to the action button.
    * @private
    */
-  getActionName_: function(actionType) {
+  getActionName_(actionType) {
     if (actionType === settings.ActionTypes.UNINSTALL) {
       return this.i18n('incompatibleApplicationsRemoveButton');
     }

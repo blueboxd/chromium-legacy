@@ -23,6 +23,12 @@ class AutofillProviderAndroid : public AutofillProvider {
  public:
   AutofillProviderAndroid(const base::android::JavaRef<jobject>& jcaller,
                           content::WebContents* web_contents);
+  // Invoked when the Java-side AutofillProvider counterpart of this object
+  // has been changed (either to null or to a new object).
+  void OnJavaAutofillProviderChanged(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jcaller);
+
   ~AutofillProviderAndroid() override;
 
   // AutofillProvider:

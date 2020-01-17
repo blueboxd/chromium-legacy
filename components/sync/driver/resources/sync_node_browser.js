@@ -13,7 +13,7 @@
    * @param {!Object} node The node to check.
    */
   function isTypeRootNode(node) {
-    return node.PARENT_ID == 'r' && node.UNIQUE_SERVER_TAG != '';
+    return node.PARENT_ID === 'r' && node.UNIQUE_SERVER_TAG !== '';
   }
 
   /**
@@ -23,10 +23,10 @@
    * @param {!Object} node The node to check.
    */
   function isChildOf(parentNode, node) {
-    if (node.PARENT_ID != '') {
-      return node.PARENT_ID == parentNode.ID;
+    if (node.PARENT_ID !== '') {
+      return node.PARENT_ID === parentNode.ID;
     } else {
-      return node.modelType == parentNode.modelType;
+      return node.modelType === parentNode.modelType;
     }
   }
 
@@ -43,7 +43,7 @@
     if (nodeA.hasOwnProperty('positionIndex') &&
         nodeB.hasOwnProperty('positionIndex')) {
       return nodeA.positionIndex - nodeB.positionIndex;
-    } else if (nodeA.NON_UNIQUE_NAME != nodeB.NON_UNIQUE_NAME) {
+    } else if (nodeA.NON_UNIQUE_NAME !== nodeB.NON_UNIQUE_NAME) {
       return nodeA.NON_UNIQUE_NAME.localeCompare(nodeB.NON_UNIQUE_NAME);
     } else {
       return nodeA.METAHANDLE - nodeB.METAHANDLE;
@@ -101,7 +101,7 @@
     /**
      * Finds the children of this node and appends them to the tree.
      */
-    handleExpand_: function(event) {
+    handleExpand_(event) {
       const treeItem = this;
 
       if (treeItem.expanded_) {
@@ -133,13 +133,13 @@
   SyncNodeTree.prototype = {
     __proto__: cr.ui.Tree.prototype,
 
-    decorate: function() {
+    decorate() {
       cr.ui.Tree.prototype.decorate.call(this);
       this.addEventListener('change', this.handleChange_.bind(this));
       this.allNodes = [];
     },
 
-    populate: function(nodes) {
+    populate(nodes) {
       const tree = this;
 
       // We store the full set of nodes in the SyncNodeTree object.
@@ -153,7 +153,7 @@
       });
     },
 
-    handleChange_: function(event) {
+    handleChange_(event) {
       if (this.selectedItem) {
         updateNodeDetailView(this.selectedItem);
       }
@@ -214,7 +214,7 @@
     customSplitter.prototype = {
       __proto__: Splitter.prototype,
 
-      handleSplitterDragEnd: function(e) {
+      handleSplitterDragEnd(e) {
         Splitter.prototype.handleSplitterDragEnd.apply(this, arguments);
         const treeElement = $('sync-node-tree-container');
         const newWidth = parseFloat(treeElement.style.width);

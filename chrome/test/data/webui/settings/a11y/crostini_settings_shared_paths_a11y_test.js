@@ -18,7 +18,8 @@ AccessibilityTest.define('CrostiniAccessibilityTest', {
   axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
   setup: function() {
-    settings.router.navigateTo(settings.routes.CROSTINI_SHARED_PATHS);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.CROSTINI_SHARED_PATHS);
     Polymer.dom.flush();
   },
   /** @override */

@@ -52,6 +52,10 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
         } else if (params.isVideo()) {
             setVideoIcon();
         }
+        if (params.isAnchor()) {
+            mModel.set(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS,
+                    params.getPerformanceClass());
+        }
     }
 
     /**

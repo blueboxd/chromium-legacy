@@ -24,9 +24,7 @@ mojom("video_capture") {
 }
 
 mojom("image_capture") {
-  sources = [
-    "image_capture.mojom",
-  ]
+  sources = [ "image_capture.mojom" ]
 
   # ImageCapture Mojom interfaces are exposed publicly to layout tests which use
   # prepackaged redistributable JS bindings. It is therefore not desirable to
@@ -40,7 +38,5 @@ source_set("image_capture_types") {
     "image_capture_types.h",
   ]
 
-  deps = [
-    ":image_capture",
-  ]
+  deps = [ ":image_capture" ]
 }

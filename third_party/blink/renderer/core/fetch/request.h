@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_REQUEST_H_
 
+#include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -61,10 +62,8 @@ class CORE_EXPORT Request final : public Body {
   Request(ScriptState*, FetchRequestData*, Headers*, AbortSignal*);
   Request(ScriptState*, FetchRequestData*);
 
-  // Returns false if |credentials_mode| doesn't represent a valid credentials
-  // mode.
-  static bool ParseCredentialsMode(const String& credentials_mode,
-                                   network::mojom::CredentialsMode*);
+  static base::Optional<network::mojom::CredentialsMode> ParseCredentialsMode(
+      const String& credentials_mode);
 
   // From Request.idl:
   String method() const;

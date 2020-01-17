@@ -2137,7 +2137,25 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasIsolation() const { return Isolation() != EIsolation::kAuto; }
 
   // Content utility functions.
-  bool HasContent() const { return GetContentData(); }
+  bool ContentBehavesAsNormal() const {
+    switch (StyleType()) {
+      case kPseudoIdMarker:
+        return !GetContentData();
+      default:
+        return !GetContentData() || GetContentData()->IsNone();
+    }
+  }
+  bool ContentPreventsBoxGeneration() const {
+    switch (StyleType()) {
+      case kPseudoIdBefore:
+      case kPseudoIdAfter:
+        return ContentBehavesAsNormal();
+      case kPseudoIdMarker:
+        return GetContentData() && GetContentData()->IsNone();
+      default:
+        return false;
+    }
+  }
 
   // Cursor utility functions.
   CursorList* Cursors() const { return CursorDataInternal().Get(); }
@@ -2524,14 +2542,14 @@ class ComputedStyle : public ComputedStyleBase,
   InterpolationQuality GetInterpolationQuality() const;
 
   bool CanGeneratePseudoElement(PseudoId pseudo) const {
-    if (!HasPseudoElementStyle(pseudo))
-      return false;
     if (Display() == EDisplay::kNone)
       return false;
     if (IsEnsuredInDisplayNone())
       return false;
     if (pseudo == kPseudoIdMarker)
       return Display() == EDisplay::kListItem;
+    if (!HasPseudoElementStyle(pseudo))
+      return false;
     if (Display() != EDisplay::kContents)
       return true;
     // For display: contents elements, we still need to generate ::before and

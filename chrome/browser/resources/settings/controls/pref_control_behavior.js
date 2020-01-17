@@ -20,7 +20,7 @@ const PrefControlBehavior = {
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.validatePref_();
   },
 
@@ -28,7 +28,7 @@ const PrefControlBehavior = {
    * Logs an error once prefs are initialized if the tracked pref is not found.
    * @private
    */
-  validatePref_: function() {
+  validatePref_() {
     CrSettingsPrefs.initialized.then(() => {
       if (this.pref === undefined) {
         let error = 'Pref not found for element ' + this.tagName;

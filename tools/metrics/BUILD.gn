@@ -9,9 +9,7 @@ action("histograms_xml") {
     "histograms/histograms.xml",
   ]
   output = "$root_out_dir/histograms.xml"
-  outputs = [
-    output,
-  ]
+  outputs = [ output ]
   args = rebase_path(sources, root_build_dir) + [
            "--output",
            rebase_path(output, root_build_dir),
@@ -19,30 +17,18 @@ action("histograms_xml") {
 }
 
 copy("actions_xml") {
-  sources = [
-    "actions/actions.xml",
-  ]
-  outputs = [
-    "$root_out_dir/actions.xml",
-  ]
+  sources = [ "actions/actions.xml" ]
+  outputs = [ "$root_out_dir/actions.xml" ]
 }
 
 copy("rappor_xml") {
-  sources = [
-    "rappor/rappor.xml",
-  ]
-  outputs = [
-    "$root_out_dir/rappor.xml",
-  ]
+  sources = [ "rappor/rappor.xml" ]
+  outputs = [ "$root_out_dir/rappor.xml" ]
 }
 
 copy("ukm_xml") {
-  sources = [
-    "ukm/ukm.xml",
-  ]
-  outputs = [
-    "$root_out_dir/ukm.xml",
-  ]
+  sources = [ "ukm/ukm.xml" ]
+  outputs = [ "$root_out_dir/ukm.xml" ]
 }
 
 group("metrics_metadata") {

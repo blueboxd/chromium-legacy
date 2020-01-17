@@ -113,7 +113,8 @@ class BluetoothDeviceCast : public BluetoothDevice {
   // Subclasses must also call DidConnectGatt, DidFailToConnectGatt, or
   // DidDisconnectGatt immediately or asynchronously as the connection state
   // changes.
-  void CreateGattConnectionImpl() override;
+  void CreateGattConnectionImpl(
+      base::Optional<BluetoothUUID> service_uuid) override;
 
   // Disconnects GATT connection on platforms that maintain a specific GATT
   // connection.

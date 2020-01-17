@@ -38,7 +38,7 @@ BackgroundKeyboardHandler.prototype = {
    * @return {boolean} This value has no effect since we ignore it in
    *     SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent.
    */
-  onKeyDown: function(evt) {
+  onKeyDown(evt) {
     EventSourceState.set(EventSourceType.STANDARD_KEYBOARD);
     evt.stickyMode = ChromeVox.isStickyModeOn();
     if (ChromeVox.passThroughMode) {
@@ -70,7 +70,7 @@ BackgroundKeyboardHandler.prototype = {
    * @return {boolean} This value has no effect since we ignore it in
    *     SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent.
    */
-  onKeyUp: function(evt) {
+  onKeyUp(evt) {
     // Reset pass through mode once a keyup (not involving the pass through key)
     // is seen. The pass through command involves three keys.
     if (ChromeVox.passThroughMode) {

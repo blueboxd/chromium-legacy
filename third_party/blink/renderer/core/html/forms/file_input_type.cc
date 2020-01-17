@@ -24,7 +24,6 @@
 
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
-#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -249,9 +248,8 @@ void FileInputType::SetValue(const String&,
     return;
 
   file_list_->clear();
-  GetElement().SetNeedsStyleRecalc(
-      kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(style_change_reason::kControlValue));
+  if (auto* layout_object = GetElement().GetLayoutObject())
+    layout_object->SetShouldDoFullPaintInvalidation();
   GetElement().SetNeedsValidityCheck();
 }
 
@@ -326,25 +324,27 @@ void FileInputType::CreateShadowSubtree() {
           GetElement().Multiple() ? IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL
                                   : IDS_FORM_FILE_BUTTON_LABEL)));
   button->SetShadowPseudoId(AtomicString("-webkit-file-upload-button"));
+  button->SetActive(GetElement().CanReceiveDroppedFiles());
   GetElement().UserAgentShadowRoot()->AppendChild(button);
+}
+
+HTMLInputElement* FileInputType::UploadButton() const {
+  Node* node = GetElement().UserAgentShadowRoot()->firstChild();
+  CHECK(!node || IsA<HTMLInputElement>(node));
+  return To<HTMLInputElement>(node);
 }
 
 void FileInputType::DisabledAttributeChanged() {
   DCHECK(IsShadowHost(GetElement()));
-  CHECK(!GetElement().UserAgentShadowRoot()->firstChild() ||
-        IsA<Element>(GetElement().UserAgentShadowRoot()->firstChild()));
-  if (Element* button =
-          To<Element>(GetElement().UserAgentShadowRoot()->firstChild()))
+  if (Element* button = UploadButton()) {
     button->SetBooleanAttribute(html_names::kDisabledAttr,
                                 GetElement().IsDisabledFormControl());
+  }
 }
 
 void FileInputType::MultipleAttributeChanged() {
   DCHECK(IsShadowHost(GetElement()));
-  CHECK(!GetElement().UserAgentShadowRoot()->firstChild() ||
-        IsA<Element>(GetElement().UserAgentShadowRoot()->firstChild()));
-  if (Element* button =
-          To<Element>(GetElement().UserAgentShadowRoot()->firstChild())) {
+  if (Element* button = UploadButton()) {
     button->setAttribute(
         html_names::kValueAttr,
         AtomicString(GetLocale().QueryString(

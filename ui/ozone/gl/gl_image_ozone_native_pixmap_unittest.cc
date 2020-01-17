@@ -93,9 +93,9 @@ using GLImageScanoutTypeDisabled = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::SCANOUT,
                                     gfx::BufferFormat::RGBA_1010102>>;
 
-// This test is disabled since we need mesa support for XR30/XB30 that is not
+// This test is disabled since we need mesa support for AB30 that is not
 // available on many boards yet.
-INSTANTIATE_TYPED_TEST_SUITE_P(DISABLED_GLImageNativePixmapScanoutRGBX,
+INSTANTIATE_TYPED_TEST_SUITE_P(DISABLED_GLImageNativePixmapScanoutRGBA,
                                GLImageTest,
                                GLImageScanoutTypeDisabled);
 

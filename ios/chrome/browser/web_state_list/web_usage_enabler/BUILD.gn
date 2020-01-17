@@ -41,9 +41,7 @@ source_set("internal") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "web_state_list_web_usage_enabler_impl_unittest.mm",
-  ]
+  sources = [ "web_state_list_web_usage_enabler_impl_unittest.mm" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 

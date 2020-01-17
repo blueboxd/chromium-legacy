@@ -32,7 +32,6 @@ class BrowsingDataHelper {
 
   // Returns true iff the provided scheme is an extension.
   static bool IsExtensionScheme(const std::string& scheme);
-  static bool HasExtensionScheme(const GURL& origin);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(BrowsingDataHelper);

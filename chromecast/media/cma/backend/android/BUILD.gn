@@ -79,16 +79,12 @@ android_library("audio_track_java") {
 }
 
 test("cast_android_cma_backend_unittests") {
-  deps = [
-    ":unit_tests",
-  ]
+  deps = [ ":unit_tests" ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "volume_cache_test.cc",
-  ]
+  sources = [ "volume_cache_test.cc" ]
 
   deps = [
     ":cast_media_android",

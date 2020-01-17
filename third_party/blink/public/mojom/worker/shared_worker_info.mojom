@@ -6,6 +6,7 @@ module blink.mojom;
 
 import "services/network/public/mojom/content_security_policy.mojom";
 import "services/network/public/mojom/ip_address_space.mojom";
+import "third_party/blink/public/mojom/worker/worker_options.mojom";
 import "url/mojom/url.mojom";
 
 // Meta data that is necessary to create a new shared worker context. This
@@ -14,7 +15,7 @@ import "url/mojom/url.mojom";
 // process where the shared worker runs.
 struct SharedWorkerInfo {
   url.mojom.Url url;
-  string name;
+  WorkerOptions options;
   string content_security_policy;
   network.mojom.ContentSecurityPolicyType content_security_policy_type;
   network.mojom.IPAddressSpace creation_address_space;

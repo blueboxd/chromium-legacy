@@ -432,10 +432,6 @@ class SparseAttributeAXPropertyAdapter
             CreateProperty(AXPropertyNameEnum::Activedescendant,
                            CreateRelatedNodeListValue(object)));
         break;
-      case AXObjectAttribute::kAriaDetails:
-        properties_.emplace_back(CreateProperty(
-            AXPropertyNameEnum::Details, CreateRelatedNodeListValue(object)));
-        break;
       case AXObjectAttribute::kAriaErrorMessage:
         properties_.emplace_back(
             CreateProperty(AXPropertyNameEnum::Errormessage,
@@ -452,6 +448,11 @@ class SparseAttributeAXPropertyAdapter
         properties_.emplace_back(CreateRelatedNodeListProperty(
             AXPropertyNameEnum::Controls, objects,
             html_names::kAriaControlsAttr, *ax_object_));
+        break;
+      case AXObjectVectorAttribute::kAriaDetails:
+        properties_.emplace_back(CreateRelatedNodeListProperty(
+            AXPropertyNameEnum::Details, objects, html_names::kAriaDetailsAttr,
+            *ax_object_));
         break;
       case AXObjectVectorAttribute::kAriaFlowTo:
         properties_.emplace_back(CreateRelatedNodeListProperty(
@@ -533,7 +534,7 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
   if (!local_frame)
     return Response::Error("Frame is detached.");
   AXContext ax_context(document);
-  AXObjectCacheImpl& cache = ToAXObjectCacheImpl(ax_context.GetAXObjectCache());
+  auto& cache = To<AXObjectCacheImpl>(ax_context.GetAXObjectCache());
 
   AXObject* inspected_ax_object = cache.GetOrCreate(dom_node);
   *nodes = std::make_unique<protocol::Array<protocol::Accessibility::AXNode>>();
@@ -722,7 +723,7 @@ Response InspectorAccessibilityAgent::getFullAXTree(
     document->UpdateStyleAndLayout();
   *nodes = std::make_unique<protocol::Array<protocol::Accessibility::AXNode>>();
   AXContext ax_context(*document);
-  AXObjectCacheImpl& cache = ToAXObjectCacheImpl(ax_context.GetAXObjectCache());
+  auto& cache = To<AXObjectCacheImpl>(ax_context.GetAXObjectCache());
   Deque<AXID> ids;
   ids.emplace_back(cache.Root()->AXObjectID());
   while (!ids.empty()) {

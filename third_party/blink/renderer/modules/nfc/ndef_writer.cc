@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
-#include "third_party/blink/renderer/modules/nfc/ndef_push_options.h"
+#include "third_party/blink/renderer/modules/nfc/ndef_write_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
@@ -41,12 +41,12 @@ void NDEFWriter::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
 }
 
-// https://w3c.github.io/web-nfc/#writing-or-pushing-content
-// https://w3c.github.io/web-nfc/#the-push-method
-ScriptPromise NDEFWriter::push(ScriptState* script_state,
-                               const NDEFMessageSource& push_message,
-                               const NDEFPushOptions* options,
-                               ExceptionState& exception_state) {
+// https://w3c.github.io/web-nfc/#writing-content
+// https://w3c.github.io/web-nfc/#the-write-method
+ScriptPromise NDEFWriter::write(ScriptState* script_state,
+                                const NDEFMessageSource& write_message,
+                                const NDEFWriteOptions* options,
+                                ExceptionState& exception_state) {
   ExecutionContext* execution_context = GetExecutionContext();
   Document* document = To<Document>(execution_context);
   // https://w3c.github.io/web-nfc/#security-policies
@@ -69,7 +69,7 @@ ScriptPromise NDEFWriter::push(ScriptState* script_state,
   // Step 11.2: Run "create NDEF message", if this throws an exception,
   // reject p with that exception and abort these steps.
   NDEFMessage* ndef_message =
-      NDEFMessage::Create(execution_context, push_message, exception_state);
+      NDEFMessage::Create(execution_context, write_message, exception_state);
   if (exception_state.HadException()) {
     return ScriptPromise();
   }
@@ -109,7 +109,7 @@ PermissionService* NDEFWriter::GetPermissionService() {
 
 void NDEFWriter::OnRequestPermission(
     ScriptPromiseResolver* resolver,
-    const NDEFPushOptions* options,
+    const NDEFWriteOptions* options,
     device::mojom::blink::NDEFMessagePtr message,
     PermissionStatus status) {
   if (status != PermissionStatus::GRANTED) {
@@ -130,12 +130,14 @@ void NDEFWriter::OnRequestPermission(
         &NDEFWriter::Abort, WrapPersistent(this), WrapPersistent(resolver)));
   }
 
-  UseCounter::Count(GetExecutionContext(), WebFeature::kWebNfcNdefWriterPush);
+  UseCounter::Count(GetExecutionContext(), WebFeature::kWebNfcNdefWriterWrite);
+  // TODO(https://crbug.com/994936) remove when origin trial is complete.
+  UseCounter::Count(GetExecutionContext(), WebFeature::kWebNfcAPI);
 
   auto callback = WTF::Bind(&NDEFWriter::OnRequestCompleted,
                             WrapPersistent(this), WrapPersistent(resolver));
   nfc_proxy_->Push(std::move(message),
-                   device::mojom::blink::NDEFPushOptions::From(options),
+                   device::mojom::blink::NDEFWriteOptions::From(options),
                    std::move(callback));
 }
 

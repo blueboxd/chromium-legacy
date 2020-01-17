@@ -136,6 +136,3 @@ export class ChromeHelper {
     return instance;
   }
 }
-
-/** @const */
-cca.mojo.ChromeHelper = ChromeHelper;

@@ -4,7 +4,12 @@
 
 #include "media/base/supported_types.h"
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
 
 namespace media {
 
@@ -168,36 +173,71 @@ TEST(SupportedTypesTest, IsSupportedAudioTypeWithSpatialRenderingBasics) {
   const bool is_spatial_rendering = true;
   // Dolby Atmos = E-AC3 (Dolby Digital Plus) + spatialRendering. Currently not
   // supported.
-  EXPECT_FALSE(IsSupportedAudioType({media::kCodecEAC3, is_spatial_rendering}));
+  EXPECT_FALSE(IsSupportedAudioType(
+      {media::kCodecEAC3, AudioCodecProfile::kUnknown, is_spatial_rendering}));
 
   // Expect non-support for codecs with which there is no spatial audio format.
-  EXPECT_FALSE(IsSupportedAudioType({media::kCodecAAC, is_spatial_rendering}));
-  EXPECT_FALSE(IsSupportedAudioType({media::kCodecMP3, is_spatial_rendering}));
-  EXPECT_FALSE(IsSupportedAudioType({media::kCodecPCM, is_spatial_rendering}));
+  EXPECT_FALSE(IsSupportedAudioType(
+      {media::kCodecAAC, AudioCodecProfile::kUnknown, is_spatial_rendering}));
+  EXPECT_FALSE(IsSupportedAudioType(
+      {media::kCodecMP3, AudioCodecProfile::kUnknown, is_spatial_rendering}));
+  EXPECT_FALSE(IsSupportedAudioType(
+      {media::kCodecPCM, AudioCodecProfile::kUnknown, is_spatial_rendering}));
   EXPECT_FALSE(
-      IsSupportedAudioType({media::kCodecVorbis, is_spatial_rendering}));
-  EXPECT_FALSE(IsSupportedAudioType({media::kCodecFLAC, is_spatial_rendering}));
+      IsSupportedAudioType({media::kCodecVorbis, AudioCodecProfile::kUnknown,
+                            is_spatial_rendering}));
+  EXPECT_FALSE(IsSupportedAudioType(
+      {media::kCodecFLAC, AudioCodecProfile::kUnknown, is_spatial_rendering}));
   EXPECT_FALSE(
-      IsSupportedAudioType({media::kCodecAMR_NB, is_spatial_rendering}));
+      IsSupportedAudioType({media::kCodecAMR_NB, AudioCodecProfile::kUnknown,
+                            is_spatial_rendering}));
   EXPECT_FALSE(
-      IsSupportedAudioType({media::kCodecAMR_WB, is_spatial_rendering}));
+      IsSupportedAudioType({media::kCodecAMR_WB, AudioCodecProfile::kUnknown,
+                            is_spatial_rendering}));
   EXPECT_FALSE(
-      IsSupportedAudioType({media::kCodecPCM_MULAW, is_spatial_rendering}));
+      IsSupportedAudioType({media::kCodecPCM_MULAW, AudioCodecProfile::kUnknown,
+                            is_spatial_rendering}));
   EXPECT_FALSE(
-      IsSupportedAudioType({media::kCodecGSM_MS, is_spatial_rendering}));
+      IsSupportedAudioType({media::kCodecGSM_MS, AudioCodecProfile::kUnknown,
+                            is_spatial_rendering}));
   EXPECT_FALSE(
-      IsSupportedAudioType({media::kCodecPCM_S16BE, is_spatial_rendering}));
+      IsSupportedAudioType({media::kCodecPCM_S16BE, AudioCodecProfile::kUnknown,
+                            is_spatial_rendering}));
   EXPECT_FALSE(
-      IsSupportedAudioType({media::kCodecPCM_S24BE, is_spatial_rendering}));
-  EXPECT_FALSE(IsSupportedAudioType({media::kCodecOpus, is_spatial_rendering}));
+      IsSupportedAudioType({media::kCodecPCM_S24BE, AudioCodecProfile::kUnknown,
+                            is_spatial_rendering}));
+  EXPECT_FALSE(IsSupportedAudioType(
+      {media::kCodecOpus, AudioCodecProfile::kUnknown, is_spatial_rendering}));
   EXPECT_FALSE(
-      IsSupportedAudioType({media::kCodecPCM_ALAW, is_spatial_rendering}));
-  EXPECT_FALSE(IsSupportedAudioType({media::kCodecALAC, is_spatial_rendering}));
-  EXPECT_FALSE(IsSupportedAudioType({media::kCodecAC3, is_spatial_rendering}));
-  EXPECT_FALSE(
-      IsSupportedAudioType({media::kCodecMpegHAudio, is_spatial_rendering}));
-  EXPECT_FALSE(
-      IsSupportedAudioType({media::kUnknownAudioCodec, is_spatial_rendering}));
+      IsSupportedAudioType({media::kCodecPCM_ALAW, AudioCodecProfile::kUnknown,
+                            is_spatial_rendering}));
+  EXPECT_FALSE(IsSupportedAudioType(
+      {media::kCodecALAC, AudioCodecProfile::kUnknown, is_spatial_rendering}));
+  EXPECT_FALSE(IsSupportedAudioType(
+      {media::kCodecAC3, AudioCodecProfile::kUnknown, is_spatial_rendering}));
+  EXPECT_FALSE(IsSupportedAudioType({media::kCodecMpegHAudio,
+                                     AudioCodecProfile::kUnknown,
+                                     is_spatial_rendering}));
+  EXPECT_FALSE(IsSupportedAudioType({media::kUnknownAudioCodec,
+                                     AudioCodecProfile::kUnknown,
+                                     is_spatial_rendering}));
+}
+
+TEST(SupportedTypesTest, XHE_AACSupportedOnAndroidOnly) {
+  // TODO(dalecurtis): Update this test if we ever have support elsewhere.
+#if defined(OS_ANDROID)
+  const bool is_supported =
+      kPropCodecsEnabled &&
+      base::android::BuildInfo::GetInstance()->sdk_int() >=
+          base::android::SDK_VERSION_P;
+
+  EXPECT_EQ(is_supported,
+            IsSupportedAudioType(
+                {media::kCodecAAC, AudioCodecProfile::kXHE_AAC, false}));
+#else
+  EXPECT_FALSE(IsSupportedAudioType(
+      {media::kCodecAAC, AudioCodecProfile::kXHE_AAC, false}));
+#endif
 }
 
 }  // namespace media

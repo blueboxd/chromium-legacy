@@ -57,8 +57,9 @@ class MainThreadWorkletTest : public PageTestBase {
     // Set up the CSP for Document before starting MainThreadWorklet because
     // MainThreadWorklet inherits the owner Document's CSP.
     auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-    csp->DidReceiveHeader(csp_header, kContentSecurityPolicyHeaderTypeEnforce,
-                          kContentSecurityPolicyHeaderSourceHTTP);
+    csp->DidReceiveHeader(csp_header,
+                          network::mojom::ContentSecurityPolicyType::kEnforce,
+                          network::mojom::ContentSecurityPolicySource::kHTTP);
     document->InitContentSecurityPolicy(csp);
 
     reporting_proxy_ =
@@ -161,7 +162,7 @@ TEST_F(MainThreadWorkletInvalidCSPTest, InvalidContentSecurityPolicy) {
   // At this point check that the CSP that was set is indeed invalid.
   EXPECT_EQ(1ul, csp->Headers().size());
   EXPECT_EQ("invalid-csp", csp->Headers().at(0).first);
-  EXPECT_EQ(kContentSecurityPolicyHeaderTypeEnforce,
+  EXPECT_EQ(network::mojom::ContentSecurityPolicyType::kEnforce,
             csp->Headers().at(0).second);
 }
 

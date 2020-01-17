@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
+#include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
@@ -58,9 +59,8 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
   void ShowUi(const std::string& name) override {
     ui_test_name_ = name;
 
-    ClickExtensionsMenuButton();
-
     if (name == "ReloadPageBubble") {
+      ClickExtensionsMenuButton();
       TriggerSingleExtensionButton();
     } else if (ui_test_name_ == "UninstallDialog_Accept" ||
                ui_test_name_ == "UninstallDialog_Cancel") {
@@ -86,6 +86,19 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
       // Wait for animations to finish so that the dialog should be showing.
       views::test::WaitForAnimatingLayoutManager(
           GetExtensionsToolbarContainer());
+    } else if (ui_test_name_ == "InstallDialog") {
+      LoadTestExtension("extensions/uitest/long_name");
+      LoadTestExtension("extensions/uitest/window_open");
+
+      // Trigger post-install dialog.
+      ExtensionInstalledBubble::ShowBubble(extensions_[0], browser(),
+                                           SkBitmap());
+
+      // Wait for animations to finish so that the dialog should be showing.
+      views::test::WaitForAnimatingLayoutManager(
+          GetExtensionsToolbarContainer());
+    } else {
+      ClickExtensionsMenuButton();
     }
   }
 
@@ -97,14 +110,17 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
           GetExtensionsToolbarContainer();
       // Clicking the extension should close the extensions menu, pop out the
       // extension, and display the "reload this page" bubble.
-      EXPECT_TRUE(container->action_bubble_public_for_testing());
+      EXPECT_TRUE(container->GetAnchoredWidgetForExtensionForTesting(
+          extensions_[0]->id()));
       EXPECT_FALSE(container->GetPoppedOutAction());
       EXPECT_FALSE(ExtensionsMenuView::IsShowing());
     } else if (ui_test_name_ == "UninstallDialog_Accept" ||
-               ui_test_name_ == "UninstallDialog_Cancel") {
+               ui_test_name_ == "UninstallDialog_Cancel" ||
+               ui_test_name_ == "InstallDialog") {
       ExtensionsToolbarContainer* const container =
           GetExtensionsToolbarContainer();
-      // With the anchored uninstall dialog the icon should now be visible.
+      // With the anchored install/uninstall dialog the icon should now be
+      // visible.
       EXPECT_TRUE(container->IsActionVisibleOnToolbar(
           container->GetActionForId(extensions_[0]->id())));
       EXPECT_TRUE(container->GetViewForId(extensions_[0]->id())->GetVisible());
@@ -117,6 +133,17 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
     if (ui_test_name_ == "UninstallDialog_Accept" ||
         ui_test_name_ == "UninstallDialog_Cancel") {
       DismissUninstallDialog();
+      return;
+    }
+
+    if (ui_test_name_ == "InstallDialog") {
+      ExtensionsToolbarContainer* const container =
+          GetExtensionsToolbarContainer();
+      views::BubbleDialogDelegateView* const install_bubble =
+          container->GetViewForId(extensions_[0]->id())
+              ->GetProperty(views::kAnchoredDialogKey);
+      ASSERT_TRUE(install_bubble);
+      install_bubble->GetWidget()->Close();
       return;
     }
 
@@ -254,12 +281,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   test_dir.WriteFile(FILE_PATH_LITERAL("script.js"),
                      "console.log('injected!');");
 
-  scoped_refptr<const extensions::Extension> extension =
+  extensions_.push_back(
       extensions::ChromeTestExtensionLoader(profile()).LoadExtension(
-          test_dir.UnpackedPath());
-  ASSERT_TRUE(extension);
+          test_dir.UnpackedPath()));
+  ASSERT_EQ(1u, extensions_.size());
+  ASSERT_TRUE(extensions_.front());
 
-  extensions::ScriptingPermissionsModifier(profile(), extension)
+  extensions::ScriptingPermissionsModifier(profile(), extensions_.front())
       .SetWithholdHostPermissions(true);
 
   // Navigate to a page the extension wants to run on.
@@ -364,6 +392,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_InstallDialog) {
+  ShowAndVerifyUi();
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
                        InvokeUi_UninstallDialog_Accept) {
   ShowAndVerifyUi();
@@ -402,10 +434,13 @@ IN_PROC_BROWSER_TEST_P(ActivateWithReloadExtensionsMenuBrowserTest,
 
   TriggerSingleExtensionButton();
 
-  auto* const action_bubble = BrowserView::GetBrowserViewForBrowser(browser())
-                                  ->toolbar()
-                                  ->extensions_container()
-                                  ->action_bubble_public_for_testing();
+  auto* const action_bubble =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()
+          ->extensions_container()
+          ->GetAnchoredWidgetForExtensionForTesting(extensions_[0]->id())
+          ->widget_delegate()
+          ->AsDialogDelegate();
   ASSERT_TRUE(action_bubble);
 
   const bool accept_reload_dialog = GetParam();

@@ -17,7 +17,8 @@
 
 namespace ui {
 
-InputMethodFuchsia::InputMethodFuchsia(internal::InputMethodDelegate* delegate)
+InputMethodFuchsia::InputMethodFuchsia(internal::InputMethodDelegate* delegate,
+                                       gfx::AcceleratedWidget widget)
     : InputMethodBase(delegate),
       event_converter_(this),
       ime_client_binding_(this),

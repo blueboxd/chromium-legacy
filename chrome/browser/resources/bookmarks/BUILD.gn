@@ -29,9 +29,7 @@ if (optimize_webui) {
     pak_file = bookmarks_pak_file
     out_folder = unpak_folder
 
-    deps = [
-      ":flattened_resources",
-    ]
+    deps = [ ":flattened_resources" ]
   }
 
   grit("flattened_resources") {
@@ -44,9 +42,7 @@ if (optimize_webui) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
-    deps = [
-      ":polymer3_elements",
-    ]
+    deps = [ ":polymer3_elements" ]
     defines = chrome_grit_defines
     outputs = [
       "grit/bookmarks_resources.h",
@@ -240,9 +236,7 @@ js_library("debouncer") {
 }
 
 js_library("dialog_focus_manager") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 js_library("dnd_manager") {
@@ -381,15 +375,11 @@ js_library("toolbar") {
 }
 
 js_library("types") {
-  deps = [
-    ":constants",
-  ]
+  deps = [ ":constants" ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("util") {
-  deps = [
-    ":types",
-  ]
+  deps = [ ":types" ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }

@@ -102,6 +102,19 @@ const PrinterSetupResult = {
 };
 
 /**
+ *  @enum {number}
+ *  These values must be kept in sync with the PrintServerQueryResult enum in
+ *  /chrome/browser/chromeos/printing/server_printers_fetcher.h
+ */
+const PrintServerResult = {
+  NO_ERRORS: 0,
+  INCORRECT_URL: 1,
+  CONNECTION_ERROR: 2,
+  HTTP_ERROR: 3,
+  CANNOT_PARSE_IPP_RESPONSE: 4,
+};
+
+/**
  * @typedef {{
  *   message: string
  * }}

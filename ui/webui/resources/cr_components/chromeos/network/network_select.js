@@ -167,12 +167,12 @@ Polymer({
         defaultNetwork = state;
         break;
       }
-      if (state.connectionState == mojom.ConnectionStateType.kConnecting &&
+      if (state.connectionState === mojom.ConnectionStateType.kConnecting &&
           !defaultNetwork) {
         defaultNetwork = state;
         // Do not break here in case a non WiFi network is connecting but a
         // WiFi network is connected.
-      } else if (state.type == mojom.NetworkType.kWiFi) {
+      } else if (state.type === mojom.NetworkType.kWiFi) {
         break;  // Non connecting or connected WiFI networks are always last.
       }
     }
@@ -186,7 +186,7 @@ Polymer({
    */
   getNetwork(guid) {
     return this.networkStateList_.find(function(network) {
-      return network.guid == guid;
+      return network.guid === guid;
     });
   },
 
@@ -215,7 +215,7 @@ Polymer({
    */
   onGetNetworkStateList_(deviceStates, networkStates) {
     this.cellularDeviceState_ = deviceStates.find(function(device) {
-      return device.type == mojom.NetworkType.kCellular;
+      return device.type === mojom.NetworkType.kCellular;
     });
     if (this.cellularDeviceState_) {
       this.ensureCellularNetwork_(networkStates);
@@ -227,8 +227,8 @@ Polymer({
 
     if ((!defaultNetwork && !this.defaultNetworkState_) ||
         (defaultNetwork && this.defaultNetworkState_ &&
-         defaultNetwork.guid == this.defaultNetworkState_.guid &&
-         defaultNetwork.connectionState ==
+         defaultNetwork.guid === this.defaultNetworkState_.guid &&
+         defaultNetwork.connectionState ===
              this.defaultNetworkState_.connectionState)) {
       return;  // No change to network or ConnectionState
     }
@@ -248,13 +248,13 @@ Polymer({
    */
   ensureCellularNetwork_(networkStates) {
     if (networkStates.find(function(network) {
-          return network.type == mojom.NetworkType.kCellular;
+          return network.type === mojom.NetworkType.kCellular;
         })) {
       return;
     }
     const deviceState = this.cellularDeviceState_.deviceState;
-    if (deviceState == mojom.DeviceStateType.kDisabled ||
-        deviceState == mojom.DeviceStateType.kProhibited) {
+    if (deviceState === mojom.DeviceStateType.kDisabled ||
+        deviceState === mojom.DeviceStateType.kProhibited) {
       return;  // No Cellular network
     }
 
@@ -268,7 +268,7 @@ Polymer({
 
     // Insert the Cellular network after the Ethernet network if it exists.
     const idx = (networkStates.length > 0 &&
-                 networkStates[0].type == mojom.NetworkType.kEthernet) ?
+                 networkStates[0].type === mojom.NetworkType.kEthernet) ?
         1 :
         0;
     networkStates.splice(idx, 0, cellular);

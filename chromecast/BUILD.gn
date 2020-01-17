@@ -25,9 +25,7 @@ declare_args() {
 # Depends on all non-test targets that should be built by the Chromecast
 # internal build infrastructure.
 group("all") {
-  deps = [
-    "//chromecast/build:archive",
-  ]
+  deps = [ "//chromecast/build:archive" ]
   if (is_android && chromecast_branding == "public") {
     deps += [ ":cast_shell_apk" ]
   }
@@ -147,6 +145,7 @@ cast_test_group("cast_tests") {
         "--no-sandbox",
         "--enable-local-file-accesses",
         "--test-launcher-jobs=1",
+        "--enable-hardware-overlays=\"\"",
       ]
 
       gtest_excludes = []
@@ -446,15 +445,11 @@ test("cast_shell_browsertests") {
     "//chromecast/browser:browsertests",
   ]
 
-  data_deps = [
-    ":chromecast_locales_pak",
-  ]
+  data_deps = [ ":chromecast_locales_pak" ]
 }
 
 group("cast_shell_lib") {
-  data_deps = [
-    ":cast_shell_pak",
-  ]
+  data_deps = [ ":cast_shell_pak" ]
 
   deps = [
     "//chromecast/app",
@@ -470,9 +465,7 @@ group("cast_shell_lib") {
 }
 
 cast_executable("cast_shell") {
-  sources = [
-    "app/cast_main.cc",
-  ]
+  sources = [ "app/cast_main.cc" ]
 
   deps = [
     ":cast_shell_lib",
@@ -545,12 +538,9 @@ foreach(locale, cast_locales) {
   repack("_cast_repack_${locale}") {
     visibility = [ ":chromecast_locales_pak" ]
     output = "$root_out_dir/chromecast_locales/${locale}.pak"
-    sources = [
-      "$root_gen_dir/chromecast/app/chromecast_settings_${locale}.pak",
-    ]
-    deps = [
-      "//chromecast/app:chromecast_settings",
-    ]
+    sources =
+        [ "$root_gen_dir/chromecast/app/chromecast_settings_${locale}.pak" ]
+    deps = [ "//chromecast/app:chromecast_settings" ]
 
     if (chromecast_branding != "public") {
       sources += [
@@ -608,9 +598,7 @@ if (is_android) {
   android_assets("cast_shell_apk_assets") {
     assert(v8_use_external_startup_data)
 
-    sources = [
-      "$root_out_dir/assets/cast_shell.pak",
-    ]
+    sources = [ "$root_out_dir/assets/cast_shell.pak" ]
 
     deps = [
       ":cast_shell_apk_locale_assets",
@@ -630,9 +618,7 @@ if (is_android) {
       renaming_destinations += [ "stored-locales/${locale}.pak" ]
     }
 
-    deps = [
-      ":chromecast_locales_pak",
-    ]
+    deps = [ ":chromecast_locales_pak" ]
 
     treat_as_locale_paks = true
     disable_compression = true

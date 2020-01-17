@@ -540,6 +540,7 @@ bool DownloadUIModel::IsCommandEnabled(
     case DownloadCommands::LEARN_MORE_SCANNING:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::DEEP_SCAN:
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
       return true;
   }
   NOTREACHED();
@@ -567,6 +568,7 @@ bool DownloadUIModel::IsCommandChecked(
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::ANNOTATE:
     case DownloadCommands::DEEP_SCAN:
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
       return false;
   }
   return false;
@@ -617,6 +619,8 @@ void DownloadUIModel::ExecuteCommand(DownloadCommands* download_commands,
 #endif  // defined(OS_CHROMEOS)
       break;
     case DownloadCommands::DEEP_SCAN:
+      break;
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
       break;
   }
 }

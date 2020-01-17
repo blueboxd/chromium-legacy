@@ -33,9 +33,7 @@ blink_platform_sources("blob") {
     "serialized_blob_mojom_traits.h",
   ]
 
-  deps = [
-    "//services/network/public/mojom:mojom_blink",
-  ]
+  deps = [ "//services/network/public/mojom:mojom_blink" ]
 }
 
 jumbo_source_set("unit_tests") {

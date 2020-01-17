@@ -89,9 +89,10 @@ class OzonePlatformHeadless : public OzonePlatform {
     return std::make_unique<HeadlessScreen>();
   }
   std::unique_ptr<InputMethod> CreateInputMethod(
-      internal::InputMethodDelegate* delegate) override {
+      internal::InputMethodDelegate* delegate,
+      gfx::AcceleratedWidget widget) override {
 #if defined(OS_FUCHSIA)
-    return std::make_unique<InputMethodFuchsia>(delegate);
+    return std::make_unique<InputMethodFuchsia>(delegate, widget);
 #else
     return std::make_unique<InputMethodMinimal>(delegate);
 #endif

@@ -38,9 +38,7 @@ if (enable_pdf) {
       "//ui/gfx/range",
     ]
 
-    public_deps = [
-      "//gin",
-    ]
+    public_deps = [ "//gin" ]
 
     public = [
       "pdf.h",
@@ -131,13 +129,9 @@ if (enable_pdf) {
 
   source_set("features") {
     configs += [ ":pdf_common_config" ]
-    deps = [
-      "//base",
-    ]
+    deps = [ "//base" ]
 
-    public = [
-      "pdf_features.h",
-    ]
+    public = [ "pdf_features.h" ]
 
     sources = [
       "pdf_features.cc",
@@ -191,9 +185,7 @@ if (enable_pdf) {
       "//ui/gfx/range",
     ]
 
-    data = [
-      "test/data/",
-    ]
+    data = [ "test/data/" ]
 
     if (pdf_engine == 0) {
       configs += [ "//v8:external_startup_data" ]

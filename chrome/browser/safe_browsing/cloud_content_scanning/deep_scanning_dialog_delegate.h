@@ -21,6 +21,7 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
+#include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "url/gurl.h"
@@ -129,6 +130,9 @@ class DeepScanningDialogDelegate {
           Data,
           CompletionCallback)>;
 
+  using AnalyzeCallback = base::OnceCallback<void(
+      const safe_browsing::ArchiveAnalyzerResults& results)>;
+
   DeepScanningDialogDelegate(const DeepScanningDialogDelegate&) = delete;
   DeepScanningDialogDelegate& operator=(const DeepScanningDialogDelegate&) =
       delete;
@@ -195,6 +199,16 @@ class DeepScanningDialogDelegate {
   // Uploads data for deep scanning.  Returns true if uploading is occurring in
   // the background and false if there is nothing to do.
   bool UploadData();
+
+  // Prepares an upload request for the file at |path|.  If the file
+  // cannot be uploaded it will have a failure verdict added to |result_|.
+  // Virtual so that it can be overridden in tests.
+  virtual void PrepareFileRequest(base::FilePath path,
+                                  AnalyzeCallback callback);
+
+  // Prepares an upload request for the given file.
+  void AnalyzerCallback(int index,
+                        const safe_browsing::ArchiveAnalyzerResults& results);
 
   // Adds required fields to |request| before sending it to the binary upload
   // service.

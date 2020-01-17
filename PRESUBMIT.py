@@ -3306,7 +3306,7 @@ def _CheckAndroidTestJUnitFrameworkImport(input_api, output_api):
   sources = lambda x: input_api.FilterSourceFile(
       x, white_list=[r'.*\.java$'], black_list=None)
   errors = []
-  for f in input_api.AffectedFiles(sources):
+  for f in input_api.AffectedFiles(file_filter=sources):
     for line_num, line in f.ChangedContents():
       if deprecated_junit_framework_pattern.search(line):
         errors.append("%s:%d" % (f.LocalPath(), line_num))
@@ -3330,7 +3330,7 @@ def _CheckAndroidTestJUnitInheritance(input_api, output_api):
   sources = lambda x: input_api.FilterSourceFile(
       x, white_list=[r'.*Test\.java$'], black_list=None)
   errors = []
-  for f in input_api.AffectedFiles(sources):
+  for f in input_api.AffectedFiles(file_filter=sources):
     if not f.OldContents():
       class_declaration_start_flag = False
       for line_num, line in f.ChangedContents():
@@ -3359,7 +3359,7 @@ def _CheckAndroidTestAnnotationUsage(input_api, output_api):
   sources = lambda x: input_api.FilterSourceFile(
       x, white_list=[r'.*\.java$'], black_list=None)
   errors = []
-  for f in input_api.AffectedFiles(sources):
+  for f in input_api.AffectedFiles(file_filter=sources):
     for line_num, line in f.ChangedContents():
       if deprecated_annotation_import_pattern.search(line):
         errors.append("%s:%d" % (f.LocalPath(), line_num))

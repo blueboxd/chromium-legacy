@@ -72,13 +72,20 @@ bool GetBytesOfBufferSource(const NDEFRecordDataSource& buffer_source,
 // https://w3c.github.io/web-nfc/#dfn-validate-external-type
 // Validates |input| as an external type.
 bool IsValidExternalType(const String& input) {
-  static const String kOtherCharsForCustomType("()+,-=@;$_*'.");
+  static const String kOtherCharsForCustomType(":!()+,-=@;$_*'.");
 
+  // Ensure |input| is an ASCII string.
+  if (!input.ContainsOnlyASCIIOrEmpty())
+    return false;
+
+  // As all characters in |input| is ASCII, limiting its length within 255 just
+  // limits the length of its utf-8 encoded bytes we finally write into the
+  // record payload.
   if (input.IsEmpty() || input.length() > 255)
     return false;
 
-  // Finds the last occurrence of ':'.
-  wtf_size_t colon_index = input.ReverseFind(':');
+  // Finds the first occurrence of ':'.
+  wtf_size_t colon_index = input.find(':');
   if (colon_index == kNotFound)
     return false;
 
@@ -86,9 +93,7 @@ bool IsValidExternalType(const String& input) {
   String domain = input.Left(colon_index);
   if (domain.IsEmpty())
     return false;
-  // TODO(https://crbug.com/520391): Make sure |domain| can be converted
-  // successfully to ASCII using IDN rules and does not contain any forbidden
-  // host code point.
+  // TODO(https://crbug.com/520391): Validate |domain|.
 
   // Validates the type (the part after ':').
   String type = input.Substring(colon_index + 1);
@@ -146,21 +151,26 @@ static NDEFRecord* CreateTextRecord(const String& id,
     return nullptr;
   }
 
-  String encoding_label = !encoding.IsEmpty() ? encoding : "utf-8";
-  if (encoding_label != "utf-8" && encoding_label != "utf-16" &&
-      encoding_label != "utf-16be" && encoding_label != "utf-16le") {
-    exception_state.ThrowTypeError(
-        "Encoding must be either \"utf-8\", \"utf-16\", \"utf-16be\", or "
-        "\"utf-16le\".");
-    return nullptr;
-  }
-
+  String encoding_label = encoding.IsNull() ? "utf-8" : encoding;
   WTF::Vector<uint8_t> bytes;
   if (data.IsString()) {
+    if (encoding_label != "utf-8") {
+      exception_state.ThrowTypeError(
+          "A DOMString data source is always encoded as \"utf-8\" so other "
+          "encodings are not allowed.");
+      return nullptr;
+    }
     StringUTF8Adaptor utf8_string(data.GetAsString());
     bytes.Append(utf8_string.data(), utf8_string.size());
   } else {
     DCHECK(IsBufferSource(data));
+    if (encoding_label != "utf-8" && encoding_label != "utf-16" &&
+        encoding_label != "utf-16be" && encoding_label != "utf-16le") {
+      exception_state.ThrowTypeError(
+          "Encoding must be either \"utf-8\", \"utf-16\", \"utf-16be\", or "
+          "\"utf-16le\".");
+      return nullptr;
+    }
     if (!GetBytesOfBufferSource(data, &bytes, exception_state)) {
       return nullptr;
     }

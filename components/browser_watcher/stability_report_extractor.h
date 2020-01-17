@@ -7,7 +7,7 @@
 #ifndef COMPONENTS_BROWSER_WATCHER_STABILITY_REPORT_EXTRACTOR_H_
 #define COMPONENTS_BROWSER_WATCHER_STABILITY_REPORT_EXTRACTOR_H_
 
-#include "base/files/file_path.h"
+#include "base/debug/activity_analyzer.h"
 #include "components/browser_watcher/stability_report.pb.h"
 
 namespace browser_watcher {
@@ -29,11 +29,10 @@ enum CollectionStatus {
   COLLECTION_STATUS_MAX = 11
 };
 
-// Extracts a stability report from a stability file.
-// TODO(manzagop): have a function that takes a GlobalActivityAnalyzer instead
-// and simplify testing.
-CollectionStatus Extract(const base::FilePath& stability_file,
-                         StabilityReport* report);
+// Extracts a stability report from an existing GlobalActivityAnalyzer.
+CollectionStatus Extract(
+    std::unique_ptr<base::debug::GlobalActivityAnalyzer> global_analyzer,
+    StabilityReport* report);
 
 }  // namespace browser_watcher
 

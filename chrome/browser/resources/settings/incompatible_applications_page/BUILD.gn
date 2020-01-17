@@ -13,9 +13,7 @@ js_type_check("closure_compile") {
 }
 
 js_library("incompatible_applications_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("incompatible_applications_page") {

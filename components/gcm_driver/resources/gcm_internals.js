@@ -29,6 +29,37 @@ cr.define('gcmInternals', function() {
   }
 
   /**
+   * Sets the registeredAppIds from |info| to the element identified by
+   * |elementId|. The list will have duplicates counted and visually shown.
+   * @param {!Object} info A dictionary of device infos to be displayed.
+   * @param {string} prop Name of the property.
+   * @param {string} elementId The id of a HTML element.
+   */
+  function setRegisteredAppIdsIfExists(info, prop, elementId) {
+    const element = $(elementId);
+    if (!element) {
+      return;
+    }
+
+    if (info[prop] === undefined || !Array.isArray(info[prop])) {
+      return;
+    }
+
+    const registeredAppIds = new Map();
+    info[prop].forEach(registeredAppId => {
+      registeredAppIds.set(
+          registeredAppId, (registeredAppIds.get(registeredAppId) || 0) + 1);
+    });
+
+    const list = [];
+    for (const [registeredAppId, count] of registeredAppIds.entries()) {
+      list.push(registeredAppId + (count > 1 ? ` (x${count})` : ``));
+    }
+
+    element.textContent = list.join(', ');
+  }
+
+  /**
    * Display device informations.
    * @param {!Object} info A dictionary of device infos to be displayed.
    */
@@ -43,9 +74,10 @@ cr.define('gcmInternals', function() {
     setIfExists(info, 'connectionState', 'connection-state');
     setIfExists(info, 'lastCheckin', 'last-checkin');
     setIfExists(info, 'nextCheckin', 'next-checkin');
-    setIfExists(info, 'registeredAppIds', 'registered-app-ids');
     setIfExists(info, 'sendQueueSize', 'send-queue-size');
     setIfExists(info, 'resendQueueSize', 'resend-queue-size');
+
+    setRegisteredAppIdsIfExists(info, 'registeredAppIds', 'registered-app-ids');
   }
 
   /**

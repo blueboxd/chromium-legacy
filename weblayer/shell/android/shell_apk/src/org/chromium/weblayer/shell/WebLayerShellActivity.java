@@ -22,6 +22,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.ValueCallback;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -248,6 +249,12 @@ public class WebLayerShellActivity extends FragmentActivity {
                         DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                 getSystemService(DownloadManager.class).enqueue(request);
                 return true;
+            }
+
+            @Override
+            public void allowDownload(Uri uri, String requestMethod, Uri requestInitiator,
+                    ValueCallback<Boolean> callback) {
+                callback.onReceiveValue(true);
             }
         });
         tab.setErrorPageCallback(new ErrorPageCallback() {

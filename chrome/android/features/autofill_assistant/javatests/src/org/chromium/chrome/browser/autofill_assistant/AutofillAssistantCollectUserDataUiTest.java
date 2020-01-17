@@ -959,9 +959,13 @@ public class AutofillAssistantCollectUserDataUiTest {
                     new AssistantDateChoiceOptions(endTime, minTime, maxTime));
             model.set(AssistantCollectUserDataModel.DATE_RANGE_START_LABEL, "Pick up");
             model.set(AssistantCollectUserDataModel.DATE_RANGE_END_LABEL, "Return");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_INVALID_ERROR_MESSAGE,
+                    "Return must be later than pick up");
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
+        onView(withText("Return must be later than pick up"))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)));
         onView(allOf(withId(R.id.datetime), isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
                        withText("Oct 21, 2019 8:00 AM")))
                 .check(matches(isDisplayed()));
@@ -1002,9 +1006,13 @@ public class AutofillAssistantCollectUserDataUiTest {
                     new AssistantDateChoiceOptions(endTime, minTime, maxTime));
             model.set(AssistantCollectUserDataModel.DATE_RANGE_START_LABEL, "Pick up");
             model.set(AssistantCollectUserDataModel.DATE_RANGE_END_LABEL, "Return");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_INVALID_ERROR_MESSAGE,
+                    "Return must be later than pick up");
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
+        onView(withText("Return must be later than pick up"))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)));
         onView(allOf(withId(R.id.datetime), isDescendantOfA(is(viewHolder.mDateRangeStartSection)),
                        withText("21.10.2019 08:00")))
                 .check(matches(isDisplayed()));
@@ -1047,6 +1055,8 @@ public class AutofillAssistantCollectUserDataUiTest {
                     new AssistantDateChoiceOptions(endTime, minTime, maxTime));
             model.set(AssistantCollectUserDataModel.DATE_RANGE_START_LABEL, "Pick up");
             model.set(AssistantCollectUserDataModel.DATE_RANGE_END_LABEL, "Return");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_INVALID_ERROR_MESSAGE,
+                    "Return must be later than pick up");
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
@@ -1057,6 +1067,8 @@ public class AutofillAssistantCollectUserDataUiTest {
         onView(allOf(withId(R.id.datetime), isDescendantOfA(is(viewHolder.mDateRangeEndSection)),
                        withText("Oct 21, 2019 8:00 AM")))
                 .check(matches(isDisplayed()));
+        onView(withText("Return must be later than pick up"))
+                .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
 
         assertThat(delegate.mDateRangeStart.getTimeInUtcMillis(), is(endTime.getTimeInUtcMillis()));
         assertThat(delegate.mDateRangeEnd.getTimeInUtcMillis(), is(endTime.getTimeInUtcMillis()));
@@ -1089,12 +1101,16 @@ public class AutofillAssistantCollectUserDataUiTest {
                     new AssistantDateChoiceOptions(endTime, minTime, maxTime));
             model.set(AssistantCollectUserDataModel.DATE_RANGE_START_LABEL, "Pick up");
             model.set(AssistantCollectUserDataModel.DATE_RANGE_END_LABEL, "Return");
+            model.set(AssistantCollectUserDataModel.DATE_RANGE_INVALID_ERROR_MESSAGE,
+                    "Return must be later than pick up");
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
         AssistantDateTime newStartTime = new AssistantDateTime(2019, 11, 3, 12, 0, 0);
         AssistantDateTime newEndTime = new AssistantDateTime(2019, 11, 12, 20, 30, 0);
 
+        onView(withText("Return must be later than pick up"))
+                .check(matches(withEffectiveVisibility(Visibility.GONE)));
         onView(allOf(withId(R.id.datetime), isDescendantOfA(is(viewHolder.mDateRangeStartSection))))
                 .perform(click());
         onView(withId(R.id.date_picker))

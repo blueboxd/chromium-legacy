@@ -461,6 +461,3 @@ export class Preview {
     document.querySelector('#preview-focus-aim').hidden = true;
   }
 }
-
-/** @const */
-cca.views.camera.Preview = Preview;

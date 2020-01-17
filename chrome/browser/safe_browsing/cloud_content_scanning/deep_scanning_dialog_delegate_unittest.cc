@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -76,6 +77,11 @@ class BaseTest : public testing::Test {
   void SetWaitPolicy(DelayDeliveryUntilVerdictValues state) {
     TestingBrowserProcess::GetGlobal()->local_state()->SetInteger(
         prefs::kDelayDeliveryUntilVerdict, state);
+  }
+
+  void SetAllowPasswordPolicy(AllowPasswordProtectedFilesValues state) {
+    TestingBrowserProcess::GetGlobal()->local_state()->SetInteger(
+        prefs::kAllowPasswordProtectedFiles, state);
   }
 
   void SetMalwarePolicy(SendFilesForMalwareCheckValues state) {
@@ -539,6 +545,10 @@ class DeepScanningDialogDelegateAuditOnlyTest : public BaseTest {
     failures_.insert({std::move(path), std::move(response)});
   }
 
+  void SetPathIsEncrypted(base::FilePath path) {
+    encrypted_.insert(std::move(path));
+  }
+
   void SetScanPolicies(bool dlp, bool malware) {
     include_dlp_ = dlp;
     include_malware_ = malware;
@@ -564,8 +574,12 @@ class DeepScanningDialogDelegateAuditOnlyTest : public BaseTest {
 
     DeepScanningDialogDelegate::SetFactoryForTesting(base::BindRepeating(
         &FakeDeepScanningDialogDelegate::Create, run_loop_.QuitClosure(),
-        base::Bind(&DeepScanningDialogDelegateAuditOnlyTest::StatusCallback,
-                   base::Unretained(this)),
+        base::BindRepeating(
+            &DeepScanningDialogDelegateAuditOnlyTest::StatusCallback,
+            base::Unretained(this)),
+        base::BindRepeating(
+            &DeepScanningDialogDelegateAuditOnlyTest::EncryptionStatusCallback,
+            base::Unretained(this)),
         kDmToken));
   }
 
@@ -584,6 +598,10 @@ class DeepScanningDialogDelegateAuditOnlyTest : public BaseTest {
     return response;
   }
 
+  bool EncryptionStatusCallback(const base::FilePath& path) {
+    return encrypted_.count(path) > 0;
+  }
+
   base::RunLoop run_loop_;
   std::unique_ptr<content::WebContents> web_contents_;
   ScopedSetDMToken scoped_dm_token_{
@@ -594,6 +612,10 @@ class DeepScanningDialogDelegateAuditOnlyTest : public BaseTest {
   // Paths in this map will be consider to have failed deep scan checks.
   // The actual failure response is given for each path.
   std::map<base::FilePath, DeepScanningClientResponse> failures_;
+
+  // Paths in this set will be considered to contain encryption and will
+  // not be uploaded.
+  std::set<base::FilePath> encrypted_;
 
   // DLP response to ovewrite in the callback if present.
   base::Optional<DlpDeepScanningVerdict> dlp_verdict_ = base::nullopt;
@@ -752,6 +774,66 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest,
             EXPECT_EQ(2u, result.paths_results.size());
             EXPECT_TRUE(result.paths_results[0]);
             EXPECT_TRUE(result.paths_results[1]);
+            *called = true;
+          },
+          &called));
+  RunUntilDone();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileIsEncrypted) {
+  SetScanPolicies(/*dlp=*/true, /*malware=*/true);
+  SetAllowPasswordPolicy(ALLOW_NONE);
+  AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent, "*");
+  GURL url(kTestUrl);
+  DeepScanningDialogDelegate::Data data;
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
+
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/enc.zip"));
+
+  SetPathIsEncrypted(data.paths[0]);
+
+  bool called = false;
+  DeepScanningDialogDelegate::ShowForWebContents(
+      contents(), std::move(data),
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(0u, data.text.size());
+            EXPECT_EQ(1u, data.paths.size());
+            EXPECT_EQ(0u, result.text_results.size());
+            EXPECT_EQ(1u, result.paths_results.size());
+            EXPECT_FALSE(result.paths_results[0]);
+            *called = true;
+          },
+          &called));
+  RunUntilDone();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileIsEncrypted_PolicyAllows) {
+  SetScanPolicies(/*dlp=*/true, /*malware=*/true);
+  SetAllowPasswordPolicy(ALLOW_UPLOADS);
+  AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent, "*");
+  GURL url(kTestUrl);
+  DeepScanningDialogDelegate::Data data;
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
+
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/enc.zip"));
+
+  SetPathIsEncrypted(data.paths[0]);
+
+  bool called = false;
+  DeepScanningDialogDelegate::ShowForWebContents(
+      contents(), std::move(data),
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(0u, data.text.size());
+            EXPECT_EQ(1u, data.paths.size());
+            EXPECT_EQ(0u, result.text_results.size());
+            EXPECT_EQ(1u, result.paths_results.size());
+            EXPECT_TRUE(result.paths_results[0]);
             *called = true;
           },
           &called));
@@ -1127,18 +1209,13 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedTypes) {
   DeepScanningDialogDelegate::Data data;
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
 
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.7z"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.bzip"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.cab"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.docx"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.eps"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.gzip"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.hwp"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.img_for_ocr"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.kml"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.kmz"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.odp"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.ods"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.odt"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.pdf"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.ppt"));
@@ -1146,21 +1223,11 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedTypes) {
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.ps"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.rar"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.rtf"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sdc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sdd"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sdw"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.7z"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sxc"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sxi"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.sxw"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.tar"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.ttf"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.txt"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.wml"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.wpd"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.xls"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.xlsx"));
-  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.xml"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.xps"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.zip"));
 
@@ -1175,8 +1242,8 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, SupportedTypes) {
       base::BindOnce(
           [](bool* called, const DeepScanningDialogDelegate::Data& data,
              const DeepScanningDialogDelegate::Result& result) {
-            EXPECT_EQ(36u, data.paths.size());
-            ASSERT_EQ(36u, result.paths_results.size());
+            EXPECT_EQ(21u, data.paths.size());
+            EXPECT_EQ(21u, result.paths_results.size());
 
             // The supported types should be marked as false.
             for (const auto& result : result.paths_results)

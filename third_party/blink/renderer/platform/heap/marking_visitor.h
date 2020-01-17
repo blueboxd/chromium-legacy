@@ -161,10 +161,11 @@ class PLATFORM_EXPORT MarkingVisitor
   // Returns whether an object is in construction.
   static bool IsInConstruction(HeapObjectHeader* header);
 
-  // Write barrier that adds |value| to the set of marked objects. The barrier
-  // bails out if marking is off or the object is not yet marked. Returns true
-  // if the object was marked on this call.
-  static bool WriteBarrier(void* value);
+  // Write barrier that adds a value the |slot| refers to to the set of marked
+  // objects. The barrier bails out if marking is off or the object is not yet
+  // marked. Returns true if the object was marked on this call.
+  template <typename T>
+  static bool WriteBarrier(T** slot);
 
   // Eagerly traces an already marked backing store ensuring that all its
   // children are discovered by the marker. The barrier bails out if marking
@@ -186,7 +187,11 @@ class PLATFORM_EXPORT MarkingVisitor
   // to be in construction.
   void DynamicallyMarkAddress(Address);
 
-  void FlushMarkingWorklist();
+  // Adds tracing callback for an already marked object. The object is not
+  // allowed to be in construction.
+  void VisitMarkedHeader(HeapObjectHeader* header);
+
+  void FlushMarkingWorklists();
 
  private:
   // Exact version of the marking write barriers.
@@ -204,13 +209,14 @@ ALWAYS_INLINE bool MarkingVisitor::IsInConstruction(HeapObjectHeader* header) {
 }
 
 // static
-ALWAYS_INLINE bool MarkingVisitor::WriteBarrier(void* value) {
+template <typename T>
+ALWAYS_INLINE bool MarkingVisitor::WriteBarrier(T** slot) {
   if (!ThreadState::IsAnyIncrementalMarking())
     return false;
 
   // Avoid any further checks and dispatch to a call at this point. Aggressive
   // inlining otherwise pollutes the regular execution paths.
-  return WriteBarrierSlow(value);
+  return WriteBarrierSlow(*slot);
 }
 
 // static

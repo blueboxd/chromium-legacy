@@ -56,9 +56,7 @@ source_set("web") {
     "//ui/base",
     "//url",
   ]
-  public_deps = [
-    ":tab_id_tab_helper",
-  ]
+  public_deps = [ ":tab_id_tab_helper" ]
 }
 
 source_set("page_placeholder") {
@@ -182,27 +180,19 @@ js_compile_bundle("chrome_bundle_main_frame") {
 }
 
 js_compile_checked("payment_request") {
-  sources = [
-    "resources/payment_request.js",
-  ]
+  sources = [ "resources/payment_request.js" ]
 }
 
 js_compile_checked("credential_manager") {
-  sources = [
-    "resources/credential_manager.js",
-  ]
+  sources = [ "resources/credential_manager.js" ]
 }
 
 js_compile_checked("accessibility") {
-  sources = [
-    "resources/accessibility.js",
-  ]
+  sources = [ "resources/accessibility.js" ]
 }
 
 js_compile_checked("image_fetch") {
-  sources = [
-    "resources/image_fetch.js",
-  ]
+  sources = [ "resources/image_fetch.js" ]
 }
 
 source_set("java_script_console") {
@@ -273,9 +263,7 @@ source_set("web_internal") {
     "//ui/gfx",
     "//url",
   ]
-  public_deps = [
-    ":java_script_console",
-  ]
+  public_deps = [ ":java_script_console" ]
   libs = [
     "UIKit.framework",
     "Foundation.framework",
@@ -421,9 +409,7 @@ source_set("eg_test_support+eg2") {
   ]
   testonly = true
 
-  sources = [
-    "progress_indicator_app_interface.h",
-  ]
+  sources = [ "progress_indicator_app_interface.h" ]
 
   deps = [
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
@@ -507,9 +493,7 @@ source_set("eg2_tests") {
 source_set("perf_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "early_page_script_perftest.mm",
-  ]
+  sources = [ "early_page_script_perftest.mm" ]
   deps = [
     "//base",
     "//base/test:test_support",
@@ -527,7 +511,5 @@ source_set("feature_flags") {
     "features.cc",
     "features.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

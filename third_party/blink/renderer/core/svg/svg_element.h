@@ -59,10 +59,6 @@ class CORE_EXPORT SVGElement : public Element {
 
   bool SupportsFocus() const override { return false; }
 
-  // The TreeScope this element should resolve id's against. This differs from
-  // the regular Node::treeScope() by taking <use> into account.
-  TreeScope& TreeScopeForIdResolution() const;
-
   bool IsOutermostSVGSVGElement() const;
 
   bool HasTagName(const SVGQualifiedName& name) const {
@@ -148,7 +144,7 @@ class CORE_EXPORT SVGElement : public Element {
 
   SVGElement* CorrespondingElement() const;
   void SetCorrespondingElement(SVGElement*);
-  SVGUseElement* CorrespondingUseElement() const;
+  SVGUseElement* GeneratingUseElement() const;
 
   void SynchronizeAnimatedSVGAttribute(const QualifiedName&) const;
 

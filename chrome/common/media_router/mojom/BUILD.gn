@@ -18,9 +18,7 @@ mojom("media_controller") {
 }
 
 mojom("media_router") {
-  sources = [
-    "media_router.mojom",
-  ]
+  sources = [ "media_router.mojom" ]
 
   public_deps = [
     ":media_controller",
@@ -42,13 +40,9 @@ mojom("media_router") {
 }
 
 mojom("media_router_test_interfaces") {
-  sources = [
-    "media_router_traits_test_service.mojom",
-  ]
+  sources = [ "media_router_traits_test_service.mojom" ]
 
-  public_deps = [
-    ":media_router",
-  ]
+  public_deps = [ ":media_router" ]
 
   disable_variants = true
 }

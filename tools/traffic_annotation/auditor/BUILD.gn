@@ -31,15 +31,11 @@ proto_library("chrome_settings_full_runtime") {
 }
 
 proto_library("traffic_annotation") {
-  sources = [
-    "../traffic_annotation.proto",
-  ]
+  sources = [ "../traffic_annotation.proto" ]
 
   import_dirs = [ "$root_gen_dir" + "/components/policy/proto" ]
 
-  deps = [
-    ":chrome_settings_full_runtime",
-  ]
+  deps = [ ":chrome_settings_full_runtime" ]
 
   use_protobuf_full = true
 }
@@ -78,18 +74,12 @@ source_set("auditor_sources") {
 }
 
 executable("traffic_annotation_auditor") {
-  sources = [
-    "traffic_annotation_auditor_ui.cc",
-  ]
-  deps = [
-    ":auditor_sources",
-  ]
+  sources = [ "traffic_annotation_auditor_ui.cc" ]
+  deps = [ ":auditor_sources" ]
 }
 
 test("traffic_annotation_auditor_unittests") {
-  sources = [
-    "traffic_annotation_auditor_unittest.cc",
-  ]
+  sources = [ "traffic_annotation_auditor_unittest.cc" ]
   data = [
     "../summary/annotations.xml",
     "tests/annotations_diff12.txt",

@@ -335,16 +335,15 @@ class VolumeInfoImpl {
    * @return {Promise<!DirectoryEntry>} Volume type.
    */
   resolveDisplayRootImpl_() {
-    // TODO(mtomasz): Do not add VolumeInfo which failed to resolve root, and
-    // remove this if logic.
-    if (this.volumeType !== VolumeManagerCommon.VolumeType.DRIVE) {
-      if (this.fileSystem_) {
-        this.displayRoot_ = this.fileSystem_.root;
-        return Promise.resolve(this.displayRoot_);
-      } else {
-        return Promise.reject(this.error);
-      }
+    if (!this.fileSystem_) {
+      return Promise.reject(this.error);
     }
+
+    if (this.volumeType !== VolumeManagerCommon.VolumeType.DRIVE) {
+      this.displayRoot_ = this.fileSystem_.root;
+      return Promise.resolve(this.displayRoot_);
+    }
+
     // For Drive, we need to resolve.
     const displayRootURL = this.fileSystem_.root.toURL() + 'root';
     return Promise

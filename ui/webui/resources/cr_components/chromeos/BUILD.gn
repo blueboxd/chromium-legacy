@@ -21,9 +21,7 @@ group("closure_compile") {
 }
 
 js_type_check("chromeos_resources") {
-  deps = [
-    ":bluetooth_dialog",
-  ]
+  deps = [ ":bluetooth_dialog" ]
 }
 
 js_library("bluetooth_dialog") {

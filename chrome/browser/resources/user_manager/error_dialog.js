@@ -22,7 +22,7 @@ Polymer({
    * Displays the dialog populated with the given message.
    * @param {string} message Error message to show.
    */
-  show: function(message) {
+  show(message) {
     this.message_ = message;
     this.$.dialog.showModal();
   }

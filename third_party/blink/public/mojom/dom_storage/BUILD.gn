@@ -14,9 +14,7 @@ mojom_component("dom_storage") {
     "storage_partition_service.mojom",
   ]
 
-  public_deps = [
-    "//url/mojom:url_mojom_origin",
-  ]
+  public_deps = [ "//url/mojom:url_mojom_origin" ]
 
   # The Blink variant is linked directly into the private platform
   # implementation and so it requires the corresponding export configuration to

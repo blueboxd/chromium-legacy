@@ -487,6 +487,9 @@ class PLATFORM_EXPORT ThreadState final {
   // Visit all DOM wrappers allocatd on this thread.
   void VisitDOMWrappers(Visitor*);
 
+  // Visit card tables (remembered sets) containing inter-generational pointers.
+  void VisitRememberedSets(MarkingVisitor*);
+
   // Incremental marking implementation functions.
   void IncrementalMarkingStartForTesting();
   void IncrementalMarkingStart(BlinkGC::GCReason);

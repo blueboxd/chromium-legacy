@@ -12,16 +12,12 @@ component("device_event_log") {
 
   defines = [ "DEVICE_EVENT_LOG_IMPLEMENTATION" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "device_event_log_impl_unittest.cc",
-  ]
+  sources = [ "device_event_log_impl_unittest.cc" ]
 
   deps = [
     ":device_event_log",

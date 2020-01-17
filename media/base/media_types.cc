@@ -10,7 +10,7 @@ namespace media {
 
 // static
 AudioType AudioType::FromDecoderConfig(const AudioDecoderConfig& config) {
-  return {config.codec()};
+  return {config.codec(), AudioCodecProfile::kUnknown, false};
 }
 
 // static
@@ -57,7 +57,8 @@ VideoType VideoType::FromDecoderConfig(const VideoDecoderConfig& config) {
 }
 
 bool operator==(const AudioType& x, const AudioType& y) {
-  return x.codec == y.codec;
+  return std::tie(x.codec, x.profile, x.spatial_rendering) ==
+         std::tie(y.codec, y.profile, y.spatial_rendering);
 }
 
 bool operator!=(const AudioType& x, const AudioType& y) {

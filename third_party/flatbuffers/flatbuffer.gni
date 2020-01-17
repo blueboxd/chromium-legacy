@@ -76,9 +76,7 @@ template("flatbuffer") {
       out_dir = "{{source_gen_dir}}"
     }
 
-    outputs = [
-      "$out_dir/{{source_name_part}}_generated.h",
-    ]
+    outputs = [ "$out_dir/{{source_name_part}}_generated.h" ]
 
     args = [
       "-c",

@@ -125,13 +125,6 @@ void LayoutListBox::ComputeLogicalHeight(
   LayoutBox::ComputeLogicalHeight(height, logical_top, computed_values);
 }
 
-void LayoutListBox::StopAutoscroll() {
-  HTMLSelectElement* select = SelectElement();
-  if (select->IsDisabledFormControl())
-    return;
-  select->HandleMouseRelease();
-}
-
 void LayoutListBox::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
@@ -139,18 +132,6 @@ void LayoutListBox::ComputeIntrinsicLogicalWidths(
                                                  max_logical_width);
   if (StyleRef().Width().IsPercentOrCalc())
     min_logical_width = LayoutUnit();
-}
-
-void LayoutListBox::ScrollToRect(const PhysicalRect& absolute_rect) {
-  if (HasOverflowClip()) {
-    DCHECK(Layer());
-    DCHECK(Layer()->GetScrollableArea());
-    Layer()->GetScrollableArea()->ScrollIntoView(
-        absolute_rect, WebScrollIntoViewParams(
-                           ScrollAlignment::kAlignToEdgeIfNeeded,
-                           ScrollAlignment::kAlignToEdgeIfNeeded,
-                           kProgrammaticScroll, false, kScrollBehaviorInstant));
-  }
 }
 
 }  // namespace blink

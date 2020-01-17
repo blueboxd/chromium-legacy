@@ -56,7 +56,6 @@
 <translation id="328888136576916638">Google API চাবিসমূহ নাই। Chromiumৰ কিছুমান কাৰ্যক্ষতা অক্ষম কৰা হ’ব।</translation>
 <translation id="3296368748942286671">Chromium বন্ধ কৰাৰ পিছতো নেপথ্যত এপ্‌সমূহ চলি থাকিবলৈ দিয়ক</translation>
 <translation id="331951419404882060">ছাইন ইন কৰোঁতে আসোঁৱাহ হোৱাৰ কাৰণে Chromium OSএ আপোনাৰ ডেটা ছিংক কৰিব নোৱাৰিলে।</translation>
-<translation id="3340978935015468852">ছেটিংসমূহ</translation>
 <translation id="3474745554856756813">ইয়ে এই ডিভাইচটোৰ পৰা <ph name="ITEMS_COUNT" />টা বস্তু মচিব। আপোনাৰ ডেটা পাছত পুনৰুদ্ধাৰ কৰিবলৈ Chromiumত <ph name="USER_EMAIL" /> হিচাপে ছাইন ইন কৰক।</translation>
 <translation id="3509308970982693815">অনুগ্ৰহ কৰি Chromiumৰ সকলো ৱিণ্ড’ বন্ধ কৰি পুনৰ চেষ্টা কৰক।</translation>
 <translation id="3575459661164320785">আপোনাৰ কম্পিউটাৰত কোনো ক্ষতিকাৰক ছফ্‌টৱেৰ আছে। Chromiumএ আপোনাৰ ব্ৰাউজাৰে সাধাৰণভাৱে কাম কৰিবলৈ এইটো আঁতৰাব পাৰে, আপোনাৰ ছেটিং পুনঃস্থাপন কৰিব পাৰে আৰু এক্সটেনশ্বন অক্ষম কৰিব পাৰে।</translation>
@@ -165,6 +164,7 @@ Chromiumএ আপোনাৰ ছেটিংসমূহ পুনৰুদ্
 <translation id="7339898014177206373">নতুন ৱিণ্ড'</translation>
 <translation id="734373864078049451">আপোনাৰ ৱেব, বুকমার্ক আৰু আন Chromium বস্তুবোৰ ইয়াত থাকে।</translation>
 <translation id="7349591376906416160">আপোনাৰ ছিষ্টেমৰ প্ৰশাসকে Chromiumক <ph name="TARGET_URL_HOSTNAME" /> এক্সেছ কৰিবলৈ <ph name="ALTERNATIVE_BROWSER_NAME" /> খুলিবলৈ কনফিগাৰ কৰিছে।</translation>
+<translation id="7448255348454382571">Chromium OS ৰিষ্টার্ট কৰক</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium Dev</translation>
 <translation id="7451052299415159299">এই ছাইটটোৰ বাবে আপোনাৰ কেমেৰালৈ এক্সেছ পাবলৈ Chromiumক অনুমতিৰ আৱশ্যক</translation>
 <translation id="7483335560992089831">বর্তমান চলি থকা Chromiumৰ একেই সংস্কৰণটো ইনষ্টল কৰিব নোৱাৰি। অনুগ্ৰহ কৰি Chromium বন্ধ কৰি পুনৰ চেষ্টা কৰক।</translation>
@@ -204,7 +204,6 @@ Chromiumএ আপোনাৰ ছেটিংসমূহ পুনৰুদ্
     Chromium ব্ৰাউজাৰৰ ছেটিংসমূহ<ph name="LINK_END" />ত চাওক</translation>
 <translation id="8697124171261953979">এইটোৱে আপুনি Chromiumৰ ব্যৱহাৰ আৰম্ভ কৰিলে বা Omniboxৰ পৰা সন্ধান কৰিলে কি পৃষ্ঠা খোল খাব সেয়া নিয়ন্ত্ৰণ কৰে।</translation>
 <translation id="8704119203788522458">এইটো আপোনাৰ Chromium</translation>
-<translation id="8739167630197873875">আপুনি Chromiumৰ পৰা বাহিৰ হ'লে কুকীসমূহ মচে। ছিংক কৰি থাকিবলৈ, এই <ph name="COOKIE_SETTINGS_LINK" /> সলনি কৰক।</translation>
 <translation id="8796602469536043152">এই ছাইটটোত আপোনাৰ কেমেৰা আৰু মাইক্ৰ’ফ’ন এক্সেছ কৰিবলৈ Chromiumক অনুমতিৰ আৱশ্যক</translation>
 <translation id="8803635938069941624">Chromium OSৰ চৰ্তাৱলী</translation>
 <translation id="8821041990367117597">আপোনাৰ একাউণ্টৰ ছাইন ইনৰ সবিশেষ তথ্যৰ ম্যাদ উকলি যোৱাৰ বাবে ক্ৰ’মিয়ামে আপোনাৰ ডেটা ছিংক কৰিব নোৱাৰিলে৷</translation>

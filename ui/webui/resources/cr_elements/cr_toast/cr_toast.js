@@ -34,12 +34,12 @@ Polymer({
    * @private
    */
   resetAutoHide_() {
-    if (this.hideTimeoutId_ != null) {
+    if (this.hideTimeoutId_ !== null) {
       window.clearTimeout(this.hideTimeoutId_);
       this.hideTimeoutId_ = null;
     }
 
-    if (this.open && this.duration != 0) {
+    if (this.open && this.duration !== 0) {
       this.hideTimeoutId_ = window.setTimeout(() => {
         this.open = false;
       }, this.duration);
@@ -63,8 +63,8 @@ Polymer({
     // is changed. If neither is changed, we will still need to reset auto-hide.
     let shouldResetAutoHide = true;
 
-    if (typeof(duration) != 'undefined' && duration >= 0 &&
-        this.duration != duration) {
+    if (typeof (duration) !== 'undefined' && duration >= 0 &&
+        this.duration !== duration) {
       this.duration = duration;
       shouldResetAutoHide = false;
     }

@@ -91,11 +91,9 @@ class ViewEventTestBase : public views::WidgetDelegate, public testing::Test {
   // appropriately.
   virtual gfx::Size GetPreferredSizeForContents() const;
 
-  // Overridden from views::WidgetDelegate:
+  // views::WidgetDelegate:
   bool CanResize() const override;
   views::View* GetContentsView() override;
-  const views::Widget* GetWidget() const override;
-  views::Widget* GetWidget() override;
 
  protected:
   ~ViewEventTestBase() override;
@@ -129,6 +127,9 @@ class ViewEventTestBase : public views::WidgetDelegate, public testing::Test {
   // Callback from CreateEventTask. Runs the supplied task and if there are
   // failures invokes Done.
   void RunTestMethod(base::OnceClosure task);
+
+  // views::WidgetDelegate:
+  const views::Widget* GetWidgetImpl() const override;
 
   // The content of the Window.
   views::View* content_view_ = nullptr;

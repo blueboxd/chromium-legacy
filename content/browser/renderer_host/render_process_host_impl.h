@@ -830,10 +830,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static RenderProcessHost* FindReusableProcessHostForSiteInstance(
       SiteInstanceImpl* site_instance);
 
-  void CreateMediaStreamTrackMetricsHost(
-      mojo::PendingReceiver<blink::mojom::MediaStreamTrackMetricsHost>
-          receiver);
-
   void CreateAgentMetricsCollectorHost(
       mojo::PendingReceiver<blink::mojom::AgentMetricsCollectorHost> receiver);
 
@@ -905,6 +901,18 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // renderer process. This is posted to the main thread by IOThreadHostImpl
   // if the request isn't handled on the IO thread.
   void OnBindHostReceiver(mojo::GenericPendingReceiver receiver);
+
+  // IOThreadHostImpl owns some IO-thread state associated with this
+  // RenderProcessHostImpl. This is mainly to allow various IPCs from the
+  // renderer to be handled on the IO thread without a hop to the UI thread.
+  //
+  // Declare this early to ensure it triggers the destruction of the
+  // IOThreadHostImpl prior to other objects with an IO thread deleter.  This
+  // is necessary to ensure those objects stop receiving mojo messages before
+  // their destruction.
+  class IOThreadHostImpl;
+  friend class IOThreadHostImpl;
+  base::Optional<base::SequenceBound<IOThreadHostImpl>> io_thread_host_impl_;
 
   mojo::OutgoingInvitation mojo_invitation_;
 
@@ -1118,13 +1126,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   int shutdown_exit_code_;
 
   IpcSendWatcher ipc_send_watcher_for_testing_;
-
-  // IOThreadHostImpl owns some IO-thread state associated with this
-  // RenderProcessHostImpl. This is mainly to allow various IPCs from the
-  // renderer to be handled on the IO thread without a hop to the UI thread.
-  class IOThreadHostImpl;
-  friend class IOThreadHostImpl;
-  base::Optional<base::SequenceBound<IOThreadHostImpl>> io_thread_host_impl_;
 
   // Keeps this process registered with the tracing subsystem.
   std::unique_ptr<TracingServiceController::ClientRegistration>

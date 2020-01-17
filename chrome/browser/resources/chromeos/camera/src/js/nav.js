@@ -8,7 +8,10 @@ import {DeviceOperator} from './mojo/device_operator.js';
 import * as state from './state.js';
 import * as toast from './toast.js';
 import * as util from './util.js';
-import {View} from './views/view.js';  // eslint-disable-line no-unused-vars
+import {
+  View,      // eslint-disable-line no-unused-vars
+  ViewName,  // eslint-disable-line no-unused-vars
+} from './views/view.js';
 
 /**
  * All views stacked in ascending z-order (DOM order) for navigation, and only
@@ -134,23 +137,23 @@ function hide(index) {
 }
 
 /**
- * Finds the view by its id in the stacked views.
- * @param {string} id View identifier.
+ * Finds the view by its name in the stacked views.
+ * @param {ViewName} name View name.
  * @return {number} Index of the view found; otherwise, -1.
  */
-function findIndex(id) {
-  return allViews.findIndex((view) => view.root.id === id);
+function findIndex(name) {
+  return allViews.findIndex((view) => view.name === name);
 }
 
 /**
  * Opens a navigation session of the view; shows the view before entering it and
  * hides the view after leaving it for the ended session.
- * @param {string} id View identifier.
+ * @param {ViewName} name View name.
  * @param {...*} args Optional rest parameters for entering the view.
  * @return {!Promise<*>} Promise for the operation or result.
  */
-export function open(id, ...args) {
-  const index = findIndex(id);
+export function open(name, ...args) {
+  const index = findIndex(name);
   return show(index).enter(...args).finally(() => {
     hide(index);
   });
@@ -158,12 +161,12 @@ export function open(id, ...args) {
 
 /**
  * Closes the current navigation session of the view by leaving it.
- * @param {string} id View identifier.
+ * @param {ViewName} name View name.
  * @param {*=} condition Optional condition for leaving the view.
  * @return {boolean} Whether successfully leaving the view or not.
  */
-export function close(id, condition) {
-  const index = findIndex(id);
+export function close(name, condition) {
+  const index = findIndex(name);
   return allViews[index].leave(condition);
 }
 
@@ -218,14 +221,3 @@ export function onWindowResized() {
     }
   }
 }
-
-/** @const */
-cca.nav.setup = setup;
-/** @const */
-cca.nav.open = open;
-/** @const */
-cca.nav.close = close;
-/** @const */
-cca.nav.onKeyPressed = onKeyPressed;
-/** @const */
-cca.nav.onWindowResized = onWindowResized;

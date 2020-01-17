@@ -771,18 +771,6 @@ void WizardController::SkipToLoginForTesting(
   VLOG(1) << "SkipToLoginForTesting.";
   StartupUtils::MarkEulaAccepted();
 
-  // Enable metrics and crash collection, and verify that they're enabled.
-  ChangeMetricsReportingStateWithReply(
-      true,
-      base::BindRepeating(&WizardController::OnChangedMetricsReportingState,
-                          weak_factory_.GetWeakPtr()));
-  if (!StatsReportingController::Get()->IsEnabled()) {
-    LOG(ERROR) << "StatsReportingController reports collection is NOT enabled";
-  }
-  if (!crash_reporter::GetUploadsEnabled()) {
-    LOG(ERROR) << "crash_reporter reports that crash uploads NOT enabled";
-  }
-
   PerformPostEulaActions();
   OnDeviceDisabledChecked(false /* device_disabled */);
 }

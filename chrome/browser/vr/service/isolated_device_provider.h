@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_SERVICE_ISOLATED_DEVICE_PROVIDER_H_
 
 #include "base/containers/flat_map.h"
+#include "chrome/browser/vr/vr_export.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
@@ -17,7 +18,7 @@ namespace vr {
 
 class VRUiHost;
 
-class IsolatedVRDeviceProvider
+class VR_EXPORT IsolatedVRDeviceProvider
     : public device::VRDeviceProvider,
       public device::mojom::IsolatedXRRuntimeProviderClient {
  public:

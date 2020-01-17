@@ -27,9 +27,8 @@ class AudioProcessorControls;
 namespace blink {
 
 class AudioServiceAudioProcessorProxy;
+class LocalFrame;
 class MediaStreamAudioProcessor;
-class MediaStreamInternalFrameWrapper;
-class WebLocalFrame;
 
 // Represents a local source of audio data that is routed through the WebRTC
 // audio pipeline for post-processing (e.g., for echo cancellation during a
@@ -37,18 +36,18 @@ class WebLocalFrame;
 // MediaStreamProcessor that modifies its audio. Modified audio is delivered to
 // one or more MediaStreamAudioTracks.
 class MODULES_EXPORT ProcessedLocalAudioSource final
-    : public blink::MediaStreamAudioSource,
+    : public MediaStreamAudioSource,
       public media::AudioCapturerSource::CaptureCallback {
  public:
-  // |internal_consumer_frame_| references the blink::LocalFrame that will
+  // |consumer_frame_| references the LocalFrame that will
   // consume the audio data. Audio parameters and (optionally) a pre-existing
   // audio session ID are derived from |device_info|. |factory| must outlive
   // this instance.
   ProcessedLocalAudioSource(
-      WebLocalFrame* web_frame,
-      const blink::MediaStreamDevice& device,
+      LocalFrame* frame,
+      const MediaStreamDevice& device,
       bool disable_local_echo,
-      const blink::AudioProcessingProperties& audio_processing_properties,
+      const AudioProcessingProperties& audio_processing_properties,
       ConstraintsOnceCallback started_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -126,7 +125,10 @@ class MODULES_EXPORT ProcessedLocalAudioSource final
 
   // The LocalFrame that will consume the audio data. Used when creating
   // AudioCapturerSources.
-  std::unique_ptr<MediaStreamInternalFrameWrapper> internal_consumer_frame_;
+  //
+  // TODO(crbug.com/704136): Consider moving ProcessedLocalAudioSource to
+  // Oilpan and use Member<> here.
+  WeakPersistent<LocalFrame> consumer_frame_;
 
   blink::AudioProcessingProperties audio_processing_properties_;
 

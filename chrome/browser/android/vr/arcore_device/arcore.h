@@ -54,6 +54,9 @@ class ArCore {
   // Returns information about all anchors tracked in the current frame.
   virtual mojom::XRAnchorsDataPtr GetAnchorsData() = 0;
 
+  // Returns information about lighting estimation.
+  virtual mojom::XRLightEstimationDataPtr GetLightEstimationData() = 0;
+
   virtual bool RequestHitTest(
       const mojom::XRRayPtr& ray,
       std::vector<mojom::XRHitResultPtr>* hit_results) = 0;

@@ -261,7 +261,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
 
   scoped_refptr<gl::GLContext> context;
   if (use_virtualized_gl_context_ && share_group_) {
-    context = share_group_->GetSharedContext(surface_.get());
+    context = share_group_->shared_context();
     if (context && (!context->MakeCurrent(surface_.get()) ||
                     context->CheckStickyGraphicsResetStatus() != GL_NO_ERROR)) {
       context = nullptr;
@@ -281,7 +281,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
       // Ensure that context creation did not lose track of the intended share
       // group.
       DCHECK(context->share_group() == share_group_.get());
-      share_group_->SetSharedContext(surface_.get(), context.get());
+      share_group_->SetSharedContext(context.get());
 
       // This needs to be called against the real shared context, not the
       // virtual context created below.

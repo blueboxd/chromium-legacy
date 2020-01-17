@@ -30,7 +30,5 @@ source_set("file_system") {
     "//ui/shell_dialogs",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

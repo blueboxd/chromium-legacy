@@ -451,7 +451,7 @@ TEST_P(NGInlineCursorTest, NextWithListItem) {
   NGInlineCursor cursor = SetupCursor("<ul><li id=root>abc</li></ul>");
   Vector<String> list = ToDebugStringList(cursor);
   EXPECT_THAT(list,
-              ElementsAre("LayoutNGListMarker (anonymous)", "#linebox", "abc"));
+              ElementsAre("LayoutNGListMarker ::marker", "#linebox", "abc"));
 }
 
 TEST_P(NGInlineCursorTest, NextWithSoftHyphens) {

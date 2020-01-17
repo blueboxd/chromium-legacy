@@ -27,12 +27,12 @@ gfx::Rect TouchSelectionMenuRunnerViews::TestApi::GetAnchorRect() const {
   return menu ? menu->GetAnchorRect() : gfx::Rect();
 }
 
-LabelButton* TouchSelectionMenuRunnerViews::TestApi::GetFirstButton() const {
+LabelButton* TouchSelectionMenuRunnerViews::TestApi::GetFirstButton() {
   TouchSelectionMenuViews* menu = menu_runner_->menu_;
   return menu ? static_cast<LabelButton*>(menu->children().front()) : nullptr;
 }
 
-Widget* TouchSelectionMenuRunnerViews::TestApi::GetWidget() const {
+Widget* TouchSelectionMenuRunnerViews::TestApi::GetWidget() {
   TouchSelectionMenuViews* menu = menu_runner_->menu_;
   return menu ? menu->GetWidget() : nullptr;
 }

@@ -11,9 +11,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
+#include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/db/v4_database.h"
 #include "components/safe_browsing/core/db/v4_store.h"
-#include "content/public/test/browser_task_environment.h"
 #include "testing/platform_test.h"
 
 namespace safe_browsing {
@@ -70,6 +70,8 @@ class V4DatabaseTest : public PlatformTest {
 
   void SetUp() override {
     PlatformTest::SetUp();
+
+    task_environment_ = CreateTestTaskEnvironment();
 
     // Setup a database in a temporary directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -202,7 +204,7 @@ class V4DatabaseTest : public PlatformTest {
   std::unique_ptr<V4Database> v4_database_;
   base::FilePath database_dirname_;
   base::ScopedTempDir temp_dir_;
-  content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
   bool created_but_not_called_back_;
   bool created_and_called_back_;
   bool verify_checksum_called_back_;

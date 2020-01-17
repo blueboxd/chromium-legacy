@@ -8,7 +8,5 @@ source_set("cpp") {
     "bluetooth_uuid.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

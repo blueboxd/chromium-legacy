@@ -416,7 +416,8 @@ void ProfileHelperImpl::ClearSigninProfile(
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   // Check if signin profile was loaded.
-  if (!profile_manager->GetProfileByPath(GetSigninProfileDir())) {
+  if (!profile_manager ||
+      !profile_manager->GetProfileByPath(GetSigninProfileDir())) {
     OnSigninProfileCleared();
     return;
   }

@@ -376,7 +376,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   void RefreshNoWindowsWidgetBounds(bool animate);
 
-  void OnItemAdded();
+  void OnItemAdded(aura::Window* window);
 
   // Tracks observed windows.
   base::flat_set<aura::Window*> observed_windows_;

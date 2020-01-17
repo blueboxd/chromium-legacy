@@ -141,8 +141,6 @@ test.customizeMenu.setUp = function() {
   // Required to enable the richer picker. |configData| does not correctly
   // populate using base::test::ScopedFeatureList.
   configData.richerPicker = true;
-  configData.chromeColors = true;
-  configData.chromeColorsCustomColorPicker = false;
   customize.colorsMenuLoaded = false;
   customize.builtTiles = false;
 
@@ -721,18 +719,6 @@ test.customizeMenu.testShortcuts_ChangeShortcutTypeAndVisibility = function() {
 //// COLOR SUBMENU TESTS ////
 
 /**
- * Test that Customization dialog doesn't have Colors option when Colors are
- * disabled.
- */
-test.customizeMenu.testColors_Disabled = function() {
-  configData.chromeColors = false;
-  init();
-
-  $(test.customizeMenu.IDS.EDIT_BG).click();
-  assertFalse(elementIsVisible($(test.customizeMenu.IDS.COLORS_BUTTON)));
-};
-
-/**
  * Test that Customization dialog has Colors option when Colors are enabled.
  */
 test.customizeMenu.testColors_Enabled = function() {
@@ -892,7 +878,6 @@ test.customizeMenu.testColors_NoPreselectNoColorId = function() {
  * Test preselect when custom color is used.
  */
 test.customizeMenu.testColors_PreselectColorPicker = function() {
-  configData.chromeColorsCustomColorPicker = true;
   test.customizeMenu.mockNtpTheme = {
     usingDefaultTheme: false,
     colorId: 0,

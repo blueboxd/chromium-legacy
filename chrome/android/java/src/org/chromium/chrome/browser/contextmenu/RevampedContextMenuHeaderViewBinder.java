@@ -5,14 +5,21 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
+import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.style.StyleSpan;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.text.SpanApplier.SpanInfo;
 
 class RevampedContextMenuHeaderViewBinder {
     public static void bind(PropertyModel model, View view, PropertyKey propertyKey) {
@@ -64,6 +71,26 @@ class RevampedContextMenuHeaderViewBinder {
                     model.get(RevampedContextMenuHeaderProperties.CIRCLE_BG_VISIBLE);
             view.findViewById(R.id.circle_background)
                     .setVisibility(isVisible ? View.VISIBLE : View.INVISIBLE);
+        } else if (propertyKey == RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS) {
+            LinearLayout performanceInfo = view.findViewById(R.id.menu_header_performance_info);
+
+            @PerformanceClass
+            int performanceClass =
+                    model.get(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS);
+            if (performanceClass != PerformanceClass.PERFORMANCE_FAST) {
+                performanceInfo.setVisibility(View.GONE);
+                return;
+            }
+
+            performanceInfo.setVisibility(View.VISIBLE);
+
+            String performanceString =
+                    view.getContext().getString(R.string.contextmenu_performance_info_fast);
+            SpannableString styledText = SpanApplier.applySpans(
+                    performanceString, new SpanInfo("<b>", "</b>", new StyleSpan(Typeface.BOLD)));
+
+            TextView performanceInfoText = view.findViewById(R.id.performance_info_text);
+            performanceInfoText.setText(styledText);
         }
     }
 }

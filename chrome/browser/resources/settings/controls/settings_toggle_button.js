@@ -34,7 +34,7 @@ Polymer({
   ],
 
   /** @override */
-  focus: function() {
+  focus() {
     this.$.control.focus();
   },
 
@@ -42,7 +42,7 @@ Polymer({
    * Removes the aria-label attribute if it's added by $i18n{...}.
    * @private
    */
-  onAriaLabelSet_: function() {
+  onAriaLabelSet_() {
     if (this.hasAttribute('aria-label')) {
       const ariaLabel = this.ariaLabel;
       this.removeAttribute('aria-label');
@@ -54,12 +54,12 @@ Polymer({
    * @return {string}
    * @private
    */
-  getAriaLabel_: function() {
+  getAriaLabel_() {
     return this.label || this.ariaLabel;
   },
 
   /** @private */
-  onDisableOrPrefChange_: function() {
+  onDisableOrPrefChange_() {
     if (this.controlDisabled()) {
       this.removeAttribute('actionable');
     } else {
@@ -73,7 +73,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onHostTap_: function(e) {
+  onHostTap_(e) {
     e.stopPropagation();
     if (this.controlDisabled()) {
       return;
@@ -88,7 +88,7 @@ Polymer({
    * @param {!CustomEvent<boolean>} e
    * @private
    */
-  onChange_: function(e) {
+  onChange_(e) {
     this.checked = e.detail;
     this.notifyChangedByUserInteraction();
   },

@@ -119,8 +119,8 @@ template <typename Base>
 bool LayoutNGBlockFlowMixin<
     Base>::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
   // LayoutNGBlockFlowMixin is in charge of paint invalidation of the first
-  // line.
-  if (PaintFragment())
+  // line and painting backplates.
+  if (PaintFragment() || Base::FragmentItems())
     return false;
 
   if (Base::StyleRef().HasColumnRule())

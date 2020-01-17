@@ -22,6 +22,8 @@ extern const base::FeatureParam<bool> kOnlySetLastRefreshAttemptOnSuccess;
 
 extern const base::Feature kInterestFeedNotifications;
 
+extern const base::Feature kInterestFeedFeedback;
+
 }  // namespace feed
 
 #endif  // COMPONENTS_FEED_FEED_FEATURE_LIST_H_

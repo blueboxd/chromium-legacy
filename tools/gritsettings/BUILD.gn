@@ -7,15 +7,9 @@ import("//tools/grit/grit_rule.gni")
 
 action("default_resource_ids") {
   script = "//tools/grit/grit.py"
-  inputs = [
-    "resource_ids.spec",
-  ]
-  outputs = [
-    grit_resource_id_file,
-  ]
-  deps = [
-    "//tools/grit:grit_sources",
-  ]
+  inputs = [ "resource_ids.spec" ]
+  outputs = [ grit_resource_id_file ]
+  deps = [ "//tools/grit:grit_sources" ]
   depfile = "$target_gen_dir/$target_name.d"
   _rebased_input = rebase_path(inputs[0], root_build_dir)
   args = [

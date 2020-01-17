@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview
- * Subpage of settings-multidevice-feature for managing the Smart Lock feature.
- */
-cr.exportPath('settings');
-
 cr.define('settings', function() {
   /**
    * The state of the preference controlling Smart Lock's ability to sign-in the
@@ -87,7 +81,7 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = settings.MultiDeviceBrowserProxyImpl.getInstance();
 
     this.addWebUIListener(
@@ -112,7 +106,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeIsSmartLockEnabled_: function() {
+  computeIsSmartLockEnabled_() {
     return !!this.pageContentData &&
         this.getFeatureState(settings.MultiDeviceFeature.SMART_LOCK) ==
         settings.MultiDeviceFeatureState.ENABLED_BY_USER;
@@ -122,7 +116,7 @@ Polymer({
    * Updates the state of the Smart Lock 'sign-in enabled' toggle.
    * @private
    */
-  updateSmartLockSignInEnabled_: function(enabled) {
+  updateSmartLockSignInEnabled_(enabled) {
     this.smartLockSignInEnabled_ = enabled ?
         settings.SignInEnabledState.ENABLED :
         settings.SignInEnabledState.DISABLED;
@@ -133,12 +127,12 @@ Polymer({
    * sign-in disables the toggle.
    * @private
    */
-  updateSmartLockSignInAllowed_: function(allowed) {
+  updateSmartLockSignInAllowed_(allowed) {
     this.smartLockSignInAllowed_ = allowed;
   },
 
   /** @private */
-  openPasswordPromptDialog_: function() {
+  openPasswordPromptDialog_() {
     this.showPasswordPromptDialog_ = true;
   },
 
@@ -147,7 +141,7 @@ Polymer({
    * radio group representing the pref.
    * @private
    */
-  onSmartLockSignInEnabledChanged_: function() {
+  onSmartLockSignInEnabledChanged_() {
     const radioGroup = this.$$('cr-radio-group');
     const enabled = radioGroup.selected == settings.SignInEnabledState.ENABLED;
 
@@ -168,7 +162,7 @@ Polymer({
    * element closes.
    * @private
    */
-  onEnableSignInDialogClose_: function() {
+  onEnableSignInDialogClose_() {
     this.showPasswordPromptDialog_ = false;
 
     // If |this.authToken_| is set when the dialog has been closed, this means

@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
@@ -28,7 +29,7 @@ TEST_F(AppListTest, PressHomeButtonToShowAndDismiss) {
   ShelfWidget* shelf_widget = shelf->shelf_widget();
   ShelfView* shelf_view = shelf->GetShelfViewForTesting();
   ShelfViewTestAPI(shelf_view).RunMessageLoopUntilAnimationsDone();
-  HomeButton* home_button = shelf_widget->GetHomeButton();
+  HomeButton* home_button = shelf_widget->navigation_widget()->GetHomeButton();
   // Ensure animations progressed to give the home button a non-empty size.
   ASSERT_GT(home_button->GetBoundsInScreen().height(), 0);
 

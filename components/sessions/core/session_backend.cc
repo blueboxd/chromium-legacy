@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
 using base::TimeTicks;
@@ -194,9 +193,12 @@ static const char* kLastSessionFileName = "Last Session";
 // static
 const int SessionBackend::kFileReadBufferSize = 1024;
 
-SessionBackend::SessionBackend(sessions::BaseSessionService::SessionType type,
-                               const base::FilePath& path_to_dir)
-    : type_(type),
+SessionBackend::SessionBackend(
+    scoped_refptr<base::SequencedTaskRunner> owning_task_runner,
+    sessions::BaseSessionService::SessionType type,
+    const base::FilePath& path_to_dir)
+    : RefCountedDeleteOnSequence(owning_task_runner),
+      type_(type),
       path_to_dir_(path_to_dir),
       last_session_valid_(false),
       inited_(false),
@@ -320,12 +322,7 @@ bool SessionBackend::AppendCommandsToFile(
 }
 
 SessionBackend::~SessionBackend() {
-  if (current_session_file_) {
-    // Destructor performs file IO because file is open in sync mode.
-    // crbug.com/112512.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    current_session_file_.reset();
-  }
+  current_session_file_.reset();
 }
 
 void SessionBackend::ResetFile() {

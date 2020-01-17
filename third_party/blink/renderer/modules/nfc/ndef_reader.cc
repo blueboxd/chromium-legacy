@@ -146,6 +146,8 @@ void NDEFReader::OnRequestPermission(ScriptPromiseResolver* resolver,
   }
 
   UseCounter::Count(GetExecutionContext(), WebFeature::kWebNfcNdefReaderScan);
+  // TODO(https://crbug.com/994936) remove when origin trial is complete.
+  UseCounter::Count(GetExecutionContext(), WebFeature::kWebNfcAPI);
 
   GetNfcProxy()->StartReading(
       this, options,

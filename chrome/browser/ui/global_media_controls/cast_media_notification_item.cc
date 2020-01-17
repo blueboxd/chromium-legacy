@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
 
+#include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_session_controller.h"
@@ -111,6 +112,21 @@ media_session::mojom::MediaSessionInfo::SessionState ToSessionState(
   }
 }
 
+base::string16 GetSourceTitle(const media_router::MediaRoute& route) {
+  if (route.media_sink_name().empty())
+    return base::UTF8ToUTF16(route.description());
+
+  if (route.description().empty())
+    return base::UTF8ToUTF16(route.media_sink_name());
+
+  const char kSeparator[] = " \xC2\xB7 ";  // "Middle dot" character.
+  const std::string source_title =
+      base::i18n::IsRTL()
+          ? route.media_sink_name() + kSeparator + route.description()
+          : route.description() + kSeparator + route.media_sink_name();
+  return base::UTF8ToUTF16(source_title);
+}
+
 }  // namespace
 
 CastMediaNotificationItem::CastMediaNotificationItem(
@@ -126,8 +142,7 @@ CastMediaNotificationItem::CastMediaNotificationItem(
           base::BindRepeating(&CastMediaNotificationItem::ImageChanged,
                               base::Unretained(this))),
       session_info_(CreateSessionInfo()) {
-  metadata_.source_title = base::UTF8ToUTF16(route.media_sink_name());
-  metadata_.artist = base::UTF8ToUTF16(route.description());
+  metadata_.source_title = GetSourceTitle(route);
   notification_controller_->ShowNotification(media_route_id_);
 }
 
@@ -153,6 +168,7 @@ void CastMediaNotificationItem::Dismiss() {
 void CastMediaNotificationItem::OnMediaStatusUpdated(
     media_router::mojom::MediaStatusPtr status) {
   metadata_.title = base::UTF8ToUTF16(status->title);
+  metadata_.artist = base::UTF8ToUTF16(status->secondary_title);
   actions_ = ToMediaSessionActions(*status);
   session_info_->state = ToSessionState(status->play_state);
   session_info_->playback_state = ToPlaybackState(status->play_state);
@@ -171,8 +187,7 @@ void CastMediaNotificationItem::OnRouteUpdated(
     const media_router::MediaRoute& route) {
   DCHECK_EQ(route.media_route_id(), media_route_id_);
   bool updated = false;
-  const base::string16 new_source_title =
-      base::UTF8ToUTF16(route.media_sink_name());
+  const base::string16 new_source_title = GetSourceTitle(route);
   if (metadata_.source_title != new_source_title) {
     metadata_.source_title = new_source_title;
     updated = true;

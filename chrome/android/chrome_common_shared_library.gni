@@ -78,9 +78,7 @@ template("chrome_common_shared_library") {
     # Use a dynamically-generated linker script.
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     deps += [ ":$_linker_script_target" ]
-    inputs = [
-      "$_linker_script",
-    ]
+    inputs = [ "$_linker_script" ]
     if (!defined(ldflags)) {
       ldflags = []
     }

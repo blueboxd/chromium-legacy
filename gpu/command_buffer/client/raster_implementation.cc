@@ -1145,8 +1145,7 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
       GetOrCreatePaintCache(), font_manager_.strike_server(),
       raster_properties_->color_space, raster_properties_->can_use_lcd_text,
       capabilities().context_supports_distance_field_text,
-      capabilities().max_texture_size,
-      capabilities().glyph_cache_max_texture_bytes);
+      capabilities().max_texture_size);
   serializer.Serialize(&list->paint_op_buffer_, &temp_raster_offsets_,
                        preamble);
   // TODO(piman): raise error if !serializer.valid()?

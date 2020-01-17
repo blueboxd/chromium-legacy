@@ -30,11 +30,11 @@
 
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_file_system_flags.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/filesystem/async_callback_helper.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_reader.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
-#include "third_party/blink/renderer/modules/filesystem/file_system_flags.h"
 
 namespace blink {
 

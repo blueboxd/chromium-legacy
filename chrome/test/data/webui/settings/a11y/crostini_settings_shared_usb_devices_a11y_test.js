@@ -19,7 +19,8 @@ AccessibilityTest.define('CrostiniAccessibilityTest', {
   axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
   setup: function() {
-    settings.router.navigateTo(settings.routes.CROSTINI_SHARED_USB_DEVICES);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.CROSTINI_SHARED_USB_DEVICES);
     Polymer.dom.flush();
   },
   /** @override */

@@ -43,7 +43,7 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
                       InstallFinalizedCallback callback) override;
   void UninstallExternalWebApp(
-      const GURL& app_url,
+      const web_app::AppId& app_id,
       web_app::ExternalInstallSource external_install_source,
       UninstallWebAppCallback callback) override;
   bool CanUserUninstallFromSync(const web_app::AppId& app_id) const override;

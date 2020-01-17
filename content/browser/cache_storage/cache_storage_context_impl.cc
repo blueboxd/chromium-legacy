@@ -194,17 +194,17 @@ void CacheStorageContextImpl::GetAllOriginsInfo(
           base::RetainedRef(this), std::move(callback)));
 }
 
-void CacheStorageContextImpl::DeleteForOrigin(const GURL& origin) {
+void CacheStorageContextImpl::DeleteForOrigin(const url::Origin& origin) {
   // Can be called on any sequence.
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(
                      [](scoped_refptr<CacheStorageContextImpl> context,
-                        const GURL& origin) {
+                        const url::Origin& origin) {
                        scoped_refptr<CacheStorageManager> manager =
                            context->CacheManager();
                        if (!manager)
                          return;
-                       manager->DeleteOriginData(url::Origin::Create(origin),
+                       manager->DeleteOriginData(origin,
                                                  CacheStorageOwner::kCacheAPI);
                      },
                      base::RetainedRef(this), origin));

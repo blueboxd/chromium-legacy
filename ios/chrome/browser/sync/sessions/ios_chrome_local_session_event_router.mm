@@ -160,8 +160,31 @@ void IOSChromeLocalSessionEventRouter::OnTabParented(web::WebState* web_state) {
   OnWebStateChange(web_state);
 }
 
+void IOSChromeLocalSessionEventRouter::WillBeginBatchOperation(
+    WebStateList* web_state_list) {
+  batch_in_progress_++;
+}
+
+void IOSChromeLocalSessionEventRouter::BatchOperationEnded(
+    WebStateList* web_state_list) {
+  DCHECK(batch_in_progress_ > 0);
+  batch_in_progress_--;
+  if (batch_in_progress_)
+    return;
+  // Batch operations are only used for restoration, close all tabs or undo
+  // close all tabs. In any case, a full sync is necessary after this.
+  if (handler_)
+    handler_->OnSessionRestoreComplete();
+  if (!flare_.is_null()) {
+    flare_.Run(syncer::SESSIONS);
+    flare_.Reset();
+  }
+}
+
 void IOSChromeLocalSessionEventRouter::OnWebStateChange(
     web::WebState* web_state) {
+  if (batch_in_progress_)
+    return;
   sync_sessions::SyncedTabDelegate* tab =
       GetSyncedTabDelegateFromWebState(web_state);
   if (!tab)

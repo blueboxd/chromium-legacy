@@ -145,7 +145,7 @@
     "contexts": ["blessed_extension"]
   },
   "declarativeNetRequest.getMatchedRules": {
-    "dependencies": ["permission:declarativeNetRequest", "permission:declarativeNetRequestFeedback"],
+    "dependencies": ["permission:declarativeNetRequest"],
     "contexts": ["blessed_extension"],
     "channel": "trunk"
   },

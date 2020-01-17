@@ -6,7 +6,8 @@
 #define CHROMEOS_COMPONENTS_MULTIDEVICE_REMOTE_DEVICE_CACHE_H_
 
 #include <memory>
-#include <unordered_map>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -21,6 +22,12 @@ namespace multidevice {
 // SetRemoteDevices() are provided different sets of devices, the set of devices
 // returned by GetRemoteDevices() is the union of those different sets (i.e.,
 // devices are not deleted from the cache).
+//
+// All devices in the cache will have a unique Instance ID, if one exists, and a
+// unique legacy device ID, RemoteDevice::GetDeviceId(), if one exists. Every
+// device is guaranteed to have at least one non-trivial ID. If a device is
+// added with either ID matching an existing device, the existing device is
+// overwritten.
 class RemoteDeviceCache {
  public:
   class Factory {
@@ -40,14 +47,24 @@ class RemoteDeviceCache {
 
   RemoteDeviceRefList GetRemoteDevices() const;
 
+  // Looks up device in cache by Instance ID, |instance_id|, and by the legacy
+  // device ID from RemoteDevice::GetDeviceId(), |legacy_device_id|. Returns the
+  // first device that matches either ID. Returns null if no such device exists.
+  //
+  // For best results, pass in both IDs when available since the device could
+  // have been written to the cache with one of the IDs missing.
   base::Optional<RemoteDeviceRef> GetRemoteDevice(
-      const std::string& device_id) const;
+      const base::Optional<std::string>& instance_id,
+      const base::Optional<std::string>& legacy_device_id) const;
 
  private:
   RemoteDeviceCache();
 
-  std::unordered_map<std::string, std::shared_ptr<RemoteDevice>>
-      remote_device_map_;
+  std::shared_ptr<RemoteDevice> GetRemoteDeviceFromCache(
+      const base::Optional<std::string>& instance_id,
+      const base::Optional<std::string>& legacy_device_id) const;
+
+  std::vector<std::shared_ptr<RemoteDevice>> cached_remote_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteDeviceCache);
 };

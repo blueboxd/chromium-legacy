@@ -10,9 +10,7 @@ import("//third_party/protobuf/proto_library.gni")
 # set, here we link the result into a component.
 component("proto") {
   output_name = "policy_proto"
-  public_deps = [
-    ":proto_internal",
-  ]
+  public_deps = [ ":proto_internal" ]
 }
 
 proto_library("policy_common_definitions_compile_proto") {
@@ -23,9 +21,7 @@ proto_library("policy_common_definitions_compile_proto") {
     ":proto_internal",
   ]
 
-  sources = [
-    "policy_common_definitions.proto",
-  ]
+  sources = [ "policy_common_definitions.proto" ]
 
   proto_out_dir = "components/policy/proto"
 }

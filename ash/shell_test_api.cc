@@ -25,7 +25,6 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/run_loop.h"
 #include "components/prefs/testing_pref_service.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"

@@ -118,8 +118,10 @@ float BrowserControls::BottomContentOffset() {
 }
 
 void BrowserControls::SetShownRatio(float top_ratio, float bottom_ratio) {
-  top_ratio = clampTo(top_ratio, 0.f, 1.f);
-  bottom_ratio = clampTo(bottom_ratio, 0.f, 1.f);
+  // The ratios can be > 1 during height change animations, so we shouldn't
+  // clamp the values.
+  top_ratio = std::max(0.f, top_ratio);
+  bottom_ratio = std::max(0.f, bottom_ratio);
 
   if (top_shown_ratio_ == top_ratio && bottom_shown_ratio_ == bottom_ratio)
     return;

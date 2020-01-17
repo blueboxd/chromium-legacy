@@ -160,7 +160,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   // Bound methods.
   v8::Local<v8::Object> AriaActiveDescendantElement();
   v8::Local<v8::Object> AriaControlsElementAtIndex(unsigned index);
-  v8::Local<v8::Object> AriaDetailsElement();
+  v8::Local<v8::Object> AriaDetailsElementAtIndex(unsigned index);
   v8::Local<v8::Object> AriaErrorMessageElement();
   v8::Local<v8::Object> AriaFlowToElementAtIndex(unsigned index);
   v8::Local<v8::Object> AriaOwnsElementAtIndex(unsigned index);

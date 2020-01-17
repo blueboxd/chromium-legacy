@@ -26,7 +26,7 @@ namespace {
 // Looks by name for a directive in a list of directives.
 // If it is not found, returns nullptr.
 static mojom::CSPDirectivePtr* FindDirective(
-    mojom::CSPDirective::Name name,
+    mojom::CSPDirectiveName name,
     std::vector<mojom::CSPDirectivePtr>* directives) {
   for (auto& directive : *directives) {
     if (directive->name == name)
@@ -299,14 +299,13 @@ void ParseReportDirective(const GURL& request_url,
 }
 
 // Parses the frame-ancestor directive of a Content-Security-Policy header.
-void ParseFrameAncestors(
-    const mojom::ContentSecurityPolicyPtr& content_security_policy_ptr,
-    base::StringPiece frame_ancestors_value) {
+void ParseFrameAncestors(const mojom::ContentSecurityPolicyPtr& policy,
+                         base::StringPiece frame_ancestors_value) {
   // A frame-ancestors directive has already been parsed. Skip further
   // frame-ancestors directives per
   // https://www.w3.org/TR/CSP3/#parse-serialized-policy.
-  if (FindDirective(mojom::CSPDirective::Name::FrameAncestors,
-                    &(content_security_policy_ptr->directives))) {
+  if (FindDirective(mojom::CSPDirectiveName::FrameAncestors,
+                    &(policy->directives))) {
     // TODO(arthursonzogni, lfg): Should a warning be fired to the user here?
     return;
   }
@@ -318,23 +317,22 @@ void ParseFrameAncestors(
   if (!source_list)
     return;
 
-  content_security_policy_ptr->directives.push_back(mojom::CSPDirective::New(
-      mojom::CSPDirective::Name::FrameAncestors, std::move(source_list)));
+  policy->directives.push_back(mojom::CSPDirective::New(
+      mojom::CSPDirectiveName::FrameAncestors, std::move(source_list)));
 }
 
 // Parses the report-uri directive of a Content-Security-Policy header.
-void ParseReportEndpoint(
-    const mojom::ContentSecurityPolicyPtr& content_security_policy_ptr,
-    const GURL& base_url,
-    base::StringPiece header_value,
-    bool using_reporting_api) {
+void ParseReportEndpoint(const mojom::ContentSecurityPolicyPtr& policy,
+                         const GURL& base_url,
+                         base::StringPiece header_value,
+                         bool using_reporting_api) {
   // A report-uri directive has already been parsed. Skip further directives per
   // https://www.w3.org/TR/CSP3/#parse-serialized-policy.
-  if (!content_security_policy_ptr->report_endpoints.empty())
+  if (!policy->report_endpoints.empty())
     return;
 
   ParseReportDirective(base_url, header_value, using_reporting_api,
-                       &(content_security_policy_ptr->report_endpoints));
+                       &(policy->report_endpoints));
 }
 
 }  // namespace
@@ -348,21 +346,18 @@ void ContentSecurityPolicy::Parse(const GURL& base_url,
   std::string header_value;
   while (headers.EnumerateHeader(&iter, "content-security-policy",
                                  &header_value)) {
-    Parse(base_url, network::mojom::ContentSecurityPolicyType::kEnforce,
-          header_value);
+    Parse(base_url, mojom::ContentSecurityPolicyType::kEnforce, header_value);
   }
   iter = 0;
   while (headers.EnumerateHeader(&iter, "content-security-policy-report-only",
                                  &header_value)) {
-    Parse(base_url, network::mojom::ContentSecurityPolicyType::kReport,
-          header_value);
+    Parse(base_url, mojom::ContentSecurityPolicyType::kReport, header_value);
   }
 }
 
-void ContentSecurityPolicy::Parse(
-    const GURL& base_url,
-    network::mojom::ContentSecurityPolicyType type,
-    base::StringPiece header_value) {
+void ContentSecurityPolicy::Parse(const GURL& base_url,
+                                  mojom::ContentSecurityPolicyType type,
+                                  base::StringPiece header_value) {
   // RFC7230, section 3.2.2 specifies that headers appearing multiple times can
   // be combined with a comma. Walk the header string, and parse each comma
   // separated chunk as a separate header.
@@ -370,32 +365,77 @@ void ContentSecurityPolicy::Parse(
        base::SplitStringPiece(header_value, ",", base::TRIM_WHITESPACE,
                               base::SPLIT_WANT_NONEMPTY)) {
     DirectivesMap directives = ParseHeaderValue(header);
-    auto content_security_policy_ptr = mojom::ContentSecurityPolicy::New();
-    content_security_policy_ptr->type = type;
+    auto policy = mojom::ContentSecurityPolicy::New();
+
+    policy->header = mojom::ContentSecurityPolicyHeader::New(
+        header_value.as_string(), type,
+        mojom::ContentSecurityPolicySource::kHTTP);
 
     auto frame_ancestors = directives.find("frame-ancestors");
     if (frame_ancestors != directives.end())
-      ParseFrameAncestors(content_security_policy_ptr, frame_ancestors->second);
+      ParseFrameAncestors(policy, frame_ancestors->second);
 
     auto report_endpoints = directives.find("report-to");
     if (report_endpoints != directives.end()) {
-      if (!content_security_policy_ptr->use_reporting_api) {
-        content_security_policy_ptr->use_reporting_api = true;
-        content_security_policy_ptr->report_endpoints.clear();
+      if (!policy->use_reporting_api) {
+        policy->use_reporting_api = true;
+        policy->report_endpoints.clear();
       }
     } else {
       report_endpoints = directives.find("report-uri");
     }
 
     if (report_endpoints != directives.end()) {
-      ParseReportEndpoint(content_security_policy_ptr, base_url,
-                          report_endpoints->second,
-                          content_security_policy_ptr->use_reporting_api);
+      ParseReportEndpoint(policy, base_url, report_endpoints->second,
+                          policy->use_reporting_api);
     }
 
-    content_security_policies_.push_back(
-        std::move(content_security_policy_ptr));
+    content_security_policies_.push_back(std::move(policy));
   }
+}
+
+// static
+std::string ContentSecurityPolicy::ToString(mojom::CSPDirectiveName name) {
+  switch (name) {
+    case mojom::CSPDirectiveName::DefaultSrc:
+      return "default-src";
+    case mojom::CSPDirectiveName::ChildSrc:
+      return "child-src";
+    case mojom::CSPDirectiveName::FrameSrc:
+      return "frame-src";
+    case mojom::CSPDirectiveName::FormAction:
+      return "form-action";
+    case mojom::CSPDirectiveName::UpgradeInsecureRequests:
+      return "upgrade-insecure-requests";
+    case mojom::CSPDirectiveName::NavigateTo:
+      return "navigate-to";
+    case mojom::CSPDirectiveName::FrameAncestors:
+      return "frame-ancestors";
+    case mojom::CSPDirectiveName::Unknown:
+      return "";
+  }
+  NOTREACHED();
+  return "";
+}
+
+// static
+mojom::CSPDirectiveName ContentSecurityPolicy::ToDirectiveName(
+    const std::string& name) {
+  if (name == "default-src")
+    return mojom::CSPDirectiveName::DefaultSrc;
+  if (name == "child-src")
+    return mojom::CSPDirectiveName::ChildSrc;
+  if (name == "frame-src")
+    return mojom::CSPDirectiveName::FrameSrc;
+  if (name == "form-action")
+    return mojom::CSPDirectiveName::FormAction;
+  if (name == "upgrade-insecure-requests")
+    return mojom::CSPDirectiveName::UpgradeInsecureRequests;
+  if (name == "navigate-to")
+    return mojom::CSPDirectiveName::NavigateTo;
+  if (name == "frame-ancestors")
+    return mojom::CSPDirectiveName::FrameAncestors;
+  return mojom::CSPDirectiveName::Unknown;
 }
 
 }  // namespace network

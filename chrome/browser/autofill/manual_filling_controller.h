@@ -59,6 +59,11 @@ class ManualFillingController {
   static base::WeakPtr<ManualFillingController> GetOrCreate(
       content::WebContents* contents);
 
+  // Returns a weak pointer to the unique ManualFillingController instance
+  // associated with a WebContents.
+  static base::WeakPtr<ManualFillingController> Get(
+      content::WebContents* contents);
+
   // --------------------------------------------
   // Methods called by type-specific controllers.
   // --------------------------------------------

@@ -168,7 +168,7 @@ login.createScreen('EulaScreen', 'eula', function() {
 
   return {
     /** @override */
-    decorate: function() {
+    decorate() {
       $('oobe-eula-md').screen = this;
     },
 
@@ -176,14 +176,14 @@ login.createScreen('EulaScreen', 'eula', function() {
      * Called from $('oobe-eula-md') onUsageChanged handler.
      * @param {boolean} value $('usage-stats').checked value.
      */
-    onUsageStatsClicked_: function(value) {
+    onUsageStatsClicked_(value) {
       chrome.send('EulaScreen.usageStatsEnabled', [value]);
     },
 
     /**
      * Event handler that is invoked when 'chrome://terms' is loaded.
      */
-    onFrameLoad: function() {
+    onFrameLoad() {
       $('eula').classList.remove('eula-loading');
     },
 
@@ -191,7 +191,7 @@ login.createScreen('EulaScreen', 'eula', function() {
      * Event handler that is invoked just before the screen is shown.
      * @param {object} data Screen init payload.
      */
-    onBeforeShow: function() {
+    onBeforeShow() {
       $('eula').classList.add('eula-loading');
       this.updateLocalizedContent();
     },
@@ -203,12 +203,12 @@ login.createScreen('EulaScreen', 'eula', function() {
       return $('oobe-eula-md');
     },
 
-    enableKeyboardFlow: function() {},
+    enableKeyboardFlow() {},
 
     /**
      * Updates localized content of the screen that is not updated via template.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       // Reload the terms contents.
       $('oobe-eula-md').updateLocalizedContent();
     },
@@ -217,7 +217,7 @@ login.createScreen('EulaScreen', 'eula', function() {
      * Sets TPM password.
      * @param {text} password TPM password to be shown.
      */
-    setTpmPassword: function(password) {
+    setTpmPassword(password) {
       $('oobe-eula-md').password = password;
     },
 
@@ -231,7 +231,7 @@ login.createScreen('EulaScreen', 'eula', function() {
      *
      * @param {!WebView} webview Webview element to host the terms.
      */
-    loadEulaToWebview_: function(webview) {
+    loadEulaToWebview_(webview) {
       assert(webview.tagName === 'WEBVIEW');
 
       /**
@@ -267,7 +267,7 @@ login.createScreen('EulaScreen', 'eula', function() {
     /**
      * Called when focus is returned.
      */
-    onFocusReturned: function() {
+    onFocusReturned() {
       $('oobe-eula-md').focus();
     },
   };

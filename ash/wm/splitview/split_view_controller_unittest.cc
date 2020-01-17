@@ -4511,8 +4511,6 @@ class TestWindowDelegateWithWidget : public views::WidgetDelegate {
 
   // views::WidgetDelegate:
   void DeleteDelegate() override { delete this; }
-  views::Widget* GetWidget() override { return widget_; }
-  const views::Widget* GetWidget() const override { return widget_; }
   bool CanActivate() const override { return true; }
   bool CanResize() const override { return can_resize_; }
   bool CanMaximize() const override { return true; }
@@ -4521,6 +4519,9 @@ class TestWindowDelegateWithWidget : public views::WidgetDelegate {
   void set_widget(views::Widget* widget) { widget_ = widget; }
 
  private:
+  // views::WidgetDelegate:
+  const views::Widget* GetWidgetImpl() const override { return widget_; }
+
   bool can_resize_;
   views::Widget* widget_ = nullptr;
 

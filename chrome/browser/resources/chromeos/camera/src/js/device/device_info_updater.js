@@ -241,6 +241,3 @@ export class DeviceInfoUpdater {
     return {photo: info.photoResols, video: info.videoResols};
   }
 }
-
-/** @const */
-cca.device.DeviceInfoUpdater = DeviceInfoUpdater;

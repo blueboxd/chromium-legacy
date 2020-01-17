@@ -13,6 +13,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_getter.h"
 
 namespace gfx {
 class ImageSkia;
@@ -27,7 +28,7 @@ class NonClientFrameView;
 class View;
 
 // Handles events on Widgets in context-specific ways.
-class VIEWS_EXPORT WidgetDelegate {
+class VIEWS_EXPORT WidgetDelegate : public virtual WidgetGetter {
  public:
   WidgetDelegate();
 
@@ -149,10 +150,6 @@ class VIEWS_EXPORT WidgetDelegate {
   virtual void OnWindowBeginUserBoundsChange() {}
   virtual void OnWindowEndUserBoundsChange() {}
 
-  // Returns the Widget associated with this delegate.
-  virtual Widget* GetWidget() = 0;
-  virtual const Widget* GetWidget() const = 0;
-
   // Returns the View that is contained within this Widget.
   virtual View* GetContentsView();
 
@@ -212,10 +209,9 @@ class VIEWS_EXPORT WidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(WidgetDelegate);
 };
 
-// A WidgetDelegate implementation that is-a View. Used to override GetWidget()
-// to call View's GetWidget() for the common case where a WidgetDelegate
-// implementation is-a View. Note that WidgetDelegateView is not owned by
-// view's hierarchy and is expected to be deleted on DeleteDelegate call.
+// A WidgetDelegate implementation that is-a View. Note that WidgetDelegateView
+// is not owned by view's hierarchy and is expected to be deleted on
+// DeleteDelegate call.
 class VIEWS_EXPORT WidgetDelegateView : public WidgetDelegate, public View {
  public:
   METADATA_HEADER(WidgetDelegateView);
@@ -225,8 +221,6 @@ class VIEWS_EXPORT WidgetDelegateView : public WidgetDelegate, public View {
 
   // WidgetDelegate:
   void DeleteDelegate() override;
-  Widget* GetWidget() override;
-  const Widget* GetWidget() const override;
   views::View* GetContentsView() override;
 
  private:

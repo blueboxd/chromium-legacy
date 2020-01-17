@@ -503,6 +503,26 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   EXPECT_TRUE(
       router->forced_last_fling_start_target_to_stop_flinging_for_test());
 }
+
+// Check that fling controller does not generate fling curve when view is
+// destroyed.
+IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
+                       NoFlingWhenViewIsDestroyed) {
+  LoadURL(kBrowserFlingDataURL);
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  GetWidgetHost()->GetView()->Destroy();
+  SimulateTouchscreenFling(GetWidgetHost());
+
+  // As the view is destroyed, there shouldn't be any active fling.
+  EXPECT_FALSE(static_cast<InputRouterImpl*>(GetWidgetHost()->input_router())
+                   ->IsFlingActiveForTest());
+
+  EXPECT_EQ(
+      0, EvalJs(root->current_frame_host(), "window.scrollY").ExtractDouble());
+}
 #endif  // !defined(OS_MACOSX)
 
 class PhysicsBasedFlingCurveBrowserTest : public BrowserSideFlingBrowserTest {

@@ -27,17 +27,13 @@ if (!is_ios) {
       "//url",
     ]
 
-    public_deps = [
-      "//components/paint_preview/common/mojom",
-    ]
+    public_deps = [ "//components/paint_preview/common/mojom" ]
   }
 
   source_set("test_utils") {
     testonly = true
 
-    sources = [
-      "test_utils.h",
-    ]
+    sources = [ "test_utils.h" ]
 
     deps = [
       "//testing/gmock",

@@ -22,7 +22,6 @@
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> သည် အန္တရာယ်ရှိသောကြောင့် Chrome က ၎င်းကို ပိတ်ဆို့ထားပါသည်။</translation>
 <translation id="1619887657840448962">Chrome ပိုမိုလုံခြုံမှုရှိစေရန်၊ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> တွင် စာရင်းဝင်ထားခြင်း မရှိသည့်အပြင် သင့်အား အသိမပေးဘဲ ထည့်ထားပုံရသည့် အောက်ပါ တိုးချဲ့လိုင်းအား ပိတ်ထားခဲ့၏။</translation>
 <translation id="1628000112320670027">Chrome အကူအညီရယူရန်</translation>
-<translation id="1635734105302489219">Chrome မှထွက်သည့်အခါ ကွတ်ကီးများကို သင်ရှင်းလင်းထားသည်။ ဆက်လက်၍ စင့်ခ်လုပ်ရန် <ph name="COOKIE_SETTINGS_LINK" /> ကို ပြောင်းပါ။</translation>
 <translation id="1662639173275167396">Chrome OS ကို နောက်ထပ် <ph name="BEGIN_LINK_CROS_OSS" />အခမဲ့ရင်းမြစ် ဆော့ဖ်ဝဲ<ph name="END_LINK_CROS_OSS" />၊ ရှိရင်းစွဲ <ph name="BEGIN_LINK_LINUX_OSS" />Linux (စမ်းသပ်ဆော့ဖ်ဝဲ)<ph name="END_LINK_LINUX_OSS" /> တို့က ပံ့ပိုးထားခြင်းဖြစ်သည်။</translation>
 <translation id="1666409074978194368">အပ်ဒိတ်လုပ်ပြီးပါတော့မည်။ အပ်ဒိတ်လုပ်ခြင်း အပြီးသတ်ရန် Google Chrome ကို ပြန်ဖွင့်ပါ။ ရုပ်ဖျက် ဝင်ဒိုးများကို ပြန်ဖွင့်မည် မဟုတ်ပါ။</translation>
 <translation id="1674870198290878346">Chrome ရုပ်ဖျက်ဝင်းဒိုးတွင် လင့်ခ်ကို ဖွင့်ခြင်း</translation>
@@ -77,7 +76,6 @@
 <translation id="3089968997497233615">ပိုသစ်သော၊ ပိုလုံခြုံသော Google Chrome ရနိုင်ပါသည်။</translation>
 <translation id="3149510190863420837">Chrome အက်ပ်များ</translation>
 <translation id="3282568296779691940">Chrome သို့ လက်မှတ်ထိုး ဝင်</translation>
-<translation id="3340978935015468852">ဆက်တင်များ</translation>
 <translation id="3360895254066713204">Chrome ကူညီပေးသူ</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome ကို ယခု ပြန်လည်စတင်ပါမည်}=1{Chrome ကို ၁ စက္ကန့်အကြာတွင် ပြန်လည်စတင်ပါမည်}other{Chrome ကို # စက္ကန့်အကြာတွင် ပြန်လည်စတင်ပါမည်}}</translation>
 <translation id="3395323229510056640">Chrome OS အကူအညီရယူရန်</translation>

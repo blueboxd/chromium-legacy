@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 
+#include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -76,7 +77,8 @@ enum class ResourceType : uint8_t;
 using SandboxFlags = WebSandboxFlags;
 typedef HeapVector<Member<CSPDirectiveList>> CSPDirectiveListVector;
 typedef HeapVector<Member<ConsoleMessage>> ConsoleMessageVector;
-typedef std::pair<String, ContentSecurityPolicyHeaderType> CSPHeaderAndType;
+typedef std::pair<String, network::mojom::ContentSecurityPolicyType>
+    CSPHeaderAndType;
 using RedirectStatus = ResourceRequest::RedirectStatus;
 
 //  A delegate interface to implement violation reporting, support for some
@@ -222,11 +224,11 @@ class CORE_EXPORT ContentSecurityPolicy final
 
   void DidReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
   void DidReceiveHeader(const String&,
-                        ContentSecurityPolicyHeaderType,
-                        ContentSecurityPolicyHeaderSource);
+                        network::mojom::ContentSecurityPolicyType,
+                        network::mojom::ContentSecurityPolicySource);
   void AddPolicyFromHeaderValue(const String&,
-                                ContentSecurityPolicyHeaderType,
-                                ContentSecurityPolicyHeaderSource);
+                                network::mojom::ContentSecurityPolicyType,
+                                network::mojom::ContentSecurityPolicySource);
   void ReportAccumulatedHeaders(LocalFrameClient*) const;
 
   Vector<CSPHeaderAndType> Headers() const;
@@ -400,7 +402,7 @@ class CORE_EXPORT ContentSecurityPolicy final
                        const Vector<String>& report_endpoints,
                        bool use_reporting_api,
                        const String& header,
-                       ContentSecurityPolicyHeaderType,
+                       network::mojom::ContentSecurityPolicyType,
                        ViolationType,
                        std::unique_ptr<SourceLocation>,
                        LocalFrame* = nullptr,
@@ -481,7 +483,7 @@ class CORE_EXPORT ContentSecurityPolicy final
   // there is no execution context to enforce the sandbox flags.
   SandboxFlags GetSandboxMask() const { return sandbox_mask_; }
 
-  bool HasPolicyFromSource(ContentSecurityPolicyHeaderSource) const;
+  bool HasPolicyFromSource(network::mojom::ContentSecurityPolicySource) const;
 
   static bool IsScriptDirective(
       ContentSecurityPolicy::DirectiveType directive_type) {
@@ -520,9 +522,10 @@ class CORE_EXPORT ContentSecurityPolicy final
       const String& message,
       mojom::ConsoleMessageLevel = mojom::ConsoleMessageLevel::kError);
 
-  void AddAndReportPolicyFromHeaderValue(const String&,
-                                         ContentSecurityPolicyHeaderType,
-                                         ContentSecurityPolicyHeaderSource);
+  void AddAndReportPolicyFromHeaderValue(
+      const String&,
+      network::mojom::ContentSecurityPolicyType,
+      network::mojom::ContentSecurityPolicySource);
 
   bool ShouldSendViolationReport(const String&) const;
   void DidSendViolationReport(const String&);

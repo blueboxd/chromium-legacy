@@ -506,7 +506,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
                             blink::ServiceWorkerStatusCode status,
                             const std::string& status_message,
                             int64_t registration_id);
-  // Callback for ServiceWorkerStorage::FindRegistrationForClientUrl().
+  // Callback for ServiceWorkerRegistry::FindRegistrationForClientUrl().
   void GetRegistrationComplete(
       GetRegistrationCallback callback,
       int64_t trace_id,

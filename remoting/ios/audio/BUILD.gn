@@ -18,9 +18,7 @@ source_set("audio") {
     "//remoting/client/audio",
   ]
 
-  public_deps = [
-    "//remoting/proto",
-  ]
+  public_deps = [ "//remoting/proto" ]
 
   libs = [ "AudioToolbox.framework" ]
 
@@ -29,9 +27,7 @@ source_set("audio") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "audio_playback_sink_ios_unittest.cc",
-  ]
+  sources = [ "audio_playback_sink_ios_unittest.cc" ]
   deps = [
     ":audio",
     "//remoting/client/audio:test_support",

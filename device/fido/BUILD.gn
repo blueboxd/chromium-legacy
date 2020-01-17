@@ -255,9 +255,7 @@ source_set("mocks") {
 }
 
 fuzzer_test("fido_hid_message_fuzzer") {
-  sources = [
-    "hid/fido_hid_message_fuzzer.cc",
-  ]
+  sources = [ "hid/fido_hid_message_fuzzer.cc" ]
   deps = [
     ":fido",
     "//base",
@@ -266,19 +264,13 @@ fuzzer_test("fido_hid_message_fuzzer") {
 }
 
 fuzzer_test("fido_ble_frames_fuzzer") {
-  sources = [
-    "ble/fido_ble_frames_fuzzer.cc",
-  ]
-  deps = [
-    ":fido",
-  ]
+  sources = [ "ble/fido_ble_frames_fuzzer.cc" ]
+  deps = [ ":fido" ]
   libfuzzer_options = [ "max_len=65535" ]
 }
 
 fuzzer_test("ctap_response_fuzzer") {
-  sources = [
-    "ctap_response_fuzzer.cc",
-  ]
+  sources = [ "ctap_response_fuzzer.cc" ]
   deps = [
     ":fido",
     "//base",
@@ -291,9 +283,7 @@ fuzzer_test("ctap_response_fuzzer") {
 }
 
 fuzzer_test("fido_cable_handshake_handler_fuzzer") {
-  sources = [
-    "cable/fido_cable_handshake_handler_fuzzer.cc",
-  ]
+  sources = [ "cable/fido_cable_handshake_handler_fuzzer.cc" ]
   deps = [
     ":fido",
     "//base",
@@ -306,9 +296,7 @@ fuzzer_test("fido_cable_handshake_handler_fuzzer") {
 }
 
 fuzzer_test("fido_cable_handshake_handler_v2_fuzzer") {
-  sources = [
-    "cable/fido_cable_handshake_handler_v2_fuzzer.cc",
-  ]
+  sources = [ "cable/fido_cable_handshake_handler_v2_fuzzer.cc" ]
   deps = [
     ":fido",
     "//base",

@@ -1494,6 +1494,11 @@ bool TestLauncher::InitTests() {
   }
   for (const TestIdentifier& test_id : tests) {
     TestInfo test_info(test_id);
+    if (test_id.test_case_name == "GoogleTestVerification") {
+      LOG(INFO) << "The following parameterized test case is not instantiated: "
+                << test_id.test_name;
+      continue;
+    }
     // TODO(isamsonov): crbug.com/1004417 remove when windows builders
     // stop flaking on MANAUAL_ tests.
     if (launcher_delegate_->ShouldRunTest(test_id))

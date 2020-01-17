@@ -14,14 +14,15 @@
 #include "services/service_manager/public/cpp/binder_map.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_automation.mojom-forward.h"
 
 namespace content {
 
 class FakeBluetoothChooser;
 class FakeBluetoothChooserFactory;
-class WebTestBrowserContext;
 class MockClipboardHost;
 class MockPlatformNotificationService;
+class WebTestBrowserContext;
 
 class WebTestContentBrowserClient : public ShellContentBrowserClient {
  public:
@@ -92,15 +93,15 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   // Creates and stores a FakeBluetoothChooserFactory instance.
   void CreateFakeBluetoothChooserFactory(
       mojo::PendingReceiver<mojom::FakeBluetoothChooserFactory> receiver);
-  // TODO(https://crbug.com/955171): Remove this and use BindClipboardHost
-  // directly once it uses service_manager::BinderMap instead of
-  // service_manager::BinderRegistry.
-  void BindClipboardHostForRequest(blink::mojom::ClipboardHostRequest request);
   void BindClipboardHost(
+      RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver);
 
   void BindClientHintsControllerDelegate(
       mojo::PendingReceiver<client_hints::mojom::ClientHints> receiver);
+
+  void BindPermissionAutomation(
+      mojo::PendingReceiver<blink::test::mojom::PermissionAutomation> receiver);
 
   std::unique_ptr<MockPlatformNotificationService>
       mock_platform_notification_service_;

@@ -113,13 +113,9 @@ template("chrome_public_common_apk_or_module_tmpl") {
       }
 
       if (android_64bit_target_cpu) {
-        deps = [
-          "//chrome/android:lib${library_target}($android_secondary_abi_toolchain)",
-        ]
+        deps = [ "//chrome/android:lib${library_target}($android_secondary_abi_toolchain)" ]
       } else {
-        deps = [
-          "//chrome/android:lib${library_target}",
-        ]
+        deps = [ "//chrome/android:lib${library_target}" ]
       }
     }
   } else if (defined(invoker.shared_library_for_unwind_asset)) {
@@ -336,6 +332,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
     is_monochrome = !is_trichrome
 
+    shared_libraries = []
     loadable_modules = []
     secondary_abi_loadable_modules = []
 
@@ -447,6 +444,18 @@ template("monochrome_public_common_apk_or_module_tmpl") {
 
     use_chromium_linker = is_trichrome && chromium_linker_supported
     use_modern_linker = use_chromium_linker
+
+    if (build_hwasan_splits && android_64bit_target_cpu &&
+        invoker.is_64_bit_browser) {
+      _hwasan_toolchain = "//build/toolchain/android:android_clang_arm64_hwasan"
+      shared_libraries +=
+          [ "//chrome/android:libmonochrome_64($_hwasan_toolchain)" ]
+
+      if (use_chromium_linker) {
+        shared_libraries +=
+            [ "//base/android/linker:chromium_android_linker($_hwasan_toolchain)" ]
+      }
+    }
 
     # Resources config for blocklisting resource names from obfuscation
     resources_config_path = "//android_webview/aapt2.config"

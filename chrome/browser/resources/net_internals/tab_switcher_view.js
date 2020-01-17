@@ -53,7 +53,7 @@ const TabSwitcherView = (function() {
     // Override methods in View
     // ---------------------------------------------
 
-    setGeometry: function(left, top, width, height) {
+    setGeometry(left, top, width, height) {
       superClass.prototype.setGeometry.call(this, left, top, width, height);
 
       const tabListNode = $(TAB_LIST_ID);
@@ -76,7 +76,7 @@ const TabSwitcherView = (function() {
       }
     },
 
-    show: function(isVisible) {
+    show(isVisible) {
       superClass.prototype.show.call(this, isVisible);
       const activeView = this.getActiveTabView();
       if (activeView) {
@@ -94,7 +94,7 @@ const TabSwitcherView = (function() {
      * @param {!View} view The tab's actual contents.
      * @param {string} name The name for the menu item that selects the tab.
      */
-    addTab: function(tabId, view, name, hash) {
+    addTab(tabId, view, name, hash) {
       if (!tabId) {
         throw Error('Must specify a non-false tabId');
       }
@@ -113,7 +113,7 @@ const TabSwitcherView = (function() {
       this.tabListWidth_ = $(TAB_LIST_ID).offsetWidth;
     },
 
-    showTabLink: function(tabId, isVisible) {
+    showTabLink(tabId, isVisible) {
       const wasActive = this.activeTabId_ == tabId;
 
       setNodeDisplay(this.tabIdToLink_[tabId], isVisible);
@@ -131,19 +131,19 @@ const TabSwitcherView = (function() {
       }
     },
 
-    getAllTabViews: function() {
+    getAllTabViews() {
       return this.tabIdToView_;
     },
 
-    getTabView: function(tabId) {
+    getTabView(tabId) {
       return this.tabIdToView_[tabId];
     },
 
-    getActiveTabView: function() {
+    getActiveTabView() {
       return this.tabIdToView_[this.activeTabId_];
     },
 
-    getActiveTabId: function() {
+    getActiveTabId() {
       return this.activeTabId_;
     },
 
@@ -153,7 +153,7 @@ const TabSwitcherView = (function() {
      *   (2) Update the dropdown menu's current selection.
      *   (3) Invoke the optional onTabSwitched callback.
      */
-    switchToTab: function(tabId) {
+    switchToTab(tabId) {
       const newView = this.getTabView(tabId);
 
       if (!newView) {

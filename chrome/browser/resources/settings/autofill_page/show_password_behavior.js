@@ -28,7 +28,7 @@ const ShowPasswordBehavior = {
    * or when there's federated text otherwise 'password'.
    * @private
    */
-  getPasswordInputType_: function() {
+  getPasswordInputType_() {
     return this.item.password || this.item.entry.federationText ? 'text' :
                                                                   'password';
   },
@@ -40,7 +40,7 @@ const ShowPasswordBehavior = {
    * @param {string} show The i18n text to use for 'Show'
    * @private
    */
-  showPasswordTitle_: function(password, hide, show) {
+  showPasswordTitle_(password, hide, show) {
     return password ? hide : show;
   },
 
@@ -49,7 +49,7 @@ const ShowPasswordBehavior = {
    * @return {string}
    * @private
    */
-  getIconClass_: function() {
+  getIconClass_() {
     return this.item.password ? 'icon-visibility-off' : 'icon-visibility';
   },
 
@@ -59,7 +59,7 @@ const ShowPasswordBehavior = {
    * federated text.
    * @private
    */
-  getPassword_: function() {
+  getPassword_() {
     if (!this.item) {
       return '';
     }
@@ -71,7 +71,7 @@ const ShowPasswordBehavior = {
    * Handler for tapping the show/hide button.
    * @private
    */
-  onShowPasswordButtonTap_: function() {
+  onShowPasswordButtonTap_() {
     if (this.item.password) {
       this.set('item.password', '');
       return;

@@ -50,7 +50,7 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
           element.classList.contains('has-shadow'),
           'Main page should not show shadow ' + element.className);
 
-      settings.navigateTo(settings.routes.POWER);
+      settings.Router.getInstance().navigateTo(settings.routes.POWER);
       Polymer.dom.flush();
       assertTrue(
           element.classList.contains('has-shadow'),
@@ -163,7 +163,7 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       assertEquals('', searchField.getSearchInput().value);
 
       const query = 'foo';
-      settings.navigateTo(
+      settings.Router.getInstance().navigateTo(
           settings.routes.BASIC, new URLSearchParams(`search=${query}`));
       assertEquals(query, searchField.getSearchInput().value);
     });
@@ -173,20 +173,25 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       const searchField =
           /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
 
-      settings.navigateTo(
+      settings.Router.getInstance().navigateTo(
           settings.routes.BASIC, /* dynamicParams */ null,
           /* removeSearch */ true);
       assertEquals('', searchField.getSearchInput().value);
-      assertFalse(settings.getQueryParameters().has('search'));
+      assertFalse(
+          settings.Router.getInstance().getQueryParameters().has('search'));
 
       let value = 'GOOG';
       searchField.setValue(value);
-      assertEquals(value, settings.getQueryParameters().get('search'));
+      assertEquals(
+          value,
+          settings.Router.getInstance().getQueryParameters().get('search'));
 
       // Test that search queries are properly URL encoded.
       value = '+++';
       searchField.setValue(value);
-      assertEquals(value, settings.getQueryParameters().get('search'));
+      assertEquals(
+          value,
+          settings.Router.getInstance().getQueryParameters().get('search'));
     });
 
     test('whitespace only search query is ignored', () => {
@@ -194,19 +199,19 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       const searchField =
           /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
       searchField.setValue('    ');
-      let urlParams = settings.getQueryParameters();
+      let urlParams = settings.Router.getInstance().getQueryParameters();
       assertFalse(urlParams.has('search'));
 
       searchField.setValue('   foo');
-      urlParams = settings.getQueryParameters();
+      urlParams = settings.Router.getInstance().getQueryParameters();
       assertEquals('foo', urlParams.get('search'));
 
       searchField.setValue('   foo ');
-      urlParams = settings.getQueryParameters();
+      urlParams = settings.Router.getInstance().getQueryParameters();
       assertEquals('foo ', urlParams.get('search'));
 
       searchField.setValue('   ');
-      urlParams = settings.getQueryParameters();
+      urlParams = settings.Router.getInstance().getQueryParameters();
       assertFalse(urlParams.has('search'));
     });
 
@@ -221,11 +226,14 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       ironSelector.forceSynchronousItemUpdate();
 
       const urlParams = new URLSearchParams('search=foo');
-      settings.navigateTo(settings.routes.BASIC, urlParams);
+      settings.Router.getInstance().navigateTo(
+          settings.routes.BASIC, urlParams);
       assertEquals(
-          urlParams.toString(), settings.getQueryParameters().toString());
+          urlParams.toString(),
+          settings.Router.getInstance().getQueryParameters().toString());
       settingsMenu.$.people.click();
-      assertEquals('', settings.getQueryParameters().toString());
+      assertEquals(
+          '', settings.Router.getInstance().getQueryParameters().toString());
     });
   });
 

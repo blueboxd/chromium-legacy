@@ -11,9 +11,7 @@ import("//remoting/remoting_options.gni")
 group("jni") {
   testonly = true
 
-  deps = [
-    ":remoting_client_jni",
-  ]
+  deps = [ ":remoting_client_jni" ]
 }
 
 shared_library("remoting_client_jni") {

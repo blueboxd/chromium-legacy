@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_recalc.h"
@@ -42,6 +43,50 @@ const char* kUnsupportedDisplay =
 const char* kElementIsDisconnected = "Element is disconnected.";
 const char* kElementIsNested = "Element is nested under a locked element.";
 }  // namespace rejection_names
+
+void RecordActivationReason(DisplayLockActivationReason reason) {
+  int ordered_reason = -1;
+
+  // IMPORTANT: This number needs to be bumped up when adding
+  // new reasons.
+  static const int number_of_reasons = 9;
+
+  switch (reason) {
+    case DisplayLockActivationReason::kAccessibility:
+      ordered_reason = 0;
+      break;
+    case DisplayLockActivationReason::kFindInPage:
+      ordered_reason = 1;
+      break;
+    case DisplayLockActivationReason::kFragmentNavigation:
+      ordered_reason = 2;
+      break;
+    case DisplayLockActivationReason::kScriptFocus:
+      ordered_reason = 3;
+      break;
+    case DisplayLockActivationReason::kScrollIntoView:
+      ordered_reason = 4;
+      break;
+    case DisplayLockActivationReason::kSelection:
+      ordered_reason = 5;
+      break;
+    case DisplayLockActivationReason::kSimulatedClick:
+      ordered_reason = 6;
+      break;
+    case DisplayLockActivationReason::kUserFocus:
+      ordered_reason = 7;
+      break;
+    case DisplayLockActivationReason::kViewportIntersection:
+      ordered_reason = 8;
+      break;
+    case DisplayLockActivationReason::kViewport:
+    case DisplayLockActivationReason::kAny:
+      NOTREACHED();
+      break;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Blink.Render.DisplayLockActivationReason",
+                            ordered_reason, number_of_reasons);
+}
 
 // Helper function to convert a display locking state to a string. Used in
 // traces.
@@ -408,7 +453,8 @@ void DisplayLockContext::FireActivationEvent(Element* activated_element) {
 }
 
 void DisplayLockContext::CommitForActivationWithSignal(
-    Element* activated_element) {
+    Element* activated_element,
+    DisplayLockActivationReason reason_for_metrics) {
   DCHECK(activated_element);
   DCHECK(element_);
   DCHECK(ConnectedToView());
@@ -420,6 +466,8 @@ void DisplayLockContext::CommitForActivationWithSignal(
                 weak_factory_.GetWeakPtr(), WrapPersistent(activated_element)));
 
   StartCommit();
+
+  RecordActivationReason(reason_for_metrics);
 
   if (!IsAttributeVersion(this)) {
     css_is_activated_ = true;
@@ -777,8 +825,8 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
     old_document.RemoveLockedDisplayLock();
     document_->AddLockedDisplayLock();
     if (!IsActivatable(DisplayLockActivationReason::kAny)) {
-      old_document.RemoveActivationBlockingDisplayLock();
-      document_->AddActivationBlockingDisplayLock();
+      old_document.DecrementDisplayLockBlockingAllActivation();
+      document_->IncrementDisplayLockBlockingAllActivation();
     }
   }
 }
@@ -1023,9 +1071,9 @@ void DisplayLockContext::StateChangeHelper::UpdateActivationBlockingCount(
   // Adjust activation blocking lock counts.
   if (old_activatable != new_activatable) {
     if (old_activatable)
-      document.AddActivationBlockingDisplayLock();
+      document.IncrementDisplayLockBlockingAllActivation();
     else
-      document.RemoveActivationBlockingDisplayLock();
+      document.DecrementDisplayLockBlockingAllActivation();
   }
 }
 

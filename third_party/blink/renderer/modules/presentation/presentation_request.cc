@@ -129,8 +129,9 @@ bool PresentationRequest::HasPendingActivity() const {
   if (HasEventListeners())
     return true;
 
-  return availability_property_ && availability_property_->GetState() ==
-                                       ScriptPromisePropertyBase::kPending;
+  return availability_property_ &&
+         availability_property_->GetState() ==
+             PresentationAvailabilityProperty::kPending;
 }
 
 ScriptPromise PresentationRequest::start(ScriptState* script_state,
@@ -217,8 +218,7 @@ ScriptPromise PresentationRequest::getAvailability(
   if (!availability_property_) {
     availability_property_ =
         MakeGarbageCollected<PresentationAvailabilityProperty>(
-            ExecutionContext::From(script_state), this,
-            PresentationAvailabilityProperty::kReady);
+            ExecutionContext::From(script_state));
 
     controller->GetAvailabilityState()->RequestAvailability(
         urls_, MakeGarbageCollected<PresentationAvailabilityCallbacks>(

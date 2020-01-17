@@ -22,6 +22,7 @@ class CORE_EXPORT NGAbstractInlineTextBox final : public AbstractInlineTextBox {
   static scoped_refptr<AbstractInlineTextBox> GetOrCreate(
       const NGInlineCursor& cursor);
   static void WillDestroy(const NGInlineCursor& cursor);
+  static void WillDestroy(const NGPaintFragment* fragment);
 
   friend class LayoutText;
 

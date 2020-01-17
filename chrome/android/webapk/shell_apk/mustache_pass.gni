@@ -17,9 +17,7 @@ template("mustache_pass") {
                              "visibility",
                              "deps",
                            ])
-    sources = [
-      invoker.input,
-    ]
+    sources = [ invoker.input ]
     if (defined(invoker.config_file)) {
       sources += [ invoker.config_file ]
     }
@@ -29,9 +27,7 @@ template("mustache_pass") {
 
     script = "//chrome/android/webapk/shell_apk/mustache_pass.py"
 
-    outputs = [
-      invoker.output,
-    ]
+    outputs = [ invoker.output ]
 
     args = [
       "--template",

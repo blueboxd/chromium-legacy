@@ -9,7 +9,5 @@ static_library("profile_metrics") {
     "counts.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

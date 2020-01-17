@@ -145,6 +145,3 @@ export class ReviewResult {
     });
   }
 }
-
-/** @const */
-cca.views.camera.ReviewResult = ReviewResult;

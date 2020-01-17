@@ -5,6 +5,7 @@
 #ifndef UI_ACCESSIBILITY_AX_LANGUAGE_DETECTION_H_
 #define UI_ACCESSIBILITY_AX_LANGUAGE_DETECTION_H_
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -14,6 +15,7 @@
 #include "third_party/cld_3/src/src/nnet_language_identifier.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_tree_observer.h"
 
 namespace ui {
 
@@ -139,24 +141,57 @@ class AX_EXPORT AXLanguageInfoStats {
   DISALLOW_COPY_AND_ASSIGN(AXLanguageInfoStats);
 };
 
+// AXLanguageDetectionObserver is registered as a change observer on an AXTree
+// and will run language detection after each update to the tree.
+//
+// We have kept this observer separate from the AXLanguageDetectionManager as we
+// are aiming to launch language detection in two phases and wanted to try keep
+// the code paths somewhat separate.
+//
+// TODO(chrishall): After both features have launched we could consider merging
+// AXLanguageDetectionObserver into AXLanguageDetectionManager.
+//
+// TODO(chrishall): Investigate the cost of using AXTreeObserver, given that it
+// has many empty virtual methods which are called for every AXTree change and
+// we are only currently interested in OnAtomicUpdateFinished.
+class AX_EXPORT AXLanguageDetectionObserver : public ui::AXTreeObserver {
+ public:
+  // Observer constructor will register itself with the provided AXTree.
+  AXLanguageDetectionObserver(AXTree* tree);
+
+  // Observer destructor will remove itself as an observer from the AXTree.
+  ~AXLanguageDetectionObserver() override;
+
+ private:
+  void OnAtomicUpdateFinished(ui::AXTree* tree,
+                              bool root_changed,
+                              const std::vector<Change>& changes) override;
+
+  // Non-owning pointer to AXTree, used to de-register observer on destruction.
+  AXTree* const tree_;
+
+  DISALLOW_COPY_AND_ASSIGN(AXLanguageDetectionObserver);
+};
+
 // AXLanguageDetectionManager manages all of the context needed for language
 // detection within an AXTree.
 class AX_EXPORT AXLanguageDetectionManager {
  public:
-  AXLanguageDetectionManager();
+  // Construct an AXLanguageDetectionManager for the specified tree.
+  AXLanguageDetectionManager(AXTree* tree);
   ~AXLanguageDetectionManager();
 
-  // Detect languages for each node in the subtree rooted at the given node.
+  // Detect languages for each node in the tree managed by this manager.
   // This is the first pass in detection and labelling.
   // This only detects the language, it does not label it, for that see
   //  LabelLanguageForSubtree.
-  void DetectLanguages(AXNode* subtree_root);
+  void DetectLanguages();
 
-  // Label languages for each node in the subtree rooted at the given node.
+  // Label languages for each node in the tree manager by this manager.
   // This is the second pass in detection and labelling.
   // This will label the language, but relies on the earlier detection phase
   // having already completed.
-  void LabelLanguages(AXNode* subtree_root);
+  void LabelLanguages();
 
   // Sub-node language detection for a given string attribute.
   // For example, if a node has name: "My name is Fred", then calling
@@ -166,8 +201,14 @@ class AX_EXPORT AXLanguageDetectionManager {
       const AXNode& node,
       ax::mojom::StringAttribute attr);
 
+  // Construct and register a dynamic content change observer for this manager.
+  void RegisterLanguageDetectionObserver();
+
  private:
-  AXLanguageInfoStats lang_info_stats_;
+  friend class AXLanguageDetectionObserver;
+
+  // Allow access from a fixture only used in testing.
+  friend class AXLanguageDetectionTestFixture;
 
   // Perform detection for subtree rooted at subtree_root.
   void DetectLanguagesForSubtree(AXNode* subtree_root);
@@ -187,6 +228,14 @@ class AX_EXPORT AXLanguageDetectionManager {
   // kShortTextIdentifierMinByteLength so it can be used for detecting languages
   // of shorter text (e.g. one character).
   chrome_lang_id::NNetLanguageIdentifier short_text_language_identifier_;
+
+  // The observer to support dynamic content language detection.
+  std::unique_ptr<AXLanguageDetectionObserver> language_detection_observer_;
+
+  // Non-owning back pointer to the tree which owns this manager.
+  AXTree* tree_;
+
+  AXLanguageInfoStats lang_info_stats_;
 
   DISALLOW_COPY_AND_ASSIGN(AXLanguageDetectionManager);
 };

@@ -83,7 +83,7 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
   UICollectionViewLayoutAttributes* attributes =
       [super layoutAttributesForSupplementaryViewOfKind:kind
                                             atIndexPath:indexPath];
-  if (IsRegularXRegularSizeClass())
+  if (!IsSplitToolbarMode())
     return attributes;
 
   if ([kind isEqualToString:UICollectionElementKindSectionHeader] &&

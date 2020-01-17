@@ -367,7 +367,9 @@
   OP(MaxShaderCompilerThreadsKHR)                              /* 608 */ \
   OP(CreateAndTexStorage2DSharedImageINTERNALImmediate)        /* 609 */ \
   OP(BeginSharedImageAccessDirectCHROMIUM)                     /* 610 */ \
-  OP(EndSharedImageAccessDirectCHROMIUM)                       /* 611 */
+  OP(EndSharedImageAccessDirectCHROMIUM)                       /* 611 */ \
+  OP(BeginBatchReadAccessSharedImageCHROMIUM)                  /* 612 */ \
+  OP(EndBatchReadAccessSharedImageCHROMIUM)                    /* 613 */
 
 enum CommandId {
   kOneBeforeStartPoint =

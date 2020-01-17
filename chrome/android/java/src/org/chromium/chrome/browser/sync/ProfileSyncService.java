@@ -13,8 +13,8 @@ import org.json.JSONException;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
 
@@ -455,6 +455,18 @@ public class ProfileSyncService {
     }
 
     /**
+     * Checks if trusted vault encryption keys are needed, independently of the currently-enabled
+     * data types.
+     *
+     * @return true if we need an encryption key.
+     */
+    public boolean isTrustedVaultKeyRequired() {
+        assert isEngineInitialized();
+        return ProfileSyncServiceJni.get().isTrustedVaultKeyRequired(
+                mNativeProfileSyncServiceAndroid, ProfileSyncService.this);
+    }
+
+    /**
      * Checks if trusted vault encryption keys are needed to decrypt a currently-enabled data type.
      *
      * @return true if we need an encryption key for a type that is currently enabled.
@@ -658,6 +670,8 @@ public class ProfileSyncService {
         void enableEncryptEverything(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         boolean isPassphraseRequiredForPreferredDataTypes(
+                long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
+        boolean isTrustedVaultKeyRequired(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         boolean isTrustedVaultKeyRequiredForPreferredDataTypes(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);

@@ -82,8 +82,6 @@ class FindTabHelper : public web::WebStateObserver,
   FindTabHelper(web::WebState* web_state);
 
   // web::WebStateObserver.
-  void DidFinishNavigation(web::WebState* web_state,
-                           web::NavigationContext* navigation_context) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
   // The ObjC find in page controller.

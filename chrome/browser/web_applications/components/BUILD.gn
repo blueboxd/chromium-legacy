@@ -131,6 +131,7 @@ source_set("components") {
     "//components/user_manager:user_manager",
     "//content/public/browser",
     "//extensions/common:common_constants",
+    "//net",
     "//services/preferences/public/cpp",
     "//skia",
   ]

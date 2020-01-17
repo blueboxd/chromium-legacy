@@ -44,11 +44,9 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
            LayoutBlockFlow::IsOfType(type);
   }
 
-  String ButtonValue();
   String FileTextValue() const;
 
   HTMLInputElement* UploadButton() const;
-  int UploadButtonWidth();
 
   bool HasControlClip() const override { return true; }
   PhysicalRect ControlClipRect(const PhysicalOffset&) const override;
@@ -64,7 +62,6 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
   const char* GetName() const override { return "LayoutFileUploadControl"; }
 
  private:
-  void UpdateFromElement() override;
   void ComputeIntrinsicLogicalWidths(
       LayoutUnit& min_logical_width,
       LayoutUnit& max_logical_width) const override;
@@ -73,10 +70,6 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
                    const PhysicalOffset& paint_offset) const override;
 
   int MaxFilenameWidth() const;
-
-  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
-
-  bool can_receive_dropped_files_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFileUploadControl, IsFileUploadControl());

@@ -61,6 +61,9 @@ class SerialIoHandlerPosix : public SerialIoHandler {
   void EnsureWatchingReads();
   void EnsureWatchingWrites();
 
+  void StopWatchingFileRead();
+  void StopWatchingFileWrite();
+
   std::unique_ptr<base::FileDescriptorWatcher::Controller> file_read_watcher_;
   std::unique_ptr<base::FileDescriptorWatcher::Controller> file_write_watcher_;
 

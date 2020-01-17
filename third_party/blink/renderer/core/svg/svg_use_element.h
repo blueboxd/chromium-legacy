@@ -45,6 +45,7 @@ class SVGUseElement final : public SVGGraphicsElement,
   ~SVGUseElement() override;
 
   void InvalidateShadowTree();
+  void InvalidateTargetReference();
 
   // Return the element that should be used for clipping,
   // or null if a valid clip element is not directly referenced.
@@ -96,12 +97,7 @@ class SVGUseElement final : public SVGGraphicsElement,
     return *ClosedShadowRoot();
   }
 
-  // Instance tree handling
-  enum ObserveBehavior {
-    kAddObserver,
-    kDontAddObserver,
-  };
-  Element* ResolveTargetElement(ObserveBehavior);
+  Element* ResolveTargetElement();
   void AttachShadowTree(SVGElement& target);
   void DetachShadowTree();
   CORE_EXPORT SVGElement* InstanceRoot() const;
@@ -109,10 +105,6 @@ class SVGUseElement final : public SVGGraphicsElement,
   void ClearResourceReference();
   bool HasCycleUseReferencing(const ContainerNode& target_instance,
                               const SVGElement& new_target) const;
-  void ExpandUseElementsInShadowTree();
-  void AddReferencesToFirstDegreeNestedUseElements(SVGElement& target);
-
-  void InvalidateDependentShadowTrees();
 
   bool ResourceIsValid() const;
   void NotifyFinished(Resource*) override;

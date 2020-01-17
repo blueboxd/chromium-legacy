@@ -55,7 +55,7 @@ Polymer({
      */
     syncedDevices_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -97,7 +97,7 @@ Polymer({
   focusGrid_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.focusGrid_ = new FocusGrid();
 
     // Update the sign in state.
@@ -108,12 +108,12 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.focusGrid_.destroy();
   },
 
   /** @return {HTMLElement} */
-  getContentScrollTarget: function() {
+  getContentScrollTarget() {
     return this;
   },
 
@@ -122,7 +122,7 @@ Polymer({
    * @return {!ForeignDeviceInternal}
    * @private
    */
-  createInternalDevice_: function(session) {
+  createInternalDevice_(session) {
     let tabs = [];
     const separatorIndexes = [];
     for (let i = 0; i < session.windows.length; i++) {
@@ -167,12 +167,12 @@ Polymer({
   },
 
   /** @private */
-  onSignInTap_: function() {
+  onSignInTap_() {
     BrowserService.getInstance().startSignInFlow();
   },
 
   /** @private */
-  onOpenMenu_: function(e) {
+  onOpenMenu_(e) {
     const menu = /** @type {CrActionMenuElement} */ (this.$.menu.get());
     this.actionMenuModel_ = e.detail.tag;
     menu.showAt(e.detail.target);
@@ -182,7 +182,7 @@ Polymer({
   },
 
   /** @private */
-  onOpenAllTap_: function() {
+  onOpenAllTap_() {
     const menu = assert(this.$.menu.getIfExists());
     const browserService = BrowserService.getInstance();
     browserService.recordHistogram(
@@ -194,7 +194,7 @@ Polymer({
   },
 
   /** @private */
-  updateFocusGrid_: function() {
+  updateFocusGrid_() {
     if (!this.focusGrid_) {
       return;
     }
@@ -212,7 +212,7 @@ Polymer({
   },
 
   /** @private */
-  onDeleteSessionTap_: function() {
+  onDeleteSessionTap_() {
     const menu = assert(this.$.menu.getIfExists());
     const browserService = BrowserService.getInstance();
     browserService.recordHistogram(
@@ -224,7 +224,7 @@ Polymer({
   },
 
   /** @private */
-  clearDisplayedSyncedDevices_: function() {
+  clearDisplayedSyncedDevices_() {
     this.syncedDevices_ = [];
   },
 
@@ -235,7 +235,7 @@ Polymer({
    * @param {boolean} guestSession
    * @return {boolean}
    */
-  showNoSyncedMessage: function(
+  showNoSyncedMessage(
       signInState, syncedDevicesLength, guestSession) {
     if (guestSession) {
       return true;
@@ -251,7 +251,7 @@ Polymer({
    * @param {boolean} guestSession
    * @return {boolean}
    */
-  showSignInGuide: function(signInState, guestSession) {
+  showSignInGuide(signInState, guestSession) {
     const show = !signInState && !guestSession;
     if (show) {
       BrowserService.getInstance().recordAction(
@@ -266,7 +266,7 @@ Polymer({
    * are no synced tabs.
    * @return {string}
    */
-  noSyncedTabsMessage: function() {
+  noSyncedTabsMessage() {
     let stringName = this.fetchingSyncedTabs_ ? 'loading' : 'noSyncedResults';
     if (this.searchTerm !== '') {
       stringName = 'noSearchResults';
@@ -282,7 +282,7 @@ Polymer({
    * this approach seems to have acceptable performance.
    * @param {?Array<!ForeignSession>} sessionList
    */
-  updateSyncedDevices: function(sessionList) {
+  updateSyncedDevices(sessionList) {
     this.fetchingSyncedTabs_ = false;
 
     if (!sessionList) {
@@ -314,7 +314,7 @@ Polymer({
    * @param {?boolean} current
    * @param {?boolean} previous
    */
-  signInStateChanged_: function(current, previous) {
+  signInStateChanged_(current, previous) {
     if (previous === undefined) {
       return;
     }
@@ -331,7 +331,7 @@ Polymer({
     this.fetchingSyncedTabs_ = true;
   },
 
-  searchTermChanged: function(searchTerm) {
+  searchTermChanged(searchTerm) {
     this.clearDisplayedSyncedDevices_();
     this.updateSyncedDevices(this.sessionList);
   }

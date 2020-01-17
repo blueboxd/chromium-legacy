@@ -83,7 +83,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     onDragEnter_(e) {
-      if (++this.dragEnters_ == 1) {
+      if (++this.dragEnters_ === 1) {
         if (this.delegate_.shouldAcceptDrag(e)) {
           this.target_.classList.add('drag-target');
           this.delegate_.doDragEnter(e);

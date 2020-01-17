@@ -55,6 +55,7 @@ class PickerIndicatorElement final : public HTMLDivElement,
     virtual void PickerIndicatorChooseValue(double) = 0;
     virtual Element& PickerOwnerElement() const = 0;
     virtual bool SetupDateTimeChooserParameters(DateTimeChooserParameters&) = 0;
+    virtual void DidEndChooser() = 0;
   };
 
   PickerIndicatorElement(Document&, PickerIndicatorOwner&);

@@ -181,7 +181,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
   if (!root.value().is_list())
     return YES;
 
-  base::Value::ListStorage& listValues = root.value().GetList();
+  base::Value::ConstListView listValues = root.value().GetList();
   if (listValues.size() == 2) {
     if (listValues[0].is_int()) {
       int numHighlighted = listValues[0].GetInt();

@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
@@ -690,7 +691,11 @@ TEST_F(BackgroundTracingConfigTest, BufferLimitConfig) {
 
   notifier.set_type(net::NetworkChangeNotifier::CONNECTION_2G);
 #if defined(OS_ANDROID)
-  EXPECT_EQ(300u, config->GetTraceConfig().GetTraceBufferSizeInKb());
+  int64_t ram_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
+  size_t expected_trace_buffer_size =
+      (ram_mb > 0 && ram_mb <= 1024) ? 800u : 300u;
+  EXPECT_EQ(expected_trace_buffer_size,
+            config->GetTraceConfig().GetTraceBufferSizeInKb());
   EXPECT_EQ(600u, config->GetTraceUploadLimitKb());
 #endif
 

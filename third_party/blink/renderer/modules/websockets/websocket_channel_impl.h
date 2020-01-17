@@ -189,7 +189,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
 
   void SendInternal(network::mojom::blink::WebSocketMessageType,
                     const char* data,
-                    wtf_size_t total_size,
+                    size_t total_size,
                     uint64_t* consumed_buffered_amount);
   void SendAndAdjustQuota(bool final,
                           network::mojom::blink::WebSocketMessageType,
@@ -245,7 +245,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
   bool throttle_passed_ = false;
   bool has_initiated_opening_handshake_ = false;
   uint64_t sending_quota_ = 0;
-  wtf_size_t sent_size_of_top_message_ = 0;
+  size_t sent_size_of_top_message_ = 0;
   FrameScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
 

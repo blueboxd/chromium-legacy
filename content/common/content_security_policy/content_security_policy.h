@@ -10,8 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/csp_directive.h"
-#include "content/common/content_security_policy_header.h"
-#include "services/network/public/mojom/content_security_policy.mojom-forward.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -25,15 +24,16 @@ struct SourceLocation;
 // enforced upon requests.
 struct CONTENT_EXPORT ContentSecurityPolicy {
   ContentSecurityPolicy();
-  ContentSecurityPolicy(const ContentSecurityPolicyHeader& header,
-                        const std::vector<CSPDirective>& directives,
-                        const std::vector<std::string>& report_endpoints,
-                        bool use_reporting_api);
+  ContentSecurityPolicy(
+      const network::mojom::ContentSecurityPolicyHeader& header,
+      const std::vector<CSPDirective>& directives,
+      const std::vector<std::string>& report_endpoints,
+      bool use_reporting_api);
   explicit ContentSecurityPolicy(network::mojom::ContentSecurityPolicyPtr);
   ContentSecurityPolicy(const ContentSecurityPolicy&);
   ~ContentSecurityPolicy();
 
-  ContentSecurityPolicyHeader header;
+  network::mojom::ContentSecurityPolicyHeader header;
   std::vector<CSPDirective> directives;
   std::vector<std::string> report_endpoints;
   bool use_reporting_api;
@@ -44,7 +44,7 @@ struct CONTENT_EXPORT ContentSecurityPolicy {
   // the |directive| for a given |context|.
   // Note: Any policy violation are reported to the |context|.
   static bool Allow(const ContentSecurityPolicy& policy,
-                    CSPDirective::Name directive,
+                    network::mojom::CSPDirectiveName directive,
                     const GURL& url,
                     bool has_followed_redirect,
                     bool is_response_check,

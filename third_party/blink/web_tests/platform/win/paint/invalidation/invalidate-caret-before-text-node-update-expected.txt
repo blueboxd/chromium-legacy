@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='root' class='editing'",
-          "rect": [6, 6, 788, 22],
+          "rect": [4, 4, 792, 26],
           "reason": "style change"
         },
         {

@@ -86,11 +86,10 @@ std::unique_ptr<views::View> CreateGoogleAccountFooter() {
 AccountChooserDialogView::AccountChooserDialogView(
     CredentialManagerDialogController* controller,
     content::WebContents* web_contents)
-    : controller_(controller),
-      web_contents_(web_contents),
-      show_signin_button_(false) {
+    : controller_(controller), web_contents_(web_contents) {
   DCHECK(controller);
   DCHECK(web_contents);
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL);
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN));
@@ -105,7 +104,13 @@ AccountChooserDialogView::AccountChooserDialogView(
 AccountChooserDialogView::~AccountChooserDialogView() = default;
 
 void AccountChooserDialogView::ShowAccountChooser() {
-  show_signin_button_ = controller_->ShouldShowSignInButton();
+  // It isn't known until after the creation of this dialog whether the sign-in
+  // button should be shown, so always reset the button state here.
+  DialogDelegate::set_buttons(controller_->ShouldShowSignInButton()
+                                  ? ui::DIALOG_BUTTON_OK |
+                                        ui::DIALOG_BUTTON_CANCEL
+                                  : ui::DIALOG_BUTTON_CANCEL);
+  DialogModelChanged();
   InitWindow();
   constrained_window::ShowWebModalDialogViews(this, web_contents_);
 }
@@ -135,17 +140,10 @@ void AccountChooserDialogView::WindowClosing() {
 }
 
 bool AccountChooserDialogView::Accept() {
-  DCHECK(show_signin_button_);
   DCHECK(controller_);
   controller_->OnSignInClicked();
   // The dialog is closed by the controller.
   return false;
-}
-
-int AccountChooserDialogView::GetDialogButtons() const {
-  if (show_signin_button_)
-    return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
-  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 void AccountChooserDialogView::ButtonPressed(views::Button* sender,

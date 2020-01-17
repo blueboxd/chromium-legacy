@@ -25,7 +25,7 @@ Polymer({
      */
     accounts_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -42,7 +42,7 @@ Polymer({
     /** @private */
     addAccountsAllowed_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('kerberosAddAccountsAllowed');
       },
     },
@@ -58,20 +58,20 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'kerberos-accounts-changed', this.refreshAccounts_.bind(this));
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ =
         settings.KerberosAccountsBrowserProxyImpl.getInstance();
 
     // Grab account list and - when done - pop up the reauthentication dialog if
     // there is a kerberos_reauth param.
     this.refreshAccounts_().then(() => {
-      const queryParams = settings.getQueryParameters();
+      const queryParams = settings.Router.getInstance().getQueryParameters();
       const reauthPrincipal = queryParams.get('kerberos_reauth');
       const reauthAccount = this.accounts_.find(account => {
         return account.principalName == reauthPrincipal;
@@ -88,7 +88,7 @@ Polymer({
    * @return {string} A CSS image-set for multiple scale factors.
    * @private
    */
-  getIconImageSet_: function(iconUrl) {
+  getIconImageSet_(iconUrl) {
     return cr.icon.getImage(iconUrl);
   },
 
@@ -96,7 +96,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onAddAccountClick_: function(event) {
+  onAddAccountClick_(event) {
     this.selectedAccount_ = null;
     this.showAddAccountDialog_ = true;
   },
@@ -105,13 +105,13 @@ Polymer({
    * @param {!CustomEvent<!{model: !{item: !settings.Account}}>} event
    * @private
    */
-  onReauthenticationClick_: function(event) {
+  onReauthenticationClick_(event) {
     this.selectedAccount_ = event.model.item;
     this.showAddAccountDialog_ = true;
   },
 
   /** @private */
-  onAddAccountDialogClosed_: function() {
+  onAddAccountDialogClosed_() {
     if (this.$$('kerberos-add-account-dialog').accountWasRefreshed) {
       this.showToast_('kerberosAccountsAccountRefreshedTip');
     }
@@ -126,7 +126,7 @@ Polymer({
    * @return {!Promise}
    * @private
    */
-  refreshAccounts_: function() {
+  refreshAccounts_() {
     return this.browserProxy_.getAccounts().then(accounts => {
       this.accounts_ = accounts;
     });
@@ -138,7 +138,7 @@ Polymer({
    *      event
    * @private
    */
-  onAccountActionsMenuButtonClick_: function(event) {
+  onAccountActionsMenuButtonClick_(event) {
     this.selectedAccount_ = event.model.item;
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
         .showAt(event.target);
@@ -148,7 +148,7 @@ Polymer({
    * Closes action menu and resets action menu model.
    * @private
    */
-  closeActionMenu_: function() {
+  closeActionMenu_() {
     this.$$('cr-action-menu').close();
     this.selectedAccount_ = null;
   },
@@ -157,7 +157,7 @@ Polymer({
    * Removes |this.selectedAccount_|.
    * @private
    */
-  onRemoveAccountClick_: function() {
+  onRemoveAccountClick_() {
     this.browserProxy_
         .removeAccount(
             /** @type {!settings.KerberosAccount} */ (this.selectedAccount_))
@@ -175,7 +175,7 @@ Polymer({
    * Sets |this.selectedAccount_| as active Kerberos account.
    * @private
    */
-  onSetAsActiveAccountClick_: function() {
+  onSetAsActiveAccountClick_() {
     this.browserProxy_.setAsActiveAccount(
         /** @type {!settings.KerberosAccount} */ (this.selectedAccount_));
     this.closeActionMenu_();
@@ -185,7 +185,7 @@ Polymer({
    * Opens the reauth dialog for |this.selectedAccount_|.
    * @private
    */
-  onRefreshNowClick_: function() {
+  onRefreshNowClick_() {
     this.showAddAccountDialog_ = true;
   },
 
@@ -194,7 +194,7 @@ Polymer({
    * @param {string} label Name of the localized label string.
    * @private
    */
-  showToast_: function(label) {
+  showToast_(label) {
     this.accountToastText_ = this.i18n(label);
     this.$$('#account-toast').show();
   }

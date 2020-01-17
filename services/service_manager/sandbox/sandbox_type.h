@@ -58,8 +58,8 @@ enum class SandboxType {
   kNaClLoader,
 #endif  // defined(OS_MACOSX)
 
-  // The pdf compositor service process.
-  kPdfCompositor,
+  // The print compositor service process.
+  kPrintCompositor,
 
   // The audio service process.
   kAudio,

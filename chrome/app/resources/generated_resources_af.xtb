@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">Hierdie gebruikerrekening behoort nie aan die domein waarvoor die toestel ingeskryf is nie. As jy by 'n ander domein wil inskryf, moet jy eers toestelterugstelling ondergaan.</translation>
 <translation id="1274977772557788323">Adobe Flash Player-berginginstellings</translation>
 <translation id="1274997165432133392">Webkoekies en ander werfdata</translation>
-<translation id="127668050356036882">Maak al jou vensters toe</translation>
 <translation id="1280820357415527819">Soek tans vir mobiele netwerke …</translation>
 <translation id="1282420830958964167">Die limiet op "<ph name="APP_NAME" />" wat jou ouer gestel het, het uitgetel. Jy kan dit môre vir <ph name="TIME_LIMIT" /> gebruik.</translation>
 <translation id="1285320974508926690">Moet nooit hierdie werf vertaal nie</translation>
@@ -518,7 +517,6 @@
 <translation id="1712552549805331520"><ph name="URL" /> wil data permanent op jou plaaslike rekenaar berg</translation>
 <translation id="1714644264617423774">Aktiveer toeganklikheidskenmerke om jou toestel makliker te maak om te gebruik. <ph name="LINK_BEGIN" />Kom meer te wete<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Bewegingsensors</translation>
-<translation id="171824261579749339">Australies <ph name="LINK_BEGIN" />Kom meer te wete<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">Afgelope uur</translation>
 <translation id="1719312230114180055">Let wel: Jou vingerafdruk kan minder veilig as 'n sterk wagwoord of PIN wees.</translation>
 <translation id="1720318856472900922">TLS WWW-bedienerstawing</translation>
@@ -729,7 +727,6 @@
 <translation id="2006638907958895361">Maak skakel in <ph name="APP" /> oop</translation>
 <translation id="2007404777272201486">Gee 'n probleem aan …</translation>
 <translation id="2010501376126504057">Versoenbare toestelle</translation>
-<translation id="2016430552235416146">Tradisioneel</translation>
 <translation id="2017334798163366053">Deaktiveer prestasiedata-insameling</translation>
 <translation id="2017836877785168846">Vee geskiedenis en outovoltooiings in die adresbalk uit.</translation>
 <translation id="2018352199541442911">Jammer, jou eksterne bergingtoestel word nie in hierdie stadium gesteun nie.</translation>
@@ -770,7 +767,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2076672359661571384">Medium (aanbeveel)</translation>
 <translation id="2077129598763517140">Gebruik hardewareversnelling wanneer dit beskikbaar is</translation>
 <translation id="2078019350989722914">Waarsku voor jy uitgaan <ph name="KEY_EQUIVALENT" />)</translation>
-<translation id="2078494137444990774">Af</translation>
 <translation id="2079053412993822885">As jy een van jou eie sertifikate uitvee, kan jy dit nie meer gebruik om jouself te identifiseer nie.</translation>
 <translation id="2079545284768500474">Ontdoen</translation>
 <translation id="2080070583977670716">Nog instellings</translation>
@@ -1209,7 +1205,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2665647207431876759">Verval</translation>
 <translation id="2665717534925640469">Hierdie bladsy is nou volskerm en het jou muismerker gedeaktiveer.</translation>
 <translation id="2665919335226618153">Ai tog! Kon nie formateer nie.</translation>
-<translation id="2666990579225592931">Maak gasvenster oop</translation>
 <translation id="2667463864537187133">Bestuur speltoets</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> deel tans 'n Chrome-oortjie.</translation>
 <translation id="2670429602441959756">Hierdie bladsy bevat kenmerke wat nog nie in VR gesteun word nie. Verlaat tans …</translation>
@@ -2406,7 +2401,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4364327530094270451">Spanspek</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deel tans 'n venster.</translation>
 <translation id="4364830672918311045">Wys kennisgewings</translation>
-<translation id="436499142539576997">Kon nie programdata verkry nie; probeer steeds om die program te gebruik …</translation>
 <translation id="4370975561335139969">Die e-posadres en wagwoord wat jy ingevoer het, pas nie</translation>
 <translation id="437184764829821926">Gevorderde lettertipe-instellings</translation>
 <translation id="4374831787438678295">Linux-installeerder</translation>
@@ -3434,7 +3428,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5867841422488265304">Soek of tik webadres in</translation>
 <translation id="5869029295770560994">OK, het dit</translation>
 <translation id="5869522115854928033">Gestoorde wagwoorde</translation>
-<translation id="5869948122057593679">Maak al jou vensters toe</translation>
 <translation id="5870086504539785141">Maak toeganklikheidkieslys toe</translation>
 <translation id="5870155679953074650">Harde foute</translation>
 <translation id="5876851302954717356">Nuwe oortjie aan die regterkant</translation>
@@ -4483,7 +4476,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7385854874724088939">Kon nie uitdruk nie. Gaan asseblief jou drukker na en probeer weer.</translation>
 <translation id="7385896526023870365">Hierdie uitbreiding het nie bykomende werftoegang nie.</translation>
 <translation id="7388044238629873883">Jy is amper klaar!</translation>
-<translation id="7388222713940428051">Maak gasvenster oop</translation>
 <translation id="7392118418926456391">Virusskandering het misluk</translation>
 <translation id="7392915005464253525">Maak geslote venster weer oop</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> sal met stelselafskop begin en aanhou om in die agtergrond te werk selfs wanneer jy alle ander <ph name="PRODUCT_NAME" />-vensters toegemaak het.</translation>
@@ -4748,7 +4740,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7784067724422331729">Sekuriteitsinstellings op jou rekenaar het hierdie lêer geblokkeer.</translation>
 <translation id="7784796923038949829">Kan nie werf se data lees of verander nie</translation>
 <translation id="778480864305029524">Om kitsverbinding te gebruik, skakel kennisgewings vir Google Play Dienste aan.</translation>
-<translation id="7786207843293321886">Gaan by Gas uit</translation>
 <translation id="7786889348652477777">Herlaai program</translation>
 <translation id="7787308148023287649">Wys op 'n ander skerm</translation>
 <translation id="7788298548579301890">'n Ander program op jou rekenaar het 'n program bygevoeg wat dalk die manier sal verander waarop Chrome werk.
@@ -4862,7 +4853,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7908378463497120834">Jammer, minstens een deel van jou eksterne bergingtoestel kon nie gekoppel word nie.</translation>
 <translation id="7909969815743704077">Afgelaai in Incognito</translation>
 <translation id="7910768399700579500">Nuwe vouer</translation>
-<translation id="7910831464510799808">Aan</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Jou wagwoord is op die bediener verander. Meld af en meld dan weer aan.</translation>
 <translation id="7915457674565721553">Koppel aan die internet om ouerkontroles op te stel</translation>

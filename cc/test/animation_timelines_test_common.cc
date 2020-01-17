@@ -5,12 +5,12 @@
 #include "cc/test/animation_timelines_test_common.h"
 
 #include "base/memory/ptr_util.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/keyframe_effect.h"
-#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/paint/filter_operation.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/property_tree.h"
@@ -426,6 +426,7 @@ AnimationTimelinesTest::~AnimationTimelinesTest() = default;
 
 void AnimationTimelinesTest::SetUp() {
   timeline_ = AnimationTimeline::Create(timeline_id_);
+  animation_ = Animation::Create(animation_id_);
 }
 
 void AnimationTimelinesTest::TearDown() {
@@ -462,7 +463,7 @@ void AnimationTimelinesTest::AttachTimelineAnimationLayer() {
   timeline_->AttachAnimation(animation_);
   animation_->AttachElement(element_id_);
 
-  element_animations_ = animation_->keyframe_effect()->element_animations();
+  element_animations_ = animation_->element_animations();
 }
 
 void AnimationTimelinesTest::CreateImplTimelineAndAnimation() {
@@ -473,12 +474,10 @@ void AnimationTimelinesTest::CreateImplTimelineAndAnimation() {
 void AnimationTimelinesTest::GetImplTimelineAndAnimationByID() {
   timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
   EXPECT_TRUE(timeline_impl_);
-  animation_impl_ = static_cast<SingleKeyframeEffectAnimation*>(
-      timeline_impl_->GetAnimationById(animation_id_));
+  animation_impl_ = timeline_impl_->GetAnimationById(animation_id_);
   EXPECT_TRUE(animation_impl_);
 
-  element_animations_impl_ =
-      animation_impl_->keyframe_effect()->element_animations();
+  element_animations_impl_ = animation_impl_->element_animations();
 }
 
 void AnimationTimelinesTest::ReleaseRefPtrs() {

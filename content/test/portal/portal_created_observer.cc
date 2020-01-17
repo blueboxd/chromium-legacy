@@ -41,8 +41,10 @@ void PortalCreatedObserver::CreatePortal(
                                           std::move(portal), std::move(client));
   portal_ = portal_interceptor->GetPortal();
   RenderFrameProxyHost* proxy_host = portal_->CreateProxyAndAttachPortal();
-  std::move(callback).Run(proxy_host->GetRoutingID(), portal_->portal_token(),
-                          portal_->GetDevToolsFrameToken());
+  std::move(callback).Run(
+      proxy_host->GetRoutingID(),
+      proxy_host->frame_tree_node()->current_replication_state(),
+      portal_->portal_token(), portal_->GetDevToolsFrameToken());
 
   DidCreatePortal();
 }

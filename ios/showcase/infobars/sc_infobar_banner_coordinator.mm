@@ -87,18 +87,15 @@
 
 #pragma mark InfobarModalDelegate
 
-- (void)modalInfobarButtonWasAccepted:(id)sender {
-  [self dismissInfobarModal:sender animated:YES completion:nil];
+- (void)dismissInfobarModal:(id)infobarModal {
+  [self.baseViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)dismissInfobarModal:(UIButton*)sender
-                   animated:(BOOL)animated
-                 completion:(ProceduralBlock)completion {
-  [self.baseViewController dismissViewControllerAnimated:animated
-                                              completion:nil];
+- (void)modalInfobarButtonWasAccepted:(id)infobarModal {
+  [self dismissInfobarModal:infobarModal];
 }
 
-- (void)modalInfobarWasDismissed:(id)sender {
+- (void)modalInfobarWasDismissed:(id)infobarModal {
 }
 
 @end

@@ -13,8 +13,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/features.h"
-#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -23,6 +23,7 @@ namespace safe_browsing {
 class SafeBrowsingPrefsTest : public ::testing::Test {
  protected:
   void SetUp() override {
+    task_environment_ = CreateTestTaskEnvironment();
     prefs_.registry()->RegisterBooleanPref(
         prefs::kSafeBrowsingScoutReportingEnabled, false);
     prefs_.registry()->RegisterBooleanPref(
@@ -54,7 +55,7 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
   TestingPrefServiceSimple prefs_;
 
  private:
-  content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 };
 
 // TODO(crbug.com/881476) disabled for flaky crashes.

@@ -43,12 +43,11 @@ Document* DOMParser::parseFromString(const StringOrTrustedHTML& stringOrHTML,
 Document* DOMParser::parseFromStringInternal(const String& str,
                                              const String& type) {
   Document* doc = DOMImplementation::createDocument(
-      type,
       DocumentInit::Create()
+          .WithTypeFrom(type)
           .WithContextDocument(context_document_)
           .WithOwnerDocument(context_document_)
-          .WithContentSecurityPolicyFromContextDoc(),
-      false);
+          .WithContentSecurityPolicyFromContextDoc());
   doc->SetContent(str);
   doc->SetMimeType(AtomicString(type));
   if (context_document_) {

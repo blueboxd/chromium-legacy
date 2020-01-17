@@ -8,20 +8,44 @@
 
 namespace syncer {
 
-CommitRequestData::CommitRequestData() {}
+CommitRequestData::CommitRequestData() = default;
 
-CommitRequestData::~CommitRequestData() {}
+CommitRequestData::~CommitRequestData() = default;
 
-CommitResponseData::CommitResponseData() {}
+CommitResponseData::CommitResponseData() = default;
 
 CommitResponseData::CommitResponseData(const CommitResponseData& other) =
     default;
 
-CommitResponseData::~CommitResponseData() {}
+CommitResponseData::CommitResponseData(CommitResponseData&&) = default;
 
-UpdateResponseData::UpdateResponseData() {}
+CommitResponseData& CommitResponseData::operator=(const CommitResponseData&) =
+    default;
 
-UpdateResponseData::~UpdateResponseData() {}
+CommitResponseData& CommitResponseData::operator=(CommitResponseData&&) =
+    default;
+
+CommitResponseData::~CommitResponseData() = default;
+
+FailedCommitResponseData::FailedCommitResponseData() = default;
+
+FailedCommitResponseData::FailedCommitResponseData(
+    const FailedCommitResponseData& other) = default;
+
+FailedCommitResponseData::FailedCommitResponseData(FailedCommitResponseData&&) =
+    default;
+
+FailedCommitResponseData& FailedCommitResponseData::operator=(
+    const FailedCommitResponseData&) = default;
+
+FailedCommitResponseData& FailedCommitResponseData::operator=(
+    FailedCommitResponseData&&) = default;
+
+FailedCommitResponseData::~FailedCommitResponseData() = default;
+
+UpdateResponseData::UpdateResponseData() = default;
+
+UpdateResponseData::~UpdateResponseData() = default;
 
 size_t EstimateMemoryUsage(const CommitRequestData& value) {
   using base::trace_event::EstimateMemoryUsage;

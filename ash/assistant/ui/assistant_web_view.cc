@@ -13,10 +13,10 @@
 #include "ash/assistant/ui/assistant_web_view_delegate.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/assistant/assistant_web_view_factory.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chromeos/services/assistant/public/features.h"
-#include "services/content/public/cpp/navigable_contents_view.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -80,27 +80,6 @@ void AssistantWebView::ChildPreferredSizeChanged(views::View* child) {
   SchedulePaint();
 }
 
-void AssistantWebView::OnFocus() {
-  if (contents_)
-    contents_->Focus();
-}
-
-void AssistantWebView::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  if (contents_) {
-    // TODO(b/146351046): Temporary workaround for b/145213680. Should be
-    // removed once we have moved off of the Content Service (tracked in
-    // b/146351046).
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(
-                       [](base::WeakPtr<AssistantWebView> view) {
-                         if (view)
-                           view->GetFocusManager()->ClearFocus();
-                       },
-                       weak_factory_.GetWeakPtr()));
-    contents_->FocusThroughTabTraversal(reverse);
-  }
-}
-
 void AssistantWebView::InitLayout() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
@@ -120,20 +99,10 @@ void AssistantWebView::InitLayout() {
 
 bool AssistantWebView::OnCaptionButtonPressed(AssistantButtonId id) {
   // We need special handling of the back button. When possible, the back button
-  // should navigate backwards in the web contents' history stack.
-  if (id == AssistantButtonId::kBack && contents_) {
-    contents_->GoBack(base::BindOnce(
-        [](const base::WeakPtr<AssistantWebView>& assistant_web_view,
-           bool success) {
-          // If we can't navigate back in the web contents' history stack we
-          // defer back to our primary caption button delegate.
-          if (!success && assistant_web_view) {
-            assistant_web_view->assistant_view_delegate_
-                ->GetCaptionBarDelegate()
-                ->OnCaptionButtonPressed(AssistantButtonId::kBack);
-          }
-        },
-        weak_factory_.GetWeakPtr()));
+  // should navigate backwards in the WebContents' history stack. If we can't go
+  // back, control is returned to the primary caption button delegate.
+  if (id == AssistantButtonId::kBack && contents_view_ &&
+      contents_view_->GoBack()) {
     return true;
   }
 
@@ -144,20 +113,20 @@ bool AssistantWebView::OnCaptionButtonPressed(AssistantButtonId id) {
 
 void AssistantWebView::DidStopLoading() {
   // We should only respond to the |DidStopLoading| event the first time, to add
-  // the view for the navigable contents to our view hierarchy and perform other
-  // one-time view initializations.
+  // the view for contents to our view hierarchy and perform other one-time view
+  // initializations.
   if (contents_view_initialized_)
     return;
 
   contents_view_initialized_ = true;
 
   UpdateContentSize();
-  AddChildView(contents_->GetView()->view());
+  AddChildView(contents_view_.get());
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
-  // We need to clip the corners of our web contents to match our container.
+  // We need to clip the corners of our WebContents to match our container.
   if (!chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
-    contents_->GetView()->native_view()->layer()->SetRoundedCornerRadius(
+    contents_view_->GetNativeView()->layer()->SetRoundedCornerRadius(
         {/*top_left=*/0, /*top_right=*/0, /*bottom_right=*/kCornerRadiusDip,
          /*bottom_left=*/kCornerRadiusDip});
   }
@@ -179,11 +148,11 @@ void AssistantWebView::DidSuppressNavigation(const GURL& url,
     return;
   }
 
-  // Otherwise we'll allow our web contents to navigate freely.
-  contents_->Navigate(url);
+  // Otherwise we'll allow our WebContents to navigate freely.
+  contents_view_->Navigate(url);
 }
 
-void AssistantWebView::UpdateCanGoBack(bool can_go_back) {
+void AssistantWebView::DidChangeCanGoBack(bool can_go_back) {
   if (!chromeos::assistant::features::IsAssistantWebContainerEnabled())
     return;
 
@@ -210,23 +179,22 @@ void AssistantWebView::OnUiVisibilityChanged(
 void AssistantWebView::OpenUrl(const GURL& url) {
   RemoveContents();
 
-  if (!contents_factory_.is_bound()) {
-    assistant_view_delegate_->GetNavigableContentsFactoryForView(
-        contents_factory_.BindNewPipeAndPassReceiver());
-  }
+  AssistantWebView2::InitParams contents_params;
+  contents_params.suppress_navigation = true;
 
-  auto contents_params = content::mojom::NavigableContentsParams::New();
-  contents_params->suppress_navigations = true;
+  contents_view_ = AssistantWebViewFactory::Get()->Create(contents_params);
 
-  contents_ = std::make_unique<content::NavigableContents>(
-      contents_factory_.get(), std::move(contents_params));
+  // We retain ownership of |contents_view_| as it is only added to the view
+  // hierarchy once loading stops and we want to ensure that it is cleaned up in
+  // the rare chance that that never occurs.
+  contents_view_->set_owned_by_client();
 
-  // We observe |contents_| so that we can handle events from the underlying
-  // web contents.
-  contents_->AddObserver(this);
+  // We observe |contents_view_| so that we can handle events from the
+  // underlying WebContents.
+  contents_view_->AddObserver(this);
 
   // Navigate to the specified |url|.
-  contents_->Navigate(url);
+  contents_view_->Navigate(url);
 }
 
 void AssistantWebView::OnUsableWorkAreaChanged(
@@ -237,32 +205,32 @@ void AssistantWebView::OnUsableWorkAreaChanged(
 }
 
 void AssistantWebView::RemoveContents() {
-  if (!contents_)
+  if (!contents_view_)
     return;
 
-  views::View* view = contents_->GetView()->view();
-  if (view)
-    RemoveChildView(view);
+  RemoveChildView(contents_view_.get());
 
   SetFocusBehavior(FocusBehavior::NEVER);
-  contents_->RemoveObserver(this);
-  contents_.reset();
+
+  contents_view_->RemoveObserver(this);
+  contents_view_.reset();
+
   contents_view_initialized_ = false;
 }
 
 void AssistantWebView::UpdateContentSize() {
-  if (!contents_ || !contents_view_initialized_)
+  if (!contents_view_ || !contents_view_initialized_)
     return;
 
   if (chromeos::assistant::features::IsAssistantWebContainerEnabled()) {
-    contents_->GetView()->view()->SetPreferredSize(GetPreferredSize());
+    contents_view_->SetPreferredSize(GetPreferredSize());
     return;
   }
 
   const gfx::Size preferred_size = gfx::Size(
       kPreferredWidthDip, GetHeightForWidth(kPreferredWidthDip) -
                               caption_bar_->GetPreferredSize().height());
-  contents_->GetView()->view()->SetPreferredSize(preferred_size);
+  contents_view_->SetPreferredSize(preferred_size);
 }
 
 }  // namespace ash

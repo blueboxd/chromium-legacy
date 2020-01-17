@@ -37,9 +37,7 @@ class AccessibilityPanel : public views::WidgetDelegate,
   // Closes the panel asynchronously.
   void Close();
 
-  // WidgetDelegate overrides.
-  const views::Widget* GetWidget() const override;
-  views::Widget* GetWidget() override;
+  // WidgetDelegate:
   void DeleteDelegate() override;
   views::View* GetContentsView() override;
 
@@ -49,6 +47,9 @@ class AccessibilityPanel : public views::WidgetDelegate,
 
  private:
   class AccessibilityPanelWebContentsObserver;
+
+  // WidgetDelegate:
+  const views::Widget* GetWidgetImpl() const override;
 
   // content::WebContentsDelegate:
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,

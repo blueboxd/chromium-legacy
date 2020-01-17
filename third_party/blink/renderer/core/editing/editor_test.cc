@@ -18,8 +18,8 @@ namespace blink {
 class EditorTest : public EditingTestBase {
  public:
   void TearDown() override {
-    SystemClipboard::GetInstance().WritePlainText(String(""));
-    SystemClipboard::GetInstance().CommitWrite();
+    GetDocument().GetFrame()->GetSystemClipboard()->WritePlainText(String(""));
+    GetDocument().GetFrame()->GetSystemClipboard()->CommitWrite();
     EditingTestBase::TearDown();
   }
 
@@ -69,7 +69,8 @@ TEST_F(EditorTest, CopyVisibleSelection) {
 
   ExecuteCopy();
 
-  const String copied = SystemClipboard::GetInstance().ReadPlainText();
+  const String copied =
+      GetDocument().GetFrame()->GetSystemClipboard()->ReadPlainText();
   EXPECT_EQ("HEY", copied);
 }
 
@@ -89,7 +90,8 @@ TEST_F(EditorTest, DontCopyHiddenSelections) {
 
   ExecuteCopy();
 
-  const String copied = SystemClipboard::GetInstance().ReadPlainText();
+  const String copied =
+      GetDocument().GetFrame()->GetSystemClipboard()->ReadPlainText();
   EXPECT_TRUE(copied.IsEmpty()) << copied << " was copied.";
 }
 

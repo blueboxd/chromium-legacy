@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
@@ -189,9 +190,10 @@ void DedicatedWorker::Start() {
     // https://html.spec.whatwg.org/C/#workeroptions
     auto credentials_mode = network::mojom::CredentialsMode::kSameOrigin;
     if (options_->type() == "module") {
-      bool result = Request::ParseCredentialsMode(options_->credentials(),
-                                                  &credentials_mode);
+      base::Optional<network::mojom::CredentialsMode> result =
+          Request::ParseCredentialsMode(options_->credentials());
       DCHECK(result);
+      credentials_mode = result.value();
     }
 
     mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token;

@@ -8,13 +8,13 @@
     },
     {
       "name": "LayoutTextControl INPUT id='root'",
-      "position": [-2, -2],
-      "bounds": [65, 26],
+      "position": [-4, -4],
+      "bounds": [69, 30],
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "LayoutTextControl INPUT id='root'",
-          "rect": [0, 0, 65, 26],
+          "rect": [0, 0, 69, 30],
           "reason": "full layer"
         },
         {
@@ -24,7 +24,7 @@
         },
         {
           "object": "Caret",
-          "rect": [59, 5, 1, 16],
+          "rect": [61, 7, 1, 16],
           "reason": "caret"
         }
       ],

@@ -122,7 +122,7 @@ void WorkerInspectorController::DetachSession(DevToolsSession*) {
     thread_->GetWorkerBackingThread().BackingThread().RemoveTaskObserver(this);
 }
 
-void WorkerInspectorController::InspectElement(const WebPoint&) {
+void WorkerInspectorController::InspectElement(const gfx::Point&) {
   NOTREACHED();
 }
 

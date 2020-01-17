@@ -91,6 +91,9 @@ class NET_EXPORT QuicTransportClient
 
     virtual void OnIncomingBidirectionalStreamAvailable() = 0;
     virtual void OnIncomingUnidirectionalStreamAvailable() = 0;
+    virtual void OnIncomingDatagramAvailable() = 0;
+    virtual void OnCanCreateNewOutgoingBidirectionalStream() = 0;
+    virtual void OnCanCreateNewOutgoingUnidirectionalStream() = 0;
   };
 
   // |visitor| and |context| must outlive this object.
@@ -114,6 +117,9 @@ class NET_EXPORT QuicTransportClient
   void OnSessionReady() override;
   void OnIncomingBidirectionalStreamAvailable() override;
   void OnIncomingUnidirectionalStreamAvailable() override;
+  void OnIncomingDatagramAvailable() override;
+  void OnCanCreateNewOutgoingBidirectionalStream() override;
+  void OnCanCreateNewOutgoingUnidirectionalStream() override;
 
   // QuicChromiumPacketReader::Visitor methods.
   void OnReadError(int result, const DatagramClientSocket* socket) override;

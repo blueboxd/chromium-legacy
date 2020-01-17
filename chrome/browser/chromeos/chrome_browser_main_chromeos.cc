@@ -101,6 +101,7 @@
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 #include "chrome/browser/chromeos/power/process_data_collector.h"
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
+#include "chrome/browser/chromeos/power/smart_charging/smart_charging_manager.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
@@ -954,6 +955,8 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // fetch of the initial CrosSettings DeviceRebootOnShutdown policy.
   shutdown_policy_forwarder_ = std::make_unique<ShutdownPolicyForwarder>();
 
+  smart_charging_manager_ = power::SmartChargingManager::CreateInstance();
+
   if (base::FeatureList::IsEnabled(
           ::features::kAdaptiveScreenBrightnessLogging)) {
     adaptive_screen_brightness_manager_ =
@@ -1046,6 +1049,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
     ScreenLocker::ShutDownClass();
   low_disk_notification_.reset();
   demo_mode_resources_remover_.reset();
+  smart_charging_manager_.reset();
   adaptive_screen_brightness_manager_.reset();
   auto_screen_brightness_controller_.reset();
   dark_resume_controller_.reset();

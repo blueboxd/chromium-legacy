@@ -220,7 +220,6 @@ class PLATFORM_EXPORT HeapObjectHeader {
   DISALLOW_NEW();
 
  public:
-  enum HeaderLocation : uint8_t { kNormalPage, kLargePage };
   enum class AccessMode : uint8_t { kNonAtomic, kAtomic };
 
   static HeapObjectHeader* FromPayload(const void*);
@@ -231,7 +230,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   static void CheckFromPayload(const void*);
 
   // If |gc_info_index| is 0, this header is interpreted as a free list header.
-  HeapObjectHeader(size_t, size_t, HeaderLocation);
+  HeapObjectHeader(size_t, size_t);
 
   template <AccessMode mode = AccessMode::kNonAtomic>
   NO_SANITIZE_ADDRESS bool IsFree() const {
@@ -299,10 +298,7 @@ class FreeListEntry final : public HeapObjectHeader {
  public:
   NO_SANITIZE_ADDRESS
   explicit FreeListEntry(size_t size)
-      : HeapObjectHeader(size,
-                         kGcInfoIndexForFreeListHeader,
-                         HeapObjectHeader::kNormalPage),
-        next_(nullptr) {}
+      : HeapObjectHeader(size, kGcInfoIndexForFreeListHeader), next_(nullptr) {}
 
   Address GetAddress() { return reinterpret_cast<Address>(this); }
 
@@ -466,6 +462,7 @@ class BasePage {
   // Does not create free list entries for empty pages.
   virtual bool Sweep(FinalizeType) = 0;
   virtual void MakeConsistentForMutator() = 0;
+  virtual void Unmark() = 0;
 
   // Calls finalizers after sweeping is done.
   virtual void FinalizeSweep(SweepResult) = 0;
@@ -653,6 +650,7 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
   void RemoveFromHeap() override;
   bool Sweep(FinalizeType) override;
   void MakeConsistentForMutator() override;
+  void Unmark() override;
   void FinalizeSweep(SweepResult) override;
 #if defined(ADDRESS_SANITIZER)
   void PoisonUnmarkedObjects() override;
@@ -721,11 +719,15 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
 
   void VerifyMarking() override;
 
+  // Marks a card corresponding to address.
   void MarkCard(Address address);
 
   // Iterates over all objects in marked cards.
   template <typename Function>
   void IterateCardTable(Function function) const;
+
+  // Clears all bits in the card table.
+  void ClearCardTable() { card_table_.Clear(); }
 
  private:
   // Data structure that divides a page in a number of cards each of 512 bytes
@@ -875,6 +877,7 @@ class PLATFORM_EXPORT LargeObjectPage final : public BasePage {
   void RemoveFromHeap() override;
   bool Sweep(FinalizeType) override;
   void MakeConsistentForMutator() override;
+  void Unmark() override;
   void FinalizeSweep(SweepResult) override;
 
   void CollectStatistics(
@@ -898,12 +901,20 @@ class PLATFORM_EXPORT LargeObjectPage final : public BasePage {
   bool IsVectorBackingPage() const { return is_vector_backing_page_; }
 #endif
 
+  // Remembers the page as containing inter-generational pointers.
+  void SetRemembered(bool remembered) {
+    DCHECK_NE(remembered, is_remembered_);
+    is_remembered_ = remembered;
+  }
+  bool IsRemembered() const { return is_remembered_; }
+
  private:
   // The size of the underlying object including HeapObjectHeader.
   size_t object_size_;
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
   bool is_vector_backing_page_;
 #endif
+  bool is_remembered_ = false;
 };
 
 // Each thread has a number of thread arenas (e.g., Generic arenas, typed arenas
@@ -933,6 +944,7 @@ class PLATFORM_EXPORT BaseArena {
   virtual void MakeIterable() {}
   virtual void MakeConsistentForGC();
   void MakeConsistentForMutator();
+  void Unmark();
 #if DCHECK_IS_ON()
   virtual bool IsConsistentForGC() = 0;
 #endif
@@ -994,15 +1006,7 @@ class PLATFORM_EXPORT BaseArena {
 class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
  public:
   NormalPageArena(ThreadState*, int index);
-  void AddToFreeList(Address address, size_t size) {
-#if DCHECK_IS_ON()
-    DCHECK(FindPageFromAddress(address));
-    // TODO(palmer): Do we need to handle about integer overflow here (and in
-    // similar expressions elsewhere)?
-    DCHECK(FindPageFromAddress(address + size - 1));
-#endif
-    free_list_.Add(address, size);
-  }
+  void AddToFreeList(Address address, size_t size);
   void AddToFreeList(FreeList* other) { free_list_.MoveFrom(other); }
   void ClearFreeLists() override;
   void CollectFreeListStatistics(
@@ -1049,6 +1053,9 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
 
   void MakeConsistentForGC() override;
 
+  template <typename Function>
+  void IterateAndClearCardTables(Function function);
+
  private:
   void AllocatePage();
 
@@ -1091,6 +1098,9 @@ class LargeObjectArena final : public BaseArena {
 #if DCHECK_IS_ON()
   bool IsConsistentForGC() override { return true; }
 #endif
+
+  template <typename Function>
+  void IterateAndClearRememberedPages(Function function);
 
  private:
   Address DoAllocateLargeObjectPage(size_t, size_t gc_info_index);
@@ -1259,8 +1269,12 @@ inline Address NormalPageArena::AllocateObject(size_t allocation_size,
     current_allocation_point_ += allocation_size;
     remaining_allocation_size_ -= allocation_size;
     DCHECK_GT(gc_info_index, 0u);
-    new (NotNull, header_address) HeapObjectHeader(
-        allocation_size, gc_info_index, HeapObjectHeader::kNormalPage);
+    new (NotNull, header_address)
+        HeapObjectHeader(allocation_size, gc_info_index);
+    DCHECK(!PageFromObject(header_address)->IsLargeObjectPage());
+    static_cast<NormalPage*>(PageFromObject(header_address))
+        ->object_start_bit_map()
+        ->SetBit(header_address);
     Address result = header_address + sizeof(HeapObjectHeader);
     DCHECK(!(reinterpret_cast<uintptr_t>(result) & kAllocationMask));
 
@@ -1275,6 +1289,29 @@ inline Address NormalPageArena::AllocateObject(size_t allocation_size,
 
 inline NormalPageArena* NormalPage::ArenaForNormalPage() const {
   return static_cast<NormalPageArena*>(Arena());
+}
+
+// Iterates over all card tables and clears them.
+template <typename Function>
+inline void NormalPageArena::IterateAndClearCardTables(Function function) {
+  for (BasePage* page : swept_pages_) {
+    auto* normal_page = static_cast<NormalPage*>(page);
+    normal_page->IterateCardTable(function);
+    normal_page->ClearCardTable();
+  }
+}
+
+// Iterates over all pages that may contain inter-generational pointers.
+template <typename Function>
+inline void LargeObjectArena::IterateAndClearRememberedPages(
+    Function function) {
+  for (BasePage* page : swept_pages_) {
+    auto* large_page = static_cast<LargeObjectPage*>(page);
+    if (large_page->IsRemembered()) {
+      function(large_page->ObjectHeader());
+      large_page->SetRemembered(false);
+    }
+  }
 }
 
 inline void ObjectStartBitmap::SetBit(Address header_address) {
@@ -1331,8 +1368,7 @@ inline void ObjectStartBitmap::Iterate(Callback callback) const {
 
 NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
     size_t size,
-    size_t gc_info_index,
-    HeaderLocation header_location) {
+    size_t gc_info_index) {
   // sizeof(HeapObjectHeader) must be equal to or smaller than
   // |kAllocationGranularity|, because |HeapObjectHeader| is used as a header
   // for a freed entry. Given that the smallest entry size is
@@ -1347,14 +1383,6 @@ NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
   encoded_high_ =
       static_cast<uint16_t>(gc_info_index << kHeaderGCInfoIndexShift);
   encoded_low_ = internal::EncodeSize(size);
-  if (header_location == kNormalPage) {
-    DCHECK(!PageFromObject(this)->IsLargeObjectPage());
-    static_cast<NormalPage*>(PageFromObject(this))
-        ->object_start_bit_map()
-        ->SetBit(reinterpret_cast<Address>(this));
-  } else {
-    DCHECK(PageFromObject(this)->IsLargeObjectPage());
-  }
   DCHECK(IsInConstruction());
 }
 

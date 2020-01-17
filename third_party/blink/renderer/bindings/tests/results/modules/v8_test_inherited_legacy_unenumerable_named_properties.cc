@@ -284,14 +284,4 @@ TestInheritedLegacyUnenumerableNamedProperties* V8TestInheritedLegacyUnenumerabl
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInheritedLegacyUnenumerableNamedProperties* NativeValueTraits<TestInheritedLegacyUnenumerableNamedProperties>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestInheritedLegacyUnenumerableNamedProperties* native_value = V8TestInheritedLegacyUnenumerableNamedProperties::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestInheritedLegacyUnenumerableNamedProperties"));
-  }
-  return native_value;
-}
-
 }  // namespace blink

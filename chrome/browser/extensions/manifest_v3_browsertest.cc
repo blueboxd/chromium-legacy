@@ -101,7 +101,9 @@ IN_PROC_BROWSER_TEST_F(ManifestV3BrowserTest, ProgrammaticScriptInjection) {
 
 // A simple end-to-end test exercising the new action API in Manifest V3.
 // More robust tests for the action API are in extension_action_apitest.cc.
-IN_PROC_BROWSER_TEST_F(ManifestV3BrowserTest, ActionAPI) {
+//
+// Test is flaky: https://crbug.com/1042671
+IN_PROC_BROWSER_TEST_F(ManifestV3BrowserTest, DISABLED_ActionAPI) {
   constexpr char kManifest[] =
       R"({
            "name": "Action API",

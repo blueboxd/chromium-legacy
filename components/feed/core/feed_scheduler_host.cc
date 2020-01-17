@@ -41,21 +41,16 @@ enum class FeedHostMismatch {
   kMaxValue = kBothAreSet,
 };
 
-// Copies boolean args into temps to avoid evaluating them multiple times.
-#define UMA_HISTOGRAM_MISMATCH(name, feed_is_set, host_is_set)  \
-  do {                                                          \
-    bool copied_feed_is_set = feed_is_set;                      \
-    bool copied_host_is_set = host_is_set;                      \
-    FeedHostMismatch status = FeedHostMismatch::kNeitherAreSet; \
-    if (copied_feed_is_set && copied_host_is_set) {             \
-      status = FeedHostMismatch::kBothAreSet;                   \
-    } else if (copied_feed_is_set) {                            \
-      status = FeedHostMismatch::kFeedIsSetOnly;                \
-    } else if (copied_host_is_set) {                            \
-      status = FeedHostMismatch::kHostIsSetOnly;                \
-    }                                                           \
-    UMA_HISTOGRAM_ENUMERATION(name, status);                    \
-  } while (false);
+FeedHostMismatch GetMismatch(bool feed_is_set, bool host_is_set) {
+  if (feed_is_set && host_is_set) {
+    return FeedHostMismatch::kBothAreSet;
+  } else if (feed_is_set) {
+    return FeedHostMismatch::kFeedIsSetOnly;
+  } else if (host_is_set) {
+    return FeedHostMismatch::kHostIsSetOnly;
+  }
+  return FeedHostMismatch::kNeitherAreSet;
+}
 
 struct ParamPair {
   std::string name;
@@ -292,9 +287,10 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
   // Both the Feed and the scheduler track if there are outstanding requests.
   // It's possible that this data gets out of sync. We treat the Feed as
   // authoritative and we change our values to match.
-  UMA_HISTOGRAM_MISMATCH("ContentSuggestions.Feed.Scheduler.OutstandingRequest",
-                         has_outstanding_request,
-                         !outstanding_request_until_.is_null());
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSuggestions.Feed.Scheduler.OutstandingRequest",
+      GetMismatch(has_outstanding_request,
+                  !outstanding_request_until_.is_null()));
   if (has_outstanding_request == outstanding_request_until_.is_null()) {
     if (has_outstanding_request) {
       outstanding_request_until_ =
@@ -312,8 +308,9 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
   bool scheduler_thinks_has_content =
       !profile_prefs_->FindPreference(prefs::kLastFetchAttemptTime)
            ->IsDefaultValue();
-  UMA_HISTOGRAM_MISMATCH("ContentSuggestions.Feed.Scheduler.HasContent",
-                         has_content, scheduler_thinks_has_content);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSuggestions.Feed.Scheduler.HasContent",
+      GetMismatch(has_content, scheduler_thinks_has_content));
   if (has_content != scheduler_thinks_has_content) {
     if (has_content) {
       profile_prefs_->SetTime(prefs::kLastFetchAttemptTime,

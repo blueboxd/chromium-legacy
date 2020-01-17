@@ -558,6 +558,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (!self.viewVisible || !animated) {
     [self.scrollView setContentOffset:targetOffset animated:NO];
     self.currentPage = targetPage;
+    // Important updates (e.g., button configurations, incognito visibility) are
+    // made at the end of scrolling animations after |self.currentPage| is set.
+    // Since this codepath has no animations, updates must be called manually.
+    [self broadcastIncognitoContentVisibility];
+    [self configureButtonsForActiveAndCurrentPage];
   } else {
     // Only set |scrollViewAnimatingContentOffset| to YES if there's an actual
     // change in the contentOffset, as |-scrollViewDidEndScrollingAnimation:| is
@@ -871,8 +876,13 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       gridViewController == nil ? NO : !gridViewController.gridEmpty;
   self.closeAllButton.title =
       l10n_util::GetNSString(IDS_IOS_TAB_GRID_CLOSE_ALL_BUTTON);
-  self.closeAllButton.accessibilityIdentifier =
-      kTabGridCloseAllButtonIdentifier;
+  // Setting the |accessibilityIdentifier| seems to trigger layout, which causes
+  // an infinite loop.
+  if (self.closeAllButton.accessibilityIdentifier !=
+      kTabGridCloseAllButtonIdentifier) {
+    self.closeAllButton.accessibilityIdentifier =
+        kTabGridCloseAllButtonIdentifier;
+  }
 }
 
 // Shows the two toolbars and the floating button. Suitable for use in

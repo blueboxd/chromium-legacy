@@ -23,7 +23,7 @@ login.createScreen('FatalErrorScreen', 'fatal-error', function() {
     savedUIStates_: {},
 
     /** @override */
-    decorate: function() {
+    decorate() {
       $('fatal-error-card')
           .addEventListener('buttonclick', this.onDismiss_.bind(this));
     },
@@ -36,7 +36,7 @@ login.createScreen('FatalErrorScreen', 'fatal-error', function() {
     /**
      * Invoked when user clicks on the ok button.
      */
-    onDismiss_: function() {
+    onDismiss_() {
       this.callback_();
     },
 
@@ -46,7 +46,7 @@ login.createScreen('FatalErrorScreen', 'fatal-error', function() {
      * @param {function()} callback The callback to be invoked when the
      *     screen is dismissed.
      */
-    show: function(message, buttonLabel, callback) {
+    show(message, buttonLabel, callback) {
       $('fatal-error-card').textContent = message;
       $('fatal-error-card').buttonLabel = buttonLabel;
       this.callback_ = callback;

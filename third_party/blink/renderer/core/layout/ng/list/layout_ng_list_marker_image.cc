@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker_image.h"
+
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 
 namespace blink {
@@ -25,16 +27,13 @@ bool LayoutNGListMarkerImage::IsOfType(LayoutObjectType type) const {
 Node* LayoutNGListMarkerImage::NodeForHitTest() const {
   // In LayoutNG tree, image list marker is structured like this:
   // <li> (LayoutListItem)
-  //   <anonymous block> (LayoutNGListMarker or LayoutNGInsideListMarker)
+  //   ::marker (LayoutNGListMarker or LayoutNGInsideListMarker)
   //     <anonymous img> (LayoutNGListMarkerImage)
   // Hit testing should return the list-item node.
   DCHECK(!GetNode());
-  for (const LayoutObject* parent = Parent(); parent;
-       parent = parent->Parent()) {
-    if (Node* node = parent->GetNode())
-      return node;
-  }
-  return nullptr;
+  const LayoutNGListItem* list_item =
+      LayoutNGListItem::FromMarkerOrMarkerContent(*this);
+  return list_item ? list_item->GetNode() : nullptr;
 }
 
 // Because ImageResource() is always LayoutImageResourceStyleImage. So we could

@@ -124,7 +124,7 @@ cr.define('cr.ui.dialogs', function() {
   /** @protected */
   BaseDialog.prototype.onContainerKeyDown = function(event) {
     // Handle Escape.
-    if (event.keyCode == 27 && !this.cancelButton.disabled) {
+    if (event.keyCode === 27 && !this.cancelButton.disabled) {
       this.onCancelClick_(event);
       event.stopPropagation();
       // Prevent the event from being handled by the container of the dialog.
@@ -135,7 +135,7 @@ cr.define('cr.ui.dialogs', function() {
 
   /** @private */
   BaseDialog.prototype.onContainerMouseDown_ = function(event) {
-    if (event.target == this.container) {
+    if (event.target === this.container) {
       const classList = this.container.classList;
       // Start 'pulse' animation.
       classList.remove('pulse');
@@ -381,7 +381,7 @@ cr.define('cr.ui.dialogs', function() {
 
   /** @private */
   PromptDialog.prototype.onKeyDown_ = function(event) {
-    if (event.keyCode == 13) {  // Enter
+    if (event.keyCode === 13) {  // Enter
       this.onOkClick_(event);
       event.preventDefault();
     }

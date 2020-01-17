@@ -20,6 +20,9 @@ const int kOpenFlagsForWrite =
     base::File::FLAG_OPEN | base::File::FLAG_WRITE | base::File::FLAG_ASYNC;
 const int kCreateFlagsForWrite =
     base::File::FLAG_CREATE | base::File::FLAG_WRITE | base::File::FLAG_ASYNC;
+const int kCreateFlagsForWriteAlways = base::File::FLAG_CREATE_ALWAYS |
+                                       base::File::FLAG_WRITE |
+                                       base::File::FLAG_ASYNC;
 
 }  // namespace
 
@@ -109,6 +112,9 @@ int LocalFileStreamWriter::InitiateOpen(base::OnceClosure main_operation) {
       break;
     case CREATE_NEW_FILE:
       open_flags = kCreateFlagsForWrite;
+      break;
+    case CREATE_NEW_FILE_ALWAYS:
+      open_flags = kCreateFlagsForWriteAlways;
       break;
   }
 

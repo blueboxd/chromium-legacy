@@ -100,6 +100,7 @@ bool ContainsSameEvents(const Events& expected,
 }
 
 base::Value ConvertEventsToValue(const Events& events, Profile* profile) {
+  base::Value context = reporting::GetContext(profile);
   base::Value event_list(base::Value::Type::LIST);
 
   for (auto it = events.begin(); it != events.end(); ++it) {
@@ -107,8 +108,8 @@ base::Value ConvertEventsToValue(const Events& events, Profile* profile) {
     for (const em::AppInstallReportLogEvent& app_install_report_log_event :
          (*it).second) {
       base::Value wrapper;
-      wrapper =
-          ConvertEventToValue(package, app_install_report_log_event, profile);
+      wrapper = ConvertEventToValue(package, app_install_report_log_event,
+                                    context, profile);
       event_list.Append(std::move(wrapper));
     }
   }
@@ -203,7 +204,7 @@ class AppInstallEventLogManagerTest : public testing::Test {
     events_[package_name].push_back(event_);
     manager_->Add({kPackageNames[app_index]}, event_);
     FlushNonDelayedTasks();
-    event_.set_timestamp(event_.timestamp() + 1);
+    event_.set_timestamp(event_.timestamp() + 1000);
   }
 
   void AddLogEntryForsetOfApps(const std::set<std::string>& packages) {
@@ -212,7 +213,7 @@ class AppInstallEventLogManagerTest : public testing::Test {
     }
     manager_->Add(packages, event_);
     FlushNonDelayedTasks();
-    event_.set_timestamp(event_.timestamp() + 1);
+    event_.set_timestamp(event_.timestamp() + 1000);
   }
 
   void AddLogEntryForAllApps() { AddLogEntryForsetOfApps(packages_); }
@@ -229,7 +230,6 @@ class AppInstallEventLogManagerTest : public testing::Test {
     base::Value event_list = ConvertEventsToValue(events_, /*profile=*/nullptr);
     base::Value context = reporting::GetContext(/*profile=*/nullptr);
 
-    AppendEventId(&event_list, context);
     events_value_ = RealtimeReportingJobConfiguration::BuildReport(
         std::move(event_list), std::move(context));
   }

@@ -23,7 +23,7 @@ js_library("personalization_options") {
   deps = [
     ":privacy_page_browser_proxy",
     "..:page_visibility",
-    "..:route",
+    "..:router",
     "../controls:settings_toggle_button",
     "../people_page:sync_browser_proxy",
     "../prefs:prefs_behavior",
@@ -54,8 +54,10 @@ js_library("privacy_page_browser_proxy") {
 js_library("privacy_page") {
   deps = [
     ":privacy_page_browser_proxy",
+    "..:metrics_browser_proxy",
     "..:page_visibility",
     "..:route",
+    "..:router",
     "../controls:settings_toggle_button",
     "../people_page:signout_dialog",
     "../people_page:sync_browser_proxy",
@@ -71,16 +73,14 @@ js_library("privacy_page") {
 }
 
 js_library("security_keys_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
 js_library("security_keys_subpage") {
   deps = [
     ":security_keys_browser_proxy",
-    "..:route",
+    "..:router",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:i18n_behavior",
   ]
@@ -97,9 +97,7 @@ js_library("security_keys_set_pin_dialog") {
 }
 
 js_library("security_keys_pin_field") {
-  deps = [
-    "//ui/webui/resources/js:i18n_behavior",
-  ]
+  deps = [ "//ui/webui/resources/js:i18n_behavior" ]
 }
 
 js_library("security_keys_credential_management_dialog") {
@@ -133,7 +131,9 @@ js_library("security_keys_bio_enroll_dialog") {
 js_library("security_page") {
   deps = [
     ":privacy_page_browser_proxy",
+    "..:metrics_browser_proxy",
     "..:route",
+    "..:router",
     "../people_page:sync_browser_proxy",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/js:load_time_data",

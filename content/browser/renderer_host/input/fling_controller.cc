@@ -391,14 +391,24 @@ bool FlingController::UpdateCurrentFlingState(
     return false;
   }
 
+  gfx::Size root_widget_viewport_size =
+      event_sender_client_->GetRootWidgetViewportSize();
+  // If the view is destroyed while FlingController is generating fling curve,
+  // |GetRootWidgetViewportSize()| will return empty size. Reset the
+  // state of fling_booster_ and return false.
+  if (root_widget_viewport_size.IsEmpty()) {
+    fling_booster_.Reset();
+    EndCurrentFling();
+    return false;
+  }
+
   fling_curve_ = std::unique_ptr<blink::WebGestureCurve>(
       ui::WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
           current_fling_parameters_.source_device,
           current_fling_parameters_.velocity,
           gfx::Vector2dF() /*initial_offset*/, false /*on_main_thread*/,
           GetContentClient()->browser()->ShouldUseMobileFlingCurve(),
-          current_fling_parameters_.global_point,
-          event_sender_client_->GetRootWidgetViewportSize()));
+          current_fling_parameters_.global_point, root_widget_viewport_size));
   return true;
 }
 

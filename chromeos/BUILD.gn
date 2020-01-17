@@ -35,9 +35,7 @@ component("chromeos") {
     "//build/config/linux/nss:system_nss_no_ssl_config",
     "//build/config/compiler:use_orderfile_for_hugepage",
   ]
-  public_deps = [
-    "//chromeos/constants",
-  ]
+  public_deps = [ "//chromeos/constants" ]
   deps = [
     ":chromeos_export",
     "//base",
@@ -98,12 +96,8 @@ component("chromeos") {
 }
 
 source_set("chromeos_export") {
-  deps = [
-    "//base",
-  ]
-  sources = [
-    "chromeos_export.h",
-  ]
+  deps = [ "//base" ]
+  sources = [ "chromeos_export.h" ]
 }
 
 # This must be a static library instead of a source set because some of the
@@ -113,9 +107,7 @@ source_set("chromeos_export") {
 # can be converted to a source set.
 static_library("test_support") {
   testonly = true
-  public_deps = [
-    ":test_support_source_set",
-  ]
+  public_deps = [ ":test_support_source_set" ]
 }
 
 source_set("test_support_source_set") {
@@ -142,9 +134,7 @@ source_set("test_support_source_set") {
 }
 
 source_set("test_utils") {
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   sources = [
     "test/chromeos_test_utils.cc",
     "test/chromeos_test_utils.h",
@@ -211,9 +201,7 @@ test("chromeos_unittests") {
     "test/run_all_unittests.cc",
   ]
 
-  data = [
-    "test/data/",
-  ]
+  data = [ "test/data/" ]
 }
 
 # The following definitions only apply when building for a CrOS board (ie: not
@@ -254,6 +242,12 @@ if (is_chromeos_device) {
     ]
   }
 
+  # Used to report the size of various partitions. For more details, see:
+  # https://source.chromium.org/search?q=report_disk_usage.go
+  tast_test("disk_usage_tast_test") {
+    tast_tests = [ "platform.ReportDiskUsage" ]
+  }
+
   # Tast test sources live in the Chromium OS repository.
   # To diagnose tast failures or disable tests, see go/tast-failures
   tast_test("chrome_all_tast_tests") {
@@ -287,17 +281,11 @@ if (is_chromeos_device) {
 
     # TODO(bpastene): Figure out what's generating resources/chromeos/ and
     # declare it as a dep instead of adding the dir directly.
-    data = [
-      "$root_out_dir/resources/chromeos/",
-    ]
+    data = [ "$root_out_dir/resources/chromeos/" ]
   }
 }
 
 fuzzer_test("ppd_line_reader_fuzzer") {
-  sources = [
-    "printing/ppd_line_reader_fuzzer.cc",
-  ]
-  deps = [
-    ":chromeos",
-  ]
+  sources = [ "printing/ppd_line_reader_fuzzer.cc" ]
+  deps = [ ":chromeos" ]
 }

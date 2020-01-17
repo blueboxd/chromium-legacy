@@ -53,12 +53,8 @@ if (is_linux && !is_chromecast && !use_fuzzing_engine) {
 }
 
 fuzzer_test("expat_xml_parse_fuzzer") {
-  sources = [
-    "fuzz/expat_xml_parse_fuzzer.cc",
-  ]
-  deps = [
-    ":expat",
-  ]
+  sources = [ "fuzz/expat_xml_parse_fuzzer.cc" ]
+  deps = [ ":expat" ]
   dict = "//third_party/libxml/fuzz/xml.dict"
   seed_corpus = "//third_party/libxml/fuzz/seed_corpus"
 }

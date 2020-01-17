@@ -1494,6 +1494,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_STOPTRACING = 1431,
   LOGIN_LOCKMANAGEDGUESTSESSION = 1432,
   LOGIN_UNLOCKMANAGEDGUESTSESSION = 1433,
+  AUTOTESTPRIVATE_SETARCTOUCHMODE = 1434,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

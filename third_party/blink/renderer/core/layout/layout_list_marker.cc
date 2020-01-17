@@ -312,7 +312,7 @@ void LayoutListMarker::UpdateMargins() {
 std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForInside(
     const ComputedStyle& style,
     bool is_image) {
-  if (style.GetContentData())
+  if (!style.ContentBehavesAsNormal())
     return {};
   if (is_image)
     return {LayoutUnit(), LayoutUnit(kCMarkerPaddingPx)};
@@ -332,7 +332,7 @@ std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForOutside(
     LayoutUnit marker_inline_size) {
   LayoutUnit margin_start;
   LayoutUnit margin_end;
-  if (style.GetContentData()) {
+  if (!style.ContentBehavesAsNormal()) {
     margin_start = -marker_inline_size;
   } else if (is_image) {
     margin_start = -marker_inline_size - kCMarkerPaddingPx;

@@ -10,11 +10,11 @@
 
 /** @polymerBehavior */
 const OobeI18nBehaviorImpl = {
-  ready: function() {
+  ready() {
     this.classList.add('i18n-dynamic');
   },
 
-  i18nUpdateLocale: function() {
+  i18nUpdateLocale() {
     // TODO(crbug.com/893934): move i18nUpdateLocale from I18nBehavior to this
     // class.
     I18nBehavior.i18nUpdateLocale.call(this);

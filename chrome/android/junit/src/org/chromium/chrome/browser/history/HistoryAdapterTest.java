@@ -17,8 +17,8 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.MoreProgressButton;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.components.browser_ui.widget.MoreProgressButton;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;

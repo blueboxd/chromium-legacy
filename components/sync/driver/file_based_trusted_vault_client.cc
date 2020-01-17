@@ -15,6 +15,7 @@
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
 #include "components/os_crypt/os_crypt.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/protocol/local_trusted_vault.pb.h"
 
 namespace syncer {
@@ -61,9 +62,10 @@ class FileBasedTrustedVaultClient::Backend
 
   void ReadDataFromDisk() { data_ = ReadEncryptedFile(file_path_); }
 
-  std::vector<std::vector<uint8_t>> FetchKeys(const std::string& gaia_id) {
+  std::vector<std::vector<uint8_t>> FetchKeys(
+      const CoreAccountInfo& account_info) {
     const sync_pb::LocalTrustedVaultPerUser* per_user_vault =
-        FindUserVault(gaia_id);
+        FindUserVault(account_info.gaia);
 
     std::vector<std::vector<uint8_t>> keys;
     if (per_user_vault) {
@@ -133,12 +135,13 @@ FileBasedTrustedVaultClient::AddKeysChangedObserver(
 }
 
 void FileBasedTrustedVaultClient::FetchKeys(
-    const std::string& gaia_id,
+    const CoreAccountInfo& account_info,
     base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb) {
   TriggerLazyInitializationIfNeeded();
   base::PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&Backend::FetchKeys, backend_, gaia_id), std::move(cb));
+      base::BindOnce(&Backend::FetchKeys, backend_, account_info),
+      std::move(cb));
 }
 
 void FileBasedTrustedVaultClient::StoreKeys(
@@ -153,7 +156,7 @@ void FileBasedTrustedVaultClient::StoreKeys(
 }
 
 void FileBasedTrustedVaultClient::MarkKeysAsStale(
-    const std::string& gaia_id,
+    const CoreAccountInfo& account_info,
     base::OnceCallback<void(bool)> cb) {
   // Not really supported and not useful for this particular implementation.
   std::move(cb).Run(false);

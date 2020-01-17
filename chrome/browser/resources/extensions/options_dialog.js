@@ -65,7 +65,7 @@ Polymer({
    * into account the window width/height.
    * @private
    */
-  updateDialogSize_: function() {
+  updateDialogSize_() {
     const headerHeight = this.$.body.offsetTop;
     const maxHeight =
         Math.min(0.9 * window.innerHeight, OptionsDialogMaxHeight);
@@ -80,7 +80,7 @@ Polymer({
   },
 
   /** @param {chrome.developerPrivate.ExtensionInfo} data */
-  show: function(data) {
+  show(data) {
     this.data_ = data;
     whenDocumentReady().then(() => {
       if (!this.extensionOptions_) {
@@ -107,7 +107,7 @@ Polymer({
   },
 
   /** @private */
-  onClose_: function() {
+  onClose_() {
     this.extensionOptions_.onpreferredsizechanged = null;
 
     if (this.boundUpdateDialogSize_) {

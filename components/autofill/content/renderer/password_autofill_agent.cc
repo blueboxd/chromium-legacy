@@ -975,7 +975,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
   if (logger)
     logger->LogNumber(Logger::STRING_NUMBER_OF_ALL_FORMS, forms.size());
 
-  std::vector<PasswordForm> password_forms;
+  std::vector<FormData> password_forms_data;
   for (const WebFormElement& form : forms) {
     if (only_visible) {
       bool is_form_visible = form_util::AreFormContentsVisible(form);
@@ -990,21 +990,20 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
         continue;
     }
 
-    std::unique_ptr<PasswordForm> password_form(
-        GetPasswordFormFromWebForm(form));
-    if (!password_form || !FormHasPasswordField(password_form->form_data))
+    std::unique_ptr<FormData> form_data(GetFormDataFromWebForm(form));
+    if (!form_data || !FormHasPasswordField(*form_data))
       continue;
 
     if (logger)
-      logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD, *password_form);
+      logger->LogFormData(Logger::STRING_FORM_IS_PASSWORD, *form_data);
 
     FormStructureInfo form_structure_info =
-        ExtractFormStructureInfo(password_form->form_data);
+        ExtractFormStructureInfo(*form_data);
     if (only_visible || WasFormStructureChanged(form_structure_info)) {
       forms_structure_cache_[form_structure_info.unique_renderer_id] =
           std::move(form_structure_info);
 
-      password_forms.push_back(std::move(*password_form));
+      password_forms_data.push_back(std::move(*form_data));
       continue;
     }
 
@@ -1036,50 +1035,43 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
   }
 
   if (add_unowned_inputs) {
-    std::unique_ptr<PasswordForm> password_form(
-        GetPasswordFormFromUnownedInputElements());
-    if (password_form) {
+    std::unique_ptr<FormData> form_data(GetFormDataFromUnownedInputElements());
+    if (form_data) {
       if (logger) {
-        logger->LogPasswordForm(Logger::STRING_FORM_IS_PASSWORD,
-                                *password_form);
+        logger->LogFormData(Logger::STRING_FORM_IS_PASSWORD, *form_data);
       }
-
-      password_forms.push_back(std::move(*password_form));
+      password_forms_data.push_back(std::move(*form_data));
     }
   }
 
   if (only_visible) {
     // Send the PasswordFormsRendered message regardless of whether
-    // |password_forms| is empty. The empty |password_forms| are a possible
-    // signal to the browser that a pending login attempt succeeded.
+    // |password_forms_data| is empty. The empty |password_forms_data| are a
+    // possible signal to the browser that a pending login attempt succeeded.
     WebFrame* main_frame = render_frame()->GetWebFrame()->Top();
     bool did_stop_loading = !main_frame || !main_frame->IsLoading();
-    GetPasswordManagerDriver()->PasswordFormsRendered(password_forms,
+    GetPasswordManagerDriver()->PasswordFormsRendered(password_forms_data,
                                                       did_stop_loading);
   } else {
     // If there is a password field, but the list of password forms is empty for
     // some reason, add a dummy form to the list. It will cause a request to the
     // store. Therefore, saved passwords will be available for filling on click.
-    if (!sent_request_to_store_ && password_forms.empty() &&
+    if (!sent_request_to_store_ && password_forms_data.empty() &&
         HasPasswordField(*frame)) {
       // Set everything that |FormDigest| needs.
-      password_forms.push_back(PasswordForm());
-      password_forms.back().scheme = PasswordForm::Scheme::kHtml;
-      password_forms.back().origin =
+      password_forms_data.push_back(PasswordForm().form_data);
+      password_forms_data.back().url =
           form_util::GetCanonicalOriginForDocument(frame->GetDocument());
-      password_forms.back().signon_realm =
-          GetSignOnRealm(password_forms.back().origin);
-      password_forms.back().form_data.url = password_forms.back().origin;
     }
-    if (!password_forms.empty()) {
+    if (!password_forms_data.empty()) {
       sent_request_to_store_ = true;
-      GetPasswordManagerDriver()->PasswordFormsParsed(password_forms);
+      GetPasswordManagerDriver()->PasswordFormsParsed(password_forms_data);
     }
   }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Provide warnings about the accessibility of password forms on the page.
-  if (!password_forms.empty() &&
+  if (!password_forms_data.empty() &&
       (frame->GetDocument().Url().ProtocolIs(url::kHttpScheme) ||
        frame->GetDocument().Url().ProtocolIs(url::kHttpsScheme)))
     page_passwords_analyser_.AnalyseDocumentDOM(frame);
@@ -1151,7 +1143,8 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
       // the frame starts loading. If there are redirects that cause a new
       // RenderView to be instantiated (such as redirects to the WebStore)
       // we will never get to finish the load.
-      GetPasswordManagerDriver()->PasswordFormSubmitted(*submitted_form);
+      GetPasswordManagerDriver()->PasswordFormSubmitted(
+          submitted_form->form_data);
     } else {
       if (logger)
         logger->LogMessage(Logger::STRING_SECURITY_ORIGIN_FAILURE);
@@ -1375,6 +1368,12 @@ PasswordAutofillAgent::GetSimplifiedPasswordFormFromWebForm(
                                                  &username_detector_cache_);
 }
 
+std::unique_ptr<FormData> PasswordAutofillAgent::GetFormDataFromWebForm(
+    const WebFormElement& web_form) {
+  return CreateSimplifiedFormDataFromWebForm(web_form, &field_data_manager_,
+                                             &username_detector_cache_);
+}
+
 std::unique_ptr<PasswordForm>
 PasswordAutofillAgent::GetPasswordFormFromUnownedInputElements() {
   // The element's frame might have been detached in the meantime (see
@@ -1400,6 +1399,22 @@ PasswordAutofillAgent::GetSimplifiedPasswordFormFromUnownedInputElements() {
   if (!web_frame)
     return nullptr;
   return CreateSimplifiedPasswordFormFromUnownedInputElements(
+      *web_frame, &field_data_manager_, &username_detector_cache_);
+}
+
+std::unique_ptr<FormData>
+PasswordAutofillAgent::GetFormDataFromUnownedInputElements() {
+  // The element's frame might have been detached in the meantime (see
+  // http://crbug.com/585363, comments 5 and 6), in which case |frame| will
+  // be null. This was hardly caused by form submission (unless the user is
+  // supernaturally quick), so it is OK to drop the ball here.
+  content::RenderFrame* frame = render_frame();
+  if (!frame)
+    return nullptr;
+  WebLocalFrame* web_frame = frame->GetWebFrame();
+  if (!web_frame)
+    return nullptr;
+  return CreateSimplifiedFormDataFromUnownedInputElements(
       *web_frame, &field_data_manager_, &username_detector_cache_);
 }
 
@@ -1510,7 +1525,8 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
     return;
 
   if (has_password) {
-    GetPasswordManagerDriver()->ShowManualFallbackForSaving(*password_form);
+    GetPasswordManagerDriver()->ShowManualFallbackForSaving(
+        password_form->form_data);
   } else {
     GetPasswordManagerDriver()->HideManualFallbackForSaving();
   }

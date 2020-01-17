@@ -35,7 +35,5 @@ static_library("debug_webui") {
     "//ui/resources",
     "//ui/webui",
   ]
-  public_deps = [
-    "//chromeos/services/device_sync/public/mojom",
-  ]
+  public_deps = [ "//chromeos/services/device_sync/public/mojom" ]
 }

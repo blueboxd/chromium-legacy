@@ -45,13 +45,13 @@ Polymer({
    * @return {boolean} Whether the option is selected.
    * @private
    */
-  isSelected_: function(option) {
+  isSelected_(option) {
     return this.getValue_(option) === this.selectedValue ||
         (!!option.is_default && this.selectedValue === '');
   },
 
   /** @param {string} value The value to select. */
-  selectValue: function(value) {
+  selectValue(value) {
     this.selectedValue = value;
   },
 
@@ -61,7 +61,7 @@ Polymer({
    * @return {string} Value for the option.
    * @private
    */
-  getValue_: function(option) {
+  getValue_(option) {
     return JSON.stringify(option);
   },
 
@@ -71,7 +71,7 @@ Polymer({
    * @return {string} Display name for the option.
    * @private
    */
-  getDisplayName_: function(option) {
+  getDisplayName_(option) {
     let displayName = option.custom_display_name;
     if (!displayName && option.custom_display_name_localized) {
       displayName = getStringForCurrentLocale(
@@ -81,7 +81,7 @@ Polymer({
   },
 
   /** @param {string} value The new select value. */
-  onProcessSelectChange: function(value) {
+  onProcessSelectChange(value) {
     let newValue = null;
     try {
       newValue = JSON.parse(value);

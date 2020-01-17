@@ -33,9 +33,7 @@ action("bake_in_configs") {
   ]
 
   output_file = "$target_gen_dir/baked_in_configs.cc"
-  outputs = [
-    output_file,
-  ]
+  outputs = [ output_file ]
 
   # The JSON file list is too long for the command line on Windows, so put
   # them in a response file.
@@ -118,9 +116,7 @@ jumbo_source_set("unit_tests") {
 }
 
 fuzzer_test("domain_reliability_header_fuzzer") {
-  sources = [
-    "header_fuzzer.cc",
-  ]
+  sources = [ "header_fuzzer.cc" ]
   deps = [
     ":domain_reliability",
     "//base",

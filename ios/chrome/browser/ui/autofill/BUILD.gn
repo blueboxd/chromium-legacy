@@ -62,9 +62,7 @@ source_set("autofill") {
     "//ios/web/public/js_messaging",
     "//ui/base",
   ]
-  public_deps = [
-    "//ios/chrome/browser/ui/collection_view",
-  ]
+  public_deps = [ "//ios/chrome/browser/ui/collection_view" ]
   libs = [ "UIKit.framework" ]
 }
 
@@ -94,9 +92,7 @@ source_set("bridges") {
     "//ios/web",
     "//ui/base",
   ]
-  public_deps = [
-    "//ios/chrome/browser/ui/collection_view",
-  ]
+  public_deps = [ "//ios/chrome/browser/ui/collection_view" ]
   libs = [ "UIKit.framework" ]
 }
 
@@ -142,9 +138,7 @@ source_set("autofill_message") {
     "save_card_message_with_links.h",
     "save_card_message_with_links.mm",
   ]
-  deps = [
-    "//url:url",
-  ]
+  deps = [ "//url:url" ]
 }
 
 source_set("eg_tests") {

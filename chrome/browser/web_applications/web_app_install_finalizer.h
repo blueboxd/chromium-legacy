@@ -40,7 +40,7 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                                   UninstallWebAppCallback callback) override;
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
                       InstallFinalizedCallback callback) override;
-  void UninstallExternalWebApp(const GURL& app_url,
+  void UninstallExternalWebApp(const AppId& app_id,
                                ExternalInstallSource external_install_source,
                                UninstallWebAppCallback callback) override;
   bool CanUserUninstallFromSync(const AppId& app_id) const override;

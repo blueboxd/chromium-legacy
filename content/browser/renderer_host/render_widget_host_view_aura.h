@@ -363,6 +363,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   friend class InputMethodAuraTestBase;
   friend class RenderWidgetHostViewAuraTest;
   friend class RenderWidgetHostViewAuraBrowserTest;
+  friend class RenderWidgetHostViewAuraDevtoolsBrowserTest;
   friend class RenderWidgetHostViewAuraCopyRequestTest;
   friend class TestInputMethodObserver;
 #if defined(OS_WIN)

@@ -157,6 +157,9 @@ public final class EventConstants {
     /** User has tapped on Identity Disc. */
     public static final String IDENTITY_DISC_USED = "identity_disc_used";
 
+    /** User has used Ephemeral Tab i.e. opened and browsed the content. */
+    public static final String EPHEMERAL_TAB_USED = "ephemeral_tab_used";
+
     /**
      * Do not instantiate.
      */

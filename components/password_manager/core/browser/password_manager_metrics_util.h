@@ -330,16 +330,19 @@ enum class IsSyncPasswordHashSaved {
 // Metrics:
 // - PasswordManager.ShowAllSavedPasswordsAcceptedContext
 // - PasswordManager.ShowAllSavedPasswordsShownContext
-enum ShowAllSavedPasswordsContext {
-  SHOW_ALL_SAVED_PASSWORDS_CONTEXT_NONE,
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ShowAllSavedPasswordsContext {
+  kNone = 0,
   // The "Show all saved passwords..." fallback is shown below a list of
   // available passwords.
-  SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD,
+  kPassword = 1,
   // Obsolete.
-  SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK_DEPRECATED,
+  kManualFallbackDeprecated = 2,
   // The "Show all saved  passwords..." fallback is shown in context menu.
-  SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU,
-  SHOW_ALL_SAVED_PASSWORDS_CONTEXT_COUNT
+  kContextMenu = 3,
+  kMaxValue = kContextMenu,
 };
 
 // Metrics: "PasswordManager.CertificateErrorsWhileSeeingForms"

@@ -18,9 +18,7 @@ h2o_junit_manifest_target_name = "h2o_j_unit_manifest_target"
 # old copy of the runtime library.
 android_library("compiled_in_runtime_library_java") {
   chromium_code = false
-  sources = [
-    "src/org/chromium/webapk/lib/runtime_library/IWebApkApi.java",
-  ]
+  sources = [ "src/org/chromium/webapk/lib/runtime_library/IWebApkApi.java" ]
 }
 
 mustache_pass("generate_old_style_manifest_for_upload") {
@@ -133,9 +131,7 @@ template("webapk_tmpl") {
     input = input[0]
     output = _manifest_output
     extra_variables = [ "manifest_package=$apk_package_name" ]
-    deps = [
-      _manifest_to_upload_dep,
-    ]
+    deps = [ _manifest_to_upload_dep ]
   }
 
   # Populate background color in values/background_color.xml
@@ -248,9 +244,7 @@ template("webapk_tmpl") {
 
   android_apk(target_name) {
     forward_variables_from(invoker, [ "apk_name" ])
-    deps = [
-      ":$_java_with_services_target_name",
-    ]
+    deps = [ ":$_java_with_services_target_name" ]
 
     android_manifest = _manifest_output
     android_manifest_dep = ":$_manifest_target_name"
@@ -382,7 +376,5 @@ junit_binary("webapk_shell_apk_h2o_junit_tests") {
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/test:junit_test_support",
   ]
-  data_deps = [
-    ":${h2o_junit_manifest_target_name}",
-  ]
+  data_deps = [ ":${h2o_junit_manifest_target_name}" ]
 }

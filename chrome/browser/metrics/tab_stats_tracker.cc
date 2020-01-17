@@ -118,13 +118,11 @@ const char TabStatsTracker::UmaStatsReportingDelegate::
 // enum.
 const char* kTabDiscardCountHistogramNames[] = {
     "Discarding.DiscardsPer10Minutes.Extension",
-    "Discarding.DiscardsPer10Minutes.Proactive",
     "Discarding.DiscardsPer10Minutes.Urgent",
 };
 
 const char* kTabReloadCountHistogramNames[] = {
     "Discarding.ReloadsPer10Minutes.Extension",
-    "Discarding.ReloadsPer10Minutes.Proactive",
     "Discarding.ReloadsPer10Minutes.Urgent",
 };
 

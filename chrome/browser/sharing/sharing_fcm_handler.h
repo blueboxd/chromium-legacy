@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "components/gcm_driver/gcm_app_handler.h"
@@ -71,6 +72,7 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
       chrome_browser_sharing::MessageType original_message_type,
       base::Optional<syncer::DeviceInfo::SharingTargetInfo> target_info,
       SharingDevicePlatform sender_device_type,
+      base::TimeTicks message_received_time,
       std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
 
   void OnAckMessageSent(

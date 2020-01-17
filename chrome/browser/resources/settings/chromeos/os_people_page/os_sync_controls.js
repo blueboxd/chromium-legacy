@@ -74,12 +74,12 @@ Polymer({
   cachedOsSyncPrefs_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.OsSyncBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'os-sync-prefs-changed', this.handleOsSyncPrefsChanged_.bind(this));
   },
@@ -90,7 +90,7 @@ Polymer({
    * @param {!settings.Route|undefined} oldRoute
    * @protected
    */
-  currentRouteChanged: function(newRoute, oldRoute) {
+  currentRouteChanged(newRoute, oldRoute) {
     if (newRoute == settings.routes.OS_SYNC) {
       this.browserProxy_.didNavigateToOsSyncPage();
     }
@@ -103,7 +103,7 @@ Polymer({
    * Handler for when the sync preferences are updated.
    * @private
    */
-  handleOsSyncPrefsChanged_: function(osSyncFeatureEnabled, osSyncPrefs) {
+  handleOsSyncPrefsChanged_(osSyncFeatureEnabled, osSyncPrefs) {
     this.osSyncFeatureEnabled = osSyncFeatureEnabled;
     this.osSyncPrefs = osSyncPrefs;
 
@@ -123,12 +123,12 @@ Polymer({
   },
 
   /** @private */
-  onTurnOnSyncButtonClick_: function() {
+  onTurnOnSyncButtonClick_() {
     this.browserProxy_.setOsSyncFeatureEnabled(true);
   },
 
   /** @private */
-  onTurnOffSyncButtonClick_: function() {
+  onTurnOffSyncButtonClick_() {
     this.browserProxy_.setOsSyncFeatureEnabled(false);
   },
 
@@ -137,7 +137,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onSyncAllOsTypesChanged_: function(event) {
+  onSyncAllOsTypesChanged_(event) {
     if (event.target.checked) {
       this.set('osSyncPrefs.syncAllOsTypes', true);
 
@@ -163,7 +163,7 @@ Polymer({
    * Handler for when any sync data type checkbox is changed.
    * @private
    */
-  onSingleSyncDataTypeChanged_: function() {
+  onSingleSyncDataTypeChanged_() {
     this.sendOsSyncDatatypes_();
   },
 
@@ -173,7 +173,7 @@ Polymer({
    * a dependency on apps.
    * @private
    */
-  onAppsSyncedChanged_: function() {
+  onAppsSyncedChanged_() {
     this.set('osSyncPrefs.wallpaperEnabled', this.osSyncPrefs.osAppsSynced);
 
     this.onSingleSyncDataTypeChanged_();
@@ -183,7 +183,7 @@ Polymer({
    * Sends the osSyncPrefs dictionary back to the C++ handler.
    * @private
    */
-  sendOsSyncDatatypes_: function() {
+  sendOsSyncDatatypes_() {
     assert(this.osSyncPrefs);
     this.browserProxy_.setOsSyncDatatypes(this.osSyncPrefs);
   },
@@ -192,7 +192,7 @@ Polymer({
    * @return {boolean} Whether the sync data type toggles should be disabled.
    * @private
    */
-  computeDataTypeTogglesDisabled_: function() {
+  computeDataTypeTogglesDisabled_() {
     return !this.osSyncFeatureEnabled ||
         (this.osSyncPrefs !== undefined && this.osSyncPrefs.syncAllOsTypes);
   },
@@ -201,7 +201,7 @@ Polymer({
    * @return {boolean} Whether the sync controls are hidden.
    * @private
    */
-  syncControlsHidden_: function() {
+  syncControlsHidden_() {
     // Hide everything until the initial prefs are received from C++,
     // otherwise there is a visible layout reshuffle on first load.
     return !this.osSyncPrefs;
@@ -212,7 +212,7 @@ Polymer({
    *     disabled.
    * @private
    */
-  shouldWallpaperSyncSectionBeDisabled_: function() {
+  shouldWallpaperSyncSectionBeDisabled_() {
     return this.areDataTypeTogglesDisabled_ || !this.osSyncPrefs ||
         !this.osSyncPrefs.osAppsSynced;
   },

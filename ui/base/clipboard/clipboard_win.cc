@@ -267,7 +267,7 @@ void ClipboardWin::ReadAvailableTypes(ClipboardBuffer buffer,
 
   types->clear();
   if (::IsClipboardFormatAvailable(
-          ClipboardFormatType::GetPlainTextType().ToFormatEtc().cfFormat))
+          ClipboardFormatType::GetPlainTextAType().ToFormatEtc().cfFormat))
     types->push_back(base::UTF8ToUTF16(kMimeTypeText));
   if (::IsClipboardFormatAvailable(
           ClipboardFormatType::GetHtmlType().ToFormatEtc().cfFormat))
@@ -524,7 +524,7 @@ void ClipboardWin::ReadBookmark(base::string16* title, std::string* url) const {
     return;
 
   HANDLE data = ::GetClipboardData(
-      ClipboardFormatType::GetUrlWType().ToFormatEtc().cfFormat);
+      ClipboardFormatType::GetUrlType().ToFormatEtc().cfFormat);
   if (!data)
     return;
 
@@ -624,12 +624,12 @@ void ClipboardWin::WriteBookmark(const char* title_data,
   base::string16 wide_bookmark = base::UTF8ToUTF16(bookmark);
   HGLOBAL glob = CreateGlobalData(wide_bookmark);
 
-  WriteToClipboard(ClipboardFormatType::GetUrlWType().ToFormatEtc().cfFormat,
+  WriteToClipboard(ClipboardFormatType::GetUrlType().ToFormatEtc().cfFormat,
                    glob);
 }
 
 void ClipboardWin::WriteWebSmartPaste() {
-  DCHECK(clipboard_owner_->hwnd() != nullptr);
+  DCHECK_NE(clipboard_owner_->hwnd(), nullptr);
   ::SetClipboardData(
       ClipboardFormatType::GetWebKitSmartPasteType().ToFormatEtc().cfFormat,
       nullptr);
@@ -743,9 +743,10 @@ void ClipboardWin::WriteBitmapFromHandle(HBITMAP source_hbitmap,
 }
 
 void ClipboardWin::WriteToClipboard(unsigned int format, HANDLE handle) {
-  DCHECK(clipboard_owner_->hwnd() != nullptr);
+  DCHECK_NE(clipboard_owner_->hwnd(), nullptr);
   if (handle && !::SetClipboardData(format, handle)) {
-    DCHECK(ERROR_CLIPBOARD_NOT_OPEN != GetLastError());
+    DCHECK_NE(GetLastError(),
+              static_cast<unsigned long>(ERROR_CLIPBOARD_NOT_OPEN));
     FreeData(format, handle);
   }
 }

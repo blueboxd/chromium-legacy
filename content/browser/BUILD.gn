@@ -81,8 +81,6 @@ jumbo_source_set("browser") {
     "//components/viz/client",
     "//components/viz/common",
     "//components/viz/host",
-    "//components/viz/service",
-    "//components/viz/service/main",
     "//content:resources",
     "//content/app/resources",
     "//content/browser/background_fetch:background_fetch_proto",
@@ -841,6 +839,9 @@ jumbo_source_set("browser") {
     "frame_host/back_forward_cache_metrics.h",
     "frame_host/blocked_scheme_navigation_throttle.cc",
     "frame_host/blocked_scheme_navigation_throttle.h",
+    "frame_host/clipboard_host_impl.cc",
+    "frame_host/clipboard_host_impl.h",
+    "frame_host/clipboard_host_impl_mac.mm",
     "frame_host/cross_process_frame_connector.cc",
     "frame_host/cross_process_frame_connector.h",
     "frame_host/debug_urls.cc",
@@ -1199,6 +1200,7 @@ jumbo_source_set("browser") {
     "memory/swap_metrics_driver_impl_mac.cc",
     "memory/swap_metrics_driver_impl_mac.h",
     "memory/swap_metrics_driver_impl_win.cc",
+    "message_port.cc",
     "message_port_provider.cc",
     "mime_registry_impl.cc",
     "mime_registry_impl.h",
@@ -1303,9 +1305,6 @@ jumbo_source_set("browser") {
     "quota_dispatcher_host.h",
     "renderer_host/agent_metrics_collector.cc",
     "renderer_host/agent_metrics_collector.h",
-    "renderer_host/clipboard_host_impl.cc",
-    "renderer_host/clipboard_host_impl.h",
-    "renderer_host/clipboard_host_impl_mac.mm",
     "renderer_host/code_cache_host_impl.cc",
     "renderer_host/code_cache_host_impl.h",
     "renderer_host/cursor_manager.cc",
@@ -1924,6 +1923,8 @@ jumbo_source_set("browser") {
     "webui/web_ui_url_loader_factory_internal.h",
     "worker_host/dedicated_worker_host.cc",
     "worker_host/dedicated_worker_host.h",
+    "worker_host/dedicated_worker_service_impl.cc",
+    "worker_host/dedicated_worker_service_impl.h",
     "worker_host/shared_worker_connector_impl.cc",
     "worker_host/shared_worker_connector_impl.h",
     "worker_host/shared_worker_content_settings_proxy_impl.cc",
@@ -1979,10 +1980,6 @@ jumbo_source_set("browser") {
       "//services/data_decoder/public/cpp",
       "//services/data_decoder/public/mojom",
     ]
-  }
-
-  if (is_chromeos || is_android || is_chromecast || is_fuchsia) {
-    defines += [ "ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION" ]
   }
 
   if (is_chromecast && is_linux) {
@@ -2579,7 +2576,7 @@ jumbo_source_set("browser") {
       "renderer_host/delegated_frame_host.h",
     ]
     deps += [
-      "//components/viz/service",
+      "//components/viz/service/main",
       "//ui/compositor",
       "//ui/compositor/host",
     ]

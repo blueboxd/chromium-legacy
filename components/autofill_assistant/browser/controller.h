@@ -291,6 +291,9 @@ class Controller : public ScriptExecutorDelegate,
   void SetOverlayColors(std::unique_ptr<OverlayColors> colors);
   void ReportNavigationStateChanged();
 
+  // Enter step while ignoring the return value.
+  void EnterStateSilent(AutofillAssistantState state);
+
   // Clear out visible state and enter the stopped state.
   void EnterStoppedState();
 
@@ -387,6 +390,10 @@ class Controller : public ScriptExecutorDelegate,
 
   // Value for ScriptExecutorDelegate::IsNavigatingToNewDocument()
   bool navigating_to_new_document_ = false;
+
+  // If this is set, the controller was still navigating during startup. Wait
+  // for DidFinishNavigation and execute the callback.
+  base::OnceClosure start_after_navigation_;
 
   // Value for ScriptExecutorDelegate::HasNavigationError()
   bool navigation_error_ = false;

@@ -36,6 +36,12 @@ class WebTestRenderFrameObserver : public RenderFrameObserver,
   void ReplicateTestConfiguration(
       mojom::ShellTestConfigurationPtr config) override;
   void SetupSecondaryRenderer() override;
+  void Reset() override;
+  void TestFinishedInSecondaryRenderer() override;
+  void LayoutDumpCompleted(const std::string& completed_layout_dump) override;
+  void ReplyBluetoothManualChooserEvents(
+      const std::vector<std::string>& events) override;
+
   void BindReceiver(
       mojo::PendingAssociatedReceiver<mojom::WebTestControl> receiver);
 

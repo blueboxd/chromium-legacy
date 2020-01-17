@@ -18,7 +18,7 @@ login.createScreen('MarketingOptInScreen', 'marketing-opt-in', function() {
     /*
      * Executed on language change.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       $('marketing-opt-in-impl').i18nUpdateLocale();
     },
   };

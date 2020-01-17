@@ -31,23 +31,15 @@ zip("remoting_me2me_host_archive") {
   # package handling in other build/signing scripts.
   inputs = packaging_outputs
   output = "$root_build_dir/remoting-me2me-host-linux.zip"
-  deps = [
-    ":remoting_me2me_host_copy",
-  ]
+  deps = [ ":remoting_me2me_host_copy" ]
 }
 
 copy("remoting_me2me_host_copy") {
   # Copy the debian package file, which has version info in it,
   # to a consistewnt filename for use on Chromoting swarming bots.
-  sources = [
-    deb_filename,
-  ]
-  outputs = [
-    "$root_build_dir/remoting-me2me-host.deb",
-  ]
-  public_deps = [
-    ":remoting_me2me_host_deb_installer",
-  ]
+  sources = [ deb_filename ]
+  outputs = [ "$root_build_dir/remoting-me2me-host.deb" ]
+  public_deps = [ ":remoting_me2me_host_deb_installer" ]
 }
 
 action("remoting_me2me_host_deb_installer") {
@@ -65,9 +57,7 @@ action("remoting_me2me_host_deb_installer") {
     "debian/rules",
   ]
   outputs = packaging_outputs
-  sources = [
-    "build-deb.sh",
-  ]
+  sources = [ "build-deb.sh" ]
   args = [
     "-s",
     rebase_path("//", root_build_dir),

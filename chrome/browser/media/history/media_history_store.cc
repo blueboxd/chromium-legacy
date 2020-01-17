@@ -4,7 +4,16 @@
 
 #include "chrome/browser/media/history/media_history_store.h"
 
+#include "base/callback.h"
+#include "base/strings/stringprintf.h"
+#include "base/task_runner_util.h"
+#include "chrome/browser/media/history/media_history_engagement_table.h"
+#include "chrome/browser/media/history/media_history_origin_table.h"
+#include "chrome/browser/media/history/media_history_playback_table.h"
+#include "chrome/browser/media/history/media_history_session_table.h"
 #include "content/public/browser/media_player_watch_time.h"
+#include "services/media_session/public/cpp/media_position.h"
+#include "sql/statement.h"
 
 namespace {
 
@@ -50,6 +59,18 @@ class MediaHistoryStoreInternal
 
   void SavePlayback(const content::MediaPlayerWatchTime& watch_time);
 
+  mojom::MediaHistoryStatsPtr GetMediaHistoryStats();
+  int GetTableRowCount(const std::string& table_name);
+
+  void SavePlaybackSession(
+      const GURL& url,
+      const media_session::MediaMetadata& metadata,
+      const base::Optional<media_session::MediaPosition>& position);
+
+  base::Optional<MediaHistoryStore::MediaPlaybackSessionList>
+  GetPlaybackSessions(unsigned int num_sessions,
+                      MediaHistoryStore::GetPlaybackSessionsFilter filter);
+
   scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
   base::FilePath db_path_;
   std::unique_ptr<sql::Database> db_;
@@ -57,6 +78,7 @@ class MediaHistoryStoreInternal
   scoped_refptr<MediaHistoryEngagementTable> engagement_table_;
   scoped_refptr<MediaHistoryOriginTable> origin_table_;
   scoped_refptr<MediaHistoryPlaybackTable> playback_table_;
+  scoped_refptr<MediaHistorySessionTable> session_table_;
   bool initialization_successful_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaHistoryStoreInternal);
@@ -70,12 +92,14 @@ MediaHistoryStoreInternal::MediaHistoryStoreInternal(
       engagement_table_(new MediaHistoryEngagementTable(db_task_runner_)),
       origin_table_(new MediaHistoryOriginTable(db_task_runner_)),
       playback_table_(new MediaHistoryPlaybackTable(db_task_runner_)),
+      session_table_(new MediaHistorySessionTable(db_task_runner_)),
       initialization_successful_(false) {}
 
 MediaHistoryStoreInternal::~MediaHistoryStoreInternal() {
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(engagement_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(origin_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(playback_table_));
+  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(session_table_));
   db_task_runner_->DeleteSoon(FROM_HERE, std::move(db_));
 }
 
@@ -153,6 +177,8 @@ sql::InitStatus MediaHistoryStoreInternal::InitializeTables() {
     status = origin_table_->Initialize(db_.get());
   if (status == sql::INIT_OK)
     status = playback_table_->Initialize(db_.get());
+  if (status == sql::INIT_OK)
+    status = session_table_->Initialize(db_.get());
 
   return status;
 }
@@ -163,6 +189,76 @@ bool MediaHistoryStoreInternal::CreateOriginId(const std::string& origin) {
     return false;
 
   return origin_table_->CreateOriginId(origin);
+}
+
+mojom::MediaHistoryStatsPtr MediaHistoryStoreInternal::GetMediaHistoryStats() {
+  mojom::MediaHistoryStatsPtr stats(mojom::MediaHistoryStats::New());
+
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return stats;
+
+  sql::Statement statement(DB()->GetUniqueStatement(
+      "SELECT name FROM sqlite_master WHERE type='table' "
+      "AND name NOT LIKE 'sqlite_%';"));
+
+  std::vector<std::string> table_names;
+  while (statement.Step()) {
+    auto table_name = statement.ColumnString(0);
+    stats->table_row_counts.emplace(table_name, GetTableRowCount(table_name));
+  }
+
+  DCHECK(statement.Succeeded());
+  return stats;
+}
+
+int MediaHistoryStoreInternal::GetTableRowCount(const std::string& table_name) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return -1;
+
+  sql::Statement statement(DB()->GetUniqueStatement(
+      base::StringPrintf("SELECT count(*) from %s", table_name.c_str())
+          .c_str()));
+
+  while (statement.Step()) {
+    return statement.ColumnInt(0);
+  }
+
+  return -1;
+}
+
+void MediaHistoryStoreInternal::SavePlaybackSession(
+    const GURL& url,
+    const media_session::MediaMetadata& metadata,
+    const base::Optional<media_session::MediaPosition>& position) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return;
+
+  if (!DB()->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  auto origin = url::Origin::Create(url);
+  if (CreateOriginId(origin.Serialize()) &&
+      session_table_->SavePlaybackSession(url, origin, metadata, position)) {
+    DB()->CommitTransaction();
+  } else {
+    DB()->RollbackTransaction();
+  }
+}
+
+base::Optional<MediaHistoryStore::MediaPlaybackSessionList>
+MediaHistoryStoreInternal::GetPlaybackSessions(
+    unsigned int num_sessions,
+    MediaHistoryStore::GetPlaybackSessionsFilter filter) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!initialization_successful_)
+    return base::nullopt;
+
+  return session_table_->GetPlaybackSessions(num_sessions, std::move(filter));
 }
 
 MediaHistoryStore::MediaHistoryStore(
@@ -183,6 +279,45 @@ void MediaHistoryStore::SavePlayback(
   db_->db_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&MediaHistoryStoreInternal::SavePlayback, db_,
                                 watch_time));
+}
+
+void MediaHistoryStore::GetMediaHistoryStats(
+    base::OnceCallback<void(mojom::MediaHistoryStatsPtr)> callback) {
+  if (!db_->initialization_successful_)
+    return std::move(callback).Run(mojom::MediaHistoryStats::New());
+
+  base::PostTaskAndReplyWithResult(
+      db_->db_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&MediaHistoryStoreInternal::GetMediaHistoryStats, db_),
+      std::move(callback));
+}
+
+void MediaHistoryStore::SavePlaybackSession(
+    const GURL& url,
+    const media_session::MediaMetadata& metadata,
+    const base::Optional<media_session::MediaPosition>& position) {
+  if (!db_->initialization_successful_)
+    return;
+
+  db_->db_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&MediaHistoryStoreInternal::SavePlaybackSession,
+                                db_, url, metadata, position));
+}
+
+void MediaHistoryStore::GetPlaybackSessions(
+    unsigned int num_sessions,
+    GetPlaybackSessionsFilter filter,
+    GetPlaybackSessionsCallback callback) {
+  if (!db_->initialization_successful_) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      db_->db_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&MediaHistoryStoreInternal::GetPlaybackSessions, db_,
+                     num_sessions, std::move(filter)),
+      std::move(callback));
 }
 
 }  // namespace media_history

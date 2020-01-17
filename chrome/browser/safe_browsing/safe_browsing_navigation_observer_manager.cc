@@ -17,12 +17,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/utils.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -405,7 +405,7 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByWebContents(
   if (!last_committed_url.is_valid())
     return INVALID_URL;
   bool has_user_gesture = HasUserGesture(web_contents);
-  SessionID tab_id = SessionTabHelper::IdForTab(web_contents);
+  SessionID tab_id = sessions::SessionTabHelper::IdForTab(web_contents);
   return IdentifyReferrerChainByHostingPage(
       ClearURLRef(last_committed_url), GURL(), tab_id, has_user_gesture,
       user_gesture_count_limit, out_referrer_chain);
@@ -478,12 +478,14 @@ void SafeBrowsingNavigationObserverManager::RecordNewWebContents(
     nav_event->source_url = SafeBrowsingNavigationObserverManager::ClearURLRef(
         rfh->GetLastCommittedURL());
   }
-  nav_event->source_tab_id = SessionTabHelper::IdForTab(source_web_contents);
+  nav_event->source_tab_id =
+      sessions::SessionTabHelper::IdForTab(source_web_contents);
   nav_event->source_main_frame_url =
       SafeBrowsingNavigationObserverManager::ClearURLRef(
           source_web_contents->GetLastCommittedURL());
   nav_event->original_request_url = cleaned_target_url;
-  nav_event->target_tab_id = SessionTabHelper::IdForTab(target_web_contents);
+  nav_event->target_tab_id =
+      sessions::SessionTabHelper::IdForTab(target_web_contents);
   nav_event->frame_id = rfh ? rfh->GetFrameTreeNodeId() : -1;
   nav_event->maybe_launched_by_external_application =
       ui::PageTransitionCoreTypeIs(page_transition,

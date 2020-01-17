@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observation.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
@@ -23,6 +22,7 @@ class Document;
 class Element;
 class ExceptionState;
 class IntersectionObserverDelegate;
+class IntersectionObserverEntry;
 class IntersectionObserverInit;
 class ScriptState;
 class V8IntersectionObserverCallback;
@@ -149,6 +149,8 @@ class CORE_EXPORT IntersectionObserver final
   // Returns false if this observer has an explicit root element which has been
   // deleted; true otherwise.
   bool RootIsValid() const;
+  bool CanUseCachedRects() const { return can_use_cached_rects_; }
+  void InvalidateCachedRects() { can_use_cached_rects_ = 0; }
 
   // ScriptWrappable override:
   bool HasPendingActivity() const override;
@@ -173,6 +175,7 @@ class CORE_EXPORT IntersectionObserver final
   unsigned track_fraction_of_root_ : 1;
   unsigned always_report_root_bounds_ : 1;
   unsigned needs_delivery_ : 1;
+  unsigned can_use_cached_rects_ : 1;
 };
 
 }  // namespace blink

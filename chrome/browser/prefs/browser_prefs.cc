@@ -516,6 +516,11 @@ const char kDisplayRotationAcceleratorDialogHasBeenAccepted[] =
 const char kBlacklistedCredentialsNormalized[] =
     "profile.blacklisted_credentials_normalized";
 
+// Deprecated 1/2020
+#if defined(OS_MACOSX)
+const char kKeyCreated[] = "os_crypt.key_created";
+#endif  // defined(OS_MACOSX)
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -737,9 +742,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   QuitWithAppsController::RegisterPrefs(registry);
   system_media_permissions::RegisterSystemMediaPermissionStatesPrefs(registry);
   AppShimRegistry::Get()->RegisterLocalPrefs(registry);
+  registry->RegisterBooleanPref(kKeyCreated, false);
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN)
   OSCrypt::RegisterLocalPrefs(registry);
 #endif
 
@@ -1076,6 +1082,14 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
   local_state->ClearPref(kLastStartupTimestamp);
   local_state->ClearPref(kLastStartupVersion);
   local_state->ClearPref(kSameVersionStartupCount);
+
+  // Added 1/2019
+  local_state->ClearPref(kLastStartupTimestamp);
+
+  // Added 1/2020
+#if defined(OS_MACOSX)
+  local_state->ClearPref(kKeyCreated);
+#endif  // defined(OS_MACOSX)
 }
 
 // This method should be periodically pruned of year+ old migrations.

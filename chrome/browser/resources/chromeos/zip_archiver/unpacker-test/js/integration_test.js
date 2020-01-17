@@ -23,31 +23,31 @@ var unloadExtension = function() {
 var zipList = [
   {
     name: 'small_zip.zip',
-    afterOnLaunchTests: function() {
+    afterOnLaunchTests() {
       smallArchiveCheck('small_zip.zip', SMALL_ZIP_METADATA, false, null);
     },
-    afterSuspendTests: function() {
+    afterSuspendTests() {
       smallArchiveCheck('small_zip.zip', SMALL_ZIP_METADATA, true, null);
       smallArchiveCheckAfterSuspend('small_zip.zip');
     },
-    afterRestartTests: function() {
+    afterRestartTests() {
       smallArchiveCheckAfterRestart('small_zip.zip');
       smallArchiveCheck('small_zip.zip', SMALL_ZIP_METADATA, true, null);
     }
   },
   {
     name: 'encrypted.zip',
-    afterOnLaunchTests: function() {
+    afterOnLaunchTests() {
       // TODO(mtomasz): Add tests for clicking the Cancel button in the
       // passphrase dialog.
       smallArchiveCheck(
           'encrypted.zip', SMALL_ZIP_METADATA, false, ENCRYPTED_ZIP_PASSPHRASE);
     },
-    afterSuspendTests: function() {
+    afterSuspendTests() {
       smallArchiveCheck('encrypted.zip', SMALL_ZIP_METADATA, true, null);
       smallArchiveCheckAfterSuspend('encrypted.zip');
     },
-    afterRestartTests: function() {
+    afterRestartTests() {
       smallArchiveCheckAfterRestart('encrypted.zip');
       smallArchiveCheck('encrypted.zip', SMALL_ZIP_METADATA, true, null);
     }

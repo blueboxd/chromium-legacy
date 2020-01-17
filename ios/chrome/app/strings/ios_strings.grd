@@ -1372,6 +1372,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_RECENT_TABS_RECENTLY_CLOSED" desc="The heading of the recently closed section in the recent tab panel. [Length: 35em] [iOS only]">
         Recently Closed
       </message>
+      <message name="IDS_IOS_RESET_ZOOM" desc="Label for a button to reset the text zoom level to the default state." meaning="Reset text zoom level to the default state">
+        Reset
+      </message>
       <message name="IDS_IOS_SAFE_MODE_AW_SNAP" desc="The title of the safe mode UI after multiple crashes.  This is intended to be a humorous exclamation of dismay. [Length: 30em]">
         Aw, Snap!
       </message>

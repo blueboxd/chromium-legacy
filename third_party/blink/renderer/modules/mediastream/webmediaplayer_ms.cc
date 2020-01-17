@@ -348,6 +348,14 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
       compositor_task_runner_, io_task_runner_, web_stream_,
       std::move(submitter_), surface_layer_mode_, weak_this_);
 
+  // We can receive a call to RequestAnimationFrame() before |compositor_| is
+  // created. In that case, we suspend the request, and wait until now to
+  // reiniate it.
+  if (pending_raf_request_) {
+    RequestAnimationFrame();
+    pending_raf_request_ = false;
+  }
+
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
   std::string stream_id =
@@ -731,7 +739,7 @@ WebSize WebMediaPlayerMS::NaturalSize() const {
 
 WebSize WebMediaPlayerMS::VisibleRect() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame = GetCurrentFrame();
   if (!video_frame)
     return WebSize();
 
@@ -756,6 +764,11 @@ bool WebMediaPlayerMS::Seeking() const {
 double WebMediaPlayerMS::Duration() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return std::numeric_limits<double>::infinity();
+}
+
+scoped_refptr<media::VideoFrame> WebMediaPlayerMS::GetCurrentFrame() const {
+  return current_frame_override_ ? current_frame_override_
+                                 : compositor_->GetCurrentFrame();
 }
 
 double WebMediaPlayerMS::CurrentTime() const {
@@ -812,7 +825,7 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const scoped_refptr<media::VideoFrame> frame = compositor_->GetCurrentFrame();
+  const scoped_refptr<media::VideoFrame> frame = GetCurrentFrame();
 
   viz::ContextProvider* provider = nullptr;
   if (frame && frame->HasTextures()) {
@@ -980,7 +993,7 @@ bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
   TRACE_EVENT0("media", "copyVideoTextureToPlatformTexture");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame = GetCurrentFrame();
 
   if (!video_frame.get() || !video_frame->HasTextures())
     return false;
@@ -1010,7 +1023,7 @@ bool WebMediaPlayerMS::CopyVideoYUVDataToPlatformTexture(
   TRACE_EVENT0("media", "copyVideoYUVDataToPlatformTexture");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame = GetCurrentFrame();
 
   if (!video_frame)
     return false;
@@ -1043,8 +1056,7 @@ bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,
   TRACE_EVENT0("media", "texImageImpl");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const scoped_refptr<media::VideoFrame> video_frame =
-      compositor_->GetCurrentFrame();
+  const scoped_refptr<media::VideoFrame> video_frame = GetCurrentFrame();
   if (!video_frame || !video_frame->IsMappable() ||
       video_frame->HasTextures() ||
       video_frame->format() != media::PIXEL_FORMAT_Y16) {
@@ -1215,6 +1227,46 @@ void WebMediaPlayerMS::OnDisplayTypeChanged(
           &WebMediaPlayerMSCompositor::SetForceSubmit,
           CrossThreadUnretained(compositor_.get()),
           display_type == WebMediaPlayer::DisplayType::kPictureInPicture));
+}
+
+void WebMediaPlayerMS::OnNewFramePresentedCallback(
+    scoped_refptr<media::VideoFrame> presented_frame,
+    base::TimeTicks presentation_time,
+    base::TimeTicks expected_presentation_time,
+    uint32_t presentation_counter) {
+  if (!main_render_task_runner_->BelongsToCurrentThread()) {
+    PostCrossThreadTask(
+        *main_render_task_runner_, FROM_HERE,
+        CrossThreadBindOnce(&WebMediaPlayerMS::OnNewFramePresentedCallback,
+                            weak_this_, presented_frame, presentation_time,
+                            expected_presentation_time, presentation_counter));
+    return;
+  }
+
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  current_frame_override_ = std::move(presented_frame);
+  client_->OnRequestAnimationFrame(
+      presentation_time, expected_presentation_time, presentation_counter,
+      *current_frame_override_);
+  current_frame_override_.reset();
+}
+
+void WebMediaPlayerMS::RequestAnimationFrame() {
+  DCHECK(RuntimeEnabledFeatures::VideoRequestAnimationFrameEnabled());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (!compositor_) {
+    // Reissue the request after |compositor_| is created, in Load().
+    pending_raf_request_ = true;
+    return;
+  }
+
+  PostCrossThreadTask(
+      *compositor_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(
+          &WebMediaPlayerMSCompositor::SetOnFramePresentedCallback, compositor_,
+          CrossThreadBindOnce(&WebMediaPlayerMS::OnNewFramePresentedCallback,
+                              weak_this_)));
 }
 
 }  // namespace blink

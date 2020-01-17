@@ -379,10 +379,11 @@ void PasswordStore::AddCompromisedCredentials(
 
 void PasswordStore::RemoveCompromisedCredentials(
     const GURL& url,
-    const base::string16& username) {
+    const base::string16& username,
+    RemoveCompromisedCredentialsReason reason) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(&PasswordStore::RemoveCompromisedCredentialsImpl,
-                              this, url, username));
+                              this, url, username, reason));
 }
 
 void PasswordStore::GetAllCompromisedCredentials(

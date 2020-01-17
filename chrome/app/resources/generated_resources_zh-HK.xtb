@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">裝置註冊的網域中沒有這個使用者帳戶。如果您要使用其他網域進行註冊，必須先完成裝置修復操作。</translation>
 <translation id="1274977772557788323">Adobe Flash Player 儲存設定</translation>
 <translation id="1274997165432133392">Cookie 和其他網站數據</translation>
-<translation id="127668050356036882">關閉所有視窗</translation>
 <translation id="1280820357415527819">正在搜尋流動網絡</translation>
 <translation id="1282420830958964167">您使用「<ph name="APP_NAME" />」的時間已達家長設定的限制，明天可以使用 <ph name="TIME_LIMIT" />。</translation>
 <translation id="1285320974508926690">永不翻譯此網站</translation>
@@ -518,7 +517,6 @@
 <translation id="1712552549805331520"><ph name="URL" /> 要求在您的本機電腦上永久儲存數據</translation>
 <translation id="1714644264617423774">啟用無障礙功能，讓您使用裝置更輕鬆。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">動作感應器</translation>
-<translation id="171824261579749339">澳洲 <ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">過去一小時</translation>
 <translation id="1719312230114180055">請注意：相比安全性較強的密碼或 PIN，指紋識別的安全性較低。</translation>
 <translation id="1720318856472900922">TLS WWW 伺服器驗證</translation>
@@ -729,7 +727,6 @@
 <translation id="2006638907958895361">在 <ph name="APP" />中開啟連結</translation>
 <translation id="2007404777272201486">報告問題…</translation>
 <translation id="2010501376126504057">兼容裝置</translation>
-<translation id="2016430552235416146">傳統</translation>
 <translation id="2017334798163366053">停用效能數據收集</translation>
 <translation id="2017836877785168846">清除網址列中的記錄和自動完成資料。</translation>
 <translation id="2018352199541442911">很抱歉，系統目前不支援您的外部儲存裝置。</translation>
@@ -770,7 +767,6 @@
 <translation id="2076672359661571384">中 (建議)</translation>
 <translation id="2077129598763517140">在可用時使用硬件加速</translation>
 <translation id="2078019350989722914">結束前顯示警告訊息 (<ph name="KEY_EQUIVALENT" />)</translation>
-<translation id="2078494137444990774">關閉</translation>
 <translation id="2079053412993822885">如果您刪除了擁有的憑證之一，您將無法透過該憑證識別身分。</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="2080070583977670716">顯示更多設定</translation>
@@ -1208,7 +1204,6 @@
 <translation id="2665647207431876759">已過期</translation>
 <translation id="2665717534925640469">這個網頁已顯示為全螢幕，並停用了滑鼠游標。</translation>
 <translation id="2665919335226618153">糟糕！格式化過程中發生錯誤。</translation>
-<translation id="2666990579225592931">開啟訪客視窗</translation>
 <translation id="2667463864537187133">管理拼字檢查</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> 正在共用 Chrome 分頁。</translation>
 <translation id="2670429602441959756">此網頁包含尚未支援 VR 模式的功能。即將退出…</translation>
@@ -2404,7 +2399,6 @@
 <translation id="4364327530094270451">蜜瓜</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> 正在共用視窗。</translation>
 <translation id="4364830672918311045">顯示通知</translation>
-<translation id="436499142539576997">無法取得應用程式資料，但系統仍在嘗試執行應用程式…</translation>
 <translation id="4370975561335139969">您所輸入的電郵與密碼不符</translation>
 <translation id="437184764829821926">進階字型設定</translation>
 <translation id="4374831787438678295">Linux 安裝程式</translation>
@@ -3431,7 +3425,6 @@
 <translation id="5867841422488265304">搜尋或輸入網址</translation>
 <translation id="5869029295770560994">好，我知道了</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
-<translation id="5869948122057593679">關閉所有視窗</translation>
 <translation id="5870086504539785141">關閉協助工具選單</translation>
 <translation id="5870155679953074650">嚴重錯誤</translation>
 <translation id="5876851302954717356">在右側新增分頁</translation>
@@ -4480,7 +4473,6 @@
 <translation id="7385854874724088939">準備列印時出現錯誤，請檢查您的打印機，然後再試一次。</translation>
 <translation id="7385896526023870365">此擴充程式沒有其他網站存取權。</translation>
 <translation id="7388044238629873883">就快完成了！</translation>
-<translation id="7388222713940428051">開啟訪客視窗</translation>
 <translation id="7392118418926456391">病毒掃描失敗</translation>
 <translation id="7392915005464253525">重新開啟已關閉視窗(&amp;E)</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> 會隨著系統一併啟動，即使在所有 <ph name="PRODUCT_NAME" /> 視窗都關閉後，仍會在背景繼續執行。</translation>
@@ -4745,7 +4737,6 @@
 <translation id="7784067724422331729">您的電腦安全性設定封鎖了這個檔案。</translation>
 <translation id="7784796923038949829">無法讀取或變更網站資料</translation>
 <translation id="778480864305029524">如要使用即時網絡共享功能，請開啟「Google Play 服務」的通知功能。</translation>
-<translation id="7786207843293321886">結束訪客工作階段</translation>
 <translation id="7786889348652477777">重新載入應用程式(&amp;R)</translation>
 <translation id="7787308148023287649">在另一個螢幕上顯示</translation>
 <translation id="7788298548579301890">電腦中的其他程式新增了一個應用程式，可能會變更 Chrome 的運作方式。
@@ -4859,7 +4850,6 @@
 <translation id="7908378463497120834">很抱歉，您的外部儲存裝置上至少有一個分區無法掛載。</translation>
 <translation id="7909969815743704077">已透過無痕模式下載</translation>
 <translation id="7910768399700579500">新增資料夾(&amp;N)</translation>
-<translation id="7910831464510799808">開啟</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">您已在伺服器上變更密碼。請先登出，然後重新登入。</translation>
 <translation id="7915457674565721553">連線至互聯網即可設定家長監控設定</translation>

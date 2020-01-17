@@ -118,15 +118,11 @@ static_library("test_support") {
   ]
 
   if (is_chromeos && use_dbus) {
-    deps = [
-      "//services/device/public/mojom",
-    ]
+    deps = [ "//services/device/public/mojom" ]
   }
 
   if (is_win) {
-    deps = [
-      "//testing/gtest",
-    ]
+    deps = [ "//testing/gtest" ]
   }
 }
 

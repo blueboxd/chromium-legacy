@@ -32,7 +32,7 @@ bool ShouldCheckPolicy(const ContentSecurityPolicy& policy,
 CSPContext::CSPContext() {}
 CSPContext::~CSPContext() {}
 
-bool CSPContext::IsAllowedByCsp(CSPDirective::Name directive_name,
+bool CSPContext::IsAllowedByCsp(network::mojom::CSPDirectiveName directive_name,
                                 const GURL& url,
                                 bool has_followed_redirect,
                                 bool is_response_check,
@@ -108,7 +108,7 @@ bool CSPContext::SchemeShouldBypassCSP(const base::StringPiece& scheme) {
 
 void CSPContext::SanitizeDataForUseInCspViolation(
     bool has_followed_redirect,
-    CSPDirective::Name directive,
+    network::mojom::CSPDirectiveName directive,
     GURL* blocked_url,
     SourceLocation* source_location) const {
   return;

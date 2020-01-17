@@ -240,10 +240,14 @@ TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged) {
   Node* text = GetDocument().body()->firstChild()->firstChild();
   MarkerController().AddCompositionMarker(
       EphemeralRange(Position(text, 0), Position(text, 1)), Color::kTransparent,
-      ui::mojom::ImeTextSpanThickness::kThin, Color::kBlack);
+      ui::mojom::ImeTextSpanThickness::kThin,
+      ui::mojom::ImeTextSpanUnderlineStyle::kSolid, Color::kBlack,
+      Color::kBlack);
   MarkerController().AddCompositionMarker(
       EphemeralRange(Position(text, 1), Position(text, 3)), Color::kTransparent,
-      ui::mojom::ImeTextSpanThickness::kThick, Color::kBlack);
+      ui::mojom::ImeTextSpanThickness::kThick,
+      ui::mojom::ImeTextSpanUnderlineStyle::kSolid, Color::kBlack,
+      Color::kBlack);
 
   EXPECT_EQ(2u, MarkerController().Markers().size());
 }

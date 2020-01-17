@@ -28,10 +28,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -54,6 +53,7 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
@@ -144,7 +144,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         private void record(int numOfThumbnails) {
             assert numOfThumbnails >= 0;
             long elasped = SystemClock.elapsedRealtime() - mActivityCreationTimeMs;
-            PostTask.postTask(TaskTraits.CURRENT_THREAD_BEST_EFFORT,
+            PostTask.postTask(UiThreadTaskTraits.BEST_EFFORT,
                     ()
                             -> ReturnToChromeExperimentsUtil.recordTimeToGTSFirstMeaningfulPaint(
                                     elasped, numOfThumbnails));

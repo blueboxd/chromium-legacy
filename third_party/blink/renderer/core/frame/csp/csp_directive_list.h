@@ -34,21 +34,23 @@ class CORE_EXPORT CSPDirectiveList final
   static CSPDirectiveList* Create(ContentSecurityPolicy*,
                                   const UChar* begin,
                                   const UChar* end,
-                                  ContentSecurityPolicyHeaderType,
-                                  ContentSecurityPolicyHeaderSource,
+                                  network::mojom::ContentSecurityPolicyType,
+                                  network::mojom::ContentSecurityPolicySource,
                                   bool should_parse_wasm_eval = false);
 
   CSPDirectiveList(ContentSecurityPolicy*,
-                   ContentSecurityPolicyHeaderType,
-                   ContentSecurityPolicyHeaderSource);
+                   network::mojom::ContentSecurityPolicyType,
+                   network::mojom::ContentSecurityPolicySource);
 
   void Parse(const UChar* begin,
              const UChar* end,
              bool should_parse_wasm_eval = false);
 
   const String& Header() const { return header_; }
-  ContentSecurityPolicyHeaderType HeaderType() const { return header_type_; }
-  ContentSecurityPolicyHeaderSource HeaderSource() const {
+  network::mojom::ContentSecurityPolicyType HeaderType() const {
+    return header_type_;
+  }
+  network::mojom::ContentSecurityPolicySource HeaderSource() const {
     return header_source_;
   }
 
@@ -122,7 +124,7 @@ class CORE_EXPORT CSPDirectiveList final
     return eval_disabled_error_message_;
   }
   bool IsReportOnly() const {
-    return header_type_ == kContentSecurityPolicyHeaderTypeReport;
+    return header_type_ == network::mojom::ContentSecurityPolicyType::kReport;
   }
   bool IsActiveForConnections() const {
     return OperativeDirective(
@@ -299,8 +301,8 @@ class CORE_EXPORT CSPDirectiveList final
   Member<ContentSecurityPolicy> policy_;
 
   String header_;
-  ContentSecurityPolicyHeaderType header_type_;
-  ContentSecurityPolicyHeaderSource header_source_;
+  network::mojom::ContentSecurityPolicyType header_type_;
+  network::mojom::ContentSecurityPolicySource header_source_;
 
   bool has_sandbox_policy_;
 

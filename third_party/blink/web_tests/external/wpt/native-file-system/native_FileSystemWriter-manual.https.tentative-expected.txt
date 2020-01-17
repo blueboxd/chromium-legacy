@@ -1,0 +1,29 @@
+This is a testharness.js-based test.
+PASS User succesfully selected an empty directory.
+PASS User granted write access.
+PASS write() with an empty blob to an empty file
+PASS write() a blob to an empty file
+PASS write() called with a blob and a valid offset
+FAIL write() called with an invalid offset assert_unreached: Should have rejected: undefined Reached unreachable code
+PASS write() with an empty string to an empty file
+PASS write() with a valid utf-8 string
+PASS write() with a string with unix line ending preserved
+PASS write() with a string with windows line ending preserved
+PASS write() with an empty array buffer to an empty file
+PASS write() with a valid typed array buffer
+PASS truncate() to shrink a file
+PASS truncate() to grow a file
+PASS createWriter() fails when parent directory is removed
+PASS write() fails when parent directory is removed
+PASS truncate() fails when parent directory is removed
+PASS atomic writes: close() fails when parent directory is removed
+PASS atomic writes: writers make atomic changes on close
+PASS atomic writes: write() after close() fails
+PASS atomic writes: truncate() after close() fails
+PASS atomic writes: close() after close() fails
+PASS atomic writes: only one close() operation may succeed
+PASS createWriter({keepExistingData: true}): atomic writer initialized with source contents
+PASS createWriter({keepExistingData: false}): atomic writer initialized with empty file
+PASS atomic writes: writer persists file on close, even if file is removed
+Harness: the test ran to completion.
+

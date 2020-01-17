@@ -90,7 +90,7 @@ Polymer({
 
   },
 
-  focus: function() {
+  focus() {
     /* When Network Selection Dialog is shown because user pressed "Back"
        button on EULA screen, display_manager does not inform this dialog that
        it is shown. It ouly focuses this dialog.
@@ -100,7 +100,7 @@ Polymer({
     this.show();
   },
 
-  onBeforeShow: function() {
+  onBeforeShow() {
     var isOobe = window.hasOwnProperty('Oobe') &&
         window.hasOwnProperty('DISPLAY_TYPE') && Oobe.getInstance() &&
         Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE;
@@ -111,7 +111,7 @@ Polymer({
   /**
    * Scroll to the bottom of footer container.
    */
-  scrollToBottom: function() {
+  scrollToBottom() {
     var el = this.$$('#top-scroll-container');
     el.scrollTop = el.scrollHeight;
   },
@@ -120,14 +120,14 @@ Polymer({
   /**
    * Updates the scroll behaviour.
    */
-  updateScroll: function() {
+  updateScroll() {
     this.requestUpdateScroll();
   },
 
   /**
    * This is called from oobe_welcome when this dialog is shown.
    */
-  show: function() {
+  show() {
     var focusedElements = this.getElementsByClassName('focus-on-show');
     var focused = false;
     for (var i = 0; i < focusedElements.length; ++i) {
@@ -146,7 +146,7 @@ Polymer({
   },
 
   /** @private */
-  onfullScreenDialogChanged_: function() {
+  onfullScreenDialogChanged_() {
     if (this.fullScreenDialog)
       document.documentElement.setAttribute('full-screen-dialog', true);
   },

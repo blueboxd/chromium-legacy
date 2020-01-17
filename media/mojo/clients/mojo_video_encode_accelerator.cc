@@ -92,7 +92,7 @@ void VideoEncodeAcceleratorClient::NotifyEncoderInfoChange(
 
 MojoVideoEncodeAccelerator::MojoVideoEncodeAccelerator(
     mojo::PendingRemote<mojom::VideoEncodeAccelerator> vea,
-    const gpu::VideoEncodeAcceleratorSupportedProfiles& supported_profiles)
+    const SupportedProfiles& supported_profiles)
     : vea_(std::move(vea)), supported_profiles_(supported_profiles) {
   DVLOG(1) << __func__;
   DCHECK(vea_);
@@ -103,8 +103,7 @@ MojoVideoEncodeAccelerator::GetSupportedProfiles() {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  return GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
-      supported_profiles_);
+  return supported_profiles_;
 }
 
 bool MojoVideoEncodeAccelerator::Initialize(const Config& config,

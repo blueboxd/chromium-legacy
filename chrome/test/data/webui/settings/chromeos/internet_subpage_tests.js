@@ -56,7 +56,7 @@ suite('InternetSubpage', function() {
   teardown(function() {
     internetSubpage.remove();
     internetSubpage = null;
-    settings.resetRouteForTesting();
+    settings.Router.getInstance().resetRouteForTesting();
   });
 
   suite('SubPage', function() {

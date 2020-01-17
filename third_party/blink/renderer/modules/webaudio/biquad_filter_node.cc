@@ -122,20 +122,23 @@ BiquadFilterNode::BiquadFilterNode(BaseAudioContext& context)
                             1.0,
                             AudioParamHandler::AutomationRate::kAudio,
                             AudioParamHandler::AutomationRateMode::kVariable)),
-      gain_(
+      gain_(AudioParam::Create(context,
+                               Uuid(),
+                               AudioParamHandler::kParamTypeBiquadFilterGain,
+                               0.0,
+                               AudioParamHandler::AutomationRate::kAudio,
+                               AudioParamHandler::AutomationRateMode::kVariable,
+                               std::numeric_limits<float>::lowest(),
+                               40 * log10f(std::numeric_limits<float>::max()))),
+      detune_(
           AudioParam::Create(context,
                              Uuid(),
-                             AudioParamHandler::kParamTypeBiquadFilterGain,
+                             AudioParamHandler::kParamTypeBiquadFilterDetune,
                              0.0,
                              AudioParamHandler::AutomationRate::kAudio,
-                             AudioParamHandler::AutomationRateMode::kVariable)),
-      detune_(AudioParam::Create(
-          context,
-          Uuid(),
-          AudioParamHandler::kParamTypeBiquadFilterDetune,
-          0.0,
-          AudioParamHandler::AutomationRate::kAudio,
-          AudioParamHandler::AutomationRateMode::kVariable)) {
+                             AudioParamHandler::AutomationRateMode::kVariable,
+                             -1200 * log2f(std::numeric_limits<float>::max()),
+                             1200 * log2f(std::numeric_limits<float>::max()))) {
   SetHandler(BiquadFilterHandler::Create(*this, context.sampleRate(),
                                          frequency_->Handler(), q_->Handler(),
                                          gain_->Handler(), detune_->Handler()));

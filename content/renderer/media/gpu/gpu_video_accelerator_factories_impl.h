@@ -113,7 +113,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 
-  std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+  media::VideoEncodeAccelerator::SupportedProfiles
   GetVideoEncodeAcceleratorSupportedProfiles() override;
 
   scoped_refptr<viz::ContextProvider> GetMediaContextProvider() override;
@@ -192,6 +192,9 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // are no supported configs.
   base::Optional<media::SupportedVideoDecoderConfigMap>
       supported_decoder_configs_ GUARDED_BY(supported_decoder_configs_lock_);
+
+  const media::VideoEncodeAccelerator::SupportedProfiles
+      supported_vea_profiles_;
 
   // For sending requests to allocate shared memory in the Browser process.
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

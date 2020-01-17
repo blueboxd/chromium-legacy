@@ -20,7 +20,7 @@ login.createScreen('AppDownloadingScreen', 'app-downloading', function() {
     /*
      * Executed on language change.
      */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       $('app-downloading-screen').i18nUpdateLocale();
     },
 
@@ -29,7 +29,7 @@ login.createScreen('AppDownloadingScreen', 'app-downloading', function() {
      * screen title.
      * @param numOfApps Number of apps selected by the user.
      */
-    updateNumberOfSelectedApps: function(numOfApps) {
+    updateNumberOfSelectedApps(numOfApps) {
       $('app-downloading-screen').numOfApps = numOfApps;
     },
   };

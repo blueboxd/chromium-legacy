@@ -39,9 +39,7 @@ void NavigationInitiatorImpl::SendViolationReport(
           violation_params->effective_directive),
       violation_params->console_message, KURL(violation_params->blocked_url),
       report_endpoints, violation_params->use_reporting_api,
-      violation_params->header,
-      static_cast<ContentSecurityPolicyHeaderType>(
-          violation_params->disposition),
+      violation_params->header, violation_params->disposition,
       ContentSecurityPolicy::ViolationType::kURLViolation,
       std::move(source_location), nullptr /* LocalFrame */,
       violation_params->after_redirect ? RedirectStatus::kFollowedRedirect

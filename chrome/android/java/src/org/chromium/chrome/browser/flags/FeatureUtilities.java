@@ -22,12 +22,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.HashMap;
@@ -63,6 +63,7 @@ public class FeatureUtilities {
     private static Map<String, Boolean> sFlags = new HashMap<>();
     private static Boolean sHasRecognitionIntentHandler;
     private static String sReachedCodeProfilerTrialGroup;
+    private static Boolean sEnabledTabThumbnailApsectRatioForTesting;
 
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
@@ -81,30 +82,6 @@ public class FeatureUtilities {
         }
 
         return sHasRecognitionIntentHandler;
-    }
-
-    /**
-     * Records the current custom tab visibility state with native-side feature utilities.
-     * @param visible Whether a custom tab is visible.
-     */
-    public static void setCustomTabVisible(boolean visible) {
-        FeatureUtilitiesJni.get().setCustomTabVisible(visible);
-    }
-
-    /**
-     * Records whether the activity is in multi-window mode with native-side feature utilities.
-     * @param isInMultiWindowMode Whether the activity is in Android N multi-window mode.
-     */
-    public static void setIsInMultiWindowMode(boolean isInMultiWindowMode) {
-        FeatureUtilitiesJni.get().setIsInMultiWindowMode(isInMultiWindowMode);
-    }
-
-    /**
-     * Records the type of the currently visible Activity for metrics.
-     * @param activityType The type of the Activity.
-     */
-    public static void setActivityType(@ActivityType int activityType) {
-        FeatureUtilitiesJni.get().setActivityType(activityType);
     }
 
     /**
@@ -219,6 +196,16 @@ public class FeatureUtilities {
     public static void cacheBottomToolbarEnabled() {
         cacheFlag(ChromePreferenceKeys.FLAGS_CACHED_BOTTOM_TOOLBAR_ENABLED,
                 ChromeFeatureList.CHROME_DUET);
+        cacheBottomToolbarVariation();
+    }
+
+    /**
+     * Cache the enabled bottom toolbar variation.
+     */
+    public static void cacheBottomToolbarVariation() {
+        cacheVariation(ChromePreferenceKeys.VARIATION_CACHED_BOTTOM_TOOLBAR,
+                ChromeFeatureList.CHROME_DUET,
+                BottomToolbarVariationManager.getVariationParamName());
     }
 
     /**
@@ -262,6 +249,15 @@ public class FeatureUtilities {
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                         ContextUtils.getApplicationContext())
                 && (isDuetTabStripIntegrationAndroidEnabled() || !isTabGroupsAndroidEnabled());
+    }
+
+    /**
+     * @return The currently enabled bottom toolbar variation.
+     */
+    public static String getBottomToolbarVariation() {
+        return SharedPreferencesManager.getInstance().readString(
+                ChromePreferenceKeys.VARIATION_CACHED_BOTTOM_TOOLBAR,
+                BottomToolbarVariationManager.Variations.NONE);
     }
 
     /**
@@ -415,7 +411,8 @@ public class FeatureUtilities {
      * @return Whether the Start Surface is enabled.
      */
     public static boolean isStartSurfaceEnabled() {
-        return isFlagEnabled(ChromePreferenceKeys.FLAGS_CACHED_START_SURFACE_ENABLED, false);
+        return isFlagEnabled(ChromePreferenceKeys.FLAGS_CACHED_START_SURFACE_ENABLED, false)
+                && !SysUtils.isLowEndDevice();
     }
 
     private static void cachePaintPreviewTestEnabled() {
@@ -717,6 +714,31 @@ public class FeatureUtilities {
     }
 
     /**
+     * @return Whether the thumbnail_aspect_ratio field trail is set.
+     */
+    public static boolean isTabThumbnailAspectRatioNotOne() {
+        if (sEnabledTabThumbnailApsectRatioForTesting != null) {
+            return sEnabledTabThumbnailApsectRatioForTesting;
+        }
+
+        double expectedAspectRatio = ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
+                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio", 1.0);
+        return Double.compare(1.0, expectedAspectRatio) != 0;
+    }
+
+    /**
+     * @return Whether to allow to refetch tab thumbnail if the aspect ratio is not matching.
+     */
+    public static boolean isAllowToRefetchTabThumbnail() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "allow_to_refetch", false);
+    }
+
+    public static void enableTabThumbnailAspectRatioForTesting(Boolean enabled) {
+        sEnabledTabThumbnailApsectRatioForTesting = enabled;
+    }
+
+    /**
      * Expose an interface to set the homepage policy feature flag to be enabled during tests.
      */
     @VisibleForTesting
@@ -729,6 +751,12 @@ public class FeatureUtilities {
     private static void cacheFlag(String preferenceName, String featureName) {
         SharedPreferencesManager.getInstance().writeBoolean(
                 preferenceName, ChromeFeatureList.isEnabled(featureName));
+    }
+
+    private static void cacheVariation(
+            String preferenceName, String featureName, String variationName) {
+        SharedPreferencesManager.getInstance().writeString(preferenceName,
+                ChromeFeatureList.getFieldTrialParamByFeature(featureName, variationName));
     }
 
     private static boolean isFlagEnabled(String preferenceName, boolean defaultValue) {
@@ -747,9 +775,6 @@ public class FeatureUtilities {
 
     @NativeMethods
     interface Natives {
-        void setCustomTabVisible(boolean visible);
-        void setActivityType(@ActivityType int type);
-        void setIsInMultiWindowMode(boolean isInMultiWindowMode);
         boolean isNetworkServiceWarmUpEnabled();
     }
 }

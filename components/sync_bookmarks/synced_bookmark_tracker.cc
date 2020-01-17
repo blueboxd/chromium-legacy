@@ -15,6 +15,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/model/entity_data.h"
@@ -88,6 +89,16 @@ bool SyncedBookmarkTracker::Entity::MatchesSpecificsHash(
   std::string hash;
   HashSpecifics(specifics, &hash);
   return hash == metadata_->specifics_hash();
+}
+
+bool SyncedBookmarkTracker::Entity::has_final_guid() const {
+  return metadata_->has_client_tag_hash();
+}
+
+void SyncedBookmarkTracker::Entity::set_final_guid(const std::string& guid) {
+  DCHECK(!has_final_guid());
+  metadata_->set_client_tag_hash(
+      syncer::ClientTagHash::FromUnhashed(syncer::BOOKMARKS, guid).value());
 }
 
 size_t SyncedBookmarkTracker::Entity::EstimateMemoryUsage() const {
@@ -165,6 +176,14 @@ bool SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
     // The entry is valid. If it's not a tombstone, collect its node id to
     // compare it later with the ids in the bookmark model.
     if (!bookmark_metadata.metadata().is_deleted()) {
+      // TODO(crbug.com/1032052): If the client-tag is known, verify that it
+      // matches the bookmark's GUID.
+
+      // TODO(crbug.com/1032052): Eventually empty client-tag-hashes should be
+      // disallowed and treated as invalid sync metadata. This requires a grace
+      // period for most clients to receive at least one update per bookmark.
+      // When that's achieved, has_final_guid() and set_final_guid() could be
+      // removed.
       metadata_node_ids.push_back(bookmark_metadata.id());
     }
   }
@@ -238,6 +257,11 @@ void SyncedBookmarkTracker::Add(const std::string& sync_id,
   metadata->set_sequence_number(0);
   metadata->set_acked_sequence_number(0);
   metadata->mutable_unique_position()->CopyFrom(unique_position);
+  // For any newly added bookmark, be it a local creation or a remote one, the
+  // authoritative final GUID is known from start.
+  metadata->set_client_tag_hash(syncer::ClientTagHash::FromUnhashed(
+                                    syncer::BOOKMARKS, bookmark_node->guid())
+                                    .value());
   HashSpecifics(specifics, metadata->mutable_specifics_hash());
   auto entity = std::make_unique<Entity>(bookmark_node, std::move(metadata));
   bookmark_node_to_entities_map_[bookmark_node] = entity.get();
@@ -257,6 +281,7 @@ void SyncedBookmarkTracker::Update(
   Entity* entity = GetMutableEntityForSyncId(sync_id);
   DCHECK(entity);
   DCHECK_EQ(entity->metadata()->server_id(), sync_id);
+
   entity->metadata()->set_server_version(server_version);
   entity->metadata()->set_modification_time(
       syncer::TimeToProtoTime(modification_time));
@@ -271,6 +296,14 @@ void SyncedBookmarkTracker::UpdateServerVersion(const std::string& sync_id,
   Entity* entity = GetMutableEntityForSyncId(sync_id);
   DCHECK(entity);
   entity->metadata()->set_server_version(server_version);
+}
+
+void SyncedBookmarkTracker::PopulateFinalGuid(const std::string& sync_id,
+                                              const std::string& guid) {
+  Entity* entity = GetMutableEntityForSyncId(sync_id);
+  DCHECK(entity);
+  DCHECK(!entity->has_final_guid());
+  entity->set_final_guid(guid);
 }
 
 void SyncedBookmarkTracker::MarkCommitMayHaveStarted(
@@ -504,18 +537,6 @@ void SyncedBookmarkTracker::UpdateSyncForLocalCreationIfNeeded(
   entity->metadata()->set_server_id(new_id);
   sync_id_to_entities_map_[new_id] = std::move(entity);
   sync_id_to_entities_map_.erase(old_id);
-}
-
-void SyncedBookmarkTracker::UpdateBookmarkNodePointer(
-    const bookmarks::BookmarkNode* old_node,
-    const bookmarks::BookmarkNode* new_node) {
-  if (old_node == new_node) {
-    return;
-  }
-  bookmark_node_to_entities_map_[new_node] =
-      bookmark_node_to_entities_map_[old_node];
-  bookmark_node_to_entities_map_[new_node]->set_bookmark_node(new_node);
-  bookmark_node_to_entities_map_.erase(old_node);
 }
 
 void SyncedBookmarkTracker::AckSequenceNumber(const std::string& sync_id) {

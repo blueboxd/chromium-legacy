@@ -1968,7 +1968,10 @@ void Content::ApplyValue(StyleResolverState& state,
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     DCHECK(identifier_value->GetValueID() == CSSValueID::kNormal ||
            identifier_value->GetValueID() == CSSValueID::kNone);
-    state.Style()->SetContent(nullptr);
+    if (identifier_value->GetValueID() == CSSValueID::kNone)
+      state.Style()->SetContent(MakeGarbageCollected<NoneContentData>());
+    else
+      state.Style()->SetContent(nullptr);
     return;
   }
   const CSSValueList& outer_list = To<CSSValueList>(value);
@@ -4157,7 +4160,7 @@ const CSSValue* MaxHeight::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   const Length& max_height = style.MaxHeight();
-  if (max_height.IsMaxSizeNone())
+  if (max_height.IsNone())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(max_height, style);
 }
@@ -4182,7 +4185,7 @@ const CSSValue* MaxWidth::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   const Length& max_width = style.MaxWidth();
-  if (max_width.IsMaxSizeNone())
+  if (max_width.IsNone())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(max_width, style);
 }
@@ -4402,6 +4405,15 @@ const CSSValue* Order::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(style.Order(),
                                         CSSPrimitiveValue::UnitType::kNumber);
+}
+
+const CSSValue* OriginTrialTestProperty::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return CSSIdentifierValue::Create(style.OriginTrialTestProperty());
+  ;
 }
 
 const CSSValue* Orphans::ParseSingleValue(CSSParserTokenRange& range,

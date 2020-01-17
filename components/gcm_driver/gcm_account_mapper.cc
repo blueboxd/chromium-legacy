@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
@@ -48,8 +49,7 @@ GCMAccountMapper::GCMAccountMapper(GCMDriver* gcm_driver)
       clock_(base::DefaultClock::GetInstance()),
       initialized_(false) {}
 
-GCMAccountMapper::~GCMAccountMapper() {
-}
+GCMAccountMapper::~GCMAccountMapper() = default;
 
 void GCMAccountMapper::Initialize(const AccountMappings& account_mappings,
                                   const DispatchMessageCallback& callback) {
@@ -153,6 +153,8 @@ void GCMAccountMapper::OnMessage(const std::string& app_id,
                                  const IncomingMessage& message) {
   DCHECK_EQ(app_id, kGCMAccountMapperAppId);
   // TODO(fgorski): Report Send to Gaia ID failures using UMA.
+
+  base::UmaHistogramBoolean("GCM.AccountMappingMessageReceived", true);
 
   if (dispatch_message_callback_.is_null()) {
     DVLOG(1) << "dispatch_message_callback_ missing in GCMAccountMapper";

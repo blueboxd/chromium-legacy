@@ -102,7 +102,7 @@ TEST_F(ResizeObserverUnitTest, ResizeObservationSize) {
 TEST_F(ResizeObserverUnitTest, TestMemoryLeaks) {
   ResizeObserverController& controller =
       GetDocument().EnsureResizeObserverController();
-  const HeapHashSet<WeakMember<ResizeObserver>>& observers =
+  const HeapLinkedHashSet<WeakMember<ResizeObserver>>& observers =
       controller.Observers();
   ASSERT_EQ(observers.size(), 0U);
   v8::HandleScope scope(v8::Isolate::GetCurrent());

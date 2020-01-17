@@ -292,9 +292,7 @@ ios_framework_bundle("earl_grey") {
     "//ios/third_party/fishhook",
     "//ios/third_party/webkit",
   ]
-  public_deps = [
-    "//ios/third_party/ochamcrest:ochamcrest+link",
-  ]
+  public_deps = [ "//ios/third_party/ochamcrest:ochamcrest+link" ]
 
   libs = [
     "CoreData.framework",

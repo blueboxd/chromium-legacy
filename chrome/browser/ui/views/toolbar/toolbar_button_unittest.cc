@@ -74,9 +74,10 @@ class TestParentView : public views::View {
   TestParentView& operator=(const TestParentView&) = delete;
   ~TestParentView() override = default;
 
-  const views::Widget* GetWidget() const override { return widget_.get(); }
-
  private:
+  // views::View:
+  const views::Widget* GetWidgetImpl() const override { return widget_.get(); }
+
   std::unique_ptr<views::Widget> widget_;
 };
 

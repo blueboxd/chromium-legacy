@@ -184,9 +184,9 @@ ContentSecurityPolicy* IsolatedWorldCSP::CreateIsolatedWorldCSP(
   csp->BindToDelegate(*delegate);
 
   if (apply_policy) {
-    csp->AddPolicyFromHeaderValue(policy,
-                                  kContentSecurityPolicyHeaderTypeEnforce,
-                                  kContentSecurityPolicyHeaderSourceHTTP);
+    csp->AddPolicyFromHeaderValue(
+        policy, network::mojom::ContentSecurityPolicyType::kEnforce,
+        network::mojom::ContentSecurityPolicySource::kHTTP);
   }
 
   return csp;

@@ -82,6 +82,8 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   gpu::SyncToken GenUnverifiedSyncToken() override;
 
   void Flush() override;
+  scoped_refptr<gfx::NativePixmap> GetNativePixmap(
+      const gpu::Mailbox& mailbox) override;
 
   size_t shared_image_count() const { return shared_images_.size(); }
   const gfx::Size& MostRecentSize() const { return most_recent_size_; }

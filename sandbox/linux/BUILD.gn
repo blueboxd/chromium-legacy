@@ -34,9 +34,7 @@ if (is_nacl_nonsfi) {
 # the setuid sandbox and is its own target.
 
 group("sandbox") {
-  public_deps = [
-    ":sandbox_services",
-  ]
+  public_deps = [ ":sandbox_services" ]
   if (compile_suid_client || is_nacl_nonsfi) {
     public_deps += [ ":suid_sandbox_client" ]
   }
@@ -59,9 +57,7 @@ source_set("sandbox_linux_test_utils") {
     "tests/unit_tests.h",
   ]
 
-  deps = [
-    "//testing/gtest",
-  ]
+  deps = [ "//testing/gtest" ]
 
   if (!is_nacl_nonsfi) {
     sources += [
@@ -191,17 +187,13 @@ action("bpf_dsl_golden") {
     "bpf_dsl/golden/x86-64/NegativeConstantsPolicy.txt",
     "bpf_dsl/golden/x86-64/SwitchPolicy.txt",
   ]
-  outputs = [
-    "$target_gen_dir/bpf_dsl/golden/golden_files.h",
-  ]
+  outputs = [ "$target_gen_dir/bpf_dsl/golden/golden_files.h" ]
   args =
       rebase_path(outputs, root_build_dir) + rebase_path(inputs, root_build_dir)
 }
 
 test("sandbox_linux_unittests") {
-  deps = [
-    ":sandbox_linux_unittests_sources",
-  ]
+  deps = [ ":sandbox_linux_unittests_sources" ]
   if (is_android) {
     use_raw_android_executable = true
   }
@@ -358,9 +350,7 @@ component("sandbox_services") {
 
   defines = [ "SANDBOX_IMPLEMENTATION" ]
 
-  public_deps = [
-    "//sandbox:sandbox_export",
-  ]
+  public_deps = [ "//sandbox:sandbox_export" ]
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
@@ -445,9 +435,7 @@ if (compile_suid_client || is_nacl_nonsfi) {
       "suid/common/suid_unsafe_environment_variables.h",
     ]
     defines = [ "SANDBOX_IMPLEMENTATION" ]
-    public_deps = [
-      "//sandbox:sandbox_export",
-    ]
+    public_deps = [ "//sandbox:sandbox_export" ]
     deps = [
       ":sandbox_services",
       "//base",

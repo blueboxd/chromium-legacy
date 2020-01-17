@@ -60,9 +60,7 @@ static_library("observers") {
     "//google_apis",
   ]
 
-  public_deps = [
-    "//components/unified_consent",
-  ]
+  public_deps = [ "//components/unified_consent" ]
 }
 
 static_library("test_support") {

@@ -5,6 +5,7 @@
 #import "ios/web/navigation/crw_web_view_navigation_observer.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/net/http_response_headers_util.h"
 #include "ios/web/common/features.h"
@@ -230,8 +231,9 @@ using web::wk_navigation_util::IsPlaceholderUrl;
 - (void)webViewURLDidChange {
   // TODO(crbug.com/966412): Determine if there are any cases where this still
   // happens, and if so whether anything should be done when it does.
-  if (!self.webView.URL) {
-    DVLOG(1) << "Received nil URL callback";
+  if (self.webView.URL.absoluteString.length == 0) {
+    DVLOG(1) << "Received nil/empty URL callback";
+    base::UmaHistogramBoolean("IOS.Web.URLDidChangeToEmptyURL", true);
     return;
   }
   GURL URL(net::GURLWithNSURL(self.webView.URL));

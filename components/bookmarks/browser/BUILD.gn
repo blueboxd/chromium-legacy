@@ -52,9 +52,7 @@ static_library("browser") {
     "url_index.h",
   ]
 
-  public_deps = [
-    "//components/bookmarks/common",
-  ]
+  public_deps = [ "//components/bookmarks/common" ]
 
   deps = [
     "//base",
@@ -104,9 +102,7 @@ static_library("test_support") {
     "bookmark_test_util.h",
   ]
 
-  deps = [
-    ":browser",
-  ]
+  deps = [ ":browser" ]
 }
 
 bundle_data("unit_tests_bundle_data") {
@@ -116,10 +112,8 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/bookmarks/meta_info_as_string.json",
     "//components/test/data/bookmarks/model_without_sync.json",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 source_set("unit_tests") {
@@ -159,9 +153,7 @@ source_set("unit_tests") {
 # The fuzzer depends on code that is not built on Mac.
 if (!is_mac) {
   fuzzer_test("bookmark_node_data_read_fuzzer") {
-    sources = [
-      "bookmark_node_data_read_fuzzer.cc",
-    ]
+    sources = [ "bookmark_node_data_read_fuzzer.cc" ]
     deps = [
       ":browser",
       "//base",

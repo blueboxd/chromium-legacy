@@ -60,7 +60,7 @@ TEST_F(CompositorAnimationTest, NullDelegate) {
   std::unique_ptr<CompositorAnimationTestClient> client(
       new CompositorAnimationTestClient);
   CompositorAnimation* animation = client->GetCompositorAnimation();
-  cc::SingleKeyframeEffectAnimation* cc_animation = animation->CcAnimation();
+  cc::Animation* cc_animation = animation->CcAnimation();
   timeline->AnimationAttached(*client);
   int timeline_id = cc_animation->animation_timeline()->id();
 
@@ -93,8 +93,7 @@ TEST_F(CompositorAnimationTest, NotifyFromCCAfterCompositorAnimationDeletion) {
   std::unique_ptr<CompositorAnimationTestClient> client(
       new CompositorAnimationTestClient);
   CompositorAnimation* animation = client->GetCompositorAnimation();
-  scoped_refptr<cc::SingleKeyframeEffectAnimation> cc_animation =
-      animation->CcAnimation();
+  scoped_refptr<cc::Animation> cc_animation = animation->CcAnimation();
   timeline->AnimationAttached(*client);
   int timeline_id = cc_animation->animation_timeline()->id();
 
@@ -129,8 +128,7 @@ TEST_F(CompositorAnimationTest,
 
   scoped_refptr<cc::AnimationTimeline> cc_timeline =
       timeline->GetAnimationTimeline();
-  scoped_refptr<cc::SingleKeyframeEffectAnimation> cc_animation =
-      client->animation_->CcAnimation();
+  scoped_refptr<cc::Animation> cc_animation = client->animation_->CcAnimation();
   EXPECT_FALSE(cc_animation->animation_timeline());
 
   timeline->AnimationAttached(*client);

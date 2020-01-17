@@ -29,12 +29,6 @@ using SpdyLinkedHashMapImpl = quiche::SimpleLinkedHashMap<Key, Value, Hash, Eq>;
 template <typename T, size_t N, typename A = std::allocator<T>>
 using SpdyInlinedVectorImpl = std::vector<T, A>;
 
-using SpdyStringPieceHashImpl = base::StringPieceHash;
-
-inline size_t SpdyHashStringPairImpl(SpdyStringPiece a, SpdyStringPiece b) {
-  return base::StringPieceHash()(a) ^ base::StringPieceHash()(b);
-}
-
 // A map which is faster than (for example) hash_map for a certain number of
 // unique key-value-pair elements, and upgrades itself to unordered_map when
 // runs out of space.

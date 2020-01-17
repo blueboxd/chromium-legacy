@@ -5,11 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojo_bindings") {
-  sources = [
-    "machine_learning_internals_page_handler.mojom",
-  ]
+  sources = [ "machine_learning_internals_page_handler.mojom" ]
 
-  deps = [
-    "//chromeos/services/machine_learning/public/mojom",
-  ]
+  deps = [ "//chromeos/services/machine_learning/public/mojom" ]
 }

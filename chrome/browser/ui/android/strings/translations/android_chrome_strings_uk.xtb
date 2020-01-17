@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Закрити поточну вкладку</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Пошук і огляд</translation>
-<translation id="1264974993859112054">Спорт</translation>
 <translation id="1266864766717917324">Не вдалося надіслати: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1283039547216852943">Торкніться, щоб розгорнути</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Щоб мати доступ до закладок на всіх своїх пристроях, увійдіть в обліковий запис і ввімкніть синхронізацію</translation>
 <translation id="2822354292072154809">Скинути всі дозволи сайту <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2842985007712546952">Батьківська папка</translation>
-<translation id="2858138569776157458">Популярні сайти</translation>
 <translation id="2860954141821109167">Переконайтеся, що на цьому пристрої ввімкнено додаток Телефон</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2874939134665556319">Попередня композиція</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Вхід у Chrome</translation>
 <translation id="3288003805934695103">перезавантажити сторінку</translation>
 <translation id="32895400574683172">Сповіщення дозволено</translation>
+<translation id="3290926146403723641">Щоб виконувати завдання в Інтернеті через Асистента, Chrome надсилає в Google URL-адресу та вміст сайту, а також відповідну особисту інформацію</translation>
 <translation id="3295530008794733555">Шукайте швидше. Заощаджуйте трафік.</translation>
 <translation id="3298243779924642547">Спрощена</translation>
 <translation id="3303414029551471755">Завантажити вміст?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Номери телефонів</translation>
 <translation id="3819178904835489326">Видалено завантажених файлів: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Видалити дані сайтів?</translation>
-<translation id="3853625385350850937">Щоб продовжити, увімкніть NFC на пристрої</translation>
 <translation id="3859306556332390985">Далі</translation>
 <translation id="388596076286380598">Отримуйте статті, відео й інший контент від сайтів, які вам подобаються, навіть у режимі офлайн або при слабкому з'єднанні.</translation>
 <translation id="3894427358181296146">Додати папку</translation>
@@ -764,7 +762,6 @@
 <translation id="6697947395630195233">Chrome потрібен доступ до місцезнаходження, щоб повідомляти ваші геодані цьому сайту.</translation>
 <translation id="6698801883190606802">Керування синхронізованими даними</translation>
 <translation id="6699370405921460408">Сервери Google оптимізують сторінки, які ви відвідуєте.</translation>
-<translation id="6709133671862442373">Новини</translation>
 <translation id="6710213216561001401">Попереднє</translation>
 <translation id="671481426037969117">Вийшов час на таймері веб-сайту <ph name="FQDN" />. Завтра він знову запрацює.</translation>
 <translation id="6738867403308150051">Завантаження…</translation>
@@ -1079,7 +1076,6 @@
 <translation id="9133397713400217035">Перегляд у режимі офлайн</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показати оригінал</translation>
-<translation id="9139318394846604261">Покупки</translation>
 <translation id="9155898266292537608">Можете також шукати, швидко торкнувшись слова</translation>
 <translation id="9169507124922466868">Історію навігації відкрито на половину висоти</translation>
 <translation id="9204836675896933765">Залишився 1 файл</translation>

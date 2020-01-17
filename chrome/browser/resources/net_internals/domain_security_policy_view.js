@@ -130,7 +130,7 @@ const DomainSecurityPolicyView = (function() {
     // Inherit the superclass's methods.
     __proto__: superClass.prototype,
 
-    onSubmitHSTSAdd_: function(event) {
+    onSubmitHSTSAdd_(event) {
       g_browser.sendHSTSAdd(this.addStsInput_.value, this.addStsCheck_.checked);
       g_browser.sendHSTSQuery(this.addStsInput_.value);
       this.queryStsInput_.value = this.addStsInput_.value;
@@ -139,18 +139,18 @@ const DomainSecurityPolicyView = (function() {
       event.preventDefault();
     },
 
-    onSubmitDelete_: function(event) {
+    onSubmitDelete_(event) {
       g_browser.sendDomainSecurityPolicyDelete(this.deleteInput_.value);
       this.deleteInput_.value = '';
       event.preventDefault();
     },
 
-    onSubmitHSTSQuery_: function(event) {
+    onSubmitHSTSQuery_(event) {
       g_browser.sendHSTSQuery(this.queryStsInput_.value);
       event.preventDefault();
     },
 
-    onHSTSQueryResult: function(result) {
+    onHSTSQueryResult(result) {
       if (result.error != undefined) {
         this.queryStsOutputDiv_.innerHTML = '';
         const s = addNode(this.queryStsOutputDiv_, 'span');
@@ -225,7 +225,7 @@ const DomainSecurityPolicyView = (function() {
       yellowFade(this.queryStsOutputDiv_);
     },
 
-    onSubmitExpectCTAdd_: function(event) {
+    onSubmitExpectCTAdd_(event) {
       g_browser.sendExpectCTAdd(
           this.addExpectCTInput_.value, this.addExpectCTReportUriInput_.value,
           this.addExpectCTEnforceCheck_.checked);
@@ -237,12 +237,12 @@ const DomainSecurityPolicyView = (function() {
       event.preventDefault();
     },
 
-    onSubmitExpectCTQuery_: function(event) {
+    onSubmitExpectCTQuery_(event) {
       g_browser.sendExpectCTQuery(this.queryExpectCTInput_.value);
       event.preventDefault();
     },
 
-    onExpectCTQueryResult: function(result) {
+    onExpectCTQueryResult(result) {
       if (result.error != undefined) {
         this.queryExpectCTOutputDiv_.innerHTML = '';
         const s = addNode(this.queryExpectCTOutputDiv_, 'span');
@@ -284,12 +284,12 @@ const DomainSecurityPolicyView = (function() {
       yellowFade(this.queryExpectCTOutputDiv_);
     },
 
-    onSubmitExpectCTTestReport_: function(event) {
+    onSubmitExpectCTTestReport_(event) {
       g_browser.sendExpectCTTestReport(this.testExpectCTReportInput_.value);
       event.preventDefault();
     },
 
-    onExpectCTTestReportResult: function(result) {
+    onExpectCTTestReportResult(result) {
       if (result == 'success') {
         addTextNode(this.testExpectCTOutputDiv_, 'Test report succeeded');
       } else {

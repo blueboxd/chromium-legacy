@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
@@ -17,6 +18,7 @@
 #include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/cryptauth_feature_type.h"
+#include "chromeos/services/device_sync/cryptauth_task_metrics_logger.h"
 
 namespace chromeos {
 
@@ -81,9 +83,11 @@ ConvertFeatureStatusesToSoftwareFeatureMap(
     base::Optional<CryptAuthFeatureType> feature_type =
         CryptAuthFeatureTypeFromString(status.feature_type());
 
-    // TODO(https://crbug.com/936273): Add metrics to track unknown feature type
-    // occurrences.
-    if (!feature_type) {
+    bool is_known_feature_type = feature_type.has_value();
+    base::UmaHistogramBoolean(
+        "CryptAuth.DeviceSyncV2.FeatureStatusGetter.IsKnownFeatureType",
+        is_known_feature_type);
+    if (!is_known_feature_type) {
       PA_LOG(ERROR) << "Unknown feature type: " << status.feature_type();
       *did_non_fatal_error_occur = true;
       continue;
@@ -108,22 +112,25 @@ ConvertFeatureStatusesToSoftwareFeatureMap(
   for (const multidevice::SoftwareFeature& feature : kAllSoftwareFeatures) {
     bool is_marked_supported = base::Contains(marked_supported, feature);
     bool is_marked_enabled = base::Contains(marked_enabled, feature);
-    if (is_marked_supported) {
-      feature_states[feature] =
-          is_marked_enabled ? multidevice::SoftwareFeatureState::kEnabled
-                            : multidevice::SoftwareFeatureState::kSupported;
-      continue;
-    }
+    bool is_unsupported_feature_marked_enabled =
+        !is_marked_supported && is_marked_enabled;
 
-    // TODO(https://crbug.com/936273): Add metrics to track occurrences of
-    // unsupported features marked as enabled.
-    if (!is_marked_supported && is_marked_enabled) {
+    base::UmaHistogramBoolean(
+        "CryptAuth.DeviceSyncV2.FeatureStatusGetter."
+        "IsUnsupportedFeatureMarkedEnabled",
+        is_unsupported_feature_marked_enabled);
+    if (is_unsupported_feature_marked_enabled) {
       PA_LOG(ERROR) << "SoftwareFeature " << feature << " flagged as enabled "
                     << "but not supported. Marking unsupported.";
       *did_non_fatal_error_occur = true;
     }
 
-    feature_states[feature] = multidevice::SoftwareFeatureState::kNotSupported;
+    feature_states[feature] =
+        is_marked_supported
+            ? (is_marked_enabled
+                   ? multidevice::SoftwareFeatureState::kEnabled
+                   : multidevice::SoftwareFeatureState::kSupported)
+            : multidevice::SoftwareFeatureState::kNotSupported;
   }
 
   return feature_states;
@@ -142,11 +149,16 @@ base::Time GetMaxLastModifiedTimeFromFeatureStatuses(
   return base::Time::FromJavaTime(max_last_modified_time_millis);
 }
 
-void RecordGetFeatureStatusesMetrics(base::TimeDelta execution_time) {
+void RecordGetFeatureStatusesMetrics(base::TimeDelta execution_time,
+                                     CryptAuthApiCallResult result) {
   LogAsyncExecutionTimeMetric(
       "CryptAuth.DeviceSyncV2.FeatureStatusGetter.ExecutionTime."
       "GetFeatureStatuses",
       execution_time);
+  LogCryptAuthApiCallSuccessMetric(
+      "CryptAuth.DeviceSyncV2.FeatureStatusGetter.ApiCallResult."
+      "GetFeatureStatuses",
+      result);
 }
 
 }  // namespace
@@ -202,8 +214,6 @@ void CryptAuthFeatureStatusGetterImpl::OnAttemptStarted(
 
   start_get_feature_statuses_timestamp_ = base::TimeTicks::Now();
 
-  // TODO(https://crbug.com/936273): Add metrics to track failure rates due to
-  // async timeouts.
   timer_->Start(
       FROM_HERE, kWaitingForBatchGetFeatureStatusesResponseTimeout,
       base::BindOnce(
@@ -226,17 +236,20 @@ void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesSuccess(
     const cryptauthv2::BatchGetFeatureStatusesResponse& feature_response) {
   DCHECK(id_to_device_software_feature_info_map_.empty());
 
-  RecordGetFeatureStatusesMetrics(base::TimeTicks::Now() -
-                                  start_get_feature_statuses_timestamp_);
+  RecordGetFeatureStatusesMetrics(
+      base::TimeTicks::Now() - start_get_feature_statuses_timestamp_,
+      CryptAuthApiCallResult::kSuccess);
 
   bool did_non_fatal_error_occur = false;
   for (const cryptauthv2::DeviceFeatureStatus& device_feature_status :
        feature_response.device_feature_statuses()) {
     const std::string& id = device_feature_status.device_id();
 
-    // TODO(https://crbug.com/936273): Log metrics for unrequested devices
-    // in response.
     bool was_id_requested = base::Contains(input_device_ids, id);
+    base::UmaHistogramBoolean(
+        "CryptAuth.DeviceSyncV2.FeatureStatusGetter."
+        "WasDeviceInResponseRequested",
+        was_id_requested);
     if (!was_id_requested) {
       PA_LOG(ERROR) << "Unrequested device (ID: " << id
                     << ") in BatchGetFeatureStatuses response.";
@@ -244,9 +257,11 @@ void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesSuccess(
       continue;
     }
 
-    // TODO(https://crbug.com/936273): Log metrics for duplicate device IDs.
     bool is_duplicate_id =
         base::Contains(id_to_device_software_feature_info_map_, id);
+    base::UmaHistogramBoolean(
+        "CryptAuth.DeviceSyncV2.FeatureStatusGetter.IsDuplicateDeviceId",
+        is_duplicate_id);
     if (is_duplicate_id) {
       PA_LOG(ERROR) << "Duplicate device IDs (" << id
                     << ") in BatchGetFeatureStatuses response.";
@@ -263,10 +278,17 @@ void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesSuccess(
             device_feature_status.feature_statuses()));
   }
 
-  // TODO(https://crbug.com/936273): Log metrics for missing devices.
-  if (input_device_ids.size() !=
-      id_to_device_software_feature_info_map_.size()) {
-    PA_LOG(ERROR) << "Devices missing in BatchGetFeatureStatuses response.";
+  bool correct_number_of_devices_in_response =
+      input_device_ids.size() == id_to_device_software_feature_info_map_.size();
+  base::UmaHistogramBoolean(
+      "CryptAuth.DeviceSyncV2.FeatureStatusGetter."
+      "CorrectNumberOfDevicesInResponse",
+      correct_number_of_devices_in_response);
+  if (!correct_number_of_devices_in_response) {
+    PA_LOG(ERROR) << "Incorrect number of devices in BatchGetFeatureStatuses "
+                  << "response. Expected: " << input_device_ids.size()
+                  << ". Received: "
+                  << id_to_device_software_feature_info_map_.size() << ".";
     did_non_fatal_error_occur = true;
   }
 
@@ -279,15 +301,17 @@ void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesSuccess(
 
 void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesFailure(
     NetworkRequestError error) {
-  RecordGetFeatureStatusesMetrics(base::TimeTicks::Now() -
-                                  start_get_feature_statuses_timestamp_);
+  RecordGetFeatureStatusesMetrics(
+      base::TimeTicks::Now() - start_get_feature_statuses_timestamp_,
+      CryptAuthApiCallResultFromNetworkRequestError(error));
 
   FinishAttempt(BatchGetFeatureStatusesNetworkRequestErrorToResultCode(error));
 }
 
 void CryptAuthFeatureStatusGetterImpl::OnBatchGetFeatureStatusesTimeout() {
-  RecordGetFeatureStatusesMetrics(base::TimeTicks::Now() -
-                                  start_get_feature_statuses_timestamp_);
+  RecordGetFeatureStatusesMetrics(
+      base::TimeTicks::Now() - start_get_feature_statuses_timestamp_,
+      CryptAuthApiCallResult::kTimeout);
 
   FinishAttempt(CryptAuthDeviceSyncResult::ResultCode::
                     kErrorTimeoutWaitingForBatchGetFeatureStatusesResponse);

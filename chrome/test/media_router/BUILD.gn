@@ -148,11 +148,7 @@ if (enable_downstream_media_tests) {
       "internal/",
       "telemetry/",
     ]
-    deps = [
-      "//tools/perf:perf",
-    ]
-    data_deps = [
-      "//tools/perf/contrib/media_router_benchmarks:telemetry_extension_resources",
-    ]
+    deps = [ "//tools/perf:perf" ]
+    data_deps = [ "//tools/perf/contrib/media_router_benchmarks:telemetry_extension_resources" ]
   }
 }

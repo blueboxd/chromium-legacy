@@ -25,7 +25,7 @@ WebviewEventManager.prototype = {
    * @param {Function} listener the event listener
    * @private
    */
-  addEventListener: function(eventTarget, type, listener) {
+  addEventListener(eventTarget, type, listener) {
     eventTarget.addEventListener(type, listener);
     this.unbindWebviewCleanupFunctions_.push(
         eventTarget.removeEventListener.bind(eventTarget, type, listener));
@@ -39,8 +39,7 @@ WebviewEventManager.prototype = {
    * @param {Function} listener the event listener
    * @private
    */
-  addWebRequestEventListener: function(
-      webRequestEvent, listener, filter, extraInfoSpec) {
+  addWebRequestEventListener(webRequestEvent, listener, filter, extraInfoSpec) {
     webRequestEvent.addListener(listener, filter, extraInfoSpec);
     this.unbindWebviewCleanupFunctions_.push(
         webRequestEvent.removeListener.bind(webRequestEvent, listener));
@@ -50,7 +49,7 @@ WebviewEventManager.prototype = {
    * Unbinds this Authenticator from the currently bound webview.
    * @private
    */
-  removeAllListeners: function() {
+  removeAllListeners() {
     for (let i = 0; i < this.unbindWebviewCleanupFunctions_.length; i++) {
       this.unbindWebviewCleanupFunctions_[i]();
     }

@@ -228,9 +228,7 @@ component("bluetooth") {
     "//ui/base",
   ]
 
-  public_deps = [
-    "//device/bluetooth/public/cpp",
-  ]
+  public_deps = [ "//device/bluetooth/public/cpp" ]
 
   if (is_android) {
     deps += [ ":jni_headers" ]

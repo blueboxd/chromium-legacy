@@ -25,6 +25,7 @@ namespace safe_browsing {
 using ReusedPasswordAccountType =
     LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordAccountType;
 
+// Structure: http://screen/YaNfDRYrcnk.png.
 class VerdictCacheManager : public history::HistoryServiceObserver {
  public:
   explicit VerdictCacheManager(
@@ -44,7 +45,6 @@ class VerdictCacheManager : public history::HistoryServiceObserver {
   // Stores |verdict| in |content_settings_| based on its |trigger_type|, |url|,
   // reused |password_type|, |verdict| and |receive_time|.
   void CachePhishGuardVerdict(
-      const GURL& url,
       LoginReputationClientRequest::TriggerType trigger_type,
       ReusedPasswordAccountType password_type,
       const LoginReputationClientResponse& verdict,

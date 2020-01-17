@@ -47,6 +47,20 @@ enum ImeTextSpanThickness {
   kThick,
 };
 
+// This enum represents the style of an underline segment of text,
+// the underline style of a ui::ImeTextSpan element.
+// The possible values are:
+// * kNone: When you don't want to paint the underline.
+// * kSolid: For regular style.
+// * kDot: For dotted underlines.
+// * kDash: For dashed underlines.
+enum ImeTextSpanUnderlineStyle {
+  kNone,
+  kSolid,
+  kDot,
+  kDash,
+};
+
 // Represents an underlined segment of text currently composed by IME.
 // Corresponds to ui::ImeTextSpan.
 struct ImeTextSpan {
@@ -55,6 +69,8 @@ struct ImeTextSpan {
   uint32 end_offset;
   uint32 underline_color;
   ImeTextSpanThickness thickness;
+  ImeTextSpanUnderlineStyle underline_style;
+  uint32 text_color;
   uint32 background_color;
   uint32 suggestion_highlight_color;
   bool remove_on_finish_composing;

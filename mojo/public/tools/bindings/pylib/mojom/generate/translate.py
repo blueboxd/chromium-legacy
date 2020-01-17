@@ -653,18 +653,18 @@ def _Module(tree, path, imports):
 
   filename = os.path.basename(path)
   # First pass collects kinds.
-  module.enums = map(
-      lambda enum: _Enum(module, enum, None),
-      _ElemsOfType(tree.definition_list, ast.Enum, filename))
-  module.structs = map(
-      lambda struct: _Struct(module, struct),
-      _ElemsOfType(tree.definition_list, ast.Struct, filename))
-  module.unions = map(
-      lambda union: _Union(module, union),
-      _ElemsOfType(tree.definition_list, ast.Union, filename))
-  module.interfaces = map(
-      lambda interface: _Interface(module, interface),
-      _ElemsOfType(tree.definition_list, ast.Interface, filename))
+  module.enums = list(
+      map(lambda enum: _Enum(module, enum, None),
+          _ElemsOfType(tree.definition_list, ast.Enum, filename)))
+  module.structs = list(
+      map(lambda struct: _Struct(module, struct),
+          _ElemsOfType(tree.definition_list, ast.Struct, filename)))
+  module.unions = list(
+      map(lambda union: _Union(module, union),
+          _ElemsOfType(tree.definition_list, ast.Union, filename)))
+  module.interfaces = list(
+      map(lambda interface: _Interface(module, interface),
+          _ElemsOfType(tree.definition_list, ast.Interface, filename)))
   module.constants = map(
       lambda constant: _Constant(module, constant, None),
       _ElemsOfType(tree.definition_list, ast.Const, filename))
@@ -673,8 +673,9 @@ def _Module(tree, path, imports):
   # to refer to kinds defined anywhere in the mojom.
   all_defined_kinds = {}
   for struct in module.structs:
-    struct.fields = map(lambda field:
-        _StructField(module, field, struct), struct.fields_data)
+    struct.fields = list(
+        map(lambda field: _StructField(module, field, struct),
+            struct.fields_data))
     del struct.fields_data
     all_defined_kinds[struct.spec] = struct
     for enum in struct.enums:

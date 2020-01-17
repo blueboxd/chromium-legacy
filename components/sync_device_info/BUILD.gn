@@ -77,13 +77,9 @@ static_library("test_support") {
     "fake_local_device_info_provider.h",
   ]
 
-  public_deps = [
-    ":sync_device_info",
-  ]
+  public_deps = [ ":sync_device_info" ]
 
-  deps = [
-    "//components/sync:test_support_model",
-  ]
+  deps = [ "//components/sync:test_support_model" ]
 }
 
 source_set("unit_tests") {

@@ -9,7 +9,9 @@
 
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/ip_address_space.mojom.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_creation_context_type.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -23,6 +25,8 @@ class CONTENT_EXPORT SharedWorkerInstance {
   SharedWorkerInstance(
       int64_t id,
       const GURL& url,
+      blink::mojom::ScriptType script_type,
+      network::mojom::CredentialsMode credentials_mode,
       const std::string& name,
       const url::Origin& constructor_origin,
       const std::string& content_security_policy,
@@ -46,6 +50,10 @@ class CONTENT_EXPORT SharedWorkerInstance {
   // Accessors.
   const GURL& url() const { return url_; }
   const std::string& name() const { return name_; }
+  blink::mojom::ScriptType script_type() const { return script_type_; }
+  network::mojom::CredentialsMode credentials_mode() const {
+    return credentials_mode_;
+  }
   const url::Origin& constructor_origin() const { return constructor_origin_; }
   const std::string& content_security_policy() const {
     return content_security_policy_;
@@ -74,6 +82,9 @@ class CONTENT_EXPORT SharedWorkerInstance {
   int64_t id_;
 
   GURL url_;
+  // Used for fetching the top-level worker script.
+  blink::mojom::ScriptType script_type_;
+  network::mojom::CredentialsMode credentials_mode_;
   std::string name_;
 
   // The origin of the document that created this shared worker instance. Used

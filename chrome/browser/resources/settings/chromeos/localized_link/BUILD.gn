@@ -5,13 +5,9 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":localized_link",
-  ]
+  deps = [ ":localized_link" ]
 }
 
 js_library("localized_link") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
+  deps = [ "//ui/webui/resources/js:assert" ]
 }

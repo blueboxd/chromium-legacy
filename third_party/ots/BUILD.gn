@@ -87,12 +87,8 @@ static_library("ots") {
 }
 
 fuzzer_test("ots_fuzzer") {
-  sources = [
-    "fuzz/ots_fuzzer.cc",
-  ]
-  deps = [
-    ":ots",
-  ]
+  sources = [ "fuzz/ots_fuzzer.cc" ]
+  deps = [ ":ots" ]
   libfuzzer_options = [ "max_len=16800" ]
   seed_corpus = "//third_party/harfbuzz-ng/fuzz/seed_corpus"
 }

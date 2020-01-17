@@ -47,13 +47,13 @@ const CSSParserContext* CSSRule::ParserContext(
 void CSSRule::SetParentStyleSheet(CSSStyleSheet* style_sheet) {
   parent_is_rule_ = false;
   parent_style_sheet_ = style_sheet;
-  MarkingVisitor::WriteBarrier(parent_style_sheet_);
+  MarkingVisitor::WriteBarrier(&parent_style_sheet_);
 }
 
 void CSSRule::SetParentRule(CSSRule* rule) {
   parent_is_rule_ = true;
   parent_rule_ = rule;
-  MarkingVisitor::WriteBarrier(parent_rule_);
+  MarkingVisitor::WriteBarrier(&parent_rule_);
 }
 
 void CSSRule::Trace(blink::Visitor* visitor) {

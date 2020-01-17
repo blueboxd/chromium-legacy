@@ -108,14 +108,6 @@ Display BuildDisplayForScreen(NSScreen* screen) {
 
   display.set_color_depth(Display::kDefaultBitsPerPixel);
   display.set_depth_per_component(Display::kDefaultBitsPerComponent);
-  if ([screen respondsToSelector:@selector
-              (maximumPotentialExtendedDynamicRangeColorComponentValue)]) {
-    if ([screen maximumPotentialExtendedDynamicRangeColorComponentValue] >=
-        2.0) {
-      display.set_color_depth(Display::kHDR10BitsPerPixel);
-      display.set_depth_per_component(Display::kHDR10BitsPerComponent);
-    }
-  }
   display.set_is_monochrome(CGDisplayUsesForceToGray());
 
   if (auto display_link = ui::DisplayLinkMac::GetForDisplay(display_id))

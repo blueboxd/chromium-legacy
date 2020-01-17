@@ -454,6 +454,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   // These functions are only public so we can call it from NGBlockNode while
   // we're still working on LayoutNG.
   void AddVisualOverflowFromFloats();
+  void AddVisualOverflowFromFloats(const NGPhysicalContainerFragment& fragment);
   void AddLayoutOverflowFromFloats();
 
   virtual NGInlineNodeData* TakeNGInlineNodeData() { return nullptr; }

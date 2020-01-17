@@ -4,7 +4,5 @@
 
 source_set("requirements") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "page_info_presentation.h",
-  ]
+  sources = [ "page_info_presentation.h" ]
 }

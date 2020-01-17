@@ -82,9 +82,7 @@ cast_source_set("small_message_socket") {
     "small_message_socket.cc",
     "small_message_socket.h",
   ]
-  public_deps = [
-    "//net",
-  ]
+  public_deps = [ "//net" ]
 
   deps = [
     ":io_buffer_pool",
@@ -102,9 +100,7 @@ cast_source_set("test_support") {
     "mock_stream_socket.h",
   ]
 
-  public_deps = [
-    "//testing/gmock",
-  ]
+  public_deps = [ "//testing/gmock" ]
 
   deps = [
     "//base",

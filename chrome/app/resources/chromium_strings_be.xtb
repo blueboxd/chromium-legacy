@@ -56,7 +56,6 @@
 <translation id="328888136576916638">Адсутнічаюць ключы Google API. Некаторыя функцыі Chromium будуць выключаны.</translation>
 <translation id="3296368748942286671">Працягваць выконваць фонавыя праграмы, калі Chromium закрыты</translation>
 <translation id="331951419404882060">Chromium OS не змог сінхранізаваць даныя з-за памылкі ўваходу.</translation>
-<translation id="3340978935015468852">налады</translation>
 <translation id="3474745554856756813">З гэтай прылады будзе выдалена наступная колькасць элементаў: <ph name="ITEMS_COUNT" />. Каб потым атрымаць свае даныя, увайдзіце ў Chromium як <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Закрыйце ўсе вокны Chromium і паўтарыце спробу.</translation>
 <translation id="3575459661164320785">На камп'ютары знойдзена шкоднае ПЗ. Chromium можа яго выдаліць, аднавіць налады і выключыць пашырэнні, каб браўзер змог зноў нармальна працаваць.</translation>
@@ -205,7 +204,6 @@
       налады браўзера Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Таксама вызначае, якая старонка паказваецца пры запуску Chromium або пошуку з амнібокса.</translation>
 <translation id="8704119203788522458">Гэта ваш Chromium</translation>
-<translation id="8739167630197873875">Пры выхадзе з браўзера Chromium файлы cookie выдаляюцца. Каб сінхранізацыя працавала, змяніце гэтыя <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="8796602469536043152">Chromium запытвае доступ да камеры і мікрафона для гэтага сайта</translation>
 <translation id="8803635938069941624">Умовы Chromium OS</translation>
 <translation id="8821041990367117597">Сінхранізаваць даныя ў браўзеры Chromium не ўдалося: даныя ўліковага запісу для ўваходу састарэлі.</translation>

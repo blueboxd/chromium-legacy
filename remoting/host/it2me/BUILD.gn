@@ -151,39 +151,26 @@ if (!is_chromeos && enable_remoting_host) {
           "//remoting/resources/chromoting128.png",
         ]
 
-        outputs = [
-          "{{bundle_resources_dir}}/{{source_file_part}}",
-        ]
+        outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
       }
 
       # remote_assistance_host-InfoPlist.strings
       foreach(locale, remoting_locales_with_underscores) {
         bundle_data("remote_assistance_host_strings_${locale}_bundle_data") {
-          sources = [
-            "$root_gen_dir/remoting/host/remote_assistance_host-InfoPlist.strings/$locale.lproj/InfoPlist.strings",
-          ]
-          outputs = [
-            "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
-          ]
-          deps = [
-            "//remoting/host:remoting_infoplist_strings",
-          ]
+          sources = [ "$root_gen_dir/remoting/host/remote_assistance_host-InfoPlist.strings/$locale.lproj/InfoPlist.strings" ]
+          outputs =
+              [ "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}" ]
+          deps = [ "//remoting/host:remoting_infoplist_strings" ]
         }
       }
 
       if (icu_use_data_file) {
         bundle_data("remote_assistance_host_resources") {
-          sources = [
-            "$root_out_dir/icudtl.dat",
-          ]
+          sources = [ "$root_out_dir/icudtl.dat" ]
 
-          outputs = [
-            "{{bundle_resources_dir}}/{{source_file_part}}",
-          ]
+          outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
 
-          public_deps = [
-            "//third_party/icu:icudata",
-          ]
+          public_deps = [ "//third_party/icu:icudata" ]
         }
       }
     } else {

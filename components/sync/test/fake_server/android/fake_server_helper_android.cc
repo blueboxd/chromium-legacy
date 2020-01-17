@@ -253,6 +253,10 @@ void FakeServerHelperAndroid::ModifyBookmarkEntity(
       CreateBookmarkEntity(env, title, url, parent_id);
   sync_pb::SyncEntity proto;
   bookmark->SerializeAsProto(&proto);
+  // The GUID has just been regenerated in CreateBookmarkEntity(). To avoid
+  // running into a GUID mismatch, let's clear it here since it can be auto-
+  // populated by ModelTypeWorker.
+  proto.mutable_specifics()->mutable_bookmark()->clear_guid();
   fake_server_ptr->ModifyBookmarkEntity(
       base::android::ConvertJavaStringToUTF8(env, entity_id),
       base::android::ConvertJavaStringToUTF8(env, parent_id),
@@ -278,6 +282,10 @@ void FakeServerHelperAndroid::ModifyBookmarkFolderEntity(
 
   sync_pb::SyncEntity proto;
   bookmark_builder.BuildFolder()->SerializeAsProto(&proto);
+  // The GUID has just been regenerated in CreateBookmarkEntity(). To avoid
+  // running into a GUID mismatch, let's clear it here since it can be auto-
+  // populated by ModelTypeWorker.
+  proto.mutable_specifics()->mutable_bookmark()->clear_guid();
   fake_server_ptr->ModifyBookmarkEntity(
       base::android::ConvertJavaStringToUTF8(env, entity_id),
       base::android::ConvertJavaStringToUTF8(env, parent_id),

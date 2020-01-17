@@ -112,12 +112,6 @@ class V8TestInterface5 {
 };
 
 template <>
-struct NativeValueTraits<TestInterface5Implementation> : public NativeValueTraitsBase<TestInterface5Implementation> {
-  MODULES_EXPORT static TestInterface5Implementation* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  MODULES_EXPORT static TestInterface5Implementation* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestInterface5Implementation> {
   typedef V8TestInterface5 Type;
 };

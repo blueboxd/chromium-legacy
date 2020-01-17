@@ -41,7 +41,7 @@ Polymer({
    * @private
    */
   onKeypress_(event) {
-    if (event.key != 'Enter') {
+    if (event.key !== 'Enter') {
       return;
     }
     event.stopPropagation();

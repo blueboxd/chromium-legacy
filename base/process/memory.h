@@ -40,6 +40,12 @@ const int kMaxOomScore = 1000;
 BASE_EXPORT bool AdjustOOMScore(ProcessId process, int score);
 #endif
 
+namespace internal {
+// Returns true if address-space was released. Some configurations reserve part
+// of the process address-space for special allocations (e.g. WASM).
+bool ReleaseAddressSpaceReservation();
+}  // namespace internal
+
 #if defined(OS_WIN)
 namespace win {
 

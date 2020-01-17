@@ -42,9 +42,7 @@ source_set("test_support") {
 }
 
 mojom("page_load_metrics_mojom") {
-  sources = [
-    "page_load_metrics.mojom",
-  ]
+  sources = [ "page_load_metrics.mojom" ]
   public_deps = [
     "//mojo/public/mojom/base",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings",

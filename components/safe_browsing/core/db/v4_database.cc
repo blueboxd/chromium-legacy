@@ -15,10 +15,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/proto/webui.pb.h"
-#include "content/public/browser/browser_thread.h"
 
-using content::BrowserThread;
 using base::TimeTicks;
 
 namespace safe_browsing {
@@ -137,7 +136,7 @@ V4Database::V4Database(
 
 // static
 void V4Database::Destroy(std::unique_ptr<V4Database> v4_database) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   V4Database* v4_database_raw = v4_database.release();
   if (v4_database_raw) {
     v4_database_raw->weak_factory_on_io_.InvalidateWeakPtrs();
@@ -152,7 +151,7 @@ V4Database::~V4Database() {
 void V4Database::ApplyUpdate(
     std::unique_ptr<ParsedServerResponse> parsed_server_response,
     DatabaseUpdatedCallback db_updated_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   DCHECK(!pending_store_updates_);
   DCHECK(db_updated_callback_.is_null());
 
@@ -193,7 +192,7 @@ void V4Database::ApplyUpdate(
 
 void V4Database::UpdatedStoreReady(ListIdentifier identifier,
                                    std::unique_ptr<V4Store> new_store) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   DCHECK(pending_store_updates_);
   if (new_store) {
     (*store_map_)[identifier].swap(new_store);
@@ -219,7 +218,7 @@ std::unique_ptr<StoreStateMap> V4Database::GetStoreStateMap() {
 
 bool V4Database::AreAnyStoresAvailable(
     const StoresToCheck& stores_to_check) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   for (const ListIdentifier& identifier : stores_to_check) {
     if (IsStoreAvailable(identifier))
       return true;
@@ -229,7 +228,7 @@ bool V4Database::AreAnyStoresAvailable(
 
 bool V4Database::AreAllStoresAvailable(
     const StoresToCheck& stores_to_check) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   for (const ListIdentifier& identifier : stores_to_check) {
     if (!IsStoreAvailable(identifier))
       return false;
@@ -241,7 +240,7 @@ void V4Database::GetStoresMatchingFullHash(
     const FullHash& full_hash,
     const StoresToCheck& stores_to_check,
     StoreAndHashPrefixes* matched_store_and_hash_prefixes) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   matched_store_and_hash_prefixes->clear();
   for (const ListIdentifier& identifier : stores_to_check) {
     if (!IsStoreAvailable(identifier))
@@ -258,7 +257,7 @@ void V4Database::GetStoresMatchingFullHash(
 
 void V4Database::ResetStores(
     const std::vector<ListIdentifier>& stores_to_reset) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   for (const ListIdentifier& identifier : stores_to_reset) {
     store_map_->at(identifier)->Reset();
   }
@@ -266,7 +265,7 @@ void V4Database::ResetStores(
 
 void V4Database::VerifyChecksum(
     DatabaseReadyForUpdatesCallback db_ready_for_updates_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
 
   // Make a threadsafe copy of store_map_ w/raw pointers that we can hand to
   // the DB thread. The V4Stores ptrs are guaranteed to be valid because their
@@ -288,7 +287,7 @@ void V4Database::VerifyChecksum(
 void V4Database::OnChecksumVerified(
     DatabaseReadyForUpdatesCallback db_ready_for_updates_callback,
     const std::vector<ListIdentifier>& stores_to_reset) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(CurrentlyOnThread(ThreadID::IO));
   std::move(db_ready_for_updates_callback).Run(stores_to_reset);
 }
 

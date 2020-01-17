@@ -36,13 +36,13 @@ chrome.automation.StateType = {
 };
 
 chrome.metricsPrivate = {
-  recordUserAction: function() {},
-  recordValue: function() {},
+  recordUserAction() {},
+  recordValue() {},
   MetricTypeType: {HISTOGRAM_LINEAR: 1}
 };
 
 chrome.commandLinePrivate = {
-  hasSwitch: function() {}
+  hasSwitch() {}
 };
 
 chrome.accessibilityPrivate = {};
@@ -54,7 +54,7 @@ chrome.accessibilityPrivate.SelectToSpeakState = {
 };
 
 chrome.i18n = {
-  getMessage: function(key) {
+  getMessage(key) {
     if (key == 'select_to_speak_checkbox_checked') {
       return 'checked';
     }

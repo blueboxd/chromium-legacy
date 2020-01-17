@@ -56,7 +56,7 @@ Polymer({
    */
   moveFocusRow_(items, direction) {
     let offset =
-        (direction == 'ArrowDown' || direction == 'ArrowRight') ? 1 : -1;
+        (direction === 'ArrowDown' || direction === 'ArrowRight') ? 1 : -1;
     const style = getComputedStyle(this);
     const avatarSpacing =
         parseInt(style.getPropertyValue('--avatar-spacing'), 10);
@@ -67,11 +67,11 @@ Polymer({
 
     const focusIndex =
         Array.prototype.slice.call(items).findIndex(function(item) {
-          return Polymer.dom(item).getOwnerRoot().activeElement == item;
+          return Polymer.dom(item).getOwnerRoot().activeElement === item;
         });
 
     let nextItem = null;
-    if (direction == 'ArrowDown' || direction == 'ArrowUp') {
+    if (direction === 'ArrowDown' || direction === 'ArrowUp') {
       for (let i = offset; Math.abs(i) <= rows; i += offset) {
         nextItem = items[(focusIndex + i * rowSize + gridSize) % gridSize];
         if (nextItem) {
@@ -82,7 +82,7 @@ Polymer({
         // end.
       }
     } else {
-      if (style.direction == 'rtl') {
+      if (style.direction === 'rtl') {
         offset *= -1;
       }
       let nextIndex = (focusIndex + offset) % items.length;
@@ -93,6 +93,6 @@ Polymer({
     }
 
     nextItem.focus();
-    assert(Polymer.dom(nextItem).getOwnerRoot().activeElement == nextItem);
+    assert(Polymer.dom(nextItem).getOwnerRoot().activeElement === nextItem);
   }
 });

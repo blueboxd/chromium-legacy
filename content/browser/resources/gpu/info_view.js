@@ -390,9 +390,9 @@ cr.define('gpu', function() {
         problemEl.appendChild(iNode);
 
         const headNode = document.createElement('span');
-        if (problem.tag == 'disabledFeatures') {
+        if (problem.tag === 'disabledFeatures') {
           headNode.textContent = 'Disabled Features: ';
-        } else {  // problem.tag == 'workarounds'
+        } else {  // problem.tag === 'workarounds'
           headNode.textContent = 'Applied Workarounds: ';
         }
         iNode.appendChild(headNode);
@@ -403,9 +403,9 @@ cr.define('gpu', function() {
             iNode.appendChild(separateNode);
           }
           const nameNode = document.createElement('span');
-          if (problem.tag == 'disabledFeatures') {
+          if (problem.tag === 'disabledFeatures') {
             nameNode.classList.add('feature-red');
-          } else {  // problem.tag == 'workarounds'
+          } else {  // problem.tag === 'workarounds'
             nameNode.classList.add('feature-yellow');
           }
           nameNode.textContent = problem.affectedGpuSettings[j];
@@ -459,7 +459,7 @@ cr.define('gpu', function() {
       ANGLEFeatureEl.appendChild(separator);
 
       const status = document.createElement('span');
-      if (ANGLEFeature.status == 'enabled') {
+      if (ANGLEFeature.status === 'enabled') {
         status.textContent = 'Enabled';
         status.classList.add('feature-green');
       } else {

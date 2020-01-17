@@ -11,7 +11,7 @@ cr.define('cr.ui', function() {
    */
   function getTabBox(el) {
     return /** @type {cr.ui.TabBox} */ (findAncestor(el, function(node) {
-      return node.tagName == 'TABBOX';
+      return node.tagName === 'TABBOX';
     }));
   }
 
@@ -21,7 +21,7 @@ cr.define('cr.ui', function() {
    * @return {boolean} Whether the element is a tab related element.
    */
   function isTabElement(el) {
-    return el.tagName == 'TAB' || el.tagName == 'TABPANEL';
+    return el.tagName === 'TAB' || el.tagName === 'TABPANEL';
   }
 
   /**
@@ -57,7 +57,7 @@ cr.define('cr.ui', function() {
     if (element) {
       let i;
       for (i = 0; child = element.children[i]; i++) {
-        const isSelected = i == selectedIndex;
+        const isSelected = i === selectedIndex;
         child.selected = isSelected;
 
         // Update tabIndex for a11y
@@ -78,7 +78,7 @@ cr.define('cr.ui', function() {
     if (element) {
       let i;
       for (i = 0; child = element.children[i]; i++) {
-        child.selected = i == selectedIndex;
+        child.selected = i === selectedIndex;
       }
     }
   }
@@ -106,7 +106,7 @@ cr.define('cr.ui', function() {
      */
     handleSelectedChange_(e) {
       const target = /** @type {cr.ui.Tab|cr.ui.TabPanel}} */ (e.target);
-      if (e.newValue && isTabElement(target) && getTabBox(target) == this) {
+      if (e.newValue && isTabElement(target) && getTabBox(target) === this) {
         const index =
             Array.prototype.indexOf.call(target.parentElement.children, target);
         this.selectedIndex = index;
@@ -166,7 +166,7 @@ cr.define('cr.ui', function() {
       }
 
       const cs = this.ownerDocument.defaultView.getComputedStyle(this);
-      if (cs.direction == 'rtl') {
+      if (cs.direction === 'rtl') {
         delta *= -1;
       }
 

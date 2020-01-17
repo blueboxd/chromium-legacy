@@ -173,9 +173,9 @@ Polymer({
     if (!simLockStatus) {
       return;
     }
-    this.pukRequired_ = simLockStatus.lockType == 'sim-puk';
+    this.pukRequired_ = simLockStatus.lockType === 'sim-puk';
     const lockEnabled = simLockStatus.lockEnabled;
-    if (lockEnabled != this.lockEnabled_) {
+    if (lockEnabled !== this.lockEnabled_) {
       this.setLockEnabled_ = lockEnabled;
       this.updateLockEnabled_();
     } else {
@@ -497,7 +497,7 @@ Polymer({
 
   /** @private */
   getErrorMsg_() {
-    if (this.error_ == ErrorType.NONE) {
+    if (this.error_ === ErrorType.NONE) {
       return '';
     }
     const retriesLeft = (this.simUnlockSent_ && this.deviceState &&
@@ -505,19 +505,19 @@ Polymer({
         this.deviceState.simLockStatus.retriesLeft :
         0;
 
-    if (this.error_ == ErrorType.INCORRECT_PIN) {
+    if (this.error_ === ErrorType.INCORRECT_PIN) {
       return this.i18n('networkSimErrorIncorrectPin', retriesLeft);
     }
-    if (this.error_ == ErrorType.INCORRECT_PUK) {
+    if (this.error_ === ErrorType.INCORRECT_PUK) {
       return this.i18n('networkSimErrorIncorrectPuk', retriesLeft);
     }
-    if (this.error_ == ErrorType.MISMATCHED_PIN) {
+    if (this.error_ === ErrorType.MISMATCHED_PIN) {
       return this.i18n('networkSimErrorPinMismatch');
     }
-    if (this.error_ == ErrorType.INVALID_PIN) {
+    if (this.error_ === ErrorType.INVALID_PIN) {
       return this.i18n('networkSimErrorInvalidPin', retriesLeft);
     }
-    if (this.error_ == ErrorType.INVALID_PUK) {
+    if (this.error_ === ErrorType.INVALID_PUK) {
       return this.i18n('networkSimErrorInvalidPuk', retriesLeft);
     }
     assertNotReached();
@@ -543,7 +543,7 @@ Polymer({
       this.focusDialogInput_();
       return false;
     }
-    if (opt_pin2 != undefined && pin1 != opt_pin2) {
+    if (opt_pin2 !== undefined && pin1 !== opt_pin2) {
       this.error_ = ErrorType.MISMATCHED_PIN;
       this.focusDialogInput_();
       return false;

@@ -58,10 +58,10 @@ bool TextInputClientObserver::OnMessageReceived(const IPC::Message& message) {
 bool TextInputClientObserver::Send(IPC::Message* message) {
   // This class is attached to the main frame RenderWidget, but sends and
   // receives messages while the main frame is remote (and the RenderWidget is
-  // undead). The messages are not received on RenderWidgetHostImpl, so there's
-  // no need to send through RenderWidget or use its routing id. We avoid this
-  // problem then by sending directly through RenderThread instead of through
-  // RenderWidget::Send().
+  // destroyed). The messages are not received on RenderWidgetHostImpl, so
+  // there's no need to send through RenderWidget or use its routing id. We
+  // avoid this problem then by sending directly through RenderThread instead of
+  // through RenderWidget::Send().
   // TODO(crbug.com/669219): This class should not be used while the main frame
   // is remote.
   return RenderThread::Get()->Send(message);

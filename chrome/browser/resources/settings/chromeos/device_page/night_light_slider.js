@@ -90,7 +90,7 @@ Polymer({
   dragObject_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.isRTL_ = window.getComputedStyle(this).direction == 'rtl';
 
     this.$.sliderContainer.addEventListener('contextmenu', function(e) {
@@ -113,14 +113,14 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  prefsAvailable: function() {
+  prefsAvailable() {
     return ['custom_start_time', 'custom_end_time']
         .map(key => `prefs.ash.night_light.${key}.value`)
         .every(path => this.get(path) != undefined);
   },
 
   /** @private */
-  updateMarkers_: function() {
+  updateMarkers_() {
     if (!this.isReady_ || !this.prefsAvailable()) {
       return;
     }
@@ -160,7 +160,7 @@ Polymer({
    * updated.
    * @private
    */
-  onResize_: function() {
+  onResize_() {
     this.updateKnobs_();
   },
 
@@ -169,7 +169,7 @@ Polymer({
    * 24-hour clock format is changed. This will also refresh the slider.
    * @private
    */
-  hourFormatChanged_: function() {
+  hourFormatChanged_() {
     this.shouldUse24Hours_ = /** @type {boolean} */ (
         this.getPref('settings.clock.use_24hour_clock').value);
   },
@@ -181,7 +181,7 @@ Polymer({
    * @return {string} The CSS style of the legend div.
    * @private
    */
-  getLegendStyle_: function(percent, isRTL) {
+  getLegendStyle_(percent, isRTL) {
     percent = isRTL ? 100 - percent : percent;
     return 'left: ' + percent + '%';
   },
@@ -190,7 +190,7 @@ Polymer({
    * If one of the two knobs is focused, this function blurs it.
    * @private
    */
-  blurAnyFocusedKnob_: function() {
+  blurAnyFocusedKnob_() {
     const activeElement = this.shadowRoot.activeElement;
     if (activeElement == this.$.startKnob || activeElement == this.$.endKnob) {
       activeElement.blur();
@@ -202,7 +202,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  startDrag_: function(event) {
+  startDrag_(event) {
     event.preventDefault();
 
     // Only handle start or end knobs. Use the "knob-inner" divs just to display
@@ -228,7 +228,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  continueDrag_: function(event) {
+  continueDrag_(event) {
     if (!this.dragObject_) {
       return;
     }
@@ -253,7 +253,7 @@ Polymer({
    * @return {number}
    * @private
    */
-  getDeltaMinutes_: function(deltaX) {
+  getDeltaMinutes_(deltaX) {
     return (this.isRTL_ ? -1 : 1) *
         Math.floor(
             TOTAL_MINUTES_PER_DAY * deltaX / this.$.sliderBar.offsetWidth);
@@ -266,7 +266,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  doKnobTracking_: function(event) {
+  doKnobTracking_(event) {
     const lastDeltaMinutes = this.getDeltaMinutes_(event.detail.ddx);
     if (Math.abs(lastDeltaMinutes) < 1) {
       return;
@@ -286,7 +286,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  endDrag_: function(event) {
+  endDrag_(event) {
     event.preventDefault();
     this.dragObject_ = null;
     this.removeRipple_();
@@ -299,7 +299,7 @@ Polymer({
    * @return {number}
    * @private
    */
-  getKnobRatio_: function(knob) {
+  getKnobRatio_(knob) {
     return parseFloat(knob.style.left) / this.$.sliderBar.offsetWidth;
   },
 
@@ -312,7 +312,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getLocaleTimeString_: function(hour, minutes, shouldUse24Hours) {
+  getLocaleTimeString_(hour, minutes, shouldUse24Hours) {
     const d = new Date();
     d.setHours(hour);
     d.setMinutes(minutes);
@@ -332,7 +332,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTimeString_: function(offsetMinutes, shouldUse24Hours) {
+  getTimeString_(offsetMinutes, shouldUse24Hours) {
     const hour = Math.floor(offsetMinutes / 60);
     const minute = Math.floor(offsetMinutes % 60);
 
@@ -344,7 +344,7 @@ Polymer({
    * knobs and their label bubbles and refreshes the slider.
    * @private
    */
-  updateKnobs_: function() {
+  updateKnobs_() {
     if (!this.isReady_ || !this.prefsAvailable() ||
         this.$.sliderBar.offsetWidth == 0) {
       return;
@@ -365,7 +365,7 @@ Polymer({
    * @param {number} offsetMinutes
    * @private
    */
-  updateKnobLeft_: function(knob, offsetMinutes) {
+  updateKnobLeft_(knob, offsetMinutes) {
     const offsetAfter6pm =
         (offsetMinutes + TOTAL_MINUTES_PER_DAY - OFFSET_MINUTES_6PM) %
         TOTAL_MINUTES_PER_DAY;
@@ -390,7 +390,7 @@ Polymer({
    * and the progress bar).
    * @private
    */
-  refresh_: function() {
+  refresh_() {
     // The label bubbles have the same left coordinates as their corresponding
     // knobs.
     this.$.startLabel.style.left = this.$.startKnob.style.left;
@@ -431,7 +431,7 @@ Polymer({
    * label up a little.
    * @private
    */
-  fixLabelsOverlapIfAny_: function() {
+  fixLabelsOverlapIfAny_() {
     const startLabel = this.$.startLabel;
     const endLabel = this.$.endLabel;
     const distance = Math.abs(
@@ -453,7 +453,7 @@ Polymer({
    * @return {number}
    * @private
    */
-  getOtherKnobPrefValue_: function(prefPath) {
+  getOtherKnobPrefValue_(prefPath) {
     if (prefPath == 'ash.night_light.custom_start_time') {
       return /** @type {number} */ (
           this.getPref('ash.night_light.custom_end_time').value);
@@ -491,7 +491,7 @@ Polymer({
    * @param {boolean} fromUserGesture
    * @private
    */
-  updatePref_: function(updatedValue, fromUserGesture) {
+  updatePref_(updatedValue, fromUserGesture) {
     const prefPath = assert(this.getFocusedKnobPrefPathIfAny_());
     const otherValue = this.getOtherKnobPrefValue_(prefPath);
 
@@ -512,7 +512,7 @@ Polymer({
    * @returns {?string}
    * @private
    */
-  getPrefPath_: function(knob) {
+  getPrefPath_(knob) {
     if (knob == this.$.startKnob) {
       return 'ash.night_light.custom_start_time';
     }
@@ -529,7 +529,7 @@ Polymer({
    * @returns {?number}
    * @private
    */
-  getPrefValue_: function(knob) {
+  getPrefValue_(knob) {
     const path = this.getPrefPath_(knob);
     return path ? /** @type {number} */ (this.getPref(path).value) : null;
   },
@@ -540,7 +540,7 @@ Polymer({
    * @return {?string}
    * @private
    */
-  getFocusedKnobPrefPathIfAny_: function() {
+  getFocusedKnobPrefPathIfAny_() {
     return this.getPrefPath_(this.shadowRoot.activeElement);
   },
 
@@ -548,7 +548,7 @@ Polymer({
    * @return {boolean} Whether either of the two knobs is focused.
    * @private
    */
-  isEitherKnobFocused_: function() {
+  isEitherKnobFocused_() {
     const activeElement = this.shadowRoot.activeElement;
     return activeElement == this.$.startKnob || activeElement == this.$.endKnob;
   },
@@ -559,7 +559,7 @@ Polymer({
    * doesn't show.
    * @protected
    */
-  _createRipple: function() {
+  _createRipple() {
     if (this.isEitherKnobFocused_()) {
       this._rippleContainer = this.shadowRoot.activeElement;
     } else {
@@ -580,7 +580,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onFocus_: function(event) {
+  onFocus_(event) {
     this.handleKnobEvent_(event);
   },
 
@@ -592,7 +592,7 @@ Polymer({
    * @param {Element=} overrideElement
    * @private
    */
-  handleKnobEvent_: function(event, overrideElement) {
+  handleKnobEvent_(event, overrideElement) {
     const knob = overrideElement ||
         event.path.find(el => el.classList && el.classList.contains('knob'));
     if (!knob) {
@@ -617,7 +617,7 @@ Polymer({
    * Handles blur events on the start and end knobs.
    * @private
    */
-  onBlur_: function() {
+  onBlur_() {
     this.removeRipple_();
   },
 
@@ -625,7 +625,7 @@ Polymer({
    * Removes ripple if one exists.
    * @private
    */
-  removeRipple_: function() {
+  removeRipple_() {
     if (this.hasRipple()) {
       this._ripple.remove();
       this._ripple = null;
@@ -636,7 +636,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onKeyDown_: function(event) {
+  onKeyDown_(event) {
     const activeElement = this.shadowRoot.activeElement;
     if (event.key == 'Tab') {
       if (event.shiftKey && this.$.endKnob == activeElement) {

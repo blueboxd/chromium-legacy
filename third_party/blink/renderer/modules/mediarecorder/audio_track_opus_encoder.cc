@@ -27,7 +27,7 @@ enum : int {
 
   // Maximum buffer multiplier for the AudioEncoders' AudioFifo. Recording is
   // not real time, hence a certain buffering is allowed.
-  kMaxNumberOfFifoBuffers = 2,
+  kMaxNumberOfFifoBuffers = 3,
 };
 
 // The amount of Frames in a 60 ms buffer @ 48000 samples/second.
@@ -164,8 +164,10 @@ void AudioTrackOpusEncoder::EncodeAudio(
   // output and they are multiples.
   fifo_->Push(input_bus.get());
 
-  // Wait to have enough |input_bus|s to guarantee a satisfactory conversion.
-  while (fifo_->frames() >= input_params_.frames_per_buffer()) {
+  // Wait to have enough |input_bus|s to guarantee a satisfactory conversion,
+  // accounting for multiple calls to ProvideInput().
+  while (fifo_->frames() >= converter_->GetMaxInputFramesRequested(
+                                kOpusPreferredFramesPerBuffer)) {
     std::unique_ptr<media::AudioBus> audio_bus = media::AudioBus::Create(
         converted_params_.channels(), kOpusPreferredFramesPerBuffer);
     converter_->Convert(audio_bus.get());

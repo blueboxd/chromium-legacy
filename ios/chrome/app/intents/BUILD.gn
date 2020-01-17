@@ -9,18 +9,12 @@ source_set("intents") {
     "SearchInChromeIntent.h",
     "SearchInChromeIntent.m",
   ]
-  deps = [
-    ":resources",
-  ]
+  deps = [ ":resources" ]
   libs = [ "Intents.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 bundle_data("resources") {
-  sources = [
-    "Intents.intentdefinition",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
+  sources = [ "Intents.intentdefinition" ]
+  outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
 }

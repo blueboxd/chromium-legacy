@@ -6,9 +6,12 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/pooled_sequenced_task_runner.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
+#include "chrome/browser/media/history/media_history_session_table.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/media_player_watch_time.h"
 #include "content/public/test/browser_task_environment.h"
@@ -48,6 +51,20 @@ class MediaHistoryStoreUnitTest : public testing::Test {
   }
 
   void TearDown() override { content::RunAllTasksUntilIdle(); }
+
+  mojom::MediaHistoryStatsPtr GetStatsSync() {
+    base::RunLoop run_loop;
+    mojom::MediaHistoryStatsPtr stats_out;
+
+    GetMediaHistoryStore()->GetMediaHistoryStats(
+        base::BindLambdaForTesting([&](mojom::MediaHistoryStatsPtr stats) {
+          stats_out = std::move(stats);
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    return stats_out;
+  }
 
   MediaHistoryStore* GetMediaHistoryStore() {
     return media_history_store_.get();
@@ -127,6 +144,39 @@ TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
   }
 
   EXPECT_EQ(1, origin_row_count);
+}
+
+TEST_F(MediaHistoryStoreUnitTest, GetStats) {
+  {
+    // Check all the tables are empty.
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    EXPECT_EQ(0, stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
+    EXPECT_EQ(0,
+              stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
+    EXPECT_EQ(0,
+              stats->table_row_counts[MediaHistoryEngagementTable::kTableName]);
+    EXPECT_EQ(0, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+  }
+
+  {
+    // Create a media player watch time and save it to the playbacks table.
+    GURL url("http://google.com/test");
+    content::MediaPlayerWatchTime watch_time(
+        url, url.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
+        base::TimeDelta::FromMilliseconds(321), true, false);
+    GetMediaHistoryStore()->SavePlayback(watch_time);
+  }
+
+  {
+    // Check the tables have records in them.
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    EXPECT_EQ(1, stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
+    EXPECT_EQ(1,
+              stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
+    EXPECT_EQ(0,
+              stats->table_row_counts[MediaHistoryEngagementTable::kTableName]);
+    EXPECT_EQ(0, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+  }
 }
 
 }  // namespace media_history

@@ -176,8 +176,6 @@ blink_core_sources("layout") {
     "layout_ruby_run.h",
     "layout_ruby_text.cc",
     "layout_ruby_text.h",
-    "layout_search_field.cc",
-    "layout_search_field.h",
     "layout_shift_region.cc",
     "layout_shift_region.h",
     "layout_shift_tracker.cc",

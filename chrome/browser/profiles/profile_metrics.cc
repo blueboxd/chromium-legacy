@@ -78,28 +78,6 @@ ProfileMetrics::ProfileType GetProfileType(
   return metric;
 }
 
-void LogLockedProfileInformation(ProfileManager* manager) {
-  base::Time now = base::Time::Now();
-  const int kMinutesInProfileValidDuration =
-      base::TimeDelta::FromDays(28).InMinutes();
-  std::vector<ProfileAttributesEntry*> entries =
-      manager->GetProfileAttributesStorage().GetAllProfilesAttributes();
-  for (ProfileAttributesEntry* entry : entries) {
-    // Find when locked profiles were locked
-    if (entry->IsSigninRequired()) {
-      base::TimeDelta time_since_lock = now - entry->GetActiveTime();
-      // Specifying 100 buckets for the histogram to get a higher level of
-      // granularity in the reported data, given the large number of possible
-      // values (kMinutesInProfileValidDuration > 40,000).
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Profile.LockedProfilesDuration",
-                                  time_since_lock.InMinutes(),
-                                  1,
-                                  kMinutesInProfileValidDuration,
-                                  100);
-    }
-  }
-}
-
 bool HasProfileBeenActiveSince(const ProfileAttributesEntry* entry,
                                const base::Time& active_limit) {
 #if !defined(OS_ANDROID)
@@ -245,13 +223,8 @@ void ProfileMetrics::LogNumberOfProfileSwitches() {
 
 void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
   profile_metrics::Counts counts;
-  bool success = CountProfileInformation(manager, &counts);
-
+  CountProfileInformation(manager, &counts);
   profile_metrics::LogProfileMetricsCounts(counts);
-
-  // Ignore other metrics if we have no profiles.
-  if (success)
-    LogLockedProfileInformation(manager);
 }
 
 void ProfileMetrics::LogProfileAddNewUser(ProfileAdd metric) {
@@ -519,11 +492,6 @@ void ProfileMetrics::LogProfileSyncInfo(ProfileSync metric) {
 void ProfileMetrics::LogProfileAuthResult(ProfileAuth metric) {
   UMA_HISTOGRAM_ENUMERATION("Profile.AuthResult", metric,
                             NUM_PROFILE_AUTH_METRICS);
-}
-
-void ProfileMetrics::LogProfileDesktopMenu(ProfileDesktopMenu metric) {
-  UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.NonGAIA", metric,
-                            NUM_PROFILE_DESKTOP_MENU_METRICS);
 }
 
 void ProfileMetrics::LogProfileDelete(bool profile_was_signed_in) {

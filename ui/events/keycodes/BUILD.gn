@@ -14,9 +14,7 @@ jumbo_source_set("xkb") {
     "xkb_keysym.h",
   ]
 
-  public_deps = [
-    "//ui/base:buildflags",
-  ]
+  public_deps = [ "//ui/base:buildflags" ]
 
   deps = [
     "//base",

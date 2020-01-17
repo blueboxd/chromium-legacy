@@ -48,9 +48,7 @@ component("cpp") {
     "util.h",
   ]
 
-  public_deps = [
-    ":base_cpp",
-  ]
+  public_deps = [ ":base_cpp" ]
 
   deps = [
     "//base",

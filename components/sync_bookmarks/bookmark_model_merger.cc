@@ -115,45 +115,31 @@ bool NodeSemanticsMatch(const bookmarks::BookmarkNode* local_node,
   return local_node->url() == GURL(specifics.url());
 }
 
-// Goes through remote updates to detect duplicate GUIDs (should be extremely
-// rare) and resolve them by ignoring (clearing) all occurrences except one,
-// which if possible will be the one that also matches the originator client
-// item ID.
-// TODO(crbug.com/978430): Remove this logic and deprecate proto field.
-void ResolveDuplicateRemoteGUIDs(syncer::UpdateResponseDataList* updates) {
+// Goes through remote updates to detect duplicate GUIDs, which cannot exist
+// because GUIDs are guaranteed to match the originator client item ID (handled
+// in GroupValidUpdatesByParentId()) and duplicates of originator client item
+// ID are sorted out by ModelTypeWorker.
+void CheckNoDuplicatesInRemoteGUIDs(
+    const UpdatesPerParentId& updates_per_parent_id) {
+#if DCHECK_IS_ON()
   std::set<std::string> known_guids;
-  // In a first pass we process |originator_client_item_id| which is more
-  // authoritative and cannot run into duplicates.
-  for (const UpdateResponseData& update : *updates) {
-    // |originator_client_item_id| is empty for permanent nodes.
-    if (update.entity.is_deleted() ||
-        update.entity.originator_client_item_id.empty()) {
-      continue;
-    }
 
-    bool success =
-        known_guids.insert(update.entity.originator_client_item_id).second;
-    DCHECK(success);
-  }
+  for (const auto& parent_id_and_updates : updates_per_parent_id) {
+    for (const UpdateResponseData& update : parent_id_and_updates.second) {
+      // |originator_client_item_id| is empty for permanent nodes.
+      if (update.entity.is_deleted() ||
+          !update.entity.server_defined_unique_tag.empty()) {
+        continue;
+      }
 
-  // In a second pass, detect if GUIDs in specifics conflict with each other or
-  // with |originator_client_item_id| values processed earlier.
-  for (UpdateResponseData& update : *updates) {
-    const std::string& guid_in_specifics =
-        update.entity.specifics.bookmark().guid();
-    if (guid_in_specifics.empty() ||
-        guid_in_specifics == update.entity.originator_client_item_id) {
-      continue;
-    }
+      const std::string& guid_in_specifics =
+          update.entity.specifics.bookmark().guid();
 
-    bool success = known_guids.insert(guid_in_specifics).second;
-    if (!success) {
-      // This GUID conflicts with another one, so let's ignore it for the
-      // purpose of merging. This mimics the data produced by old clients,
-      // without the GUID being populated.
-      update.entity.specifics.mutable_bookmark()->clear_guid();
+      bool success = known_guids.insert(guid_in_specifics).second;
+      DCHECK(success);
     }
   }
+#endif  // DCHECK_IS_ON()
 }
 
 // Groups all valid updates by the server ID of their parent and moves them away
@@ -185,6 +171,13 @@ UpdatesPerParentId GroupValidUpdatesByParentId(
       DLOG(ERROR) << "Remote update with invalid specifics";
       continue;
     }
+    if (!HasExpectedBookmarkGuid(update_entity.specifics.bookmark(),
+                                 update_entity.originator_cache_guid,
+                                 update_entity.originator_client_item_id)) {
+      // Ignore updates with an unexpected GUID.
+      DLOG(ERROR) << "Remote update with unexpected GUID";
+      continue;
+    }
 
     updates_per_parent_id[update_entity.parent_id].push_back(std::move(update));
   }
@@ -208,8 +201,8 @@ void BookmarkModelMerger::RemoteTreeNode::EmplaceSelfAndDescendantsByGUID(
         guid_to_remote_node_map) const {
   DCHECK(guid_to_remote_node_map);
 
-  const std::string& guid = entity().specifics.bookmark().guid();
-  if (!guid.empty()) {
+  if (entity().server_defined_unique_tag.empty()) {
+    const std::string& guid = entity().specifics.bookmark().guid();
     DCHECK(base::IsValidGUID(guid));
 
     // Duplicate GUIDs have been sorted out before.
@@ -312,12 +305,12 @@ void BookmarkModelMerger::Merge() {
 // static
 BookmarkModelMerger::RemoteForest BookmarkModelMerger::BuildRemoteForest(
     syncer::UpdateResponseDataList updates) {
-  ResolveDuplicateRemoteGUIDs(&updates);
-
   // Filter out invalid remote updates and group the valid ones by the server ID
   // of their parent.
   UpdatesPerParentId updates_per_parent_id =
       GroupValidUpdatesByParentId(&updates);
+
+  CheckNoDuplicatesInRemoteGUIDs(updates_per_parent_id);
 
   // Construct one tree per permanent entity.
   RemoteForest update_forest;
@@ -543,16 +536,12 @@ void BookmarkModelMerger::ProcessRemoteCreation(
     const bookmarks::BookmarkNode* local_parent,
     size_t index) {
   DCHECK(!FindMatchingLocalNodeByGUID(remote_node));
+
   const EntityData& remote_update_entity = remote_node.entity();
+  DCHECK(IsValidBookmarkSpecifics(remote_update_entity.specifics.bookmark(),
+                                  remote_update_entity.is_folder));
 
-  // If specifics do not have a valid GUID, create a new one. Legacy clients do
-  // not populate GUID field and if the originator_client_item_id is not of
-  // valid GUID format to replace it, the field is left blank.
-  sync_pb::EntitySpecifics specifics = remote_node.entity().specifics;
-  if (!base::IsValidGUID(specifics.bookmark().guid())) {
-    specifics.mutable_bookmark()->set_guid(base::GenerateGUID());
-  }
-
+  const sync_pb::EntitySpecifics& specifics = remote_node.entity().specifics;
   const bookmarks::BookmarkNode* bookmark_node =
       CreateBookmarkNodeFromSpecifics(specifics.bookmark(), local_parent, index,
                                       remote_update_entity.is_folder,
@@ -625,8 +614,10 @@ void BookmarkModelMerger::ProcessLocalCreation(
             predecessor_entity->metadata()->unique_position()),
         suffix);
   }
+
   const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
-      node, bookmark_model_, /*force_favicon_load=*/true);
+      node, bookmark_model_, /*force_favicon_load=*/true,
+      /*include_guid=*/true);
   bookmark_tracker_->Add(sync_id, node, server_version, creation_time,
                          pos.ToProto(), specifics);
   // Mark the entity that it needs to be committed.

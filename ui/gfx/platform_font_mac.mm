@@ -13,6 +13,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/skia/include/ports/SkTypeface_mac.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
@@ -312,7 +313,8 @@ NativeFont PlatformFontMac::GetNativeFont() const {
 }
 
 sk_sp<SkTypeface> PlatformFontMac::GetNativeSkTypefaceIfAvailable() const {
-  return nullptr;
+  return sk_sp<SkTypeface>(
+      SkCreateTypefaceFromCTFont(base::mac::NSToCFCast(GetNativeFont())));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

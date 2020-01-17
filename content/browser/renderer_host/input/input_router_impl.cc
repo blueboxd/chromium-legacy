@@ -710,6 +710,10 @@ void InputRouterImpl::ForceResetTouchActionForTest() {
   touch_action_filter_.ForceResetTouchActionForTest();
 }
 
+bool InputRouterImpl::IsFlingActiveForTest() {
+  return gesture_event_queue_.IsFlingActiveForTest();
+}
+
 void InputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
   TRACE_EVENT1("input", "InputRouterImpl::OnSetTouchAction", "action",
                touch_action);

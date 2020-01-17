@@ -35,9 +35,7 @@ source_set("test_support") {
     "mock_keychain.h",
   ]
 
-  public_deps = [
-    "//testing/gmock",
-  ]
+  public_deps = [ "//testing/gmock" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

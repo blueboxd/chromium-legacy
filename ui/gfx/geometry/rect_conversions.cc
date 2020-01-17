@@ -55,6 +55,17 @@ Rect ToEnclosedRect(const RectF& rect) {
   return result;
 }
 
+Rect ToEnclosedRectIgnoringError(const RectF& r, float error) {
+  int left = ToCeiledIntIgnoringError(r.x(), error);
+  int right = r.width() ? ToFlooredIntIgnoringError(r.right(), error) : left;
+  int top = ToCeiledIntIgnoringError(r.y(), error);
+  int bottom = r.height() ? ToFlooredIntIgnoringError(r.bottom(), error) : top;
+
+  Rect result;
+  result.SetByBounds(left, top, right, bottom);
+  return result;
+}
+
 Rect ToNearestRect(const RectF& rect) {
   float float_min_x = rect.x();
   float float_min_y = rect.y();

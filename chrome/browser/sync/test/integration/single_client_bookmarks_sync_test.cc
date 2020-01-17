@@ -886,7 +886,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                                             originator_client_item_id));
 
   EXPECT_EQ(1, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
-                                               /*kLeftEmpty=*/2));
+                                               /*kInferred=*/3));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
@@ -921,6 +921,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                                                /*kValidOCII=*/1));
   EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
                                                /*kLeftEmpty=*/2));
+  EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kInferred=*/3));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
@@ -959,6 +961,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                                                /*kValidOCII=*/1));
   EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
                                                /*kLeftEmpty=*/2));
+  EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kInferred=*/3));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
@@ -996,55 +1000,10 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                                                /*kSpecifics=*/0));
   EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
                                                /*kValidOCII=*/1));
-  EXPECT_EQ(1, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+  EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
                                                /*kLeftEmpty=*/2));
-}
-
-IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
-                       ApplyRemoteUpdateWithValidGUID) {
-  // Create a bookmark.
-  const GURL url = GURL("https://foo.com");
-  fake_server::EntityBuilderFactory entity_builder_factory;
-  fake_server::BookmarkEntityBuilder bookmark_builder =
-      entity_builder_factory.NewBookmarkEntityBuilder("Seattle Sounders FC");
-
-  // Issue remote creation.
-  std::unique_ptr<syncer::LoopbackServerEntity> bookmark =
-      bookmark_builder.BuildBookmark(url, /*is_legacy=*/false);
-  const std::string old_guid = bookmark.get()->GetSpecifics().bookmark().guid();
-  fake_server_->InjectEntity(std::move(bookmark));
-  SCOPED_TRACE(std::string("old_guid=") + old_guid);
-
-  // Start syncing.
-  DisableVerifier();
-  ASSERT_TRUE(SetupSync());
-
-  // Created bookmark should be in the model.
-  ASSERT_TRUE(BookmarksUrlChecker(kSingleProfileIndex, url, 1).Wait());
-  ASSERT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
-  ASSERT_EQ(
-      old_guid,
-      GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
-
-  // Change bookmark GUID in the server to simulate an update from another
-  // client that has a differente GUID assigned to this bookmark. This can
-  // happen because every client assigns GUIDs independently when the GUID is
-  // missing, and the values should eventually be consistent across clients.
-  std::vector<sync_pb::SyncEntity> server_bookmarks =
-      GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
-  ASSERT_EQ(1ul, server_bookmarks.size());
-  sync_pb::EntitySpecifics specifics = server_bookmarks[0].specifics();
-  const std::string new_guid = base::GenerateGUID();
-  specifics.mutable_bookmark()->set_guid(new_guid);
-  ASSERT_TRUE(GetFakeServer()->ModifyEntitySpecifics(
-      /*entity_id=*/server_bookmarks[0].id_string(), specifics));
-
-  // The bookmark GUID should have been updated with the corresponding value.
-  EXPECT_TRUE(BookmarksGUIDChecker(kSingleProfileIndex, new_guid).Wait());
-  EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
-  EXPECT_EQ(
-      new_guid,
-      GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
+  EXPECT_EQ(1, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
+                                               /*kInferred=*/3));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,

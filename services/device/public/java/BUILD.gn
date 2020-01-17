@@ -5,18 +5,12 @@
 import("//build/config/android/rules.gni")
 
 android_library("nfc_java") {
-  sources = [
-    "src/org/chromium/device/nfc/NfcDelegate.java",
-  ]
-  deps = [
-    "//base:base_java",
-  ]
+  sources = [ "src/org/chromium/device/nfc/NfcDelegate.java" ]
+  deps = [ "//base:base_java" ]
 }
 
 android_library("geolocation_java") {
-  sources = [
-    "src/org/chromium/device/geolocation/LocationProvider.java",
-  ]
+  sources = [ "src/org/chromium/device/geolocation/LocationProvider.java" ]
 }
 
 android_library("geolocation_java_test_support") {

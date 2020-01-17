@@ -57,9 +57,7 @@ source_set("tab_grid_ui_constants") {
     "tab_grid_constants.mm",
   ]
 
-  deps = [
-    "resources:grid_background_color",
-  ]
+  deps = [ "resources:grid_background_color" ]
 }
 
 source_set("tab_grid_ui") {
@@ -121,12 +119,19 @@ source_set("unit_tests") {
     "grid:grid_ui",
     "//base",
     "//base/test:test_support",
+    "//components/sessions",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/ntp",
+    "//ios/chrome/browser/sessions:restoration_agent",
+    "//ios/chrome/browser/sessions:test_support",
+    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/tabs:tabs_internal",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/web",
+    "//ios/chrome/browser/web:page_placeholder",
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/browser/web_state_list:test_support",

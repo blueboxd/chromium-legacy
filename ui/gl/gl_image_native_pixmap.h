@@ -45,6 +45,7 @@ class GL_EXPORT GLImageNativePixmap : public gl::GLImageEGL {
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
+  scoped_refptr<gfx::NativePixmap> GetNativePixmap() override;
 
  protected:
   ~GLImageNativePixmap() override;

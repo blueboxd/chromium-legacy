@@ -118,6 +118,7 @@ message DeviceReportingProto {
   optional bool report_storage_status = 13 [default = false];
   optional bool report_board_status = 14 [default = false];
   optional bool report_cpu_info = 15 [default = false];
+  optional bool report_graphics_status = 16 [default = false];
 
   // Frequency to report device status, default to 3 hours.
   optional int64 device_status_frequency = 9 [default = 10800000];
@@ -829,6 +830,15 @@ message AccessibilitySettingsProto {
   optional bool login_screen_show_options_in_system_tray_menu_enabled = 32;
   optional PolicyOptions
       login_screen_show_options_in_system_tray_menu_enabled_options = 33;
+
+  // Sets whether all the accessibility features shortcuts are being enabled or
+  // not on the login screen. If this policy is set to true, the accessibility
+  // shortcuts are going to be enabled when the login screen is shown. If this
+  // policy is set to false, the accessibility shortcuts are going to be
+  // disabled when the login screen is shown. If this policy is left unset, the
+  // accessibility shortcuts are going to be enabled on the login screen.
+  optional bool login_screen_shortcuts_enabled = 34;
+  optional PolicyOptions login_screen_shortcuts_enabled_options = 35;
 }
 
 message SupervisedUsersSettingsProto {

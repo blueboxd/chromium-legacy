@@ -3393,7 +3393,6 @@ TEST_P(QuicNetworkTransactionTest,
     client_maker_.RemoveSavedStreamFrames(
         GetNthClientInitiatedBidirectionalStreamId(0));
 
-    if (FLAGS_quic_allow_http3_priority) {
       // TLP 1
       quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
                                           1, packet_number++, true));
@@ -3425,41 +3424,6 @@ TEST_P(QuicNetworkTransactionTest,
                          client_maker_.MakeConnectionClosePacket(
                              packet_number++, true, quic::QUIC_TOO_MANY_RTOS,
                              "5 consecutive retransmission timeouts"));
-    } else {
-      // When PRIORITY is disabled, packet 2 only contains request headers. And
-      // since the request stream is reset, packet 2 will not be retransmitted.
-      // TLP 1
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          1, packet_number++, true));
-      // TLP 2
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          3, packet_number++, true));
-      // RTO 1
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          4, packet_number++, true));
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          1, packet_number++, true));
-      // RTO 2
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          3, packet_number++, true));
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          4, packet_number++, true));
-      // RTO 3
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          1, packet_number++, true));
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          3, packet_number++, true));
-      // RTO 4
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          4, packet_number++, true));
-      quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
-                                          1, packet_number++, true));
-      // RTO 5
-      quic_data.AddWrite(SYNCHRONOUS,
-                         client_maker_.MakeConnectionClosePacket(
-                             packet_number++, true, quic::QUIC_TOO_MANY_RTOS,
-                             "5 consecutive retransmission timeouts"));
-    }
   }
 
   quic_data.AddRead(ASYNC, OK);
@@ -6853,9 +6817,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
   if ((client_headers_include_h2_stream_dependency_ &&
        version_.transport_version >= quic::QUIC_VERSION_43 &&
-       !VersionUsesHttp3(version_.transport_version)) ||
-      (VersionUsesHttp3(version_.transport_version) &&
-       FLAGS_quic_allow_http3_priority)) {
+       !VersionUsesHttp3(version_.transport_version))) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientPriorityPacket(
@@ -6949,9 +6911,7 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
   if ((client_headers_include_h2_stream_dependency_ &&
        version_.transport_version >= quic::QUIC_VERSION_43 &&
-       !VersionUsesHttp3(version_.transport_version)) ||
-      (VersionUsesHttp3(version_.transport_version) &&
-       FLAGS_quic_allow_http3_priority)) {
+       !VersionUsesHttp3(version_.transport_version))) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientPriorityPacket(
@@ -7221,9 +7181,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
 
   if ((client_headers_include_h2_stream_dependency_ &&
        version_.transport_version >= quic::QUIC_VERSION_43 &&
-       !VersionUsesHttp3(version_.transport_version)) ||
-      (VersionUsesHttp3(version_.transport_version) &&
-       (FLAGS_quic_allow_http3_priority))) {
+       !VersionUsesHttp3(version_.transport_version))) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientPriorityPacket(
@@ -7901,9 +7859,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
 
   if ((client_headers_include_h2_stream_dependency_ &&
        version_.transport_version >= quic::QUIC_VERSION_43 &&
-       !VersionUsesHttp3(version_.transport_version)) ||
-      (VersionUsesHttp3(version_.transport_version) &&
-       FLAGS_quic_allow_http3_priority)) {
+       !VersionUsesHttp3(version_.transport_version))) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientPriorityPacket(

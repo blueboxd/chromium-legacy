@@ -1513,12 +1513,16 @@ bool TabStrip::ShouldHideCloseButtonForTab(Tab* tab) const {
 void TabStrip::SelectTab(Tab* tab, const ui::Event& event) {
   int model_index = GetModelIndexOf(tab);
   if (IsValidModelIndex(model_index)) {
+    if (tab->group().has_value())
+      base::RecordAction(base::UserMetricsAction("TabGroups_SwitchGroupedTab"));
+
     // Report histogram metrics for the number of tab hover cards seen before
     // a tab is selected by mouse press.
     if (base::FeatureList::IsEnabled(features::kTabHoverCards) && hover_card_ &&
         event.type() == ui::ET_MOUSE_PRESSED && !tab->IsActive()) {
       hover_card_->RecordHoverCardsSeenRatioMetric();
     }
+
     controller_->SelectTab(model_index, event);
   }
 }

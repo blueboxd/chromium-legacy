@@ -506,12 +506,15 @@ void NGPaintFragment::AssociateWithLayoutObject(
       return;
     }
     // This |layout_object| was fragmented across multiple blocks.
+    DCHECK_EQ(layout_object, first_fragment->GetLayoutObject());
     NGPaintFragment* last_fragment = first_fragment->LastForSameLayoutObject();
     last_fragment->next_for_same_layout_object_ = this;
     return;
   }
-  DCHECK(add_result.stored_value->value);
-  add_result.stored_value->value->next_for_same_layout_object_ = this;
+  NGPaintFragment* last_fragment = add_result.stored_value->value;
+  DCHECK(last_fragment) << layout_object;
+  DCHECK_EQ(layout_object, last_fragment->GetLayoutObject());
+  last_fragment->next_for_same_layout_object_ = this;
   add_result.stored_value->value = this;
 }
 

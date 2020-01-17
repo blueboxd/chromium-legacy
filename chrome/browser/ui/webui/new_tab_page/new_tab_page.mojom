@@ -68,6 +68,8 @@ struct Theme {
   skia.mojom.SkColor background_color;
   skia.mojom.SkColor shortcut_background_color;
   skia.mojom.SkColor shortcut_text_color;
+  // True if the theme is dark (e.g. NTP background color is dark).
+  bool is_dark;
   // TODO(crbug.com/1040682): Additional info about the theme depending on the
   // type. That should be optional since only some themes require it. However,
   // making this field optional crashes JS.
@@ -92,6 +94,8 @@ interface PageHandler {
   ReorderMostVisitedTile(url.mojom.Url url, uint8 new_pos);
   // Replaces the custom and most-visited tiles with the default tile set.
   RestoreMostVisitedDefaults();
+  // Set the visibility and whether custom links are enabled.
+  SetMostVisitedSettings(bool customLinksEnabled, bool visible);
   // Undoes the last action done to the tiles (add, delete, reorder, restore or
   // update). Note that only the last action can be undone.
   UndoMostVisitedTileAction();

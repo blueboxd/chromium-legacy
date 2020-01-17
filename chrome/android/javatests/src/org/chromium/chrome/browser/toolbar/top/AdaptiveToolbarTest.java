@@ -32,11 +32,13 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager.Variations;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -89,8 +91,9 @@ public class AdaptiveToolbarTest {
     // clang-format off
     @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID +
             "<Study", "force-fieldtrials=Study/Group", NO_NEW_TAB_VARIATION_PARAMS})
-    public void testTopToolbar_WithGTS_WithBottomToolbar() throws InterruptedException {
+    public void testTopToolbar_WithGTS_WithBottomToolbar_Home_Search_Tab_Switcher() {
         // clang-format on
+        BottomToolbarVariationManager.setVariation(Variations.HOME_SEARCH_TAB_SWITCHER);
         setupFlagsAndLaunchActivity(true, true);
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         Layout layout = cta.getLayoutManager().getOverviewLayout();
@@ -98,11 +101,66 @@ public class AdaptiveToolbarTest {
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 1);
 
+        // Both menu and new tab button should be visible in top tab switcher toolbar.
         checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(false);
+        checkTopToolbarButtonsVisibility(true);
 
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
 
+        // Both menu and new tab button should be visible in top tab switcher toolbar.
+        checkTopToolbarButtonsExistence(true);
+        checkTopToolbarButtonsVisibility(true);
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID +
+            "<Study", "force-fieldtrials=Study/Group", NO_NEW_TAB_VARIATION_PARAMS})
+    public void testTopToolbar_WithGTS_WithBottomToolbar_Home_Search_Share() {
+        // clang-format on
+        BottomToolbarVariationManager.setVariation(Variations.HOME_SEARCH_SHARE);
+        setupFlagsAndLaunchActivity(true, true);
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        Layout layout = cta.getLayoutManager().getOverviewLayout();
+        assertTrue(layout instanceof StartSurfaceLayout);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Both menu and new tab button should be visible in top tab switcher toolbar.
+        checkTopToolbarButtonsExistence(true);
+        checkTopToolbarButtonsVisibility(true);
+
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+
+        // Both menu and new tab button should be visible in top tab switcher toolbar.
+        checkTopToolbarButtonsExistence(true);
+        checkTopToolbarButtonsVisibility(true);
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID +
+            "<Study", "force-fieldtrials=Study/Group", NO_NEW_TAB_VARIATION_PARAMS})
+    public void testTopToolbar_WithGTS_WithBottomToolbar_New_Tab_Search_Share() {
+        // clang-format on
+        BottomToolbarVariationManager.setVariation(Variations.NEW_TAB_SEARCH_SHARE);
+        setupFlagsAndLaunchActivity(true, true);
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        Layout layout = cta.getLayoutManager().getOverviewLayout();
+        assertTrue(layout instanceof StartSurfaceLayout);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Menu button should be visible and new tab button should be invisible
+        // in top tab switcher toolbar.
+        checkTopToolbarButtonsExistence(true);
+        checkTopToolbarButtonsVisibility(false, true);
+
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+
+        // Both menu and new tab button should be visible in top tab switcher toolbar.
         checkTopToolbarButtonsExistence(true);
         checkTopToolbarButtonsVisibility(true);
     }
@@ -132,18 +190,59 @@ public class AdaptiveToolbarTest {
 
     @Test
     @MediumTest
-    public void testTopToolbar_WithoutGTS_WithBottomToolbar() throws InterruptedException {
+    public void testTopToolbar_WithoutGTS_WithBottomToolbar_Home_Search_Tab_Switcher() {
+        BottomToolbarVariationManager.setVariation(Variations.HOME_SEARCH_TAB_SWITCHER);
         setupFlagsAndLaunchActivity(true, false);
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         Layout layout = cta.getLayoutManager().getOverviewLayout();
         assertFalse(layout instanceof StartSurfaceLayout);
         enterTabSwitcher(cta);
 
-        checkTopToolbarButtonsExistence(false);
+        checkTopToolbarButtonsExistence(true);
+        checkTopToolbarButtonsVisibility(true);
 
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
 
-        checkTopToolbarButtonsExistence(false);
+        checkTopToolbarButtonsExistence(true);
+        checkTopToolbarButtonsVisibility(true);
+    }
+
+    @Test
+    @MediumTest
+    public void testTopToolbar_WithoutGTS_WithBottomToolbar_Home_Search_Share() {
+        BottomToolbarVariationManager.setVariation(Variations.HOME_SEARCH_SHARE);
+        setupFlagsAndLaunchActivity(true, false);
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        Layout layout = cta.getLayoutManager().getOverviewLayout();
+        assertFalse(layout instanceof StartSurfaceLayout);
+        enterTabSwitcher(cta);
+
+        checkTopToolbarButtonsExistence(true);
+        checkTopToolbarButtonsVisibility(true);
+
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+
+        checkTopToolbarButtonsExistence(true);
+        checkTopToolbarButtonsVisibility(true);
+    }
+
+    @Test
+    @MediumTest
+    public void testTopToolbar_WithoutGTS_WithBottomToolbar_New_Tab_Search_Share() {
+        BottomToolbarVariationManager.setVariation(Variations.NEW_TAB_SEARCH_SHARE);
+        setupFlagsAndLaunchActivity(true, false);
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        Layout layout = cta.getLayoutManager().getOverviewLayout();
+        assertFalse(layout instanceof StartSurfaceLayout);
+        enterTabSwitcher(cta);
+
+        checkTopToolbarButtonsExistence(true);
+        checkTopToolbarButtonsVisibility(false, true);
+
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+
+        checkTopToolbarButtonsExistence(true);
+        checkTopToolbarButtonsVisibility(true);
     }
 
     private void checkTopToolbarButtonsExistence(boolean isNotNull) {
@@ -161,12 +260,16 @@ public class AdaptiveToolbarTest {
     }
 
     private void checkTopToolbarButtonsVisibility(boolean isVisible) {
-        int visibility = isVisible ? View.VISIBLE : View.GONE;
+        checkTopToolbarButtonsVisibility(isVisible, isVisible);
+    }
+
+    private void checkTopToolbarButtonsVisibility(
+            boolean isNewTabButtonVisible, boolean isMenuButtonVisible) {
         onView(withId(R.id.tab_switcher_toolbar)).check((v, noMatchingViewException) -> {
             View newTabButton = v.findViewById(R.id.new_tab_button);
             View menuButton = v.findViewById(R.id.menu_button_wrapper);
-            assertEquals(visibility, newTabButton.getVisibility());
-            assertEquals(visibility, menuButton.getVisibility());
+            assertEquals(isNewTabButtonVisible, newTabButton.getVisibility() == View.VISIBLE);
+            assertEquals(isMenuButtonVisible, menuButton.getVisibility() == View.VISIBLE);
         });
     }
 }

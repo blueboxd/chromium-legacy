@@ -170,6 +170,11 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
   if (running_checker_->network_accessed())
     network_accessed_ = true;
 
+  if (is_main_script) {
+    cross_origin_embedder_policy_ =
+        running_checker_->cross_origin_embedder_policy();
+  }
+
   if (ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent == result) {
     TRACE_EVENT_WITH_FLOW0(
         "ServiceWorker",

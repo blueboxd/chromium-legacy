@@ -184,6 +184,21 @@ void AppServiceImpl::UnpauseApps(apps::mojom::AppType app_type,
   iter->second->UnpauseApps(app_id);
 }
 
+void AppServiceImpl::GetMenuModel(apps::mojom::AppType app_type,
+                                  const std::string& app_id,
+                                  apps::mojom::MenuType menu_type,
+                                  GetMenuModelCallback callback) {
+  auto iter = publishers_.find(app_type);
+  if (iter == publishers_.end()) {
+    std::move(callback).Run(apps::mojom::MenuItems::New());
+    return;
+  }
+
+  // TODO(crbug.com/1038487): change to use below code to call
+  // AppServiceProxy->GetMenuModel when GetMenuModel is added to mojom.
+  // iter->second->GetMenuModel(app_id, menu_type, std::move(callback));
+}
+
 void AppServiceImpl::OpenNativeSettings(apps::mojom::AppType app_type,
                                         const std::string& app_id) {
   auto iter = publishers_.find(app_type);

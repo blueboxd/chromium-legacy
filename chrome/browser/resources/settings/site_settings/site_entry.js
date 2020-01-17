@@ -56,7 +56,7 @@ Polymer({
      */
     originUsages_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -69,7 +69,7 @@ Polymer({
      */
     cookiesNum_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -88,20 +88,20 @@ Polymer({
   button_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.localDataBrowserProxy_ =
         settings.LocalDataBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     if (this.button_) {
       this.unlisten(this.button_, 'keydown', 'onButtonKeydown_');
     }
   },
 
   /** @param {!KeyboardEvent} e */
-  onButtonKeydown_: function(e) {
+  onButtonKeydown_(e) {
     if (e.shiftKey && e.key === 'Tab') {
       this.focus();
     }
@@ -114,7 +114,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  grouped_: function(siteGroup) {
+  grouped_(siteGroup) {
     if (!siteGroup) {
       return false;
     }
@@ -131,7 +131,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldHideOverflow_: function(siteGroup) {
+  shouldHideOverflow_(siteGroup) {
     return !this.grouped_(siteGroup) &&
         !loadTimeData.getBoolean('enableStoragePressureUI');
   },
@@ -144,7 +144,7 @@ Polymer({
    * @return {string} The user-friendly name.
    * @private
    */
-  siteGroupRepresentation_: function(siteGroup) {
+  siteGroupRepresentation_(siteGroup) {
     if (!siteGroup) {
       return '';
     }
@@ -173,7 +173,7 @@ Polymer({
    * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
    * @private
    */
-  onSiteGroupChanged_: function(siteGroup) {
+  onSiteGroupChanged_(siteGroup) {
     // Update the button listener.
     if (this.button_) {
       this.unlisten(this.button_, 'keydown', 'onButtonKeydown_');
@@ -207,7 +207,7 @@ Polymer({
    * @return {string} The scheme if non-HTTPS, or empty string if HTTPS.
    * @private
    */
-  siteGroupScheme_: function(siteGroup) {
+  siteGroupScheme_(siteGroup) {
     if (!siteGroup || (this.grouped_(siteGroup))) {
       return '';
     }
@@ -221,7 +221,7 @@ Polymer({
    * @return {string} The scheme if non-HTTPS, or empty string if HTTPS.
    * @private
    */
-  originScheme_: function(origin) {
+  originScheme_(origin) {
     const url = this.toUrl(origin.origin);
     const scheme = url.protocol.replace(new RegExp(':*$'), '');
     /** @type{string} */ const HTTPS_SCHEME = 'https';
@@ -238,7 +238,7 @@ Polymer({
    * @return {string} URL that is used for fetching the favicon
    * @private
    */
-  getSiteGroupIcon_: function(siteGroup) {
+  getSiteGroupIcon_(siteGroup) {
     const origins = siteGroup.origins;
     assert(origins);
     assert(origins.length >= 1);
@@ -270,7 +270,7 @@ Polymer({
    * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
    * @private
    */
-  calculateUsageInfo_: function(siteGroup) {
+  calculateUsageInfo_(siteGroup) {
     let overallUsage = 0;
     this.siteGroup.origins.forEach((originInfo, i) => {
       overallUsage += originInfo.usage;
@@ -285,7 +285,7 @@ Polymer({
    * @param {number} numCookies
    * @private
    */
-  getCookieNumString_: function(numCookies) {
+  getCookieNumString_(numCookies) {
     if (numCookies == 0) {
       return Promise.resolve('');
     }
@@ -299,7 +299,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  originUsagesItem_: function(change, index) {
+  originUsagesItem_(change, index) {
     return change.base[index];
   },
 
@@ -310,7 +310,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  originCookiesItem_: function(change, index) {
+  originCookiesItem_(change, index) {
     return change.base[index];
   },
 
@@ -320,10 +320,10 @@ Polymer({
    * it.
    * @private
    */
-  navigateToSiteDetails_: function(origin) {
+  navigateToSiteDetails_(origin) {
     this.fire(
         'site-entry-selected', {item: this.siteGroup, index: this.listIndex});
-    settings.navigateTo(
+    settings.Router.getInstance().navigateTo(
         settings.routes.SITE_SETTINGS_SITE_DETAILS,
         new URLSearchParams('site=' + origin));
   },
@@ -333,7 +333,7 @@ Polymer({
    * @param {!{model: !{index: !number}}} e
    * @private
    */
-  onOriginTap_: function(e) {
+  onOriginTap_(e) {
     this.navigateToSiteDetails_(this.siteGroup.origins[e.model.index].origin);
     this.browserProxy.recordAction(settings.AllSitesAction.ENTER_SITE_DETAILS);
   },
@@ -343,7 +343,7 @@ Polymer({
    * list of origins or directly navigates to Site Details if there is only one.
    * @private
    */
-  onSiteEntryTap_: function() {
+  onSiteEntryTap_() {
     // Individual origins don't expand - just go straight to Site Details.
     if (!this.grouped_(this.siteGroup)) {
       this.navigateToSiteDetails_(this.siteGroup.origins[0].origin);
@@ -362,7 +362,7 @@ Polymer({
    * Toggles open and closed the list of origins if there is more than one.
    * @private
    */
-  toggleCollapsible_: function() {
+  toggleCollapsible_() {
     const collapseChild =
         /** @type {IronCollapseElement} */ (this.$.originList.get());
     collapseChild.toggle();
@@ -378,7 +378,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  showOverflowMenu_: function(e) {
+  showOverflowMenu_(e) {
     this.fire('open-menu', {
       target: e.target,
       index: this.listIndex,
@@ -395,7 +395,7 @@ Polymer({
    * @return {number}
    * @private
    */
-  getIndexBoundToOriginList_: function(siteGroup, index) {
+  getIndexBoundToOriginList_(siteGroup, index) {
     return Math.max(0, Math.min(index, siteGroup.origins.length - 1));
   },
 
@@ -405,7 +405,7 @@ Polymer({
    * @param {number} index
    * @private
    */
-  getClassForIndex_: function(index) {
+  getClassForIndex_(index) {
     if (index == 0) {
       return 'first';
     }
@@ -417,7 +417,7 @@ Polymer({
    * @param {!settings.SortMethod|undefined} sortMethod
    * @private
    */
-  updateOrigins_: function(sortMethod) {
+  updateOrigins_(sortMethod) {
     if (!sortMethod || !this.siteGroup || !this.grouped_(this.siteGroup)) {
       return null;
     }
@@ -446,7 +446,7 @@ Polymer({
    * @param {!settings.SortMethod|undefined} sortMethod
    * @private
    */
-  sortFunction_: function(sortMethod) {
+  sortFunction_(sortMethod) {
     if (sortMethod == settings.SortMethod.MOST_VISITED) {
       return (origin1, origin2) => {
         return origin2.engagement - origin1.engagement;

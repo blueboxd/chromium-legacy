@@ -277,6 +277,9 @@ class ATL_NO_VTABLE CGaiaCredentialBase
                                BSTR* error_text);
 
   HRESULT RecoverWindowsPasswordIfPossible(base::string16* recovered_password);
+  // Sets the error message in the password field based on the HRESULT returned
+  // by NetUserChangePassword win32 function.
+  void SetErrorMessageInPasswordField(HRESULT hr);
 
   Microsoft::WRL::ComPtr<ICredentialProviderCredentialEvents> events_;
   Microsoft::WRL::ComPtr<IGaiaCredentialProvider> provider_;

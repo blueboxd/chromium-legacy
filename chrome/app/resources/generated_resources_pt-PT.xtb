@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">Esta conta de utilizador não pertence ao domínio no qual o dispositivo está inscrito. Se pretender inscrever-se num outro domínio, necessita de efetuar a recuperação do dispositivo em primeiro lugar.</translation>
 <translation id="1274977772557788323">Definições de armazenamento do Adobe Flash Player</translation>
 <translation id="1274997165432133392">Cookies e outros dados do site</translation>
-<translation id="127668050356036882">Fechar todas as janelas</translation>
 <translation id="1280820357415527819">A pesquisar redes móveis…</translation>
 <translation id="1282420830958964167">O limite na aplicação "<ph name="APP_NAME" />" que um dos teus pais definiu esgotou-se. Amanhã, podes utilizá-la durante <ph name="TIME_LIMIT" />.</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
@@ -518,7 +517,6 @@
 <translation id="1712552549805331520"><ph name="URL" /> pretende armazenar permanentemente os dados no seu computador local.</translation>
 <translation id="1714644264617423774">Ativa as funcionalidades de acessibilidade para facilitar a utilização do dispositivo. <ph name="LINK_BEGIN" />Saber mais<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Sensores de movimento</translation>
-<translation id="171824261579749339">Australiano <ph name="LINK_BEGIN" />Saber mais<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1719312230114180055">Nota: a impressão digital pode ser menos segura do que um PIN ou uma palavra-passe fortes.</translation>
 <translation id="1720318856472900922">Autenticação de servidor TLS WWW</translation>
@@ -729,7 +727,6 @@
 <translation id="2006638907958895361">Abrir link na aplicação <ph name="APP" /></translation>
 <translation id="2007404777272201486">Comunicar um problema...</translation>
 <translation id="2010501376126504057">Dispositivos compatíveis</translation>
-<translation id="2016430552235416146">Tradicional</translation>
 <translation id="2017334798163366053">Desativar a recolha de dados de desempenho</translation>
 <translation id="2017836877785168846">Limpa o histórico e os preenchimentos automáticos da barra de endereço.</translation>
 <translation id="2018352199541442911">Lamentamos, mas de momento o seu aparelho de armazenamento externo não é suportado.</translation>
@@ -770,7 +767,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2076672359661571384">Médio (recomendado)</translation>
 <translation id="2077129598763517140">Utilizar aceleração de hardware sempre que estiver disponível</translation>
 <translation id="2078019350989722914">Avisar antes de sair (<ph name="KEY_EQUIVALENT" />)</translation>
-<translation id="2078494137444990774">Desativado</translation>
 <translation id="2079053412993822885">Se eliminar um dos seus próprios certificados, deixará de poder utilizá-lo para se identificar.</translation>
 <translation id="2079545284768500474">Anular</translation>
 <translation id="2080070583977670716">Mais definições</translation>
@@ -1208,7 +1204,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2665647207431876759">Expirada</translation>
 <translation id="2665717534925640469">Esta página está agora em ecrã inteiro e desativou o cursor do rato.</translation>
 <translation id="2665919335226618153">Ah, bolas! Ocorreu um erro durante a formatação.</translation>
-<translation id="2666990579225592931">Abrir janela de convidado</translation>
 <translation id="2667463864537187133">Gerir verificação ortográfica</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> está a partilhar um separador do Chrome.</translation>
 <translation id="2670429602441959756">Esta página contém funcionalidades que ainda não são suportadas no modo de RV e será agora fechada.</translation>
@@ -2406,7 +2401,6 @@ Pretende pará-lo?</translation>
 <translation id="4364327530094270451">Melão</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> está a partilhar uma janela.</translation>
 <translation id="4364830672918311045">Apresentar notificações</translation>
-<translation id="436499142539576997">Falha ao obter dados da app. Ainda a tentar executar a app…</translation>
 <translation id="4370975561335139969">O email e a palavra-passe introduzidos não coincidem.</translation>
 <translation id="437184764829821926">Definições avançadas do tipo de letra</translation>
 <translation id="4374831787438678295">Instalador para o Linux</translation>
@@ -3434,7 +3428,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5867841422488265304">Pesquise ou escreva o endereço Web</translation>
 <translation id="5869029295770560994">OK, compreendi</translation>
 <translation id="5869522115854928033">Palavras-passe guardadas</translation>
-<translation id="5869948122057593679">Fechar todas as janelas</translation>
 <translation id="5870086504539785141">Fechar menu de acessibilidade</translation>
 <translation id="5870155679953074650">Falhas principais</translation>
 <translation id="5876851302954717356">Novo separador à direita</translation>
@@ -4483,7 +4476,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7385854874724088939">Ocorreu um erro ao tentar imprimir. Verifique a impressora e tente novamente.</translation>
 <translation id="7385896526023870365">Esta extensão não tem acesso adicional a sites.</translation>
 <translation id="7388044238629873883">Está quase!</translation>
-<translation id="7388222713940428051">Abrir janela de convidado</translation>
 <translation id="7392118418926456391">Falha ao analisar vírus</translation>
 <translation id="7392915005464253525">Voltar a abrir a jan&amp;ela fechada</translation>
 <translation id="7396845648024431313">O <ph name="APP_NAME" /> é iniciado no arranque do sistema e continua a ser executado em segundo plano, mesmo depois de fechar todas as restantes janelas do <ph name="PRODUCT_NAME" />.</translation>
@@ -4748,7 +4740,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7784067724422331729">As definições de segurança do computador bloquearam este ficheiro.</translation>
 <translation id="7784796923038949829">Não é possível ler nem alterar os dados do site.</translation>
 <translation id="778480864305029524">Para utilizar a Ligação via telemóvel instantânea, ative as notificações dos Serviços do Google Play</translation>
-<translation id="7786207843293321886">Sair da Sessão de Convidado</translation>
 <translation id="7786889348652477777">&amp;Recarregar aplicação</translation>
 <translation id="7787308148023287649">Apresentar noutro ecrã</translation>
 <translation id="7788298548579301890">Outro programa no computador adicionou uma aplicação que pode alterar o funcionamento do Chrome.
@@ -4862,7 +4853,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7908378463497120834">Lamentamos, mas não foi possível montar, pelo menos, uma partição no aparelho de armazenamento externo.</translation>
 <translation id="7909969815743704077">Transferido em modo de navegação anónima</translation>
 <translation id="7910768399700579500">&amp;Nova pasta</translation>
-<translation id="7910831464510799808">Ativado</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">A sua palavra-passe foi alterada no servidor. Termine e inicie sessão novamente.</translation>
 <translation id="7915457674565721553">Ligue-se à Internet para configurar o controlo parental.</translation>

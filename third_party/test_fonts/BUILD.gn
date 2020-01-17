@@ -35,7 +35,5 @@ copy("test_fonts") {
     "test_fonts/Tinos-Regular.ttf",
   ]
 
-  outputs = [
-    "$root_out_dir/test_fonts/{{source_file_part}}",
-  ]
+  outputs = [ "$root_out_dir/test_fonts/{{source_file_part}}" ]
 }

@@ -74,7 +74,9 @@ std::unique_ptr<DataWithTimestamp>
 BleServiceDataHelperImpl::GenerateForegroundAdvertisement(
     const DeviceIdPair& device_id_pair) {
   base::Optional<multidevice::RemoteDeviceRef> local_device =
-      remote_device_cache_->GetRemoteDevice(device_id_pair.local_device_id());
+      remote_device_cache_->GetRemoteDevice(
+          base::nullopt /* instance_id */,
+          device_id_pair.local_device_id() /* legacy_device_id */);
   if (!local_device) {
     PA_LOG(ERROR) << "Requested local device does not exist: "
                   << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
@@ -83,7 +85,9 @@ BleServiceDataHelperImpl::GenerateForegroundAdvertisement(
   }
 
   base::Optional<multidevice::RemoteDeviceRef> remote_device =
-      remote_device_cache_->GetRemoteDevice(device_id_pair.remote_device_id());
+      remote_device_cache_->GetRemoteDevice(
+          base::nullopt /* instance_id */,
+          device_id_pair.remote_device_id() /* legacy_device_id */);
   if (!remote_device) {
     PA_LOG(ERROR) << "Requested remote device does not exist: "
                   << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
@@ -103,7 +107,8 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
       local_device_id_to_remote_device_ids_map;
   for (const auto& device_id_pair : device_id_pair_set) {
     if (!remote_device_cache_->GetRemoteDevice(
-            device_id_pair.local_device_id())) {
+            base::nullopt /* instance_id */,
+            device_id_pair.local_device_id() /* legacy_device_id */)) {
       PA_LOG(ERROR) << "Requested local device does not exist"
                     << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id_pair.local_device_id());
@@ -111,7 +116,8 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
     }
 
     if (!remote_device_cache_->GetRemoteDevice(
-            device_id_pair.remote_device_id())) {
+            base::nullopt /* instance_id */,
+            device_id_pair.remote_device_id() /* legacy_device_id */)) {
       PA_LOG(ERROR) << "Requested remote device does not exist"
                     << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id_pair.remote_device_id());
@@ -144,7 +150,9 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
   if (service_data.size() >= kMinNumBytesInForegroundServiceData) {
     std::vector<cryptauth::BeaconSeed> beacon_seeds =
         multidevice::ToCryptAuthSeedList(
-            remote_device_cache_->GetRemoteDevice(local_device_id)
+            remote_device_cache_
+                ->GetRemoteDevice(base::nullopt /* instance_id */,
+                                  local_device_id /* legacy_device_id */)
                 ->beacon_seeds());
 
     identified_device_id =
@@ -161,7 +169,9 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
     multidevice::RemoteDeviceRefList remote_devices;
     std::transform(remote_device_ids.begin(), remote_device_ids.end(),
                    std::back_inserter(remote_devices), [this](auto device_id) {
-                     return *remote_device_cache_->GetRemoteDevice(device_id);
+                     return *remote_device_cache_->GetRemoteDevice(
+                         base::nullopt /* instance_id */,
+                         device_id /* legacy_device_id */);
                    });
 
     identified_device_id =
@@ -176,7 +186,9 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
     return base::nullopt;
 
   return BleServiceDataHelper::DeviceWithBackgroundBool(
-      *remote_device_cache_->GetRemoteDevice(identified_device_id),
+      *remote_device_cache_->GetRemoteDevice(
+          base::nullopt /* instance_id */,
+          identified_device_id /* legacy_device_id */),
       is_background_advertisement);
 }
 

@@ -15,11 +15,23 @@ let t = async_test('Test cancel select value in datetime-local popup');
 
 function selectValue() {
   let dateTimeElement = document.getElementById("datetime-local");
+  
+  assert_equals(dateTimeElement.value, "2019-02-14T13:02");
+  assert_not_equals(internals.pagePopupWindow, null);
+
   clickDayCellAt(3, 4);
   clickTimeCellAt(0, 4);
   clickTimeCellAt(1, 1);
-  clickCancelTimeButton();
+  assert_equals(dateTimeElement.value, "2019-02-27T17:03");
+
+  // First escape resets popup to original value
+  eventSender.keyDown('Escape');
   assert_equals(dateTimeElement.value, "2019-02-14T13:02");
+  assert_not_equals(internals.pagePopupWindow, null);
+
+  // Second escape closes the popup
+  eventSender.keyDown('Escape');
+  assert_equals(internals.pagePopupWindow, null);
   t.done();
 }
 

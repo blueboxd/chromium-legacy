@@ -15,6 +15,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.IClientDownload;
+import org.chromium.weblayer_private.interfaces.IDownload;
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
@@ -280,6 +282,51 @@ public final class Tab {
             StrictModeWorkaround.apply();
             return mCallback.onInterceptDownload(
                     Uri.parse(uriString), userAgent, contentDisposition, mimetype, contentLength);
+        }
+
+        @Override
+        public void allowDownload(String uriString, String requestMethod,
+                String requestInitiatorString, IObjectWrapper valueCallback) {
+            StrictModeWorkaround.apply();
+            Uri requestInitiator;
+            if (requestInitiatorString != null) {
+                requestInitiator = Uri.parse(requestInitiatorString);
+            } else {
+                requestInitiator = Uri.EMPTY;
+            }
+            mCallback.allowDownload(Uri.parse(uriString), requestMethod, requestInitiator,
+                    (ValueCallback<Boolean>) ObjectWrapper.unwrap(
+                            valueCallback, ValueCallback.class));
+        }
+
+        @Override
+        public IClientDownload createClientDownload(IDownload downloadImpl) {
+            StrictModeWorkaround.apply();
+            return new Download(downloadImpl);
+        }
+
+        @Override
+        public void downloadStarted(IClientDownload download) {
+            StrictModeWorkaround.apply();
+            mCallback.onDownloadStarted((Download) download);
+        }
+
+        @Override
+        public void downloadProgressChanged(IClientDownload download) {
+            StrictModeWorkaround.apply();
+            mCallback.onDownloadProgressChanged((Download) download);
+        }
+
+        @Override
+        public void downloadCompleted(IClientDownload download) {
+            StrictModeWorkaround.apply();
+            mCallback.onDownloadCompleted((Download) download);
+        }
+
+        @Override
+        public void downloadFailed(IClientDownload download) {
+            StrictModeWorkaround.apply();
+            mCallback.onDownloadFailed((Download) download);
         }
     }
 

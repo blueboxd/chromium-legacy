@@ -373,6 +373,11 @@ bool NodesMatch(const BookmarkNode* node_a, const BookmarkNode* node_b) {
                << node_b->parent()->GetIndexOf(node_b);
     return false;
   }
+  if (node_a->guid() != node_b->guid()) {
+    LOG(ERROR) << "GUID mismatch: " << node_a->guid() << " vs. "
+               << node_b->guid();
+    return false;
+  }
   return true;
 }
 
@@ -530,7 +535,8 @@ const BookmarkNode* AddURL(int profile,
     const BookmarkNode* v_parent = nullptr;
     FindNodeInVerifier(model, parent, &v_parent);
     const BookmarkNode* v_node = GetVerifierBookmarkModel()->AddURL(
-        v_parent, index, base::UTF8ToUTF16(title), url);
+        v_parent, index, base::UTF8ToUTF16(title), url,
+        /*meta_info=*/nullptr, result->date_added(), result->guid());
     if (!v_node) {
       LOG(ERROR) << "Could not add bookmark " << title << " to the verifier";
       return nullptr;
@@ -573,7 +579,8 @@ const BookmarkNode* AddFolder(int profile,
     const BookmarkNode* v_parent = nullptr;
     FindNodeInVerifier(model, parent, &v_parent);
     const BookmarkNode* v_node = GetVerifierBookmarkModel()->AddFolder(
-        v_parent, index, base::UTF8ToUTF16(title));
+        v_parent, index, base::UTF8ToUTF16(title),
+        /*meta_info=*/nullptr, result->guid());
     if (!v_node) {
       LOG(ERROR) << "Could not add folder " << title << " to the verifier";
       return nullptr;

@@ -865,8 +865,7 @@ class NetworkNamespaceHelper {
 
     for (const auto& record : records) {
       namespaces->push_back(AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE,
-                                              record.namespace_url, GURL(),
-                                              record.is_pattern));
+                                              record.namespace_url, GURL()));
     }
   }
 

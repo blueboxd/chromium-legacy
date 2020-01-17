@@ -15,9 +15,7 @@ grit("webui_test_resources") {
     "webui_test_resources.pak",
   ]
 
-  deps = [
-    ":web_ui_test_bindings_js",
-  ]
+  deps = [ ":web_ui_test_bindings_js" ]
 
   grit_flags = [
     "-E",
@@ -27,27 +25,19 @@ grit("webui_test_resources") {
 }
 
 mojom("web_ui_test_bindings") {
-  sources = [
-    "webui/web_ui_test.mojom",
-  ]
+  sources = [ "webui/web_ui_test.mojom" ]
 }
 
 js_type_check("closure_compile") {
-  deps = [
-    ":test_api_js",
-  ]
+  deps = [ ":test_api_js" ]
 }
 
 js_library("test_api_js") {
-  sources = [
-    "webui/test_api.js",
-  ]
+  sources = [ "webui/test_api.js" ]
   externs_list = [
     "webui/mock4js_externs.js",
     "//third_party/chaijs/externs/chai-3.5.js",
     "//ui/webui/resources/js/dom_automation_controller.js",
   ]
-  deps = [
-    ":web_ui_test_bindings_js_library_for_compile",
-  ]
+  deps = [ ":web_ui_test_bindings_js_library_for_compile" ]
 }

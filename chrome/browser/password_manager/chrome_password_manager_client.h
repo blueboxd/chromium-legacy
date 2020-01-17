@@ -272,6 +272,9 @@ class ChromePasswordManagerClient
   // in the screens coordinate system.
   gfx::RectF GetBoundsInScreenSpace(const gfx::RectF& bounds);
 
+  // Instructs the client to hide the form filling UI.
+  void HideFillingUI();
+
   // Checks if the current page specified in |url| fulfils the conditions for
   // the password manager to be active on it.
   bool IsPasswordManagementEnabledForCurrentPage(const GURL& url) const;

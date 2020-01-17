@@ -47,7 +47,6 @@ public class DownloadPage extends BasicNativePage implements DownloadManagerCoor
                 activity.getModalDialogManager());
 
         mDownloadCoordinator.addObserver(this);
-        mDownloadCoordinator.setHistoryNavigationDelegate(host.createHistoryNavigationDelegate());
         mTitle = activity.getString(R.string.menu_downloads);
 
         // #destroy() unregisters the ActivityStateListener to avoid checking for externally removed

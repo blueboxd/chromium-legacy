@@ -58,6 +58,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 
 #if defined(OS_MACOSX)
 #include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
@@ -910,10 +911,10 @@ void RenderFrameHostManager::OnDidUpdateName(const std::string& name,
 }
 
 void RenderFrameHostManager::OnDidAddContentSecurityPolicies(
-    const std::vector<ContentSecurityPolicyHeader>& headers) {
+    std::vector<network::mojom::ContentSecurityPolicyHeaderPtr> headers) {
   for (const auto& pair : proxy_hosts_) {
-    pair.second->Send(new FrameMsg_AddContentSecurityPolicies(
-        pair.second->GetRoutingID(), headers));
+    pair.second->GetAssociatedRemoteFrame()
+        ->AddReplicatedContentSecurityPolicies(mojo::Clone(headers));
   }
 }
 
@@ -1022,10 +1023,10 @@ void RenderFrameHostManager::CancelPendingIfNecessary(
 }
 
 void RenderFrameHostManager::UpdateUserActivationState(
-    blink::UserActivationUpdateType update_type) {
+    blink::mojom::UserActivationUpdateType update_type) {
   for (const auto& pair : proxy_hosts_) {
-    pair.second->Send(new FrameMsg_UpdateUserActivationState(
-        pair.second->GetRoutingID(), update_type));
+    RenderFrameProxyHost* proxy = pair.second.get();
+    proxy->GetAssociatedRemoteFrame()->UpdateUserActivationState(update_type);
   }
 
   // If any frame in an inner delegate is activated, then the FrameTreeNode that
@@ -1040,9 +1041,10 @@ void RenderFrameHostManager::UpdateUserActivationState(
                                                    ->render_manager()
                                                    ->GetProxyToOuterDelegate();
   if (outer_delegate_proxy &&
-      update_type == blink::UserActivationUpdateType::kNotifyActivation) {
-    outer_delegate_proxy->Send(new FrameMsg_UpdateUserActivationState(
-        outer_delegate_proxy->GetRoutingID(), update_type));
+      update_type ==
+          blink::mojom::UserActivationUpdateType::kNotifyActivation) {
+    outer_delegate_proxy->GetAssociatedRemoteFrame()->UpdateUserActivationState(
+        update_type);
     GetOuterDelegateNode()->UpdateUserActivationState(update_type);
   }
 }
@@ -1279,9 +1281,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
     render_frame_host_->set_browsing_instance_not_swapped_reason(
         force_swap_result);
   }
-  SiteInstanceDescriptor new_instance_descriptor =
-      SiteInstanceDescriptor(current_instance);
-  new_instance_descriptor = DetermineSiteInstanceForURL(
+  SiteInstanceDescriptor new_instance_descriptor = DetermineSiteInstanceForURL(
       dest_url, source_instance, current_instance, dest_instance, transition,
       is_failure, dest_is_restore, dest_is_view_source_mode, force_swap,
       was_server_redirect);
@@ -1378,6 +1378,14 @@ void RenderFrameHostManager::PrepareForInnerDelegateAttach(
     return;
   }
   CreateNewFrameForInnerDelegateAttachIfNecessary();
+}
+
+void RenderFrameHostManager::SetEmbeddingToken(
+    const base::UnguessableToken& embedding_token) {
+  RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
+  DCHECK(proxy_to_parent);
+  proxy_to_parent->GetAssociatedRemoteFrame()->SetEmbeddingToken(
+      embedding_token);
 }
 
 RenderFrameHostManager::SiteInstanceDescriptor

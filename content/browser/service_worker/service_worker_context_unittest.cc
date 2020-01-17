@@ -589,7 +589,7 @@ TEST_F(ServiceWorkerContextTest, Register) {
   EXPECT_EQ(scope, notifications_[1].scope);
   EXPECT_EQ(registration_id, notifications_[1].registration_id);
 
-  context()->storage()->FindRegistrationForId(
+  context()->registry()->FindRegistrationForId(
       registration_id, scope.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
                      blink::ServiceWorkerStatusCode::kOk,
@@ -639,7 +639,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
   EXPECT_EQ(scope, notifications_[0].scope);
   EXPECT_EQ(registration_id, notifications_[0].registration_id);
 
-  context()->storage()->FindRegistrationForId(
+  context()->registry()->FindRegistrationForId(
       registration_id, scope.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
                      blink::ServiceWorkerStatusCode::kErrorNotFound,
@@ -690,7 +690,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
   EXPECT_EQ(scope, notifications_[1].scope);
   EXPECT_EQ(registration_id, notifications_[1].registration_id);
 
-  context()->storage()->FindRegistrationForId(
+  context()->registry()->FindRegistrationForId(
       registration_id, scope.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
                      blink::ServiceWorkerStatusCode::kOk,
@@ -723,7 +723,7 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
 
-  context()->storage()->FindRegistrationForId(
+  context()->registry()->FindRegistrationForId(
       registration_id, scope.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
                      blink::ServiceWorkerStatusCode::kErrorNotFound,
@@ -822,23 +822,23 @@ TEST_F(ServiceWorkerContextTest, UnregisterMultiple) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
 
-  context()->storage()->FindRegistrationForId(
+  context()->registry()->FindRegistrationForId(
       registration_id1, origin1_s1.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
                      blink::ServiceWorkerStatusCode::kErrorNotFound,
                      false /* expect_waiting */, false /* expect_active */));
-  context()->storage()->FindRegistrationForId(
+  context()->registry()->FindRegistrationForId(
       registration_id2, origin1_s2.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
                      blink::ServiceWorkerStatusCode::kErrorNotFound,
                      false /* expect_waiting */, false /* expect_active */));
-  context()->storage()->FindRegistrationForId(
+  context()->registry()->FindRegistrationForId(
       registration_id3, origin2_s1.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
                      blink::ServiceWorkerStatusCode::kOk,
                      false /* expect_waiting */, true /* expect_active */));
 
-  context()->storage()->FindRegistrationForId(
+  context()->registry()->FindRegistrationForId(
       registration_id4, origin3_s1.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
                      blink::ServiceWorkerStatusCode::kOk,
@@ -1101,7 +1101,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(called);
 
-  context()->storage()->FindRegistrationForId(
+  context()->registry()->FindRegistrationForId(
       registration_id, scope.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
                      blink::ServiceWorkerStatusCode::kOk,
@@ -1112,7 +1112,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
 
   // The storage is disabled while the recovery process is running, so the
   // operation should be aborted.
-  context()->storage()->FindRegistrationForId(
+  context()->registry()->FindRegistrationForId(
       registration_id, scope.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
                      blink::ServiceWorkerStatusCode::kErrorAbort,
@@ -1121,7 +1121,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
 
   // The context started over and the storage was re-initialized, so the
   // registration should not be found.
-  context()->storage()->FindRegistrationForId(
+  context()->registry()->FindRegistrationForId(
       registration_id, scope.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
                      blink::ServiceWorkerStatusCode::kErrorNotFound,
@@ -1137,7 +1137,7 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(called);
 
-  context()->storage()->FindRegistrationForId(
+  context()->registry()->FindRegistrationForId(
       registration_id, scope.GetOrigin(),
       base::BindOnce(&ExpectRegisteredWorkers,
                      blink::ServiceWorkerStatusCode::kOk,

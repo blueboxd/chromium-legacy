@@ -700,6 +700,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // handled by AppsGridView.
   bool ShouldHandleDragEvent(const ui::LocatedEvent& event);
 
+  // Create a layer mask for graident alpha when the feature is enabled.
+  void MaybeCreateGradientMask();
+
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.
 

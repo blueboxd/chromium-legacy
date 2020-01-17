@@ -30,21 +30,15 @@ source_set("fuzzer_support") {
 }
 
 fuzzer_test("origin_trial_token_fuzzer") {
-  sources = [
-    "origin_trial_token_fuzzer.cc",
-  ]
-  deps = [
-    "//content/test:test_support",
-  ]
+  sources = [ "origin_trial_token_fuzzer.cc" ]
+  deps = [ "//content/test:test_support" ]
   dict =
       "//content/test/data/fuzzer_dictionaries/origin_trial_token_fuzzer.dict"
   seed_corpus = "//content/test/data/fuzzer_corpus/origin_trial_token_data/"
 }
 
 fuzzer_test("origin_policy_parser_fuzzer") {
-  sources = [
-    "origin_policy_parser_fuzzer.cc",
-  ]
+  sources = [ "origin_policy_parser_fuzzer.cc" ]
   deps = [
     "//base",
     "//base:i18n",
@@ -56,27 +50,17 @@ fuzzer_test("origin_policy_parser_fuzzer") {
 }
 
 fuzzer_test("renderer_fuzzer") {
-  sources = [
-    "renderer_fuzzer.cc",
-  ]
-  deps = [
-    ":fuzzer_support",
-  ]
+  sources = [ "renderer_fuzzer.cc" ]
+  deps = [ ":fuzzer_support" ]
 }
 
 fuzzer_test("renderer_tree_fuzzer") {
-  sources = [
-    "renderer_tree_fuzzer.cc",
-  ]
-  deps = [
-    ":fuzzer_support",
-  ]
+  sources = [ "renderer_tree_fuzzer.cc" ]
+  deps = [ ":fuzzer_support" ]
 }
 
 fuzzer_test("renderer_proto_tree_fuzzer") {
-  sources = [
-    "renderer_proto_tree_fuzzer.cc",
-  ]
+  sources = [ "renderer_proto_tree_fuzzer.cc" ]
   deps = [
     ":fuzzer_support",
     ":html_tree_proto",
@@ -85,16 +69,12 @@ fuzzer_test("renderer_proto_tree_fuzzer") {
 }
 
 proto_library("html_tree_proto") {
-  sources = [
-    "html_tree.proto",
-  ]
+  sources = [ "html_tree.proto" ]
   testonly = true
 }
 
 fuzzer_test("signed_exchange_envelope_fuzzer") {
-  sources = [
-    "signed_exchange_envelope_fuzzer.cc",
-  ]
+  sources = [ "signed_exchange_envelope_fuzzer.cc" ]
   deps = [
     "//base:i18n",
     "//content/test:test_support",
@@ -103,9 +83,8 @@ fuzzer_test("signed_exchange_envelope_fuzzer") {
 }
 
 fuzzer_test("devtools_protocol_encoding_cbor_fuzzer") {
-  sources = [
-    "../../browser/devtools/devtools_protocol_encoding_cbor_fuzzer.cc",
-  ]
+  sources =
+      [ "../../browser/devtools/devtools_protocol_encoding_cbor_fuzzer.cc" ]
   deps = [
     "//base",
     "//third_party/inspector_protocol:crdtp",
@@ -115,9 +94,8 @@ fuzzer_test("devtools_protocol_encoding_cbor_fuzzer") {
 }
 
 fuzzer_test("devtools_protocol_encoding_json_fuzzer") {
-  sources = [
-    "../../browser/devtools/devtools_protocol_encoding_json_fuzzer.cc",
-  ]
+  sources =
+      [ "../../browser/devtools/devtools_protocol_encoding_json_fuzzer.cc" ]
   deps = [
     "//base",
     "//third_party/inspector_protocol:crdtp",
@@ -126,12 +104,8 @@ fuzzer_test("devtools_protocol_encoding_json_fuzzer") {
 }
 
 fuzzer_test("inspector_fuzzer") {
-  sources = [
-    "../../browser/devtools/inspector_fuzzer.cc",
-  ]
-  deps = [
-    "//third_party/inspector_protocol:crdtp",
-  ]
+  sources = [ "../../browser/devtools/inspector_fuzzer.cc" ]
+  deps = [ "//third_party/inspector_protocol:crdtp" ]
   seed_corpus = "//components/cbor/reader_fuzzer_corpus/"
 }
 
@@ -139,16 +113,12 @@ fuzzer_test("signed_exchange_certificate_chain_fuzzer") {
   sources = [
     "../../browser/web_package/signed_exchange_certificate_chain_fuzzer.cc",
   ]
-  deps = [
-    "//content/test:test_support",
-  ]
+  deps = [ "//content/test:test_support" ]
   seed_corpus = "//content/test/data/fuzzer_corpus/signed_exchange_certificate_chain_data/"
 }
 
 fuzzer_test("appcache_manifest_parser_fuzzer") {
-  sources = [
-    "appcache_manifest_parser_fuzzer.cc",
-  ]
+  sources = [ "appcache_manifest_parser_fuzzer.cc" ]
   deps = [
     "//base:i18n",
     "//content/test:test_support",
@@ -158,9 +128,7 @@ fuzzer_test("appcache_manifest_parser_fuzzer") {
 }
 
 fuzzer_test("merkle_integrity_source_stream_fuzzer") {
-  sources = [
-    "merkle_integrity_source_stream_fuzzer.cc",
-  ]
+  sources = [ "merkle_integrity_source_stream_fuzzer.cc" ]
 
   # This fuzzer depends on net::FuzzedSourceStream, in net_fuzzer_test_support,
   # but both it and //content:test_support set up similar globals. As
@@ -180,9 +148,7 @@ fuzzer_test("merkle_integrity_source_stream_fuzzer") {
 }
 
 proto_library("appcache_fuzzer_proto") {
-  sources = [
-    "../../browser/appcache/appcache_fuzzer.proto",
-  ]
+  sources = [ "../../browser/appcache/appcache_fuzzer.proto" ]
   testonly = true
 }
 
@@ -260,9 +226,7 @@ fuzzer_test("speech_audio_encoder_fuzzer") {
 }
 
 fuzzer_test("browser_accessibility_fuzzer") {
-  sources = [
-    "browser_accessibility_fuzzer.cc",
-  ]
+  sources = [ "browser_accessibility_fuzzer.cc" ]
   deps = [
     "//content/app:both_for_content_tests",
     "//content/browser:browser",
@@ -289,19 +253,13 @@ fuzzer_test("indexed_db_leveldb_coding_encodeidbkey_fuzzer") {
   sources = [
     "../../browser/indexed_db/indexed_db_leveldb_coding_encodeidbkey_fuzzer.cc",
   ]
-  deps = [
-    ":indexed_db_fuzzer_support",
-  ]
+  deps = [ ":indexed_db_fuzzer_support" ]
   seed_corpus = "../../browser/indexed_db/fuzzer_corpus/indexed_db_key"
 }
 
 fuzzer_test("indexed_db_leveldb_coding_encodeidbkeypath_fuzzer") {
-  sources = [
-    "../../browser/indexed_db/indexed_db_leveldb_coding_encodeidbkeypath_fuzzer.cc",
-  ]
-  deps = [
-    ":indexed_db_fuzzer_support",
-  ]
+  sources = [ "../../browser/indexed_db/indexed_db_leveldb_coding_encodeidbkeypath_fuzzer.cc" ]
+  deps = [ ":indexed_db_fuzzer_support" ]
   seed_corpus = "../../browser/indexed_db/fuzzer_corpus/indexed_db_key_path"
 }
 
@@ -309,19 +267,13 @@ fuzzer_test("indexed_db_leveldb_coding_decodeidbkey_fuzzer") {
   sources = [
     "../../browser/indexed_db/indexed_db_leveldb_coding_decodeidbkey_fuzzer.cc",
   ]
-  deps = [
-    ":indexed_db_fuzzer_support",
-  ]
+  deps = [ ":indexed_db_fuzzer_support" ]
   seed_corpus = "../../browser/indexed_db/fuzzer_corpus/encoded_indexed_db_key"
 }
 
 fuzzer_test("indexed_db_leveldb_coding_decodeidbkeypath_fuzzer") {
-  sources = [
-    "../../browser/indexed_db/indexed_db_leveldb_coding_decodeidbkeypath_fuzzer.cc",
-  ]
-  deps = [
-    ":indexed_db_fuzzer_support",
-  ]
+  sources = [ "../../browser/indexed_db/indexed_db_leveldb_coding_decodeidbkeypath_fuzzer.cc" ]
+  deps = [ ":indexed_db_fuzzer_support" ]
   seed_corpus =
       "../../browser/indexed_db/fuzzer_corpus/encoded_indexed_db_key_path"
 }

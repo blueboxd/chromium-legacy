@@ -64,11 +64,11 @@ struct UrlLoadParams;
                           withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
                                     atIndex:(int)position;
 
-// Updates the OTR (Off The Record) tab model. Should only be called when both
-// the current OTR tab model and the new OTR tab model are either nil or contain
-// no tabs. This must be called after the otr tab model has been deleted because
+// Updates the OTR (Off The Record) browser. Should only be called when both
+// the current OTR browser and the new OTR browser are either nil or contain no
+// tabs. This must be called after the otr tab model has been deleted because
 // the incognito browser state is deleted.
-- (void)setOtrTabModel:(TabModel*)otrModel;
+- (void)setOtrBrowser:(Browser*)otrBrowser;
 
 @end
 

@@ -14,7 +14,7 @@ cr.define('cr.ui', function() {
    */
   function decorate(source, constr) {
     let elements;
-    if (typeof source == 'string') {
+    if (typeof source === 'string') {
       elements = document.querySelectorAll(source);
     } else {
       elements = [source];
@@ -65,7 +65,7 @@ cr.define('cr.ui', function() {
    */
   function define(tagNameOrFunction) {
     let createFunction, tagName;
-    if (typeof tagNameOrFunction == 'function') {
+    if (typeof tagNameOrFunction === 'function') {
       createFunction = tagNameOrFunction;
       tagName = '';
     } else {
@@ -119,7 +119,7 @@ cr.define('cr.ui', function() {
     const win = doc.defaultView;
     const computedStyle = win.getComputedStyle(el);
     const parentComputedStyle = win.getComputedStyle(parentEl);
-    const rtl = computedStyle.direction == 'rtl';
+    const rtl = computedStyle.direction === 'rtl';
 
     // To get the max width we get the width of the treeItem minus the position
     // of the input.
@@ -198,7 +198,7 @@ cr.define('cr.ui', function() {
         doc.removeEventListener('click', onclick, true);
       }
     }
-    // The following 'click' event (if e.type == 'mouseup') mustn't be taken
+    // The following 'click' event (if e.type === 'mouseup') mustn't be taken
     // into account (it mustn't stop tracking clicks). Start event listening
     // after zero timeout.
     setTimeout(function() {

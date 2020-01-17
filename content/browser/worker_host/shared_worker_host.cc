@@ -143,8 +143,10 @@ void SharedWorkerHost::Start(
 
   started_ = true;
 
+  auto options = blink::mojom::WorkerOptions::New(
+      instance_.script_type(), instance_.credentials_mode(), instance_.name());
   blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
-      instance_.url(), instance_.name(), instance_.content_security_policy(),
+      instance_.url(), std::move(options), instance_.content_security_policy(),
       instance_.content_security_policy_type(),
       instance_.creation_address_space()));
 

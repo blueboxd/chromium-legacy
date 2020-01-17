@@ -976,9 +976,9 @@ class AppCacheStorageImplTest : public testing::Test {
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::FALLBACK, 1));
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, 2));
     cache_->fallback_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace2, kEntryUrl2, false));
+        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace2, kEntryUrl2));
     cache_->fallback_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl, false));
+        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl));
     AppCacheDatabase::CacheRecord cache_record;
     std::vector<AppCacheDatabase::EntryRecord> entries;
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
@@ -1041,9 +1041,9 @@ class AppCacheStorageImplTest : public testing::Test {
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::INTERCEPT, 1));
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::INTERCEPT, 2));
     cache_->intercept_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_INTERCEPT_NAMESPACE, kInterceptNamespace2, kEntryUrl2, false));
+        APPCACHE_INTERCEPT_NAMESPACE, kInterceptNamespace2, kEntryUrl2));
     cache_->intercept_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_INTERCEPT_NAMESPACE, kInterceptNamespace, kEntryUrl, false));
+        APPCACHE_INTERCEPT_NAMESPACE, kInterceptNamespace, kEntryUrl));
     AppCacheDatabase::CacheRecord cache_record;
     std::vector<AppCacheDatabase::EntryRecord> entries;
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
@@ -1083,166 +1083,6 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(delegate()->found_entry_.IsIntercept());
     EXPECT_EQ(kEntryUrl2, delegate()->found_namespace_entry_url_);
     EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
-    TestFinished();
-  }
-
-  // FindInterceptPatternMatch ----------------------------------------
-
-  void FindInterceptPatternMatchInDatabase() {
-    FindInterceptPatternMatch(true);
-  }
-
-  void FindInterceptPatternMatchInWorkingSet() {
-    FindInterceptPatternMatch(false);
-  }
-
-  void FindInterceptPatternMatch(bool drop_from_working_set) {
-    // Setup some preconditions. Create a complete cache with an
-    // pattern matching intercept namespace and entry.
-    MakeCacheAndGroup(kManifestUrl, 2, 1, true);
-    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::INTERCEPT, 1));
-    cache_->intercept_namespaces_.push_back(
-        AppCacheNamespace(APPCACHE_INTERCEPT_NAMESPACE,
-                          kInterceptPatternNamespace, kEntryUrl, true));
-    AppCacheDatabase::CacheRecord cache_record;
-    std::vector<AppCacheDatabase::EntryRecord> entries;
-    std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
-    std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
-    std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
-    cache_->ToDatabaseRecords(group_.get(), &cache_record, &entries,
-                              &intercepts, &fallbacks, &whitelists);
-
-    for (const auto& entry : entries) {
-      // MakeCacheAndGroup has inserted  the default entry record already
-      if (entry.url != kDefaultEntryUrl)
-        EXPECT_TRUE(database()->InsertEntry(&entry));
-    }
-
-    EXPECT_TRUE(database()->InsertNamespaceRecords(intercepts));
-    if (drop_from_working_set) {
-      EXPECT_TRUE(cache_->HasOneRef());
-      cache_ = nullptr;
-      EXPECT_TRUE(group_->HasOneRef());
-      group_ = nullptr;
-    }
-
-    // First test something that does not match the pattern.
-    PushNextTask(base::BindOnce(
-        &AppCacheStorageImplTest::Verify_FindInterceptPatternMatchNegative,
-        base::Unretained(this)));
-    storage()->FindResponseForMainRequest(kInterceptPatternTestNegativeUrl,
-                                          GURL(), delegate());
-    EXPECT_EQ(GURL(), delegate()->found_url_);  // Is always async.
-  }
-
-  void Verify_FindInterceptPatternMatchNegative() {
-    EXPECT_EQ(kInterceptPatternTestNegativeUrl, delegate()->found_url_);
-    EXPECT_TRUE(delegate()->found_manifest_url_.is_empty());
-    EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, delegate()->found_cache_id_);
-    EXPECT_EQ(blink::mojom::kAppCacheNoResponseId,
-              delegate()->found_entry_.response_id());
-    EXPECT_EQ(blink::mojom::kAppCacheNoResponseId,
-              delegate()->found_fallback_entry_.response_id());
-    EXPECT_TRUE(delegate()->found_namespace_entry_url_.is_empty());
-    EXPECT_EQ(0, delegate()->found_entry_.types());
-    EXPECT_EQ(0, delegate()->found_fallback_entry_.types());
-
-    // Then test something that matches.
-    PushNextTask(base::BindOnce(
-        &AppCacheStorageImplTest::Verify_FindInterceptPatternMatchPositive,
-        base::Unretained(this)));
-    storage()->FindResponseForMainRequest(kInterceptPatternTestPositiveUrl,
-                                          GURL(), delegate());
-  }
-
-  void Verify_FindInterceptPatternMatchPositive() {
-    EXPECT_EQ(kInterceptPatternTestPositiveUrl, delegate()->found_url_);
-    EXPECT_EQ(kManifestUrl, delegate()->found_manifest_url_);
-    EXPECT_EQ(1, delegate()->found_cache_id_);
-    EXPECT_EQ(2, delegate()->found_group_id_);
-    EXPECT_EQ(1, delegate()->found_entry_.response_id());
-    EXPECT_TRUE(delegate()->found_entry_.IsIntercept());
-    EXPECT_EQ(kEntryUrl, delegate()->found_namespace_entry_url_);
-    EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
-    TestFinished();
-  }
-
-  // FindFallbackPatternMatch  -------------------------------
-
-  void FindFallbackPatternMatchInDatabase() { FindFallbackPatternMatch(true); }
-
-  void FindFallbackPatternMatchInWorkingSet() {
-    FindFallbackPatternMatch(false);
-  }
-
-  void FindFallbackPatternMatch(bool drop_from_working_set) {
-    // Setup some preconditions. Create a complete cache with a
-    // pattern matching fallback namespace and entry.
-    MakeCacheAndGroup(kManifestUrl, 2, 1, true);
-    cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::FALLBACK, 1));
-    cache_->fallback_namespaces_.push_back(
-        AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
-                          kFallbackPatternNamespace, kEntryUrl, true));
-    AppCacheDatabase::CacheRecord cache_record;
-    std::vector<AppCacheDatabase::EntryRecord> entries;
-    std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
-    std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
-    std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
-    cache_->ToDatabaseRecords(group_.get(), &cache_record, &entries,
-                              &intercepts, &fallbacks, &whitelists);
-
-    for (const auto& entry : entries) {
-      // MakeCacheAndGroup has inserted the default entry record already.
-      if (entry.url != kDefaultEntryUrl)
-        EXPECT_TRUE(database()->InsertEntry(&entry));
-    }
-
-    EXPECT_TRUE(database()->InsertNamespaceRecords(fallbacks));
-    if (drop_from_working_set) {
-      EXPECT_TRUE(cache_->HasOneRef());
-      cache_ = nullptr;
-      EXPECT_TRUE(group_->HasOneRef());
-      group_ = nullptr;
-    }
-
-    // First test something that does not match the pattern.
-    PushNextTask(base::BindOnce(
-        &AppCacheStorageImplTest::Verify_FindFallbackPatternMatchNegative,
-        base::Unretained(this)));
-    storage()->FindResponseForMainRequest(kFallbackPatternTestNegativeUrl,
-                                          GURL(), delegate());
-    EXPECT_EQ(GURL(), delegate()->found_url_);  // Is always async.
-  }
-
-  void Verify_FindFallbackPatternMatchNegative() {
-    EXPECT_EQ(kFallbackPatternTestNegativeUrl, delegate()->found_url_);
-    EXPECT_TRUE(delegate()->found_manifest_url_.is_empty());
-    EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, delegate()->found_cache_id_);
-    EXPECT_EQ(blink::mojom::kAppCacheNoResponseId,
-              delegate()->found_entry_.response_id());
-    EXPECT_EQ(blink::mojom::kAppCacheNoResponseId,
-              delegate()->found_fallback_entry_.response_id());
-    EXPECT_TRUE(delegate()->found_namespace_entry_url_.is_empty());
-    EXPECT_EQ(0, delegate()->found_entry_.types());
-    EXPECT_EQ(0, delegate()->found_fallback_entry_.types());
-
-    // Then test something that matches.
-    PushNextTask(base::BindOnce(
-        &AppCacheStorageImplTest::Verify_FindFallbackPatternMatchPositive,
-        base::Unretained(this)));
-    storage()->FindResponseForMainRequest(kFallbackPatternTestPositiveUrl,
-                                          GURL(), delegate());
-  }
-
-  void Verify_FindFallbackPatternMatchPositive() {
-    EXPECT_EQ(kFallbackPatternTestPositiveUrl, delegate()->found_url_);
-    EXPECT_EQ(kManifestUrl, delegate()->found_manifest_url_);
-    EXPECT_EQ(1, delegate()->found_cache_id_);
-    EXPECT_EQ(2, delegate()->found_group_id_);
-    EXPECT_EQ(1, delegate()->found_fallback_entry_.response_id());
-    EXPECT_TRUE(delegate()->found_fallback_entry_.IsFallback());
-    EXPECT_EQ(kEntryUrl, delegate()->found_namespace_entry_url_);
-    EXPECT_FALSE(delegate()->found_entry_.has_response_id());
     TestFinished();
   }
 
@@ -1303,7 +1143,7 @@ class AppCacheStorageImplTest : public testing::Test {
     fallback_namespace_record.origin = url::Origin::Create(manifest_url);
     EXPECT_TRUE(database()->InsertNamespace(&fallback_namespace_record));
     cache_->fallback_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl2, false));
+        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl2));
   }
 
   void Verify_FindMainResponseWithMultipleHits() {
@@ -1415,12 +1255,11 @@ class AppCacheStorageImplTest : public testing::Test {
         AppCacheEntry(AppCacheEntry::EXPLICIT | AppCacheEntry::FOREIGN, 1));
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, 2));
     cache_->fallback_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl2, false));
+        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl2));
     cache_->online_whitelist_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_NETWORK_NAMESPACE, kOnlineNamespace, GURL(), false));
-    cache_->online_whitelist_namespaces_.push_back(
-        AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE,
-                          kOnlineNamespaceWithinFallback, GURL(), false));
+        APPCACHE_NETWORK_NAMESPACE, kOnlineNamespace, GURL()));
+    cache_->online_whitelist_namespaces_.push_back(AppCacheNamespace(
+        APPCACHE_NETWORK_NAMESPACE, kOnlineNamespaceWithinFallback, GURL()));
 
     AppCacheDatabase::EntryRecord entry_record;
     entry_record.cache_id = 1;
@@ -1958,26 +1797,6 @@ TEST_F(AppCacheStorageImplTest, FindMainResponseExclusionsInDatabase) {
 TEST_F(AppCacheStorageImplTest, FindMainResponseExclusionsInWorkingSet) {
   RunTestOnUIThread(
       &AppCacheStorageImplTest::FindMainResponseExclusionsInWorkingSet);
-}
-
-TEST_F(AppCacheStorageImplTest, FindInterceptPatternMatchInWorkingSet) {
-  RunTestOnUIThread(
-      &AppCacheStorageImplTest::FindInterceptPatternMatchInWorkingSet);
-}
-
-TEST_F(AppCacheStorageImplTest, FindInterceptPatternMatchInDatabase) {
-  RunTestOnUIThread(
-      &AppCacheStorageImplTest::FindInterceptPatternMatchInDatabase);
-}
-
-TEST_F(AppCacheStorageImplTest, FindFallbackPatternMatchInWorkingSet) {
-  RunTestOnUIThread(
-      &AppCacheStorageImplTest::FindFallbackPatternMatchInWorkingSet);
-}
-
-TEST_F(AppCacheStorageImplTest, FindFallbackPatternMatchInDatabase) {
-  RunTestOnUIThread(
-      &AppCacheStorageImplTest::FindFallbackPatternMatchInDatabase);
 }
 
 TEST_F(AppCacheStorageImplTest, Reinitialize1) {

@@ -95,16 +95,12 @@ if (is_android) {
   }
 
   android_library("load_seed_result_enum_java") {
-    deps = [
-      "//base:base_java",
-    ]
+    deps = [ "//base:base_java" ]
     srcjar_deps = [ ":load_seed_result_enum_srcjar" ]
   }
 
   java_cpp_enum("load_seed_result_enum_srcjar") {
-    sources = [
-      "metrics.h",
-    ]
+    sources = [ "metrics.h" ]
   }
 }
 
@@ -115,9 +111,7 @@ static_library("test_support") {
     "variations_params_manager.h",
   ]
 
-  public_deps = [
-    ":variations",
-  ]
+  public_deps = [ ":variations" ]
 
   deps = [
     "field_trial_config:field_trial_config",
@@ -170,9 +164,7 @@ source_set("unit_tests") {
 
 # Convenience testing target
 test("variations_unittests") {
-  sources = [
-    "//components/test/run_all_unittests.cc",
-  ]
+  sources = [ "//components/test/run_all_unittests.cc" ]
   deps = [
     ":unit_tests",
     "//components/test:test_support",

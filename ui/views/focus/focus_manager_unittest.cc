@@ -858,14 +858,15 @@ class AdvanceFocusWidgetDelegate : public WidgetDelegate {
     should_advance_focus_to_parent_ = value;
   }
 
-  // WidgetDelegate overrides:
+  // WidgetDelegate:
   bool ShouldAdvanceFocusToTopLevelWidget() const override {
     return should_advance_focus_to_parent_;
   }
-  Widget* GetWidget() override { return widget_; }
-  const Widget* GetWidget() const override { return widget_; }
 
  private:
+  // WidgetDelegate:
+  const Widget* GetWidgetImpl() const override { return widget_; }
+
   Widget* widget_;
   bool should_advance_focus_to_parent_;
 

@@ -59,6 +59,9 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {kManagementReportUsers, IDS_MANAGEMENT_REPORT_DEVICE_USERS},
     {kManagementPrinting, IDS_MANAGEMENT_REPORT_PRINTING},
     {kManagementCrostini, IDS_MANAGEMENT_CROSTINI},
+    {kManagementReportExtensions, IDS_MANAGEMENT_REPORT_EXTENSIONS},
+    {kManagementReportAndroidApplications,
+     IDS_MANAGEMENT_REPORT_ANDROID_APPLICATIONS},
 #endif  // defined(OS_CHROMEOS)
     {"browserReporting", IDS_MANAGEMENT_BROWSER_REPORTING},
     {"browserReportingExplanation",

@@ -38,15 +38,11 @@ js_library("error_dialog") {
 }
 
 js_library("profile_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("user_manager_pages") {
-  deps = [
-    "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
-  ]
+  deps = [ "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager" ]
 }
 
 js_library("user_manager_tutorial") {

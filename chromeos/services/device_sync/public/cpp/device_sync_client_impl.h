@@ -123,7 +123,8 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
   bool pending_notify_enrollment_finished_ = false;
   bool pending_notify_new_synced_devices_ = false;
 
-  base::Optional<std::string> local_device_id_;
+  base::Optional<std::string> local_instance_id_;
+  base::Optional<std::string> local_legacy_device_id_;
 
   base::WeakPtrFactory<DeviceSyncClientImpl> weak_ptr_factory_{this};
 

@@ -49,7 +49,7 @@ Polymer({
      */
     showTechnologyBadge_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.valueExists('showTechnologyBadge') &&
             loadTimeData.getBoolean('showTechnologyBadge');
       }
@@ -60,13 +60,13 @@ Polymer({
   networkConfig_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
                               .getMojoServiceRemote();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.updateTetherDeviceState_();
     this.updateTetherNetworkState_();
   },
@@ -81,7 +81,7 @@ Polymer({
    *     networks
    * @private
    */
-  onActiveNetworksChanged: function(networks) {
+  onActiveNetworksChanged(networks) {
     const guid = this.activeNetworkState_.guid;
     if (!networks.find(network => network.guid == guid)) {
       return;
@@ -94,12 +94,12 @@ Polymer({
   },
 
   /** CrosNetworkConfigObserver impl */
-  onNetworkStateListChanged: function() {
+  onNetworkStateListChanged() {
     this.updateTetherNetworkState_();
   },
 
   /** CrosNetworkConfigObserver impl */
-  onDeviceStateListChanged: function() {
+  onDeviceStateListChanged() {
     this.updateTetherDeviceState_();
   },
 
@@ -111,7 +111,7 @@ Polymer({
    * state.
    * @private
    */
-  updateTetherDeviceState_: function() {
+  updateTetherDeviceState_() {
     this.networkConfig_.getDeviceStateList().then(response => {
       const kTether = chromeos.networkConfig.mojom.NetworkType.kTether;
       const deviceStates = response.result;
@@ -135,7 +135,7 @@ Polymer({
    * with an empty string for a GUID otherwise.
    * @private
    */
-  updateTetherNetworkState_: function() {
+  updateTetherNetworkState_() {
     const kTether = chromeos.networkConfig.mojom.NetworkType.kTether;
     const filter = {
       filter: chromeos.networkConfig.mojom.FilterType.kVisible,
@@ -156,7 +156,7 @@ Polymer({
    * @return {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
    * @private
    */
-  getNetworkStateList_: function() {
+  getNetworkStateList_() {
     return this.activeNetworkState_.guid ? [this.activeNetworkState_] : [];
   },
 
@@ -164,7 +164,7 @@ Polymer({
    * @return {!URLSearchParams}
    * @private
    */
-  getTetherNetworkUrlSearchParams_: function() {
+  getTetherNetworkUrlSearchParams_() {
     return new URLSearchParams('type=Tether');
   },
 });

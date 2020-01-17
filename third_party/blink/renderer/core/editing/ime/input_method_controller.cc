@@ -630,7 +630,8 @@ void InputMethodController::AddImeTextSpans(
       case ImeTextSpan::Type::kComposition:
         GetDocument().Markers().AddCompositionMarker(
             ephemeral_line_range, ime_text_span.UnderlineColor(),
-            ime_text_span.Thickness(), ime_text_span.BackgroundColor());
+            ime_text_span.Thickness(), ime_text_span.UnderlineStyle(),
+            ime_text_span.TextColor(), ime_text_span.BackgroundColor());
         break;
       case ImeTextSpan::Type::kSuggestion:
       case ImeTextSpan::Type::kMisspellingSuggestion:
@@ -656,6 +657,8 @@ void InputMethodController::AddImeTextSpans(
                 .SetHighlightColor(ime_text_span.SuggestionHighlightColor())
                 .SetUnderlineColor(ime_text_span.UnderlineColor())
                 .SetThickness(ime_text_span.Thickness())
+                .SetUnderlineStyle(ime_text_span.UnderlineStyle())
+                .SetTextColor(ime_text_span.TextColor())
                 .SetBackgroundColor(ime_text_span.BackgroundColor())
                 .SetRemoveOnFinishComposing(
                     ime_text_span.NeedsRemovalOnFinishComposing())
@@ -948,6 +951,7 @@ void InputMethodController::SetComposition(
     GetDocument().Markers().AddCompositionMarker(
         CompositionEphemeralRange(), Color::kTransparent,
         ui::mojom::ImeTextSpanThickness::kThin,
+        ui::mojom::ImeTextSpanUnderlineStyle::kSolid, Color::kTransparent,
         LayoutTheme::GetTheme().PlatformDefaultCompositionBackgroundColor());
     return;
   }

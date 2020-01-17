@@ -98,7 +98,7 @@ Polymer({
   delayedProgress_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.passwordManager_ = PasswordManagerImpl.getInstance();
 
     this.switchToDialog_(States.START);
@@ -167,7 +167,7 @@ Polymer({
   },
 
   /** Closes the dialog. */
-  close: function() {
+  close() {
     clearTimeout(this.progressTaskToken_);
     clearTimeout(this.delayedCompletionToken_);
     this.progressTaskToken_ = null;
@@ -183,7 +183,7 @@ Polymer({
   },
 
   /** @private */
-  onExportTap_: function() {
+  onExportTap_() {
     // <if expr="chromeos">
     this.tokenRequestManager.request(this.exportPasswords_.bind(this));
     // </if>
@@ -197,7 +197,7 @@ Polymer({
    * security checks.
    * @private
    */
-  exportPasswords_: function() {
+  exportPasswords_() {
     this.passwordManager_.exportPasswords(() => {
       if (chrome.runtime.lastError &&
           chrome.runtime.lastError.message == 'in-progress') {
@@ -247,7 +247,7 @@ Polymer({
    * Handler for tapping the 'cancel' button. Should just dismiss the dialog.
    * @private
    */
-  onCancelButtonTap_: function() {
+  onCancelButtonTap_() {
     this.close();
   },
 
@@ -256,7 +256,7 @@ Polymer({
    * cancel the export and dismiss the dialog.
    * @private
    */
-  onCancelProgressButtonTap_: function() {
+  onCancelProgressButtonTap_() {
     this.passwordManager_.cancelExportPasswords();
     this.close();
   },

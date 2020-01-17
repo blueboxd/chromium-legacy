@@ -76,15 +76,11 @@ class StubFunction : public ScriptFunction {
 class GarbageCollectedHolder final : public GarbageCollectedScriptWrappable {
  public:
   typedef ScriptPromiseProperty<Member<GarbageCollectedScriptWrappable>,
-                                Member<GarbageCollectedScriptWrappable>,
                                 Member<GarbageCollectedScriptWrappable>>
       Property;
   GarbageCollectedHolder(ExecutionContext* execution_context)
       : GarbageCollectedScriptWrappable("holder"),
-        property_(
-            MakeGarbageCollected<Property>(execution_context,
-                                           ToGarbageCollectedScriptWrappable(),
-                                           Property::kReady)) {}
+        property_(MakeGarbageCollected<Property>(execution_context)) {}
 
   Property* GetProperty() { return property_; }
   GarbageCollectedScriptWrappable* ToGarbageCollectedScriptWrappable() {
@@ -194,13 +190,8 @@ class ScriptPromisePropertyNonScriptWrappableResolutionTargetTest
  public:
   template <typename T>
   void Test(const T& value, const char* expected, const char* file, int line) {
-    typedef ScriptPromiseProperty<Member<GarbageCollectedScriptWrappable>, T,
-                                  ToV8UndefinedGenerator>
-        Property;
-    Property* property = MakeGarbageCollected<Property>(
-        &GetDocument(),
-        MakeGarbageCollected<GarbageCollectedScriptWrappable>("holder"),
-        Property::kReady);
+    typedef ScriptPromiseProperty<T, ToV8UndefinedGenerator> Property;
+    Property* property = MakeGarbageCollected<Property>(&GetDocument());
     size_t n_resolve_calls = 0;
     ScriptValue actual_value;
     String actual;
@@ -289,6 +280,9 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest,
   Persistent<GCObservation> observation;
   {
     ScriptState::Scope scope(MainScriptState());
+    // Here we have a reference cylce between Holder() and the promise.
+    Holder()->GetProperty()->Resolve(Holder());
+
     observation = MakeGarbageCollected<GCObservation>(
         Promise(DOMWrapperWorld::MainWorld()).V8Value());
   }

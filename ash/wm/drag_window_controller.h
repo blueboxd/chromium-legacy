@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
@@ -19,6 +20,7 @@ class Window;
 
 namespace ui {
 class LayerTreeOwner;
+class Shadow;
 }
 
 namespace ash {
@@ -27,7 +29,10 @@ namespace ash {
 // Phantom windows called "drag windows" represent the window on other displays.
 class ASH_EXPORT DragWindowController {
  public:
-  DragWindowController(aura::Window* window, bool is_touch_dragging);
+  DragWindowController(
+      aura::Window* window,
+      bool is_touch_dragging,
+      const base::Optional<gfx::Rect>& shadow_bounds = base::nullopt);
   virtual ~DragWindowController();
 
   // Updates bounds and opacity for the drag windows, and creates/destroys each
@@ -40,6 +45,8 @@ class ASH_EXPORT DragWindowController {
   FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, DragWindowController);
   FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest,
                            DragWindowControllerAcrossThreeDisplays);
+  FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest,
+                           DragWindowControllerWithCustomShadowBounds);
 
   // Returns the currently active drag windows.
   int GetDragWindowsCountForTest() const;
@@ -48,6 +55,7 @@ class ASH_EXPORT DragWindowController {
   // currently active drag windows list.
   const aura::Window* GetDragWindowForTest(size_t index) const;
   const ui::LayerTreeOwner* GetDragLayerOwnerForTest(size_t index) const;
+  const ui::Shadow* GetDragWindowShadowForTest(size_t index) const;
 
   // Call Layer::OnPaintLayer on all layers under the drag_windows_.
   void RequestLayerPaintForTest();
@@ -57,6 +65,9 @@ class ASH_EXPORT DragWindowController {
 
   // Indicates touch dragging, as opposed to mouse dragging.
   const bool is_touch_dragging_;
+
+  // Used if the drag windows may need their shadows adjusted.
+  const base::Optional<gfx::Rect> shadow_bounds_;
 
   // |window_|'s opacity before the drag. Used to revert opacity after the drag.
   const float old_opacity_;

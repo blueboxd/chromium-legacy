@@ -2528,7 +2528,7 @@ class AppListPresenterDelegateHomeLauncherTest
   }
 
   void PressHomeButton() {
-    Shell::Get()->app_list_controller()->OnHomeButtonPressed(
+    Shell::Get()->app_list_controller()->ToggleAppList(
         GetPrimaryDisplayId(), AppListShowSource::kShelfButton,
         base::TimeTicks());
     GetAppListTestHelper()->WaitUntilIdle();

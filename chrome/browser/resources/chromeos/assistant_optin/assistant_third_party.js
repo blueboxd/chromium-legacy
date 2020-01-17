@@ -58,7 +58,7 @@ Polymer({
    *
    * @private
    */
-  onNextTap_: function() {
+  onNextTap_() {
     if (this.buttonsDisabled) {
       return;
     }
@@ -72,7 +72,7 @@ Polymer({
    * Click event handler for information links.
    * @param {MouseEvent} e click event.
    */
-  urlClickHandler: function(e) {
+  urlClickHandler(e) {
     if (e.target.localName !== 'a') {
       return;
     }
@@ -86,7 +86,7 @@ Polymer({
    * @param {string} url URL to show.
    * @param {string} title Title of the dialog.
    */
-  showThirdPartyOverlay: function(url, title) {
+  showThirdPartyOverlay(url, title) {
     this.$['webview-container'].classList.add('overlay-loading');
     this.$['overlay-webview'].src = url;
     this.$['third-party-overlay'].setTitleAriaLabel(title);
@@ -97,7 +97,7 @@ Polymer({
   /**
    * Hides overlay dialog.
    */
-  hideOverlay: function() {
+  hideOverlay() {
     this.$['third-party-overlay'].close();
     if (this.lastFocusedElement) {
       this.lastFocusedElement.focus();
@@ -108,7 +108,7 @@ Polymer({
   /**
    * Reloads the page.
    */
-  reloadPage: function() {
+  reloadPage() {
     this.fire('loading');
     this.buttonsDisabled = true;
   },
@@ -116,7 +116,7 @@ Polymer({
   /**
    * Reload the page with the given consent string text data.
    */
-  reloadContent: function(data) {
+  reloadContent(data) {
     this.$['third-party-dialog'].setAttribute(
         'aria-label', data['thirdPartyTitle']);
     this.$['title-text'].textContent = data['thirdPartyTitle'];
@@ -135,7 +135,7 @@ Polymer({
   /**
    * Add a setting zippy with the provided data.
    */
-  addSettingZippy: function(zippy_data) {
+  addSettingZippy(zippy_data) {
     if (this.settingZippyLoaded_) {
       if (this.consentStringLoaded_) {
         this.onPageLoaded();
@@ -183,7 +183,7 @@ Polymer({
   /**
    * Handles event when all the page content has been loaded.
    */
-  onPageLoaded: function() {
+  onPageLoaded() {
     this.fire('loaded');
     this.buttonsDisabled = false;
     this.$['next-button'].focus();
@@ -197,7 +197,7 @@ Polymer({
   /**
    * Signal from host to show the screen.
    */
-  onShow: function() {
+  onShow() {
     this.$['overlay-close-button'].addEventListener(
         'click', this.hideOverlay.bind(this));
     var webviewContainer = this.$['webview-container'];

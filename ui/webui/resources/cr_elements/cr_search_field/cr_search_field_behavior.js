@@ -57,7 +57,7 @@
     if (!updated) {
       // If the input is only whitespace and value is empty, |hasSearchText|
       // needs to be updated.
-      if (value == '' && this.hasSearchText) {
+      if (value === '' && this.hasSearchText) {
         this.hasSearchText = false;
       }
       return;
@@ -100,7 +100,7 @@
    * after any change, whether the result of user input or JS modification.
    */
   onSearchTermInput() {
-    this.hasSearchText = this.$.searchInput.value != '';
+    this.hasSearchText = this.$.searchInput.value !== '';
     this.scheduleSearch_();
   },
 
@@ -129,7 +129,7 @@
    */
   updateEffectiveValue_(value) {
     const effectiveValue = value.replace(/\s+/g, ' ').replace(/^\s/, '');
-    if (effectiveValue == this.effectiveValue_) {
+    if (effectiveValue === this.effectiveValue_) {
       return false;
     }
 

@@ -24,6 +24,7 @@ js_library("internet_page") {
     ":internet_config",
     ":internet_page_browser_proxy",
     "../..:route",
+    "../..:router",
     "../../settings_page:settings_animated_pages",
     "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
@@ -41,14 +42,12 @@ js_library("internet_page") {
 }
 
 js_library("internet_page_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("internet_config") {
   deps = [
-    "../..:route",
+    "../..:router",
     "//ui/webui/resources/cr_components/chromeos/network:network_config",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
     "//ui/webui/resources/js:assert",
@@ -64,6 +63,7 @@ js_library("internet_detail_page") {
     ":internet_page_browser_proxy",
     ":tether_connection_dialog",
     "../..:route",
+    "../..:router",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
     "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:assert",
@@ -92,6 +92,7 @@ js_library("internet_subpage") {
     ":internet_page_browser_proxy",
     "..:route_origin_behavior",
     "../..:route",
+    "../..:router",
     "../localized_link:localized_link",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
@@ -106,6 +107,7 @@ js_library("internet_subpage") {
 js_library("network_proxy_section") {
   deps = [
     "../..:route",
+    "../..:router",
     "../../controls:settings_toggle_button",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:network_proxy",

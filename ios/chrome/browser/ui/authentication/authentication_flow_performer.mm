@@ -181,15 +181,17 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
 - (void)signOutBrowserState:(ios::ChromeBrowserState*)browserState {
   AuthenticationServiceFactory::GetForBrowserState(browserState)
-      ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, ^{
-        [_delegate didSignOut];
-      });
+      ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+                /*force_clear_browsing_data=*/false, ^{
+                  [_delegate didSignOut];
+                });
 }
 
 - (void)signOutImmediatelyFromBrowserState:
     (ios::ChromeBrowserState*)browserState {
   AuthenticationServiceFactory::GetForBrowserState(browserState)
-      ->SignOut(signin_metrics::ABORT_SIGNIN, nil);
+      ->SignOut(signin_metrics::ABORT_SIGNIN,
+                /*force_clear_browsing_data=*/false, nil);
 }
 
 - (void)promptSwitchFromManagedEmail:(NSString*)managedEmail

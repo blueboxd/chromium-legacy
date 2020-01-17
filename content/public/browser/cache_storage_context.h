@@ -10,7 +10,9 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 
-class GURL;
+namespace url {
+class Origin;
+}
 
 namespace content {
 
@@ -26,7 +28,7 @@ class CacheStorageContext
   // Methods used in response to browsing data and quota manager requests.
   // May be called on any sequence.
   virtual void GetAllOriginsInfo(GetUsageInfoCallback callback) = 0;
-  virtual void DeleteForOrigin(const GURL& origin_url) = 0;
+  virtual void DeleteForOrigin(const url::Origin& origin) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<CacheStorageContext>;

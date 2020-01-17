@@ -41,7 +41,7 @@ Polymer({
    *
    * @private
    */
-  getWrappedIcon: function(iconUri, imageLabel) {
+  getWrappedIcon(iconUri, imageLabel) {
     return String.raw`
     <html>
       <style>

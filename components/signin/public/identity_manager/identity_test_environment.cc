@@ -209,7 +209,8 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
       token_service.get(), gaia_cookie_manager_service.get());
 
   auto accounts_cookie_mutator = std::make_unique<AccountsCookieMutatorImpl>(
-      gaia_cookie_manager_service.get(), account_tracker_service.get());
+      signin_client, token_service.get(), gaia_cookie_manager_service.get(),
+      account_tracker_service.get());
 
   std::unique_ptr<DeviceAccountsSynchronizer> device_accounts_synchronizer;
 #if defined(OS_IOS)

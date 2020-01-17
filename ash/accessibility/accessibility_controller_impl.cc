@@ -88,6 +88,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kAccessibilitySelectToSpeakEnabled,
     prefs::kAccessibilitySpokenFeedbackEnabled,
     prefs::kAccessibilityStickyKeysEnabled,
+    prefs::kAccessibilityShortcutsEnabled,
     prefs::kAccessibilitySwitchAccessEnabled,
     prefs::kAccessibilityVirtualKeyboardEnabled,
     prefs::kDockedMagnifierEnabled,
@@ -367,6 +368,9 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityStickyKeysEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityShortcutsEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kAccessibilitySwitchAccessEnabled, false,
@@ -1175,6 +1179,11 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
           &AccessibilityControllerImpl::UpdateSelectToSpeakFromPref,
           base::Unretained(this)));
   pref_change_registrar_->Add(
+      prefs::kAccessibilityShortcutsEnabled,
+      base::BindRepeating(
+          &AccessibilityControllerImpl::UpdateShortcutsEnabledFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityStickyKeysEnabled,
       base::BindRepeating(
           &AccessibilityControllerImpl::UpdateStickyKeysFromPref,
@@ -1240,6 +1249,7 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
   UpdateStickyKeysFromPref();
   UpdateSwitchAccessFromPref();
   UpdateVirtualKeyboardFromPref();
+  UpdateShortcutsEnabledFromPref();
 }
 
 void AccessibilityControllerImpl::UpdateAutoclickFromPref() {
@@ -1652,6 +1662,19 @@ void AccessibilityControllerImpl::MaybeCreateSwitchAccessEventHandler() {
   UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand::kSelect);
   UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand::kNext);
   UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand::kPrevious);
+}
+
+void AccessibilityControllerImpl::UpdateShortcutsEnabledFromPref() {
+  DCHECK(active_user_prefs_);
+  const bool enabled =
+      active_user_prefs_->GetBoolean(prefs::kAccessibilityShortcutsEnabled);
+
+  if (shortcuts_enabled_ == enabled)
+    return;
+
+  shortcuts_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged();
 }
 
 void AccessibilityControllerImpl::UpdateVirtualKeyboardFromPref() {

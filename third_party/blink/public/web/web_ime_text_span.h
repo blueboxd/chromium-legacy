@@ -59,6 +59,7 @@ struct WebImeTextSpan {
         start_offset(0),
         end_offset(0),
         thickness(ui::mojom::ImeTextSpanThickness::kThin),
+        underline_style(ui::mojom::ImeTextSpanUnderlineStyle::kSolid),
         background_color(0),
         suggestion_highlight_color(0),
         suggestions(std::vector<std::string>()) {}
@@ -68,6 +69,7 @@ struct WebImeTextSpan {
       unsigned s,
       unsigned e,
       ui::mojom::ImeTextSpanThickness th,
+      ui::mojom::ImeTextSpanUnderlineStyle us,
       SkColor bc,
       SkColor shc = 0,
       const std::vector<std::string>& su = std::vector<std::string>())
@@ -75,6 +77,7 @@ struct WebImeTextSpan {
         start_offset(s),
         end_offset(e),
         thickness(th),
+        underline_style(us),
         background_color(bc),
         suggestion_highlight_color(shc),
         suggestions(su) {}
@@ -92,6 +95,8 @@ struct WebImeTextSpan {
   unsigned end_offset;
   SkColor underline_color = SK_ColorTRANSPARENT;
   ui::mojom::ImeTextSpanThickness thickness;
+  ui::mojom::ImeTextSpanUnderlineStyle underline_style;
+  SkColor text_color = SK_ColorTRANSPARENT;
   SkColor background_color;
   SkColor suggestion_highlight_color;
   bool remove_on_finish_composing;

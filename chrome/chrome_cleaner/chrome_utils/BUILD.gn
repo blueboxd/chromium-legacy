@@ -42,13 +42,9 @@ source_set("force_installed_extension") {
     "force_installed_extension.h",
   ]
 
-  deps = [
-    ":extension_id",
-  ]
+  deps = [ ":extension_id" ]
 
-  public_deps = [
-    "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
-  ]
+  public_deps = [ "//chrome/chrome_cleaner/logging/proto:shared_data_proto" ]
 
   all_dependent_configs = [ "//third_party/protobuf:using_proto" ]
 }
@@ -91,7 +87,5 @@ source_set("extension_id") {
     "extension_id.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

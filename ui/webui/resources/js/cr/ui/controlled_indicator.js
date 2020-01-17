@@ -78,7 +78,7 @@ cr.define('cr.ui', function() {
 
       if (this.hasAttribute('text' + this.controlledBy)) {
         text = this.getAttribute('text' + this.controlledBy);
-      } else if (this.controlledBy == 'extension' && this['extensionName']) {
+      } else if (this.controlledBy === 'extension' && this['extensionName']) {
         text = defaultStrings['extensionWithName'];
       }
 

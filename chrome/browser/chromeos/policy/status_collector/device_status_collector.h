@@ -130,17 +130,6 @@ class DeviceStatusCollector : public StatusCollector,
   using CPUTempFetcher =
       base::Callback<std::vector<enterprise_management::CPUTempInfo>()>;
 
-  // Passed into asynchronous mojo interface for communicating with Android.
-  using AndroidStatusReceiver =
-      base::Callback<void(const std::string&, const std::string&)>;
-  // Calls the enterprise reporting mojo interface, passing over the
-  // AndroidStatusReceiver. Returns false if the mojo interface isn't available,
-  // in which case no asynchronous query is emitted and the android status query
-  // fails synchronously. The |AndroidStatusReceiver| is not called in this
-  // case.
-  using AndroidStatusFetcher =
-      base::Callback<bool(const AndroidStatusReceiver&)>;
-
   // Format of the function that asynchronously receives TpmStatusInfo.
   using TpmStatusReceiver = base::OnceCallback<void(const TpmStatusInfo&)>;
   // Gets the TpmStatusInfo and passes it to TpmStatusReceiver.
@@ -153,6 +142,15 @@ class DeviceStatusCollector : public StatusCollector,
   // Gets the data from cros_healthd and passes it to CrosHealthdDataReceiver.
   using CrosHealthdDataFetcher =
       base::RepeatingCallback<void(CrosHealthdDataReceiver)>;
+
+  // Asynchronously receives the graphics status.
+  using GraphicsStatusReceiver =
+      base::OnceCallback<void(const enterprise_management::GraphicsStatus&)>;
+
+  // Gets the display and graphics adapter information reported to the browser
+  // by the GPU process.
+  using GraphicsStatusFetcher =
+      base::RepeatingCallback<void(GraphicsStatusReceiver)>;
 
   // Reads EMMC usage lifetime from /var/log/storage_info.txt
   using EMMCLifetimeFetcher =
@@ -176,7 +174,8 @@ class DeviceStatusCollector : public StatusCollector,
       const TpmStatusFetcher& tpm_status_fetcher,
       const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
       const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
-      const CrosHealthdDataFetcher& cros_healthd_data_fetcher);
+      const CrosHealthdDataFetcher& cros_healthd_data_fetcher,
+      const GraphicsStatusFetcher& graphics_status_fetcher);
 
   // Constructor with default callbacks. These callbacks are always executed on
   // Blocking Pool. Caller is responsible for passing already initialized
@@ -262,6 +261,8 @@ class DeviceStatusCollector : public StatusCollector,
       enterprise_management::DeviceStatusReportRequest* status);
   bool GetRunningKioskApp(
       enterprise_management::DeviceStatusReportRequest* status);
+  bool GetGraphicsStatus(scoped_refptr<DeviceStatusCollectorState>
+                             state);  // Queues async queries!
 
   // Helpers for the various portions of SESSION STATUS. Return true if they
   // actually report any status. Functions that queue async queries take
@@ -389,6 +390,8 @@ class DeviceStatusCollector : public StatusCollector,
 
   CrosHealthdDataFetcher cros_healthd_data_fetcher_;
 
+  GraphicsStatusFetcher graphics_status_fetcher_;
+
   PowerStatusCallback power_status_callback_;
 
   // Power manager client. Used to listen to power changed events.
@@ -410,6 +413,7 @@ class DeviceStatusCollector : public StatusCollector,
   bool report_storage_status_ = false;
   bool report_board_status_ = false;
   bool report_cpu_info_ = false;
+  bool report_graphics_status_ = false;
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       activity_times_subscription_;
@@ -433,6 +437,8 @@ class DeviceStatusCollector : public StatusCollector,
       board_status_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       cpu_info_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      graphics_status_subscription_;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 

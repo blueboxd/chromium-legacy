@@ -20,6 +20,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/gbm_device.h"
+#include "ui/gfx/linux/gbm_util.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
@@ -44,35 +45,10 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
   if (!buffer_manager_->gbm_device())
     return false;
 
-  uint32_t flags = 0;
-  switch (usage) {
-    case gfx::BufferUsage::GPU_READ:
-      flags = GBM_BO_USE_LINEAR;
-      break;
-    case gfx::BufferUsage::SCANOUT:
-      flags = GBM_BO_USE_RENDERING | GBM_BO_USE_SCANOUT;
-      break;
-    case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
-      flags = GBM_BO_USE_LINEAR | GBM_BO_USE_WRITE | GBM_BO_USE_SCANOUT;
-      break;
-    case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
-      flags = GBM_BO_USE_LINEAR | GBM_BO_USE_SCANOUT;
-      break;
-    case gfx::BufferUsage::SCANOUT_VDA_WRITE:
-      flags = GBM_BO_USE_SCANOUT;
-      break;
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-      flags = GBM_BO_USE_LINEAR;
-      break;
-    default:
-      NOTREACHED() << "Not supported buffer format";
-      break;
-  }
-
   const uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
   auto modifiers = buffer_manager_->GetModifiersForBufferFormat(format);
   gbm_bo_ = buffer_manager_->gbm_device()->CreateBufferWithModifiers(
-      fourcc_format, size, flags, modifiers);
+      fourcc_format, size, ui::BufferUsageToGbmFlags(usage), modifiers);
   if (!gbm_bo_) {
     LOG(ERROR) << "Cannot create bo with format= "
                << gfx::BufferFormatToString(format) << " and usage "

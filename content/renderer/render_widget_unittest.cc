@@ -173,13 +173,11 @@ class InteractiveRenderWidget : public RenderWidget {
       : RenderWidget(++next_routing_id_,
                      compositor_deps,
                      blink::mojom::DisplayMode::kUndefined,
-                     /*is_undead=*/false,
                      /*is_hidden=*/false,
                      /*never_composited=*/false,
                      mojo::NullReceiver()),
         always_overscroll_(false) {
-    UnconditionalInit(base::NullCallback());
-    LivingInit(&mock_webwidget_, screen_info);
+    Initialize(base::NullCallback(), &mock_webwidget_, screen_info);
 
     mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>();
 
@@ -444,7 +442,6 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   void SetActiveForWidget(bool active) override {}
   bool SupportsMultipleWindowsForWidget() override { return true; }
   bool ShouldAckSyntheticInputImmediately() override { return true; }
-  void CancelPagePopupForWidget() override {}
   void ApplyNewDisplayModeForWidget(
       blink::mojom::DisplayMode new_display_mode) override {}
   void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,

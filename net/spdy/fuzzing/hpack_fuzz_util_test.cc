@@ -71,7 +71,7 @@ TEST(HpackFuzzUtilTest, ParsesSequenceOfHeaderBlocks) {
   HpackFuzzUtil::Input input;
   input.input.assign(fixture, base::size(fixture) - 1);
 
-  SpdyStringPiece block;
+  quiche::QuicheStringPiece block;
 
   EXPECT_TRUE(HpackFuzzUtil::NextHeaderBlock(&input, &block));
   EXPECT_EQ("aaaaa", block);
@@ -132,7 +132,7 @@ TEST(HpackFuzzUtilTest, ValidFuzzExamplesRegressionTest) {
   HpackFuzzUtil::FuzzerContext context;
   HpackFuzzUtil::InitializeFuzzerContext(&context);
 
-  SpdyStringPiece block;
+  quiche::QuicheStringPiece block;
   while (HpackFuzzUtil::NextHeaderBlock(&input, &block)) {
     // As these are valid examples, all fuzz stages should succeed.
     EXPECT_TRUE(

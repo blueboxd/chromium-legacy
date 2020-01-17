@@ -85,6 +85,14 @@ class CORE_EXPORT ScriptPromiseResolver
   // Do not call this function unless you truly need the behavior.
   void Detach();
 
+  // Suppresses the check in Dispose. Do not use this function unless you truly
+  // need the behavior. Also consider using Detach().
+  void SuppressDetachCheck() {
+#if DCHECK_IS_ON()
+    suppress_detach_check_ = true;
+#endif
+  }
+
   // Once this function is called this resolver stays alive while the
   // promise is pending and the associated ExecutionContext isn't stopped.
   void KeepAliveWhilePending();
@@ -157,6 +165,7 @@ class CORE_EXPORT ScriptPromiseResolver
 #if DCHECK_IS_ON()
   // True if promise() is called.
   bool is_promise_called_ = false;
+  bool suppress_detach_check_ = false;
 
   base::debug::StackTrace create_stack_trace_{8};
 #endif

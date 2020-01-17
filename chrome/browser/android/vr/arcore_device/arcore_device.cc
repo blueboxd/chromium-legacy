@@ -129,8 +129,7 @@ void ArCoreDevice::RequestSession(
   session_state_->pending_request_session_callback_ = std::move(callback);
 
   bool use_dom_overlay = base::Contains(
-      options->enabled_features,
-      device::mojom::XRSessionFeature::DOM_OVERLAY_FOR_HANDHELD_AR);
+      options->enabled_features, device::mojom::XRSessionFeature::DOM_OVERLAY);
 
   // mailbox_bridge_ is either supplied from the constructor, or recreated in
   // OnSessionEnded().

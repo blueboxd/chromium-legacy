@@ -20,7 +20,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.PLUGIN_VM_DETAILS) {
           map.set(settings.routes.PLUGIN_VM_DETAILS.path, '#plugin-vm');
@@ -34,7 +34,7 @@ Polymer({
   },
 
   /** @private */
-  onSubpageClick_: function(event) {
-    settings.navigateTo(settings.routes.PLUGIN_VM_DETAILS);
+  onSubpageClick_(event) {
+    settings.Router.getInstance().navigateTo(settings.routes.PLUGIN_VM_DETAILS);
   },
 });

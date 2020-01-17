@@ -15,6 +15,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -147,6 +148,15 @@ class BlinkTestController : public WebContentsObserver,
   void set_printer(BlinkTestResultPrinter* printer) { printer_.reset(printer); }
 
   void DevToolsProcessCrashed();
+
+  // Returns a path to a temporary directory. Each call to this method will
+  // return a new (empty) directory, as well as delete any directories that
+  // might have been created by previous calls.
+  base::FilePath GetWritableDirectoryForTests();
+
+  // For the duration of the current test this causes all file choosers to
+  // return the passed in path.
+  void SetFilePathForMockFileDialog(const base::FilePath& path);
 
   // WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -324,6 +334,8 @@ class BlinkTestController : public WebContentsObserver,
   // Map from one frame to one mojo pipe.
   std::map<GlobalFrameRoutingId, mojo::AssociatedRemote<mojom::WebTestControl>>
       web_test_control_map_;
+
+  base::ScopedTempDir writable_directory_for_tests_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

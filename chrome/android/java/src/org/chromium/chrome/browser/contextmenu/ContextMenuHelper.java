@@ -24,7 +24,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -145,6 +145,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         };
         mOnMenuClosed = (notAbandoned) -> {
             recordTimeToTakeActionHistogram(mSelectedItemBeforeDismiss || notAbandoned);
+            mPopulator.onMenuClosed();
             if (mNativeContextMenuHelper == 0) return;
             ContextMenuHelperJni.get().onContextMenuClosed(
                     mNativeContextMenuHelper, ContextMenuHelper.this);
@@ -243,7 +244,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      */
     private void shareImageWithLastShareComponent() {
         retrieveImage((Uri imageUri) -> {
-            ShareHelper.shareImage(mWindow, ShareHelper.getLastShareComponentName(null), imageUri);
+            ShareHelper.shareImage(
+                    mWindow, ShareHelper.getLastShareByChromeComponentName(), imageUri);
         });
     }
 

@@ -250,6 +250,29 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     done_callback.Run();
   }
 
+  ClientStatus GetElementTag(const Selector& selector,
+                             std::string* element_tag_output) {
+    base::RunLoop run_loop;
+    ClientStatus result;
+    web_controller_->GetElementTag(
+        selector, base::BindOnce(&WebControllerBrowserTest::OnGetElementTag,
+                                 base::Unretained(this), run_loop.QuitClosure(),
+                                 &result, element_tag_output));
+    run_loop.Run();
+    return result;
+  }
+
+  void OnGetElementTag(const base::Closure& done_callback,
+                       ClientStatus* successful_output,
+                       std::string* element_tag_output,
+                       const ClientStatus& status,
+                       const std::string& element_tag) {
+    EXPECT_EQ(ACTION_APPLIED, status.proto_status());
+    *successful_output = status;
+    *element_tag_output = element_tag;
+    done_callback.Run();
+  }
+
   void FindElement(const Selector& selector,
                    ClientStatus* status_out,
                    ElementFinder::Result* result_out) {
@@ -1123,6 +1146,26 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetOuterHtml) {
   oopif_selector.selectors.emplace_back("#divToRemove");
   ASSERT_EQ(ACTION_APPLIED, GetOuterHtml(oopif_selector, &html).proto_status());
   EXPECT_EQ(R"(<div id="divToRemove">Text</div>)", html);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetElementTag) {
+  std::string element_tag;
+
+  // Div.
+  ASSERT_EQ(
+      ACTION_APPLIED,
+      GetElementTag(Selector({"#testOuterHtml"}), &element_tag).proto_status());
+  EXPECT_EQ("DIV", element_tag);
+
+  // Select.
+  ASSERT_EQ(ACTION_APPLIED,
+            GetElementTag(Selector({"#select"}), &element_tag).proto_status());
+  EXPECT_EQ("SELECT", element_tag);
+
+  // Input.
+  ASSERT_EQ(ACTION_APPLIED,
+            GetElementTag(Selector({"#input1"}), &element_tag).proto_status());
+  EXPECT_EQ("INPUT", element_tag);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {

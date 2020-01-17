@@ -40,6 +40,11 @@ void SkiaOutputDevice::SetGpuVSyncEnabled(bool enabled) {
   NOTIMPLEMENTED();
 }
 
+void SkiaOutputDevice::SchedulePrimaryPlane(
+    const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane) {
+  NOTIMPLEMENTED();
+}
+
 void SkiaOutputDevice::ScheduleOverlays(
     SkiaOutputSurface::OverlayList overlays) {
   NOTIMPLEMENTED();
@@ -86,14 +91,6 @@ void SkiaOutputDevice::FinishSwapBuffers(
 
 void SkiaOutputDevice::EnsureBackbuffer() {}
 void SkiaOutputDevice::DiscardBackbuffer() {}
-
-gl::GLImage* SkiaOutputDevice::GetOverlayImage() {
-  return nullptr;
-}
-
-std::unique_ptr<gfx::GpuFence> SkiaOutputDevice::SubmitOverlayGpuFence() {
-  return nullptr;
-}
 
 SkiaOutputDevice::SwapInfo::SwapInfo(
     uint64_t swap_id,

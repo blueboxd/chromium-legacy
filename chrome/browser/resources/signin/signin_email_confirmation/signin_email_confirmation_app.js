@@ -19,7 +19,7 @@ Polymer({
   _template: html`{__html_template__}`,
 
   /** @override */
-  ready: function() {
+  ready() {
     const args = /** @type {{lastEmail: string, newEmail: string}} */
         (JSON.parse(chrome.getVariableValue('dialogArguments')));
     const {lastEmail, newEmail} = args;
@@ -34,7 +34,7 @@ Polymer({
     document.addEventListener('keydown', this.onKeyDown_.bind(this));
   },
 
-  onKeyDown_: function(e) {
+  onKeyDown_(e) {
     // If the currently focused element isn't something that performs an action
     // on "enter" being pressed and the user hits "enter", perform the default
     // action of the dialog, which is "OK".
@@ -46,13 +46,13 @@ Polymer({
   },
 
   /** @private */
-  onConfirm_: function() {
+  onConfirm_() {
     const action = this.$$('cr-radio-group').selected;
     chrome.send('dialogClose', [JSON.stringify({'action': action})]);
   },
 
   /** @private */
-  onCancel_: function() {
+  onCancel_() {
     chrome.send('dialogClose', [JSON.stringify({'action': 'cancel'})]);
   },
 });

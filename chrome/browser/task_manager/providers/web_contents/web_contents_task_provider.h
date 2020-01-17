@@ -11,6 +11,7 @@
 #include "chrome/browser/task_manager/providers/task_provider.h"
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
@@ -39,6 +40,9 @@ class WebContentsTaskProvider : public TaskProvider {
 
   // Checks if the given |web_contents| is tracked by the provider.
   bool HasWebContents(content::WebContents* web_contents) const;
+
+  // Returns the task, if any, of the provided frame.
+  Task* GetTaskOfFrame(content::RenderFrameHost* frame);
 
  private:
   friend class WebContentsEntry;

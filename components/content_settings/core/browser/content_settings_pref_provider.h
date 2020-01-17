@@ -58,12 +58,11 @@ class PrefProvider : public UserModifiableProvider {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) override;
+  void SetClockForTesting(base::Clock* clock) override;
 
   void ClearPrefs();
 
   ContentSettingsPref* GetPref(ContentSettingsType type) const;
-
-  void SetClockForTesting(base::Clock* clock);
 
  private:
   friend class DeadlockCheckerObserver;  // For testing.

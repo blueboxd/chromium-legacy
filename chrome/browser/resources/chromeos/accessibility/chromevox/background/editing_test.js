@@ -28,14 +28,14 @@ ChromeVoxEditingTest.prototype = {
   /**
    * @return {!MockFeedback}
    */
-  createMockFeedback: function() {
+  createMockFeedback() {
     var mockFeedback =
         new MockFeedback(this.newCallback(), this.newCallback.bind(this));
     mockFeedback.install();
     return mockFeedback;
   },
 
-  press: function(keyCode, modifiers) {
+  press(keyCode, modifiers) {
     return function() {
       BackgroundKeyboardHandler.sendKeyPress(keyCode, modifiers);
     };

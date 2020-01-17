@@ -61,7 +61,10 @@ class MockSharingFCMHandler : public SharingFCMHandler {
 
  public:
   MockSharingFCMHandler()
-      : SharingFCMHandler(nullptr, nullptr, nullptr, nullptr) {}
+      : SharingFCMHandler(/*gcm_driver=*/nullptr,
+                          /*sharing_fcm_sender=*/nullptr,
+                          /*sync_preference=*/nullptr,
+                          /*handler_registry=*/nullptr) {}
   ~MockSharingFCMHandler() = default;
 
   MOCK_METHOD0(StartListening, void());
@@ -71,13 +74,16 @@ class MockSharingFCMHandler : public SharingFCMHandler {
 class MockSharingMessageSender : public SharingMessageSender {
  public:
   MockSharingMessageSender()
-      : SharingMessageSender(nullptr, nullptr, nullptr) {}
+      : SharingMessageSender(
+            /*sync_prefs=*/nullptr,
+            /*local_device_info_provider=*/nullptr) {}
   ~MockSharingMessageSender() override = default;
 
-  MOCK_METHOD4(SendMessageToDevice,
+  MOCK_METHOD5(SendMessageToDevice,
                void(const syncer::DeviceInfo&,
                     base::TimeDelta,
                     chrome_browser_sharing::SharingMessage,
+                    DelegateType,
                     ResponseCallback));
 
  private:
@@ -314,6 +320,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
   auto run_callback = [&](const syncer::DeviceInfo& device_info,
                           base::TimeDelta response_timeout,
                           chrome_browser_sharing::SharingMessage message,
+                          SharingMessageSender::DelegateType delegate_type,
                           SharingMessageSender::ResponseCallback callback) {
     std::unique_ptr<chrome_browser_sharing::ResponseMessage> response_message =
         std::make_unique<chrome_browser_sharing::ResponseMessage>();
@@ -323,7 +330,8 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
   };
 
   ON_CALL(*sharing_message_sender_,
-          SendMessageToDevice(testing::_, testing::_, testing::_, testing::_))
+          SendMessageToDevice(testing::_, testing::_, testing::_, testing::_,
+                              testing::_))
       .WillByDefault(testing::Invoke(run_callback));
 
   GetSharingService()->SendMessageToDevice(

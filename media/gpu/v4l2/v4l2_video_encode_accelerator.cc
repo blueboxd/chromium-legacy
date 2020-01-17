@@ -168,8 +168,7 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
       // thread by V4L2DevicePoller.
       encoder_task_runner_(base::CreateSingleThreadTaskRunner(
           {base::ThreadPool(), base::WithBaseSyncPrimitives()},
-          base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
-      device_poll_thread_("V4L2EncoderDevicePollThread") {
+          base::SingleThreadTaskRunnerThreadMode::DEDICATED)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
   DETACH_FROM_SEQUENCE(encoder_sequence_checker_);
 
@@ -178,7 +177,6 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
 
 V4L2VideoEncodeAccelerator::~V4L2VideoEncodeAccelerator() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
-  DCHECK(!device_poll_thread_.IsRunning());
   VLOGF(2);
 }
 
@@ -816,7 +814,7 @@ void V4L2VideoEncodeAccelerator::DestroyTask() {
         FROM_HERE, base::BindOnce(std::move(flush_callback_), false));
   }
 
-  // Stop streaming and the device_poll_thread_.
+  // Stop streaming and the V4L2 device poller.
   StopDevicePoll();
 
   DestroyInputBuffers();
@@ -825,7 +823,7 @@ void V4L2VideoEncodeAccelerator::DestroyTask() {
   delete this;
 }
 
-void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
+void V4L2VideoEncodeAccelerator::ServiceDeviceTask(bool /*event*/) {
   DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK_NE(encoder_state_, kUninitialized);
@@ -838,29 +836,6 @@ void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
 
   Dequeue();
   Enqueue();
-
-  // Clear the interrupt fd.
-  if (!device_->ClearDevicePollInterrupt())
-    return;
-
-  // Device can be polled as soon as either input or output buffers are queued.
-  bool poll_device = (input_queue_->QueuedBuffersCount() +
-                          output_queue_->QueuedBuffersCount() >
-                      0);
-
-  // ServiceDeviceTask() should only ever be scheduled from DevicePollTask(),
-  // so either:
-  // * device_poll_thread_ is running normally
-  // * device_poll_thread_ scheduled us, but then a DestroyTask() shut it down,
-  //   in which case we're in kError state, and we should have early-outed
-  //   already.
-  DCHECK(device_poll_thread_.task_runner());
-  // Queue the DevicePollTask() now.
-  // base::Unretained(this) is safe, because device_poll_thread_ is owned by
-  // *this and stops before *this destruction.
-  device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::DevicePollTask,
-                                base::Unretained(this), poll_device));
 
   DVLOGF(3) << encoder_input_queue_.size() << "] => DEVICE["
             << input_queue_->FreeBuffersCount() << "+"
@@ -918,10 +893,6 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
       return;
   }
   if (old_inputs_queued == 0 && input_queue_->QueuedBuffersCount() != 0) {
-    // We just started up a previously empty queue.
-    // Queue state changed; signal interrupt.
-    if (!device_->SetDevicePollInterrupt())
-      return;
     // Shall call VIDIOC_STREAMON if we haven't yet.
     do_streamon = !input_queue_->IsStreaming();
   }
@@ -934,15 +905,8 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
   }
 
   // Enqueue all the outputs we can.
-  const size_t old_outputs_queued = output_queue_->QueuedBuffersCount();
   while (auto output_buffer = output_queue_->GetFreeBuffer()) {
     if (!EnqueueOutputRecord(std::move(*output_buffer)))
-      return;
-  }
-  if (old_outputs_queued == 0 && output_queue_->QueuedBuffersCount() != 0) {
-    // We just started up a previously empty queue.
-    // Queue state changed; signal interrupt.
-    if (!device_->SetDevicePollInterrupt())
       return;
   }
 
@@ -1213,21 +1177,18 @@ bool V4L2VideoEncodeAccelerator::EnqueueOutputRecord(
 bool V4L2VideoEncodeAccelerator::StartDevicePoll() {
   DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
-  DCHECK(!device_poll_thread_.IsRunning());
 
-  // Start up the device poll thread and schedule its first DevicePollTask().
-  if (!device_poll_thread_.Start()) {
+  // We need to make sure here not to use base::Unretained(this), as the
+  // |encoder_task_runner_| seems to outlive this class.
+  if (!device_->StartPolling(
+          base::BindRepeating(&V4L2VideoEncodeAccelerator::ServiceDeviceTask,
+                              weak_this_),
+          base::BindRepeating(&V4L2VideoEncodeAccelerator::OnPollError,
+                              weak_this_))) {
     VLOGF(1) << "StartDevicePoll(): Device thread failed to start";
     NOTIFY_ERROR(kPlatformFailureError);
     return false;
   }
-  // Enqueue a poll task with no devices to poll on -- it will wait only on the
-  // interrupt fd.
-  // base::Unretained(this) is safe, because device_poll_thread_ is owned by
-  // *this and stops before *this destruction.
-  device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::DevicePollTask,
-                                base::Unretained(this), false));
 
   return true;
 }
@@ -1236,12 +1197,7 @@ bool V4L2VideoEncodeAccelerator::StopDevicePoll() {
   DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
 
-  // Signal the DevicePollTask() to stop, and stop the device poll thread.
-  if (!device_->SetDevicePollInterrupt())
-    return false;
-  device_poll_thread_.Stop();
-  // Clear the interrupt now, to be sure.
-  if (!device_->ClearDevicePollInterrupt())
+  if (!device_->StopPolling())
     return false;
 
   // Tegra driver cannot call Streamoff() when the stream is off, so we check
@@ -1267,21 +1223,8 @@ bool V4L2VideoEncodeAccelerator::StopDevicePoll() {
   return true;
 }
 
-void V4L2VideoEncodeAccelerator::DevicePollTask(bool poll_device) {
-  DVLOGF(4);
-  DCHECK(device_poll_thread_.task_runner()->BelongsToCurrentThread());
-
-  bool event_pending;
-  if (!device_->Poll(poll_device, &event_pending)) {
-    NOTIFY_ERROR(kPlatformFailureError);
-    return;
-  }
-
-  // All processing should happen on ServiceDeviceTask(), since we shouldn't
-  // touch encoder state from this thread.
-  encoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::ServiceDeviceTask,
-                                weak_this_));
+void V4L2VideoEncodeAccelerator::OnPollError() {
+  NOTIFY_ERROR(kPlatformFailureError);
 }
 
 void V4L2VideoEncodeAccelerator::NotifyError(Error error) {
@@ -1494,15 +1437,6 @@ bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
   return true;
 }
 
-bool V4L2VideoEncodeAccelerator::IsCtrlExposed(uint32_t ctrl_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
-
-  struct v4l2_queryctrl query_ctrl{};
-  query_ctrl.id = ctrl_id;
-
-  return device_->Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) == 0;
-}
-
 bool V4L2VideoEncodeAccelerator::SetExtCtrls(
     std::vector<struct v4l2_ext_control> ctrls) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
@@ -1537,7 +1471,7 @@ bool V4L2VideoEncodeAccelerator::InitControls(const Config& config) {
 #endif
     // Request to inject SPS and PPS before each IDR, if the device supports
     // that feature. Otherwise we'll have to cache and inject ourselves.
-    if (IsCtrlExposed(V4L2_CID_MPEG_VIDEO_H264_SPS_PPS_BEFORE_IDR)) {
+    if (device_->IsCtrlExposed(V4L2_CID_MPEG_VIDEO_H264_SPS_PPS_BEFORE_IDR)) {
       memset(&ctrl, 0, sizeof(ctrl));
       ctrl.id = V4L2_CID_MPEG_VIDEO_H264_SPS_PPS_BEFORE_IDR;
       ctrl.value = 1;

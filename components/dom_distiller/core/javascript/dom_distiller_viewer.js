@@ -28,7 +28,7 @@ function fillYouTubePlaceholders() {
   const placeholders = document.getElementsByClassName('embed-placeholder');
   for (let i = 0; i < placeholders.length; i++) {
     if (!placeholders[i].hasAttribute('data-type') ||
-        placeholders[i].getAttribute('data-type') != 'youtube' ||
+        placeholders[i].getAttribute('data-type') !== 'youtube' ||
         !placeholders[i].hasAttribute('data-id')) {
       continue;
     }
@@ -69,14 +69,14 @@ const fontFamilyClasses = ['sans-serif', 'serif', 'monospace'];
 function useFontFamily(fontFamily) {
   fontFamilyClasses.forEach(
       (element) =>
-          document.body.classList.toggle(element, element == fontFamily));
+          document.body.classList.toggle(element, element === fontFamily));
 }
 
 // These classes must agree with the theme classes in distilledpage.css.
 const themeClasses = ['light', 'dark', 'sepia'];
 function useTheme(theme) {
   themeClasses.forEach(
-      (element) => document.body.classList.toggle(element, element == theme));
+      (element) => document.body.classList.toggle(element, element === theme));
   updateToolbarColor(theme);
 }
 
@@ -92,9 +92,9 @@ function getClassFromElement(element, classList) {
 
 function updateToolbarColor(theme) {
   let toolbarColor;
-  if (theme == 'sepia') {
+  if (theme === 'sepia') {
     toolbarColor = '#BF9A73';
-  } else if (theme == 'dark') {
+  } else if (theme === 'dark') {
     toolbarColor = '#1A1A1A';
   } else {
     toolbarColor = '#F5F5F5';

@@ -60,7 +60,6 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     private final View mToolbarView;
     private final LayoutInflater mLayoutInflater;
     private final Supplier<BottomSheetController> mBottomSheetController;
-    private final NavigationSheet.Delegate mDelegate;
     private final NavigationSheetMediator mMediator;
     private final BottomSheetObserver mSheetObserver = new EmptyBottomSheetObserver() {
         @Override
@@ -79,6 +78,8 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     private final int mItemHeight;
     private final int mContentPadding;
     private final View mParentView;
+
+    private NavigationSheet.Delegate mDelegate;
 
     private static class NavigationItemViewBinder {
         public static void bind(PropertyModel model, View view, PropertyKey propertyKey) {
@@ -113,11 +114,10 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     /**
      * Construct a new NavigationSheet.
      */
-    NavigationSheetCoordinator(View parent, Context context,
-            Supplier<BottomSheetController> bottomSheetController, Delegate delegate) {
+    NavigationSheetCoordinator(
+            View parent, Context context, Supplier<BottomSheetController> bottomSheetController) {
         mParentView = parent;
         mBottomSheetController = bottomSheetController;
-        mDelegate = delegate;
         mLayoutInflater = LayoutInflater.from(context);
         mToolbarView = mLayoutInflater.inflate(R.layout.navigation_sheet_toolbar, null);
         mMediator = new NavigationSheetMediator(context, mModelList, (position, index) -> {
@@ -182,6 +182,11 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     }
 
     // NavigationSheet
+
+    @Override
+    public void setDelegate(NavigationSheet.Delegate delegate) {
+        mDelegate = delegate;
+    }
 
     @Override
     public void start(boolean forward, boolean showCloseIndicator) {

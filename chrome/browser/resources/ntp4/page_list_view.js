@@ -143,7 +143,7 @@ cr.define('ntp', function() {
      * @param {!ntp.PageSwitcher|undefined} opt_pageSwitcherEnd Optional end
      *     page switcher button.
      */
-    initialize: function(
+    initialize(
         pageList, dotList, cardSliderFrame, opt_trash, opt_pageSwitcherStart,
         opt_pageSwitcherEnd) {
       this.pageList = pageList;
@@ -239,7 +239,7 @@ cr.define('ntp', function() {
      * When opt_refNode is falsey, |page| will just be appended to the end of
      * the page list.
      */
-    appendTilePage: function(page, title, titleIsEditable, opt_refNode) {
+    appendTilePage(page, title, titleIsEditable, opt_refNode) {
       if (opt_refNode) {
         const refIndex = this.getTilePageIndex(opt_refNode);
         this.cardSlider.addCardAtIndex(page, refIndex);
@@ -268,7 +268,7 @@ cr.define('ntp', function() {
      * @param {AppInfo} appData The data for the app. This contains page and
      *     position indices.
      */
-    appMoved: function(appData) {
+    appMoved(appData) {
       const app = /** @type {ntp.App} */ ($(appData.id));
       assert(app, 'trying to move an app that doesn\'t exist');
       app.remove(false);
@@ -285,7 +285,7 @@ cr.define('ntp', function() {
      *     false if the app is being disabled.
      * @param {boolean} fromPage True if the removal was from the current page.
      */
-    appRemoved: function(appData, isUninstall, fromPage) {
+    appRemoved(appData, isUninstall, fromPage) {
       const app = /** @type {ntp.App} */ ($(appData.id));
       assert(app, 'trying to remove an app that doesn\'t exist');
 
@@ -300,7 +300,7 @@ cr.define('ntp', function() {
      * @return {boolean} If the page is still starting up.
      * @private
      */
-    isStartingUp_: function() {
+    isStartingUp_() {
       return document.documentElement.classList.contains('starting-up');
     },
 
@@ -320,7 +320,7 @@ cr.define('ntp', function() {
      * @param {{apps: Array<AppInfo>, appPageNames: Array<string>}} data
      *     An object with all the data on available applications.
      */
-    getAppsCallback: function(data) {
+    getAppsCallback(data) {
       const startTime = Date.now();
 
       // Remember this to select the correct card when done rebuilding.
@@ -429,7 +429,7 @@ cr.define('ntp', function() {
      * @param {boolean=} opt_highlight Whether the app about to be added should
      *     be highlighted.
      */
-    appAdded: function(appData, opt_highlight) {
+    appAdded(appData, opt_highlight) {
       if (appData.id == this.highlightAppId) {
         opt_highlight = true;
         this.highlightAppId = null;
@@ -463,7 +463,7 @@ cr.define('ntp', function() {
      * @param {Object} data An object with all the data on available
      *     applications.
      */
-    appsPrefChangedCallback: function(data) {
+    appsPrefChangedCallback(data) {
       for (let i = 0; i < data.apps.length; ++i) {
         $(data.apps[i].id).appData = data.apps[i];
       }
@@ -479,7 +479,7 @@ cr.define('ntp', function() {
      * Invoked whenever the pages in apps-page-list have changed so that
      * the Slider knows about the new elements.
      */
-    updateSliderCards: function() {
+    updateSliderCards() {
       const pageNo = Math.max(
           0, Math.min(this.cardSlider.currentCard, this.tilePages.length - 1));
       this.cardSlider.setCards(
@@ -492,7 +492,7 @@ cr.define('ntp', function() {
      * Called whenever tiles should be re-arranging themselves out of the way
      * of a moving or insert tile.
      */
-    enterRearrangeMode: function() {
+    enterRearrangeMode() {
       const tempPage = new ntp.AppsPage();
       tempPage.classList.add('temporary');
       const pageName = loadTimeData.getString('appDefaultPageName');
@@ -510,7 +510,7 @@ cr.define('ntp', function() {
     /**
      * Invoked whenever some app is released
      */
-    leaveRearrangeMode: function() {
+    leaveRearrangeMode() {
       const tempPage = /** @type {ntp.AppsPage} */ (
           document.querySelector('.tile-page.temporary'));
       if (tempPage) {
@@ -534,7 +534,7 @@ cr.define('ntp', function() {
      * Callback for the 'pagelayout' event.
      * @param {Event} e The event.
      */
-    onPageLayout_: function(e) {
+    onPageLayout_(e) {
       if (Array.prototype.indexOf.call(this.tilePages, e.currentTarget) !=
           this.cardSlider.currentCard) {
         return;
@@ -548,7 +548,7 @@ cr.define('ntp', function() {
      * layout of the current card, and updates the aria-label attributes of
      * the page switchers.
      */
-    updatePageSwitchers: function() {
+    updatePageSwitchers() {
       if (!this.pageSwitcherStart || !this.pageSwitcherEnd) {
         return;
       }
@@ -594,7 +594,7 @@ cr.define('ntp', function() {
      * @return {number} The index of |page| or -1 if it is not in the
      *    collection.
      */
-    getAppsPageIndex: function(page) {
+    getAppsPageIndex(page) {
       return Array.prototype.indexOf.call(this.appsPages, page);
     },
 
@@ -603,7 +603,7 @@ cr.define('ntp', function() {
      * @param {Event} e The cardSlider:card_changed event.
      * @private
      */
-    onCardChanged_: function(e) {
+    onCardChanged_(e) {
       const page = e.cardSlider.currentCardValue;
 
       // Don't change shownPage until startup is done (and page changes actually
@@ -631,7 +631,7 @@ cr.define('ntp', function() {
      * @param {number} shownPageIndex The new shown page index.
      * @private
      */
-    setShownPage_: function(shownPageIndex) {
+    setShownPage_(shownPageIndex) {
       assert(shownPageIndex >= 0);
       this.shownPageIndex = shownPageIndex;
       chrome.send('pageSelected', [this.shownPageIndex]);
@@ -642,7 +642,7 @@ cr.define('ntp', function() {
      * card accordingly.
      * @param {Event} e A card removed or added event.
      */
-    onCardAdded_: function(e) {
+    onCardAdded_(e) {
       // When the second arg passed to insertBefore is falsey, it acts just like
       // appendChild.
       this.pageList.insertBefore(e.addedCard, this.tilePages[e.addedIndex]);
@@ -654,7 +654,7 @@ cr.define('ntp', function() {
      * accordingly.
      * @param {Event} e A card removed or added event.
      */
-    onCardRemoved_: function(e) {
+    onCardRemoved_(e) {
       e.removedCard.parentNode.removeChild(e.removedCard);
       this.onCardAddedOrRemoved_();
     },
@@ -663,7 +663,7 @@ cr.define('ntp', function() {
      * Called when a card is removed or added.
      * @private
      */
-    onCardAddedOrRemoved_: function() {
+    onCardAddedOrRemoved_() {
       if (this.isStartingUp_()) {
         return;
       }
@@ -679,7 +679,7 @@ cr.define('ntp', function() {
      * @param {ntp.AppsPage} appPage The app page for which we wish to save.
      * @param {string} name The name of the page.
      */
-    saveAppPageName: function(appPage, name) {
+    saveAppPageName(appPage, name) {
       const index = this.getAppsPageIndex(appPage);
       assert(index != -1);
       chrome.send('saveAppPageName', [name, index]);
@@ -689,7 +689,7 @@ cr.define('ntp', function() {
      * Window resize handler.
      * @private
      */
-    onWindowResize_: function(e) {
+    onWindowResize_(e) {
       this.cardSlider.resize(this.sliderFrame.offsetWidth);
       this.updatePageSwitchers();
     },
@@ -699,7 +699,7 @@ cr.define('ntp', function() {
      * not offline-enabled to be grayscale if the browser is offline.
      * @private
      */
-    updateOfflineEnabledApps_: function() {
+    updateOfflineEnabledApps_() {
       const apps = /** @type {!NodeList<!ntp.App>} */ (
           document.querySelectorAll('.app'));
       for (let i = 0; i < apps.length; ++i) {
@@ -716,7 +716,7 @@ cr.define('ntp', function() {
      * @param {Event} e The KeyboardEvent.
      * @private
      */
-    onDocKeyDown_: function(e) {
+    onDocKeyDown_(e) {
       if (!e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) {
         return;
       }
@@ -744,7 +744,7 @@ cr.define('ntp', function() {
      * @return {number} The index of |page| or -1 if it is not in the
      *    collection.
      */
-    getTilePageIndex: function(page) {
+    getTilePageIndex(page) {
       return Array.prototype.indexOf.call(this.tilePages, page);
     },
 
@@ -753,7 +753,7 @@ cr.define('ntp', function() {
      * @param {ntp.TilePage} page The page to be removed.
      * @param {boolean=} opt_animate If the removal should be animated.
      */
-    removeTilePageAndDot_: function(page, opt_animate) {
+    removeTilePageAndDot_(page, opt_animate) {
       if (page.navigationDot) {
         page.navigationDot.remove(opt_animate);
       }

@@ -3851,4 +3851,22 @@ void GLES2Implementation::EndSharedImageAccessDirectCHROMIUM(GLuint texture) {
   CheckGLError();
 }
 
+void GLES2Implementation::BeginBatchReadAccessSharedImageCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glBeginBatchReadAccessSharedImageCHROMIUM("
+                     << ")");
+  helper_->BeginBatchReadAccessSharedImageCHROMIUM();
+  CheckGLError();
+}
+
+void GLES2Implementation::EndBatchReadAccessSharedImageCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glEndBatchReadAccessSharedImageCHROMIUM("
+                     << ")");
+  helper_->EndBatchReadAccessSharedImageCHROMIUM();
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

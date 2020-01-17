@@ -18,16 +18,6 @@ class WebXrPermissionContext : public PermissionContextBase {
 
  private:
   // PermissionContextBase:
-  ContentSetting GetPermissionStatusInternal(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) const override;
-  void DecidePermission(content::WebContents* web_contents,
-                        const PermissionRequestID& id,
-                        const GURL& requesting_origin,
-                        const GURL& embedding_origin,
-                        bool user_gesture,
-                        BrowserPermissionCallback callback) override;
   bool IsRestrictedToSecureOrigins() const override;
 
   ContentSettingsType content_settings_type_;

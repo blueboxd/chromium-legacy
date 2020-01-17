@@ -317,9 +317,7 @@ source_set("lib") {
 
 executable("chromedriver") {
   testonly = true
-  sources = [
-    "server/chromedriver_server.cc",
-  ]
+  sources = [ "server/chromedriver_server.cc" ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -350,9 +348,7 @@ python_library("chromedriver_py_tests") {
     "//testing/xvfb.py",
   ]
 
-  data_deps = [
-    "//chrome/test/chromedriver",
-  ]
+  data_deps = [ "//chrome/test/chromedriver" ]
   if (is_component_build && is_mac) {
     data_deps += [ "//chrome:chrome_framework" ]
   }
@@ -365,9 +361,7 @@ python_library("chromedriver_py_tests") {
 
 python_library("chromedriver_replay_unittests") {
   testonly = true
-  deps = [
-    ":chromedriver",
-  ]
+  deps = [ ":chromedriver" ]
 
   pydeps_file = "log_replay/client_replay_unittest.pydeps"
 }

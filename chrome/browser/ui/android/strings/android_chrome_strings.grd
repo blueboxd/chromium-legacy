@@ -2069,6 +2069,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_CONTEXTMENU_OPEN_IN_EPHEMERAL_TAB" desc="Context-sensitive menu item to open a quick preview of the selected linked page.   Note that 'preview' is a verb, not a noun. We're also labeling it *New* to draw attention to it when first released. The selected link will open in an overlay panel on top of the current tab which will go away easily too. [CHAR-LIMIT=30]">
         Preview page <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
       </message>
+      <message name="IDS_CONTEXTMENU_PERFORMANCE_INFO_FAST" desc="Context sensitive menu item that indicates the target of a link will likely load quickly [CHAR-LIMIT=30]">
+        Usually loads <ph name="BEGIN_BOLD">&lt;b&gt;</ph>fast<ph name="END_BOLD">&lt;/b&gt;</ph>
+      </message>
 
       <!-- Swipe refresh -->
       <message name="IDS_ACCESSIBILITY_SWIPE_REFRESH" desc="Content description for the swipe refresh action.">
@@ -2703,15 +2706,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_NTP_EXPLORE_SITES_MORE" desc="Text on a button leading to a complete view of all categories for all popular websites">
         More categories
       </message>
-      <message name="IDS_EXPLORE_SITES_DEFAULT_CATEGORY_NEWS" desc="The caption for a button that when clicked opens a UI in this tab that shows a list of websites with content related to news. [CHAR-LIMIT=12]">
-        News
-      </message>
-      <message name="IDS_EXPLORE_SITES_DEFAULT_CATEGORY_SPORTS" desc="The caption for a button that when clicked opens a UI in this tab that shows a list of websites with content related to sports. For example, soccer, cricket, football, running [CHAR-LIMIT=12]">
-        Sports
-      </message>
-      <message name="IDS_EXPLORE_SITES_DEFAULT_CATEGORY_SHOPPING" desc="The caption for a button that when clicked opens a UI in this tab that shows a list of websites with content related to shopping. [CHAR-LIMIT=12]">
-        Shopping
-      </message>
       <message name="IDS_EXPLORE_SITES_LOADING_FROM_NET" desc="Caption for an indeterminate loading spinner indicating that we are loading the data from the internet">
         Finding the best from the web…
       </message>
@@ -2726,9 +2720,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_EXPLORE_SITES_LOADING_ERROR_NEXT_STEPS_CHECK_CONNECTION" desc="Text on an error screen indicating that checking network connection can fix this error.">
         Checking your internet connection
-      </message>
-      <message name="IDS_EXPLORE_SITES_TOP_SITES_TILE" desc="A label for a button that when clicked takes the user to a tab that contains categorized links to websites that are popular in their country. [CHAR_LIMIT=12]">
-        Top sites
       </message>
       <message name="IDS_EXPLORE_SITES_IPH" desc="An in-product-help message for the explore sites feature on Android. The message encourages users to open a tab that contains categorized links to websites that are popular in their country.">
         See popular websites
@@ -3859,6 +3850,9 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_PHOTO_PICKER_BROWSE" desc="The label for the Browse action in the Photo Picker (browsing for photos).">
         Browse
       </message>
+      <message name="IDS_PHOTO_PICKER_VIDEO_DURATION" desc="The label showing the duration time and current position of the video, as in: 0:01 / 0:10.">
+        <ph name="POSITION">%1$s<ex>0:01</ex></ph> / <ph name="DURATION">%2$s<ex>0:10</ex></ph>
+      </message>
 
       <!-- Interventions -->
       <message name="IDS_REDIRECT_BLOCKED_MESSAGE" desc="The message stating that a redirect (noun) was blocked on this page. This will be followed on a separate line with the address the user was being redirected to.">
@@ -3991,6 +3985,10 @@ The site does NOT gain access to the camera. The camera images are only visible 
 
       <message name="IDS_LINK_COPIED" desc="Text shown in the toast notification when Copy Link is selected in the sharing hub.">
         Link Copied
+      </message>
+
+      <message name="IDS_QR_CODE_CAMERA_FRAMING_RECT_DESCRIPTION" desc="Text under the framing rectangle in QR code camera preview.">
+        Position QR/barcode in this frame.
       </message>
 
       <!-- Chime DFM module strings -->

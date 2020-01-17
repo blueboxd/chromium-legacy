@@ -41,9 +41,7 @@ process_version_rc_template("version") {
 updater_runtime_deps = "$root_gen_dir/updater.runtime_deps"
 group("updater_runtime_deps") {
   write_runtime_deps = updater_runtime_deps
-  data_deps = [
-    "//chrome/updater/win:updater",
-  ]
+  data_deps = [ "//chrome/updater/win:updater" ]
 }
 
 template("generate_installer") {
@@ -57,9 +55,7 @@ template("generate_installer") {
 
     release_file = "updater.release"
 
-    inputs = [
-      release_file,
-    ]
+    inputs = [ release_file ]
 
     outputs = [
       "$output_dir/updater.packed.7z",
@@ -135,9 +131,7 @@ test("installer_unittest") {
     "string_unittest.cc",
   ]
 
-  public_deps = [
-    ":lib",
-  ]
+  public_deps = [ ":lib" ]
   deps = [
     "//base",
     "//base/test:test_support",

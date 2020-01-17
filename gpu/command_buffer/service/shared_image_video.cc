@@ -526,7 +526,7 @@ class SharedImageRepresentationOverlayVideo
         stream_image_(backing->stream_texture_sii_) {}
 
  protected:
-  void BeginReadAccess() override {
+  bool BeginReadAccess() override {
     // A |CodecImage| is already in a SurfaceView, render content to the
     // overlay.
     if (!stream_image_->HasTextureOwner()) {
@@ -534,6 +534,7 @@ class SharedImageRepresentationOverlayVideo
                    "SharedImageRepresentationOverlayVideo::BeginReadAccess");
       stream_image_->RenderToOverlay();
     }
+    return true;
   }
 
   void EndReadAccess() override {}

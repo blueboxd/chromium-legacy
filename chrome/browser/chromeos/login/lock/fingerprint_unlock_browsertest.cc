@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 
-#include "base/test/simple_test_clock.cc"
+#include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"

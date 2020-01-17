@@ -64,8 +64,7 @@ typedef NS_ENUM(NSInteger, IdentityChooserCoordinatorState) {
   self.state = IdentityChooserCoordinatorStateStarted;
   // Creates the controller.
   self.identityChooserViewController = [[IdentityChooserViewController alloc]
-      initWithTableViewStyle:UITableViewStylePlain
-                 appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+      initWithStyle:UITableViewStylePlain];
   self.identityChooserViewController.modalPresentationStyle =
       UIModalPresentationCustom;
   self.transitionController = [[IdentityChooserTransitionDelegate alloc] init];

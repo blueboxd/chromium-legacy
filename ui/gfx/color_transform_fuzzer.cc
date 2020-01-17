@@ -41,13 +41,13 @@ static void ColorTransform(size_t hash) {
 
 static gfx::ColorSpace CreateRGBColorSpace(size_t hash) {
   auto primaries = static_cast<gfx::ColorSpace::PrimaryID>(
-      1 + ((hash >> 0) % (size_t)gfx::ColorSpace::PrimaryID::LAST));
+      1 + ((hash >> 0) % (size_t)gfx::ColorSpace::PrimaryID::kMaxValue));
   auto transfer = static_cast<gfx::ColorSpace::TransferID>(
-      1 + ((hash >> 8) % (size_t)gfx::ColorSpace::TransferID::LAST));
+      1 + ((hash >> 8) % (size_t)gfx::ColorSpace::TransferID::kMaxValue));
   auto matrix = static_cast<gfx::ColorSpace::MatrixID>(
-      1 + ((hash >> 16) % (size_t)gfx::ColorSpace::MatrixID::LAST));
+      1 + ((hash >> 16) % (size_t)gfx::ColorSpace::MatrixID::kMaxValue));
   auto range = static_cast<gfx::ColorSpace::RangeID>(
-      1 + ((hash >> 24) % (size_t)gfx::ColorSpace::RangeID::LAST));
+      1 + ((hash >> 24) % (size_t)gfx::ColorSpace::RangeID::kMaxValue));
 
   return gfx::ColorSpace(primaries, transfer, matrix, range);
 }

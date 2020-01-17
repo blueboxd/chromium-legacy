@@ -29,6 +29,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
+#include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/buildflags.h"
@@ -85,6 +86,20 @@ const char kSilentPushUnsupportedMessage[] =
     "result in user-visible messages. You can indicate this by calling "
     "pushManager.subscribe({userVisibleOnly: true}) instead. See "
     "https://goo.gl/yqv4Q4 for more details.";
+
+// Message displayed in the console (as an error) when a GCM Sender ID is used
+// to create a subscription, which is unsupported. The subscription request will
+// have been blocked, and an exception will be thrown as well.
+const char kSenderIdRegistrationDisallowedMessage[] =
+    "The provided application server key is not a VAPID key. Only VAPID keys "
+    "are supported. For more information check https://crbug.com/979235.";
+
+// Message displayed in the console (as a warning) when a GCM Sender ID is used
+// to create a subscription, which will soon be unsupported.
+const char kSenderIdRegistrationDeprecatedMessage[] =
+    "The provided application server key is not a VAPID key. Only VAPID keys "
+    "will be supported in the future. For more information check "
+    "https://crbug.com/979235.";
 
 void RecordDeliveryStatus(blink::mojom::PushDeliveryStatus status) {
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus", status);
@@ -149,6 +164,21 @@ void LogMessageReceivedEventToDevTools(
       url::Origin::Create(app_identifier.origin()),
       content::DevToolsBackgroundService::kPushMessaging,
       "Push message received" /* event_name */, message_id, event_metadata);
+}
+
+content::RenderFrameHost* GetMainFrameForRenderFrameHost(
+    content::RenderFrameHost* render_frame_host) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+
+  return web_contents ? web_contents->GetMainFrame() : nullptr;
+}
+
+bool IsVapidKey(const std::string& application_server_key) {
+  // VAPID keys are NIST P-256 public keys in uncompressed format (64 bytes),
+  // verified through its length and the 0x04 prefix.
+  return application_server_key.size() == 65 &&
+         application_server_key[0] == 0x04;
 }
 
 }  // namespace
@@ -502,7 +532,7 @@ void PushMessagingServiceImpl::OnMessageDecryptionFailed(
 void PushMessagingServiceImpl::SubscribeFromDocument(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
-    int renderer_id,
+    int render_process_id,
     int render_frame_id,
     blink::mojom::PushSubscriptionOptionsPtr options,
     bool user_gesture,
@@ -526,16 +556,16 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
   }
 
   content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(renderer_id, render_frame_id);
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-  if (!web_contents)
-    return;
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
 
   if (!options->user_visible_only) {
-    web_contents->GetMainFrame()->AddMessageToConsole(
-        blink::mojom::ConsoleMessageLevel::kError,
-        kSilentPushUnsupportedMessage);
+    content::RenderFrameHost* main_frame =
+        GetMainFrameForRenderFrameHost(render_frame_host);
+
+    if (main_frame) {
+      main_frame->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
+                                      kSilentPushUnsupportedMessage);
+    }
 
     SubscribeEndWithError(
         std::move(callback),
@@ -549,7 +579,8 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
       user_gesture,
       base::BindOnce(&PushMessagingServiceImpl::DoSubscribe,
                      weak_factory_.GetWeakPtr(), app_identifier,
-                     std::move(options), std::move(callback)));
+                     std::move(options), std::move(callback), render_process_id,
+                     render_frame_id));
 }
 
 void PushMessagingServiceImpl::SubscribeFromWorker(
@@ -586,6 +617,7 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
   }
 
   DoSubscribe(app_identifier, std::move(options), std::move(register_callback),
+              /* render_process_id= */ -1, /* render_frame_id= */ -1,
               CONTENT_SETTING_ALLOW);
 }
 
@@ -613,6 +645,8 @@ void PushMessagingServiceImpl::DoSubscribe(
     const PushMessagingAppIdentifier& app_identifier,
     blink::mojom::PushSubscriptionOptionsPtr options,
     RegisterCallback register_callback,
+    int render_process_id,
+    int render_frame_id,
     ContentSetting content_setting) {
   if (content_setting != CONTENT_SETTING_ALLOW) {
     SubscribeEndWithError(
@@ -621,11 +655,38 @@ void PushMessagingServiceImpl::DoSubscribe(
     return;
   }
 
-  IncreasePushSubscriptionCount(1, true /* is_pending */);
-
   std::string application_server_key_string(
       options->application_server_key.begin(),
       options->application_server_key.end());
+
+  // TODO(peter): Move this check to the renderer process & Mojo message
+  // validation once the flag is always enabled, and remove the
+  // |render_process_id| and |render_frame_id| parameters from this method.
+  if (!IsVapidKey(application_server_key_string)) {
+    content::RenderFrameHost* render_frame_host =
+        content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+    content::RenderFrameHost* main_frame =
+        GetMainFrameForRenderFrameHost(render_frame_host);
+
+    if (base::FeatureList::IsEnabled(kPushMessagingDisallowSenderIDs)) {
+      if (main_frame) {
+        main_frame->AddMessageToConsole(
+            blink::mojom::ConsoleMessageLevel::kError,
+            kSenderIdRegistrationDisallowedMessage);
+      }
+      SubscribeEndWithError(
+          std::move(register_callback),
+          blink::mojom::PushRegistrationStatus::UNSUPPORTED_GCM_SENDER_ID);
+      return;
+    } else if (main_frame) {
+      main_frame->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          kSenderIdRegistrationDeprecatedMessage);
+    }
+  }
+
+  IncreasePushSubscriptionCount(1, true /* is_pending */);
+
   GetInstanceIDDriver()
       ->GetInstanceID(app_identifier.app_id())
       ->GetToken(NormalizeSenderInfo(application_server_key_string), kGCMScope,
@@ -1106,10 +1167,7 @@ void PushMessagingServiceImpl::Observe(
 
 std::string PushMessagingServiceImpl::NormalizeSenderInfo(
     const std::string& application_server_key) const {
-  // Only encode the |application_server_key| when it is a NIST P-256 public key
-  // in uncompressed format, verified through its length and the 0x04 prefix
-  // byte.
-  if (application_server_key.size() != 65 || application_server_key[0] != 0x04)
+  if (!IsVapidKey(application_server_key))
     return application_server_key;
 
   std::string encoded_application_server_key;

@@ -187,15 +187,13 @@ NotificationChannel::NotificationChannel(const NotificationChannel& other) =
 
 NotificationChannelsProviderAndroid::NotificationChannelsProviderAndroid()
     : NotificationChannelsProviderAndroid(
-          std::make_unique<NotificationChannelsBridgeImpl>(),
-          std::make_unique<base::DefaultClock>()) {}
+          std::make_unique<NotificationChannelsBridgeImpl>()) {}
 
 NotificationChannelsProviderAndroid::NotificationChannelsProviderAndroid(
-    std::unique_ptr<NotificationChannelsBridge> bridge,
-    std::unique_ptr<base::Clock> clock)
+    std::unique_ptr<NotificationChannelsBridge> bridge)
     : bridge_(std::move(bridge)),
       platform_supports_channels_(bridge_->ShouldUseChannelSettings()),
-      clock_(std::move(clock)),
+      clock_(base::DefaultClock::GetInstance()),
       initialized_cached_channels_(false) {}
 
 NotificationChannelsProviderAndroid::~NotificationChannelsProviderAndroid() =
@@ -392,6 +390,11 @@ base::Time NotificationChannelsProviderAndroid::GetWebsiteSettingLastModified(
     return base::Time();
 
   return channel_entry->second.timestamp;
+}
+
+void NotificationChannelsProviderAndroid::SetClockForTesting(
+    base::Clock* clock) {
+  clock_ = clock;
 }
 
 // InitCachedChannels() must be called prior to calling this method.

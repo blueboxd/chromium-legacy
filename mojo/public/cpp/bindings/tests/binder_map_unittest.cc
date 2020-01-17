@@ -116,7 +116,7 @@ TEST_F(BinderMapTest, CorrectSequence) {
   Remote<mojom::TestInterface2> remote2;
   GenericPendingReceiver receiver2(remote2.BindNewPipeAndPassReceiver());
 
-  auto task_runner1 = base::CreateSequencedTaskRunner({base::CurrentThread()});
+  auto task_runner1 = base::SequencedTaskRunnerHandle::Get();
   auto task_runner2 = base::CreateSequencedTaskRunner({base::ThreadPool()});
 
   TestInterface1Impl impl1;

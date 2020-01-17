@@ -17,8 +17,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
-import org.chromium.chrome.browser.ui.widget.PromoDialog;
-import org.chromium.chrome.browser.ui.widget.RadioButtonLayout;
+import org.chromium.components.browser_ui.widget.PromoDialog;
+import org.chromium.components.browser_ui.widget.RadioButtonLayout;
 
 /** A dialog that forces the user to choose a default search engine. */
 public class DefaultSearchEnginePromoDialog extends PromoDialog {

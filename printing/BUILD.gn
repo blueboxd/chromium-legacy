@@ -14,6 +14,9 @@ if (is_mac) {
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
+if (use_cups && is_chromeos) {
+  import("//printing/backend/tools/code_generator.gni")
+}
 
 if ((enable_basic_printing && is_win) || enable_print_preview) {
   # Windows basic printing or print preview requires pdf enabled.
@@ -25,27 +28,16 @@ if ((enable_basic_printing && is_win) || enable_print_preview) {
 # Several targets want to include this header file. We separate it out
 # here so multiple targets can depend on it.
 source_set("printing_export") {
-  sources = [
-    "printing_export.h",
-  ]
+  sources = [ "printing_export.h" ]
 }
 
 if (use_cups && is_chromeos) {
-  attributes_path = "backend/tools/ipp-registrations-2.csv"
   ipp_handler_map_path = "$target_gen_dir/backend/ipp_handler_map.cc"
 
-  action("ipp_code_generate") {
-    script = "backend/tools/code_generator.py"
-    inputs = [
-      attributes_path,
-    ]
-    outputs = [
-      ipp_handler_map_path,
-    ]
-    args = [
-      "--attributes-file=" + rebase_path(attributes_path, root_build_dir),
-      "--ipp-handler-map=" + rebase_path(ipp_handler_map_path, root_build_dir),
-    ]
+  ipp_code_generate("ipp_handlers_generate") {
+    outputs = [ ipp_handler_map_path ]
+    args = [ "--ipp-handler-map=" +
+             rebase_path(ipp_handler_map_path, root_build_dir) ]
   }
 }
 
@@ -105,9 +97,7 @@ component("printing") {
   cflags = []
   defines = [ "PRINTING_IMPLEMENTATION" ]
 
-  public_deps = [
-    "//printing/buildflags",
-  ]
+  public_deps = [ "//printing/buildflags" ]
   deps = [
     ":printing_export",
     "//base",
@@ -199,7 +189,7 @@ component("printing") {
     defines += [ "PRINT_BACKEND_AVAILABLE" ]
 
     if (is_chromeos) {
-      deps += [ ":ipp_code_generate" ]
+      deps += [ ":ipp_handlers_generate" ]
 
       sources += [
         "backend/cups_connection.cc",
@@ -383,9 +373,7 @@ if (use_cups) {
 
 if (is_android) {
   generate_jni("printing_jni_headers") {
-    sources = [
-      "android/java/src/org/chromium/printing/PrintingContext.java",
-    ]
+    sources = [ "android/java/src/org/chromium/printing/PrintingContext.java" ]
   }
 
   android_library("printing_java") {

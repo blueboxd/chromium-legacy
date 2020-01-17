@@ -36,7 +36,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     const updateNtpExtension = ntpExtension => {
       // Note that |ntpExtension| is empty if there is no NTP extension.
       this.ntpExtension_ = ntpExtension;
@@ -52,7 +52,7 @@ Polymer({
    * @return {boolean} Whether the open specific pages is selected.
    * @private
    */
-  showStartupUrls_: function(restoreOnStartup) {
+  showStartupUrls_(restoreOnStartup) {
     return restoreOnStartup == this.prefValues_.OPEN_SPECIFIC;
   },
 });

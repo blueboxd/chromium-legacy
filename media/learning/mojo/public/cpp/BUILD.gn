@@ -25,9 +25,7 @@ source_set("cpp") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "mojo_learning_task_controller_unittest.cc",
-  ]
+  sources = [ "mojo_learning_task_controller_unittest.cc" ]
 
   deps = [
     "//base",

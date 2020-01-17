@@ -15,9 +15,7 @@ js_type_check("closure_compile") {
 }
 
 js_library("app_installer") {
-  deps = [
-    ":cws_widget_container_platform_delegate",
-  ]
+  deps = [ ":cws_widget_container_platform_delegate" ]
 }
 
 js_library("cws_widget_container") {
@@ -29,9 +27,7 @@ js_library("cws_widget_container") {
 }
 
 js_library("cws_widget_container_error_dialog") {
-  deps = [
-    "//ui/webui/resources/js/cr/ui:dialogs",
-  ]
+  deps = [ "//ui/webui/resources/js/cr/ui:dialogs" ]
 }
 
 js_library("cws_widget_container_platform_delegate") {

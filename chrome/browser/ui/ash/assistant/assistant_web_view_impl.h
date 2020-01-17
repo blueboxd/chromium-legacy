@@ -33,6 +33,7 @@ class AssistantWebViewImpl : public ash::AssistantWebView2,
 
   // ash::AssistantWebView2:
   const char* GetClassName() const override;
+  gfx::NativeView GetNativeView() override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void Layout() override;
   void AddObserver(Observer* observer) override;
@@ -53,21 +54,31 @@ class AssistantWebViewImpl : public ash::AssistantWebView2,
   void ResizeDueToAutoResize(content::WebContents* web_contents,
                              const gfx::Size& new_size) override;
   bool TakeFocus(content::WebContents* web_contents, bool reverse) override;
+  void NavigationStateChanged(content::WebContents* web_contents,
+                              content::InvalidateTypes changed_flags) override;
 
   // content::WebContentsObserver:
   void DidStopLoading() override;
   void OnFocusChangedInPage(content::FocusedNodeDetails* details) override;
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
+  void NavigationEntriesDeleted() override;
+  void DidAttachInterstitialPage() override;
+  void DidDetachInterstitialPage() override;
 
  private:
   void InitWebContents(Profile* profile);
   void InitLayout(Profile* profile);
 
+  void UpdateCanGoBack();
+
   const InitParams params_;
 
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<views::WebView> web_view_;
+
+  // Whether or not the embedded |web_contents_| can go back.
+  bool can_go_back_ = false;
 
   base::ObserverList<Observer> observers_;
 };

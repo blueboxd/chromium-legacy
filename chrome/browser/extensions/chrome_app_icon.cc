@@ -64,9 +64,9 @@ class RoundedCornersImageSource : public gfx::CanvasImageSource {
 // static
 void ChromeAppIcon::ApplyEffects(int resource_size_in_dip,
                                  const ResizeFunction& resize_function,
-                                 bool apply_chrome_badge,
                                  bool app_launchable,
                                  bool from_bookmark,
+                                 Badge badge_type,
                                  gfx::ImageSkia* image_skia) {
   if (!resize_function.is_null()) {
     resize_function.Run(gfx::Size(resource_size_in_dip, resource_size_in_dip),
@@ -74,9 +74,8 @@ void ChromeAppIcon::ApplyEffects(int resource_size_in_dip,
   }
 
 #if defined(OS_CHROMEOS)
-  if (apply_chrome_badge) {
-    util::ApplyChromeBadge(image_skia);
-  }
+  if (badge_type != Badge::kNone)
+    util::ApplyBadge(image_skia, badge_type);
 #endif
 
   if (!app_launchable) {
@@ -142,20 +141,23 @@ void ChromeAppIcon::UpdateIcon() {
 
   image_skia_ = icon_->image_skia();
 
-  bool apply_chrome_badge = false;
-#if defined(OS_CHROMEOS)
-  icon_is_badged_ = util::ShouldApplyChromeBadge(browser_context_, app_id_);
-  apply_chrome_badge = icon_is_badged_;
-#endif
-
+  Badge badge_type = Badge::kNone;
   bool app_launchable = util::IsAppLaunchable(app_id_, browser_context_);
+#if defined(OS_CHROMEOS)
+  has_chrome_badge_ = util::ShouldApplyChromeBadge(browser_context_, app_id_);
+  if (!app_launchable) {
+    badge_type = Badge::kBlocked;
+  } else if (has_chrome_badge_) {
+    badge_type = Badge::kChrome;
+  }
+#endif
 
   const Extension* extension =
       ExtensionRegistry::Get(browser_context_)->GetInstalledExtension(app_id_);
   bool from_bookmark = extension && extension->from_bookmark();
 
-  ApplyEffects(resource_size_in_dip_, resize_function_, apply_chrome_badge,
-               app_launchable, from_bookmark, &image_skia_);
+  ApplyEffects(resource_size_in_dip_, resize_function_, app_launchable,
+               from_bookmark, badge_type, &image_skia_);
 
   delegate_->OnIconUpdated(this);
 }

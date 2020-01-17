@@ -6,7 +6,7 @@
 
 namespace task_manager {
 
-PrintingTask* PrintingTag::CreateTask() const {
+PrintingTask* PrintingTag::CreateTask(WebContentsTaskProvider*) const {
   return new PrintingTask(web_contents());
 }
 

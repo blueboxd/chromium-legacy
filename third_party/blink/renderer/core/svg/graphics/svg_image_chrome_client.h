@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -76,11 +77,12 @@ class CORE_EXPORT SVGImageChromeClient final : public EmptyChromeClient {
   FRIEND_TEST_ALL_PREFIXES(SVGImageSimTest, PageVisibilityHiddenToVisible);
 };
 
-DEFINE_TYPE_CASTS(SVGImageChromeClient,
-                  ChromeClient,
-                  client,
-                  client->IsSVGImageChromeClient(),
-                  client.IsSVGImageChromeClient());
+template <>
+struct DowncastTraits<SVGImageChromeClient> {
+  static bool AllowFrom(const ChromeClient& client) {
+    return client.IsSVGImageChromeClient();
+  }
+};
 
 }  // namespace blink
 

@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_rtp_header_extension_parameters.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtls_transport.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_codec_parameters.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_decoding_parameters.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_header_extension_capability.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_header_extension_parameters.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_stats_report.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"

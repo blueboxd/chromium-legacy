@@ -21,7 +21,9 @@ constexpr BinaryUploadService::Result kAllBinaryUploadServiceResults[]{
     BinaryUploadService::Result::TIMEOUT,
     BinaryUploadService::Result::FILE_TOO_LARGE,
     BinaryUploadService::Result::FAILED_TO_GET_TOKEN,
-    BinaryUploadService::Result::UNAUTHORIZED};
+    BinaryUploadService::Result::UNAUTHORIZED,
+    BinaryUploadService::Result::FILE_ENCRYPTED,
+};
 
 constexpr int64_t kTotalBytes = 1000;
 
@@ -56,6 +58,9 @@ std::string ResultToString(const BinaryUploadService::Result& result,
       break;
     case BinaryUploadService::Result::UNAUTHORIZED:
       return "";
+    case BinaryUploadService::Result::FILE_ENCRYPTED:
+      result_value = "FileEncrypted";
+      break;
   }
   return result_value;
 }

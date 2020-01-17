@@ -150,10 +150,7 @@ ProfileInfoHandler::GetAccountNameAndIcon() const {
   if (g_browser_process->profile_manager()
           ->GetProfileAttributesStorage()
           .GetProfileAttributesWithPath(profile_->GetPath(), &entry)) {
-    name = base::UTF16ToUTF8(
-        ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName()
-            ? entry->GetLocalProfileName()
-            : entry->GetName());
+    name = base::UTF16ToUTF8(entry->GetLocalProfileName());
     // TODO(crbug.com/710660): return chrome://theme/IDR_PROFILE_AVATAR_*
     // and update theme_source.cc to get high res avatar icons. This does less
     // work here, sends less over IPC, and is more stable with returned results.

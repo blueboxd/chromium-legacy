@@ -146,7 +146,7 @@ AutomationTreeWalker.prototype = {
    * @return {!AutomationTreeWalker} The called AutomationTreeWalker, for
    *                                 chaining.
    */
-  next: function() {
+  next() {
     if (!this.node_) {
       return this;
     }
@@ -169,7 +169,7 @@ AutomationTreeWalker.prototype = {
    * @param {!chrome.automation.AutomationNode} node
    * @private
    */
-  forward_: function(node) {
+  forward_(node) {
     if (!this.leafPred_(node) && node.firstChild) {
       if (this.phase_ == AutomationTreeWalkerPhase.INITIAL) {
         this.phase_ = AutomationTreeWalkerPhase.DESCENDANT;
@@ -216,7 +216,7 @@ AutomationTreeWalker.prototype = {
    * @param {!chrome.automation.AutomationNode} node
    * @private
    */
-  backward_: function(node) {
+  backward_(node) {
     if (node.previousSibling) {
       this.phase_ = AutomationTreeWalkerPhase.OTHER;
       node = node.previousSibling;

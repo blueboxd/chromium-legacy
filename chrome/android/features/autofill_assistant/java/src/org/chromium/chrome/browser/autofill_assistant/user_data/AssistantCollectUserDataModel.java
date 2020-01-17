@@ -131,6 +131,9 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<String> DATE_RANGE_END_LABEL =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<String> DATE_RANGE_INVALID_ERROR_MESSAGE =
+            new WritableObjectPropertyKey<>();
+
     public static final WritableObjectPropertyKey<List<AssistantAdditionalSectionFactory>>
             PREPENDED_SECTIONS = new WritableObjectPropertyKey<>();
 
@@ -156,9 +159,9 @@ public class AssistantCollectUserDataModel extends PropertyModel {
                 SUPPORTED_BASIC_CARD_NETWORKS, AVAILABLE_LOGINS, EXPANDED_SECTION,
                 REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT,
                 CREDIT_CARD_EXPIRED_TEXT, REQUEST_DATE_RANGE, DATE_RANGE_START,
-                DATE_RANGE_START_LABEL, DATE_RANGE_END, DATE_RANGE_END_LABEL, PREPENDED_SECTIONS,
-                APPENDED_SECTIONS, TERMS_REQUIRE_REVIEW_TEXT, PRIVACY_NOTICE_TEXT,
-                GENERIC_USER_INTERFACE);
+                DATE_RANGE_START_LABEL, DATE_RANGE_END, DATE_RANGE_END_LABEL,
+                DATE_RANGE_INVALID_ERROR_MESSAGE, PREPENDED_SECTIONS, APPENDED_SECTIONS,
+                TERMS_REQUIRE_REVIEW_TEXT, PRIVACY_NOTICE_TEXT, GENERIC_USER_INTERFACE);
 
         /**
          * Set initial state for basic type properties (others are implicitly null).
@@ -344,6 +347,11 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setDateTimeRangeEndLabel(String label) {
         set(DATE_RANGE_END_LABEL, label);
+    }
+
+    @CalledByNative
+    private void setDateRangeInvalidErrorMessage(String error) {
+        set(DATE_RANGE_INVALID_ERROR_MESSAGE, error);
     }
 
     @CalledByNative

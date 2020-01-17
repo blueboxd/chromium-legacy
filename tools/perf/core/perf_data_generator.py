@@ -361,49 +361,6 @@ BUILDERS = {
       'device_os_flavor': 'google',
     },
   },
-  'android-nexus5x-perf': {
-    'tests': [
-      {
-        'isolate': 'performance_test_suite',
-        'extra_args': [
-            '--assert-gpu-compositing',
-        ],
-      },
-      {
-        'isolate': 'media_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'components_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'tracing_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'gpu_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'base_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      }
-    ],
-    'platform': 'android',
-    'dimension': {
-      'pool': 'chrome.tests.perf',
-      'os': 'Android',
-      'device_type': 'bullhead',
-      'device_os': 'MMB29Q',
-      'device_os_flavor': 'google',
-    },
-  },
   'Android Nexus5 Perf': {
     'tests': [
       {
@@ -535,44 +492,6 @@ BUILDERS = {
             '--assert-gpu-compositing',
         ],
       },
-      # TODO(crbug.com/1039019): Remove all of the following gtests and enable
-      # as part of the shard maps.
-      {
-        'isolate': 'angle_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-        'extra_args': [
-            '--shard-timeout=300'
-        ],
-      },
-      {
-        'isolate': 'media_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'components_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'views_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'base_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'dawn_perf_tests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-        'extra_args': [
-            '--shard-timeout=300'
-        ],
-      },
     ],
     'platform': 'win',
     'target_bits': 64,
@@ -592,23 +511,6 @@ BUILDERS = {
       {
         'isolate': 'performance_test_suite',
       },
-      # TODO(crbug.com/1039019): Remove all of the following gtests and enable
-      # as part of the shard maps.
-      {
-        'isolate': 'load_library_perf_tests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'components_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'media_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      }
     ],
     'platform': 'win',
     'target_bits': 32,
@@ -625,43 +527,6 @@ BUILDERS = {
         'isolate': 'performance_test_suite',
         'extra_args': [
             '--assert-gpu-compositing',
-        ],
-      },
-      # TODO(crbug.com/1039019): Remove all of the following gtests and enable
-      # as part of the shard maps.
-      {
-        'isolate': 'load_library_perf_tests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'angle_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'isolate': 'media_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-      },
-      {
-        'name': 'passthrough_command_buffer_perftests',
-        'isolate': 'command_buffer_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-        'extra_args': [
-            '--use-cmd-decoder=passthrough',
-            '--use-angle=gl-null',
-        ],
-      },
-      {
-        'name': 'validating_command_buffer_perftests',
-        'isolate': 'command_buffer_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-        'extra_args': [
-            '--use-cmd-decoder=validating',
-            '--use-stub',
         ],
       },
     ],
@@ -756,11 +621,6 @@ BUILDERS = {
         'extra_args': [
           '--assert-gpu-compositing',
         ],
-      },
-      {
-        'isolate': 'performance_browser_tests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
       },
     ],
     'platform': 'mac',
@@ -1222,16 +1082,16 @@ def generate_performance_test(tester_config, test, builder_name):
     # to shards perf benchmarks on Win builders, reduce this hard timeout limit
     # to ~2 hrs.
     # Note that the builder seems to time out after 7 hours (crbug.com/1036447),
-    # so we must timeout the shards within ~5.5 hours to allow for other
+    # so we must timeout the shards within ~6 hours to allow for other
     # overhead. If the overall builder times out then we
     # don't get data even from the passing shards.
-    'hard_timeout': int(5.5 * 60 * 60), # 5.5 hours timeout for full suite
+    'hard_timeout': int(6 * 60 * 60), # 6 hours timeout for full suite
     'ignore_task_failure': False,
     # 5.5 hour timeout. Note that this is effectively the timeout for a
     # benchmarking subprocess to run since we intentionally do not stream
     # subprocess output to the task stdout.
     # TODO(crbug.com/865538): Reduce this once we can reduce hard_timeout.
-    'io_timeout': int(5.5 * 60 * 60),
+    'io_timeout': int(6 * 60 * 60),
     'dimension_sets': [
       tester_config['dimension']
     ],

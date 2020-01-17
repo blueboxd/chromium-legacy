@@ -47,6 +47,9 @@ class CONTENT_EXPORT BrowserAccessibilityPosition
                     ui::AXNode::AXID* parent_id) const override;
   BrowserAccessibility* GetNodeInTree(AXTreeID tree_id,
                                       ui::AXNode::AXID node_id) const override;
+  int32_t GetAnchorID(BrowserAccessibility* node) const override;
+  AXTreeID GetTreeID(BrowserAccessibility* node) const override;
+
   bool IsEmbeddedObjectInParent() const override;
 
   bool IsInLineBreakingObject() const override;

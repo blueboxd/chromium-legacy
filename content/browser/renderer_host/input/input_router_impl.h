@@ -122,6 +122,8 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
 
   void ForceResetTouchActionForTest();
 
+  bool IsFlingActiveForTest();
+
  private:
   friend class InputRouterImplTest;
   friend class InputRouterImplTestBase;

@@ -37,7 +37,7 @@ class ActionLink extends HTMLAnchorElement {
     }
 
     this.addEventListener('keydown', function(e) {
-      if (!this.disabled && e.key == 'Enter' && !this.href) {
+      if (!this.disabled && e.key === 'Enter' && !this.href) {
         // Schedule a click asynchronously because other 'keydown' handlers
         // may still run later (e.g. document.addEventListener('keydown')).
         // Specifically options dialogs break when this timeout isn't here.
@@ -64,7 +64,7 @@ class ActionLink extends HTMLAnchorElement {
       document.addEventListener('mouseup', removePreventDefault);
 
       // If focus started via mouse press, don't show an outline.
-      if (document.activeElement != this) {
+      if (document.activeElement !== this) {
         this.classList.add('no-outline');
       }
     });
@@ -90,7 +90,7 @@ class ActionLink extends HTMLAnchorElement {
 
   /** @override */
   setAttribute(attr, val) {
-    if (attr.toLowerCase() == 'disabled') {
+    if (attr.toLowerCase() === 'disabled') {
       this.disabled = true;
     } else {
       HTMLAnchorElement.prototype.setAttribute.apply(this, arguments);
@@ -99,7 +99,7 @@ class ActionLink extends HTMLAnchorElement {
 
   /** @override */
   removeAttribute(attr) {
-    if (attr.toLowerCase() == 'disabled') {
+    if (attr.toLowerCase() === 'disabled') {
       this.disabled = false;
     } else {
       HTMLAnchorElement.prototype.removeAttribute.apply(this, arguments);

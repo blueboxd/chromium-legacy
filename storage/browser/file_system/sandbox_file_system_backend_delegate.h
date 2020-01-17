@@ -219,13 +219,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
   bool IsAllowedScheme(const GURL& url) const;
 
   // Returns a path to the usage cache file.
-  base::FilePath GetUsageCachePathForOriginAndType(const GURL& origin_url,
+  base::FilePath GetUsageCachePathForOriginAndType(const url::Origin& origin,
                                                    FileSystemType type);
 
   // Returns a path to the usage cache file (static version).
   static base::FilePath GetUsageCachePathForOriginAndType(
       ObfuscatedFileUtil* sandbox_file_util,
-      const GURL& origin_url,
+      const url::Origin& origin,
       FileSystemType type,
       base::File::Error* error_out);
 

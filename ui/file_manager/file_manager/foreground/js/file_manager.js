@@ -580,7 +580,7 @@ class FileManager extends cr.EventTarget {
         this.ui_.listContainer.table, this.directoryModel_);
 
     this.quickViewModel_ = new QuickViewModel();
-    const fileListSelectionModel = /** @type {!cr.ui.ListSelectionModel} */ (
+    const fileListSelectionModel = /** @type {!FileListSelectionModel} */ (
         this.directoryModel_.getFileListSelection());
     this.quickViewUma_ =
         new QuickViewUma(assert(this.volumeManager_), assert(this.dialogType));
@@ -748,6 +748,7 @@ class FileManager extends cr.EventTarget {
    * @return {!Promise<void>}
    */
   async initializeUI(dialogDom) {
+    console.warn('Files app starting up');
     this.dialogDom_ = dialogDom;
     this.document_ = this.dialogDom_.ownerDocument;
 
@@ -1409,8 +1410,8 @@ class FileManager extends cr.EventTarget {
       directoryEntry, opt_selectionEntry, opt_suggestedName) {
     // Open the directory, and select the selection (if passed).
     const promise = (async () => {
+      console.warn('Files app has started');
       if (directoryEntry) {
-        const entryDescription = util.entryDebugString(directoryEntry);
         await new Promise(resolve => {
           this.directoryModel_.changeDirectoryEntry(
               assert(directoryEntry), resolve);

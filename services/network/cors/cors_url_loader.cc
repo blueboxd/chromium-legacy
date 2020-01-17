@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -14,6 +15,7 @@
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "url/url_util.h"
@@ -436,8 +438,11 @@ void CorsURLLoader::StartRequest() {
     if (tainted_) {
       request_.headers.SetHeader(net::HttpRequestHeaders::kOrigin,
                                  url::Origin().Serialize());
-    } else if (!request_.isolated_world_origin &&
-               HasSpecialAccessToDestination()) {
+    } else if (
+        base::FeatureList::IsEnabled(
+            features::
+                kDeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess) &&
+        !request_.isolated_world_origin && HasSpecialAccessToDestination()) {
       DCHECK(!fetch_cors_flag_);
       // When request's origin has an access to the destination URL (via
       // |origin_access_list_| and |factory_bound_origin_access_list_|), we

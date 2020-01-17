@@ -10,20 +10,17 @@
 
 namespace blink {
 
-class Document;
-
 // A LayoutObject subclass for inside-positioned list markers in LayoutNG.
 class CORE_EXPORT LayoutNGInsideListMarker final : public LayoutInline {
  public:
   explicit LayoutNGInsideListMarker(Element*);
-  static LayoutNGInsideListMarker* CreateAnonymous(Document*);
 
   const char* GetName() const override { return "LayoutNGInsideListMarker"; }
 
 #if DCHECK_IS_ON()
   void AddChild(LayoutObject* new_child, LayoutObject* before_child) override {
-    // Anonymous list marker should have at most one child.
-    DCHECK(GetNode() || !FirstChild());
+    // List markers with 'content: normal' should have at most one child.
+    DCHECK(!StyleRef().ContentBehavesAsNormal() || !FirstChild());
     LayoutInline::AddChild(new_child, before_child);
   }
 #endif

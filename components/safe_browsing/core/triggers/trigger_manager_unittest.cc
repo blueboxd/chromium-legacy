@@ -10,9 +10,9 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/content/browser/threat_details.h"
+#include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/triggers/trigger_throttler.h"
-#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -62,7 +62,9 @@ class MockTriggerThrottler : public TriggerThrottler {
 
 class TriggerManagerTest : public ::testing::Test {
  public:
-  TriggerManagerTest() : trigger_manager_(nullptr, nullptr, nullptr) {}
+  TriggerManagerTest()
+      : trigger_manager_(nullptr, nullptr, nullptr),
+        task_environment_(CreateTestTaskEnvironment()) {}
   ~TriggerManagerTest() override {}
 
   void SetUp() override {
@@ -151,7 +153,7 @@ class TriggerManagerTest : public ::testing::Test {
  private:
   TriggerManager trigger_manager_;
   MockThreatDetailsFactory mock_threat_details_factory_;
-  content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
   content::TestBrowserContext browser_context_;
   content::TestWebContentsFactory web_contents_factory_;
   TestingPrefServiceSimple pref_service_;

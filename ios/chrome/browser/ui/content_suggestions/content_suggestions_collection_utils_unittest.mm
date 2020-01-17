@@ -26,33 +26,49 @@ class ContentSuggestionsCollectionUtilsTest : public PlatformTest {
         traitCollectionWithHorizontalSizeClass:UIUserInterfaceSizeClassRegular];
     UITraitCollection* verticalRegular = [UITraitCollection
         traitCollectionWithVerticalSizeClass:UIUserInterfaceSizeClassRegular];
-    customTraitCollection_ =
+    UITraitCollection* custom_trait_collection =
         [UITraitCollection traitCollectionWithTraitsFromCollections:@[
           verticalRegular, horizontalRegular
         ]];
 
-    trait_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
-        [UIWindow class], @selector(traitCollection),
-        ^UITraitCollection*(id self) {
-          return customTraitCollection_;
-        });
-
-    device_type_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
-        [UIDevice class], @selector(userInterfaceIdiom),
-        ^UIUserInterfaceIdiom(id self) {
-          return UIUserInterfaceIdiomPad;
-        });
+    SetSwizzlersUp(custom_trait_collection, UIUserInterfaceIdiomPad,
+                   UIInterfaceOrientationPortrait);
   }
-  void SetAsIPhone() {
+
+  void SetAsIPhoneLandscape() {
     UITraitCollection* horizontalCompact = [UITraitCollection
         traitCollectionWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact];
     UITraitCollection* verticalCompact = [UITraitCollection
         traitCollectionWithVerticalSizeClass:UIUserInterfaceSizeClassCompact];
-    customTraitCollection_ =
+    UITraitCollection* custom_trait_collection =
         [UITraitCollection traitCollectionWithTraitsFromCollections:@[
           verticalCompact, horizontalCompact
         ]];
 
+    SetSwizzlersUp(custom_trait_collection, UIUserInterfaceIdiomPhone,
+                   UIInterfaceOrientationLandscapeLeft);
+  }
+
+  void SetAsIPhonePortrait() {
+    UITraitCollection* horizontalCompact = [UITraitCollection
+        traitCollectionWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact];
+    UITraitCollection* verticalRegular = [UITraitCollection
+        traitCollectionWithVerticalSizeClass:UIUserInterfaceSizeClassRegular];
+    UITraitCollection* custom_trait_collection =
+        [UITraitCollection traitCollectionWithTraitsFromCollections:@[
+          verticalRegular, horizontalCompact
+        ]];
+
+    SetSwizzlersUp(custom_trait_collection, UIUserInterfaceIdiomPhone,
+                   UIInterfaceOrientationPortrait);
+  }
+
+ private:
+  // Sets up the swizzler for the different parameters passed.
+  void SetSwizzlersUp(UITraitCollection* custom_trait_collection,
+                      UIUserInterfaceIdiom custom_interface,
+                      UIInterfaceOrientation custom_orientation) {
+    customTraitCollection_ = custom_trait_collection;
     trait_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
         [UIWindow class], @selector(traitCollection),
         ^UITraitCollection*(id self) {
@@ -62,25 +78,16 @@ class ContentSuggestionsCollectionUtilsTest : public PlatformTest {
     device_type_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
         [UIDevice class], @selector(userInterfaceIdiom),
         ^UIUserInterfaceIdiom(id self) {
-          return UIUserInterfaceIdiomPhone;
+          return custom_interface;
         });
-  }
-  void SetAsPortrait() {
+
     orientation_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
         [UIApplication class], @selector(statusBarOrientation),
         ^UIInterfaceOrientation(id self) {
-          return UIInterfaceOrientationPortrait;
-        });
-  }
-  void SetAsLandscape() {
-    orientation_swizzler_ = std::make_unique<ScopedBlockSwizzler>(
-        [UIApplication class], @selector(statusBarOrientation),
-        ^UIInterfaceOrientation(id self) {
-          return UIInterfaceOrientationLandscapeLeft;
+          return custom_orientation;
         });
   }
 
- private:
   UITraitCollection* customTraitCollection_;
   std::unique_ptr<ScopedBlockSwizzler> trait_swizzler_;
   std::unique_ptr<ScopedBlockSwizzler> device_type_swizzler_;
@@ -102,8 +109,7 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPad) {
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhonePortrait) {
   // Setup.
-  SetAsIPhone();
-  SetAsPortrait();
+  SetAsIPhonePortrait();
 
   // Action.
   CGFloat heightLogo = doodleHeight(YES);
@@ -118,8 +124,7 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhonePortrait) {
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhoneLandscape) {
   // Setup.
-  SetAsIPhone();
-  SetAsLandscape();
+  SetAsIPhoneLandscape();
 
   // Action.
   CGFloat heightLogo = doodleHeight(YES);
@@ -129,7 +134,7 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhoneLandscape) {
   // Test.
   EXPECT_EQ(120, heightLogo);
   EXPECT_EQ(60, heightNoLogo);
-  EXPECT_EQ(58 + kTopInset, topMargin);
+  EXPECT_EQ(kTopInset, topMargin);
 }
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPad) {
@@ -151,8 +156,7 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPad) {
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPhonePortrait) {
   // Setup.
-  SetAsIPhone();
-  SetAsPortrait();
+  SetAsIPhonePortrait();
   CGFloat width = 500;
 
   // Action.
@@ -166,8 +170,7 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPhonePortrait) {
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, searchFieldFrameIPhoneLandscape) {
   // Setup.
-  SetAsIPhone();
-  SetAsLandscape();
+  SetAsIPhoneLandscape();
   CGFloat width = 500;
 
   // Action.
@@ -192,7 +195,7 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPad) {
 
 TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPhone) {
   // Setup.
-  SetAsIPhone();
+  SetAsIPhonePortrait();
 
   // Action, tests.
   EXPECT_EQ(276, heightForLogoHeader(YES, YES, YES, 0));

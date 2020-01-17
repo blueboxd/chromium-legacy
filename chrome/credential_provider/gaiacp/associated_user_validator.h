@@ -40,7 +40,7 @@ namespace credential_provider {
 //
 // The following functions can be called while the validator can be accessed
 // from another thread:
-// IsTokenHandleValidForUser: Called on the main thread indirectly in
+// IsAuthEnforcedForUser: Called on the main thread indirectly in
 // CGaiaCredentialProvider::GetCredentialCount. Also called on the update
 // thread while checking DenySigninForUsersWithInvalidTokenHandles.
 // GetAssociatedUsersCount: Only called on the main thread indirectly in
@@ -56,7 +56,7 @@ namespace credential_provider {
 // update of the credentials on the main thread via a call to
 // CGaiaCredentialProvider::GetCredentialCount should be able to complete
 // before a new update is requested on the update thread. This timing will
-// protect the two functions IsTokenHandleValidForUser and
+// protect the two functions IsAuthEnforcedForUser and
 // GetAssociatedUsersCount from being called by multiple threads at the same
 // time.
 class AssociatedUserValidator {
@@ -90,13 +90,13 @@ class AssociatedUserValidator {
   // for their validity. The queries are fired in separate threads but
   // no wait is done for the result. This allows background processing of
   // the queries until they are actually needed. An eventual call to
-  // IsTokenHandleValidForUser will cause the wait for the result as needed.
+  // IsAuthEnforcedForUser will cause the wait for the result as needed.
   void StartRefreshingTokenHandleValidity();
 
   // Checks whether the token handle for the given user is valid or not.
   // This function is blocking and may fire off a query for a token handle that
   // needs to complete before the function returns.
-  bool IsTokenHandleValidForUser(const base::string16& sid);
+  bool IsAuthEnforcedForUser(const base::string16& sid);
 
   enum EnforceAuthReason {
     NOT_ENFORCED = 0,
@@ -116,11 +116,15 @@ class AssociatedUserValidator {
   bool IsUserAccessBlockingEnforced(
       CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) const;
 
-  // Goes through all associated users found and denies their access to sign
-  // in to the system based on the validity of their token handle. Returns true
+  // Goes through all reauth creds found and denies their access to sign
+  // in to the system based on the auth reason being not enforced. Returns true
   // if a user has just been denied signin access.
   bool DenySigninForUsersWithInvalidTokenHandles(
-      CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus);
+      CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
+      const std::vector<base::string16>& reauth_sids);
+
+  // Returns true if any associated user is enforced to reauth via google.
+  bool IsAuthEnforcedOnAssociatedUsers();
 
   // Restores the access for a user that was denied access (if applicable).
   // Returns S_OK on success, failure otherwise.
@@ -149,6 +153,11 @@ class AssociatedUserValidator {
   // user.
   bool IsOnlineLoginStale(const base::string16& sid) const;
 
+  // Keeps the sid mapping in gcpw registry up to date with the latest token
+  // handle information.
+  HRESULT UpdateAssociatedSids(
+      std::map<base::string16, base::string16>* sid_to_handle);
+
  protected:
   // Returns the storage used for the instance pointer.
   static AssociatedUserValidator** GetInstanceStorage();
@@ -170,8 +179,9 @@ class AssociatedUserValidator {
   void StartTokenValidityQuery(const base::string16& sid,
                                const base::string16& token_handle,
                                base::TimeDelta timeout);
-  HRESULT UpdateAssociatedSids(
-      std::map<base::string16, base::string16>* sid_to_handle);
+  bool IsTokenHandleValidForUser(const base::string16& sid);
+  bool IsUserAssociated(const base::string16& sid);
+  bool HasInvokedUpdateAssociatedSids();
 
   // Stores information about the current state of a user's token handle.
   // This information includes:
@@ -222,6 +232,10 @@ class AssociatedUserValidator {
   // LockDenyAccessUpdate / UnlockDenyAccessUpdate are called in the lifetime of
   // a ScopedBlockDenyAccessUpdate to update this member.
   size_t block_deny_access_update_ = 0;
+
+  // Keeps track of whether "UpdateAssociatedSids" method is invoked at least
+  // once while creation of reauth credentials in the LoginUI.
+  bool has_invoked_update_associated_sids_ = false;
 };
 
 }  // namespace credential_provider

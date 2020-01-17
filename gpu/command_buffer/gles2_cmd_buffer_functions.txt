@@ -438,3 +438,5 @@ GL_APICALL GLuint       GL_APIENTRY glCreateAndTexStorage2DSharedImageWithIntern
 GL_APICALL void         GL_APIENTRY glCreateAndTexStorage2DSharedImageINTERNAL (GLuint texture, GLenum internalformat, const GLbyte* mailbox);
 GL_APICALL void         GL_APIENTRY glBeginSharedImageAccessDirectCHROMIUM (GLuint texture, GLenumSharedImageAccessMode mode);
 GL_APICALL void         GL_APIENTRY glEndSharedImageAccessDirectCHROMIUM (GLuint texture);
+GL_APICALL void         GL_APIENTRY glBeginBatchReadAccessSharedImageCHROMIUM (void);
+GL_APICALL void         GL_APIENTRY glEndBatchReadAccessSharedImageCHROMIUM (void);

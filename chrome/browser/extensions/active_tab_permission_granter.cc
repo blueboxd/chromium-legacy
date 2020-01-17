@@ -152,6 +152,11 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
     }
     new_hosts.AddOrigin(valid_schemes, url.GetOrigin());
     new_apis.insert(APIPermission::kTab);
+
+    if (permissions_data->HasAPIPermission(
+            APIPermission::kDeclarativeNetRequest)) {
+      new_apis.insert(APIPermission::kDeclarativeNetRequestFeedback);
+    }
   }
 
   if (permissions_data->HasAPIPermission(APIPermission::kTabCapture))

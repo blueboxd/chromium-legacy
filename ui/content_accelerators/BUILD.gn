@@ -15,7 +15,5 @@ source_set("content_accelerators") {
     "//ui/events/blink",
   ]
 
-  public_deps = [
-    "//content/public/browser",
-  ]
+  public_deps = [ "//content/public/browser" ]
 }

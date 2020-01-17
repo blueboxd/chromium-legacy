@@ -13,9 +13,7 @@ process_version("chrome_exe_version_manifest") {
   process_only = true
   visibility = [ ":*" ]
   template_file = "chrome_exe_manifest.template"
-  sources = [
-    "//chrome/VERSION",
-  ]
+  sources = [ "//chrome/VERSION" ]
   output = version_assembly_output_file
 }
 
@@ -29,18 +27,14 @@ windows_manifest("chrome_exe_manifest") {
     version_assembly_output_file,
   ]
 
-  deps = [
-    ":chrome_exe_version_manifest",
-  ]
+  deps = [ ":chrome_exe_version_manifest" ]
 }
 
 # Generates the manifest for the version assembly, which is the versioned
 # directory where Chrome finds chrome.dll.
 process_version("version_assembly_manifest") {
   template_file = "version_assembly_manifest.template"
-  sources = [
-    "//chrome/VERSION",
-  ]
+  sources = [ "//chrome/VERSION" ]
   output = "$root_build_dir/$chrome_version_full.manifest"
   process_only = true
 }

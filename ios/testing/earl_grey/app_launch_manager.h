@@ -7,28 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-#include <vector>
-
-#include "base/feature_list.h"
+#import "ios/testing/earl_grey/app_launch_configuration.h"
 
 @class AppLaunchManager;
 
-// Enum of relaunch manners. Useful combinations of whether force a relaunch,
-// whether kill app gracefully, whether run resets after a relaunch.
-typedef NS_ENUM(NSInteger, RelaunchPolicy) {
-  // Does not relaunch if app is already running with the same feature list.
-  // Kills the app directly. Keeps app state the same as before relaunch.
-  NoForceRelaunchAndKeepState,
-  // Does not relaunch if app is already running with the same feature list.
-  // Kills the app directly. Provides clean test case setups after relaunch.
-  NoForceRelaunchAndResetState,
-  // Forces a relaunch. Kills the app directly. Keeps app state the same as
-  // before relaunch.
-  ForceRelaunchByKilling,
-  // Forces a relaunch. Backgrounds and then kills the app. Keeps app state same
-  // as before relaunch.
-  ForceRelaunchByCleanShutdown,
-};
 
 // Protocol that test cases can implement to be notified by AppLaunchManager.
 @protocol AppLaunchManagerObserver
@@ -49,10 +31,9 @@ typedef NS_ENUM(NSInteger, RelaunchPolicy) {
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Makes sure the app has been started with the appropriate features
-// enabled and disabled. Also provides different ways of killing and resetting
-// app during relaunch.
-// In EG2, the app will be launched from scratch if:
+// Makes sure the app has been started with the |configuration|. Provides
+// different ways of killing and resetting app during relaunch. In EG2, the app
+// will be launched from scratch if:
 // * The app is not running, or
 // * The app is currently running with a different feature set, or
 // * |relaunchPolicy| forces a relaunch.
@@ -60,9 +41,14 @@ typedef NS_ENUM(NSInteger, RelaunchPolicy) {
 // Will wait until app is activated or launched, and fail the test if it
 // fails to do so.
 // |relaunchPolicy| controls relaunch manners.
+- (void)ensureAppLaunchedWithConfiguration:
+    (AppLaunchConfiguration)configuration;
+
+// See ensureAppLaunchedWithFeaturesEnabled:disabled:variations:
+// triggerVariations:relaunchPolicy: for details.
 - (void)ensureAppLaunchedWithFeaturesEnabled:
-            (const std::vector<base::Feature>&)featuresEnabled
-                                    disabled:(const std::vector<base::Feature>&)
+            (std::vector<base::Feature>)featuresEnabled
+                                    disabled:(std::vector<base::Feature>)
                                                  featuresDisabled
                               relaunchPolicy:(RelaunchPolicy)relaunchPolicy;
 

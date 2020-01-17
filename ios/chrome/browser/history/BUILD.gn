@@ -61,9 +61,7 @@ source_set("tab_helper") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "history_tab_helper_unittest.mm",
-  ]
+  sources = [ "history_tab_helper_unittest.mm" ]
   deps = [
     ":history",
     ":tab_helper",

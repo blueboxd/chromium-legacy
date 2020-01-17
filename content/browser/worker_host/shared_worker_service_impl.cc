@@ -36,8 +36,10 @@
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/loader_util.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
 #include "url/origin.h"
@@ -133,7 +135,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   if (!GetContentClient()->browser()->AllowSharedWorker(
           info->url,
           render_frame_host->ComputeSiteForCookies().RepresentativeUrl(),
-          main_frame->GetLastCommittedOrigin(), info->name, constructor_origin,
+          main_frame->GetLastCommittedOrigin(), info->options->name,
+          constructor_origin,
           WebContentsImpl::FromRenderFrameHostID(client_render_frame_host_id)
               ->GetBrowserContext(),
           client_render_frame_host_id.child_id,
@@ -142,8 +145,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     return;
   }
 
-  SharedWorkerHost* host =
-      FindMatchingSharedWorkerHost(info->url, info->name, constructor_origin);
+  SharedWorkerHost* host = FindMatchingSharedWorkerHost(
+      info->url, info->options->name, constructor_origin);
   if (host) {
     // Non-secure contexts cannot connect to secure workers, and secure contexts
     // cannot connect to non-secure workers:
@@ -173,10 +176,10 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       /*can_be_default=*/true, &storage_domain, &partition_name, &in_memory);
 
   SharedWorkerInstance instance(
-      next_shared_worker_instance_id_++, info->url, info->name,
-      constructor_origin, info->content_security_policy,
-      info->content_security_policy_type, info->creation_address_space,
-      creation_context_type);
+      next_shared_worker_instance_id_++, info->url, info->options->type,
+      info->options->credentials, info->options->name, constructor_origin,
+      info->content_security_policy, info->content_security_policy_type,
+      info->creation_address_space, creation_context_type);
   host = CreateWorker(instance, std::move(outside_fetch_client_settings_object),
                       client_render_frame_host_id, storage_domain, message_port,
                       std::move(blob_url_loader_factory));

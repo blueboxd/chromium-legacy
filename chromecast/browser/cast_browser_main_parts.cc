@@ -46,7 +46,6 @@
 #include "chromecast/browser/service_connector.h"
 #include "chromecast/browser/tts/tts_controller_impl.h"
 #include "chromecast/browser/tts/tts_platform_stub.h"
-#include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "chromecast/media/base/key_systems_common.h"
@@ -70,6 +69,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -376,13 +376,12 @@ void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
 
 CastBrowserMainParts::CastBrowserMainParts(
     const content::MainFunctionParams& parameters,
-    URLRequestContextFactory* url_request_context_factory,
     CastContentBrowserClient* cast_content_browser_client)
     : BrowserMainParts(),
       cast_browser_process_(new CastBrowserProcess()),
       parameters_(parameters),
       cast_content_browser_client_(cast_content_browser_client),
-      url_request_context_factory_(url_request_context_factory),
+
       media_caps_(new media::MediaCapsImpl()),
       cast_system_memory_pressure_evaluator_adjuster_(nullptr) {
   DCHECK(cast_content_browser_client);
@@ -525,8 +524,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
                      base::Unretained(this)));
 #endif  // defined(OS_ANDROID)
 
-  url_request_context_factory_->InitializeOnUIThread(nullptr);
-
   cast_browser_process_->SetBrowserContext(
       std::make_unique<CastBrowserContext>());
 
@@ -640,7 +637,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   // initialized by cast service.
   cast_browser_process_->cast_browser_metrics()->Initialize();
   cast_content_browser_client_->InitializeURLLoaderThrottleDelegate();
-  url_request_context_factory_->InitializeNetworkDelegates();
 
   cast_content_browser_client_->CreateGeneralAudienceBrowsingService();
 

@@ -87,16 +87,12 @@ jumbo_component("snapshot") {
 }
 
 jumbo_source_set("snapshot_export") {
-  sources = [
-    "snapshot_export.h",
-  ]
+  sources = [ "snapshot_export.h" ]
   visibility = [ ":*" ]
 }
 
 test("snapshot_unittests") {
-  sources = [
-    "test/run_all_unittests.cc",
-  ]
+  sources = [ "test/run_all_unittests.cc" ]
 
   if (is_mac) {
     sources += [ "snapshot_mac_unittest.mm" ]

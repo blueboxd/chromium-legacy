@@ -147,7 +147,8 @@ std::unique_ptr<base::DictionaryValue> CreateManifest(
     const std::string& json_rules_filename,
     const std::vector<std::string>& hosts = {},
     bool has_background_script = false,
-    bool has_feedback_permission = false);
+    bool has_feedback_permission = false,
+    bool has_active_tab_permission = false);
 
 // Returns a ListValue corresponding to a vector of strings.
 std::unique_ptr<base::ListValue> ToListValue(
@@ -167,7 +168,8 @@ void WriteManifestAndRuleset(
     const std::vector<TestRule>& rules,
     const std::vector<std::string>& hosts,
     bool has_background_script = false,
-    bool has_feedback_permission = false);
+    bool has_feedback_permission = false,
+    bool has_active_tab_permission = false);
 void WriteManifestAndRuleset(
     const base::FilePath& extension_dir,
     const base::FilePath::CharType* json_rules_filepath,
@@ -175,7 +177,8 @@ void WriteManifestAndRuleset(
     const base::Value& rules,
     const std::vector<std::string>& hosts,
     bool has_background_script = false,
-    bool has_feedback_permission = false);
+    bool has_feedback_permission = false,
+    bool has_active_tab_permission = false);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

@@ -45,7 +45,7 @@ Spannable = function(opt_string, opt_annotation) {
 
 Spannable.prototype = {
   /** @override */
-  toString: function() {
+  toString() {
     return this.string_;
   },
 
@@ -60,7 +60,7 @@ Spannable.prototype = {
    * @param {number} start Starting index (inclusive).
    * @param {number} end Ending index (exclusive).
    */
-  setSpan: function(value, start, end) {
+  setSpan(value, start, end) {
     this.removeSpan(value);
     this.setSpanInternal(value, start, end);
   },
@@ -71,7 +71,7 @@ Spannable.prototype = {
    * @param {number} end Ending index (exclusive).
    * @protected
    */
-  setSpanInternal: function(value, start, end) {
+  setSpanInternal(value, start, end) {
     if (0 <= start && start <= end && end <= this.string_.length) {
       // Zero-length spans are explicitly allowed, because it is possible to
       // query for position by annotation as well as the reverse.
@@ -94,7 +94,7 @@ Spannable.prototype = {
    * Removes a span.
    * @param {*} value Annotation.
    */
-  removeSpan: function(value) {
+  removeSpan(value) {
     for (var i = this.spans_.length - 1; i >= 0; i--) {
       if (this.spans_[i].value === value) {
         this.spans_.splice(i, 1);
@@ -106,7 +106,7 @@ Spannable.prototype = {
    * Appends another Spannable or string to this one.
    * @param {string|!Spannable} other String or spannable to concatenate.
    */
-  append: function(other) {
+  append(other) {
     if (other instanceof Spannable) {
       var otherSpannable = /** @type {!Spannable} */ (other);
       var originalLength = this.length;
@@ -125,7 +125,7 @@ Spannable.prototype = {
    * @param {number} position Position to query.
    * @return {*} Value annotating that position, or undefined if none is found.
    */
-  getSpan: function(position) {
+  getSpan(position) {
     return valueOfSpan(this.spans_.find(spanCoversPosition(position)));
   },
 
@@ -134,7 +134,7 @@ Spannable.prototype = {
    * @param {!Function} constructor Constructor.
    * @return {*} Object if found; undefined otherwise.
    */
-  getSpanInstanceOf: function(constructor) {
+  getSpanInstanceOf(constructor) {
     return valueOfSpan(this.spans_.find(spanInstanceOf(constructor)));
   },
 
@@ -145,7 +145,7 @@ Spannable.prototype = {
    * @param {!Function} constructor Constructor.
    * @return {!Array<Object>} Array of object.
    */
-  getSpansInstanceOf: function(constructor) {
+  getSpansInstanceOf(constructor) {
     return (this.spans_.filter(spanInstanceOf(constructor)).map(valueOfSpan));
   },
 
@@ -154,7 +154,7 @@ Spannable.prototype = {
    * @param {number} position Position to query.
    * @return {!Array} Values annotating that position.
    */
-  getSpans: function(position) {
+  getSpans(position) {
     return (this.spans_.filter(spanCoversPosition(position)).map(valueOfSpan));
   },
 
@@ -163,7 +163,7 @@ Spannable.prototype = {
    * @param {*} value Annotation.
    * @return {boolean}
    */
-  hasSpan: function(value) {
+  hasSpan(value) {
     return this.spans_.some(spanValueIs(value));
   },
 
@@ -173,7 +173,7 @@ Spannable.prototype = {
    * @param {*} value Annotation.
    * @return {number}
    */
-  getSpanStart: function(value) {
+  getSpanStart(value) {
     return this.getSpanByValueOrThrow_(value).start;
   },
 
@@ -183,7 +183,7 @@ Spannable.prototype = {
    * @param {*} value Annotation.
    * @return {number}
    */
-  getSpanEnd: function(value) {
+  getSpanEnd(value) {
     return this.getSpanByValueOrThrow_(value).end;
   },
 
@@ -191,7 +191,7 @@ Spannable.prototype = {
    * @param {*} value Annotation.
    * @return {!Array<{start: number, end: number}>}
    */
-  getSpanIntervals: function(value) {
+  getSpanIntervals(value) {
     return this.spans_
         .filter(function(s) {
           return s.value == value;
@@ -207,7 +207,7 @@ Spannable.prototype = {
    * @param {*} value
    * @return {number}
    */
-  getSpanLength: function(value) {
+  getSpanLength(value) {
     var span = this.getSpanByValueOrThrow_(value);
     return span.end - span.start;
   },
@@ -218,7 +218,7 @@ Spannable.prototype = {
    * @return {!SpanStruct}
    * @private
    */
-  getSpanByValueOrThrow_: function(value) {
+  getSpanByValueOrThrow_(value) {
     var span = this.spans_.find(spanValueIs(value));
     if (span) {
       return span;
@@ -237,7 +237,7 @@ Spannable.prototype = {
    *     If excluded, the length of the string is used instead.
    * @return {!Spannable} Substring requested.
    */
-  substring: function(start, opt_end) {
+  substring(start, opt_end) {
     var end = goog.isDef(opt_end) ? opt_end : this.string_.length;
 
     if (start < 0 || end > this.string_.length || start > end) {
@@ -259,7 +259,7 @@ Spannable.prototype = {
    * Trims whitespace from the beginning.
    * @return {!Spannable} String with whitespace removed.
    */
-  trimLeft: function() {
+  trimLeft() {
     return this.trim_(true, false);
   },
 
@@ -267,7 +267,7 @@ Spannable.prototype = {
    * Trims whitespace from the end.
    * @return {!Spannable} String with whitespace removed.
    */
-  trimRight: function() {
+  trimRight() {
     return this.trim_(false, true);
   },
 
@@ -275,7 +275,7 @@ Spannable.prototype = {
    * Trims whitespace from the beginning and end.
    * @return {!Spannable} String with whitespace removed.
    */
-  trim: function() {
+  trim() {
     return this.trim_(true, true);
   },
 
@@ -286,7 +286,7 @@ Spannable.prototype = {
    * @return {!Spannable} String with whitespace removed.
    * @private
    */
-  trim_: function(trimStart, trimEnd) {
+  trim_(trimStart, trimEnd) {
     if (!trimStart && !trimEnd) {
       return this;
     }
@@ -313,7 +313,7 @@ Spannable.prototype = {
    * or registerStatelessSerializableSpan.
    * @return {!SerializedSpannable} the json serializable form.
    */
-  toJson: function() {
+  toJson() {
     var result = {};
     result.string = this.string_;
     result.spans = [];
@@ -354,12 +354,12 @@ MultiSpannable.prototype = {
   __proto__: Spannable.prototype,
 
   /** @override */
-  setSpan: function(value, start, end) {
+  setSpan(value, start, end) {
     this.setSpanInternal(value, start, end);
   },
 
   /** @override */
-  substring: function(start, opt_end) {
+  substring(start, opt_end) {
     var ret = Spannable.prototype.substring.call(this, start, opt_end);
     return new MultiSpannable(ret);
   },

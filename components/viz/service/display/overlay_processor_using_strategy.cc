@@ -42,7 +42,7 @@ gfx::Rect OverlayProcessorUsingStrategy::GetAndResetOverlayDamage() {
 }
 
 void OverlayProcessorUsingStrategy::NotifyOverlayPromotion(
-    DisplayResourceProvider* resource_provider,
+    DisplayResourceProvider* display_resource_provider,
     const CandidateList& candidates,
     const QuadList& quad_list) {}
 

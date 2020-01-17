@@ -6,7 +6,7 @@ import("//build/config/android/config.gni")
 
 declare_args() {
   # Whether to integrate Chime notification SDK into Chrome.
-  use_chime_android_sdk = false
+  use_chime_android_sdk = true
 }
 
 chime_module_desc = {

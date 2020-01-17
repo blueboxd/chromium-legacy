@@ -510,7 +510,7 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
   mutable_style_ =
       properties_to_include == kAllProperties && computed_style_at_position
           ? computed_style_at_position->CopyProperties()
-          : CopyEditingProperties(&node->GetDocument(),
+          : CopyEditingProperties(node ? &node->GetDocument() : nullptr,
                                   computed_style_at_position);
 
   if (properties_to_include == kEditingPropertiesInEffect) {

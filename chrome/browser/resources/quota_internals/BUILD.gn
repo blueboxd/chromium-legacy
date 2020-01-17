@@ -23,9 +23,7 @@ js_library("event_handler") {
 }
 
 js_library("message_dispatcher") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 grit("quota_internals_resources") {

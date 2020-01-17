@@ -5,15 +5,15 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":settings_ui",
-  ]
+  deps = [ ":settings_ui" ]
 }
 
 js_library("settings_ui") {
   deps = [
     "..:global_scroll_target_behavior",
     "..:page_visibility",
+    "..:route",
+    "..:router",
     "../prefs",
     "../settings_main:settings_main",
     "//ui/webui/resources/cr_elements:cr_container_shadow_behavior",

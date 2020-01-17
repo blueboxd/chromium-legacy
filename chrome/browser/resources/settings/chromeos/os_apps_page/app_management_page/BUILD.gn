@@ -73,6 +73,7 @@ js_library("app_detail_view") {
     ":pwa_detail_view",
     ":store_client",
     "../../..:route",
+    "../../..:router",
   ]
 }
 
@@ -191,9 +192,7 @@ js_library("toggle_row") {
 }
 
 js_library("types") {
-  deps = [
-    "//chrome/browser/ui/webui/app_management:mojo_bindings_js_library_for_compile",
-  ]
+  deps = [ "//chrome/browser/ui/webui/app_management:mojo_bindings_js_library_for_compile" ]
 }
 
 js_library("uninstall_button") {
@@ -210,6 +209,8 @@ js_library("util") {
   deps = [
     ":constants",
     ":types",
+    "../../..:route",
+    "../../..:router",
     "//ui/webui/resources/js:cr",
   ]
 }

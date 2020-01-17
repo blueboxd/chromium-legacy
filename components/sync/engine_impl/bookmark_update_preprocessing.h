@@ -10,6 +10,8 @@
 #ifndef COMPONENTS_SYNC_ENGINE_IMPL_BOOKMARK_UPDATE_PREPROCESSING_H_
 #define COMPONENTS_SYNC_ENGINE_IMPL_BOOKMARK_UPDATE_PREPROCESSING_H_
 
+#include <string>
+
 namespace sync_pb {
 class SyncEntity;
 class EntitySpecifics;
@@ -36,6 +38,11 @@ void AdaptTitleForBookmark(const sync_pb::SyncEntity& update_entity,
 // null.
 void AdaptGuidForBookmark(const sync_pb::SyncEntity& update_entity,
                           sync_pb::EntitySpecifics* specifics);
+
+// GUID-inferring function exposed for testing.
+std::string InferGuidForLegacyBookmarkForTesting(
+    const std::string& originator_cache_guid,
+    const std::string& originator_client_item_id);
 
 }  // namespace syncer
 

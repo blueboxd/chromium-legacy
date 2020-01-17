@@ -130,9 +130,7 @@ source_set("public") {
     "ios_chrome_password_infobar_metrics_recorder.h",
     "ios_chrome_password_infobar_metrics_recorder.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("feature_flags") {
@@ -141,9 +139,7 @@ source_set("feature_flags") {
     "password_manager_features.cc",
     "password_manager_features.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("passwords_generation_utils") {
@@ -152,9 +148,7 @@ source_set("passwords_generation_utils") {
     "password_generation_utils.h",
     "password_generation_utils.mm",
   ]
-  deps = [
-    "//base:i18n",
-  ]
+  deps = [ "//base:i18n" ]
   libs = [ "CoreGraphics.framework" ]
 }
 
@@ -208,9 +202,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "credential_manager_egtest.mm",
-  ]
+  sources = [ "credential_manager_egtest.mm" ]
 
   deps = [
     ":feature_flags",
@@ -237,9 +229,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "credential_manager_egtest.mm",
-  ]
+  sources = [ "credential_manager_egtest.mm" ]
   deps = [
     ":eg_test_support+eg2",
     ":feature_flags",
@@ -306,7 +296,5 @@ source_set("eg_test_support+eg2") {
   ]
   testonly = true
 
-  sources = [
-    "password_manager_app_interface.h",
-  ]
+  sources = [ "password_manager_app_interface.h" ]
 }

@@ -32,6 +32,10 @@ namespace ash {
 // Returns true if |window| can cover available workspace.
 bool CanCoverAvailableWorkspace(aura::Window* window);
 
+// Returns false if any window with |root_window| covers the entire workspace,
+// true otherwise.
+bool ShouldAnimateWallpaper(aura::Window* root_window);
+
 // Fades |widget| to opacity one with the enter overview settings. Additionally
 // place |widget| closer to the top of screen and slide it down if |slide| is
 // true. Have OverviewController observe this animation as a enter animation if
@@ -98,8 +102,7 @@ gfx::Rect GetGridBoundsInScreen(
 // Gets the bounds of a window if it were to be snapped or about to be snapped
 // in splitview. Returns nothing if we are not in tablet mode, or if we aren't
 // in splitview, or if we aren't showing a splitview preview.
-base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
-    aura::Window* window);
+base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio();
 
 // Check if kNewOverviewLayout is enabled for tablet mode.
 bool ShouldUseTabletModeGridLayout();

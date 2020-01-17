@@ -13,7 +13,7 @@ login.createScreen('DemoPreferencesScreen', 'demo-preferences', function() {
     EXTERNAL_API: ['setInputMethodIdFromBackend'],
 
     /** @override */
-    decorate: function() {
+    decorate() {
       demoPreferencesModule = $('demo-preferences-content');
       demoPreferencesModule.screen = this;
 
@@ -21,7 +21,7 @@ login.createScreen('DemoPreferencesScreen', 'demo-preferences', function() {
     },
 
     /** Update the current input method. Called from C++. */
-    setInputMethodIdFromBackend: function(inputMethodId) {
+    setInputMethodIdFromBackend(inputMethodId) {
       $('demo-preferences-content').setSelectedKeyboard(inputMethodId);
     },
 
@@ -31,7 +31,7 @@ login.createScreen('DemoPreferencesScreen', 'demo-preferences', function() {
     },
 
     /** Called after resources are updated. */
-    updateLocalizedContent: function() {
+    updateLocalizedContent() {
       demoPreferencesModule.updateLocalizedContent();
     },
 
@@ -39,7 +39,7 @@ login.createScreen('DemoPreferencesScreen', 'demo-preferences', function() {
      * Called when language was selected.
      * @param {string} languageId Id of the selected language.
      */
-    onLanguageSelected_: function(languageId) {
+    onLanguageSelected_(languageId) {
       chrome.send('DemoPreferencesScreen.setLocaleId', [languageId]);
     },
 
@@ -47,7 +47,7 @@ login.createScreen('DemoPreferencesScreen', 'demo-preferences', function() {
      * Called when keyboard was selected.
      * @param {string} inputMethodId Id of the selected input method.
      */
-    onKeyboardSelected_: function(inputMethodId) {
+    onKeyboardSelected_(inputMethodId) {
       chrome.send('DemoPreferencesScreen.setInputMethodId', [inputMethodId]);
     },
 
@@ -55,7 +55,7 @@ login.createScreen('DemoPreferencesScreen', 'demo-preferences', function() {
      * Called when country was selected.
      * @param {string} countryId Id of the selected country.
      */
-    onCountrySelected_: function(countryId) {
+    onCountrySelected_(countryId) {
       chrome.send('DemoPreferencesScreen.setDemoModeCountry', [countryId]);
     },
   };

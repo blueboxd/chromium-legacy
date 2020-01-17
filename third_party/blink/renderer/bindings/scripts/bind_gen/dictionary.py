@@ -27,7 +27,7 @@ from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
 from .codegen_expr import expr_from_exposure
 from .codegen_format import format_template as _format
-from .codegen_utils import collect_include_headers
+from .codegen_utils import collect_include_headers_of_idl_types
 from .codegen_utils import component_export
 from .codegen_utils import enclose_with_header_guard
 from .codegen_utils import enclose_with_namespace
@@ -504,8 +504,7 @@ def make_dict_trace_def(cg_context):
 
     body.extend(map(trace_member_node, own_members))
 
-    if dictionary.inherited:
-        body.append(T("BaseClass::Trace(visitor);"))
+    body.append(T("BaseClass::Trace(visitor);"))
 
     return func_def
 
@@ -524,9 +523,8 @@ def make_dict_class_def(cg_context):
         export=component_export(component))
     class_def.set_base_template_vars(cg_context.template_bindings())
 
-    if dictionary.inherited:
-        class_def.top_section.append(
-            TextNode("using BaseClass = ${base_class_name};"))
+    class_def.top_section.append(
+        TextNode("using BaseClass = ${base_class_name};"))
 
     public_section = class_def.public_section
     public_section.append(
@@ -616,8 +614,8 @@ def generate_dictionary(dictionary):
         base_class_name=base_class_name)
 
     # Filepaths
-    header_path = path_manager.dict_path(ext="h")
-    source_path = path_manager.dict_path(ext="cc")
+    header_path = path_manager.api_path(ext="h")
+    source_path = path_manager.api_path(ext="cc")
 
     # Root nodes
     header_node = ListNode(tail="\n")
@@ -636,15 +634,13 @@ def generate_dictionary(dictionary):
 
     # Header part (copyright, include directives, and forward declarations)
     if dictionary.inherited:
-        # TODO(crbug.com/1034398): Use api_path() or impl_path() once we
-        # migrate IDL compiler and move generated code of dictionaries.
-        base_class_header = PathManager(
-            dictionary.inherited).dict_path(ext="h")
+        base_class_header = PathManager(dictionary.inherited).api_path(ext="h")
     else:
         base_class_header = (
             "third_party/blink/renderer/platform/bindings/dictionary_base.h")
     header_node.accumulator.add_include_headers(
-        collect_include_headers(dictionary))
+        collect_include_headers_of_idl_types(
+            [member.idl_type for member in dictionary.own_members]))
     header_node.accumulator.add_include_headers([
         base_class_header,
         "v8/include/v8.h",
@@ -687,8 +683,6 @@ def generate_dictionary(dictionary):
         make_forward_declarations(source_node.accumulator),
         TextNode(""),
     ])
-    source_node.accumulator.add_include_headers(
-        collect_include_headers(dictionary))
 
     # Assemble the parts.
     header_blink_ns.body.append(class_def)

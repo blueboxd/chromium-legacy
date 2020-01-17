@@ -28,8 +28,6 @@ if (is_win) {
 
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-    sources = [
-      "breakpad_tester_win.cc",
-    ]
+    sources = [ "breakpad_tester_win.cc" ]
   }
 }

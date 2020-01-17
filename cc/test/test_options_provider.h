@@ -48,7 +48,6 @@ class TestOptionsProvider : public ImageProvider,
     return context_supports_distance_field_text_;
   }
   int max_texture_size() const { return max_texture_size_; }
-  size_t max_texture_bytes() const { return max_texture_bytes_; }
 
   const std::vector<DrawImage>& decoded_images() const {
     return decoded_images_;
@@ -74,7 +73,6 @@ class TestOptionsProvider : public ImageProvider,
   bool can_use_lcd_text_ = true;
   bool context_supports_distance_field_text_ = true;
   int max_texture_size_ = 1024;
-  size_t max_texture_bytes_ = 4 * 1024 * 1024;
 
   ServicePaintCache service_paint_cache_;
   ClientPaintCache client_paint_cache_;

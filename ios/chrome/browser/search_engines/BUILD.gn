@@ -99,7 +99,5 @@ source_set("unit_tests") {
 }
 
 js_compile_checked("search_engine_js") {
-  sources = [
-    "resources/search_engine.js",
-  ]
+  sources = [ "resources/search_engine.js" ]
 }

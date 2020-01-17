@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Huidig tabblad sluiten</translation>
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Zoeken en verkennen</translation>
-<translation id="1264974993859112054">Sport</translation>
 <translation id="1266864766717917324">Kan <ph name="CONTENT_TYPE" /> niet delen</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1283039547216852943">Tik om uit te vouwen</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Log in en schakel synchronisatie in om op al je apparaten toegang tot je bladwijzers te hebben</translation>
 <translation id="2822354292072154809">Weet je zeker dat je alle siterechten voor <ph name="CHOSEN_OBJECT_NAME" /> wilt resetten?</translation>
 <translation id="2842985007712546952">Bovenliggende map</translation>
-<translation id="2858138569776157458">Topsites</translation>
 <translation id="2860954141821109167">Zorg ervoor dat een telefoon-app is ingeschakeld op dit apparaat</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Vorig nummer</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Inloggen bij Chrome</translation>
 <translation id="3288003805934695103">Laad de pagina opnieuw</translation>
 <translation id="32895400574683172">Meldingen zijn toegestaan</translation>
+<translation id="3290926146403723641">Chrome stuurt de URL van een site, sitecontent en relevante persoonlijke informatie naar Google om taken op internet te kunnen uitvoeren via de Google Assistent</translation>
 <translation id="3295530008794733555">Surf sneller en verbruik minder data</translation>
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Doorgaan met het downloaden van de content?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Telefoonnummers</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads verwijderd</translation>
 <translation id="3822502789641063741">Site-opslag wissen?</translation>
-<translation id="3853625385350850937">Schakel NFC in op je apparaat om door te gaan</translation>
 <translation id="3859306556332390985">Vooruit zoeken</translation>
 <translation id="388596076286380598">Krijg artikelen, video's en andere content van sites die je leuk vindt, ook als je offline bent of je een slechte verbinding hebt.</translation>
 <translation id="3894427358181296146">Map toevoegen</translation>
@@ -764,7 +762,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6697947395630195233">Chrome heeft toegang tot je locatie nodig om je locatie met deze site te delen.</translation>
 <translation id="6698801883190606802">Gesynchroniseerde gegevens beheren</translation>
 <translation id="6699370405921460408">De Google-servers optimaliseren de pagina's die je bezoekt.</translation>
-<translation id="6709133671862442373">Nieuws</translation>
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="671481426037969117">Je <ph name="FQDN" />-timer is afgelopen. Deze begint morgen opnieuw.</translation>
 <translation id="6738867403308150051">Downloaden...</translation>
@@ -1079,7 +1076,6 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="9133397713400217035">Offline ontdekken</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
-<translation id="9139318394846604261">Winkelen</translation>
 <translation id="9155898266292537608">Je kunt ook zoeken door kort op een woord te tikken</translation>
 <translation id="9169507124922466868">Navigatiegeschiedenis is half geopend</translation>
 <translation id="9204836675896933765">1 bestand over</translation>

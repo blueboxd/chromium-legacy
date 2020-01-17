@@ -18,7 +18,7 @@ class GuestTag : public WebContentsTag {
   ~GuestTag() override;
 
   // task_manager::WebContentsTag:
-  GuestTask* CreateTask() const override;
+  GuestTask* CreateTask(WebContentsTaskProvider*) const override;
 
  private:
   friend class WebContentsTags;

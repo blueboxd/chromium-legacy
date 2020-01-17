@@ -84,12 +84,8 @@ source_set("courgette_common") {
 }
 
 source_set("paged_array") {
-  sources = [
-    "third_party/bsdiff/paged_array.h",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "third_party/bsdiff/paged_array.h" ]
+  deps = [ "//base" ]
 }
 
 source_set("bsdiff") {
@@ -132,9 +128,7 @@ if (!is_ios) {
       output_name = "courgette64"
     }
 
-    sources = [
-      "courgette_tool.cc",
-    ]
+    sources = [ "courgette_tool.cc" ]
 
     if (is_win) {
       ldflags = [ "/LARGEADDRESSAWARE" ]
@@ -148,9 +142,7 @@ if (!is_ios) {
   }
 
   executable("courgette_minimal_tool") {
-    sources = [
-      "courgette_minimal_tool.cc",
-    ]
+    sources = [ "courgette_minimal_tool.cc" ]
 
     deps = [
       ":courgette_lib",
@@ -165,15 +157,9 @@ if (!is_ios) {
       # in the official build archives, remove this once they have been updated.
       # https://crbug.com/629243
       copy("copy_courgette_binaries") {
-        sources = [
-          "$root_out_dir/courgette64.exe",
-        ]
-        outputs = [
-          "$root_out_dir/courgette.exe",
-        ]
-        deps = [
-          ":courgette",
-        ]
+        sources = [ "$root_out_dir/courgette64.exe" ]
+        outputs = [ "$root_out_dir/courgette.exe" ]
+        deps = [ ":courgette" ]
       }
     } else {
       # Make sure that we have a copy of courgette64.exe(.pdb) in the root out
@@ -190,28 +176,16 @@ if (!is_ios) {
       if (symbol_level > 0) {
         copy("copy_courgette_pdb") {
           visibility = [ ":copy_courgette_binaries" ]
-          sources = [
-            "$courgette64_out_dir/courgette64.exe.pdb",
-          ]
-          outputs = [
-            "$root_out_dir/{{source_file_part}}",
-          ]
-          deps = [
-            courgette64_label,
-          ]
+          sources = [ "$courgette64_out_dir/courgette64.exe.pdb" ]
+          outputs = [ "$root_out_dir/{{source_file_part}}" ]
+          deps = [ courgette64_label ]
         }
       }
 
       copy("copy_courgette_binaries") {
-        sources = [
-          "$courgette64_out_dir/courgette64.exe",
-        ]
-        outputs = [
-          "$root_out_dir/{{source_file_part}}",
-        ]
-        deps = [
-          courgette64_label,
-        ]
+        sources = [ "$courgette64_out_dir/courgette64.exe" ]
+        outputs = [ "$root_out_dir/{{source_file_part}}" ]
+        deps = [ courgette64_label ]
         if (symbol_level > 0) {
           deps += [ ":copy_courgette_pdb" ]
         }
@@ -259,9 +233,7 @@ test("courgette_unittests") {
     "//testing/gtest",
   ]
 
-  data = [
-    "testdata/",
-  ]
+  data = [ "testdata/" ]
 }
 
 test("courgette_fuzz") {

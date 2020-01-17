@@ -8,14 +8,16 @@
  * the user to edit/remove the entry.
  */
 
-cr.exportPath('settings');
+cr.define('settings', function() {
+  /**
+   * The name of the event fired from this element when the "Edit" option is
+   * clicked.
+   * @type {string}
+   */
+  const EDIT_STARTUP_URL_EVENT = 'edit-startup-url';
 
-/**
- * The name of the event fired from this element when the "Edit" option is
- * clicked.
- * @type {string}
- */
-settings.EDIT_STARTUP_URL_EVENT = 'edit-startup-url';
+  return {EDIT_STARTUP_URL_EVENT};
+});
 
 Polymer({
   is: 'settings-startup-url-entry',
@@ -33,7 +35,7 @@ Polymer({
   },
 
   /** @private */
-  onRemoveTap_: function() {
+  onRemoveTap_() {
     this.$$('cr-action-menu').close();
     settings.StartupUrlsPageBrowserProxyImpl.getInstance().removeStartupPage(
         this.model.modelIndex);
@@ -43,7 +45,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onEditTap_: function(e) {
+  onEditTap_(e) {
     e.preventDefault();
     this.$$('cr-action-menu').close();
     this.fire(settings.EDIT_STARTUP_URL_EVENT, {
@@ -53,7 +55,7 @@ Polymer({
   },
 
   /** @private */
-  onDotsTap_: function() {
+  onDotsTap_() {
     const actionMenu =
         /** @type {!CrActionMenuElement} */ (this.$$('#menu').get());
     actionMenu.showAt(assert(this.$$('#dots')));

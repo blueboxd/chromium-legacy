@@ -55,16 +55,12 @@ proto_java_library("relative_root_proto_java") {
 
 proto_java_library("absolute_dep_proto_java") {
   proto_path = "//"
-  sources = [
-    "absolute_dep/absolute_dep.proto",
-  ]
+  sources = [ "absolute_dep/absolute_dep.proto" ]
 }
 
 proto_java_library("relative_dep_proto_java") {
   proto_path = "relative_dep/"
-  sources = [
-    "relative_dep/relative_dep.proto",
-  ]
+  sources = [ "relative_dep/relative_dep.proto" ]
 }
 
 proto_library("absolute_root_proto") {
@@ -98,14 +94,10 @@ proto_library("relative_root_proto") {
 
 proto_library("absolute_dep_proto") {
   proto_in_dir = "//"
-  sources = [
-    "absolute_dep/absolute_dep.proto",
-  ]
+  sources = [ "absolute_dep/absolute_dep.proto" ]
 }
 
 proto_library("relative_dep_proto") {
   proto_in_dir = "relative_dep/"
-  sources = [
-    "relative_dep/relative_dep.proto",
-  ]
+  sources = [ "relative_dep/relative_dep.proto" ]
 }

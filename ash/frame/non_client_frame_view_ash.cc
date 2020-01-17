@@ -385,6 +385,16 @@ void NonClientFrameViewAsh::SetShouldPaintHeader(bool paint) {
   header_view_->SetShouldPaintHeader(paint);
 }
 
+int NonClientFrameViewAsh::NonClientTopBorderHeight() const {
+  // The frame should not occupy the window area when it's in fullscreen,
+  // not visible or disabled.
+  if (frame_->IsFullscreen() || !GetVisible() || !GetEnabled() ||
+      header_view_->in_immersive_mode()) {
+    return 0;
+  }
+  return header_view_->GetPreferredHeight();
+}
+
 const views::View* NonClientFrameViewAsh::GetAvatarIconViewForTest() const {
   return header_view_->avatar_icon();
 }
@@ -420,16 +430,6 @@ bool NonClientFrameViewAsh::DoesIntersectRect(const views::View* target,
 FrameCaptionButtonContainerView*
 NonClientFrameViewAsh::GetFrameCaptionButtonContainerViewForTest() {
   return header_view_->caption_button_container();
-}
-
-int NonClientFrameViewAsh::NonClientTopBorderHeight() const {
-  // The frame should not occupy the window area when it's in fullscreen,
-  // not visible or disabled.
-  if (frame_->IsFullscreen() || !GetVisible() || !GetEnabled() ||
-      header_view_->in_immersive_mode()) {
-    return 0;
-  }
-  return header_view_->GetPreferredHeight();
 }
 
 }  // namespace ash

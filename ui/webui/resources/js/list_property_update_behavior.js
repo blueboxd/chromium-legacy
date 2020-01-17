@@ -49,7 +49,7 @@
     if (!uidBasedUpdate) {
       list.forEach((item, index) => {
         const updatedItem = updatedList[index];
-        if (JSON.stringify(item) != JSON.stringify(updatedItem)) {
+        if (JSON.stringify(item) !== JSON.stringify(updatedItem)) {
           this.set([propertyPath, index], updatedItem);
           updated = true;
         }

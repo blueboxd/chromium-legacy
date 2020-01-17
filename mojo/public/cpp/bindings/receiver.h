@@ -13,10 +13,12 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
+#include "mojo/public/cpp/bindings/async_flusher.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/binding_state.h"
+#include "mojo/public/cpp/bindings/pending_flush.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -203,6 +205,49 @@ class Receiver {
   // to the bound implementation.
   bool WaitForIncomingCall() {
     return internal_state_.WaitForIncomingMethodCall(MOJO_DEADLINE_INDEFINITE);
+  }
+
+  // Pauses the Remote endpoint, stopping dispatch of callbacks on that end. Any
+  // callbacks called prior to this will dispatch before the Remote endpoint is
+  // paused; any callbacks called after this will only be called once the flush
+  // operation corresponding to |flush| is completed or canceled.
+  //
+  // See documentation for |FlushAsync()| on Remote and Receiver for how to
+  // acquire a PendingFlush object, and documentation on PendingFlush for
+  // example usage.
+  void PauseRemoteCallbacksUntilFlushCompletes(PendingFlush flush) {
+    internal_state_.PauseRemoteCallbacksUntilFlushCompletes(std::move(flush));
+  }
+
+  // Flushes the Remote endpoint asynchronously using |flusher|. The
+  // corresponding PendingFlush will be notified only once all response
+  // callbacks issued prior to this operation have been dispatched at the Remote
+  // endpoint.
+  //
+  // NOTE: It is more common to use |FlushAsync()| defined below. If you really
+  // want to provide your own AsyncFlusher using this method, see the
+  // single-arugment constructor on PendingFlush. This would typically be used
+  // when code executing on the current sequence wishes to immediately pause
+  // one of its remote endpoints to wait on a flush operation that needs to be
+  // initiated on a separate sequence. Rather than bouncing to the second
+  // sequence to initiate a flush and then passing a PendingFlush back to the
+  // original sequence, the AsyncFlusher/PendingFlush can be created on the
+  // original sequence and a single task can be posted to pass the AsyncFlusher
+  // to the second sequence for use with this method.
+  void FlushAsyncWithFlusher(AsyncFlusher flusher) {
+    internal_state_.FlushAsync(std::move(flusher));
+  }
+
+  // Same as above but an AsyncFlusher/PendingFlush pair is created on the
+  // caller's behalf. The AsyncFlusher is immediately passed to a
+  // |FlushAsyncWithFlusher()| call on this object, while the PendingFlush is
+  // returned for use by the caller. See documentation on PendingFlush for
+  // example usage.
+  PendingFlush FlushAsync() {
+    AsyncFlusher flusher;
+    PendingFlush flush(&flusher);
+    FlushAsyncWithFlusher(std::move(flusher));
+    return flush;
   }
 
   // Flushes any replies previously sent by the Receiver, only unblocking once

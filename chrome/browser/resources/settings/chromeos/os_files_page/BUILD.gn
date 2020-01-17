@@ -14,6 +14,7 @@ js_type_check("closure_compile") {
 js_library("smb_shares_page") {
   deps = [
     "../..:route",
+    "../..:router",
     "../localized_link:localized_link",
     "//ui/webui/resources/cr_components/chromeos/smb_shares:smb_browser_proxy",
   ]
@@ -22,5 +23,6 @@ js_library("smb_shares_page") {
 js_library("os_files_page") {
   deps = [
     "../..:route",
+    "../..:router",
   ]
 }

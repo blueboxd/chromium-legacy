@@ -115,9 +115,9 @@ class HitTestNonClientFrameView : public NativeFrameView {
 };
 
 // This is used to return HitTestNonClientFrameView on create call.
-class HitTestWidgetDelegate : public views::WidgetDelegate {
+class HitTestWidgetDelegate : public WidgetDelegate {
  public:
-  explicit HitTestWidgetDelegate(views::Widget* widget) : widget_(widget) {}
+  explicit HitTestWidgetDelegate(Widget* widget) : widget_(widget) {}
   ~HitTestWidgetDelegate() override = default;
 
   void set_can_resize(bool can_resize) {
@@ -127,11 +127,9 @@ class HitTestWidgetDelegate : public views::WidgetDelegate {
 
   HitTestNonClientFrameView* frame_view() { return frame_view_; }
 
-  // views::WidgetDelegate:
+  // WidgetDelegate:
   bool CanResize() const override { return can_resize_; }
-  views::Widget* GetWidget() override { return widget_; }
-  views::Widget* GetWidget() const override { return widget_; }
-  views::NonClientFrameView* CreateNonClientFrameView(Widget* widget) override {
+  NonClientFrameView* CreateNonClientFrameView(Widget* widget) override {
     DCHECK(widget_ == widget);
     if (!frame_view_)
       frame_view_ = new HitTestNonClientFrameView(widget);
@@ -140,7 +138,10 @@ class HitTestWidgetDelegate : public views::WidgetDelegate {
   void DeleteDelegate() override { delete this; }
 
  private:
-  views::Widget* const widget_;
+  // WidgetDelegate:
+  const Widget* GetWidgetImpl() const override { return widget_; }
+
+  Widget* const widget_;
   HitTestNonClientFrameView* frame_view_ = nullptr;
   bool can_resize_ = false;
 
@@ -191,7 +192,7 @@ class DesktopWindowTreeHostLinuxTest : public ViewsInteractiveUITestBase {
     delegate_ = new HitTestWidgetDelegate(toplevel);
     Widget::InitParams toplevel_params =
         CreateParams(Widget::InitParams::TYPE_WINDOW);
-    auto* native_widget = new views::DesktopNativeWidgetAura(toplevel);
+    auto* native_widget = new DesktopNativeWidgetAura(toplevel);
     toplevel_params.native_widget = native_widget;
     host_ = new TestDesktopWindowTreeHostLinux(toplevel, native_widget);
     toplevel_params.desktop_window_tree_host = host_;

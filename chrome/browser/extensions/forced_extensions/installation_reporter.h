@@ -187,10 +187,12 @@ class InstallationReporter : public KeyedService {
     base::Optional<extensions::InstallationReporter::FailureReason>
         failure_reason;
     base::Optional<extensions::CrxInstallErrorDetail> install_error_detail;
-    // Network error codes when failure_reason is CRX_FETCH_FAILED.
+    // Network error codes when failure_reason is CRX_FETCH_FAILED or
+    // MANIFEST_FETCH_FAILED.
     base::Optional<int> network_error_code;
     base::Optional<int> response_code;
-    // Number of fetch tries made when failure reason is CRX_FETCH_FAILED.
+    // Number of fetch tries made when failure reason is CRX_FETCH_FAILED or
+    // MANIFEST_FETCH_FAILED.
     base::Optional<int> fetch_tries;
   };
 
@@ -218,8 +220,9 @@ class InstallationReporter : public KeyedService {
 
   // Remembers failure reason and in-progress stages in memory.
   void ReportInstallationStage(const ExtensionId& id, Stage stage);
-  void ReportCrxFetchError(
+  void ReportFetchError(
       const ExtensionId& id,
+      FailureReason reason,
       const ExtensionDownloaderDelegate::FailureData& failure_data);
   void ReportFailure(const ExtensionId& id, FailureReason reason);
   void ReportDownloadingStage(const ExtensionId& id,

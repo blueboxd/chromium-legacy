@@ -11,6 +11,7 @@ js_type_check("closure_compile") {
     ":signout_dialog",
     ":sync_account_control",
     ":sync_browser_proxy",
+    ":sync_controls",
     ":sync_page",
   ]
 
@@ -29,15 +30,11 @@ js_type_check("closure_compile") {
 }
 
 js_library("account_manager_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("import_data_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("manage_profile") {
@@ -45,6 +42,7 @@ js_library("manage_profile") {
     ":manage_profile_browser_proxy",
     ":sync_browser_proxy",
     "..:route",
+    "..:router",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
@@ -65,6 +63,7 @@ js_library("people_page") {
     "..:open_window_proxy",
     "..:page_visibility",
     "..:route",
+    "..:router",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/cr_components/chromeos/quick_unlock:lock_screen_constants",
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_png_behavior",
@@ -79,9 +78,7 @@ js_library("people_page") {
 }
 
 js_library("profile_info_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("signout_dialog") {
@@ -103,6 +100,7 @@ js_library("sync_page") {
     ":sync_browser_proxy",
     "..:page_visibility",
     "..:route",
+    "..:router",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button",
     "//ui/webui/resources/cr_elements/cr_input:cr_input",
@@ -122,9 +120,17 @@ js_library("sync_browser_proxy") {
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
+js_library("sync_controls") {
+  deps = [
+    "..:route",
+    "..:router",
+  ]
+}
+
 js_library("import_data_dialog") {
   deps = [
     ":import_data_browser_proxy",
+    "../controls:settings_checkbox",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:web_ui_listener_behavior",
@@ -136,6 +142,7 @@ js_library("sync_account_control") {
     ":profile_info_browser_proxy",
     ":sync_browser_proxy",
     "..:route",
+    "..:router",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:icon",

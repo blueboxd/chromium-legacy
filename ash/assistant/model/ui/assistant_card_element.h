@@ -9,9 +9,9 @@
 #include <string>
 
 #include "ash/assistant/model/ui/assistant_ui_element.h"
+#include "ash/public/cpp/assistant/assistant_web_view_2.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "services/content/public/cpp/navigable_contents.h"
 
 namespace ash {
 
@@ -29,45 +29,44 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCardElement
 
   const std::string& html() const { return html_; }
   const std::string& fallback() const { return fallback_; }
-  const content::NavigableContents* contents() const { return contents_.get(); }
 
-  void set_contents(std::unique_ptr<content::NavigableContents> contents) {
-    contents_ = std::move(contents);
+  const AssistantWebView2* contents_view() const {
+    return contents_view_.get();
+  }
+
+  void set_contents_view(std::unique_ptr<AssistantWebView2> contents_view) {
+    contents_view_ = std::move(contents_view);
   }
 
   // Invoke to begin processing the card element. Upon completion, the specified
   // |callback| will be run to indicate success or failure.
-  void Process(content::mojom::NavigableContentsFactory* contents_factory,
-               ProcessingCallback callback);
+  void Process(ProcessingCallback callback);
 
  private:
   // Handles processing of an AssistantCardElement.
-  class Processor : public content::NavigableContentsObserver {
+  class Processor : public AssistantWebView2::Observer {
    public:
-    Processor(AssistantCardElement& card_element,
-              content::mojom::NavigableContentsFactory* contents_factory,
-              ProcessingCallback callback);
+    Processor(AssistantCardElement& card_element, ProcessingCallback callback);
     ~Processor() override;
 
     // Invoke to begin processing.
     void Process();
 
-    // content::NavigableContentsObserver:
+    // AssistantWebView2::Observer:
     void DidStopLoading() override;
 
    private:
     AssistantCardElement& card_element_;
-    content::mojom::NavigableContentsFactory* const contents_factory_;
     ProcessingCallback callback_;
 
-    std::unique_ptr<content::NavigableContents> contents_;
+    std::unique_ptr<AssistantWebView2> contents_view_;
 
     DISALLOW_COPY_AND_ASSIGN(Processor);
   };
 
   const std::string html_;
   const std::string fallback_;
-  std::unique_ptr<content::NavigableContents> contents_;
+  std::unique_ptr<AssistantWebView2> contents_view_;
 
   std::unique_ptr<Processor> processor_;
 

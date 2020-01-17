@@ -24,7 +24,7 @@ class MODULES_EXPORT P2PQuicCryptoStreamFactoryImpl final
       quic::QuicCryptoClientConfig* crypto_config,
       quic::QuicCryptoClientStream::ProofHandler* proof_handler) override;
 
-  std::unique_ptr<quic::QuicCryptoServerStream> CreateServerCryptoStream(
+  std::unique_ptr<quic::QuicCryptoServerStreamBase> CreateServerCryptoStream(
       const quic::QuicCryptoServerConfig* crypto_config,
       quic::QuicCompressedCertsCache* compressed_certs_cache,
       quic::QuicSession* session,

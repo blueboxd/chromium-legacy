@@ -271,8 +271,10 @@ void FakePeripheral::ConnectToServiceInsecurely(
   NOTREACHED();
 }
 
-void FakePeripheral::CreateGattConnection(GattConnectionCallback callback,
-                                          ConnectErrorCallback error_callback) {
+void FakePeripheral::CreateGattConnection(
+    GattConnectionCallback callback,
+    ConnectErrorCallback error_callback,
+    base::Optional<device::BluetoothUUID> service_uuid) {
   create_gatt_connection_success_callbacks_.push_back(std::move(callback));
   create_gatt_connection_error_callbacks_.push_back(std::move(error_callback));
 
@@ -281,7 +283,7 @@ void FakePeripheral::CreateGattConnection(GattConnectionCallback callback,
   if (gatt_connected_)
     return DidConnectGatt();
 
-  CreateGattConnectionImpl();
+  CreateGattConnectionImpl(std::move(service_uuid));
 }
 
 bool FakePeripheral::IsGattServicesDiscoveryComplete() const {
@@ -309,7 +311,8 @@ bool FakePeripheral::IsGattServicesDiscoveryComplete() const {
   return discovery_complete;
 }
 
-void FakePeripheral::CreateGattConnectionImpl() {
+void FakePeripheral::CreateGattConnectionImpl(
+    base::Optional<device::BluetoothUUID>) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FakePeripheral::DispatchConnectionResponse,
                                 weak_ptr_factory_.GetWeakPtr()));

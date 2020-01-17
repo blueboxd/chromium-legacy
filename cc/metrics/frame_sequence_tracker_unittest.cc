@@ -487,15 +487,20 @@ TEST_F(FrameSequenceTrackerTest, ReportMetricsAtFixedInterval) {
   // args.frame_time is less than 5s of the tracker creation time, so won't
   // schedule this tracker to report its throughput.
   collection_.NotifyBeginImplFrame(args);
+  collection_.NotifyImplFrameCausedNoDamage(viz::BeginFrameAck(args, false));
+  collection_.NotifyFrameEnd(args);
+
   EXPECT_EQ(NumberOfTrackers(), 1u);
   EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
 
-  ImplThroughput().frames_expected += 100;
+  ImplThroughput().frames_expected += 101;
   // Now args.frame_time is 5s since the tracker creation time, so this tracker
   // should be scheduled to report its throughput.
   args = CreateBeginFrameArgs(source, ++sequence,
                               args.frame_time + TimeDeltaToReort());
   collection_.NotifyBeginImplFrame(args);
+  collection_.NotifyImplFrameCausedNoDamage(viz::BeginFrameAck(args, false));
+  collection_.NotifyFrameEnd(args);
   EXPECT_EQ(NumberOfTrackers(), 1u);
   EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
 }
@@ -657,6 +662,25 @@ TEST_F(FrameSequenceTrackerTest, MultipleNoDamageNotifications) {
 TEST_F(FrameSequenceTrackerTest, MultipleNoDamageNotificationsFromMain) {
   const char sequence[] = "b(1)B(0,1)N(1,1)n(1)N(0,1)e(1)";
   GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 0u);
+  EXPECT_EQ(MainThroughput().frames_expected, 0u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 0u);
+  EXPECT_EQ(MainThroughput().frames_produced, 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, DelayedMainFrameNoDamage) {
+  const char sequence[] = "b(1)B(0,1)n(1)e(1)b(2)n(2)e(2)b(3)N(0,1)n(3)e(3)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 0u);
+  EXPECT_EQ(MainThroughput().frames_expected, 0u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 0u);
+  EXPECT_EQ(MainThroughput().frames_produced, 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, DelayedMainFrameNoDamageFromOlderFrame) {
+  // Start a sequence, and receive a 'no damage' from an earlier frame.
+  const char second_sequence[] = "b(2)B(0,2)N(2,1)n(2)N(2,2)e(2)";
+  GenerateSequence(second_sequence);
   EXPECT_EQ(ImplThroughput().frames_expected, 0u);
   EXPECT_EQ(MainThroughput().frames_expected, 0u);
   EXPECT_EQ(ImplThroughput().frames_produced, 0u);

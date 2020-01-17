@@ -4,6 +4,17 @@
 
 import("//ios/build/chrome_build.gni")
 
+source_set("scene_guts") {
+  sources = [ "scene_controller_guts.h" ]
+  deps = [
+    "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/browser:utils",
+    "//ios/chrome/browser/url_loading",
+  ]
+
+  libs = [ "UIKit.framework" ]
+}
+
 source_set("scene") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -17,15 +28,21 @@ source_set("scene") {
 
   deps = [
     ":main",
+    ":scene_guts",
     "//base",
+    "//components/payments/core",
     "//components/signin/public/identity_manager",
     "//components/url_formatter",
     "//ios/chrome/app:app",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/browser",
     "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/main",
+    "//ios/chrome/browser/ntp:features",
+    "//ios/chrome/browser/payments",
+    "//ios/chrome/browser/payments:constants",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs:tabs",
@@ -39,6 +56,9 @@ source_set("scene") {
     "//ios/chrome/browser/ui/util:multiwindow_util",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/web_state_list",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/mailto",
+    "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/user_feedback",
   ]
 
@@ -122,6 +142,8 @@ source_set("unit_tests") {
     "//components/bookmarks/test",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/main",
+    "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/browser_view",
     "//ios/chrome/test:block_cleanup_test",

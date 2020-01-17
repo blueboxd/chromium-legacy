@@ -555,7 +555,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void PrepareForUpdate(
       std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
           compared_script_info_map,
-      const GURL& updated_script_url);
+      const GURL& updated_script_url,
+      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
   const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&
   compared_script_info_map() const;
   ServiceWorkerUpdateChecker::ComparedScriptInfo TakeComparedScriptInfo(

@@ -60,19 +60,13 @@ template("js_library") {
                              "testonly",
                              "visibility",
                            ])
-    inputs = [
-      "$script_path/compiler.py",
-    ]
+    inputs = [ "$script_path/compiler.py" ]
     output_file = "$target_gen_dir/$target_name.js_library"
-    outputs = [
-      output_file,
-    ]
+    outputs = [ output_file ]
     args = [ "--output" ] + [ rebase_path(output_file, root_build_dir) ]
 
     if (!defined(sources)) {
-      sources = [
-        target_name + ".js",
-      ]
+      sources = [ target_name + ".js" ]
     }
 
     args += [ "--sources" ] + rebase_path(sources, root_build_dir)
@@ -176,16 +170,12 @@ template("js_binary") {
     ]
 
     if (!defined(outputs)) {
-      outputs = [
-        "$target_gen_dir/$target_name.js",
-      ]
+      outputs = [ "$target_gen_dir/$target_name.js" ]
     }
     args += [ "--output" ] + rebase_path(outputs, root_build_dir)
 
     if (!defined(sources)) {
-      sources = [
-        "$target_name.js",
-      ]
+      sources = [ "$target_name.js" ]
     }
 
     if (defined(deps)) {

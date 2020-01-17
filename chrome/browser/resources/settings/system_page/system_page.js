@@ -34,7 +34,7 @@ Polymer({
   /**
    * @private
    */
-  observeProxyPrefChanged_: function() {
+  observeProxyPrefChanged_() {
     const pref = this.get('prefs.proxy');
     // TODO(dbeam): do types of policy other than USER apply on ChromeOS?
     this.isProxyEnforcedByPolicy_ =
@@ -44,7 +44,7 @@ Polymer({
   },
 
   /** @private */
-  onExtensionDisable_: function() {
+  onExtensionDisable_() {
     // TODO(dbeam): this is a pretty huge bummer. It means there are things
     // (inputs) that our prefs system is not observing. And that changes from
     // other sources (i.e. disabling/enabling an extension from
@@ -54,14 +54,14 @@ Polymer({
   },
 
   /** @private */
-  onProxyTap_: function() {
+  onProxyTap_() {
     if (this.isProxyDefault_) {
       settings.SystemPageBrowserProxyImpl.getInstance().showProxySettings();
     }
   },
 
   /** @private */
-  onRestartTap_: function(e) {
+  onRestartTap_(e) {
     // Prevent event from bubbling up to the toggle button.
     e.stopPropagation();
     // TODO(dbeam): we should prompt before restarting the browser.
@@ -73,7 +73,7 @@ Polymer({
    *     enabled.
    * @private
    */
-  shouldShowRestart_: function(enabled) {
+  shouldShowRestart_(enabled) {
     const proxy = settings.SystemPageBrowserProxyImpl.getInstance();
     return enabled != proxy.wasHardwareAccelerationEnabledAtStartup();
   },

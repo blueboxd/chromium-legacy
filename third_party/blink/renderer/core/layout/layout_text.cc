@@ -283,10 +283,17 @@ void LayoutText::DetachAbstractInlineTextBoxesIfNeeded() {
   // NGAbstractInlineTextBox for them.
   if (!has_abstract_inline_text_box_)
     return;
+  has_abstract_inline_text_box_ = false;
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    for (NGPaintFragment* fragment : NGPaintFragment::InlineFragmentsFor(this))
+      NGAbstractInlineTextBox::WillDestroy(fragment);
+    return;
+  }
+  // TODO(yosin): Make sure we call this function within valid containg block
+  // of |this|.
   NGInlineCursor cursor;
   for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())
     NGAbstractInlineTextBox::WillDestroy(cursor);
-  has_abstract_inline_text_box_ = false;
 }
 
 void LayoutText::SetFirstInlineFragment(NGPaintFragment* first_fragment) {

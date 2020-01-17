@@ -5,12 +5,14 @@
 #include "components/sync/engine_impl/bookmark_update_preprocessing.h"
 
 #include <array>
-#include <string>
 
+#include "base/containers/span.h"
 #include "base/guid.h"
+#include "base/hash/sha1.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
@@ -43,13 +45,63 @@ enum class BookmarkGuidSource {
   // GUID came from originator_client_item_id and is valid.
   kValidOCII = 1,
   // GUID not found in the specifics and originator_client_item_id is invalid,
-  // so field left empty.
-  kLeftEmpty = 2,
-  kMaxValue = kLeftEmpty,
+  // so field left empty (currently unused).
+  kDeprecatedLeftEmpty = 2,
+  // GUID not found in the specifics and originator_client_item_id is invalid,
+  // so the GUID is inferred from combining originator_client_item_id and
+  // originator_cache_guid.
+  kInferred = 3,
+
+  kMaxValue = kInferred,
 };
 
 inline void LogGuidSource(BookmarkGuidSource source) {
   base::UmaHistogramEnumeration("Sync.BookmarkGUIDSource2", source);
+}
+
+std::string ComputeGuidFromBytes(base::span<const uint8_t> bytes) {
+  DCHECK_GE(bytes.size(), 16U);
+
+  // This implementation is based on the equivalent logic in base/guid.cc.
+
+  // Set the GUID to version 4 as described in RFC 4122, section 4.4.
+  // The format of GUID version 4 must be xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx,
+  // where y is one of [8, 9, A, B].
+
+  // Clear the version bits and set the version to 4:
+  const uint8_t byte6 = (bytes[6] & 0x0fU) | 0xf0U;
+
+  // Set the two most significant bits (bits 6 and 7) of the
+  // clock_seq_hi_and_reserved to zero and one, respectively:
+  const uint8_t byte8 = (bytes[8] & 0x3fU) | 0x80U;
+
+  return base::StringPrintf(
+      "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+      bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], byte6,
+      bytes[7], byte8, bytes[9], bytes[10], bytes[11], bytes[12], bytes[13],
+      bytes[14], bytes[15]);
+}
+
+// Bookmarks created before 2015 (https://codereview.chromium.org/1136953013)
+// have an originator client item ID that is NOT a GUID. Hence, an alternative
+// method must be used to infer a GUID deterministically from a combination of
+// sync fields that is known to be a) immutable and b) unique per synced
+// bookmark.
+std::string InferGuidForLegacyBookmark(
+    const std::string& originator_cache_guid,
+    const std::string& originator_client_item_id) {
+  DCHECK(!base::IsValidGUID(originator_client_item_id));
+
+  const std::string unique_tag =
+      base::StrCat({originator_cache_guid, originator_client_item_id});
+  const std::array<uint8_t, base::kSHA1Length> hash =
+      base::SHA1HashSpan(base::as_bytes(base::make_span(unique_tag)));
+
+  static_assert(base::kSHA1Length >= 16, "16 bytes needed to infer GUID");
+
+  const std::string guid = ComputeGuidFromBytes(base::make_span(hash));
+  DCHECK(base::IsValidGUID(guid));
+  return guid;
 }
 
 }  // namespace
@@ -138,8 +190,18 @@ void AdaptGuidForBookmark(const sync_pb::SyncEntity& update_entity,
         update_entity.originator_client_item_id());
     LogGuidSource(BookmarkGuidSource::kValidOCII);
   } else {
-    LogGuidSource(BookmarkGuidSource::kLeftEmpty);
+    specifics->mutable_bookmark()->set_guid(
+        InferGuidForLegacyBookmark(update_entity.originator_cache_guid(),
+                                   update_entity.originator_client_item_id()));
+    LogGuidSource(BookmarkGuidSource::kInferred);
   }
+}
+
+std::string InferGuidForLegacyBookmarkForTesting(
+    const std::string& originator_cache_guid,
+    const std::string& originator_client_item_id) {
+  return InferGuidForLegacyBookmark(originator_cache_guid,
+                                    originator_client_item_id);
 }
 
 }  // namespace syncer

@@ -124,9 +124,7 @@ source_set("clear_browsing_data") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "history_entry_inserter_unittest.mm",
-  ]
+  sources = [ "history_entry_inserter_unittest.mm" ]
   deps = [
     ":history_ui",
     "//base",
@@ -143,9 +141,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "history_ui_egtest.mm",
-  ]
+  sources = [ "history_ui_egtest.mm" ]
   deps = [
     ":constants",
     "//base",
@@ -173,9 +169,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "history_ui_egtest.mm",
-  ]
+  sources = [ "history_ui_egtest.mm" ]
   deps = [
     ":constants",
     "//base",

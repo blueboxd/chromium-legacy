@@ -210,9 +210,6 @@ DateTime.ISOStringRegExp = /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):?(\d*).?(\d*)/;
 
 /**
  * TimePicker: Custom element providing a time picker implementation.
- *             TimePicker contains 2 parts:
- *                 - column container
- *                 - submission controls
  */
 class TimePicker extends HTMLElement {
   constructor(config) {
@@ -226,10 +223,8 @@ class TimePicker extends HTMLElement {
 
     if (config.mode == 'time') {
       // TimePicker doesn't handle the submission when used for non-time types.
-      this.submissionControls_ = new SubmissionControls(
-          this.onSubmitButtonClick_, this.onCancelButtonClick_);
-      this.append(this.submissionControls_);
       this.addEventListener('keydown', this.onKeyDown_);
+      this.addEventListener('click', this.onClick_);
     }
 
     window.addEventListener('resize', this.onWindowResize_, {once: true});
@@ -237,22 +232,12 @@ class TimePicker extends HTMLElement {
 
   initializeFromConfig_ = (config) => {
     const initialSelection = parseDateTimeString(config.currentValue, 'time');
-    this.selectedTime_ =
+    this.initialSelectedTime_ =
         initialSelection ? initialSelection : Time.currentTime();
+    this.hadValidValueWhenOpened_ = (initialSelection != null);
     this.hasSecond_ = config.hasSecond;
     this.hasMillisecond_ = config.hasMillisecond;
     this.hasAMPM_ = config.hasAMPM;
-  };
-
-  onSubmitButtonClick_ = () => {
-    const selectedValue = this.selectedValue;
-    window.setTimeout(function() {
-      window.pagePopupController.setValueAndClosePopup(0, selectedValue);
-    }, 100);
-  };
-
-  onCancelButtonClick_ = () => {
-    window.pagePopupController.closePopup();
   };
 
   onWindowResize_ = (event) => {
@@ -264,21 +249,48 @@ class TimePicker extends HTMLElement {
   onKeyDown_ = (event) => {
     switch (event.key) {
       case 'Enter':
-        this.submissionControls_.submitButton.click();
+        window.pagePopupController.setValueAndClosePopup(0, this.selectedValue);
         break;
       case 'Escape':
-        this.submissionControls_.cancelButton.click();
+        if (this.selectedValue ===
+            this.initialSelectedTime.toString(
+                this.hasSecond, this.hasMillisecond)) {
+          window.pagePopupController.closePopup();
+        } else {
+          this.resetToInitialValue();
+          window.pagePopupController.setValue(
+              this.hadValidValueWhenOpened ? this.selectedValue : '');
+        }
+        break;
+      case 'ArrowUp':
+      case 'ArrowDown':
+        window.pagePopupController.setValue(this.selectedValue);
+        event.stopPropagation();
+        event.preventDefault();
         break;
     }
   };
+
+  onClick_ = (event) => {
+    window.pagePopupController.setValue(this.selectedValue);
+  };
+
+  resetToInitialValue = () => {
+    this.timeColumns_.resetToInitialValues();
+    this.timeColumns_.scrollColumnsToMiddle();
+  }
 
   get selectedValue() {
     return this.timeColumns_.selectedValue().toString(
         this.hasSecond, this.hasMillisecond);
   }
 
-  get selectedTime() {
-    return this.selectedTime_;
+  get initialSelectedTime() {
+    return this.initialSelectedTime_;
+  }
+
+  get hadValidValueWhenOpened() {
+    return this.hadValidValueWhenOpened_;
   }
 
   get hasSecond() {
@@ -304,13 +316,9 @@ class TimePicker extends HTMLElement {
   get timeColumns() {
     return this.timeColumns_;
   }
-
-  get submissionControls() {
-    return this.submissionControls_;
-  }
 }
 TimePicker.ClassName = 'time-picker';
-TimePicker.Height = 300;
+TimePicker.Height = 260;
 TimePicker.ColumnWidth = 56;
 TimePicker.BorderWidth = 1;
 window.customElements.define('time-picker', TimePicker);
@@ -379,6 +387,13 @@ class TimeColumns extends HTMLElement {
     return new Time(hour, minute, second, millisecond);
   };
 
+  resetToInitialValues =
+      () => {
+        Array.prototype.forEach.call(this.children, (column) => {
+          column.resetToInitialValue();
+        });
+      }
+
   scrollColumnsToMiddle = () => {
     this.hourColumn_.scrollTop = this.hourColumn_.scrollHeight / 2;
     this.minuteColumn_.scrollTop = this.minuteColumn_.scrollHeight / 2;
@@ -417,7 +432,7 @@ class TimeColumn extends HTMLUListElement {
 
   createAndInitializeCells_ = (timePicker) => {
     const totalCells = Time.numberOfValues(this.columnType_, timePicker.hasAMPM);
-    let currentTime = timePicker.selectedTime.clone();
+    let currentTime = timePicker.initialSelectedTime.clone();
     let cells = [];
     let duplicateCells = [];
     // In order to support a continuous looping navigation for up/down arrows,
@@ -444,7 +459,7 @@ class TimeColumn extends HTMLUListElement {
       cells.push(timeCell);
     }
 
-    if (timePicker.selectedTime.isAM()) {
+    if (timePicker.initialSelectedTime.isAM()) {
       this.append(cells[Label.AM], cells[Label.PM]);
       this.selectedTimeCell = cells[Label.AM];
     } else {
@@ -465,7 +480,6 @@ class TimeColumn extends HTMLUListElement {
    * which has no next, we are moving to the first cell from the duplicated list
    */
   onKeyDown_ = (event) => {
-    let eventHandled = false;
     switch (event.key) {
       case 'ArrowUp':
         const previousTimeCell = this.selectedTimeCell.previousSibling;
@@ -478,7 +492,6 @@ class TimeColumn extends HTMLUListElement {
           this.selectedTimeCell = this.middleTimeCell.previousSibling;
           this.selectedTimeCell.scrollIntoView();
         }
-        eventHandled = true;
         break;
       case 'ArrowDown':
         const nextTimeCell = this.selectedTimeCell.nextSibling;
@@ -491,7 +504,6 @@ class TimeColumn extends HTMLUListElement {
           this.selectedTimeCell = this.middleTimeCell;
           this.selectedTimeCell.scrollIntoView(false);
         }
-        eventHandled = true;
         break;
       case 'ArrowLeft':
         const previousTimeColumn = this.previousSibling;
@@ -506,11 +518,6 @@ class TimeColumn extends HTMLUListElement {
         }
         break;
     }
-
-    if (eventHandled) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
   };
 
   get selectedTimeCell() {
@@ -524,6 +531,14 @@ class TimeColumn extends HTMLUListElement {
     this.selectedTimeCell_ = timeCell;
     this.selectedTimeCell_.classList.add('selected');
   }
+
+  resetToInitialValue = () => {
+    if (this.columnType_ == TimeColumnType.AMPM) {
+      this.selectedTimeCell = this.firstChild;
+    } else {
+      this.selectedTimeCell = this.middleTimeCell;
+    }
+  };
 
   get middleTimeCell() {
     return this.middleTimeCell_;
@@ -550,61 +565,3 @@ class TimeCell extends HTMLLIElement {
 }
 TimeCell.ClassName = 'time-cell';
 window.customElements.define('time-cell', TimeCell, {extends: 'li'});
-
-/**
- * SubmissionControls: Provides functionality to submit or discard a change.
- */
-class SubmissionControls extends HTMLElement {
-  constructor(submitCallback, cancelCallback) {
-    super();
-
-    const padding = document.createElement('span');
-    padding.setAttribute('id', 'submission-controls-padding');
-    this.append(padding);
-
-    this.className = SubmissionControls.ClassName;
-
-    this.submitButton_ = new SubmissionButton(
-        submitCallback,
-        '<svg width="14" height="10" viewBox="0 0 14 10" fill="none" ' +
-            'xmlns="http://www.w3.org/2000/svg"><path d="M13.3516 ' +
-            '1.35156L5 9.71094L0.648438 5.35156L1.35156 4.64844L5 ' +
-            '8.28906L12.6484 0.648438L13.3516 1.35156Z" fill="black"/></svg>');
-    this.cancelButton_ = new SubmissionButton(
-        cancelCallback,
-        '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" ' +
-            'xmlns="http://www.w3.org/2000/svg"><path d="M7.71094 7L13.1016 ' +
-            '12.3984L12.3984 13.1016L7 7.71094L1.60156 13.1016L0.898438 ' +
-            '12.3984L6.28906 7L0.898438 1.60156L1.60156 0.898438L7 ' +
-            '6.28906L12.3984 0.898438L13.1016 1.60156L7.71094 7Z" ' +
-            'fill="black"/></svg>');
-    this.append(this.submitButton_, this.cancelButton_);
-  }
-
-  get submitButton() {
-    return this.submitButton_;
-  }
-
-  get cancelButton() {
-    return this.cancelButton_;
-  }
-}
-SubmissionControls.ClassName = 'submission-controls';
-window.customElements.define('submission-controls', SubmissionControls);
-
-/**
- * SubmissionButton: Button with a custom look that can be clicked for
- *                   a submission action.
- */
-class SubmissionButton extends HTMLButtonElement {
-  constructor(clickCallback, htmlString) {
-    super();
-
-    this.className = SubmissionButton.ClassName;
-    this.innerHTML = htmlString;
-    this.addEventListener('click', clickCallback);
-  }
-}
-SubmissionButton.ClassName = 'submission-button';
-window.customElements.define(
-    'submission-button', SubmissionButton, {extends: 'button'});

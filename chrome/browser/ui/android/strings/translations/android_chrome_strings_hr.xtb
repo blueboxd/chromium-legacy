@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Zatvaranje trenutačne kartice</translation>
 <translation id="1258753120186372309">Googleov doodle logotip: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Pretraživanje i istraživanje</translation>
-<translation id="1264974993859112054">Sport</translation>
 <translation id="1266864766717917324">Nije moguće podijeliti <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Zaustavi</translation>
 <translation id="1283039547216852943">Dodirnite za proširivanje</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Da bi se vaše oznake prikazale na svim vašim uređajima, prijavite se i uključite sinkronizaciju</translation>
 <translation id="2822354292072154809">Jeste li sigurni da želite poništiti sva dopuštenja za aplikaciju <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2842985007712546952">Nadređena mapa</translation>
-<translation id="2858138569776157458">Najpopularnije web-lokacije</translation>
 <translation id="2860954141821109167">Provjerite je li na uređaju omogućena aplikacija telefona</translation>
 <translation id="2870560284913253234">Web lokacija</translation>
 <translation id="2874939134665556319">Prethodna pjesma</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Prijavite se u Chrome</translation>
 <translation id="3288003805934695103">ponovo učitajte stranicu</translation>
 <translation id="32895400574683172">Obavijesti su dopuštene</translation>
+<translation id="3290926146403723641">Da bi dovršio zadatke na webu putem Google asistenta, Chrome Googleu šalje URL i sadržaj web-lokacije te relevantne osobne podatke</translation>
 <translation id="3295530008794733555">Pregledavajte brže. Smanjite podatkovni promet.</translation>
 <translation id="3298243779924642547">Jednostav.</translation>
 <translation id="3303414029551471755">Želite li nastaviti s preuzimanjem sadržaja?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Telefonski brojevi</translation>
 <translation id="3819178904835489326">Izbrisano preuzimanja: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Izbrisati pohranu?</translation>
-<translation id="3853625385350850937">Da biste nastavili, uključite NFC na svojem uređaju</translation>
 <translation id="3859306556332390985">Traži unaprijed</translation>
 <translation id="388596076286380598">Primajte članke, videozapise i druge sadržaje s web-lokacija koje vam se sviđaju, čak i izvanmrežno ili ako vam je veza loša.</translation>
 <translation id="3894427358181296146">Dodavanje mape</translation>
@@ -764,7 +762,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6697947395630195233">Chrome treba dopuštenje za pristup vašoj lokaciji da bi je podijelio s ovom web-lokacijom.</translation>
 <translation id="6698801883190606802">Upravljanje sinkroniziranim podacima</translation>
 <translation id="6699370405921460408">Googleovi poslužitelji optimizirat će stranice koje posjećujete.</translation>
-<translation id="6709133671862442373">Vijesti</translation>
 <translation id="6710213216561001401">Prethodno</translation>
 <translation id="671481426037969117">Isteklo je odbrojavanje za aplikaciju <ph name="FQDN" />. Ponovo će se pokrenuti sutra.</translation>
 <translation id="6738867403308150051">Preuzimanje...</translation>
@@ -1079,7 +1076,6 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="9133397713400217035">Istraživanje izvan mreže</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
-<translation id="9139318394846604261">Kupnja</translation>
 <translation id="9155898266292537608">Možete i kratko dodirnuti riječ da biste je pretražili</translation>
 <translation id="9169507124922466868">Povijest navigacije je poluotvorena</translation>
 <translation id="9204836675896933765">Preostala je 1 datoteka</translation>

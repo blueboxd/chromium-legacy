@@ -473,7 +473,7 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   memory_stat->SetProcessPss(10, 100000);
 
   tab_manager_delegate.LowMemoryKillImpl(
-      base::TimeTicks::Now(), ::mojom::LifecycleUnitDiscardReason::PROACTIVE,
+      base::TimeTicks::Now(), ::mojom::LifecycleUnitDiscardReason::EXTERNAL,
       TabManager::TabDiscardDoneCB(base::DoNothing()),
       std::move(arc_processes));
 

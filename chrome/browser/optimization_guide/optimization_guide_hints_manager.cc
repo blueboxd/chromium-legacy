@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/rand_util.h"
@@ -139,6 +140,33 @@ const optimization_guide::proto::PageHint* GetPageHintForNavigation(
   }
   return matched_page_hint;
 }
+
+// Util class for recording whether a hints fetch race against the current
+// navigation was attempted. The result is recorded when it goes out of scope
+// and its destructor is called.
+class ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder {
+ public:
+  ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder()
+      : race_attempt_status_(
+            optimization_guide::RaceNavigationFetchAttemptStatus::kUnknown) {}
+
+  ~ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder() {
+    DCHECK_NE(race_attempt_status_,
+              optimization_guide::RaceNavigationFetchAttemptStatus::kUnknown);
+    base::UmaHistogramEnumeration(
+        "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
+        race_attempt_status_);
+  }
+
+  void set_race_attempt_status(
+      optimization_guide::RaceNavigationFetchAttemptStatus
+          race_attempt_status) {
+    race_attempt_status_ = race_attempt_status;
+  }
+
+ private:
+  optimization_guide::RaceNavigationFetchAttemptStatus race_attempt_status_;
+};
 
 }  // namespace
 
@@ -475,8 +503,10 @@ void OptimizationGuideHintsManager::FetchTopHostsHints() {
         optimization_guide::features::GetOptimizationGuideServiceGetHintsURL(),
         pref_service_);
   }
+
   hints_fetcher_->FetchOptimizationGuideServiceHints(
-      top_hosts, optimization_guide::proto::CONTEXT_BATCH_UPDATE,
+      top_hosts, std::vector<GURL>{}, registered_optimization_types_,
+      optimization_guide::proto::CONTEXT_BATCH_UPDATE,
       base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
                      ui_weak_ptr_factory_.GetWeakPtr()));
 }
@@ -666,8 +696,11 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
         pref_service_);
   }
 
+  // TODO(crbug/1041693): Add support for URL-keyed hints fetch from the
+  // search results page.
   hints_fetcher_->FetchOptimizationGuideServiceHints(
-      target_hosts_serialized,
+      target_hosts_serialized, std::vector<GURL>{},
+      registered_optimization_types_,
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
       base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
                      ui_weak_ptr_factory_.GetWeakPtr()));
@@ -876,6 +909,10 @@ OptimizationGuideHintsManager::CanApplyOptimization(
           optimization_metadata->performance_hints_metadata =
               optimization.performance_hints_metadata();
           break;
+        case optimization_guide::proto::Optimization::kPublicImageMetadata:
+          optimization_metadata->public_image_metadata =
+              optimization.public_image_metadata();
+          break;
         default:
           NOTREACHED();
           break;
@@ -930,31 +967,71 @@ void OptimizationGuideHintsManager::OnNavigationStartOrRedirect(
     return;
   }
 
-  if (IsAllowedToFetchNavigationHints(navigation_handle->GetURL()) &&
-      !hint_cache_->HasHint(navigation_handle->GetURL().host())) {
-    std::vector<std::string> hosts{navigation_handle->GetURL().host()};
+  MaybeFetchHintsForNavigation(navigation_handle);
+
+  LoadHintForNavigation(navigation_handle, std::move(callback));
+}
+
+void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (registered_optimization_types_.size() == 0)
+    return;
+
+  if (!IsAllowedToFetchNavigationHints(navigation_handle->GetURL()))
+    return;
+
+  ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder
+      race_navigation_recorder;
+
+  std::vector<std::string> hosts;
+  std::vector<GURL> urls;
+  if (!hint_cache_->HasHint(navigation_handle->GetURL().host())) {
+    hosts.push_back(navigation_handle->GetURL().host());
     page_navigation_hosts_being_fetched_.clear();
     page_navigation_hosts_being_fetched_.push_back(
         navigation_handle->GetURL().host());
-
-    if (!hints_fetcher_) {
-      hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
-          url_loader_factory_,
-          optimization_guide::features::
-              GetOptimizationGuideServiceGetHintsURL(),
-          pref_service_);
-    }
-    hints_fetcher_->FetchOptimizationGuideServiceHints(
-        hosts, optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
-        base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
-                       ui_weak_ptr_factory_.GetWeakPtr()));
 
     OptimizationGuideNavigationData* navigation_data =
         OptimizationGuideNavigationData::GetFromNavigationHandle(
             navigation_handle);
     navigation_data->set_was_hint_for_host_attempted_to_be_fetched(true);
+    race_navigation_recorder.set_race_attempt_status(
+        optimization_guide::RaceNavigationFetchAttemptStatus::
+            kRaceNavigationFetchHost);
   }
-  LoadHintForNavigation(navigation_handle, std::move(callback));
+
+  if (!hint_cache_->GetURLKeyedHint(navigation_handle->GetURL())) {
+    urls.push_back(navigation_handle->GetURL());
+    race_navigation_recorder.set_race_attempt_status(
+        optimization_guide::RaceNavigationFetchAttemptStatus::
+            kRaceNavigationFetchURL);
+  }
+
+  if (hosts.empty() && urls.empty()) {
+    race_navigation_recorder.set_race_attempt_status(
+        optimization_guide::RaceNavigationFetchAttemptStatus::
+            kRaceNavigationFetchNotAttempted);
+    return;
+  }
+
+  if (!hints_fetcher_) {
+    hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
+        url_loader_factory_,
+        optimization_guide::features::GetOptimizationGuideServiceGetHintsURL(),
+        pref_service_);
+  }
+
+  hints_fetcher_->FetchOptimizationGuideServiceHints(
+      hosts, urls, registered_optimization_types_,
+      optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
+      base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
+                     ui_weak_ptr_factory_.GetWeakPtr()));
+
+  if (!hosts.empty() && !urls.empty()) {
+    race_navigation_recorder.set_race_attempt_status(
+        optimization_guide::RaceNavigationFetchAttemptStatus::
+            kRaceNavigationFetchHostAndURL);
+  }
 }
 
 void OptimizationGuideHintsManager::ClearFetchedHints() {

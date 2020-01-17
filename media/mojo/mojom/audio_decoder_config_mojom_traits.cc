@@ -37,14 +37,15 @@ bool StructTraits<media::mojom::AudioDecoderConfigDataView,
   if (!input.ReadSeekPreroll(&seek_preroll))
     return false;
 
+  media::AudioCodecProfile profile;
+  if (!input.ReadProfile(&profile))
+    return false;
+
   output->Initialize(codec, sample_format, channel_layout,
                      input.samples_per_second(), extra_data, encryption_scheme,
                      seek_preroll, input.codec_delay());
-
-  if (!output->IsValidConfig())
-    return false;
-
-  return true;
+  output->set_profile(profile);
+  return output->IsValidConfig();
 }
 
 }  // namespace mojo

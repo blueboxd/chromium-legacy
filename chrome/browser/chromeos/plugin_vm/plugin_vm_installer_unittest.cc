@@ -300,11 +300,11 @@ class PluginVmInstallerDownloadServiceTest : public PluginVmInstallerTestBase {
   }
 
   void TearDown() override {
-    PluginVmInstallerTestBase::TearDown();
-
     histogram_tester_.reset();
     download_service_.reset();
     client_.reset();
+
+    PluginVmInstallerTestBase::TearDown();
   }
 
   std::unique_ptr<download::test::TestDownloadService> download_service_;
@@ -353,6 +353,13 @@ class PluginVmInstallerDriveTest : public PluginVmInstallerTestBase {
 
     installer_->SetDriveDownloadServiceForTesting(
         std::move(drive_download_service));
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
+  }
+
+  void TearDown() override {
+    histogram_tester_.reset();
+
+    PluginVmInstallerTestBase::TearDown();
   }
 
   SimpleFakeDriveService* SetUpSimpleFakeDriveService() {
@@ -367,6 +374,7 @@ class PluginVmInstallerDriveTest : public PluginVmInstallerTestBase {
 
   PluginVmDriveImageDownloadService* drive_download_service_;
   drive::FakeDriveService* fake_drive_service_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PluginVmInstallerDriveTest);
@@ -610,6 +618,7 @@ TEST_F(PluginVmInstallerDriveTest, CancelledDriveDownloadTest) {
 
 TEST_F(PluginVmInstallerDriveTest, SuccessfulDriveDownloadTest) {
   SetPluginVmImagePref(kDriveUrl, kHash);
+  fake_dlcservice_client_->SetInstallError(dlcservice::kErrorNone);
 
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnDownloadCompleted());
@@ -618,6 +627,37 @@ TEST_F(PluginVmInstallerDriveTest, SuccessfulDriveDownloadTest) {
       .Times(AtLeast(1));
 
   StartAndRunToCompletion();
+  histogram_tester_->ExpectUniqueSample(kPluginVmDlcUseResultHistogram,
+                                        PluginVmDlcUseResult::kDlcSuccess, 1);
+}
+
+// TODO(b/145814572): Modify test to block once PluginVM DLC is stable and
+// rootfs PluginVM is no longer resident.
+TEST_F(PluginVmInstallerDriveTest,
+       InstallingPluingVmDlcFailureAllowsPassthrough) {
+  SetPluginVmImagePref(kDriveUrl, kHash);
+  fake_dlcservice_client_->SetInstallError(dlcservice::kErrorInternal);
+
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
+  EXPECT_CALL(*observer_, OnDownloadCompleted());
+
+  StartAndRunToCompletion();
+  histogram_tester_->ExpectUniqueSample(
+      kPluginVmDlcUseResultHistogram,
+      PluginVmDlcUseResult::kFallbackToRootFsInternalDlcError, 1);
+}
+
+TEST_F(PluginVmInstallerDriveTest, InstallingPluginVmDlcWhenUnsupported) {
+  SetPluginVmImagePref(kDriveUrl, kHash);
+  fake_dlcservice_client_->SetInstallError(dlcservice::kErrorInvalidDlc);
+
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(0);
+  EXPECT_CALL(*observer_, OnDownloadFailed(_)).Times(1);
+
+  StartAndRunToCompletion();
+  histogram_tester_->ExpectUniqueSample(
+      kPluginVmDlcUseResultHistogram,
+      PluginVmDlcUseResult::kFallbackToRootFsInvalidDlcError, 1);
 }
 
 }  // namespace plugin_vm

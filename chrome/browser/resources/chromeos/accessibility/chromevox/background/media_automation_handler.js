@@ -50,13 +50,13 @@ MediaAutomationHandler.prototype = {
   __proto__: BaseAutomationHandler.prototype,
 
   /** @override */
-  onTtsStart: function() {
+  onTtsStart() {
     this.lastTtsEvent_ = new Date();
     this.update_({start: true});
   },
 
   /** @override */
-  onTtsEnd: function() {
+  onTtsEnd() {
     var now = new Date();
     setTimeout(function() {
       var then = this.lastTtsEvent_;
@@ -69,14 +69,14 @@ MediaAutomationHandler.prototype = {
   },
 
   /** @override */
-  onTtsInterrupted: function() {
+  onTtsInterrupted() {
     this.onTtsEnd();
   },
 
   /**
    * @param {!AutomationEvent} evt
    */
-  onMediaStartedPlaying: function(evt) {
+  onMediaStartedPlaying(evt) {
     this.mediaRoots_.add(evt.target);
     var audioStrategy = localStorage['audioStrategy'];
     if (ChromeVox.tts.isSpeaking() && audioStrategy == 'audioDuck') {
@@ -87,7 +87,7 @@ MediaAutomationHandler.prototype = {
   /**
    * @param {!AutomationEvent} evt
    */
-  onMediaStoppedPlaying: function(evt) {
+  onMediaStoppedPlaying(evt) {
     // Intentionally does nothing (to cover resume).
   },
 
@@ -97,7 +97,7 @@ MediaAutomationHandler.prototype = {
    *          end: (boolean|undefined)}} options
    * @private
    */
-  update_: function(options) {
+  update_(options) {
     var it = this.mediaRoots_.values();
     var item = it.next();
     var audioStrategy = localStorage['audioStrategy'];

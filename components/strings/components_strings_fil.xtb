@@ -89,6 +89,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Domain ng pagpapatala:</translation>
 <translation id="1340482604681802745">Address sa pag-pick up</translation>
+<translation id="1346748346194534595">Kanan</translation>
 <translation id="1348198688976932919">May mapapanganib na app ang pupuntahang site</translation>
 <translation id="1348779747280417563">Kumpirmahin ang pangalan</translation>
 <translation id="1357195169723583938">Sino ang gumamit sa device kamakailan at kailan</translation>
@@ -113,6 +114,7 @@
 <translation id="1455413310270022028">Pambura</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1467432559032391204">Kaliwa</translation>
 <translation id="1472675084647422956">Magpakita ng higit pa</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
@@ -258,6 +260,7 @@
 <translation id="2148613324460538318">Magdagdag ng Card</translation>
 <translation id="2154054054215849342">Hindi available ang pag-sync para sa iyong domain</translation>
 <translation id="2154484045852737596">I-edit ang card</translation>
+<translation id="2161656808144014275">Text</translation>
 <translation id="2166049586286450108">Ganap na Access ng Admin</translation>
 <translation id="2166378884831602661">Hindi makakapagbigay ng secure na koneksyon ang site na ito</translation>
 <translation id="2169984857010174799">Kaku2 (Envelope)</translation>
@@ -346,6 +349,7 @@
 <translation id="254947805923345898">Di-wasto ang value ng patakaran.</translation>
 <translation id="255002559098805027">Nagpadala ng di-wastong tugon ang <ph name="HOST_NAME" />.</translation>
 <translation id="2556876185419854533">&amp;I-undo ang Pag-e-edit</translation>
+<translation id="257674075312929031">Pangkat</translation>
 <translation id="2586657967955657006">Clipboard</translation>
 <translation id="2587730715158995865">Mula sa <ph name="ARTICLE_PUBLISHER" />. Basahin ito at ang <ph name="OTHER_ARTICLE_COUNT" /> (na) iba pang kwento.</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>
@@ -362,6 +366,7 @@
 <translation id="2653659639078652383">Isumite</translation>
 <translation id="2660650542324841986">Hiniling ng server na pupuntahan mo, ang <ph name="ORIGIN" />, na ilapat ang isang patakaran ng pinagmulan sa lahat ng kahilingan rito. Pero hindi na ito nakapaghatid ng patakaran, na pumipigil sa browser na matupad ang iyong kahilingan para sa <ph name="SITE" />. Magagamit ang mga patakaran ng pinagmulan ng mga operator ng site para i-configure ang seguridad at iba pang property para sa isang site.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Wala}=1{1 password (para sa <ph name="DOMAIN_LIST" />)}=2{2 password (para sa <ph name="DOMAIN_LIST" />)}one{# password (para sa <ph name="DOMAIN_LIST" />)}other{# na password (para sa <ph name="DOMAIN_LIST" />)}}</translation>
+<translation id="2666092431469916601">Tuktok</translation>
 <translation id="2666117266261740852">Isara ang iba pang tab o app</translation>
 <translation id="2674170444375937751">Sigurado ka bang nais mong tanggalin ang mga pahinang ito mula sa iyong history?</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
@@ -445,6 +450,7 @@
 <translation id="3061707000357573562">Serbisyo sa Pag-patch</translation>
 <translation id="3064966200440839136">Aalis sa incognito mode upang magbayad sa pamamagitan ng external na application. Magpatuloy?</translation>
 <translation id="3086579638707268289">Sinusubaybayan ang iyong aktibidad sa web</translation>
+<translation id="3087734570205094154">Sa ilalim</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Magdagdag ng Address sa Pag-pick up</translation>
 <translation id="3105172416063519923">Asset ID:</translation>
@@ -489,6 +495,7 @@
 <translation id="3303855915957856445">Walang nakitang resulta ng paghahanap</translation>
 <translation id="3320021301628644560">Magdagdag ng billing address</translation>
 <translation id="3324983252691184275">Crimson</translation>
+<translation id="3329013043687509092">Saturation</translation>
 <translation id="3338095232262050444">Secure</translation>
 <translation id="3355823806454867987">Baguhin ang mga setting ng proxy...</translation>
 <translation id="3360103848165129075">Sheet ng tagapangasiwa ng pagbabayad</translation>
@@ -525,6 +532,7 @@
 <translation id="3495081129428749620">Hanapin sa page
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Binabalewala ang patakarang ito dahil may isa pang patakaran mula sa parehong pangkat ng patakaran na may mas mataas na priyoridad.</translation>
+<translation id="3513704683820682405">Augmented Reality</translation>
 <translation id="3528171143076753409">Hindi pinagkakatiwalaan ang certificate ng server.</translation>
 <translation id="3528485271872257980">Dark Brown</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Hindi bababa sa 1 item sa mga naka-sync na device}=1{1 item (at higit pa sa mga naka-sync na device)}one{# item (at higit pa sa mga naka-sync na device)}other{# na item (at higit pa sa mga naka-sync na device)}}</translation>
@@ -566,6 +574,7 @@
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Naglo-load...</translation>
 <translation id="3709599264800900598">Text Na Kinopya Mo</translation>
+<translation id="3711895659073496551">Suspendihin</translation>
 <translation id="3712624925041724820">Naubos na ang mga lisensya</translation>
 <translation id="3714780639079136834">I-on ang mobile data o Wi-Fi</translation>
 <translation id="3715597595485130451">Kumonekta sa Wi-Fi</translation>
@@ -759,6 +768,7 @@
 <translation id="4594403342090139922">&amp;I-undo ang Pagtanggal</translation>
 <translation id="4597348597567598915">Laki 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="4628948037717959914">Larawan</translation>
 <translation id="4635654612248442824">Hiniling ng site na <ph name="ORIGIN" /> na ilalapat ng patakaran ng pinagmulan ang lahat ng kahilingan nito, pero hindi pa mailalapat sa ngayon ang patakarang ito.</translation>
 <translation id="464342062220857295">Mga feature sa paghahanap</translation>
 <translation id="4646534391647090355">Dalhin na ako roon</translation>
@@ -814,6 +824,7 @@
 <translation id="4926049483395192435">Dapat na tukuyin.</translation>
 <translation id="4926159001844873046">Isinasaad ng <ph name="SITE" /> na</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">Walang mga resulta</translation>
 <translation id="4950898438188848926">Button sa paglipat ng tab, pindutin ang Enter para lumipat sa nakabukas na tab, na <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Mga Pagkilos</translation>
@@ -981,6 +992,7 @@
 <translation id="5689199277474810259">I-export sa JSON</translation>
 <translation id="5689516760719285838">Lokasyon</translation>
 <translation id="569000877158168851">Walang kaugnayan ang value ng DnsOverHttpsTemplates, at hindi ito gagamitin, maliban na lang kung itatakda ang patakarang DnsOverHttpsMode sa <ph name="SECURE_DNS_MODE_AUTOMATIC" /> o <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
+<translation id="5701381305118179107">Gitna</translation>
 <translation id="570530837424789914">Pamahalaan...</translation>
 <translation id="57094364128775171">Magmungkahi ng malakas na password...</translation>
 <translation id="5710435578057952990">Ang pagkilala ng website na ito ay hindi natukoy.</translation>
@@ -1013,7 +1025,6 @@
 <translation id="5855253129151731373">Mukhang katulad ng <ph name="LOOKALIKE_DOMAIN" /> ang hostname ng site na ito. Kung minsan, ginagaya ng mga attacker ang mga site sa pamamagitan ng paggawa ng mga maliit at mahirap makitang pagbabago sa domain name.
 
     Kung naniniwala kang mali ang pagpapakita nito, pakibisita ang https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
-<translation id="5860033963881614850">Naka-off</translation>
 <translation id="5863847714970149516">Maaari kang singilin sa susunod na page</translation>
 <translation id="5866257070973731571">Magdagdag ng Numero ng Telepono</translation>
 <translation id="5866898949289125849">Isang page ng mga tool ng developer ang tinitingnan mo</translation>
@@ -1025,13 +1036,11 @@
 <translation id="5901630391730855834">Dilaw</translation>
 <translation id="5905445707201418379">Na-black ayon sa patakaran ng pinagmulan ng <ph name="ORIGIN" />.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (naka-sync)</translation>
-<translation id="5916664084637901428">Naka-on</translation>
 <translation id="59174027418879706">Pinagana</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">I-save ang card sa Google Account?</translation>
 <translation id="5922853866070715753">Malapit nang matapos</translation>
 <translation id="5932224571077948991">Nagpapakita ang site ng mga nakakasagabal o nakakapanlinlang na ad</translation>
-<translation id="5939847200023027600">Serbisyo sa PDF Compositor</translation>
 <translation id="5946937721014915347">Binubuksan ang <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Hindi maka-enroll gamit ang account ng consumer (may available na naka-package na lisensya).</translation>
 <translation id="5967592137238574583">I-edit ang Impormasyon ng Contact</translation>
@@ -1071,6 +1080,7 @@
 <translation id="6080696365213338172">Nag-access ka ng nilalaman gamit ang isang certificate na ibinigay ng administrator. Maaaring harangin ng iyong administrator ang data na ibibigay mo sa <ph name="DOMAIN" />.</translation>
 <translation id="6094273045989040137">I-annotate</translation>
 <translation id="6104072995492677441">JIS B6</translation>
+<translation id="6106989379647458772">Maaaring pansamantalang hindi gumagana ang webpage sa <ph name="PAGE" />, o kaya, maaaring permanente na itong lumipat sa isang bagong address sa web.</translation>
 <translation id="610911394827799129">Maaaring may iba pang anyo ng history ng pag-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6120179357481664955">Natatandaan mo ang iyong UPI ID?</translation>
 <translation id="6132597952260690497">Impormasyon tungkol sa mga naka-install na extension at plugin</translation>
@@ -1110,6 +1120,7 @@
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">Ihinihinto ang Google Assistant sa Chrome</translation>
 <translation id="6305205051461490394">Hindi makakonekta sa <ph name="URL" />.</translation>
+<translation id="6312113039770857350">Hindi available ang webpage</translation>
 <translation id="6321917430147971392">Suriin ang iyong mga setting ng DNS</translation>
 <translation id="6322182122604171028">Hindi magamit ang Windows Hello</translation>
 <translation id="6328639280570009161">Subukang i-disable ang paghula ng network</translation>
@@ -1136,6 +1147,7 @@
 <translation id="6410264514553301377">Ilagay ang petsa ng pag-expire at CVC para sa <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Makakatulong sa iyo ang Chromium na protektahan ang iyong Google Account at palitan ang password mo.</translation>
 <translation id="6423385022588644828">Kumpirmahin nang mas mabilis ang iyong mga card gamit ang Touch ID mula ngayon</translation>
+<translation id="6425092077175753609">Material</translation>
 <translation id="6427730057873428458">Gate fold</translation>
 <translation id="6433490469411711332">I-edit ang impormasyon sa pakikipag-ugnayan</translation>
 <translation id="6433595998831338502">Tumangging kumonekta ang <ph name="HOST_NAME" />.</translation>
@@ -1403,6 +1415,7 @@ Mga karagdagang detalye:
 <translation id="7716147886133743102">Na-block ng iyong administrator</translation>
 <translation id="7716424297397655342">Hindi maaaring i-load ang site na ito mula sa cache</translation>
 <translation id="7723047071702270851">I-edit ang Card</translation>
+<translation id="7740996059027112821">Karaniwan</translation>
 <translation id="774634243536837715">Na-block ang mapanganib na content.</translation>
 <translation id="7752995774971033316">Hindi pinamamahalaan</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
@@ -1508,6 +1521,7 @@ Mga karagdagang detalye:
 <translation id="8241707690549784388">Ang pahina na hinahanap mo para sa paggamit ng impormasyon na ipinasok mo. Ang pagbalik sa pahinang iyon maaaring magsanhi ng anumang aksyon na akalo mo ay naulit. Nais mo bang ipagpatuloy?</translation>
 <translation id="8241712895048303527">I-block sa site na ito</translation>
 <translation id="8242426110754782860">Magpatuloy</translation>
+<translation id="8249296373107784235">I-abort</translation>
 <translation id="8249320324621329438">Huling kinuha:</translation>
 <translation id="8253091569723639551">Kinakailangan ang billing address</translation>
 <translation id="825929999321470778">Ipakita ang Lahat ng Naka-save na Password</translation>
@@ -1577,6 +1591,7 @@ Mga karagdagang detalye:
 <translation id="8647750283161643317">I-reset ang lahat sa default</translation>
 <translation id="8663226718884576429">Buod ng Order, <ph name="TOTAL_LABEL" />, Higit pang Detalye</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, sagot, <ph name="ANSWER" /></translation>
+<translation id="8681531050781943054">Hindi ma-load ang webpage sa <ph name="PAGE" /> dahil:</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Available</translation>
 <translation id="869891660844655955">Expiration date</translation>
@@ -1627,6 +1642,7 @@ Mga karagdagang detalye:
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8957210676456822347">Pagpapahintulot sa Captive Portal</translation>
 <translation id="8962950042226115166">Kahina-hinalang site</translation>
+<translation id="8963213021028234748"><ph name="MARKUP_1" />Mga suhestyon:<ph name="MARKUP_2" />Tiyaking may koneksyon ka ng data<ph name="MARKUP_3" />Muling i-load ang webpage na ito sa ibang pagkakataon<ph name="MARKUP_4" />Tingnan ang inilagay mong address<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">I-save ang card</translation>
 <translation id="8971063699422889582">Nag-expire na ang certificate ng server.</translation>
 <translation id="8975012916872825179">May kasamang impormasyon tulad ng mga numero ng telepono, email address, at address sa pagpapadala</translation>
@@ -1703,6 +1719,7 @@ Mga karagdagang detalye:
 <translation id="985199708454569384">&lt;p&gt;Makikita mo ang error na ito kung hindi tumpak ang petsa at oras ng iyong computer o mobile device.&lt;/p&gt;
     &lt;p&gt;Para maayos ang error, buksan ang orasan ng iyong device. Tiyaking tama ang oras at petsa.&lt;/p&gt;</translation>
 <translation id="985956168329721395">Prc-32K</translation>
+<translation id="987264212798334818">Pangkalahatan</translation>
 <translation id="988159990683914416">Bumuo ang Developer</translation>
 <translation id="989988560359834682">I-edit ang Address</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

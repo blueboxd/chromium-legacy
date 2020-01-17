@@ -178,6 +178,14 @@ class DeviceSyncCryptAuthDeviceSyncerImplTest : public testing::Test {
             base::Unretained(this)));
   }
 
+  void SetDeviceRegistry(const std::vector<CryptAuthDevice>& devices) {
+    CryptAuthDeviceRegistry::InstanceIdToDeviceMap map;
+    for (const CryptAuthDevice& device : devices)
+      map.insert_or_assign(device.instance_id(), device);
+
+    device_registry_->SetRegistry(map);
+  }
+
   void AddInitialGroupKeyToRegistry(const CryptAuthKey& group_key) {
     key_registry_->AddKey(
         CryptAuthKeyBundle::Name::kDeviceSyncBetterTogetherGroupKey, group_key);
@@ -710,12 +718,51 @@ TEST_F(
 
   // Only the local device has its BetterTogetherDeviceMetadata in the device
   // registry since the other metadata cannot be decrypted without the group
-  // private key.
+  // private key, and because the previous device registry did not have any
+  // existing metadata to draw from.
   VerifyDeviceSyncResult(
       CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::kSuccess,
                                 true /* device_registry_changed */,
                                 cryptauthv2::GetClientDirectiveForTest()),
       GetAllTestDevicesWithoutRemoteMetadata());
+}
+
+TEST_F(DeviceSyncCryptAuthDeviceSyncerImplTest,
+       Success_PreserveExistingBetterTogetherMetadata) {
+  // Populate existing registry with all devices and their BetterTogether
+  // metadata.
+  SetDeviceRegistry(GetAllTestDevices());
+
+  AddInitialGroupKeyToRegistry(GetStaleGroupKey());
+
+  CallSync();
+
+  // The initial group key is stale, so CryptAuth provides us with the new
+  // unencrypted group public key but no encrypted group private key. This can
+  // happen if the other devices have not shared their encrypted group private
+  // key with CryptAuth yet.
+  VerifyMetadataSyncerInput(&GetStaleGroupKey());
+  FinishMetadataSyncerAttempt(
+      GetAllTestDeviceMetadataPackets(),
+      GetGroupKeyWithoutPrivateKey() /* new_group_key */,
+      base::nullopt /* encrypted_group_private_key */,
+      cryptauthv2::GetClientDirectiveForTest(),
+      CryptAuthDeviceSyncResult::ResultCode::kSuccess);
+
+  VerifyGroupKeyInRegistry(GetGroupKeyWithoutPrivateKey());
+
+  VerifyFeatureStatusGetterInput(GetAllTestDeviceIds());
+  FinishFeatureStatusGetterAttempt(
+      GetAllTestDeviceIds(), CryptAuthDeviceSyncResult::ResultCode::kSuccess);
+
+  // Even though the new device BetterTogether metadata could not be decrypted,
+  // the new registry should preserve the BetterTogether metadata from the
+  // previous registry.
+  VerifyDeviceSyncResult(
+      CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::kSuccess,
+                                false /* device_registry_changed */,
+                                cryptauthv2::GetClientDirectiveForTest()),
+      GetAllTestDevices());
 }
 
 TEST_F(DeviceSyncCryptAuthDeviceSyncerImplTest,

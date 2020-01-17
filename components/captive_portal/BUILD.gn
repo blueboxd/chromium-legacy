@@ -45,9 +45,7 @@ static_library("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "captive_portal_detector_unittest.cc",
-  ]
+  sources = [ "captive_portal_detector_unittest.cc" ]
 
   deps = [
     ":captive_portal",

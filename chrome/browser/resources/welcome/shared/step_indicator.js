@@ -33,7 +33,7 @@ Polymer({
    * @return {!Array<undefined>}
    * @private
    */
-  computeDots_: function() {
+  computeDots_() {
     // If total is 1, show nothing.
     return new Array(this.model.total > 1 ? this.model.total : 0);
   },
@@ -43,7 +43,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getActiveClass_: function(index) {
+  getActiveClass_(index) {
     return index === this.model.active ? 'active' : '';
   },
 });

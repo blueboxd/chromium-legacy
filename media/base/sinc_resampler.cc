@@ -310,6 +310,14 @@ void SincResampler::Flush() {
   UpdateRegions(false);
 }
 
+int SincResampler::GetMaxInputFramesRequested(
+    int output_frames_requested) const {
+  const int num_chunks = static_cast<int>(
+      std::ceil(static_cast<float>(output_frames_requested) / chunk_size_));
+
+  return num_chunks * request_frames_;
+}
+
 double SincResampler::BufferedFrames() const {
   return buffer_primed_ ? request_frames_ - virtual_source_idx_ : 0;
 }

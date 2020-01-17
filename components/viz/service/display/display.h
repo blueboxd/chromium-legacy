@@ -23,6 +23,7 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/frame_rate_decider.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/overlay_processor_interface.h"
 #include "components/viz/service/display/software_output_device_client.h"
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/surfaces/latest_local_surface_id_lookup_delegate.h"
@@ -233,6 +234,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 #endif
   std::unique_ptr<OutputSurface> output_surface_;
   SkiaOutputSurface* const skia_output_surface_;
+  std::unique_ptr<OverlayProcessorInterface> overlay_processor_;
   std::unique_ptr<DisplayDamageTracker> damage_tracker_;
   std::unique_ptr<DisplaySchedulerBase> scheduler_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;

@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/history_ui_favicon_request_handler.h"
 #include "components/favicon_base/favicon_types.h"
 
@@ -56,15 +57,12 @@ class HistoryUiFaviconRequestHandlerImpl
       favicon_base::FaviconRawBitmapCallback callback,
       FaviconRequestPlatform request_platform,
       HistoryUiFaviconRequestOrigin request_origin_for_uma,
-      const GURL& icon_url_for_uma,
-      base::CancelableTaskTracker* tracker) override;
-
+      const GURL& icon_url_for_uma) override;
   void GetFaviconImageForPageURL(
       const GURL& page_url,
       favicon_base::FaviconImageCallback callback,
       HistoryUiFaviconRequestOrigin request_origin_for_uma,
-      const GURL& icon_url_for_uma,
-      base::CancelableTaskTracker* tracker) override;
+      const GURL& icon_url_for_uma) override;
 
  private:
   // Called after the first attempt to retrieve the icon bitmap from local
@@ -82,7 +80,6 @@ class HistoryUiFaviconRequestHandlerImpl
       HistoryUiFaviconRequestOrigin origin_for_uma,
       const GURL& icon_url_for_uma,
       base::Time request_start_time_for_uma,
-      base::CancelableTaskTracker* tracker,
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // Called after the first attempt to retrieve the icon image from local
@@ -96,12 +93,12 @@ class HistoryUiFaviconRequestHandlerImpl
       HistoryUiFaviconRequestOrigin origin_for_uma,
       const GURL& icon_url_for_uma,
       base::Time request_start_time_for_uma,
-      base::CancelableTaskTracker* tracker,
       const favicon_base::FaviconImageResult& image_result);
 
   // Requests an icon from Google favicon server. Since requests work by
   // populating local storage, a |local_lookup_callback| will be needed in case
-  // of success and an |empty_response_callback| in case of failure.
+  // of success and an |empty_response_callback| in case of failure. Neither
+  // callback is run if |this| is deleted before completion.
   void RequestFromGoogleServer(const GURL& page_url,
                                base::OnceClosure empty_response_callback,
                                base::OnceClosure local_lookup_callback,
@@ -136,6 +133,9 @@ class HistoryUiFaviconRequestHandlerImpl
   // would be waiting for execution. Used for recording metrics for the possible
   // benefit of grouping.
   std::map<GURL, int> group_callbacks_count_;
+
+  // Needed for using FaviconService.
+  base::CancelableTaskTracker cancelable_task_tracker_;
 
   base::WeakPtrFactory<HistoryUiFaviconRequestHandlerImpl> weak_ptr_factory_{
       this};

@@ -514,26 +514,3 @@ export function pictureURL(entry) {
     }
   });
 }
-
-/** @const */
-cca.models.FileSystem.hasVideoPrefix = hasVideoPrefix;
-/** @const */
-cca.models.FileSystem.getExternalDirectory = getExternalDirectory;
-/** @const */
-cca.models.FileSystem.initialize = initialize;
-/** @const */
-cca.models.FileSystem.saveBlob = saveBlob;
-/** @const */
-cca.models.FileSystem.getMetadata = getMetadata;
-/** @const */
-cca.models.FileSystem.createTempVideoFile = createTempVideoFile;
-/** @const */
-cca.models.FileSystem.createPrivateTempVideoFile = createPrivateTempVideoFile;
-/** @const */
-cca.models.FileSystem.saveVideo = saveVideo;
-/** @const */
-cca.models.FileSystem.getFile = getFile;
-/** @const */
-cca.models.FileSystem.getEntries = getEntries;
-/** @const */
-cca.models.FileSystem.pictureURL = pictureURL;

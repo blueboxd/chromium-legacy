@@ -46,10 +46,10 @@ Polymer({
    *     and |enforcement|.
    */
   getIndicatorTypeForPref_(controlledBy, enforcement) {
-    if (enforcement == chrome.settingsPrivate.Enforcement.RECOMMENDED) {
+    if (enforcement === chrome.settingsPrivate.Enforcement.RECOMMENDED) {
       return CrPolicyIndicatorType.RECOMMENDED;
     }
-    if (enforcement == chrome.settingsPrivate.Enforcement.ENFORCED) {
+    if (enforcement === chrome.settingsPrivate.Enforcement.ENFORCED) {
       switch (controlledBy) {
         case chrome.settingsPrivate.ControlledBy.EXTENSION:
           return CrPolicyIndicatorType.EXTENSION;
@@ -67,7 +67,7 @@ Polymer({
           return CrPolicyIndicatorType.CHILD_RESTRICTION;
       }
     }
-    if (enforcement == chrome.settingsPrivate.Enforcement.PARENT_SUPERVISED) {
+    if (enforcement === chrome.settingsPrivate.Enforcement.PARENT_SUPERVISED) {
       return CrPolicyIndicatorType.PARENT;
     }
     return CrPolicyIndicatorType.NONE;
@@ -83,7 +83,7 @@ Polymer({
       return '';
     }
 
-    const matches = this.pref && this.pref.value == this.pref.recommendedValue;
+    const matches = this.pref && this.pref.value === this.pref.recommendedValue;
     return this.getIndicatorTooltip(
         indicatorType, this.pref.controlledByName || '', matches);
   },

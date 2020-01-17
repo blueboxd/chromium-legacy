@@ -1366,7 +1366,7 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
           collectionName: str('customCategoryLabel'),
           fileName: imagePath.split(/[/\\]/).pop(),
           // Use file name as aria-label.
-          ariaLabel: function() {
+          ariaLabel() {
             return this.fileName;
           },
           previewable: true,

@@ -26,7 +26,7 @@ Polymer({
     labelForAria: String,
   },
 
-  focus: function() {
+  focus() {
     this.$.button.focus();
   },
 });

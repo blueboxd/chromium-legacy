@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_LANGUAGE_TRANSLATE_FRAME_BINDER_H_
 #define CHROME_BROWSER_LANGUAGE_TRANSLATE_FRAME_BINDER_H_
 
-#include "components/translate/content/common/translate.mojom.h"
+#include "components/translate/content/common/translate.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace content {

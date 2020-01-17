@@ -1,11 +1,12 @@
 #!/usr/bin/python
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Tests for mb.py."""
 
 from __future__ import print_function
+from __future__ import absolute_import
 
 import json
 import os
@@ -14,7 +15,10 @@ import StringIO
 import sys
 import unittest
 
-import mb
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), '..'))
+
+from mb import mb
 
 
 class FakeMBW(mb.MetaBuildWrapper):
@@ -24,7 +28,9 @@ class FakeMBW(mb.MetaBuildWrapper):
     # Override vars for test portability.
     if win32:
       self.chromium_src_dir = 'c:\\fake_src'
-      self.default_config = 'c:\\fake_src\\tools\\mb\\mb_config.pyl'
+      self.default_config_master = 'c:\\fake_src\\tools\\mb\\mb_config.pyl'
+
+      self.default_config_bucket = 'c:\\fake_src\\tools\\mb\\mb_config_bucket.pyl'  # pylint: disable=line-too-long
       self.default_isolate_map = ('c:\\fake_src\\testing\\buildbot\\'
                                   'gn_isolate_map.pyl')
       self.platform = 'win32'
@@ -33,7 +39,8 @@ class FakeMBW(mb.MetaBuildWrapper):
       self.cwd = 'c:\\fake_src\\out\\Default'
     else:
       self.chromium_src_dir = '/fake_src'
-      self.default_config = '/fake_src/tools/mb/mb_config.pyl'
+      self.default_config_master = '/fake_src/tools/mb/mb_config.pyl'
+      self.default_config_bucket = '/fake_src/tools/mb/mb_config_bucket.pyl'
       self.default_isolate_map = '/fake_src/testing/buildbot/gn_isolate_map.pyl'
       self.executable = '/usr/bin/python'
       self.platform = 'linux2'
@@ -119,7 +126,7 @@ class FakeFile(object):
     self.buf += contents
 
   def close(self):
-     self.files[self.name] = self.buf
+    self.files[self.name] = self.buf
 
 
 TEST_CONFIG = """\
@@ -172,6 +179,55 @@ TEST_CONFIG = """\
 }
 """
 
+TEST_CONFIG_BUCKET = """\
+{
+  'public_artifact_builders': {},
+  'buckets': {
+    'ci': {
+      'fake_builder': 'rel_bot',
+      'fake_debug_builder': 'debug_goma',
+      'fake_simplechrome_builder': 'cros_chrome_sdk',
+      'fake_args_bot': '//build/args/bots/fake_master/fake_args_bot.gn',
+      'fake_multi_phase': { 'phase_1': 'phase_1', 'phase_2': 'phase_2'},
+      'fake_args_file': 'args_file_goma',
+    }
+  },
+  'configs': {
+    'args_file_goma': ['args_file', 'goma'],
+    'cros_chrome_sdk': ['cros_chrome_sdk'],
+    'rel_bot': ['rel', 'goma', 'fake_feature1'],
+    'debug_goma': ['debug', 'goma'],
+    'phase_1': ['phase_1'],
+    'phase_2': ['phase_2'],
+  },
+  'mixins': {
+    'cros_chrome_sdk': {
+      'cros_passthrough': True,
+    },
+    'fake_feature1': {
+      'gn_args': 'enable_doom_melon=true',
+    },
+    'goma': {
+      'gn_args': 'use_goma=true',
+    },
+    'args_file': {
+      'args_file': '//build/args/fake.gn',
+    },
+    'phase_1': {
+      'gn_args': 'phase=1',
+    },
+    'phase_2': {
+      'gn_args': 'phase=2',
+    },
+    'rel': {
+      'gn_args': 'is_debug=false',
+    },
+    'debug': {
+      'gn_args': 'is_debug=true',
+    },
+  },
+}
+"""
 
 TEST_BAD_CONFIG = """\
 {
@@ -183,6 +239,35 @@ TEST_BAD_CONFIG = """\
     'chromium': {
       'a': 'rel_bot_1',
       'b': 'rel_bot_2',
+    },
+  },
+  'mixins': {
+    'chrome_with_codecs': {
+      'gn_args': 'proprietary_codecs=true',
+    },
+    'bad_nested_config': {
+      'mixins': ['chrome_with_codecs'],
+    },
+    'rel': {
+      'gn_args': 'is_debug=false',
+    },
+  },
+}
+"""
+
+TEST_BAD_CONFIG_BUCKET = """\
+{
+  'public_artifact_builders': {
+      'fake_bucket_a': ['fake_builder_a', 'fake_builder_b'],
+  },
+  'configs': {
+    'rel_bot_1': ['rel', 'chrome_with_codecs'],
+    'rel_bot_2': ['rel', 'bad_nested_config'],
+  },
+  'buckets': {
+    'fake_bucket_a': {
+      'fake_builder_a': 'rel_bot_1',
+      'fake_builder_b': 'rel_bot_2',
     },
   },
   'mixins': {
@@ -220,6 +305,26 @@ TEST_ARGS_FILE_TWICE_CONFIG = """\
 """
 
 
+TEST_ARGS_FILE_TWICE_CONFIG_BUCKET = """\
+{
+  'public_artifact_builders': {},
+  'buckets': {
+    'chromium': {},
+    'fake_bucket': {
+      'fake_args_file_twice': 'args_file_twice',
+    },
+  },
+  'configs': {
+    'args_file_twice': ['args_file', 'args_file'],
+  },
+  'mixins': {
+    'args_file': {
+      'args_file': '//build/args/fake.gn',
+    },
+  },
+}
+"""
+
 TEST_DUP_CONFIG = """\
 {
   'masters': {
@@ -241,6 +346,27 @@ TEST_DUP_CONFIG = """\
 }
 """
 
+TEST_DUP_CONFIG_BUCKET = """\
+{
+  'public_artifact_builders': {},
+  'buckets': {
+    'ci': {},
+    'fake_bucket': {
+      'fake_builder': 'some_config',
+      'other_builder': 'some_other_config',
+    },
+  },
+  'configs': {
+    'some_config': ['args_file'],
+    'some_other_config': ['args_file'],
+  },
+  'mixins': {
+    'args_file': {
+      'args_file': '//build/args/fake.gn',
+    },
+  },
+}
+"""
 
 TRYSERVER_CONFIG = """\
 {
@@ -264,7 +390,8 @@ TRYSERVER_CONFIG = """\
 class UnitTest(unittest.TestCase):
   def fake_mbw(self, files=None, win32=False):
     mbw = FakeMBW(win32=win32)
-    mbw.files.setdefault(mbw.default_config, TEST_CONFIG)
+    mbw.files.setdefault(mbw.default_config_master, TEST_CONFIG)
+    mbw.files.setdefault(mbw.default_config_bucket, TEST_CONFIG_BUCKET)
     mbw.files.setdefault(
       mbw.ToAbsPath('//testing/buildbot/gn_isolate_map.pyl'),
       '''{
@@ -442,9 +569,18 @@ class UnitTest(unittest.TestCase):
         ('import("//build/args/fake.gn")\n'
          'use_goma = true\n'))
 
+  def test_gen_args_file_twice_bucket(self):
+    mbw = self.fake_mbw()
+    mbw.files[mbw.default_config_bucket] = TEST_ARGS_FILE_TWICE_CONFIG_BUCKET
+    self.check([
+        'gen', '-u', 'fake_bucket', '-b', 'fake_args_file_twice', '//out/Debug'
+    ],
+               mbw=mbw,
+               ret=1)
+
   def test_gen_args_file_twice(self):
     mbw = self.fake_mbw()
-    mbw.files[mbw.default_config] = TEST_ARGS_FILE_TWICE_CONFIG
+    mbw.files[mbw.default_config_master] = TEST_ARGS_FILE_TWICE_CONFIG
     self.check(['gen', '-m', 'fake_master', '-b', 'fake_args_file_twice',
                 '//out/Debug'], mbw=mbw, ret=1)
 
@@ -793,18 +929,44 @@ class UnitTest(unittest.TestCase):
                     'enable_doom_melon = true\n'
                     'use_goma = true\n'))
 
+  def test_recursive_lookup_bucket(self):
+    files = {
+        '/fake_src/build/args/fake.gn': ('enable_doom_melon = true\n'
+                                         'enable_antidoom_banana = true\n')
+    }
+    self.check(['lookup', '-u', 'ci', '-b', 'fake_args_file', '--recursive'],
+               files=files,
+               ret=0,
+               out=('enable_antidoom_banana = true\n'
+                    'enable_doom_melon = true\n'
+                    'use_goma = true\n'))
+
   def test_validate(self):
     mbw = self.fake_mbw()
     self.check(['validate'], mbw=mbw, ret=0)
 
   def test_bad_validate(self):
     mbw = self.fake_mbw()
-    mbw.files[mbw.default_config] = TEST_BAD_CONFIG
-    self.check(['validate'], mbw=mbw, ret=1)
+    mbw.files[mbw.default_config_master] = TEST_BAD_CONFIG
+    self.check(['validate', '-f', mbw.default_config_master], mbw=mbw, ret=1)
+
+  def test_bad_validate_bucket(self):
+    mbw = self.fake_mbw()
+    mbw.files[mbw.default_config_bucket] = TEST_BAD_CONFIG_BUCKET
+    self.check(['validate', '-f', mbw.default_config_bucket], mbw=mbw, ret=1)
 
   def test_duplicate_validate(self):
     mbw = self.fake_mbw()
-    mbw.files[mbw.default_config] = TEST_DUP_CONFIG
+    mbw.files[mbw.default_config_master] = TEST_DUP_CONFIG
+    self.check(['validate'], mbw=mbw, ret=1)
+    self.assertIn(
+        'Duplicate configs detected. When evaluated fully, the '
+        'following configs are all equivalent: \'some_config\', '
+        '\'some_other_config\'.', mbw.out)
+
+  def test_duplicate_validate_bucket(self):
+    mbw = self.fake_mbw()
+    mbw.files[mbw.default_config_bucket] = TEST_DUP_CONFIG_BUCKET
     self.check(['validate'], mbw=mbw, ret=1)
     self.assertIn('Duplicate configs detected. When evaluated fully, the '
                   'following configs are all equivalent: \'some_config\', '

@@ -19,7 +19,7 @@ MockEvent.prototype = {
   /**
    * @param {Function} listener
    */
-  addListener: function(listener) {
+  addListener(listener) {
     assertTrue(this.listener === null);
     this.listener = listener;
   },
@@ -30,7 +30,7 @@ MockEvent.prototype = {
    * @return {*} Return value from listener or {@code undefined} if no
    *     listener.
    */
-  dispatch: function() {
+  dispatch() {
     if (this.listener) {
       return this.listener.apply(null, arguments);
     }
@@ -54,7 +54,7 @@ MockPort.prototype = {
    * Stores {@code message} in this object.
    * @param {Object} message Message to store.
    */
-  postMessage: function(message) {
+  postMessage(message) {
     this.messages.push(message);
   }
 };
@@ -83,7 +83,7 @@ BrailleImeUnitTest.prototype = {
   extraLibraries: ['braille_ime.js'],
 
   /** @Override */
-  setUp: function() {
+  setUp() {
     chrome = chrome || {};
     chrome.input = chrome.input || {};
     chrome.input.ime = chrome.input.ime || {};
@@ -99,7 +99,7 @@ BrailleImeUnitTest.prototype = {
     this.createIme();
   },
 
-  createIme: function() {
+  createIme() {
     var IME_EVENTS = [
       'onActivate', 'onDeactivated', 'onFocus', 'onBlur',
       'onInputContextUpdate', 'onKeyEvent', 'onReset', 'onMenuItemActivated'
@@ -120,14 +120,14 @@ BrailleImeUnitTest.prototype = {
     this.ime.init();
   },
 
-  activateIme: function() {
+  activateIme() {
     this.onActivate.dispatch(ENGINE_ID);
     assertThat(
         this.port.messages, eqJSON([{type: 'activeState', active: true}]));
     this.port.messages.length = 0;
   },
 
-  sendKeyEvent_: function(type, code, extra) {
+  sendKeyEvent_(type, code, extra) {
     var event = {
       type: type,
       code: code,
@@ -142,11 +142,11 @@ BrailleImeUnitTest.prototype = {
     }
   },
 
-  sendKeyDown: function(code, extra) {
+  sendKeyDown(code, extra) {
     return this.sendKeyEvent_('keydown', code, extra);
   },
 
-  sendKeyUp: function(code, extra) {
+  sendKeyUp(code, extra) {
     return this.sendKeyEvent_('keyup', code, extra);
   },
 };

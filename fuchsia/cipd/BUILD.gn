@@ -19,12 +19,8 @@ if (host_os == "mac") {
 action("license") {
   _license_path = "${target_gen_dir}/LICENSE"
   script = "//tools/licenses.py"
-  inputs = [
-    "$_gn_path",
-  ]
-  outputs = [
-    _license_path,
-  ]
+  inputs = [ "$_gn_path" ]
+  outputs = [ _license_path ]
   args = [
     "license_file",
     rebase_path(_license_path, root_build_dir),
@@ -43,9 +39,7 @@ action("license") {
 # associated with the <build-id> tag.
 process_version("build_id") {
   template_file = "build_id.template"
-  sources = [
-    "//chrome/VERSION",
-  ]
+  sources = [ "//chrome/VERSION" ]
   output = "${target_gen_dir}/build_id.txt"
   process_only = true
 }
@@ -102,9 +96,7 @@ template("cipd_archive") {
 
   copy(target_name) {
     testonly = true
-    outputs = [
-      "${archive_staging_dir}/{{source_file_part}}",
-    ]
+    outputs = [ "${archive_staging_dir}/{{source_file_part}}" ]
   }
 }
 
@@ -131,13 +123,9 @@ cipd_archive("castrunner") {
   cipd_path = "chromium/fuchsia/castrunner-\${targetarch}"
   cipd_description = "Prebuilt Cast application Runner binaries for Fuchsia."
 
-  deps = [
-    "//fuchsia/runners:cast_runner_pkg",
-  ]
+  deps = [ "//fuchsia/runners:cast_runner_pkg" ]
 
-  sources = [
-    "${root_gen_dir}/fuchsia/runners/cast_runner/cast_runner.far",
-  ]
+  sources = [ "${root_gen_dir}/fuchsia/runners/cast_runner/cast_runner.far" ]
 }
 
 cipd_archive("http") {
@@ -145,13 +133,9 @@ cipd_archive("http") {
   cipd_path = "chromium/fuchsia/http-\${targetarch}"
   cipd_description = "Prebuilt HTTP service binary for Fuchsia."
 
-  deps = [
-    "//fuchsia/http:http_pkg",
-  ]
+  deps = [ "//fuchsia/http:http_pkg" ]
 
-  sources = [
-    "${root_gen_dir}/fuchsia/http/http/http.far",
-  ]
+  sources = [ "${root_gen_dir}/fuchsia/http/http/http.far" ]
 }
 
 _stripped_chromedriver_file = "${root_out_dir}/clang_x64/stripped/chromedriver"
@@ -161,17 +145,13 @@ action("strip_chromedriver_binary") {
 
   prog_name = "${root_out_dir}/clang_x64/chromedriver"
 
-  deps = [
-    "//chrome/test/chromedriver:chromedriver($host_toolchain)",
-  ]
+  deps = [ "//chrome/test/chromedriver:chromedriver($host_toolchain)" ]
   script = "//build/gn_run_binary.py"
   sources = [
     "//buildtools/third_party/eu-strip/bin/eu-strip",
     prog_name,
   ]
-  outputs = [
-    _stripped_chromedriver_file,
-  ]
+  outputs = [ _stripped_chromedriver_file ]
   args = [
     rebase_path("//buildtools/third_party/eu-strip/bin/eu-strip",
                 root_build_dir),
@@ -188,13 +168,9 @@ cipd_archive("chromedriver") {
   cipd_path = "chromium/fuchsia/chromedriver/\${os}-\${arch}"
   cipd_description = "Prebuilt Chromedriver binary for Fuchsia host."
   install_mode = "copy"
-  deps = [
-    ":strip_chromedriver_binary",
-  ]
+  deps = [ ":strip_chromedriver_binary" ]
 
-  sources = [
-    _stripped_chromedriver_file,
-  ]
+  sources = [ _stripped_chromedriver_file ]
 }
 
 cipd_archive("tests") {
@@ -273,13 +249,9 @@ cipd_archive("clear_key_cdm") {
   cipd_path = "chromium/fuchsia/libclearkeycdm-\${targetarch}"
   cipd_description = "Prebuilt libclearkeycdm.so binary for Fuchsia."
 
-  deps = [
-    "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm",
-  ]
+  deps = [ "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm" ]
 
-  sources = [
-    "${root_out_dir}/lib/libclearkeycdm.so",
-  ]
+  sources = [ "${root_out_dir}/lib/libclearkeycdm.so" ]
 }
 
 group("cipd") {

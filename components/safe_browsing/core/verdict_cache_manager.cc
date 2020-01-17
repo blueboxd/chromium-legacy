@@ -10,10 +10,9 @@
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "components/history/core/browser/history_service_observer.h"
+#include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
 
@@ -33,6 +32,20 @@ GURL GetHostNameWithHTTPScheme(const GURL& url) {
   std::string result(url::kHttpScheme);
   result.append(url::kStandardSchemeSeparator).append(url.host());
   return GURL(result);
+}
+// e.g, ("www.foo.com", "/bar/test.cgi") -> "http://www.foo.com/bar/test/cgi"
+GURL GetUrlWithHostAndPath(const std::string& host, const std::string& path) {
+  std::string result(url::kHttpScheme);
+  result.append(url::kStandardSchemeSeparator).append(host).append(path);
+  return GURL(result);
+}
+
+// e.g, "www.foo.com/bar/test/cgi" -> "http://www.foo.com"
+GURL GetHostNameFromCacheExpression(const std::string& cache_expression) {
+  std::string cache_expression_url(url::kHttpScheme);
+  cache_expression_url.append(url::kStandardSchemeSeparator)
+      .append(cache_expression);
+  return GetHostNameWithHTTPScheme(GURL(cache_expression_url));
 }
 
 // Convert a Proto object into a DictionaryValue.
@@ -109,6 +122,12 @@ size_t GetPathDepth(const std::string& cache_expression_path) {
       .size();
 }
 
+size_t GetHostDepth(const std::string& hostname) {
+  return base::SplitString(base::StringPiece(hostname), ".",
+                           base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY)
+      .size();
+}
+
 bool PathVariantsMatchCacheExpression(
     const std::vector<std::string>& generated_paths,
     const std::string& cache_expression_path) {
@@ -163,7 +182,7 @@ std::string GetKeyOfTypeFromTriggerType(
 }
 
 template <class T>
-typename T::VerdictType GetMostMatchingCachedVerdict(
+typename T::VerdictType GetMostMatchingCachedVerdictWithPathMatching(
     const GURL& url,
     const std::string& type_key,
     scoped_refptr<HostContentSettingsMap> content_settings,
@@ -224,6 +243,37 @@ typename T::VerdictType GetMostMatchingCachedVerdict(
   return most_matching_verdict_type;
 }
 
+template <class T>
+typename T::VerdictType GetMostMatchingCachedVerdictWithHostAndPathMatching(
+    const GURL& url,
+    const std::string& type_key,
+    scoped_refptr<HostContentSettingsMap> content_settings,
+    const ContentSettingsType contents_setting_type,
+    const char* proto_name,
+    T* out_response) {
+  DCHECK(proto_name == kVerdictProto);
+  auto most_matching_verdict_type = T::VERDICT_TYPE_UNSPECIFIED;
+
+  std::string root_host, root_path;
+  V4ProtocolManagerUtil::CanonicalizeUrl(url, &root_host, &root_path, nullptr);
+  std::vector<std::string> host_variants;
+  V4ProtocolManagerUtil::GenerateHostVariantsToCheck(root_host, &host_variants);
+  int max_path_depth = -1;
+  for (auto host : host_variants) {
+    int depth = static_cast<int>(GetHostDepth(host));
+    GURL url_to_check = GetUrlWithHostAndPath(host, root_path);
+    auto verdict_type = GetMostMatchingCachedVerdictWithPathMatching<T>(
+        url_to_check, type_key, content_settings, contents_setting_type,
+        proto_name, out_response);
+    if (depth > max_path_depth && verdict_type != T::VERDICT_TYPE_UNSPECIFIED) {
+      max_path_depth = depth;
+      most_matching_verdict_type = verdict_type;
+    }
+  }
+
+  return most_matching_verdict_type;
+}
+
 }  // namespace
 
 VerdictCacheManager::VerdictCacheManager(
@@ -243,7 +293,6 @@ VerdictCacheManager::~VerdictCacheManager() {
 }
 
 void VerdictCacheManager::CachePhishGuardVerdict(
-    const GURL& url,
     LoginReputationClientRequest::TriggerType trigger_type,
     ReusedPasswordAccountType password_type,
     const LoginReputationClientResponse& verdict,
@@ -252,7 +301,7 @@ void VerdictCacheManager::CachePhishGuardVerdict(
   DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
 
-  GURL hostname = GetHostNameWithHTTPScheme(url);
+  GURL hostname = GetHostNameFromCacheExpression(verdict.cache_expression());
 
   std::unique_ptr<base::DictionaryValue> cache_dictionary =
       base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
@@ -307,9 +356,10 @@ VerdictCacheManager::GetCachedPhishGuardVerdict(
   std::string type_key =
       GetKeyOfTypeFromTriggerType(trigger_type, password_type);
 
-  return GetMostMatchingCachedVerdict<LoginReputationClientResponse>(
-      url, type_key, content_settings_,
-      ContentSettingsType::PASSWORD_PROTECTION, kVerdictProto, out_response);
+  return GetMostMatchingCachedVerdictWithHostAndPathMatching<
+      LoginReputationClientResponse>(url, type_key, content_settings_,
+                                     ContentSettingsType::PASSWORD_PROTECTION,
+                                     kVerdictProto, out_response);
 }
 
 size_t VerdictCacheManager::GetStoredPhishGuardVerdictCount(
@@ -360,21 +410,6 @@ void VerdictCacheManager::CacheRealTimeUrlVerdict(
     const GURL& url,
     const RTLookupResponse& verdict,
     const base::Time& receive_time) {
-  GURL hostname = GetHostNameWithHTTPScheme(url);
-  std::unique_ptr<base::DictionaryValue> cache_dictionary =
-      base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
-          hostname, GURL(), ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA,
-          std::string(), nullptr));
-
-  if (!cache_dictionary)
-    cache_dictionary = std::make_unique<base::DictionaryValue>();
-
-  base::Value* verdict_dictionary = cache_dictionary->FindKeyOfType(
-      kRealTimeUrlCacheKey, base::Value::Type::DICTIONARY);
-  if (!verdict_dictionary) {
-    verdict_dictionary = cache_dictionary->SetKey(
-        kRealTimeUrlCacheKey, base::Value(base::Value::Type::DICTIONARY));
-  }
 
   std::vector<std::string> visited_cache_expressions;
   for (const auto& threat_info : verdict.threat_info()) {
@@ -385,6 +420,24 @@ void VerdictCacheManager::CacheRealTimeUrlVerdict(
     // cache expression.
     if (base::Contains(visited_cache_expressions, cache_expression))
       continue;
+
+    GURL hostname =
+        GetHostNameFromCacheExpression(threat_info.cache_expression());
+    std::unique_ptr<base::DictionaryValue> cache_dictionary =
+        base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
+            hostname, GURL(), ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA,
+            std::string(), nullptr));
+
+    if (!cache_dictionary)
+      cache_dictionary = std::make_unique<base::DictionaryValue>();
+
+    base::Value* verdict_dictionary = cache_dictionary->FindKeyOfType(
+        kRealTimeUrlCacheKey, base::Value::Type::DICTIONARY);
+    if (!verdict_dictionary) {
+      verdict_dictionary = cache_dictionary->SetKey(
+          kRealTimeUrlCacheKey, base::Value(base::Value::Type::DICTIONARY));
+    }
+
     std::unique_ptr<base::DictionaryValue> threat_info_entry(
         CreateDictionaryFromVerdict<RTLookupResponse::ThreatInfo>(
             threat_info, receive_time, kRealTimeThreatInfoProto));
@@ -393,21 +446,24 @@ void VerdictCacheManager::CacheRealTimeUrlVerdict(
     if (!verdict_dictionary->FindKey(cache_expression)) {
       stored_verdict_count_real_time_url_check_++;
     }
+
     verdict_dictionary->SetKey(
         cache_expression,
         base::Value::FromUniquePtrValue(std::move(threat_info_entry)));
     visited_cache_expressions.push_back(cache_expression);
+
+    content_settings_->SetWebsiteSettingDefaultScope(
+        hostname, GURL(), ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA,
+        std::string(), std::move(cache_dictionary));
   }
-  content_settings_->SetWebsiteSettingDefaultScope(
-      hostname, GURL(), ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA,
-      std::string(), std::move(cache_dictionary));
 }
 
 RTLookupResponse::ThreatInfo::VerdictType
 VerdictCacheManager::GetCachedRealTimeUrlVerdict(
     const GURL& url,
     RTLookupResponse::ThreatInfo* out_threat_info) {
-  return GetMostMatchingCachedVerdict<RTLookupResponse::ThreatInfo>(
+  return GetMostMatchingCachedVerdictWithPathMatching<
+      RTLookupResponse::ThreatInfo>(
       url, kRealTimeUrlCacheKey, content_settings_,
       ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA,
       kRealTimeThreatInfoProto, out_threat_info);
@@ -501,7 +557,7 @@ void VerdictCacheManager::CleanUpExpiredRealTimeUrlCheckVerdicts() {
 void VerdictCacheManager::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+  base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::UI),
                  base::BindRepeating(
                      &VerdictCacheManager::RemoveContentSettingsOnURLsDeleted,
                      GetWeakPtr(), deletion_info.IsAllHistory(),
@@ -573,7 +629,7 @@ bool VerdictCacheManager::RemoveExpiredRealTimeUrlCheckVerdicts(
 void VerdictCacheManager::RemoveContentSettingsOnURLsDeleted(
     bool all_history,
     const history::URLRows& deleted_rows) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
   DCHECK(content_settings_);
 
   if (all_history) {

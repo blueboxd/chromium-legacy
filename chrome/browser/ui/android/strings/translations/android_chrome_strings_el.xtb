@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Κλείσιμο τρέχουσας καρτέλας</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Αναζήτηση και εξερεύνηση</translation>
-<translation id="1264974993859112054">Αθλητικά</translation>
 <translation id="1266864766717917324">Δεν ήταν δυνατή η κοινοποίηση <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Διακοπή</translation>
 <translation id="1283039547216852943">Πατήστε για ανάπτυξη</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Για να εμφανίζονται οι σελιδοδείκτες σας σε όλες τις συσκευές σας, συνδεθείτε και ενεργοποιήστε τον συγχρονισμό</translation>
 <translation id="2822354292072154809">Είστε βέβαοι ότι θέλετε να αναιρεθούν όλες οι άδειες ιστοτόπου για το αντικείμενο <ph name="CHOSEN_OBJECT_NAME" />;</translation>
 <translation id="2842985007712546952">Γονικός φάκελος</translation>
-<translation id="2858138569776157458">Κορ. ιστότοποι</translation>
 <translation id="2860954141821109167">Βεβαιωθείτε ότι είναι ενεργοποιημένη μια εφαρμογή τηλεφώνου σε αυτήν τη συσκευή.</translation>
 <translation id="2870560284913253234">Ιστότοπος</translation>
 <translation id="2874939134665556319">Προηγούμενο κομμάτι</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Σύνδεση στο Chrome</translation>
 <translation id="3288003805934695103">Επαναλάβετε τη φόρτωση της σελίδας</translation>
 <translation id="32895400574683172">Οι ειδοποιήσεις επιτρέπονται</translation>
+<translation id="3290926146403723641">Για να ολοκληρώσετε τις εργασίες στο διαδίκτυο μέσω του Βοηθού Google, το Chrome θα στείλει το URL και το περιεχόμενο του ιστοτόπου καθώς και τα σχετικά προσωπικά στοιχεία στην Google.</translation>
 <translation id="3295530008794733555">Ταχύτερη περιήγηση. Χρήση λιγότερων δεδομένων.</translation>
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Συνέχεια για λήψη του περιεχομένου;</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Αριθμοί τηλεφώνου</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> λήψεις διαγράφηκαν</translation>
 <translation id="3822502789641063741">Διαγ.αποθ.χώρου ιστότ.;</translation>
-<translation id="3853625385350850937">Για να συνεχίσετε, ενεργοποιήστε το NFC στη συσκευή σας.</translation>
 <translation id="3859306556332390985">Αναζήτηση προς τα εμπρός</translation>
 <translation id="388596076286380598">Λάβετε άρθρα, βίντεο και άλλο περιεχόμενο από τους ιστοτόπους που σας αρέσουν, ακόμη και όταν είστε εκτός σύνδεσης ή η σύνδεσή σας δεν είναι καλή.</translation>
 <translation id="3894427358181296146">Προσθήκη φακέλου…</translation>
@@ -764,7 +762,6 @@
 <translation id="6697947395630195233">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία σας, για να την κοινοποιήσει σε αυτόν τον ιστότοπο.</translation>
 <translation id="6698801883190606802">Διαχείριση συγχρονισμένων δεδομένων</translation>
 <translation id="6699370405921460408">Οι διακομιστές της Google θα βελτιστοποιήσουν τις σελίδες που επισκέπτεστε.</translation>
-<translation id="6709133671862442373">Ειδήσεις</translation>
 <translation id="6710213216561001401">Προηγούμενο</translation>
 <translation id="671481426037969117">Η αντίστροφη μέτρηση <ph name="FQDN" /> εξαντλήθηκε. Θα ξεκινήσει ξανά αύριο.</translation>
 <translation id="6738867403308150051">Λήψη…</translation>
@@ -1079,7 +1076,6 @@
 <translation id="9133397713400217035">Εξερεύνηση εκτός σύνδεσης</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Εμφάνιση πρωτοτύπου</translation>
-<translation id="9139318394846604261">Αγορές</translation>
 <translation id="9155898266292537608">Επίσης, μπορείτε να κάνετε αναζήτηση με ένα γρήγορο πάτημα σε μια λέξη</translation>
 <translation id="9169507124922466868">Το ιστορικό πλοήγησης έχει ανοίξει κατά το ήμισυ</translation>
 <translation id="9204836675896933765">1 αρχείο απομένει</translation>

@@ -15,8 +15,6 @@ source_set("colors") {
     "semantic_color_names.h",
     "semantic_color_names.mm",
   ]
-  deps = [
-    "resources",
-  ]
+  deps = [ "resources" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

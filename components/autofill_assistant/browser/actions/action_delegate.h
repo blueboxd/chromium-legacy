@@ -212,6 +212,12 @@ class ActionDelegate {
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback) = 0;
 
+  // Return the tag of the element given by |selector|.
+  virtual void GetElementTag(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback) = 0;
+
   // Make the next call to WaitForNavigation to expect a navigation event that
   // started after this call.
   virtual void ExpectNavigation() = 0;

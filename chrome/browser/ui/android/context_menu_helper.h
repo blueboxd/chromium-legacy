@@ -13,6 +13,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
+#include "components/optimization_guide/proto/performance_hints_metadata.pb.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/context_menu_params.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -78,7 +79,8 @@ class ContextMenuHelper
   friend class content::WebContentsUserData<ContextMenuHelper>;
 
   static base::android::ScopedJavaLocalRef<jobject> CreateJavaContextMenuParams(
-      const content::ContextMenuParams& params);
+      const content::ContextMenuParams& params,
+      optimization_guide::proto::PerformanceClass performance_class);
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
   content::WebContents* web_contents_;

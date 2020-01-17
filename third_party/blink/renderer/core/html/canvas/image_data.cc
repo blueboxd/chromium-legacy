@@ -562,16 +562,16 @@ ImageData* ImageData::CropRect(const IntRect& crop_rect, bool flip_y) {
 ScriptPromise ImageData::CreateImageBitmap(ScriptState* script_state,
                                            EventTarget& event_target,
                                            base::Optional<IntRect> crop_rect,
-                                           const ImageBitmapOptions* options) {
+                                           const ImageBitmapOptions* options,
+                                           ExceptionState& exception_state) {
   if (BufferBase()->IsDetached()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "The source data has been detached."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The source data has been detached.");
+    return ScriptPromise();
   }
   return ImageBitmapSource::FulfillImageBitmap(
-      script_state,
-      MakeGarbageCollected<ImageBitmap>(this, crop_rect, options));
+      script_state, MakeGarbageCollected<ImageBitmap>(this, crop_rect, options),
+      exception_state);
 }
 
 v8::Local<v8::Object> ImageData::AssociateWithWrapper(

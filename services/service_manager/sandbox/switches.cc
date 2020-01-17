@@ -26,7 +26,7 @@ const char kNetworkSandbox[] = "network";
 const char kPpapiSandbox[] = "ppapi";
 const char kUtilitySandbox[] = "utility";
 const char kCdmSandbox[] = "cdm";
-const char kPdfCompositorSandbox[] = "pdf_compositor";
+const char kPrintCompositorSandbox[] = "print_compositor";
 const char kAudioSandbox[] = "audio";
 const char kSodaSandbox[] = "soda";
 

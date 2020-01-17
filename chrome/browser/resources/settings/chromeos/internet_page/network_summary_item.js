@@ -51,7 +51,7 @@ Polymer({
      */
     networkStateList: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -69,7 +69,7 @@ Polymer({
      */
     showTechnologyBadge_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.valueExists('showTechnologyBadge') &&
             loadTimeData.getBoolean('showTechnologyBadge');
       }
@@ -82,7 +82,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getNetworkStateText_: function(activeNetworkState, deviceState) {
+  getNetworkStateText_(activeNetworkState, deviceState) {
     const stateText =
         this.getConnectionStateText_(activeNetworkState, deviceState);
     if (stateText) {
@@ -124,7 +124,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getConnectionStateText_: function(networkState, deviceState) {
+  getConnectionStateText_(networkState, deviceState) {
     if (!networkState || !networkState.guid) {
       return '';
     }
@@ -154,7 +154,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showPolicyIndicator_: function(activeNetworkState) {
+  showPolicyIndicator_(activeNetworkState) {
     return (activeNetworkState !== undefined &&
             OncMojo.connectionStateIsConnected(
                 activeNetworkState.connectionState)) ||
@@ -166,7 +166,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showSimInfo_: function(deviceState) {
+  showSimInfo_(deviceState) {
     if (!deviceState || deviceState.type != mojom.NetworkType.kCellular) {
       return false;
     }
@@ -178,7 +178,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  simLockedOrAbsent_: function(deviceState) {
+  simLockedOrAbsent_(deviceState) {
     if (this.deviceIsEnabled_(deviceState)) {
       return false;
     }
@@ -197,7 +197,7 @@ Polymer({
    * @return {boolean} Whether or not the device state is enabled.
    * @private
    */
-  deviceIsEnabled_: function(deviceState) {
+  deviceIsEnabled_(deviceState) {
     return !!deviceState &&
         deviceState.deviceState == mojom.DeviceStateType.kEnabled;
   },
@@ -207,7 +207,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  enableToggleIsVisible_: function(deviceState) {
+  enableToggleIsVisible_(deviceState) {
     if (!deviceState) {
       return false;
     }
@@ -233,7 +233,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  enableToggleIsEnabled_: function(deviceState) {
+  enableToggleIsEnabled_(deviceState) {
     return this.enableToggleIsVisible_(deviceState) &&
         deviceState.deviceState != mojom.DeviceStateType.kProhibited &&
         deviceState.deviceState != mojom.DeviceStateType.kUninitialized;
@@ -244,7 +244,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getToggleA11yString_: function(deviceState) {
+  getToggleA11yString_(deviceState) {
     if (!this.enableToggleIsVisible_(deviceState)) {
       return '';
     }
@@ -266,8 +266,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showDetailsIsVisible_: function(
-      activeNetworkState, deviceState, networkStateList) {
+  showDetailsIsVisible_(activeNetworkState, deviceState, networkStateList) {
     return this.deviceIsEnabled_(deviceState) &&
         (!!activeNetworkState.guid || networkStateList.length > 0);
   },
@@ -278,7 +277,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowSubpage_: function(deviceState, networkStateList) {
+  shouldShowSubpage_(deviceState, networkStateList) {
     if (!deviceState) {
       return false;
     }
@@ -308,7 +307,7 @@ Polymer({
    * @param {!Event} event The enable button event.
    * @private
    */
-  onShowDetailsTap_: function(event) {
+  onShowDetailsTap_(event) {
     if (!this.deviceIsEnabled_(this.deviceState)) {
       if (this.enableToggleIsEnabled_(this.deviceState)) {
         const type = this.deviceState.type;
@@ -332,8 +331,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isItemActionable_: function(
-      activeNetworkState, deviceState, networkStateList) {
+  isItemActionable_(activeNetworkState, deviceState, networkStateList) {
     // The boolean logic here matches onShowDetailsTap_ method that handles the
     // item click event.
 
@@ -355,7 +353,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onDeviceEnabledChange_: function(event) {
+  onDeviceEnabledChange_(event) {
     assert(this.deviceState);
     const deviceIsEnabled = this.deviceIsEnabled_(this.deviceState);
     this.fire(
@@ -367,7 +365,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTitleText_: function() {
+  getTitleText_() {
     return this.networkTitleText ||
         this.getNetworkTypeString_(this.activeNetworkState.type);
   },
@@ -377,7 +375,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  doNothing_: function(event) {
+  doNothing_(event) {
     event.stopPropagation();
   },
 
@@ -386,7 +384,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getNetworkTypeString_: function(type) {
+  getNetworkTypeString_(type) {
     // The shared Cellular/Tether subpage is referred to as "Mobile".
     // TODO(khorimoto): Remove once Cellular/Tether are split into their own
     // sections.

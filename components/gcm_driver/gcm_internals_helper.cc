@@ -115,8 +115,13 @@ void SetGCMInternalsInfo(const gcm::GCMClient::GCMStatistics* stats,
     device_info->SetString(kGcmClientState, stats->gcm_client_state);
     device_info->SetBoolean(kConnectionClientCreated,
                             stats->connection_client_created);
-    device_info->SetString(kRegisteredAppIds,
-                           base::JoinString(stats->registered_app_ids, ","));
+
+    auto registered_app_ids = std::make_unique<base::ListValue>();
+    for (const std::string& app_id : stats->registered_app_ids)
+      registered_app_ids->AppendString(app_id);
+
+    device_info->SetList(kRegisteredAppIds, std::move(registered_app_ids));
+
     if (stats->connection_client_created)
       device_info->SetString(kConnectionState, stats->connection_state);
     if (!stats->last_checkin.is_null()) {

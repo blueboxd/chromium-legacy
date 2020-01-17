@@ -185,7 +185,7 @@ class SharderTests(unittest.TestCase):
         self.sharder = Sharder(port.split_test, max_locked_shards)
         test_list = test_list or self.test_list
         return self.sharder.shard_tests([self.get_test_input(test) for test in test_list],
-                                        num_workers, fully_parallel, run_singly)
+                                        num_workers, fully_parallel, False, run_singly)
 
     def assert_shards(self, actual_shards, expected_shard_names):
         self.assertEqual(len(actual_shards), len(expected_shard_names))

@@ -122,9 +122,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "clear_browsing_data_egtest.mm",
-  ]
+  sources = [ "clear_browsing_data_egtest.mm" ]
   deps = [
     "//base/test:test_support",
     "//ios/chrome/app/strings",
@@ -142,9 +140,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "clear_browsing_data_egtest.mm",
-  ]
+  sources = [ "clear_browsing_data_egtest.mm" ]
   deps = [
     "//base/test:test_support",
     "//ios/chrome/app/strings",

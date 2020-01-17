@@ -229,6 +229,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_SetFaviconHiDPI) {
              bookmarks_helper::FROM_UI);
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
+  bookmark0 = GetUniqueNodeByURL(0, page_url);
   SetFavicon(0, bookmark0, icon_url2, CreateFavicon(SK_ColorGREEN),
              bookmarks_helper::FROM_UI);
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
@@ -333,6 +334,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, SC_DeleteFavicon) {
              bookmarks_helper::FROM_UI);
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
+  bookmark0 = GetUniqueNodeByURL(0, page_url);
   DeleteFaviconMappings(0, bookmark0, bookmarks_helper::FROM_UI);
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 

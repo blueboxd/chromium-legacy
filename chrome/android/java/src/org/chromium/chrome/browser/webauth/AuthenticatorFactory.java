@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.webauth;
 
 import org.chromium.blink.mojom.Authenticator;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.services.service_manager.InterfaceFactory;
 

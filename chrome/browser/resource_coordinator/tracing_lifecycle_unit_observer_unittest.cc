@@ -76,15 +76,6 @@ TEST(TracingLifecycleUnitObserverTest, Tracing) {
   lifecycle_unit.SetState(LifecycleUnitState::ACTIVE, kReason);
   Mock::VerifyAndClearExpectations(observer);
 
-  // Pending discard.
-  EXPECT_CALL(*observer,
-              EmitStateBeginEvent(StrEq(kPendingDiscardTracingEventName),
-                                  StrEq(kTitle)));
-  lifecycle_unit.SetState(LifecycleUnitState::PENDING_DISCARD, kReason);
-  Mock::VerifyAndClearExpectations(observer);
-
-  EXPECT_CALL(*observer,
-              EmitStateEndEvent(StrEq(kPendingDiscardTracingEventName)));
   lifecycle_unit.SetState(LifecycleUnitState::DISCARDED, kReason);
   Mock::VerifyAndClearExpectations(observer);
 

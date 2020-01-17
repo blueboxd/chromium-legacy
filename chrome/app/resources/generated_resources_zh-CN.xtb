@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">此用户帐号不属于设备所注册的域。如果想注册其他域，那么您首先需要执行设备恢复。</translation>
 <translation id="1274977772557788323">Adobe Flash Player 存储设置</translation>
 <translation id="1274997165432133392">Cookie 及其他网站数据</translation>
-<translation id="127668050356036882">关闭所有窗口</translation>
 <translation id="1280820357415527819">正在搜索移动网络</translation>
 <translation id="1282420830958964167">您对“<ph name="APP_NAME" />”的使用时长已达到您家长所设的上限。明天可以继续使用 <ph name="TIME_LIMIT" />。</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
@@ -515,7 +514,6 @@
 <translation id="1712552549805331520"><ph name="URL" /> 想在您的本地计算机上永久存储数据</translation>
 <translation id="1714644264617423774">启用无障碍功能，让设备更易于使用。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">动态传感器</translation>
-<translation id="171824261579749339">自然滚动<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">过去一小时</translation>
 <translation id="1719312230114180055">请注意：指纹识别的安全性可能不及安全系数高的密码或 PIN 码。</translation>
 <translation id="1720318856472900922">TLS WWW 服务器身份验证</translation>
@@ -726,7 +724,6 @@
 <translation id="2006638907958895361">在<ph name="APP" />中打开链接</translation>
 <translation id="2007404777272201486">报告问题...</translation>
 <translation id="2010501376126504057">兼容的设备</translation>
-<translation id="2016430552235416146">传统</translation>
 <translation id="2017334798163366053">停用性能数据收集</translation>
 <translation id="2017836877785168846">清除历史记录和地址栏中的自动填充项。</translation>
 <translation id="2018352199541442911">抱歉，系统目前不支持您的外部存储设备。</translation>
@@ -767,7 +764,6 @@
 <translation id="2076672359661571384">中（推荐）</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
 <translation id="2078019350989722914">退出前提示 (<ph name="KEY_EQUIVALENT" />)</translation>
-<translation id="2078494137444990774">已关闭</translation>
 <translation id="2079053412993822885">如果您删除了自己的某个证书，则不能再用该证书标识自己的身份。</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2080070583977670716">更多设置</translation>
@@ -1205,7 +1201,6 @@
 <translation id="2665647207431876759">已过期</translation>
 <translation id="2665717534925640469">此网页现处于全屏模式并已隐藏鼠标指针。</translation>
 <translation id="2665919335226618153">糟糕！格式化过程中出现错误。</translation>
-<translation id="2666990579225592931">以访客身份打开一个窗口</translation>
 <translation id="2667463864537187133">管理拼写检查</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> 正在共享 Chrome 标签页。</translation>
 <translation id="2670429602441959756">此网页包含尚不受虚拟现实模式支持的功能。即将退出…</translation>
@@ -2001,7 +1996,7 @@
 <translation id="3780211714699334884"><ph name="ORIGIN" /> 将能够修改“<ph name="FOLDERNAME" />”内的文件，除非您关闭此标签页</translation>
 <translation id="3780827508782506612">此网页已翻译完毕</translation>
 <translation id="378312418865624974">读取此计算机的专属标识符</translation>
-<translation id="3784472333786002075">Cookie 是由网站创建的文件。它分为两类：第一方 Cookie 是由您访问过的网站创建而成，其网站会显示在地址栏中；第三方 Cookie 是由其他网站创建而成，这些网站拥有您在所访问网站上看到的部分内容（比如广告或图片）。</translation>
+<translation id="3784472333786002075">Cookie 是由网站创建的文件。这些文件分为两类：第一方 Cookie 是由您访问过的网站创建而成，其网站会显示在地址栏中；第三方 Cookie 是由其他网站创建而成，这些网站拥有您在所访问网站上看到的部分内容（比如广告或图片）。</translation>
 <translation id="3785308913036335955">显示应用快捷方式</translation>
 <translation id="3785727820640310185">已保存用于登录此网站的密码</translation>
 <translation id="3788401245189148511">该扩展程序想要：</translation>
@@ -2401,7 +2396,6 @@
 <translation id="4364327530094270451">甜瓜</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> 正在共享窗口。</translation>
 <translation id="4364830672918311045">显示通知</translation>
-<translation id="436499142539576997">未能获取应用数据，仍在尝试运行此应用…</translation>
 <translation id="4370975561335139969">您输入的电子邮件地址和密码不匹配。</translation>
 <translation id="437184764829821926">高级字体设置</translation>
 <translation id="4374831787438678295">Linux 安装程序</translation>
@@ -3428,7 +3422,6 @@
 <translation id="5867841422488265304">搜索或输入网址</translation>
 <translation id="5869029295770560994">知道了</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
-<translation id="5869948122057593679">关闭您的所有窗口</translation>
 <translation id="5870086504539785141">关闭辅助功能菜单</translation>
 <translation id="5870155679953074650">硬故障数</translation>
 <translation id="5876851302954717356">在右侧新增标签页</translation>
@@ -4477,7 +4470,6 @@
 <translation id="7385854874724088939">尝试打印时出现错误。请检查您的打印机，然后重试。</translation>
 <translation id="7385896526023870365">此扩展程序无权访问其他网站。</translation>
 <translation id="7388044238629873883">即将终结！</translation>
-<translation id="7388222713940428051">以访客身份打开一个窗口</translation>
 <translation id="7392118418926456391">病毒扫描失败</translation>
 <translation id="7392915005464253525">重新打开关闭的窗口(&amp;E)</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> 会在系统启动时启动，即使您将其他所有 <ph name="PRODUCT_NAME" />窗口关闭，它也会继续在后台运行。</translation>
@@ -4742,7 +4734,6 @@
 <translation id="7784067724422331729">您计算机的安全设置阻止了此文件。</translation>
 <translation id="7784796923038949829">无法读取或更改网站的数据</translation>
 <translation id="778480864305029524">要使用即时网络共享功能，请开启 Google Play 服务通知功能。</translation>
-<translation id="7786207843293321886">退出访客模式</translation>
 <translation id="7786889348652477777">重新加载应用(&amp;R)</translation>
 <translation id="7787308148023287649">在其他屏幕上显示</translation>
 <translation id="7788298548579301890">您计算机上的其他程序擅自安装了一款可能会更改 Chrome 运作方式的应用。
@@ -4856,7 +4847,6 @@
 <translation id="7908378463497120834">抱歉，您的外部存储设备上至少有一个分区无法加载。</translation>
 <translation id="7909969815743704077">已在隐身模式下进行下载</translation>
 <translation id="7910768399700579500">新建文件夹(&amp;N)</translation>
-<translation id="7910831464510799808">已开启</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">您已在服务器上更改密码。请先退出，然后重新登录。</translation>
 <translation id="7915457674565721553">请连接到互联网以设置家长控制</translation>

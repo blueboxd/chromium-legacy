@@ -72,7 +72,7 @@ suite('SiteEntry', function() {
   teardown(function() {
     // The code being tested changes the Route. Reset so that state is not
     // leaked across tests.
-    settings.resetRouteForTesting();
+    settings.Router.getInstance().resetRouteForTesting();
   });
 
   test('displays the correct number of origins', function() {
@@ -111,9 +111,10 @@ suite('SiteEntry', function() {
     assertEquals('true', originList.getAttribute('aria-hidden'));
     assertEquals(
         settings.routes.SITE_SETTINGS_SITE_DETAILS.path,
-        settings.getCurrentRoute().path);
+        settings.Router.getInstance().getCurrentRoute().path);
     assertEquals(
-        'https://login.foo.com', settings.getQueryParameters().get('site'));
+        'https://login.foo.com',
+        settings.Router.getInstance().getQueryParameters().get('site'));
   });
 
   test('with multiple origins navigates to Site Details', function() {
@@ -129,10 +130,10 @@ suite('SiteEntry', function() {
     originList[1].click();
     assertEquals(
         settings.routes.SITE_SETTINGS_SITE_DETAILS.path,
-        settings.getCurrentRoute().path);
+        settings.Router.getInstance().getCurrentRoute().path);
     assertEquals(
         TEST_MULTIPLE_SITE_GROUP.origins[1].origin,
-        settings.getQueryParameters().get('site'));
+        settings.Router.getInstance().getQueryParameters().get('site'));
   });
 
   test('with single origin does not show overflow menu', function() {

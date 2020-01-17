@@ -12,10 +12,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframed_animation_curve.h"
-#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/content_layer_client.h"
@@ -5579,27 +5579,23 @@ TEST_F(DrawPropertiesTest, MaximumAnimationScaleFactor) {
   TransformOperations translation;
   translation.AppendTranslate(1.f, 2.f, 3.f);
 
-  scoped_refptr<SingleKeyframeEffectAnimation> grand_parent_animation =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> grand_parent_animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
   timeline_impl()->AttachAnimation(grand_parent_animation);
   grand_parent_animation->AttachElement(grand_parent->element_id());
 
-  scoped_refptr<SingleKeyframeEffectAnimation> parent_animation =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> parent_animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
   timeline_impl()->AttachAnimation(parent_animation);
   parent_animation->AttachElement(parent->element_id());
 
-  scoped_refptr<SingleKeyframeEffectAnimation> child_animation =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> child_animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
   timeline_impl()->AttachAnimation(child_animation);
   child_animation->AttachElement(child->element_id());
 
-  scoped_refptr<SingleKeyframeEffectAnimation> grand_child_animation =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> grand_child_animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
   timeline_impl()->AttachAnimation(grand_child_animation);
   grand_child_animation->AttachElement(grand_child->element_id());
 
@@ -6647,11 +6643,9 @@ TEST_F(DrawPropertiesTestWithLayerTree, SkippingLayerImpl) {
       base::TimeDelta::FromSecondsD(1.0), operation, nullptr));
   std::unique_ptr<KeyframeModel> transform_animation(
       KeyframeModel::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
-  scoped_refptr<SingleKeyframeEffectAnimation> animation(
-      SingleKeyframeEffectAnimation::Create(1));
+  scoped_refptr<Animation> animation(Animation::Create(1));
   timeline()->AttachAnimation(animation);
-  animation->AttachElementForKeyframeEffect(parent->element_id(),
-                                            animation->keyframe_effect()->id());
+  animation->AttachElement(parent->element_id());
   animation->AddKeyframeModel(std::move(transform_animation));
   ImplOf(grandchild)->set_visible_layer_rect(gfx::Rect());
   parent->SetTransform(singular);
@@ -6681,8 +6675,7 @@ TEST_F(DrawPropertiesTest, LayerSkippingInSubtreeOfSingularTransform) {
       base::TimeDelta::FromSecondsD(1.0), operation, nullptr));
   std::unique_ptr<KeyframeModel> transform_animation(
       KeyframeModel::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
-  scoped_refptr<SingleKeyframeEffectAnimation> animation(
-      SingleKeyframeEffectAnimation::Create(1));
+  scoped_refptr<Animation> animation(Animation::Create(1));
   timeline_impl()->AttachAnimation(animation);
   animation->AddKeyframeModel(std::move(transform_animation));
 
@@ -6740,8 +6733,8 @@ TEST_F(DrawPropertiesTest, LayerSkippingInSubtreeOfSingularTransform) {
   // If the transform is singular, but there is an animation on it, we
   // should not skip the subtree.  Note that the animation has not started or
   // ticked, there is also code along that path.  This is not its test.
-  animation->AttachElementForKeyframeEffect(child->element_id(),
-                                            animation->keyframe_effect()->id());
+  animation->AttachElement(child->element_id());
+
   SetTransform(child, singular);
   grand_child->set_visible_layer_rect(gfx::Rect(1, 1));
   child->set_visible_layer_rect(gfx::Rect(1, 1));
@@ -6794,12 +6787,10 @@ TEST_F(DrawPropertiesTestWithLayerTree, SkippingPendingLayerImpl) {
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 0.3f, nullptr));
   std::unique_ptr<KeyframeModel> keyframe_model(
       KeyframeModel::Create(std::move(curve), 3, 3, TargetProperty::OPACITY));
-  scoped_refptr<SingleKeyframeEffectAnimation> animation(
-      SingleKeyframeEffectAnimation::Create(1));
+  scoped_refptr<Animation> animation(Animation::Create(1));
   timeline()->AttachAnimation(animation);
   animation->AddKeyframeModel(std::move(keyframe_model));
-  animation->AttachElementForKeyframeEffect(root->element_id(),
-                                            animation->keyframe_effect()->id());
+  animation->AttachElement(root->element_id());
   // Repeat the calculation invocation.
   PendingImplOf(grandchild)->set_visible_layer_rect(gfx::Rect());
   Commit();
@@ -7592,9 +7583,8 @@ TEST_F(DrawPropertiesTestWithLayerTree, OpacityAnimationsTrackingTest) {
   animated->SetBounds(gfx::Size(20, 20));
   animated->SetOpacity(0.f);
 
-  scoped_refptr<SingleKeyframeEffectAnimation> animation =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
   timeline()->AttachAnimation(animation);
 
   animation->AttachElement(animated->element_id());
@@ -7641,9 +7631,8 @@ TEST_F(DrawPropertiesTestWithLayerTree, TransformAnimationsTrackingTest) {
   root->SetForceRenderSurfaceForTesting(true);
   animated->SetBounds(gfx::Size(20, 20));
 
-  scoped_refptr<SingleKeyframeEffectAnimation> animation =
-      SingleKeyframeEffectAnimation::Create(
-          AnimationIdProvider::NextAnimationId());
+  scoped_refptr<Animation> animation =
+      Animation::Create(AnimationIdProvider::NextAnimationId());
   timeline()->AttachAnimation(animation);
   animation->AttachElement(animated->element_id());
 

@@ -191,4 +191,8 @@ void ClearTrackingSharedImageBacking::SetClearedRectInternal(
   cleared_rect_ = cleared_rect;
 }
 
+scoped_refptr<gfx::NativePixmap> SharedImageBacking::GetNativePixmap() {
+  return nullptr;
+}
+
 }  // namespace gpu

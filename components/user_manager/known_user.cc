@@ -629,21 +629,13 @@ void CleanEphemeralUsers() {
     return;
 
   ListPrefUpdate update(local_state, kKnownUsers);
-  auto& list_storage = update->GetList();
-  for (auto it = list_storage.begin(); it < list_storage.end();) {
-    bool remove = false;
-    base::DictionaryValue* element = nullptr;
-    if (update->GetDictionary(std::distance(list_storage.begin(), it),
-                              &element)) {
-      base::Value* is_ephemeral = element->FindKey(kIsEphemeral);
-      if (is_ephemeral && is_ephemeral->GetBool())
-        remove = true;
-    }
-    if (remove)
-      it = list_storage.erase(it);
-    else
-      it++;
-  }
+  update->EraseListValueIf([](const auto& value) {
+    if (!value.is_dict())
+      return false;
+
+    base::Optional<bool> is_ephemeral = value.FindBoolKey(kIsEphemeral);
+    return is_ephemeral && *is_ephemeral;
+  });
 }
 
 void RegisterPrefs(PrefRegistrySimple* registry) {

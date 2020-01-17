@@ -157,7 +157,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   void Resume();
 
   bool IsSubmitFrameExpected(int16_t frame_index);
-  void ProcessFrame(mojom::XRFrameDataPtr frame_data,
+  void ProcessFrame(mojom::XRFrameDataRequestOptionsPtr options,
+                    mojom::XRFrameDataPtr frame_data,
                     mojom::XRFrameDataProvider::GetFrameDataCallback callback);
 
   bool InitializeGl(gfx::AcceleratedWidget drawing_widget);

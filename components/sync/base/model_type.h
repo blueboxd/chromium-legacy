@@ -36,7 +36,7 @@ namespace syncer {
 // |kModelTypeInfoMap| struct entries are in the same order as their definition
 // in ModelType enum. When you make changes in ModelType enum, don't forget to
 // update the |kModelTypeInfoMap| struct in model_type.cc and also the
-// SyncModelType and SyncModelTypeByMacro histogram suffixes in histograms.xml
+// SyncModelType histogram suffix in histograms.xml
 enum ModelType {
   // Object type unknown.  Objects may transition through
   // the unknown state during their initial creation, before
@@ -177,8 +177,7 @@ inline ModelType ModelTypeFromInt(int i) {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. When you add a new entry or when you
 // deprecate an existing one, also update SyncModelTypes in enums.xml and
-// SyncModelType and SyncModelTypeByMacro suffixes in histograms.xml.
-// TODO(crbug.com/1019744): Remove the SyncModelTypeByMacro suffixes.
+// SyncModelType suffix in histograms.xml.
 enum class ModelTypeForHistograms {
   kUnspecified = 0,
   kTopLevelFolder = 1,

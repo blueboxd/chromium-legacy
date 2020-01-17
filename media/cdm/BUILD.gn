@@ -6,9 +6,7 @@ import("//media/media_options.gni")
 
 if (enable_library_cdms) {
   source_set("cdm_api") {
-    sources = [
-      "api/content_decryption_module.h",
-    ]
+    sources = [ "api/content_decryption_module.h" ]
   }
 }
 

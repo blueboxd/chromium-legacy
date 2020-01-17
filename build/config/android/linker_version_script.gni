@@ -17,9 +17,7 @@ import("//build/config/python.gni")
 template("generate_linker_version_script") {
   action_with_pydeps(target_name) {
     script = "//build/android/gyp/generate_linker_version_script.py"
-    outputs = [
-      invoker.linker_script,
-    ]
+    outputs = [ invoker.linker_script ]
     inputs = []
     args = [ "--output=" + rebase_path(invoker.linker_script, root_build_dir) ]
 

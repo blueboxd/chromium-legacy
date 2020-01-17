@@ -178,6 +178,7 @@ class ScriptPromise;
 class ScriptRunner;
 class ScriptableDocumentParser;
 class ScriptedAnimationController;
+class SecurityContextInit;
 class SecurityOrigin;
 class SelectorQueryCache;
 class SerializedScriptValue;
@@ -483,10 +484,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   bool IsForExternalHandler() const { return is_for_external_handler_; }
-  void SetIsForExternalHandler() {
-    DCHECK(!is_for_external_handler_);
-    is_for_external_handler_ = true;
-  }
 
   // This is a DOM function.
   StyleSheetList& StyleSheets();
@@ -1499,7 +1496,9 @@ class CORE_EXPORT Document : public ContainerNode,
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
 
   WindowAgent& GetWindowAgent();
-  WindowAgentFactory* GetWindowAgentFactory() { return window_agent_factory_; }
+  WindowAgentFactory* GetWindowAgentFactory() const {
+    return window_agent_factory_;
+  }
 
   void CountPotentialFeaturePolicyViolation(
       mojom::FeaturePolicyFeature) const override;
@@ -1516,9 +1515,9 @@ class CORE_EXPORT Document : public ContainerNode,
   void ProcessJavaScriptUrl(const KURL&, ContentSecurityPolicyDisposition);
 
   // Functions to keep count of display locks in this document.
-  void AddActivationBlockingDisplayLock();
-  void RemoveActivationBlockingDisplayLock();
-  int ActivationBlockingDisplayLockCount() const;
+  void IncrementDisplayLockBlockingAllActivation();
+  void DecrementDisplayLockBlockingAllActivation();
+  int DisplayLockBlockingAllActivationCount() const;
 
   void AddLockedDisplayLock();
   void RemoveLockedDisplayLock();
@@ -1650,7 +1649,6 @@ class CORE_EXPORT Document : public ContainerNode,
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextSubresourceFilterTest,
                            DuringOnFreeze);
   class NetworkStateObserver;
-  class SecurityContextInit;
 
   Document(const DocumentInit& initization,
            SecurityContextInit init_helper,
@@ -2082,8 +2080,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // The number of canvas elements on the document
   int num_canvases_ = 0;
 
-  // Number of activation blocking display locks currently in this document.
-  int activation_blocking_display_lock_count_ = 0;
+  // Number of display locks in this document that block all activation.
+  int display_lock_blocking_all_activation_count_ = 0;
   // Number of locked display locks in the document.
   int locked_display_lock_count_ = 0;
 
@@ -2093,7 +2091,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // types that are handled externally. The document in this case is the
   // counterpart to a PluginDocument except that it contains a FrameView as
   // opposed to a PluginView.
-  bool is_for_external_handler_ = false;
+  bool is_for_external_handler_;
 
 #if DCHECK_IS_ON()
   // Allow traversal of Shadow DOM V0 traversal with dirty distribution.
@@ -2159,6 +2157,8 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<IntersectionObserver> display_lock_activation_observer_;
 
   bool in_forced_colors_mode_;
+
+  bool applying_scroll_restoration_logic_ = false;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

@@ -38,7 +38,7 @@ cr.define('device_table', function() {
      * Decorates an element as a UI element class. Caches references to the
      *    table body and headers.
      */
-    decorate: function() {
+    decorate() {
       /** @private */
       this.body_ = this.tBodies[0];
       /** @private */
@@ -51,7 +51,7 @@ cr.define('device_table', function() {
      * Sets the tables device collection.
      * @param {!device_collection.DeviceCollection} deviceCollection
      */
-    setDevices: function(deviceCollection) {
+    setDevices(deviceCollection) {
       assert(!this.devices_, 'Devices can only be set once.');
 
       this.devices_ = deviceCollection;
@@ -69,7 +69,7 @@ cr.define('device_table', function() {
      * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
      * @param {boolean} isInspecting
      */
-    setInspecting: function(deviceInfo, isInspecting) {
+    setInspecting(deviceInfo, isInspecting) {
       this.inspectionMap_.set(deviceInfo, isInspecting);
       this.updateRow_(deviceInfo, this.devices_.indexOf(deviceInfo));
     },
@@ -79,7 +79,7 @@ cr.define('device_table', function() {
      * @param {number} index
      * @private
      */
-    handleForgetClick_: function(index) {
+    handleForgetClick_(index) {
       const event = new CustomEvent('forgetpressed', {
         bubbles: true,
         detail: {
@@ -94,7 +94,7 @@ cr.define('device_table', function() {
      * @param {!Event} event
      * @private
      */
-    handleChange_: function(event) {
+    handleChange_(event) {
       this.updateRow_(this.devices_.item(event.index), event.index);
     },
 
@@ -103,7 +103,7 @@ cr.define('device_table', function() {
      * @param {number} index
      * @private
      */
-    handleInspectClick_: function(index) {
+    handleInspectClick_(index) {
       const event = new CustomEvent('inspectpressed', {
         bubbles: true,
         detail: {
@@ -118,7 +118,7 @@ cr.define('device_table', function() {
      * @param {!Event} event
      * @private
      */
-    handleSplice_: function(event) {
+    handleSplice_(event) {
       event.removed.forEach(function() {
         this.body_.deleteRow(event.index);
       }, this);
@@ -134,7 +134,7 @@ cr.define('device_table', function() {
      * @param {?number} index
      * @private
      */
-    insertRow_: function(device, index) {
+    insertRow_(device, index) {
       const row = this.body_.insertRow(index);
       row.id = device.address;
 
@@ -170,7 +170,7 @@ cr.define('device_table', function() {
      * Deletes and recreates the table using the cached |devices_|.
      * @private
      */
-    redraw_: function() {
+    redraw_() {
       this.removeChild(this.body_);
       this.appendChild(document.createElement('tbody'));
       this.body_ = this.tBodies[0];
@@ -187,7 +187,7 @@ cr.define('device_table', function() {
      * @param {number} index
      * @private
      */
-    updateRow_: function(device, index) {
+    updateRow_(device, index) {
       const row = this.body_.rows[index];
       assert(row, 'Row ' + index + ' is not in the table.');
 

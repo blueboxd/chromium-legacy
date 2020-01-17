@@ -117,29 +117,6 @@ class ProfileMetrics {
     NUM_PROFILE_AUTH_METRICS
   };
 
-  // Enum for tracking user interactions with the user menu and user manager.
-  // Interactions initiated from the content area are logged into a different
-  // histogram from those that were initiated from the avatar button.
-  // An example of the interaction beginning in the content area is
-  // clicking "Manage Accounts" within account selection on a Google property.
-  enum ProfileDesktopMenu {
-    // User opened the user menu, and clicked lock.
-    PROFILE_DESKTOP_MENU_LOCK = 0,
-    // User opened the user menu, and removed an account.
-    PROFILE_DESKTOP_MENU_REMOVE_ACCT,
-    // User opened the user menu, and started adding an account.
-    PROFILE_DESKTOP_MENU_ADD_ACCT,
-    // User opened the user menu, and changed the profile name.
-    PROFILE_DESKTOP_MENU_EDIT_NAME,
-    // User opened the user menu, and started selecting a new profile image.
-    PROFILE_DESKTOP_MENU_EDIT_IMAGE,
-    // User opened the user menu, and opened the user manager.
-    PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER,
-    // User opened the user menu, and selected Go Incognito.
-    DEPRECATED_PROFILE_DESKTOP_MENU_GO_INCOGNITO,
-    NUM_PROFILE_DESKTOP_MENU_METRICS,
-  };
-
 #if defined(OS_ANDROID)
   // Enum for tracking user interactions with the account management menu
   // on Android.
@@ -198,7 +175,6 @@ class ProfileMetrics {
   static void LogProfileSwitchGaia(ProfileGaia metric);
   static void LogProfileSyncInfo(ProfileSync metric);
   static void LogProfileAuthResult(ProfileAuth metric);
-  static void LogProfileDesktopMenu(ProfileDesktopMenu metric);
   static void LogProfileDelete(bool profile_was_signed_in);
   static void LogTimeToOpenUserManager(const base::TimeDelta& time_to_open);
 

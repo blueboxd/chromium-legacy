@@ -24,6 +24,7 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
     private final String mMediaUrl;
     private MediaStatusObserver mMediaStatusObserver;
     private boolean mLoaded;
+    private boolean mHasEverReceivedValidMediaSession;
 
     FlingingControllerAdapter(RemotingSessionController sessionController, String mediaUrl) {
         mSessionController = sessionController;
@@ -140,6 +141,7 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
 
         MediaStatus mediaStatus = remoteMediaClient.getMediaStatus();
         if (mediaStatus != null) {
+            mHasEverReceivedValidMediaSession = true;
             if (mediaStatus.getPlayerState() == MediaStatus.PLAYER_STATE_IDLE
                     && mediaStatus.getIdleReason() == MediaStatus.IDLE_REASON_FINISHED) {
                 mLoaded = false;
@@ -152,7 +154,11 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
 
             mMediaStatusObserver.onMediaStatusUpdate(new MediaStatusBridge(mediaStatus));
 
-        } else {
+        } else if (mHasEverReceivedValidMediaSession) {
+            // We can receive a null |mediaStatus| while we are in the process of loading the video.
+            // We should wait until we receive one valid media status before considering the video
+            // unloaded. Otherwise, the first call to seek or play will reload the video.
+            // See b/144325733.
             mLoaded = false;
             mStreamPositionExtrapolator.clear();
         }

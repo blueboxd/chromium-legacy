@@ -1,9 +1,5 @@
 include_rules = [
-  # This is needed for error page strings/resources.
-  # TODO(1024326): If WebLayer stays with WebView's error pages implementation
-  # long-term, componentize these strings/resources as part of componentizing
-  # that implementation and remove the need for this dependency.
-  "+android_webview/grit",
+  "+components/android_system_error_page",
   "+components/autofill/content/renderer",
   "+components/safe_browsing/content/renderer",
   "+components/safe_browsing/core/common",

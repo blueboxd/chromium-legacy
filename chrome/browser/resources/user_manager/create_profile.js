@@ -25,7 +25,7 @@ Polymer({
      */
     availableIcons_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       }
     },
@@ -69,7 +69,7 @@ Polymer({
      */
     isProfileShortcutsEnabled_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('profileShortcutsEnabled');
       },
       readOnly: true
@@ -81,19 +81,19 @@ Polymer({
      */
     isForceSigninEnabled_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isForceSigninEnabled');
       },
     },
   },
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = signin.ProfileBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'create-profile-success', this.handleSuccess_.bind(this));
     this.addWebUIListener(
@@ -108,7 +108,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     // cr-input's focusable element isn't defined until after it's attached.
     Polymer.RenderStatus.afterNextRender(this, () => this.$.nameInput.focus());
   },
@@ -119,7 +119,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onTap_: function(event) {
+  onTap_(event) {
     const element = Polymer.dom(event).rootTarget;
 
     if (element.id == 'sign-in-to-chrome') {
@@ -138,7 +138,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onSaveTap_: function(event) {
+  onSaveTap_(event) {
     this.createProfile_();
   },
 
@@ -146,7 +146,7 @@ Polymer({
    * Creates the new profile.
    * @private
    */
-  createProfile_: function() {
+  createProfile_() {
     this.hideMessage_();
     this.createInProgress_ = true;
     const createShortcut =
@@ -162,7 +162,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onCancelTap_: function(event) {
+  onCancelTap_(event) {
     this.fire('change-page', {page: 'user-pods-page'});
   },
 
@@ -171,7 +171,7 @@ Polymer({
    * @param {!ProfileInfo} profileInfo Details of the created/imported profile.
    * @private
    */
-  handleSuccess_: function(profileInfo) {
+  handleSuccess_(profileInfo) {
     this.createInProgress_ = false;
     this.fire('change-page', {page: 'user-pods-page'});
   },
@@ -180,7 +180,7 @@ Polymer({
    * Hides the warning/error message.
    * @private
    */
-  hideMessage_: function() {
+  hideMessage_() {
     this.isMessageVisble_ = false;
   },
 
@@ -189,7 +189,7 @@ Polymer({
    * @param {*} message An HTML warning/error message.
    * @private
    */
-  handleMessage_: function(message) {
+  handleMessage_(message) {
     this.createInProgress_ = false;
     this.message_ = '' + message;
     this.isMessageVisble_ = true;
@@ -201,10 +201,10 @@ Polymer({
    * @param {string} id The ID of the string to translate.
    * @private
    */
-  i18nAllowIDAttr_: function(id) {
+  i18nAllowIDAttr_(id) {
     const opts = {
       'attrs': {
-        'id': function(node, value) {
+        'id'(node, value) {
           return node.tagName == 'A';
         }
       }
@@ -219,7 +219,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isSpinnerActive_: function(createInProgress) {
+  isSpinnerActive_(createInProgress) {
     return createInProgress;
   },
 
@@ -230,7 +230,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isSaveDisabled_: function(createInProgress, profileName) {
+  isSaveDisabled_(createInProgress, profileName) {
     /** @type {CrInputElement} */
     const nameInput = this.$.nameInput;
     return createInProgress || !profileName || !nameInput.validate();

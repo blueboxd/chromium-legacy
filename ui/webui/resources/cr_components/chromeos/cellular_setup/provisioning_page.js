@@ -187,7 +187,7 @@ Polymer({
 
     // The <webview> requested information about this device. Reply by posting a
     // message back to it.
-    if (messageType == 'requestDeviceInfoMsg') {
+    if (messageType === 'requestDeviceInfoMsg') {
       this.getPortalWebview().contentWindow.postMessage(
           {
             carrier: this.cellularMetadata.carrier,
@@ -200,8 +200,8 @@ Polymer({
     }
 
     // The <webview> provided an update on the status of the activation attempt.
-    if (messageType == 'reportTransactionStatusMsg') {
-      const success = status == 'ok';
+    if (messageType === 'reportTransactionStatusMsg') {
+      const success = status === 'ok';
       this.fire('on-carrier-portal-result', success);
       return;
     }

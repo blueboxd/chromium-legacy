@@ -108,13 +108,20 @@
 
             { title: 'AR Hit Test', category: 'Phone AR',
               path: 'phone-ar-hit-test.html',
+              variants: [
+                  {name: 'Debug input source events', query: '?debugSources=true'},
+                  {name: 'Debug iframe input', query: '?debugSources=true&iframe=true'}],
               description: 'Demonstrates using the Hit Test API to place virtual objects on real-world surfaces.' },
 
             { title: 'AR Plane Detection & Anchors', category: 'Phone AR',
               path: 'phone-ar-plane-detection-anchors.html',
+              variants: [{name: 'Debug input source events', query: '?debugSources=true'}],
               description: 'Demonstrates using the Plane Detection feature, including implementation of ' +
                            'synchronous hit test in JavaScript leveraging obtained plane data and ' +
                            'anchors API to position objects.' },
+            { title: 'AR Lighting estimation', category: 'Phone AR',
+              path: 'lighting-estimation.html',
+              description: 'Demonstrates using the Lighting Estimation feature.' },
           ];
 
           let mainElement = document.getElementById("main");
@@ -155,8 +162,18 @@
             polyfillLink.innerHTML = 'Open with Polyfill';
             links.appendChild(polyfillLink);
 
+            if (page.variants) {
+              for (let i = 0; i < page.variants.length; ++i) {
+                let variant = page.variants[i];
+                let link = document.createElement('a');
+                link.href = page.path + variant.query;
+                link.innerHTML = variant.name;
+                links.appendChild(link);
+              }
+            }
+
             let sourceLink = document.createElement('a');
-            sourceLink.href = 'https://github.com/immersive-web/webxr-samples/blob/master/proposals/' + page.path;
+            sourceLink.href = 'https://cs.chromium.org/chromium/src/third_party/webxr_test_pages/webxr-samples/proposals/' + page.path;
             sourceLink.innerHTML = 'Source';
             links.appendChild(sourceLink);
 

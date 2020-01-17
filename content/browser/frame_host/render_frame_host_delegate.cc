@@ -180,4 +180,12 @@ bool RenderFrameHostDelegate::IsFrameLowPriority(
   return false;
 }
 
+void RenderFrameHostDelegate::IsClipboardPasteAllowed(
+    const GURL& url,
+    const ui::ClipboardFormatType& data_type,
+    const std::string& data,
+    IsClipboardPasteAllowedCallback callback) {
+  std::move(callback).Run(ClipboardPasteAllowed(true));
+}
+
 }  // namespace content

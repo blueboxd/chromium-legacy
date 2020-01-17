@@ -96,6 +96,9 @@
     <dimen name="infobar_big_icon_size">48dp</dimen>
     <dimen name="infobar_big_icon_margin">16dp</dimen>
 
+    <!-- Dimension applied to SyncErrorInfoBar icon. -->
+    <dimen name="sync_error_infobar_icon_size">48dp</dimen>
+
     <!-- Dimensions for compact infobars are a little shorter. -->
     <dimen name="infobar_compact_size">56dp</dimen>
 

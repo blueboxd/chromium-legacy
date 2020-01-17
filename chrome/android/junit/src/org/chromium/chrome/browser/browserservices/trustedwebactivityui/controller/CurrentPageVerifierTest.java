@@ -21,15 +21,15 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
+import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -63,7 +63,8 @@ public class CurrentPageVerifierTest {
     @Mock Tab mTab;
     @Mock
     ClientPackageNameProvider mClientPackageNameProvider;
-    @Captor ArgumentCaptor<TabObserver> mTabObserverCaptor;
+    @Captor
+    ArgumentCaptor<CustomTabTabObserver> mTabObserverCaptor;
 
     TestVerifier mVerifierDelegate = new TestVerifier();
 
@@ -163,7 +164,7 @@ public class CurrentPageVerifierTest {
         NavigationHandle navigation =
                 new NavigationHandle(0 /* navigationHandleProxy */, url, true /* isMainFrame */,
                         false /* isSameDocument */, false /* isRendererInitiated */);
-        for (TabObserver tabObserver : mTabObserverCaptor.getAllValues()) {
+        for (CustomTabTabObserver tabObserver : mTabObserverCaptor.getAllValues()) {
             tabObserver.onDidStartNavigation(mTab, navigation);
         }
 
@@ -171,7 +172,7 @@ public class CurrentPageVerifierTest {
                 false /* isFragmentNavigation */, false /* isDownload */,
                 false /* isValidSearchFormUrl */, 0 /* pageTransition */, 0 /* errorCode*/,
                 200 /* httpStatusCode*/);
-        for (TabObserver tabObserver : mTabObserverCaptor.getAllValues()) {
+        for (CustomTabTabObserver tabObserver : mTabObserverCaptor.getAllValues()) {
             tabObserver.onDidFinishNavigation(mTab, navigation);
         }
     }

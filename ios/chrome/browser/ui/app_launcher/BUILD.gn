@@ -32,9 +32,7 @@ source_set("app_launcher") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "app_launcher_coordinator_unittest.mm",
-  ]
+  sources = [ "app_launcher_coordinator_unittest.mm" ]
   deps = [
     ":app_launcher",
     "//base",

@@ -7,6 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 
 namespace android_webview {
 
@@ -16,7 +17,16 @@ class AwContentsLifecycleNotifier {
   static void OnWebViewDestroyed();
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AwContentsLifecycleNotifier);
+  friend base::NoDestructor<AwContentsLifecycleNotifier>;
+
+  static AwContentsLifecycleNotifier& getInstance();
+
+  AwContentsLifecycleNotifier();
+  ~AwContentsLifecycleNotifier() = delete;
+
+  int mNumWebViews = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(AwContentsLifecycleNotifier);
 };
 
 }  // namespace android_webview

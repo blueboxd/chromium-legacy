@@ -11,14 +11,14 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/infobars/core/infobar.h"
-#include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
+#include "components/infobars/core/infobar_feature.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_password_infobar_banner_overlay.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
+#import "ios/chrome/browser/passwords/test/mock_ios_chrome_save_passwords_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/banners/test/fake_infobar_banner_consumer.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/test/fake_infobar_ui_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "testing/gtest_mac.h"
@@ -39,7 +39,7 @@ NSString* const kPassword = @"12345";
 class SavePasswordInfobarBannerOverlayMediatorTest : public PlatformTest {
  public:
   SavePasswordInfobarBannerOverlayMediatorTest() {
-    feature_list_.InitWithFeatures({kInfobarUIReboot}, {});
+    feature_list_.InitWithFeatures({kIOSInfobarUIReboot}, {});
   }
 
  private:
@@ -51,17 +51,8 @@ class SavePasswordInfobarBannerOverlayMediatorTest : public PlatformTest {
 TEST_F(SavePasswordInfobarBannerOverlayMediatorTest, SetUpConsumer) {
   // Create an InfoBarIOS with a IOSChromeSavePasswordInfoBarDelegate.
   FakeInfobarUIDelegate* ui_delegate = [[FakeInfobarUIDelegate alloc] init];
-  ui_delegate.infobarType = InfobarType::kInfobarTypePasswordSave;
-  std::unique_ptr<password_manager::MockPasswordFormManagerForUI> form_manager =
-      std::make_unique<password_manager::MockPasswordFormManagerForUI>();
-  autofill::PasswordForm form;
-  form.username_value = base::SysNSStringToUTF16(kUsername);
-  form.password_value = base::SysNSStringToUTF16(kPassword);
-  EXPECT_CALL(*form_manager, GetPendingCredentials())
-      .WillRepeatedly(testing::ReturnRef(form));
   std::unique_ptr<IOSChromeSavePasswordInfoBarDelegate> passed_delegate =
-      std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
-          false, false, std::move(form_manager));
+      MockIOSChromeSavePasswordInfoBarDelegate::Create(kUsername, kPassword);
   IOSChromeSavePasswordInfoBarDelegate* delegate = passed_delegate.get();
   InfoBarIOS infobar(ui_delegate, std::move(passed_delegate));
   // Package the infobar into an OverlayRequest, then create a mediator that

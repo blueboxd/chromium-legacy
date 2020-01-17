@@ -25,7 +25,7 @@ ChromeVoxLiveRegionsTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
   /** @override */
-  setUp: function() {
+  setUp() {
     window.RoleType = chrome.automation.RoleType;
     window.TreeChangeType = chrome.automation.TreeChangeType;
   },
@@ -33,7 +33,7 @@ ChromeVoxLiveRegionsTest.prototype = {
   /**
    * @return {!MockFeedback}
    */
-  createMockFeedback: function() {
+  createMockFeedback() {
     var mockFeedback =
         new MockFeedback(this.newCallback(), this.newCallback.bind(this));
     mockFeedback.install();
@@ -45,7 +45,7 @@ ChromeVoxLiveRegionsTest.prototype = {
    * @param {string} cmd
    * @return {function() : void}
    */
-  doCmd: function(cmd) {
+  doCmd(cmd) {
     return function() {
       CommandHandler.onCommand(cmd);
     };
@@ -55,7 +55,7 @@ ChromeVoxLiveRegionsTest.prototype = {
    * Simulates work done when users interact using keyboard, braille, or
    * touch.
    */
-  simulateUserInteraction: function() {
+  simulateUserInteraction() {
     Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
   },
 };

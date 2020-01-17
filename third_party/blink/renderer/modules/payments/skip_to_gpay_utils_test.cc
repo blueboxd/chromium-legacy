@@ -8,7 +8,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/modules/payments/payment_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_options.h"
 
 namespace blink {
 namespace {

@@ -7,7 +7,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/android/chrome_jni_headers/NotificationSystemStatusUtil_jni.h"
-#include "chrome/browser/android/feature_utilities.h"
+#include "chrome/browser/android/chrome_session_state.h"
 #include "chrome/browser/android/locale/locale_manager.h"
 #include "chrome/browser/android/metrics/uma_session_stats.h"
 

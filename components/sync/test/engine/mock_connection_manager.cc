@@ -68,11 +68,13 @@ void MockConnectionManager::SetMidCommitObserver(
   mid_commit_observer_ = observer;
 }
 
-bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
-                                             const string& path,
-                                             const string& access_token) {
+bool MockConnectionManager::PostBufferToPath(const std::string& buffer_in,
+                                             const std::string& path,
+                                             const std::string& access_token,
+                                             std::string* buffer_out,
+                                             HttpResponse* http_response) {
   ClientToServerMessage post;
-  if (!post.ParseFromString(params->buffer_in)) {
+  if (!post.ParseFromString(buffer_in)) {
     ADD_FAILURE();
     return false;
   }
@@ -91,8 +93,8 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
 
   requests_.push_back(post);
   client_stuck_ = post.sync_problem_detected();
-  sync_pb::ClientToServerResponse response;
-  response.Clear();
+  sync_pb::ClientToServerResponse client_to_server_response;
+  client_to_server_response.Clear();
 
   if (directory_) {
     // If the Directory's locked when we do this, it's a problem as in normal
@@ -107,37 +109,37 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   }
 
   if (access_token.empty()) {
-    params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
+    http_response->server_status = HttpResponse::SYNC_AUTH_ERROR;
     return false;
   }
 
   if (access_token != kValidAccessToken) {
     // Simulate server-side auth failure.
-    params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
+    http_response->server_status = HttpResponse::SYNC_AUTH_ERROR;
     ClearAccessToken();
   }
 
   if (--countdown_to_postbuffer_fail_ == 0) {
     // Fail as countdown hits zero.
-    params->response.server_status = HttpResponse::SYNC_SERVER_ERROR;
+    http_response->server_status = HttpResponse::SYNC_SERVER_ERROR;
     return false;
   }
 
   if (!server_reachable_) {
-    params->response.server_status = HttpResponse::CONNECTION_UNAVAILABLE;
+    http_response->server_status = HttpResponse::CONNECTION_UNAVAILABLE;
     return false;
   }
 
   // Default to an ok connection.
-  params->response.server_status = HttpResponse::SERVER_CONNECTION_OK;
-  response.set_error_code(SyncEnums::SUCCESS);
+  http_response->server_status = HttpResponse::SERVER_CONNECTION_OK;
+  client_to_server_response.set_error_code(SyncEnums::SUCCESS);
   const string current_store_birthday = store_birthday();
-  response.set_store_birthday(current_store_birthday);
+  client_to_server_response.set_store_birthday(current_store_birthday);
   if (post.has_store_birthday() &&
       post.store_birthday() != current_store_birthday) {
-    response.set_error_code(SyncEnums::NOT_MY_BIRTHDAY);
-    response.set_error_message("Merry Unbirthday!");
-    response.SerializeToString(&params->buffer_out);
+    client_to_server_response.set_error_code(SyncEnums::NOT_MY_BIRTHDAY);
+    client_to_server_response.set_error_message("Merry Unbirthday!");
+    client_to_server_response.SerializeToString(buffer_out);
     store_birthday_sent_ = true;
     return true;
   }
@@ -148,17 +150,17 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   store_birthday_sent_ = true;
 
   if (post.message_contents() == ClientToServerMessage::COMMIT) {
-    if (!ProcessCommit(&post, &response)) {
+    if (!ProcessCommit(&post, &client_to_server_response)) {
       return false;
     }
 
   } else if (post.message_contents() == ClientToServerMessage::GET_UPDATES) {
-    if (!ProcessGetUpdates(&post, &response)) {
+    if (!ProcessGetUpdates(&post, &client_to_server_response)) {
       return false;
     }
   } else if (post.message_contents() ==
              ClientToServerMessage::CLEAR_SERVER_DATA) {
-    if (!ProcessClearServerData(&post, &response)) {
+    if (!ProcessClearServerData(&post, &client_to_server_response)) {
       return false;
     }
   } else {
@@ -170,7 +172,7 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     base::AutoLock lock(response_code_override_lock_);
     if (throttling_) {
       sync_pb::ClientToServerResponse_Error* response_error =
-          response.mutable_error();
+          client_to_server_response.mutable_error();
       response_error->set_error_type(SyncEnums::THROTTLED);
       for (ModelType type : partial_failure_type_) {
         response_error->add_error_data_type_ids(
@@ -181,7 +183,7 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
 
     if (partial_failure_) {
       sync_pb::ClientToServerResponse_Error* response_error =
-          response.mutable_error();
+          client_to_server_response.mutable_error();
       response_error->set_error_type(SyncEnums::PARTIAL_FAILURE);
       for (ModelType type : partial_failure_type_) {
         response_error->add_error_data_type_ids(
@@ -191,7 +193,7 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     }
   }
 
-  response.SerializeToString(&params->buffer_out);
+  client_to_server_response.SerializeToString(buffer_out);
   if (post.message_contents() == ClientToServerMessage::COMMIT &&
       !mid_commit_callback_.is_null()) {
     std::move(mid_commit_callback_).Run();

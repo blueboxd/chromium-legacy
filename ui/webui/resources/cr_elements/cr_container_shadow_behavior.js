@@ -110,7 +110,7 @@
         this.sides_.forEach(side => {
           if (target === this.intersectionProbes_.get(side)) {
             this.dropShadows_.get(side).classList.toggle(
-                'has-shadow', entry.intersectionRatio == 0);
+                'has-shadow', entry.intersectionRatio === 0);
           }
         });
       }

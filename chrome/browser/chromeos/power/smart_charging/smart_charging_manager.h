@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_SMART_CHARGING_SMART_CHARGING_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_SMART_CHARGING_SMART_CHARGING_MANAGER_H_
 
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -15,7 +16,10 @@
 #include "chrome/browser/chromeos/power/ml/boot_clock.h"
 #include "chrome/browser/chromeos/power/smart_charging/smart_charging_ukm_logger.h"
 #include "chrome/browser/chromeos/power/smart_charging/user_charging_event.pb.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -27,16 +31,21 @@ namespace ml {
 class RecentEventsCounter;
 }  // namespace ml
 
+using PastEvent = PastChargingEvents::Event;
+using EventReason = UserChargingEvent::Event::Reason;
+
 // SmartChargingManager logs battery percentage and other features related to
 // user charging events. It is currently used to log data and will be
 // extended to do inference in the future.
 class SmartChargingManager : public ui::UserActivityObserver,
                              public PowerManagerClient::Observer,
-                             public viz::mojom::VideoDetectorObserver {
+                             public viz::mojom::VideoDetectorObserver,
+                             public session_manager::SessionManagerObserver {
  public:
   SmartChargingManager(
       ui::UserActivityDetector* detector,
       mojo::PendingReceiver<viz::mojom::VideoDetectorObserver> receiver,
+      session_manager::SessionManager* session_manager,
       std::unique_ptr<base::RepeatingTimer> periodic_timer);
   ~SmartChargingManager() override;
   SmartChargingManager(const SmartChargingManager&) = delete;
@@ -73,6 +82,9 @@ class SmartChargingManager : public ui::UserActivityObserver,
   void OnVideoActivityStarted() override;
   void OnVideoActivityEnded() override;
 
+  // session_manager::SessionManagerObserver overrides:
+  void OnUserSessionStarted(bool is_primary_user) override;
+
  private:
   friend class SmartChargingManagerTest;
 
@@ -80,7 +92,7 @@ class SmartChargingManager : public ui::UserActivityObserver,
   void PopulateUserChargingEventProto(UserChargingEvent* proto);
 
   // Log the event.
-  void LogEvent(const UserChargingEvent::Event::Reason& reason);
+  void LogEvent(const EventReason& reason);
 
   // Called when the periodic timer triggers.
   void OnTimerFired();
@@ -97,15 +109,39 @@ class SmartChargingManager : public ui::UserActivityObserver,
   // minutes).
   base::TimeDelta DurationRecentVideoPlaying();
 
+  // Tries to load data from user profile path.
+  void MaybeLoadFromDisk(const base::FilePath& profile_path);
+
+  // Tries to save data to user profile path.
+  void MaybeSaveToDisk(const base::FilePath& profile_path);
+
+  // Calls after saving from disk completes.
+  void OnLoadProtoFromDiskComplete(std::unique_ptr<PastChargingEvents> proto);
+
+  // Adds a past events given it's reason to |past_events_|.
+  void AddPastEvent(const EventReason& reason);
+
+  // Updates and deletes events.
+  void UpdatePastEvents();
+
+  // Gets the "plug in" and "unplug" events of the last charge.
+  std::tuple<PastEvent, PastEvent> GetLastChargeEvents();
+
   ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
       user_activity_observer_{this};
 
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>
       power_manager_client_observer_{this};
+  ScopedObserver<session_manager::SessionManager,
+                 session_manager::SessionManagerObserver>
+      session_manager_observer_{this};
 
   // Timer to trigger periodically for logging data.
   const std::unique_ptr<base::RepeatingTimer> periodic_timer_;
+
+  // Checks if data is loaded from disk yet.
+  bool loaded_from_disk_ = false;
 
   // Helper to return TimeSinceBoot.
   ml::BootClock boot_clock_;
@@ -134,15 +170,18 @@ class SmartChargingManager : public ui::UserActivityObserver,
   // TODO(crbug.com/1028853): This is for testing only. Need to remove when ukm
   // logger is available.
   UserChargingEvent user_charging_event_for_test_;
+  std::vector<PastEvent> past_events_;
 
   base::Optional<double> battery_percent_;
   base::Optional<double> screen_brightness_percent_;
   base::Optional<power_manager::PowerSupplyProperties::ExternalPower>
       external_power_;
 
+  base::Optional<base::FilePath> profile_path_;
   const std::unique_ptr<SmartChargingUkmLogger> ukm_logger_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   base::WeakPtrFactory<SmartChargingManager> weak_ptr_factory_{this};
 };
 

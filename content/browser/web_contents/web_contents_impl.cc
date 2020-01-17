@@ -2816,31 +2816,20 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
 
   SiteInstance* source_site_instance = opener->GetSiteInstance();
 
-  // We usually create the new window in the same BrowsingInstance (group of
-  // script-related windows), by passing in the current SiteInstance.  However,
-  // if the opener is being suppressed (in a non-guest), we create a new
-  // SiteInstance in its own BrowsingInstance.
-  bool is_guest = BrowserPluginGuest::IsGuest(this);
-
-  scoped_refptr<SiteInstance> site_instance =
-      params.opener_suppressed && !is_guest
-          ? SiteInstance::CreateForURL(GetBrowserContext(), params.target_url)
-          : source_site_instance;
-
-  // We must assign the SessionStorageNamespace before calling Init().
-  //
-  // http://crbug.com/142685
+  const GURL source_site_url = source_site_instance->GetSiteURL();
   const std::string& partition_id =
-      GetContentClient()->browser()->
-          GetStoragePartitionIdForSite(GetBrowserContext(),
-                                       site_instance->GetSiteURL());
-  StoragePartition* partition = BrowserContext::GetStoragePartition(
-      GetBrowserContext(), site_instance.get());
-  DOMStorageContextWrapper* dom_storage_context =
-      static_cast<DOMStorageContextWrapper*>(partition->GetDOMStorageContext());
-  SessionStorageNamespaceImpl* session_storage_namespace_impl =
-      static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace);
-  CHECK(session_storage_namespace_impl->IsFromContext(dom_storage_context));
+      GetContentClient()->browser()->GetStoragePartitionIdForSite(
+          GetBrowserContext(), source_site_url);
+  {
+    StoragePartition* partition = BrowserContext::GetStoragePartitionForSite(
+        GetBrowserContext(), source_site_url);
+    DOMStorageContextWrapper* dom_storage_context =
+        static_cast<DOMStorageContextWrapper*>(
+            partition->GetDOMStorageContext());
+    SessionStorageNamespaceImpl* session_storage_namespace_impl =
+        static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace);
+    CHECK(session_storage_namespace_impl->IsFromContext(dom_storage_context));
+  }
 
   if (delegate_ && delegate_->IsWebContentsCreationOverridden(
                        source_site_instance, params.window_container_type,
@@ -2854,6 +2843,15 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
 
   bool renderer_started_hidden =
       params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB;
+
+  // We usually create the new window in the same BrowsingInstance (group of
+  // script-related windows), by passing in the current SiteInstance.  However,
+  // if the opener is being suppressed (in a non-guest), we do not provide
+  // a SiteInstance which causes a new one to get created in its own
+  // BrowsingInstance.
+  bool is_guest = BrowserPluginGuest::IsGuest(this);
+  scoped_refptr<SiteInstance> site_instance =
+      params.opener_suppressed && !is_guest ? nullptr : source_site_instance;
 
   // Create the new web contents. This will automatically create the new
   // WebContentsView. In the future, we may want to create the view separately.
@@ -7251,6 +7249,15 @@ bool WebContentsImpl::IsFrameLowPriority(
   if (!delegate_)
     return false;
   return delegate_->IsFrameLowPriority(this, render_frame_host);
+}
+
+void WebContentsImpl::IsClipboardPasteAllowed(
+    const GURL& url,
+    const ui::ClipboardFormatType& data_type,
+    const std::string& data,
+    IsClipboardPasteAllowedCallback callback) {
+  GetContentClient()->browser()->IsClipboardPasteAllowed(
+      this, url, data_type, data, std::move(callback));
 }
 
 void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {

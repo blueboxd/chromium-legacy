@@ -14,15 +14,6 @@ import {boolToString, durationToString, getOrCreateDetailsProvider} from './disc
 import {SortedTableBehavior} from './sorted_table_behavior.js';
 
 /**
- * @param {mojom.LifecycleUnitState} state The discard state.
- * @return {boolean} Whether the state is related to discarding.
- */
-function isDiscardRelatedState(state) {
-  return state == mojom.LifecycleUnitState.PENDING_DISCARD ||
-      state == mojom.LifecycleUnitState.DISCARDED;
-}
-
-/**
  * Compares two TabDiscardsInfos based on the data in the provided sort-key.
  * @param {string} sortKey The key of the sort. See the "data-sort-key"
  *     attribute of the table headers for valid sort-keys.
@@ -46,7 +37,7 @@ export function compareTabDiscardsInfos(sortKey, a, b) {
   }
 
   // Compares boolean fields.
-  if (['canFreeze', 'canDiscard', 'isAutoDiscardable'].includes(sortKey)) {
+  if (['canFreeze', 'isAutoDiscardable'].includes(sortKey)) {
     if (val1 == val2) {
       return 0;
     }
@@ -57,7 +48,7 @@ export function compareTabDiscardsInfos(sortKey, a, b) {
   if (sortKey == 'state') {
     // If the keys are discarding state, then break ties using the discard
     // reason.
-    if (val1 == val2 && isDiscardRelatedState(val1)) {
+    if (val1 == val2 && val1 == mojom.LifecycleUnitState.DISCARDED) {
       val1 = a['discardReason'];
       val2 = b['discardReason'];
     }
@@ -108,7 +99,7 @@ Polymer({
   discardsDetailsProvider_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.setSortKey('utilityRank');
     this.discardsDetailsProvider_ = getOrCreateDetailsProvider();
 
@@ -126,7 +117,7 @@ Polymer({
    *     number if a > b.
    * @private
    */
-  computeSortFunction_: function(sortKey, sortReverse) {
+  computeSortFunction_(sortKey, sortReverse) {
     // Polymer 2.0 may invoke multi-property observers before all properties
     // are defined.
     if (!sortKey) {
@@ -147,7 +138,7 @@ Polymer({
    * @return {string} A string representation of the visibility.
    * @private
    */
-  visibilityToString_: function(visibility) {
+  visibilityToString_(visibility) {
     switch (visibility) {
       case discards.mojom.LifecycleUnitVisibility.HIDDEN:
         return 'hidden';
@@ -167,7 +158,7 @@ Polymer({
    * @return {string} A string representation of the loading state.
    * @private
    */
-  loadingStateToString_: function(loadingState) {
+  loadingStateToString_(loadingState) {
     switch (loadingState) {
       case mojom.LifecycleUnitLoadingState.UNLOADED:
         return 'unloaded';
@@ -185,12 +176,10 @@ Polymer({
    * @return {string} A string representation of the discarding reason.
    * @private
    */
-  discardReasonToString_: function(reason) {
+  discardReasonToString_(reason) {
     switch (reason) {
       case mojom.LifecycleUnitDiscardReason.EXTERNAL:
         return 'external';
-      case mojom.LifecycleUnitDiscardReason.PROACTIVE:
-        return 'proactive';
       case mojom.LifecycleUnitDiscardReason.URGENT:
         return 'urgent';
     }
@@ -211,7 +200,7 @@ Polymer({
    *     augmented with the discard reason if appropriate.
    * @private
    */
-  lifecycleStateToString_: function(
+  lifecycleStateToString_(
       state, reason, visibility, hasFocus, stateChangeTime) {
     const pageLifecycleStateFromVisibilityAndFocus = function() {
       switch (visibility) {
@@ -234,9 +223,6 @@ Polymer({
         return pageLifecycleStateFromVisibilityAndFocus() + ' (pending frozen)';
       case mojom.LifecycleUnitState.FROZEN:
         return 'frozen';
-      case mojom.LifecycleUnitState.PENDING_DISCARD:
-        return pageLifecycleStateFromVisibilityAndFocus() +
-            ' (pending discard (' + this.discardReasonToString_(reason) + '))';
       case mojom.LifecycleUnitState.DISCARDED:
         return 'discarded (' + this.discardReasonToString_(reason) + ')' +
             ((reason == mojom.LifecycleUnitDiscardReason.URGENT) ? ' at ' +
@@ -255,7 +241,7 @@ Polymer({
    * Dispatches a request to update tabInfos_.
    * @private
    */
-  updateTableImpl_: function() {
+  updateTableImpl_() {
     this.discardsDetailsProvider_.getTabDiscardsInfo().then(response => {
       this.tabInfos_ = response.infos;
     });
@@ -267,7 +253,7 @@ Polymer({
    * it after rendering instantaneously.
    * @private
    */
-  updateTable_: function() {
+  updateTable_() {
     if (this.updateTimer_) {
       clearInterval(this.updateTimer_);
     }
@@ -281,7 +267,7 @@ Polymer({
    * @return {string} The formatted reactivation score.
    * @private
    */
-  getReactivationScore_: function(item) {
+  getReactivationScore_(item) {
     return item.hasReactivationScore ? item.reactivationScore.toFixed(4) :
                                        'N/A';
   },
@@ -292,7 +278,7 @@ Polymer({
    * @return {string} The formatted site engagemetn score.
    * @private
    */
-  getSiteEngagementScore_: function(item) {
+  getSiteEngagementScore_(item) {
     return item.siteEngagementScore.toFixed(1);
   },
 
@@ -302,7 +288,7 @@ Polymer({
    * @return {string} A style to retrieve and display the item's favicon.
    * @private
    */
-  getFavIconStyle_: function(item) {
+  getFavIconStyle_(item) {
     return 'background-image:' + getFaviconForPageURL(item.tabUrl, false);
   },
 
@@ -312,7 +298,7 @@ Polymer({
    * @return {string} A human readable lifecycle state.
    * @private
    */
-  getLifeCycleState_: function(item) {
+  getLifeCycleState_(item) {
     if (item.loadingState != mojom.LifecycleUnitLoadingState.UNLOADED ||
         item.discardCount > 0) {
       return this.lifecycleStateToString_(
@@ -330,7 +316,7 @@ Polymer({
    * @return {string} A string representing the bool.
    * @private
    */
-  boolToString_: function(value) {
+  boolToString_(value) {
     return boolToString(value);
   },
 
@@ -340,7 +326,7 @@ Polymer({
    * @return {string} An English string representing the duration.
    * @private
    */
-  durationToString_: function(secondsAgo) {
+  durationToString_(secondsAgo) {
     return durationToString(secondsAgo);
   },
 
@@ -351,7 +337,7 @@ Polymer({
    *     frozen.
    * @private
    */
-  hasCannotFreezeReasons_: function(item) {
+  hasCannotFreezeReasons_(item) {
     return item.cannotFreezeReasons.length != 0;
   },
   /**
@@ -361,7 +347,7 @@ Polymer({
    *     discarded.
    * @private
    */
-  hasCannotDiscardReasons_: function(item) {
+  hasCannotDiscardReasons_(item) {
     return item.cannotDiscardReasons.length != 0;
   },
 
@@ -371,7 +357,7 @@ Polymer({
    * @return {boolean} true iff the item can be loaded.
    * @private
    */
-  canLoad_: function(item) {
+  canLoad_(item) {
     return item.loadingState == mojom.LifecycleUnitLoadingState.UNLOADED;
   },
 
@@ -381,13 +367,12 @@ Polymer({
    * @return {boolean} true iff the item can be frozen.
    * @private
    */
-  canFreeze_: function(item) {
+  canFreeze_(item) {
     if (item.visibility == discards.mojom.LifecycleUnitVisibility.HIDDEN ||
         item.visibility == discards.mojom.LifecycleUnitVisibility.OCCLUDED) {
       // Only tabs that aren't visible can be frozen for now.
       switch (item.state) {
         case mojom.LifecycleUnitState.DISCARDED:
-        case mojom.LifecycleUnitState.PENDING_DISCARD:
         case mojom.LifecycleUnitState.FROZEN:
         case mojom.LifecycleUnitState.PENDING_FREEZE:
           return false;
@@ -403,13 +388,12 @@ Polymer({
    * @return {boolean} true iff the item can be discarded.
    * @private
    */
-  canDiscard_: function(item) {
+  canDiscard_(item) {
     if (item.visibility == discards.mojom.LifecycleUnitVisibility.HIDDEN ||
         item.visibility == discards.mojom.LifecycleUnitVisibility.OCCLUDED) {
       // Only tabs that aren't visible can be discarded for now.
       switch (item.state) {
         case mojom.LifecycleUnitState.DISCARDED:
-        case mojom.LifecycleUnitState.PENDING_DISCARD:
           return false;
       }
       return true;
@@ -422,7 +406,7 @@ Polymer({
    * @param {Event} e The event.
    * @private
    */
-  toggleAutoDiscardable_: function(e) {
+  toggleAutoDiscardable_(e) {
     const item = e.model.item;
     this.discardsDetailsProvider_
         .setAutoDiscardable(item.id, !item.isAutoDiscardable)
@@ -434,7 +418,7 @@ Polymer({
    * @param {Event} e The event.
    * @private
    */
-  loadTab_: function(e) {
+  loadTab_(e) {
     this.discardsDetailsProvider_.loadById(e.model.item.id);
   },
 
@@ -443,28 +427,8 @@ Polymer({
    * @param {Event} e The event.
    * @private
    */
-  freezeTab_: function(e) {
+  freezeTab_(e) {
     this.discardsDetailsProvider_.freezeById(e.model.item.id);
-  },
-
-  /**
-   * Implementation function for tab discarding.
-   * @param {Event} e The event.
-   * @param {boolean} urgent True if tab should be urgently discarded.
-   * @private
-   */
-  discardTabImpl_: function(e, urgent) {
-    this.discardsDetailsProvider_.discardById(e.model.item.id, urgent)
-        .then(this.updateTable_.bind(this));
-  },
-
-  /**
-   * Event handler that discards a given tab.
-   * @param {Event} e The event.
-   * @private
-   */
-  discardTab_: function(e) {
-    this.discardTabImpl_(e, false);
   },
 
   /**
@@ -472,28 +436,19 @@ Polymer({
    * @param {Event} e The event.
    * @private
    */
-  urgentDiscardTab_: function(e) {
-    this.discardTabImpl_(e, true);
+  urgentDiscardTab_(e) {
+    this.discardsDetailsProvider_.discardById(e.model.item.id)
+        .then(this.updateTable_.bind(this));
   },
 
   /**
    * Implementation function to discard the next discardable tab.
-   * @param {boolean} urgent True if tab should be urgently discarded.
    * @private
    */
-  discardImpl_: function(urgent) {
-    this.discardsDetailsProvider_.discard(urgent).then(() => {
+  discardImpl_: function() {
+    this.discardsDetailsProvider_.discard().then(() => {
       this.updateTable_();
     });
-  },
-
-  /**
-   * Event handler that discards the next discardable tab.
-   * @param {Event} e The event.
-   * @private
-   */
-  discardNow_: function(e) {
-    this.discardImpl_(false);
   },
 
   /**
@@ -501,7 +456,7 @@ Polymer({
    * @param {Event} e The event.
    * @private
    */
-  discardUrgentNow_: function(e) {
-    this.discardImpl_(true);
+  discardUrgentNow_(e) {
+    this.discardImpl_();
   },
 });

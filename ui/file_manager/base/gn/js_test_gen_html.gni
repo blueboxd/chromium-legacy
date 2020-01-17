@@ -77,9 +77,7 @@ template("js_test_gen_html") {
       sources += get_target_outputs(dep)
     }
 
-    outputs = [
-      "$target_gen_dir/{{source_name_part}}_gen.html",
-    ]
+    outputs = [ "$target_gen_dir/{{source_name_part}}_gen.html" ]
     args = [ "--output" ] + rebase_path(outputs, root_build_dir)
     args += [
       "--src_path",
@@ -108,9 +106,7 @@ template("js_test_gen_html") {
     js_type_check(type_check_target_name) {
       testonly = true
       forward_variables_from(invoker, [ "closure_flags" ])
-      deps = [
-        dep,
-      ]
+      deps = [ dep ]
     }
   }
   type_check_group_name = target_name + "_type_check_auto"
@@ -121,8 +117,6 @@ template("js_test_gen_html") {
   group(target_name) {
     data = get_target_outputs(":$html_gen_target_name")
     testonly = true
-    deps = [
-      ":$html_gen_target_name",
-    ]
+    deps = [ ":$html_gen_target_name" ]
   }
 }

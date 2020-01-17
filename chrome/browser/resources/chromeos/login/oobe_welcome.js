@@ -89,7 +89,7 @@ Polymer({
   configuration_applied_: false,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.initializeLoginScreen('WelcomeScreen', {
       resetAllowed: true,
       enableDebuggingAllowed: true,
@@ -105,7 +105,7 @@ Polymer({
    * TODO (https://crbug.com/948932): Define this type.
    * @param {Object} data Screen init payload.
    */
-  onBeforeShow: function(data) {
+  onBeforeShow(data) {
     this.behaviors.forEach((behavior) => {
       if (behavior.onBeforeShow)
         behavior.onBeforeShow.call(this);
@@ -133,7 +133,7 @@ Polymer({
    * This is called when UI strings are changed.
    * Overridden from LoginScreenBehavior.
    */
-  updateLocalizedContent: function() {
+  updateLocalizedContent() {
     this.languages = /** @type {!Array<OobeTypes.LanguageDsc>} */ (
         loadTimeData.getValue('languageList'));
     this.keyboards = /** @type {!Array<OobeTypes.IMEDsc>} */ (
@@ -163,7 +163,7 @@ Polymer({
    * Overridden from LoginScreenBehavior.
    * @param {!OobeTypes.OobeConfiguration} configuration
    */
-  updateOobeConfiguration: function(configuration) {
+  updateOobeConfiguration(configuration) {
     if (!this.configuration_applied_)
       window.setTimeout(this.applyOobeConfiguration_.bind(this), 0);
   },
@@ -172,7 +172,7 @@ Polymer({
    * Called when dialog is shown for the first time.
    * @private
    */
-  applyOobeConfiguration_: function() {
+  applyOobeConfiguration_() {
     if (this.configuration_applied_)
       return;
     var configuration = Oobe.getInstance().getOobeConfiguration();
@@ -206,14 +206,14 @@ Polymer({
    * Overridden from LoginScreenBehavior.
    * @param {boolean} isInTabletMode True when in tablet mode.
    */
-  setTabletModeState: function(isInTabletMode) {
+  setTabletModeState(isInTabletMode) {
     this.$.welcomeScreen.isInTabletMode = isInTabletMode;
   },
 
   /**
    * Window-resize event listener (delivered through the display_manager).
    */
-  onWindowResize: function() {
+  onWindowResize() {
     this.$.welcomeScreen.onWindowResize();
   },
 
@@ -221,7 +221,7 @@ Polymer({
    * Hides all screens to help switching from one screen to another.
    * @private
    */
-  hideAllScreens_: function() {
+  hideAllScreens_() {
     this.$.welcomeScreen.hidden = true;
 
     var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
@@ -235,7 +235,7 @@ Polymer({
    * @param id String Screen ID.
    * @private
    */
-  showScreen_: function(id) {
+  showScreen_(id) {
     this.hideAllScreens_();
 
     var screen = this.$[id];
@@ -248,7 +248,7 @@ Polymer({
    * Returns active screen object.
    * @private
    */
-  getActiveScreen_: function() {
+  getActiveScreen_() {
     var screens = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
     for (var i = 0; i < screens.length; ++i) {
       if (!screens[i].hidden)
@@ -257,7 +257,7 @@ Polymer({
     return this.$.welcomeScreen;
   },
 
-  focus: function() {
+  focus() {
     this.getActiveScreen_().focus();
   },
 
@@ -265,7 +265,7 @@ Polymer({
    * Handles "visible" event.
    * @private
    */
-  onAnimationFinish_: function() {
+  onAnimationFinish_() {
     this.focus();
   },
 
@@ -273,7 +273,7 @@ Polymer({
    * Returns true if timezone button should be visible.
    * @private
    */
-  isTimezoneButtonVisible_: function(highlightStrength) {
+  isTimezoneButtonVisible_(highlightStrength) {
     return highlightStrength === 'strong';
   },
 
@@ -282,7 +282,7 @@ Polymer({
    *
    * @private
    */
-  onWelcomeNextButtonClicked_: function() {
+  onWelcomeNextButtonClicked_() {
     chrome.send('login.WelcomeScreen.userActed', ['continue']);
   },
 
@@ -291,7 +291,7 @@ Polymer({
    *
    * @private
    */
-  onEnableDebuggingClicked_: function() {
+  onEnableDebuggingClicked_() {
     cr.ui.Oobe.handleAccelerator(ACCELERATOR_ENABLE_DEBBUGING);
   },
 
@@ -300,7 +300,7 @@ Polymer({
    *
    * @private
    */
-  onWelcomeLaunchAdvancedOptions_: function() {
+  onWelcomeLaunchAdvancedOptions_() {
     this.showScreen_('oobeAdvancedOptionsScreen');
   },
 
@@ -309,7 +309,7 @@ Polymer({
    *
    * @private
    */
-  onWelcomeSelectLanguageButtonClicked_: function() {
+  onWelcomeSelectLanguageButtonClicked_() {
     this.showScreen_('languageScreen');
   },
 
@@ -318,7 +318,7 @@ Polymer({
    *
    * @private
    */
-  onWelcomeAccessibilityButtonClicked_: function() {
+  onWelcomeAccessibilityButtonClicked_() {
     this.showScreen_('accessibilityScreen');
   },
 
@@ -327,7 +327,7 @@ Polymer({
    *
    * @private
    */
-  onWelcomeTimezoneButtonClicked_: function() {
+  onWelcomeTimezoneButtonClicked_() {
     this.showScreen_('timezoneScreen');
   },
 
@@ -337,7 +337,7 @@ Polymer({
    * @param {!CustomEvent<!OobeTypes.LanguageDsc>} event
    * @private
    */
-  onLanguageSelected_: function(event) {
+  onLanguageSelected_(event) {
     var item = event.detail;
     var languageId = item.value;
     this.currentLanguage = item.title;
@@ -350,7 +350,7 @@ Polymer({
    * @param {string} languageId
    * @private
    */
-  applySelectedLanguage_: function(languageId) {
+  applySelectedLanguage_(languageId) {
     chrome.send('WelcomeScreen.setLocaleId', [languageId]);
   },
 
@@ -360,7 +360,7 @@ Polymer({
    * @param {!CustomEvent<!OobeTypes.IMEDsc>} event
    * @private
    */
-  onKeyboardSelected_: function(event) {
+  onKeyboardSelected_(event) {
     var item = event.detail;
     var inputMethodId = item.value;
     this.currentKeyboard = item.title;
@@ -373,16 +373,16 @@ Polymer({
    * @param {string} inputMethodId
    * @private
    */
-  applySelectedLkeyboard_: function(inputMethodId) {
+  applySelectedLkeyboard_(inputMethodId) {
     chrome.send('WelcomeScreen.setInputMethodId', [inputMethodId]);
   },
 
-  onLanguagesChanged_: function() {
+  onLanguagesChanged_() {
     this.currentLanguage =
         getSelectedTitle(/** @type {!SelectListType} */ (this.languages));
   },
 
-  onInputMethodIdSetFromBackend: function(keyboard_id) {
+  onInputMethodIdSetFromBackend(keyboard_id) {
     var found = false;
     for (var i = 0; i < this.keyboards.length; ++i) {
       if (this.keyboards[i].value != keyboard_id) {
@@ -400,7 +400,7 @@ Polymer({
     this.onKeyboardsChanged_();
   },
 
-  onKeyboardsChanged_: function() {
+  onKeyboardsChanged_() {
     this.currentKeyboard = getSelectedTitle(this.keyboards);
   },
 
@@ -409,7 +409,7 @@ Polymer({
    *
    * @private
    */
-  closeLanguageSection_: function() {
+  closeLanguageSection_() {
     this.showScreen_('welcomeScreen');
   },
 
@@ -420,7 +420,7 @@ Polymer({
    *
    * @private
    */
-  closeAccessibilitySection_: function() {
+  closeAccessibilitySection_() {
     this.showScreen_('welcomeScreen');
   },
 
@@ -432,7 +432,7 @@ Polymer({
    * @private
    * @param {!Event} event
    */
-  onA11yOptionChanged_: function(event) {
+  onA11yOptionChanged_(event) {
     var a11ytarget = /** @type {{chromeMessage: string, checked: boolean}} */ (
         event.currentTarget);
     chrome.send(a11ytarget.chromeMessage, [a11ytarget.checked]);
@@ -445,7 +445,7 @@ Polymer({
    *
    * @private
    */
-  closeTimezoneSection_: function() {
+  closeTimezoneSection_() {
     this.showScreen_('welcomeScreen');
   },
 
@@ -455,7 +455,7 @@ Polymer({
    * @param {!CustomEvent<!OobeTypes.Timezone>} event
    * @private
    */
-  onTimezoneSelected_: function(event) {
+  onTimezoneSelected_(event) {
     var item = event.detail;
     if (!item)
       return;
@@ -470,7 +470,7 @@ Polymer({
    *
    * @private
    */
-  closeAdvancedOptionsSection_: function() {
+  closeAdvancedOptionsSection_() {
     this.showScreen_('welcomeScreen');
   },
 
@@ -479,7 +479,7 @@ Polymer({
    *
    * @private
    */
-  onCFMBootstrappingClicked_: function() {
+  onCFMBootstrappingClicked_() {
     cr.ui.Oobe.handleAccelerator(ACCELERATOR_DEVICE_REQUISITION_REMORA);
   },
 
@@ -488,7 +488,7 @@ Polymer({
    *
    * @private
    */
-  onDeviceRequisitionClicked_: function() {
+  onDeviceRequisitionClicked_() {
     cr.ui.Oobe.handleAccelerator(ACCELERATOR_DEVICE_REQUISITION);
   },
 });

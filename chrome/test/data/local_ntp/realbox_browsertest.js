@@ -227,18 +227,18 @@ test.realbox1.testArrowUpDownQueryAutocomplete = function() {
 };
 
 test.realbox1.testLeftClickWhenEmptyQueriesAutocomplete = function() {
-  test.realbox.realboxEl.onclick(test.realbox.trustedEventFacade(
-      'click', {button: 1, target: test.realbox.realboxEl}));
+  test.realbox.realboxEl.onmousedown(test.realbox.trustedEventFacade(
+      'mousedown', {button: 1, target: test.realbox.realboxEl}));
   assertEquals(0, test.realbox.queries.length);
 
   test.realbox.realboxEl.value = '   ';
-  test.realbox.realboxEl.onclick(test.realbox.trustedEventFacade(
-      'click', {button: 0, target: test.realbox.realboxEl}));
+  test.realbox.realboxEl.onmousedown(test.realbox.trustedEventFacade(
+      'mousedown', {button: 0, target: test.realbox.realboxEl}));
   assertEquals(0, test.realbox.queries.length);
 
   test.realbox.realboxEl.value = '';
-  test.realbox.realboxEl.onclick(test.realbox.trustedEventFacade(
-      'click', {button: 0, target: test.realbox.realboxEl}));
+  test.realbox.realboxEl.onmousedown(test.realbox.trustedEventFacade(
+      'mousedown', {button: 0, target: test.realbox.realboxEl}));
   assertEquals(1, test.realbox.queries.length);
   assertEquals('', test.realbox.queries[0].input);
 };
@@ -1064,8 +1064,8 @@ test.realbox2.testInputAfterFocusoutPrefixMatches = function() {
 
 test.realbox2.testInputAfterFocusoutZeroPrefixMatches = function() {
   // Trigger zero suggest querying autocomplete.
-  test.realbox.realboxEl.onclick(test.realbox.trustedEventFacade(
-      'click', {button: 0, target: test.realbox.realboxEl}));
+  test.realbox.realboxEl.onmousedown(test.realbox.trustedEventFacade(
+      'mousedown', {button: 0, target: test.realbox.realboxEl}));
   assertEquals(1, test.realbox.queries.length);
 
   chrome.embeddedSearch.searchBox.autocompleteresultchanged({
@@ -1199,8 +1199,8 @@ test.realbox2.testRealboxIconZeroSuggest = function() {
   assertFalse(!!realboxIcon.style.backgroundImage);
 
   // Trigger zero suggest querying autocomplete.
-  test.realbox.realboxEl.onclick(test.realbox.trustedEventFacade(
-      'click', {button: 0, target: test.realbox.realboxEl}));
+  test.realbox.realboxEl.onmousedown(test.realbox.trustedEventFacade(
+      'mousedown', {button: 0, target: test.realbox.realboxEl}));
   assertEquals(1, test.realbox.queries.length);
 
   chrome.embeddedSearch.searchBox.autocompleteresultchanged({

@@ -712,10 +712,13 @@ void OverviewItem::UpdatePhantomsForDragging(bool is_touch_dragging) {
   DCHECK(AreMultiDisplayOverviewAndSplitViewEnabled());
   DCHECK_GT(Shell::GetAllRootWindows().size(), 1u);
   if (!phantoms_for_dragging_) {
-    phantoms_for_dragging_ = std::make_unique<DragWindowController>(
-        transform_window_.IsMinimized() ? item_widget_->GetNativeWindow()
-                                        : GetWindow(),
-        is_touch_dragging);
+    phantoms_for_dragging_ =
+        transform_window_.IsMinimized()
+            ? std::make_unique<DragWindowController>(
+                  item_widget_->GetNativeWindow(), is_touch_dragging,
+                  base::make_optional(shadow_->content_bounds()))
+            : std::make_unique<DragWindowController>(GetWindow(),
+                                                     is_touch_dragging);
   }
   phantoms_for_dragging_->Update();
 }

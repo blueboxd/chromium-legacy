@@ -2158,7 +2158,7 @@ buildflag_header("clang_coverage_buildflags") {
 
   flags = [
     "CLANG_COVERAGE=$use_clang_coverage",
-    "CLANG_COVERAGE_INSIDE_SANDBOX=$use_clang_coverage_inside_sandbox"
+    "CLANG_COVERAGE_INSIDE_SANDBOX=$use_clang_coverage_inside_sandbox",
   ]
 }
 
@@ -2184,9 +2184,7 @@ static_library("base_static") {
       "win/static_constants.h",
     ]
 
-    public_deps = [
-      "//base/win:pe_image",
-    ]
+    public_deps = [ "//base/win:pe_image" ]
 
     # Disable sanitizer coverage in win/pe_image.cc. It is called by the sandbox
     # before sanitizer coverage can initialize. http://crbug.com/484711
@@ -2311,9 +2309,7 @@ test("base_perftests") {
 }
 
 test("base_i18n_perftests") {
-  sources = [
-    "i18n/streaming_utf8_validator_perftest.cc",
-  ]
+  sources = [ "i18n/streaming_utf8_validator_perftest.cc" ]
   deps = [
     ":base",
     ":i18n",
@@ -2325,9 +2321,7 @@ test("base_i18n_perftests") {
 
 if (!is_ios) {
   executable("build_utf8_validator_tables") {
-    sources = [
-      "i18n/build_utf8_validator_tables.cc",
-    ]
+    sources = [ "i18n/build_utf8_validator_tables.cc" ]
     deps = [
       ":base",
       "//build/win:default_exe_manifest",
@@ -2336,9 +2330,7 @@ if (!is_ios) {
   }
 
   executable("check_example") {
-    sources = [
-      "check_example.cc",
-    ]
+    sources = [ "check_example.cc" ]
     deps = [
       ":base",
       "//build/win:default_exe_manifest",
@@ -2350,9 +2342,7 @@ if (is_win) {
   # Target to manually rebuild pe_image_test.dll which is checked into
   # base/test/data/pe_image.
   shared_library("pe_image_test") {
-    sources = [
-      "win/pe_image_test.cc",
-    ]
+    sources = [ "win/pe_image_test.cc" ]
     ldflags = [
       "/DELAYLOAD:cfgmgr32.dll",
       "/DELAYLOAD:shell32.dll",
@@ -2365,9 +2355,7 @@ if (is_win) {
   }
 
   loadable_module("scoped_handle_test_dll") {
-    sources = [
-      "win/scoped_handle_test_dll.cc",
-    ]
+    sources = [ "win/scoped_handle_test_dll.cc" ]
     deps = [
       ":base",
       "//base/win:base_win_buildflags",
@@ -2379,9 +2367,7 @@ if (is_win || is_mac) {
   if (current_cpu == "x64" || (current_cpu == "arm64" && is_win)) {
     # Must be a shared library so that it can be unloaded during testing.
     shared_library("base_profiler_test_support_library") {
-      sources = [
-        "profiler/test_support_library.cc",
-      ]
+      sources = [ "profiler/test_support_library.cc" ]
     }
   }
 }
@@ -2425,10 +2411,8 @@ bundle_data("base_unittests_bundle_data") {
     "test/data/serializer_test.json",
     "test/data/serializer_test_nowhitespace.json",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 if (is_ios || is_mac) {
@@ -2450,9 +2434,7 @@ if (is_fuchsia) {
   fidl_library("testfidl") {
     namespace = "base.fuchsia"
 
-    sources = [
-      "fuchsia/test.fidl",
-    ]
+    sources = [ "fuchsia/test.fidl" ]
   }
 
   source_set("test_interface_impl") {
@@ -2474,9 +2456,7 @@ source_set("base_unittests_tasktraits") {
     "task/test_task_traits_extension.cc",
     "task/test_task_traits_extension.h",
   ]
-  deps = [
-    ":base",
-  ]
+  deps = [ ":base" ]
 }
 
 test("base_unittests") {
@@ -2804,9 +2784,7 @@ test("base_unittests") {
     deps += [ ":base_unittests_arc" ]
   }
 
-  public_deps = [
-    ":base_unittests_bundle_data",
-  ]
+  public_deps = [ ":base_unittests_bundle_data" ]
 
   data = [
     "test/data/",
@@ -3062,6 +3040,7 @@ test("base_unittests") {
       "fuchsia/service_directory_test_base.cc",
       "fuchsia/service_directory_test_base.h",
       "fuchsia/service_provider_impl_unittest.cc",
+      "fuchsia/time_zone_data_unittest.cc",
       "message_loop/fd_watch_controller_posix_unittest.cc",
       "posix/file_descriptor_shuffle_unittest.cc",
       "task/thread_pool/task_tracker_posix_unittest.cc",
@@ -3128,9 +3107,7 @@ test("base_unittests") {
 action("build_date") {
   script = "//build/write_build_date_header.py"
 
-  outputs = [
-    "$target_gen_dir/generated_build_date.h",
-  ]
+  outputs = [ "$target_gen_dir/generated_build_date.h" ]
 
   args = [
     rebase_path("$target_gen_dir/generated_build_date.h", root_build_dir),
@@ -3153,6 +3130,7 @@ if (enable_nocompile_tests) {
       "metrics/histogram_unittest.nc",
       "observer_list_unittest.nc",
       "optional_unittest.nc",
+      "sequence_checker_unittest.nc",
       "strings/string16_unittest.nc",
       "task/task_traits_extension_unittest.nc",
       "task/task_traits_unittest.nc",
@@ -3212,9 +3190,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/task/TaskRunnerImpl.java",
     ]
 
-    public_deps = [
-      ":android_runtime_jni_headers",
-    ]
+    public_deps = [ ":android_runtime_jni_headers" ]
   }
 
   generate_jar_jni("android_runtime_jni_headers") {
@@ -3450,16 +3426,12 @@ if (is_android) {
       ":base",
       ":base_javatests_jni_headers",
     ]
-    sources = [
-      "test/library_loader/early_native_test_helper.cc",
-    ]
+    sources = [ "test/library_loader/early_native_test_helper.cc" ]
   }
 
   generate_jni("base_javatests_jni_headers") {
     testonly = true
-    sources = [
-      "android/javatests/src/org/chromium/base/library_loader/EarlyNativeTest.java",
-    ]
+    sources = [ "android/javatests/src/org/chromium/base/library_loader/EarlyNativeTest.java" ]
   }
 
   android_library("base_java_test_support") {
@@ -3556,9 +3528,7 @@ if (is_android) {
       ":base_java",
       ":base_java_test_support",
     ]
-    sources = [
-      "test/android/javatests/src/org/chromium/base/test/TestChildProcessConnection.java",
-    ]
+    sources = [ "test/android/javatests/src/org/chromium/base/test/TestChildProcessConnection.java" ]
   }
 
   android_library("base_junit_test_support") {
@@ -3650,9 +3620,7 @@ if (is_android) {
 
   android_library("base_java_unittest_support") {
     testonly = true
-    deps = [
-      ":base_java",
-    ]
+    deps = [ ":base_java" ]
     sources = [
       "test/android/java/src/org/chromium/base/ContentUriTestUtils.java",
       "test/android/java/src/org/chromium/base/JavaHandlerThreadHelpers.java",
@@ -3662,50 +3630,30 @@ if (is_android) {
 
 # Keep the list of fuzzer_tests in alphabetical order.
 fuzzer_test("base64_decode_fuzzer") {
-  sources = [
-    "base64_decode_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "base64_decode_fuzzer.cc" ]
+  deps = [ "//base" ]
 }
 
 fuzzer_test("base64_encode_fuzzer") {
-  sources = [
-    "base64_encode_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "base64_encode_fuzzer.cc" ]
+  deps = [ "//base" ]
 }
 
 fuzzer_test("base_json_correctness_fuzzer") {
-  sources = [
-    "json/json_correctness_fuzzer.cc",
-  ]
-  deps = [
-    ":base",
-  ]
+  sources = [ "json/json_correctness_fuzzer.cc" ]
+  deps = [ ":base" ]
   dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
 }
 
 fuzzer_test("base_json_reader_fuzzer") {
-  sources = [
-    "json/json_reader_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "json/json_reader_fuzzer.cc" ]
+  deps = [ "//base" ]
   dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
 }
 
 fuzzer_test("base_json_string_escape_fuzzer") {
-  sources = [
-    "json/string_escape_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "json/string_escape_fuzzer.cc" ]
+  deps = [ "//base" ]
 }
 
 if (is_mac) {
@@ -3714,9 +3662,7 @@ if (is_mac) {
       "test/data/mach_port_rendezvous_fuzz/dead_name.textproto",
       "test/data/mach_port_rendezvous_fuzz/send.textproto",
     ]
-    inputs = [
-      "//testing/libfuzzer/fuzzers/mach/mach_message.proto",
-    ]
+    inputs = [ "//testing/libfuzzer/fuzzers/mach/mach_message.proto" ]
     output_pattern = "$target_gen_dir/base_mach_port_rendezvous_corpus/{{source_name_part}}.binarypb"
     args = [
       "--encode=mach_fuzzer.MachMessage",
@@ -3726,9 +3672,7 @@ if (is_mac) {
     ]
   }
   fuzzer_test("base_mach_port_rendezvous_fuzzer") {
-    sources = [
-      "mac/mach_port_rendezvous_fuzzer.cc",
-    ]
+    sources = [ "mac/mach_port_rendezvous_fuzzer.cc" ]
     deps = [
       "//base",
       "//testing/libfuzzer/fuzzers/mach:converter",
@@ -3740,36 +3684,22 @@ if (is_mac) {
 }
 
 fuzzer_test("string_number_conversions_fuzzer") {
-  sources = [
-    "strings/string_number_conversions_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "strings/string_number_conversions_fuzzer.cc" ]
+  deps = [ "//base" ]
 }
 
 fuzzer_test("string_tokenizer_fuzzer") {
-  sources = [
-    "strings/string_tokenizer_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "strings/string_tokenizer_fuzzer.cc" ]
+  deps = [ "//base" ]
 }
 
 fuzzer_test("utf_string_conversions_fuzzer") {
-  sources = [
-    "strings/utf_string_conversions_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "strings/utf_string_conversions_fuzzer.cc" ]
+  deps = [ "//base" ]
 }
 
 fuzzer_test("pickle_fuzzer") {
-  sources = [
-    "pickle_fuzzer.cc",
-  ]
+  sources = [ "pickle_fuzzer.cc" ]
   deps = [
     "//base",
     "//base/test:test_support",

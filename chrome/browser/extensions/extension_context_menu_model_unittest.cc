@@ -36,7 +36,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
@@ -349,7 +348,6 @@ bool ExtensionContextMenuModelTest::HasCantAccessPageEntry(
 
 void ExtensionContextMenuModelTest::SetUp() {
   ExtensionServiceTestBase::SetUp();
-  content::BrowserSideNavigationSetUp();
   scoped_screen_override_ =
       std::make_unique<ScopedScreenOverride>(&test_screen_);
 }
@@ -368,7 +366,6 @@ void ExtensionContextMenuModelTest::TearDown() {
   chromeos::KioskAppManager::Shutdown();
 #endif
 
-  content::BrowserSideNavigationTearDown();
   ExtensionServiceTestBase::TearDown();
 }
 

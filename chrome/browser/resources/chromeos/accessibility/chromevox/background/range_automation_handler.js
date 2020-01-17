@@ -41,7 +41,7 @@ RangeAutomationHandler.prototype = {
   /**
    * @param {cursors.Range} newRange
    */
-  onCurrentRangeChanged: function(newRange) {
+  onCurrentRangeChanged(newRange) {
     if (this.node_) {
       this.removeAllListeners();
       this.node_ = undefined;
@@ -70,7 +70,7 @@ RangeAutomationHandler.prototype = {
   /**
    * @param {!AutomationEvent} evt
    */
-  onEventIfInRange: function(evt) {
+  onEventIfInRange(evt) {
     if (!DesktopAutomationHandler.announceActions &&
         evt.eventFrom == 'action') {
       return;
@@ -119,7 +119,7 @@ RangeAutomationHandler.prototype = {
   /**
    * @param {!AutomationEvent} evt
    */
-  onAriaAttributeChanged: function(evt) {
+  onAriaAttributeChanged(evt) {
     // Don't report changes on editable nodes since they interfere with text
     // selection changes. Users can query via Search+k for the current state of
     // the text field (which would also report the entire value).
@@ -146,7 +146,7 @@ RangeAutomationHandler.prototype = {
    * Provides all feedback once a checked state changed event fires.
    * @param {!AutomationEvent} evt
    */
-  onCheckedStateChanged: function(evt) {
+  onCheckedStateChanged(evt) {
     if (!AutomationPredicate.checkable(evt.target)) {
       return;
     }
@@ -161,7 +161,7 @@ RangeAutomationHandler.prototype = {
    * an descendant of the current range, changes.
    * @param {!AutomationEvent} evt
    */
-  onLocationChanged: function(evt) {
+  onLocationChanged(evt) {
     var cur = ChromeVoxState.instance.currentRange;
     if (!cur || !cur.isValid()) {
       if (ChromeVoxState.instance.getFocusBounds().length) {
@@ -192,7 +192,7 @@ RangeAutomationHandler.prototype = {
    * @return {boolean} Whether the rects are the same.
    * @private
    */
-  areRectsEqual_: function(rectA, rectB) {
+  areRectsEqual_(rectA, rectB) {
     return rectA.left == rectB.left && rectA.top == rectB.top &&
         rectA.width == rectB.width && rectA.height == rectB.height;
   }

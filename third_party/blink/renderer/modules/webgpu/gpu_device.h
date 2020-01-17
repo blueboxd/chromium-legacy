@@ -83,7 +83,8 @@ class GPUDevice final : public EventTargetWithInlineData,
       const GPUPipelineLayoutDescriptor* descriptor);
 
   GPUShaderModule* createShaderModule(
-      const GPUShaderModuleDescriptor* descriptor);
+      const GPUShaderModuleDescriptor* descriptor,
+      ExceptionState& exception_state);
   GPURenderPipeline* createRenderPipeline(
       ScriptState* script_state,
       const GPURenderPipelineDescriptor* descriptor);
@@ -105,9 +106,8 @@ class GPUDevice final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
 
  private:
-  using LostProperty = ScriptPromiseProperty<Member<GPUDevice>,
-                                             Member<GPUDeviceLostInfo>,
-                                             ToV8UndefinedGenerator>;
+  using LostProperty =
+      ScriptPromiseProperty<Member<GPUDeviceLostInfo>, ToV8UndefinedGenerator>;
 
   void OnUncapturedError(ExecutionContext* execution_context,
                          WGPUErrorType errorType,

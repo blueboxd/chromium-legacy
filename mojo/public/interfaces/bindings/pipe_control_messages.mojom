@@ -25,6 +25,8 @@ struct RunOrClosePipeMessageParams {
 
 union RunOrClosePipeInput {
   PeerAssociatedEndpointClosedEvent peer_associated_endpoint_closed_event;
+  PauseUntilFlushCompletes pause_until_flush_completes;
+  FlushAsync flush_async;
 };
 
 // A user-defined reason about why the interface is disconnected.
@@ -42,5 +44,18 @@ struct PeerAssociatedEndpointClosedEvent {
   // The interface ID.
   uint32 id;
   DisconnectReason? disconnect_reason;
+};
+
+// Sent to an endpoint to pause its message dispatch. |flush_pipe| is
+// monitored asynchronously for peer closure. Once its peer is closed, the
+// endpoint unpauses.
+struct PauseUntilFlushCompletes {
+  handle<message_pipe> flush_pipe;
+};
+
+// Sent to an endpoint so that the flush operation corresponding to
+// |flusher_pipe| is signaled by the endpoint's receipt of this message.
+struct FlushAsync {
+  handle<message_pipe> flusher_pipe;
 };
 

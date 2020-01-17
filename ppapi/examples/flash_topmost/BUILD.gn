@@ -6,10 +6,6 @@ import("//ppapi/examples/ppapi_example.gni")
 
 ppapi_example("flash_topmost") {
   output_name = "ppapi_example_flash_topmost"
-  sources = [
-    "flash_topmost.cc",
-  ]
-  deps = [
-    "//ppapi/cpp",
-  ]
+  sources = [ "flash_topmost.cc" ]
+  deps = [ "//ppapi/cpp" ]
 }

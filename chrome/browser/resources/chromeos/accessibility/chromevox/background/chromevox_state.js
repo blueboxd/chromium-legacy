@@ -26,7 +26,7 @@ ChromeVoxStateObserver.prototype = {
   /**
    * @param {cursors.Range} range The new range.
    */
-  onCurrentRangeChanged: function(range) {}
+  onCurrentRangeChanged(range) {}
 };
 
 /**
@@ -69,7 +69,7 @@ ChromeVoxState.prototype = {
    * @return {cursors.Range} The current range.
    * @protected
    */
-  getCurrentRange: function() {
+  getCurrentRange() {
     return null;
   },
 
@@ -110,7 +110,7 @@ ChromeVoxState.prototype = {
    * Gets the bounds of the focus ring.
    * @return {Array<chrome.accessibilityPrivate.ScreenRect>}
    */
-  getFocusBounds: function() {
+  getFocusBounds() {
     return this.focusBounds_;
   },
 
@@ -118,7 +118,7 @@ ChromeVoxState.prototype = {
    * Sets the bounds of the focus ring.
    * @param {!Array<!chrome.accessibilityPrivate.ScreenRect>} bounds
    */
-  setFocusBounds: function(bounds) {
+  setFocusBounds(bounds) {
     this.focusBounds_ = bounds;
     chrome.accessibilityPrivate.setFocusRings([{
       rects: bounds,

@@ -36,6 +36,7 @@ class PageLiveStateDataImpl
   bool IsBeingMirrored() const override { return is_being_mirrored_; }
   bool IsCapturingDesktop() const override { return is_capturing_desktop_; }
   bool IsAutoDiscardable() const override { return is_auto_discardable_; }
+  bool WasDiscarded() const override { return was_discarded_; }
 
   void set_is_connected_to_usb_device(bool is_connected_to_usb_device) {
     is_connected_to_usb_device_ = is_connected_to_usb_device;
@@ -59,6 +60,7 @@ class PageLiveStateDataImpl
   void set_is_auto_discardable(bool is_auto_discardable) {
     is_auto_discardable_ = is_auto_discardable;
   }
+  void set_was_discarded(bool was_discarded) { was_discarded_ = was_discarded; }
 
  private:
   // Make the impl our friend so it can access the constructor and any
@@ -74,7 +76,8 @@ class PageLiveStateDataImpl
   bool is_capturing_audio_ = false;
   bool is_being_mirrored_ = false;
   bool is_capturing_desktop_ = false;
-  bool is_auto_discardable_ = false;
+  bool is_auto_discardable_ = true;
+  bool was_discarded_ = false;
 };
 
 // Helper function to set a property in PageLiveStateDataImpl. This does the
@@ -167,8 +170,20 @@ void PageLiveStateDecorator::SetIsAutoDiscardable(
                             is_auto_discardable);
 }
 
+// static
+void PageLiveStateDecorator::SetWasDiscarded(content::WebContents* contents,
+                                             bool was_discarded) {
+  SetPropertyForWebContents(contents, &PageLiveStateDataImpl::set_was_discarded,
+                            was_discarded);
+}
+
 PageLiveStateDecorator::Data::Data() = default;
 PageLiveStateDecorator::Data::~Data() = default;
+
+const PageLiveStateDecorator::Data* PageLiveStateDecorator::Data::FromPageNode(
+    const PageNode* page_node) {
+  return PageLiveStateDataImpl::Get(PageNodeImpl::FromNode(page_node));
+}
 
 PageLiveStateDecorator::Data*
 PageLiveStateDecorator::Data::GetOrCreateForTesting(PageNode* page_node) {

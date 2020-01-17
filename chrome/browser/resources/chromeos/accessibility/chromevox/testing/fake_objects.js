@@ -21,7 +21,7 @@ FakeChromeEvent.prototype = {
    * fails the test if it is already set.
    * @param {Function} listener The new listener.
    */
-  addListener: function(listener) {
+  addListener(listener) {
     this.assertNoListener();
     this.listener_ = listener;
   },
@@ -30,7 +30,7 @@ FakeChromeEvent.prototype = {
    * Gets the listener of the event, failing the test if there's none.
    * @return {Function} The event's listener.
    */
-  getListener: function() {
+  getListener() {
     assertNotEquals(null, this.listener_);
     return this.listener_;
   },
@@ -38,7 +38,7 @@ FakeChromeEvent.prototype = {
   /**
    * Asserts that this object doesn't have any listener added.
    */
-  assertNoListener: function() {
+  assertNoListener() {
     assertEquals(null, this.listener_);
   }
 };

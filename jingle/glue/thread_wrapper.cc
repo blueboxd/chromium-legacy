@@ -75,7 +75,7 @@ JingleThreadWrapper::JingleThreadWrapper(
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(!rtc::Thread::Current());
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
-  rtc::MessageQueueManager::Add(this);
+  rtc::ThreadManager::Add(this);
   SafeWrapCurrent();
 }
 
@@ -85,7 +85,7 @@ JingleThreadWrapper::~JingleThreadWrapper() {
 
   UnwrapCurrent();
   rtc::ThreadManager::Instance()->SetCurrentThread(nullptr);
-  rtc::MessageQueueManager::Remove(this);
+  rtc::ThreadManager::Remove(this);
   g_jingle_thread_wrapper.Get().Set(nullptr);
 
   Clear(nullptr, rtc::MQID_ANY, nullptr);
@@ -305,18 +305,6 @@ bool JingleThreadWrapper::Get(rtc::Message*, int, bool) {
 bool JingleThreadWrapper::Peek(rtc::Message*, int) {
   NOTREACHED();
   return false;
-}
-
-void JingleThreadWrapper::PostAt(const rtc::Location& posted_from,
-                                 uint32_t,
-                                 rtc::MessageHandler*,
-                                 uint32_t,
-                                 rtc::MessageData*) {
-  NOTREACHED();
-}
-
-void JingleThreadWrapper::ReceiveSends() {
-  NOTREACHED();
 }
 
 int JingleThreadWrapper::GetDelay() {

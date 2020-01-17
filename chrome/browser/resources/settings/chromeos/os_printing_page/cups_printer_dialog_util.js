@@ -142,6 +142,23 @@ cr.define('settings.printing', function() {
   }
 
   /**
+   * Return the error string corresponding to the result code for print servers.
+   * @param {!PrintServerResult} result
+   * @return {string}
+   */
+  function getPrintServerErrorText(result) {
+    switch (result) {
+      case PrintServerResult.CONNECTION_ERROR:
+        return loadTimeData.getString('printServerConnectionError');
+      case PrintServerResult.CANNOT_PARSE_IPP_RESPONSE:
+      case PrintServerResult.HTTP_ERROR:
+        return loadTimeData.getString('printServerConfigurationErrorMessage');
+      default:
+        assertNotReached();
+    }
+  }
+
+  /**
    * We sort by printer type, which is based off of a maintained list in
    * cups_printers_types.js. If the types are the same, we sort alphabetically.
    * @param {!PrinterListEntry} first
@@ -175,6 +192,19 @@ cr.define('settings.printing', function() {
     return first.printerInfo.printerId == second.printerInfo.printerId;
   }
 
+  /**
+   * Finds the printers that are in |firstArr| but not in |secondArr|.
+   * @param {!Array<!PrinterListEntry>} firstArr
+   * @param {!Array<!PrinterListEntry>} secondArr
+   * @return {!Array<!PrinterListEntry>}
+   */
+  function findDifference(firstArr, secondArr) {
+    return firstArr.filter(p1 => {
+      return !secondArr.some(
+          p2 => p2.printerInfo.printerId == p1.printerInfo.printerId);
+    });
+  }
+
   return {
     isNetworkProtocol: isNetworkProtocol,
     isNameAndAddressValid: isNameAndAddressValid,
@@ -182,8 +212,10 @@ cr.define('settings.printing', function() {
     getBaseName: getBaseName,
     alphabeticalSort: alphabeticalSort,
     getErrorText: getErrorText,
+    getPrintServerErrorText: getPrintServerErrorText,
     sortPrinters: sortPrinters,
     matchesSearchTerm: matchesSearchTerm,
     arePrinterIdsEqual: arePrinterIdsEqual,
+    findDifference: findDifference,
   };
 });

@@ -63,8 +63,7 @@ constexpr CGFloat kSectionFooterHeight = 8;
 @implementation FallbackViewController
 
 - (instancetype)init {
-  self = [super initWithTableViewStyle:UITableViewStylePlain
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     [[NSNotificationCenter defaultCenter]
         addObserver:self

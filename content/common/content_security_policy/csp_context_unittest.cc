@@ -5,11 +5,12 @@
 #include <set>
 
 #include "content/common/content_security_policy/csp_context.h"
-#include "content/common/content_security_policy_header.h"
 #include "content/common/navigation_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+
+using CSPDirectiveName = network::mojom::CSPDirectiveName;
 
 namespace {
 
@@ -33,7 +34,7 @@ class CSPContextTest : public CSPContext {
 
   void SanitizeDataForUseInCspViolation(
       bool is_redirect,
-      CSPDirective::Name directive,
+      CSPDirectiveName directive,
       GURL* blocked_url,
       SourceLocation* source_location) const override {
     if (!sanitize_data_for_use_in_csp_violation_)
@@ -54,16 +55,13 @@ class CSPContextTest : public CSPContext {
 };
 
 // Build a new policy made of only one directive and no report endpoints.
-ContentSecurityPolicy BuildPolicy(CSPDirective::Name directive_name,
+ContentSecurityPolicy BuildPolicy(CSPDirectiveName directive_name,
                                   std::vector<CSPSource> sources) {
   return ContentSecurityPolicy(
-      ContentSecurityPolicyHeader(
-          std::string(),  // header
-          network::mojom::ContentSecurityPolicyType::kEnforce,
-          network::mojom::ContentSecurityPolicySource::kHTTP),
+      {},
       {CSPDirective(directive_name,
                     CSPSourceList(false, false, false, sources))},
-      std::vector<std::string>(), false);  // report_end_points
+      {}, false);
 }
 
 }  // namespace
@@ -72,16 +70,16 @@ TEST(CSPContextTest, SchemeShouldBypassCSP) {
   CSPSource source("", "example.com", false, url::PORT_UNSPECIFIED, false, "");
   CSPContextTest context;
   context.AddContentSecurityPolicy(
-      BuildPolicy(CSPDirective::DefaultSrc, {source}));
+      BuildPolicy(CSPDirectiveName::DefaultSrc, {source}));
 
   EXPECT_FALSE(context.IsAllowedByCsp(
-      CSPDirective::FrameSrc, GURL("data:text/html,<html></html>"), false,
+      CSPDirectiveName::FrameSrc, GURL("data:text/html,<html></html>"), false,
       false, SourceLocation(), CSPContext::CHECK_ALL_CSP, false));
 
   context.AddSchemeToBypassCSP("data");
 
   EXPECT_TRUE(context.IsAllowedByCsp(
-      CSPDirective::FrameSrc, GURL("data:text/html,<html></html>"), false,
+      CSPDirectiveName::FrameSrc, GURL("data:text/html,<html></html>"), false,
       false, SourceLocation(), CSPContext::CHECK_ALL_CSP, false));
 }
 
@@ -94,21 +92,21 @@ TEST(CSPContextTest, MultiplePolicies) {
   CSPSource source_c("", "c.com", false, url::PORT_UNSPECIFIED, false, "");
 
   context.AddContentSecurityPolicy(
-      BuildPolicy(CSPDirective::FrameSrc, {source_a, source_b}));
+      BuildPolicy(CSPDirectiveName::FrameSrc, {source_a, source_b}));
   context.AddContentSecurityPolicy(
-      BuildPolicy(CSPDirective::FrameSrc, {source_a, source_c}));
+      BuildPolicy(CSPDirectiveName::FrameSrc, {source_a, source_c}));
 
   EXPECT_TRUE(context.IsAllowedByCsp(
-      CSPDirective::FrameSrc, GURL("http://a.com"), false, false,
+      CSPDirectiveName::FrameSrc, GURL("http://a.com"), false, false,
       SourceLocation(), CSPContext::CHECK_ALL_CSP, false));
   EXPECT_FALSE(context.IsAllowedByCsp(
-      CSPDirective::FrameSrc, GURL("http://b.com"), false, false,
+      CSPDirectiveName::FrameSrc, GURL("http://b.com"), false, false,
       SourceLocation(), CSPContext::CHECK_ALL_CSP, false));
   EXPECT_FALSE(context.IsAllowedByCsp(
-      CSPDirective::FrameSrc, GURL("http://c.com"), false, false,
+      CSPDirectiveName::FrameSrc, GURL("http://c.com"), false, false,
       SourceLocation(), CSPContext::CHECK_ALL_CSP, false));
   EXPECT_FALSE(context.IsAllowedByCsp(
-      CSPDirective::FrameSrc, GURL("http://d.com"), false, false,
+      CSPDirectiveName::FrameSrc, GURL("http://d.com"), false, false,
       SourceLocation(), CSPContext::CHECK_ALL_CSP, false));
 }
 
@@ -118,7 +116,7 @@ TEST(CSPContextTest, SanitizeDataForUseInCspViolation) {
 
   // Content-Security-Policy: frame-src "a.com/iframe"
   context.AddContentSecurityPolicy(
-      BuildPolicy(CSPDirective::FrameSrc,
+      BuildPolicy(CSPDirectiveName::FrameSrc,
                   {CSPSource("", "a.com", false, url::PORT_UNSPECIFIED, false,
                              "/iframe")}));
 
@@ -127,7 +125,7 @@ TEST(CSPContextTest, SanitizeDataForUseInCspViolation) {
 
   // When the |blocked_url| and |source_location| aren't sensitive information.
   {
-    EXPECT_FALSE(context.IsAllowedByCsp(CSPDirective::FrameSrc, blocked_url,
+    EXPECT_FALSE(context.IsAllowedByCsp(CSPDirectiveName::FrameSrc, blocked_url,
                                         false, false, source_location,
                                         CSPContext::CHECK_ALL_CSP, false));
     ASSERT_EQ(1u, context.violations().size());
@@ -146,7 +144,7 @@ TEST(CSPContextTest, SanitizeDataForUseInCspViolation) {
 
   // When the |blocked_url| and |source_location| are sensitive information.
   {
-    EXPECT_FALSE(context.IsAllowedByCsp(CSPDirective::FrameSrc, blocked_url,
+    EXPECT_FALSE(context.IsAllowedByCsp(CSPDirectiveName::FrameSrc, blocked_url,
                                         false, false, source_location,
                                         CSPContext::CHECK_ALL_CSP, false));
     ASSERT_EQ(2u, context.violations().size());
@@ -171,14 +169,14 @@ TEST(CSPContextTest, MultipleInfringement) {
   CSPSource source_c("", "c.com", false, url::PORT_UNSPECIFIED, false, "");
 
   context.AddContentSecurityPolicy(
-      BuildPolicy(CSPDirective::FrameSrc, {source_a}));
+      BuildPolicy(CSPDirectiveName::FrameSrc, {source_a}));
   context.AddContentSecurityPolicy(
-      BuildPolicy(CSPDirective::FrameSrc, {source_b}));
+      BuildPolicy(CSPDirectiveName::FrameSrc, {source_b}));
   context.AddContentSecurityPolicy(
-      BuildPolicy(CSPDirective::FrameSrc, {source_c}));
+      BuildPolicy(CSPDirectiveName::FrameSrc, {source_c}));
 
   EXPECT_FALSE(context.IsAllowedByCsp(
-      CSPDirective::FrameSrc, GURL("http://c.com"), false, false,
+      CSPDirectiveName::FrameSrc, GURL("http://c.com"), false, false,
       SourceLocation(), CSPContext::CHECK_ALL_CSP, false));
   ASSERT_EQ(2u, context.violations().size());
   const char console_message_a[] =
@@ -198,18 +196,18 @@ TEST(CSPContextTest, CheckCSPDisposition) {
 
   // Add an enforced policy.
   context.AddContentSecurityPolicy(
-      BuildPolicy(CSPDirective::FrameSrc, {source}));
+      BuildPolicy(CSPDirectiveName::FrameSrc, {source}));
 
   // Add a report-only policy.
   ContentSecurityPolicy report_only =
-      BuildPolicy(CSPDirective::DefaultSrc, {source});
+      BuildPolicy(CSPDirectiveName::DefaultSrc, {source});
   report_only.header.type = network::mojom::ContentSecurityPolicyType::kReport;
   context.AddContentSecurityPolicy(report_only);
 
   // With CHECK_ALL_CSP, both policies should be checked and violations should
   // be reported.
   EXPECT_FALSE(context.IsAllowedByCsp(
-      CSPDirective::FrameSrc, GURL("https://not-example.com"), false, false,
+      CSPDirectiveName::FrameSrc, GURL("https://not-example.com"), false, false,
       SourceLocation(), CSPContext::CHECK_ALL_CSP, false));
   ASSERT_EQ(2u, context.violations().size());
   const char console_message_a[] =
@@ -231,7 +229,7 @@ TEST(CSPContextTest, CheckCSPDisposition) {
   // With CHECK_REPORT_ONLY_CSP, the request should be allowed but reported.
   context.ClearViolations();
   EXPECT_TRUE(context.IsAllowedByCsp(
-      CSPDirective::FrameSrc, GURL("https://not-example.com"), false, false,
+      CSPDirectiveName::FrameSrc, GURL("https://not-example.com"), false, false,
       SourceLocation(), CSPContext::CHECK_REPORT_ONLY_CSP, false));
   ASSERT_EQ(1u, context.violations().size());
   EXPECT_EQ(console_message_b, context.violations()[0].console_message);
@@ -240,7 +238,7 @@ TEST(CSPContextTest, CheckCSPDisposition) {
   // enforced policy violation should be reported.
   context.ClearViolations();
   EXPECT_FALSE(context.IsAllowedByCsp(
-      CSPDirective::FrameSrc, GURL("https://not-example.com"), false, false,
+      CSPDirectiveName::FrameSrc, GURL("https://not-example.com"), false, false,
       SourceLocation(), CSPContext::CHECK_ENFORCED_CSP, false));
   ASSERT_EQ(1u, context.violations().size());
   EXPECT_EQ(console_message_a, context.violations()[0].console_message);
@@ -251,7 +249,7 @@ TEST(CSPContextTest, CheckCSPDisposition) {
 TEST(CSPContextTest, ShouldModifyRequestUrlForCsp) {
   CSPContextTest context;
   context.AddContentSecurityPolicy(BuildPolicy(
-      CSPDirective::UpgradeInsecureRequests, std::vector<CSPSource>()));
+      CSPDirectiveName::UpgradeInsecureRequests, std::vector<CSPSource>()));
   // An HTTP subresource or form submission should be upgraded.
   EXPECT_TRUE(context.ShouldModifyRequestUrlForCsp(true));
 

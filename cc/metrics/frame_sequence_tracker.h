@@ -82,6 +82,10 @@ class CC_EXPORT FrameSequenceMetrics {
     void Merge(const ThroughputData& data) {
       frames_expected += data.frames_expected;
       frames_produced += data.frames_produced;
+#if DCHECK_IS_ON()
+      frames_processed += data.frames_processed;
+      frames_received += data.frames_received;
+#endif
     }
 
     // Tracks the number of frames that were expected to be shown during this
@@ -91,13 +95,22 @@ class CC_EXPORT FrameSequenceMetrics {
     // Tracks the number of frames that were actually presented to the user
     // during this frame-sequence.
     uint32_t frames_produced = 0;
+
+#if DCHECK_IS_ON()
+    // Tracks the number of frames that is either submitted or reported as no
+    // damage.
+    uint32_t frames_processed = 0;
+
+    // Tracks the number of begin-frames that are received.
+    uint32_t frames_received = 0;
+#endif
   };
 
   void Merge(std::unique_ptr<FrameSequenceMetrics> metrics);
   bool HasEnoughDataForReporting() const;
   bool HasDataLeftForReporting() const;
   // Report related metrics: throughput, checkboarding...
-  void ReportMetrics();
+  void ReportMetrics(const std::string& debug_trace = std::string());
 
   ThroughputData& impl_throughput() { return impl_throughput_; }
   ThroughputData& main_throughput() { return main_throughput_; }
@@ -157,6 +170,7 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   // Notifies all trackers of various events.
   void NotifyBeginImplFrame(const viz::BeginFrameArgs& args);
   void NotifyBeginMainFrame(const viz::BeginFrameArgs& args);
+  void NotifyMainFrameProcessed(const viz::BeginFrameArgs& args);
   void NotifyImplFrameCausedNoDamage(const viz::BeginFrameAck& ack);
   void NotifyMainFrameCausedNoDamage(const viz::BeginFrameArgs& args);
   void NotifyPauseFrameProduction();
@@ -220,7 +234,8 @@ class CC_EXPORT FrameSequenceTracker {
     kReadyForTermination,
   };
 
-  static const char* GetFrameSequenceTrackerTypeName(int type_index);
+  static const char* GetFrameSequenceTrackerTypeName(
+      FrameSequenceTrackerType type);
 
   ~FrameSequenceTracker();
 
@@ -234,6 +249,8 @@ class CC_EXPORT FrameSequenceTracker {
   // Notifies the tracker when a BeginFrameArgs is dispatched to the main
   // thread.
   void ReportBeginMainFrame(const viz::BeginFrameArgs& args);
+
+  void ReportMainFrameProcessed(const viz::BeginFrameArgs& args);
 
   // Notifies the tracker when the compositor submits a CompositorFrame.
   // |origin_args| represents the BeginFrameArgs that triggered the update from
@@ -361,6 +378,9 @@ class CC_EXPORT FrameSequenceTracker {
   // This is used to decide when to terminate this FrameSequenceTracker object.
   uint32_t last_submitted_frame_ = 0;
 
+  // Keeps track of the begin-main-frame that needs to be processed next.
+  uint64_t awaiting_main_response_sequence_ = 0;
+
   // Keeps track of the last sequence-number that produced a frame from the
   // main-thread.
   uint64_t last_submitted_main_sequence_ = 0;
@@ -406,8 +426,6 @@ class CC_EXPORT FrameSequenceTracker {
   // Note that |frame_sequence_trace_| is only defined and populated
   // when DCHECK is on.
   std::stringstream frame_sequence_trace_;
-
-  uint64_t last_started_main_sequence_ = 0;
 
   // If ReportBeginImplFrame is never called on a arg, then ReportBeginMainFrame
   // should ignore that arg.

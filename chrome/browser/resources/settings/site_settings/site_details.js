@@ -57,7 +57,7 @@ Polymer({
     /** @private */
     enableExperimentalWebPlatformFeatures_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures');
       },
     },
@@ -65,7 +65,7 @@ Polymer({
     /** @private */
     enableNativeFileSystemWriteContentSetting_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean(
             'enableNativeFileSystemWriteContentSetting');
       }
@@ -74,7 +74,7 @@ Polymer({
     /** @private */
     enableInsecureContentContentSetting_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('enableInsecureContentContentSetting');
       }
     },
@@ -86,12 +86,18 @@ Polymer({
     },
   },
 
+  /** @private */
+  enableWebXrContentSetting_: {
+    type: Boolean,
+    value: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
+  },
+
   listeners: {
     'usage-deleted': 'onUsageDeleted_',
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'contentSettingSitePermissionChanged',
         this.onPermissionChanged_.bind(this));
@@ -106,7 +112,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
   },
 
@@ -115,18 +121,18 @@ Polymer({
    * @param {!settings.Route} route
    * @protected
    */
-  currentRouteChanged: function(route) {
+  currentRouteChanged(route) {
     if (route != settings.routes.SITE_SETTINGS_SITE_DETAILS) {
       return;
     }
-    const site = settings.getQueryParameters().get('site');
+    const site = settings.Router.getInstance().getQueryParameters().get('site');
     if (!site) {
       return;
     }
     this.origin_ = site;
     this.browserProxy.isOriginValid(this.origin_).then((valid) => {
       if (!valid) {
-        settings.navigateToPreviousRoute();
+        settings.Router.getInstance().navigateToPreviousRoute();
       } else {
         this.$.usageApi.fetchUsageTotal(this.toUrl(this.origin_).hostname);
         this.updatePermissions_(this.getCategoryList());
@@ -143,7 +149,7 @@ Polymer({
    *     changed.
    * @private
    */
-  onPermissionChanged_: function(category, origin, embeddingOrigin) {
+  onPermissionChanged_(category, origin, embeddingOrigin) {
     if (this.origin_ === undefined || this.origin_ == '' ||
         origin === undefined || origin == '') {
       return;
@@ -158,7 +164,7 @@ Polymer({
   },
 
   // <if expr="chromeos">
-  prefEnableDrmChanged_: function() {
+  prefEnableDrmChanged_() {
     this.updatePermissions_([settings.ContentSettingsTypes.PROTECTED_CONTENT]);
   },
   // </if>
@@ -170,7 +176,7 @@ Polymer({
    *     of categories to update permissions for.
    * @private
    */
-  updatePermissions_: function(categoryList) {
+  updatePermissions_(categoryList) {
     const permissionsMap =
         /**
          * @type {!Object<!settings.ContentSettingsTypes,
@@ -204,7 +210,7 @@ Polymer({
   },
 
   /** @private */
-  onCloseDialog_: function(e) {
+  onCloseDialog_(e) {
     e.target.closest('cr-dialog').close();
   },
 
@@ -213,7 +219,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onConfirmClearSettings_: function(e) {
+  onConfirmClearSettings_(e) {
     e.preventDefault();
     this.$.confirmResetSettings.showModal();
   },
@@ -223,7 +229,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onConfirmClearStorage_: function(e) {
+  onConfirmClearStorage_(e) {
     e.preventDefault();
     if (this.storagePressureFlagEnabled_) {
       this.$.confirmClearStorageNew.showModal();
@@ -236,7 +242,7 @@ Polymer({
    * Resets all permissions for the current origin.
    * @private
    */
-  onResetSettings_: function(e) {
+  onResetSettings_(e) {
     this.browserProxy.setOriginPermissions(
         this.origin_, this.getCategoryList(), settings.ContentSetting.DEFAULT);
     if (this.getCategoryList().includes(
@@ -251,7 +257,7 @@ Polymer({
    * Clears all data stored, except cookies, for the current origin.
    * @private
    */
-  onClearStorage_: function(e) {
+  onClearStorage_(e) {
     if (this.hasUsage_(this.storedData_, this.numCookies_)) {
       this.$.usageApi.clearUsage(this.toUrl(this.origin_).href);
     }
@@ -265,7 +271,7 @@ Polymer({
    * @param {!CustomEvent<!{origin: string}>} event
    * @private
    */
-  onUsageDeleted_: function(event) {
+  onUsageDeleted_(event) {
     if (event.detail.origin == this.toUrl(this.origin_).href) {
       this.storedData_ = '';
       this.numCookies_ = '';
@@ -278,7 +284,7 @@ Polymer({
    *     disk or battery).
    * @private
    */
-  hasUsage_: function(storage, cookies) {
+  hasUsage_(storage, cookies) {
     return storage != '' || cookies != '';
   },
 
@@ -288,17 +294,17 @@ Polymer({
    *     show.
    * @private
    */
-  hasDataAndCookies_: function(storage, cookies) {
+  hasDataAndCookies_(storage, cookies) {
     return storage != '' && cookies != '';
   },
 
   /** @private */
-  onResetSettingsDialogClosed_: function() {
+  onResetSettingsDialogClosed_() {
     cr.ui.focusWithoutInk(assert(this.$$('#resetSettingsButton')));
   },
 
   /** @private */
-  onClearStorageDialogClosed_: function() {
+  onClearStorageDialogClosed_() {
     cr.ui.focusWithoutInk(assert(this.$$('#clearStorage')));
   },
 });

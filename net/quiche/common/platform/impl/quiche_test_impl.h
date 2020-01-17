@@ -11,6 +11,9 @@
 namespace quiche {
 namespace test {
 class QuicheTest : public ::testing::Test {};
+
+template <class T>
+class QuicheTestWithParamImpl : public ::testing::TestWithParam<T> {};
 }  // namespace test
 }  // namespace quiche
 

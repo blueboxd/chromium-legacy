@@ -11,6 +11,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 MockBrowsingDataCacheStorageHelper::MockBrowsingDataCacheStorageHelper(
     Profile* profile)
@@ -28,21 +29,19 @@ void MockBrowsingDataCacheStorageHelper::StartFetching(FetchCallback callback) {
 }
 
 void MockBrowsingDataCacheStorageHelper::DeleteCacheStorage(
-    const GURL& origin) {
+    const url::Origin& origin) {
   ASSERT_TRUE(fetched_);
   ASSERT_TRUE(origins_.find(origin) != origins_.end());
   origins_[origin] = false;
 }
 
 void MockBrowsingDataCacheStorageHelper::AddCacheStorageSamples() {
-  const GURL kOrigin1("https://cshost1:1/");
-  const GURL kOrigin2("https://cshost2:2/");
-  content::StorageUsageInfo info1(url::Origin::Create(kOrigin1), 1,
-                                  base::Time());
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://cshost1:1/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://cshost2:2/"));
+  content::StorageUsageInfo info1(kOrigin1, 1, base::Time());
   response_.push_back(info1);
   origins_[kOrigin1] = true;
-  content::StorageUsageInfo info2(url::Origin::Create(kOrigin2), 2,
-                                  base::Time());
+  content::StorageUsageInfo info2(kOrigin2, 2, base::Time());
   response_.push_back(info2);
   origins_[kOrigin2] = true;
 }

@@ -3,19 +3,13 @@ import("//build/config/android/rules.gni")
 
 generate_jni("test_support_content_jni_headers") {
   testonly = true
-  sources = [
-    "javatests/src/org/chromium/content_public/browser/test/NestedSystemMessageHandler.java",
-  ]
+  sources = [ "javatests/src/org/chromium/content_public/browser/test/NestedSystemMessageHandler.java" ]
 }
 
 android_library("android_test_message_pump_support_java") {
   testonly = true
-  deps = [
-    "//base:base_java",
-  ]
-  sources = [
-    "javatests/src/org/chromium/content_public/browser/test/NestedSystemMessageHandler.java",
-  ]
+  deps = [ "//base:base_java" ]
+  sources = [ "javatests/src/org/chromium/content_public/browser/test/NestedSystemMessageHandler.java" ]
 }
 
 android_library("content_java_test_support") {

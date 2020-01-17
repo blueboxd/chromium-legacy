@@ -32,8 +32,17 @@ class ContentfulPaintTimingInfo {
     return type_;
   }
 
-  bool IsEmpty() const {
+  // Returns true iff this object does not represent any paint.
+  bool Empty() const {
+    // size_ and time_ should both be set or both be unset.
+    DCHECK((size_ != 0u && time_) || (size_ == 0u && !time_));
     return !time_;
+  }
+
+  // Returns true iff this object does not represent any paint OR represents an
+  // image that has not finished loading.
+  bool ContainsValidTime() const {
+    return time_ && *time_ != base::TimeDelta();
   }
 
   std::unique_ptr<base::trace_event::TracedValue> DataAsTraceValue() const;

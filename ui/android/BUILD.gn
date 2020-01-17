@@ -71,7 +71,6 @@ component("android") {
     "//components/viz/client",
     "//components/viz/common",
     "//components/viz/host",
-    "//components/viz/service",
     "//services/viz/public/mojom",
     "//skia",
     "//third_party/blink/public:blink_headers",
@@ -195,9 +194,7 @@ android_resources("ui_java_resources") {
     resource_dirs += [ "//ui/android/java/res_night" ]
   }
 
-  deps = [
-    ":ui_strings_grd",
-  ]
+  deps = [ ":ui_strings_grd" ]
 }
 
 java_group("ui_java") {
@@ -441,7 +438,6 @@ test("ui_android_unittests") {
     "//cc",
     "//cc:test_support",
     "//components/viz/host:host",
-    "//components/viz/service:service",
     "//components/viz/test:test_support",
     "//skia",
     "//testing/gmock",

@@ -793,6 +793,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
     bool is_under_position_sticky = false;
   };
+  bool NeedsVisualOverflowRecalc() const {
+    return needs_visual_overflow_recalc_;
+  }
   void SetNeedsVisualOverflowRecalc();
   void SetNeedsCompositingInputsUpdate(bool mark_ancestor_flags = true);
 
@@ -1122,10 +1125,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
 
   void DirtyStackingContextZOrderLists();
-
-  bool NeedsVisualOverflowRecalcForTesting() const {
-    return needs_visual_overflow_recalc_;
-  }
 
   PhysicalOffset OffsetForInFlowRelPosition() const {
     return rare_data_ ? rare_data_->offset_for_in_flow_rel_position

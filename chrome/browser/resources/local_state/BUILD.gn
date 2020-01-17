@@ -6,9 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   uses_js_modules = true
-  deps = [
-    ":local_state",
-  ]
+  deps = [ ":local_state" ]
 }
 
 js_library("local_state") {

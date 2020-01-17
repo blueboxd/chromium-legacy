@@ -19,6 +19,7 @@
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_preconnect_client.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/loading_test_util.h"
@@ -444,7 +445,8 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
   LoadingPredictorBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
         {features::kLoadingOnlyLearnHighPriorityResources,
-         features::kLoadingPreconnectToRedirectTarget},
+         features::kLoadingPreconnectToRedirectTarget,
+         features::kNavigationPredictorPreconnectHoldback},
         {});
   }
   ~LoadingPredictorBrowserTest() override {}

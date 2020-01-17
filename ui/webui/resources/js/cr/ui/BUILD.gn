@@ -83,15 +83,11 @@ js_library("context_menu_handler") {
 }
 
 js_library("dialogs") {
-  deps = [
-    "../..:cr",
-  ]
+  deps = [ "../..:cr" ]
 }
 
 js_library("drag_wrapper") {
-  deps = [
-    "../..:cr",
-  ]
+  deps = [ "../..:cr" ]
 }
 
 js_library("focus_grid") {
@@ -103,15 +99,11 @@ js_library("focus_grid") {
 }
 
 js_library("focus_manager") {
-  deps = [
-    "../..:cr",
-  ]
+  deps = [ "../..:cr" ]
 }
 
 js_library("focus_outline_manager") {
-  deps = [
-    "../..:cr",
-  ]
+  deps = [ "../..:cr" ]
 }
 
 js_library("focus_row_behavior") {
@@ -138,15 +130,11 @@ js_library("focus_without_ink") {
 }
 
 js_library("grid") {
-  deps = [
-    ":list",
-  ]
+  deps = [ ":list" ]
 }
 
 js_library("keyboard_shortcut_list") {
-  deps = [
-    "../..:cr",
-  ]
+  deps = [ "../..:cr" ]
 }
 
 js_library("list") {
@@ -159,9 +147,7 @@ js_library("list") {
 }
 
 js_library("list_item") {
-  deps = [
-    "../..:cr",
-  ]
+  deps = [ "../..:cr" ]
 }
 
 js_library("list_selection_controller") {
@@ -223,9 +209,7 @@ js_library("overlay") {
 }
 
 js_library("position_util") {
-  deps = [
-    "../..:cr",
-  ]
+  deps = [ "../..:cr" ]
 }
 
 js_library("splitter") {
@@ -236,9 +220,7 @@ js_library("splitter") {
 }
 
 js_library("store") {
-  deps = [
-    "../..:cr",
-  ]
+  deps = [ "../..:cr" ]
 }
 
 js_library("store_client") {
@@ -304,16 +286,12 @@ js_type_check("ui_resources_modules") {
 }
 
 js_library("drag_wrapper.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/cr/ui/drag_wrapper.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/cr/ui/drag_wrapper.m.js" ]
   extra_deps = [ ":modulize" ]
 }
 
 js_library("focus_grid.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_grid.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_grid.m.js" ]
   deps = [
     ":focus_row.m",
     "../..:assert.m",
@@ -322,9 +300,8 @@ js_library("focus_grid.m") {
 }
 
 js_library("focus_outline_manager.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_outline_manager.m.js",
-  ]
+  sources =
+      [ "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_outline_manager.m.js" ]
   extra_deps = [ ":modulize" ]
 }
 
@@ -334,9 +311,7 @@ js_library("focus_row.m") {
     "../..:event_tracker.m",
     "../..:util.m",
   ]
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_row.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_row.m.js" ]
   extra_deps = [ ":modulize" ]
 }
 
@@ -347,9 +322,8 @@ js_library("focus_row_behavior.m") {
     "../..:assert.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_row_behavior.m.js",
-  ]
+  sources =
+      [ "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_row_behavior.m.js" ]
   extra_deps = [ ":modulize" ]
 }
 
@@ -358,9 +332,8 @@ js_library("focus_without_ink.m") {
     "../..:assert.m",
     "../..:cr.m",
   ]
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_without_ink.m.js",
-  ]
+  sources =
+      [ "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_without_ink.m.js" ]
   extra_deps = [ ":modulize" ]
 }
 
@@ -372,9 +345,7 @@ js_library("keyboard_shortcut_list.m") {
 }
 
 js_library("store.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/cr/ui/store.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/cr/ui/store.m.js" ]
   extra_deps = [ ":modulize" ]
 }
 
@@ -383,8 +354,6 @@ js_library("store_client.m") {
     ":store.m",
     "../..:assert.m",
   ]
-  sources = [
-    "$root_gen_dir/ui/webui/resources/js/cr/ui/store_client.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/cr/ui/store_client.m.js" ]
   extra_deps = [ ":modulize" ]
 }

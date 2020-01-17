@@ -39,9 +39,7 @@ grit("webui_resources_grd") {
   defines = [ "optimize_webui=$optimize_webui" ]
   source = "../webui/resources/webui_resources.grd"
 
-  deps = [
-    "//ui/webui/resources:modulize",
-  ]
+  deps = [ "//ui/webui/resources:modulize" ]
 
   # The .grd contains references to generated files.
   source_is_generated = true
@@ -60,15 +58,9 @@ grit("webui_resources_grd") {
 
 if (!is_mac) {
   copy("copy_ui_resources_100_percent") {
-    sources = [
-      "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
-    ]
-    outputs = [
-      "$root_out_dir/ui_resources_100_percent.pak",
-    ]
-    deps = [
-      "//ui/resources",
-    ]
+    sources = [ "$root_gen_dir/ui/resources/ui_resources_100_percent.pak" ]
+    outputs = [ "$root_out_dir/ui_resources_100_percent.pak" ]
+    deps = [ "//ui/resources" ]
   }
 }
 
@@ -88,43 +80,25 @@ if (is_ios || is_mac) {
   bundle_data("ui_test_pak_bundle_data_locale") {
     testonly = true
     visibility = [ ":ui_test_pak_bundle_data" ]
-    public_deps = [
-      ":ui_test_pak",
-    ]
-    sources = [
-      "$root_out_dir/ui_test.pak",
-    ]
-    outputs = [
-      "{{bundle_resources_dir}}/en.lproj/locale.pak",
-    ]
+    public_deps = [ ":ui_test_pak" ]
+    sources = [ "$root_out_dir/ui_test.pak" ]
+    outputs = [ "{{bundle_resources_dir}}/en.lproj/locale.pak" ]
   }
 
   bundle_data("ui_test_pak_bundle_data_test_pak") {
     testonly = true
     visibility = [ ":ui_test_pak_bundle_data" ]
-    public_deps = [
-      ":ui_test_pak",
-    ]
-    sources = [
-      "$root_out_dir/ui_test.pak",
-    ]
-    outputs = [
-      "{{bundle_resources_dir}}/ui_test.pak",
-    ]
+    public_deps = [ ":ui_test_pak" ]
+    sources = [ "$root_out_dir/ui_test.pak" ]
+    outputs = [ "{{bundle_resources_dir}}/ui_test.pak" ]
   }
 
   bundle_data("ui_test_pak_bundle_data_100_percent") {
     testonly = true
     visibility = [ ":ui_test_pak_bundle_data" ]
-    public_deps = [
-      ":ui_test_pak",
-    ]
-    sources = [
-      "$root_out_dir/ui_test.pak",
-    ]
-    outputs = [
-      "{{bundle_resources_dir}}/chrome_100_percent.pak",
-    ]
+    public_deps = [ ":ui_test_pak" ]
+    sources = [ "$root_out_dir/ui_test.pak" ]
+    outputs = [ "{{bundle_resources_dir}}/chrome_100_percent.pak" ]
   }
 
   group("ui_test_pak_bundle_data") {
@@ -137,15 +111,9 @@ if (is_ios || is_mac) {
   }
 } else {
   copy("ui_test_pak") {
-    sources = [
-      "$root_out_dir/ui_test.pak",
-    ]
-    outputs = [
-      "$root_out_dir/ui/en-US.pak",
-    ]
-    public_deps = [
-      ":repack_ui_test_pak_100_percent",
-    ]
+    sources = [ "$root_out_dir/ui_test.pak" ]
+    outputs = [ "$root_out_dir/ui/en-US.pak" ]
+    public_deps = [ ":repack_ui_test_pak_100_percent" ]
   }
 }
 
@@ -153,15 +121,11 @@ if (is_ios || is_mac) {
 # build directory so it can be loaded for test purposes. If a target requires
 # 200 percent resources it should also depend on ui_test_pak_data_200_percent.
 group("ui_test_pak_data") {
-  data_deps = [
-    ":repack_ui_test_pak_100_percent",
-  ]
+  data_deps = [ ":repack_ui_test_pak_100_percent" ]
 }
 
 group("ui_test_pak_data_200_percent") {
-  data_deps = [
-    ":repack_ui_test_pak_200_percent",
-  ]
+  data_deps = [ ":repack_ui_test_pak_200_percent" ]
 }
 
 repack("repack_ui_test_pak_100_percent") {
@@ -228,15 +192,11 @@ repack("repack_ui_test_pak_100_percent") {
 repack("repack_ui_test_pak_200_percent") {
   visibility = [ ":ui_test_pak_data_200_percent" ]
 
-  sources = [
-    "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
-  ]
+  sources = [ "$root_gen_dir/ui/resources/ui_resources_200_percent.pak" ]
 
   output = "$root_out_dir/ui_test_200_percent.pak"
 
-  deps = [
-    "//ui/resources",
-  ]
+  deps = [ "//ui/resources" ]
 
   if (toolkit_views) {
     deps += [ "//ui/views/resources" ]
@@ -259,7 +219,5 @@ repack("repack_ui_test_mac_locale_pack") {
 
   output = "$root_out_dir/ui/en.lproj/locale.pak"
 
-  deps = [
-    "//ui/strings",
-  ]
+  deps = [ "//ui/strings" ]
 }

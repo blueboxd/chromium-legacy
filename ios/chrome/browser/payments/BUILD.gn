@@ -54,6 +54,7 @@ source_set("payments") {
     "//ui/base",
     "//url",
   ]
+  public_deps = [ "//components/autofill/core/browser" ]
   libs = [ "UIKit.framework" ]
 }
 

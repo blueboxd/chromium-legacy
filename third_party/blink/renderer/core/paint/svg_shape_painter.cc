@@ -61,7 +61,7 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
   {
     ScopedSVGPaintState paint_state(layout_svg_shape_,
                                     paint_info_before_filtering);
-    if (paint_state.ApplyClipMaskAndFilterIfNecessary() &&
+    if (paint_state.ApplyEffects() &&
         !DrawingRecorder::UseCachedDrawingIfPossible(
             paint_state.GetPaintInfo().context, layout_svg_shape_,
             paint_state.GetPaintInfo().phase)) {

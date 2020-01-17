@@ -48,9 +48,13 @@ const char kUserCrostiniRootAccessAllowedByPolicy[] =
 // A file path preference representing a user level enterprise policy that
 // specifies Ansible playbook to be applied to the default Crostini container.
 // Value is empty when there is no playbook to be applied specified though
-// policy or playbook specified has already been applied successfully.
+// policy.
 const char kCrostiniAnsiblePlaybookFilePath[] =
     "crostini.ansible_playbook_file_path";
+// A boolean preference representing whether default Crostini container is
+// successfully configured by kCrostiniAnsiblePlaybook user policy.
+const char kCrostiniDefaultContainerConfigured[] =
+    "crostini.default_container_configured";
 
 // A boolean preference controlling Crostini usage reporting.
 const char kReportCrostiniUsageEnabled[] = "crostini.usage_reporting_enabled";
@@ -103,6 +107,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kUserCrostiniRootAccessAllowedByPolicy, true);
   registry->RegisterFilePathPref(kCrostiniAnsiblePlaybookFilePath,
                                  base::FilePath());
+  registry->RegisterBooleanPref(kCrostiniDefaultContainerConfigured, false);
   registry->RegisterDictionaryPref(
       kCrostiniTerminalSettings, base::DictionaryValue(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

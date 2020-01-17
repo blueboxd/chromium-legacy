@@ -26,21 +26,22 @@ TEST(MixedContentNavigationThrottleTest, IsMixedContent) {
       {"https://example.com/foo", "https://example.com/foo", false},
       {"https://example.com/foo", "wss://example.com/foo", false},
       {"https://example.com/foo", "data:text/html,<p>Hi!</p>", false},
-      {"https://example.com/foo", "http://127.0.0.1/", false},
-      {"https://example.com/foo", "http://[::1]/", false},
       {"https://example.com/foo", "blob:https://example.com/foo", false},
       {"https://example.com/foo", "blob:http://example.com/foo", false},
       {"https://example.com/foo", "blob:null/foo", false},
       {"https://example.com/foo", "filesystem:https://example.com/foo", false},
       {"https://example.com/foo", "filesystem:http://example.com/foo", false},
       {"https://example.com/foo", "filesystem:null/foo", false},
+      {"https://example.com/foo", "http://127.0.0.1/", false},
+      {"https://example.com/foo", "http://[::1]/", false},
+      {"https://example.com/foo", "http://a.localhost/", false},
+      {"https://example.com/foo", "http://localhost/", false},
 
       {"https://example.com/foo", "http://example.com/foo", true},
       {"https://example.com/foo", "http://google.com/foo", true},
       {"https://example.com/foo", "ws://example.com/foo", true},
       {"https://example.com/foo", "ws://google.com/foo", true},
       {"https://example.com/foo", "http://192.168.1.1/", true},
-      {"https://example.com/foo", "http://localhost/", true},
   };
 
   for (const auto& test : cases) {

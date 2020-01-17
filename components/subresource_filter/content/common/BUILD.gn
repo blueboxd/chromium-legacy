@@ -24,9 +24,7 @@ static_library("common") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "ruleset_dealer_unittest.cc",
-  ]
+  sources = [ "ruleset_dealer_unittest.cc" ]
   deps = [
     ":common",
     "//base",

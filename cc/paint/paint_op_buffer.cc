@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/docs/SkPDFDocument.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 namespace {
@@ -45,6 +46,12 @@ SkRect AdjustSrcRectForScale(SkRect original, SkSize scale_adjustment) {
   return SkRect::MakeXYWH(original.x() * x_scale, original.y() * y_scale,
                           original.width() * x_scale,
                           original.height() * y_scale);
+}
+
+SkRect MapRect(const SkMatrix& matrix, const SkRect& src) {
+  SkRect dst;
+  matrix.mapRect(&dst, src);
+  return dst;
 }
 }  // namespace
 
@@ -334,7 +341,6 @@ PaintOp::SerializeOptions::SerializeOptions(
     bool can_use_lcd_text,
     bool context_supports_distance_field_text,
     int max_texture_size,
-    size_t max_texture_bytes,
     const SkMatrix& original_ctm)
     : image_provider(image_provider),
       transfer_cache(transfer_cache),
@@ -346,7 +352,6 @@ PaintOp::SerializeOptions::SerializeOptions(
       context_supports_distance_field_text(
           context_supports_distance_field_text),
       max_texture_size(max_texture_size),
-      max_texture_bytes(max_texture_bytes),
       original_ctm(original_ctm) {}
 
 PaintOp::SerializeOptions::SerializeOptions(const SerializeOptions&) = default;
@@ -2044,6 +2049,50 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
       NOTREACHED();
   }
   return false;
+}
+
+// static
+gfx::Rect PaintOp::ComputePaintRect(const PaintOp* op,
+                                    const SkRect& clip_rect,
+                                    const SkMatrix& ctm) {
+  gfx::Rect transformed_rect;
+  SkRect op_rect;
+  if (!op->IsDrawOp() || !PaintOp::GetBounds(op, &op_rect)) {
+    // If we can't provide a conservative bounding rect for the op, assume it
+    // covers the complete current clip.
+    // TODO(khushalsagar): See if we can do something better for non-draw ops.
+    transformed_rect = gfx::ToEnclosingRect(gfx::SkRectToRectF(clip_rect));
+  } else {
+    const PaintFlags* flags =
+        op->IsPaintOpWithFlags()
+            ? &static_cast<const PaintOpWithFlags*>(op)->flags
+            : nullptr;
+    SkRect paint_rect = MapRect(ctm, op_rect);
+    if (flags) {
+      SkPaint paint = flags->ToSkPaint();
+      paint_rect = paint.canComputeFastBounds()
+                       ? paint.computeFastBounds(paint_rect, &paint_rect)
+                       : clip_rect;
+    }
+    // Clamp the image rect by the current clip rect.
+    if (!paint_rect.intersect(clip_rect))
+      return gfx::Rect();
+
+    transformed_rect = gfx::ToEnclosingRect(gfx::SkRectToRectF(paint_rect));
+  }
+
+  // During raster, we use the device clip bounds on the canvas, which outsets
+  // the actual clip by 1 due to the possibility of antialiasing. Account for
+  // this here by outsetting the image rect by 1. Note that this only affects
+  // queries into the rtree, which will now return images that only touch the
+  // bounds of the query rect.
+  //
+  // Note that it's not sufficient for us to inset the device clip bounds at
+  // raster time, since we might be sending a larger-than-one-item display
+  // item to skia, which means that skia will internally determine whether to
+  // raster the picture (using device clip bounds that are outset).
+  transformed_rect.Inset(-1, -1);
+  return transformed_rect;
 }
 
 // static

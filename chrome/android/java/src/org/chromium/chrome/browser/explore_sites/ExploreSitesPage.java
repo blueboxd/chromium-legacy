@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Base64;
+import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
@@ -22,7 +23,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
@@ -52,8 +52,7 @@ import java.util.List;
 public class ExploreSitesPage extends BasicNativePage {
     private static final long BACK_NAVIGATION_TIMEOUT_FOR_UMA = DateUtils.SECOND_IN_MILLIS * 30;
     private static final String CONTEXT_MENU_USER_ACTION_PREFIX = "ExploreSites";
-    private static final int INITIAL_SCROLL_POSITION = 3;
-    private static final int INITIAL_SCROLL_POSITION_PERSONALIZED = 0;
+    private static final int INITIAL_SCROLL_POSITION = 0;
     private static final String NAVIGATION_ENTRY_PAGE_STATE_KEY = "ExploreSitesPageState";
     // Constants that dictate sizes of rows and columns
     private static final int MAX_COLUMNS_DENSE_TITLE_BOTTOM = 5;
@@ -97,7 +96,7 @@ public class ExploreSitesPage extends BasicNativePage {
     private Tab mTab;
     private TabObserver mTabObserver;
     private Profile mProfile;
-    private HistoryNavigationLayout mView;
+    private ViewGroup mView;
     private RecyclerView mRecyclerView;
     private StableScrollLayoutManager mLayoutManager;
     private String mTitle;
@@ -178,7 +177,7 @@ public class ExploreSitesPage extends BasicNativePage {
         mTab = tab;
 
         mTitle = activity.getString(R.string.explore_sites_title);
-        mView = (HistoryNavigationLayout) activity.getLayoutInflater().inflate(
+        mView = (ViewGroup) activity.getLayoutInflater().inflate(
                 R.layout.explore_sites_page_layout, null);
         mProfile = ((TabImpl) mTab).getProfile();
 
@@ -247,7 +246,6 @@ public class ExploreSitesPage extends BasicNativePage {
         CategoryCardAdapter adapterDelegate = new CategoryCardAdapter(
                 mModel, mLayoutManager, iconGenerator, mContextMenuManager, navDelegate, mProfile);
 
-        mView.setNavigationDelegate(host.createHistoryNavigationDelegate());
         mRecyclerView = mView.findViewById(R.id.explore_sites_category_recycler);
 
         CategoryCardViewHolderFactory factory = createCategoryCardViewHolderFactory();
@@ -270,13 +268,7 @@ public class ExploreSitesPage extends BasicNativePage {
             }
         });
 
-        // We don't want to scroll to the 4th category if personalized
-        // or integrated with Most Likely.
-        int variation = ExploreSitesBridge.getVariation();
-        mInitialScrollPosition = variation == ExploreSitesVariation.PERSONALIZED
-                        || ExploreSitesBridge.isIntegratedWithMostLikely(variation)
-                ? INITIAL_SCROLL_POSITION_PERSONALIZED
-                : INITIAL_SCROLL_POSITION;
+        mInitialScrollPosition = INITIAL_SCROLL_POSITION;
 
         ExploreSitesBridge.getCatalog(mProfile,
                 ExploreSitesCatalogUpdateRequestSource.EXPLORE_SITES_PAGE, this::translateToModel);

@@ -1,0 +1,421 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "third_party/blink/renderer/core/execution_context/security_context_init.h"
+
+#include "third_party/blink/renderer/core/dom/document_init.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/execution_context/window_agent.h"
+#include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
+
+namespace blink {
+
+bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
+  return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
+         WebTestSupport::IsRunningWebTest();
+}
+
+// A helper class that allows the security context be initialized in the
+// process of constructing the document.
+SecurityContextInit::SecurityContextInit(const DocumentInit& initializer,
+                                         DocumentClassFlags document_classes) {
+  // Content Security Policy can provide sandbox flags. In CSP
+  // 'self' will be determined when the policy is bound. That occurs
+  // once the document is constructed.
+  InitializeContentSecurityPolicy(initializer, document_classes);
+
+  // Sandbox flags can come from initializer, loader or CSP.
+  InitializeSandboxFlags(initializer);
+
+  // The origin can be opaque based on sandbox flags.
+  InitializeOrigin(initializer);
+
+  // The secure context state is based on the origin.
+  InitializeSecureContextMode(initializer);
+
+  // Initialize origin trials, requires the post sandbox flags
+  // security origin and secure context state.
+  InitializeOriginTrials(initializer);
+
+  // Initialize feature policy, depends on origin trials.
+  InitializeFeaturePolicy(initializer, document_classes);
+
+  // Initialize document policy.
+  document_policy_ =
+      DocumentPolicy::CreateWithHeaderPolicy(initializer.GetDocumentPolicy());
+
+  // Initialize the agent. Depends on security origin.
+  InitializeAgent(initializer);
+}
+
+bool SecurityContextInit::FeaturePolicyFeatureObserved(
+    mojom::FeaturePolicyFeature feature) {
+  if (parsed_feature_policies_.Contains(feature))
+    return true;
+  parsed_feature_policies_.insert(feature);
+  return false;
+}
+
+bool SecurityContextInit::FeatureEnabled(OriginTrialFeature feature) const {
+  return origin_trials_->IsFeatureEnabled(feature);
+}
+
+void SecurityContextInit::ApplyPendingDataToDocument(Document& document) {
+  for (auto feature : feature_count_)
+    UseCounter::Count(document, feature);
+  for (auto feature : parsed_feature_policies_)
+    document.FeaturePolicyFeatureObserved(feature);
+}
+
+void SecurityContextInit::InitializeContentSecurityPolicy(
+    const DocumentInit& initializer,
+    DocumentClassFlags document_classes) {
+  auto* frame = initializer.GetFrame();
+  ContentSecurityPolicy* last_origin_document_csp =
+      frame ? frame->Loader().GetLastOriginDocumentCSP() : nullptr;
+
+  KURL url;
+  if (initializer.ShouldSetURL())
+    url = initializer.Url().IsEmpty() ? BlankURL() : initializer.Url();
+
+  // Alias certain security properties from |owner_document|. Used for the
+  // case of about:blank pages inheriting the security properties of their
+  // requestor context.
+  //
+  // Note that this is currently somewhat broken; Blink always inherits from
+  // the parent or opener, even though it should actually be inherited from
+  // the request initiator.
+  if (url.IsEmpty() && initializer.HasSecurityContext() &&
+      !initializer.OriginToCommit() && initializer.OwnerDocument()) {
+    last_origin_document_csp =
+        initializer.OwnerDocument()->GetContentSecurityPolicy();
+  }
+
+  csp_ = initializer.GetContentSecurityPolicy();
+
+  if (!csp_) {
+    if (initializer.ImportsController()) {
+      // If this document is an HTML import, grab a reference to its master
+      // document's Content Security Policy. We don't bind the CSP's delegate
+      // in 'InitSecurityPolicy' in this case, as we can't rebind the master
+      // document's policy object: The Content Security Policy's delegate
+      // needs to remain set to the master document.
+      csp_ =
+          initializer.ImportsController()->Master()->GetContentSecurityPolicy();
+      return;
+    }
+
+    csp_ = MakeGarbageCollected<ContentSecurityPolicy>();
+    bind_csp_immediately_ = true;
+  }
+
+  // We should inherit the navigation initiator CSP if the document is loaded
+  // using a local-scheme url.
+  //
+  // Note: about:srcdoc inherits CSP from its parent, not from its initiator.
+  // In this case, the initializer.GetContentSecurityPolicy() is used.
+  if (last_origin_document_csp && !url.IsAboutSrcdocURL() &&
+      (url.IsEmpty() || url.ProtocolIsAbout() || url.ProtocolIsData() ||
+       url.ProtocolIs("blob") || url.ProtocolIs("filesystem"))) {
+    csp_->CopyStateFrom(last_origin_document_csp);
+  }
+
+  if (document_classes & kPluginDocumentClass) {
+    if (last_origin_document_csp) {
+      csp_->CopyPluginTypesFrom(last_origin_document_csp);
+      return;
+    }
+
+    // TODO(andypaicu): This should inherit the origin document's plugin types
+    // but because this could be a OOPIF document it might not have access. In
+    // this situation we fallback on using the parent/opener:
+    if (frame) {
+      Frame* inherit_from = frame->Tree().Parent() ? frame->Tree().Parent()
+                                                   : frame->Client()->Opener();
+      if (inherit_from && frame != inherit_from) {
+        csp_->CopyPluginTypesFrom(
+            inherit_from->GetSecurityContext()->GetContentSecurityPolicy());
+      }
+    }
+  }
+}
+
+void SecurityContextInit::InitializeSandboxFlags(
+    const DocumentInit& initializer) {
+  sandbox_flags_ = initializer.GetSandboxFlags() | csp_->GetSandboxMask();
+  auto* frame = initializer.GetFrame();
+  if (frame && frame->Loader().GetDocumentLoader()->Archive()) {
+    // The URL of a Document loaded from a MHTML archive is controlled by
+    // the Content-Location header. This would allow UXSS, since
+    // Content-Location can be arbitrarily controlled to control the
+    // Document's URL and origin. Instead, force a Document loaded from a
+    // MHTML archive to be sandboxed, providing exceptions only for creating
+    // new windows.
+    sandbox_flags_ |=
+        (WebSandboxFlags::kAll &
+         ~(WebSandboxFlags::kPopups |
+           WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts));
+  }
+}
+
+void SecurityContextInit::InitializeOrigin(const DocumentInit& initializer) {
+  scoped_refptr<SecurityOrigin> document_origin =
+      initializer.GetDocumentOrigin();
+  if ((sandbox_flags_ & WebSandboxFlags::kOrigin) != WebSandboxFlags::kNone) {
+    scoped_refptr<SecurityOrigin> sandboxed_origin =
+        initializer.OriginToCommit() ? initializer.OriginToCommit()
+                                     : document_origin->DeriveNewOpaqueOrigin();
+
+    // If we're supposed to inherit our security origin from our
+    // owner, but we're also sandboxed, the only things we inherit are
+    // the origin's potential trustworthiness and the ability to
+    // load local resources. The latter lets about:blank iframes in
+    // file:// URL documents load images and other resources from
+    // the file system.
+    //
+    // Note: Sandboxed about:srcdoc iframe without "allow-same-origin" aren't
+    // allowed to load user's file, even if its parent can.
+    if (initializer.OwnerDocument()) {
+      if (document_origin->IsPotentiallyTrustworthy())
+        sandboxed_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
+      if (document_origin->CanLoadLocalResources() &&
+          !initializer.IsSrcdocDocument())
+        sandboxed_origin->GrantLoadLocalResources();
+    }
+    security_origin_ = sandboxed_origin;
+  } else {
+    security_origin_ = document_origin;
+  }
+
+  // If we are a page popup in LayoutTests ensure we use the popup
+  // owner's security origin so the tests can possibly access the
+  // document via internals API.
+  auto* frame = initializer.GetFrame();
+  if (IsPagePopupRunningInWebTest(frame)) {
+    security_origin_ = frame->PagePopupOwner()
+                           ->GetDocument()
+                           .GetSecurityOrigin()
+                           ->IsolatedCopy();
+  }
+
+  if (initializer.HasSecurityContext()) {
+    if (Settings* settings = initializer.GetSettings()) {
+      if (!settings->GetWebSecurityEnabled()) {
+        // Web security is turned off. We should let this document access
+        // every other document. This is used primary by testing harnesses for
+        // web sites.
+        security_origin_->GrantUniversalAccess();
+      } else if (security_origin_->IsLocal()) {
+        if (settings->GetAllowUniversalAccessFromFileURLs()) {
+          // Some clients want local URLs to have universal access, but that
+          // setting is dangerous for other clients.
+          security_origin_->GrantUniversalAccess();
+        } else if (!settings->GetAllowFileAccessFromFileURLs()) {
+          // Some clients do not want local URLs to have access to other local
+          // URLs.
+          security_origin_->BlockLocalAccessFromLocalOrigin();
+        }
+      }
+    }
+  }
+
+  if (initializer.GrantLoadLocalResources())
+    security_origin_->GrantLoadLocalResources();
+
+  if (security_origin_->IsOpaque() && initializer.ShouldSetURL()) {
+    KURL url = initializer.Url().IsEmpty() ? BlankURL() : initializer.Url();
+    if (SecurityOrigin::Create(url)->IsPotentiallyTrustworthy())
+      security_origin_->SetOpaqueOriginIsPotentiallyTrustworthy(true);
+  }
+}
+
+void SecurityContextInit::InitializeFeaturePolicy(
+    const DocumentInit& initializer,
+    DocumentClassFlags document_classes) {
+  auto* frame = initializer.GetFrame();
+  // For a main frame, get inherited feature policy from the opener if any.
+  const FeaturePolicy::FeatureState* opener_feature_state = nullptr;
+  if (frame && frame->IsMainFrame() && !frame->OpenerFeatureState().empty()) {
+    opener_feature_state = &frame->OpenerFeatureState();
+  }
+
+  parsed_header_ = FeaturePolicyParser::ParseHeader(
+      initializer.FeaturePolicyHeader(), security_origin_,
+      &feature_policy_parse_messages_, this);
+
+  if (sandbox_flags_ != WebSandboxFlags::kNone &&
+      RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    // The sandbox flags might have come from CSP header or the browser; in
+    // such cases the sandbox is not part of the container policy. They are
+    // added to the header policy (which specifically makes sense in the case
+    // of CSP sandbox).
+    ApplySandboxFlagsToParsedFeaturePolicy(sandbox_flags_, parsed_header_);
+  }
+
+  ParsedFeaturePolicy container_policy;
+
+  if (frame && frame->Owner()) {
+    container_policy =
+        initializer.GetFramePolicy().value_or(FramePolicy()).container_policy;
+  }
+
+  // TODO(icelland): This is problematic querying sandbox flags before
+  // feature policy is initialized.
+  if (RuntimeEnabledFeatures::BlockingFocusWithoutUserActivationEnabled() &&
+      frame && frame->Tree().Parent() &&
+      (sandbox_flags_ & WebSandboxFlags::kNavigation) !=
+          WebSandboxFlags::kNone) {
+    // Enforcing the policy for sandbox frames (for context see
+    // https://crbug.com/954349).
+    DisallowFeatureIfNotPresent(
+        mojom::FeaturePolicyFeature::kFocusWithoutUserActivation,
+        container_policy);
+  }
+
+  const FeaturePolicy* parent_feature_policy = nullptr;
+  if (frame && !frame->IsMainFrame()) {
+    parent_feature_policy =
+        frame->Tree().Parent()->GetSecurityContext()->GetFeaturePolicy();
+  }
+
+  // If we are a HTMLViewSourceDocument we use container, header or
+  // inherited policies. https://crbug.com/898688
+  if (document_classes & kViewSourceDocumentClass) {
+    feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
+        nullptr, {}, security_origin_->ToUrlOrigin());
+    return;
+  }
+
+  // Feature policy should either come from a parent in the case of an
+  // embedded child frame, or from an opener if any when a new window is
+  // created by an opener. A main frame without an opener would not have a
+  // parent policy nor an opener feature state.
+  DCHECK(!parent_feature_policy || !opener_feature_state);
+  if (!opener_feature_state ||
+      !RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
+        parent_feature_policy, container_policy,
+        security_origin_->ToUrlOrigin());
+  } else {
+    DCHECK(!parent_feature_policy);
+    feature_policy_ = FeaturePolicy::CreateWithOpenerPolicy(
+        *opener_feature_state, security_origin_->ToUrlOrigin());
+  }
+  feature_policy_->SetHeaderPolicy(parsed_header_);
+}
+
+void SecurityContextInit::InitializeSecureContextMode(
+    const DocumentInit& initializer) {
+  auto* frame = initializer.GetFrame();
+  if (!security_origin_->IsPotentiallyTrustworthy()) {
+    secure_context_mode_ = SecureContextMode::kInsecureContext;
+  } else if (SchemeRegistry::SchemeShouldBypassSecureContextCheck(
+                 security_origin_->Protocol())) {
+    secure_context_mode_ = SecureContextMode::kSecureContext;
+  } else if (frame) {
+    Frame* parent = frame->Tree().Parent();
+    while (parent) {
+      if (!parent->GetSecurityContext()
+               ->GetSecurityOrigin()
+               ->IsPotentiallyTrustworthy()) {
+        secure_context_mode_ = SecureContextMode::kInsecureContext;
+        break;
+      }
+      parent = parent->Tree().Parent();
+    }
+    if (!secure_context_mode_.has_value())
+      secure_context_mode_ = SecureContextMode::kSecureContext;
+  } else {
+    secure_context_mode_ = SecureContextMode::kInsecureContext;
+  }
+  bool is_secure = secure_context_mode_ == SecureContextMode::kSecureContext;
+  if (GetSandboxFlags() != WebSandboxFlags::kNone) {
+    feature_count_.insert(
+        is_secure ? WebFeature::kSecureContextCheckForSandboxedOriginPassed
+                  : WebFeature::kSecureContextCheckForSandboxedOriginFailed);
+  }
+  feature_count_.insert(is_secure ? WebFeature::kSecureContextCheckPassed
+                                  : WebFeature::kSecureContextCheckFailed);
+}
+
+void SecurityContextInit::InitializeOriginTrials(
+    const DocumentInit& initializer) {
+  DCHECK(secure_context_mode_.has_value());
+  origin_trials_ = MakeGarbageCollected<OriginTrialContext>();
+
+  const String& header_value = initializer.OriginTrialsHeader();
+
+  if (header_value.IsEmpty())
+    return;
+  std::unique_ptr<Vector<String>> tokens(
+      OriginTrialContext::ParseHeaderValue(header_value));
+  if (!tokens)
+    return;
+  origin_trials_->AddTokens(
+      security_origin_.get(),
+      secure_context_mode_ == SecureContextMode::kSecureContext, *tokens);
+}
+
+void SecurityContextInit::InitializeAgent(const DocumentInit& initializer) {
+  auto* frame = initializer.GetFrame();
+
+  // If we are a page popup in LayoutTests ensure we use the popup
+  // owner's frame for looking up the Agent so the tests can possibly
+  // access the document via internals API.
+  if (IsPagePopupRunningInWebTest(frame)) {
+    frame = frame->PagePopupOwner()->GetDocument().GetFrame();
+  } else if (!frame) {
+    if (Document* context_document = initializer.ContextDocument()) {
+      frame = context_document->GetFrame();
+      window_agent_factory_ = context_document->GetWindowAgentFactory();
+    } else if (const Document* owner_document = initializer.OwnerDocument()) {
+      frame = owner_document->GetFrame();
+      window_agent_factory_ = owner_document->GetWindowAgentFactory();
+    }
+  }
+
+  if (!window_agent_factory_ && frame)
+    window_agent_factory_ = &frame->window_agent_factory();
+
+  // If we are allowed to share our document with other windows then we need
+  // to look at the window agent factory, otherwise we should create our own
+  // window agent.
+  if (window_agent_factory_) {
+    bool has_potential_universal_access_privilege = false;
+    if (frame) {
+      if (Settings* settings = frame->GetSettings()) {
+        // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
+        // dynamically change.
+        if (!settings->GetWebSecurityEnabled() ||
+            settings->GetAllowUniversalAccessFromFileURLs())
+          has_potential_universal_access_privilege = true;
+      }
+    }
+    agent_ = window_agent_factory_->GetAgentForOrigin(
+        has_potential_universal_access_privilege,
+        V8PerIsolateData::MainThreadIsolate(), security_origin_.get());
+  } else {
+    // ContextDocument is null only for Documents created in unit tests.
+    // In that case, use a throw away WindowAgent.
+    agent_ = MakeGarbageCollected<WindowAgent>(
+        V8PerIsolateData::MainThreadIsolate());
+  }
+
+  // Derive possibly a new security origin that contains the cluster id.
+  security_origin_ =
+      security_origin_->GetOriginForAgentCluster(agent_->cluster_id());
+}
+
+}  // namespace blink

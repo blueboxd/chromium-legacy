@@ -7,7 +7,6 @@ copy("telemetry_extension_resources") {
     "extension/manifest.json",
     "extension/script.js",
   ]
-  outputs = [
-    "$root_out_dir/media_router/telemetry_extension/{{source_file_part}}",
-  ]
+  outputs =
+      [ "$root_out_dir/media_router/telemetry_extension/{{source_file_part}}" ]
 }

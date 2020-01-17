@@ -125,7 +125,8 @@ class DedicatedWorkerMessagingProxyForTest
     KURL script_url("http://fake.url/");
     security_origin_ = SecurityOrigin::Create(script_url);
     Vector<CSPHeaderAndType> headers{
-        {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
+        {"contentSecurityPolicy",
+         network::mojom::ContentSecurityPolicyType::kReport}};
     auto worker_settings = std::make_unique<WorkerSettings>(
         To<Document>(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(

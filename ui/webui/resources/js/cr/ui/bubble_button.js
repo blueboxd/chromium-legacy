@@ -50,7 +50,7 @@ cr.define('cr.ui', function() {
       switch (event.type) {
         // Toggle the bubble on left click. Let any other clicks propagate.
         case 'click':
-          if (event.button != 0) {
+          if (event.button !== 0) {
             return;
           }
           break;

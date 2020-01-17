@@ -20,7 +20,7 @@ function selectValue() {
   }));
   clickTimeCellAt(0, 4);
   clickTimeCellAt(1, 1);
-  clickSubmitTimeButton();
+  eventSender.keyDown('Enter');
 }
 
 t.step(() => {

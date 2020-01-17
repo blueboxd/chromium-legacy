@@ -56,9 +56,7 @@ class CORE_EXPORT DOMImplementation final : public ScriptWrappable {
   Document* createHTMLDocument(const String& title = String());
 
   // Other methods (not part of DOM)
-  static Document* createDocument(const String& mime_type,
-                                  const DocumentInit&,
-                                  bool in_view_source_mode);
+  static Document* createDocument(const DocumentInit&);
 
   static bool IsXMLMIMEType(const String&);
   static bool IsTextMIMEType(const String&);

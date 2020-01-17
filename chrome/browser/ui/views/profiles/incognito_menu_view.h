@@ -36,8 +36,6 @@ class IncognitoMenuView : public ProfileMenuViewBase {
   // Button actions.
   void OnExitButtonClicked();
 
-  views::Button* exit_button_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(IncognitoMenuView);
 };
 

@@ -15,7 +15,7 @@ login.createScreen(
         },
 
         /** @override */
-        onBeforeShow: function(data) {
+        onBeforeShow(data) {
           $('supervision-transition-md')
               .setIsRemovingSupervision(
                   data['isRemovingSupervision'] ? true : false);

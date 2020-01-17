@@ -343,7 +343,6 @@ target(link_target_type, "renderer") {
     "//components/url_formatter",
     "//components/viz/client",
     "//components/viz/common",
-    "//components/viz/service",
     "//content:resources",
     "//content/child",
     "//content/common",
@@ -440,6 +439,8 @@ target(link_target_type, "renderer") {
     set_sources_assignment_filter(sources_assignment_filter)
 
     deps += [
+      # Used by Android WebView only.
+      "//components/viz/service",
       "//third_party/android_ndk:cpu_features",
       "//third_party/ashmem",
       "//third_party/libphonenumber",
@@ -677,16 +678,12 @@ group("for_content_tests") {
   ]
 
   if (!is_component_build) {
-    public_deps = [
-      ":renderer",
-    ]
+    public_deps = [ ":renderer" ]
   }
 }
 
 fuzzer_test("audio_decoder_fuzzer") {
-  sources = [
-    "media/audio_decoder_fuzzer.cpp",
-  ]
+  sources = [ "media/audio_decoder_fuzzer.cpp" ]
   deps = [
     "//content/public/renderer:renderer_sources",
     "//content/renderer:renderer",

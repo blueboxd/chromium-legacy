@@ -11,9 +11,7 @@ component("common") {
 
   defines = [ "IS_PLATFORM_WINDOW_COMMON_IMPL" ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 
   sources = [
     "platform_window_defaults.cc",

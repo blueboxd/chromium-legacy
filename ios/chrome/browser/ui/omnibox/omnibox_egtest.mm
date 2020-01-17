@@ -150,8 +150,7 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
 // Tests that the XClientData header is sent when navigating to
 // https://google.com through the omnibox.
-// TODO(crbug.com/1036225): Test very flaky on all config.
-- (void)DISABLED_testXClientData {
+- (void)testXClientData {
   // Rewrite the google URL to localhost URL.
   [OmniboxAppInterface rewriteGoogleURLToLocalhost];
 
@@ -308,7 +307,8 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
 // Copies and pastes a URL, then performs an undo of the paste, and attempts to
 // perform a second undo.
-- (void)testCopyPasteUndo {
+// TODO(crbug.com/1041478): This test is flaky.
+- (void)FLAKY_testCopyPasteUndo {
   [self openPage1];
 
   [ChromeEarlGreyUI focusOmnibox];
@@ -364,6 +364,42 @@ id<GREYMatcher> SearchCopiedTextButton() {
                                           flags:UIKeyModifierCommand];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxContainingText(kPage2URL)];
+}
+
+// Focus the omnibox and hit "cmd+X". This should remove all text from the
+// omnibox and put it in the clipboard. This had been broken before because of
+// the preedit state complexity. Paste to verify that the URL was indeed copied.
+- (void)testCutInPreedit {
+  [self openPage1];
+
+  [ChromeEarlGreyUI focusOmnibox];
+  [self checkLocationBarEditState];
+
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"X"
+                                          flags:UIKeyModifierCommand];
+
+  // It takes a while to copy, and not waiting here will cause the test to fail.
+  GREYCondition* copyCondition = [GREYCondition
+      conditionWithName:@"page1 URL copied condition"
+                  block:^BOOL {
+                    return [UIPasteboard.generalPasteboard.string
+                        hasSuffix:base::SysUTF8ToNSString(kPage1URL)];
+                  }];
+  // Wait for copy to happen or timeout after 5 seconds.
+  GREYAssertTrue([copyCondition waitWithTimeout:5],
+                 @"Copying page 1 URL failed");
+
+  // Verify that the omnibox is empty.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxText("")];
+
+  // Attempt to paste.
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"V"
+                                          flags:UIKeyModifierCommand];
+
+  // Verify that paste happened.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxContainingText(kPage1URL)];
 }
 
 #pragma mark - Helpers

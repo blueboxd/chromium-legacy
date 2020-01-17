@@ -148,7 +148,7 @@ Tutorial.prototype = {
    * @param {Event} evt
    * @return {boolean}
    */
-  onKeyDown: function(evt) {
+  onKeyDown(evt) {
     if (document.activeElement &&
         (document.activeElement.id == 'tutorial_previous' ||
          document.activeElement.id == 'tutorial_next')) {
@@ -166,7 +166,7 @@ Tutorial.prototype = {
   },
 
   /** Open the last viewed page in the tutorial. */
-  lastViewedPage: function() {
+  lastViewedPage() {
     this.page = sessionStorage['tutorial_page_pos'] !== undefined ?
         sessionStorage['tutorial_page_pos'] :
         0;
@@ -177,7 +177,7 @@ Tutorial.prototype = {
   },
 
   /** Open the update notes page. */
-  updateNotes: function() {
+  updateNotes() {
     delete sessionStorage['tutorial_page_pos'];
     this.page = -1;
     this.showPage_([
@@ -196,7 +196,7 @@ Tutorial.prototype = {
   },
 
   /** Move to the next page in the tutorial. */
-  nextPage: function() {
+  nextPage() {
     if (this.page < Tutorial.PAGES.length - 1) {
       this.page++;
       this.showCurrentPage_();
@@ -204,7 +204,7 @@ Tutorial.prototype = {
   },
 
   /** Move to the previous page in the tutorial. */
-  previousPage: function() {
+  previousPage() {
     if (this.page > 0) {
       this.page--;
       this.showCurrentPage_();
@@ -214,7 +214,7 @@ Tutorial.prototype = {
   /**
    * Shows the page for page |this.page_|.
    */
-  showCurrentPage_: function() {
+  showCurrentPage_() {
     var pageElements = Tutorial.PAGES[this.page] || [];
     this.showPage_(pageElements);
   },
@@ -224,7 +224,7 @@ Tutorial.prototype = {
    * @param {!Array<Object>} pageElements
    * @private
    */
-  showPage_: function(pageElements) {
+  showPage_(pageElements) {
     var tutorialContainer = $('tutorial_main');
     tutorialContainer.innerHTML = '';
     this.buildDom_(pageElements, tutorialContainer);
@@ -237,7 +237,7 @@ Tutorial.prototype = {
    * @param {!Node} container
    * @private
    */
-  buildDom_: function(pageElements, container) {
+  buildDom_(pageElements, container) {
     var focus;
     for (var i = 0; i < pageElements.length; ++i) {
       var pageElement = pageElements[i];
@@ -292,7 +292,7 @@ Tutorial.prototype = {
   },
 
   /** @private */
-  finalizeDom_: function() {
+  finalizeDom_() {
     var disableNext = this.page == (Tutorial.PAGES.length - 1);
     var disablePrevious = this.page == 0;
     $('tutorial_next').setAttribute('aria-disabled', disableNext);

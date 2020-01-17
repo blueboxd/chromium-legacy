@@ -46,10 +46,8 @@ LayoutMenuList::LayoutMenuList(Element* element)
       button_text_(nullptr),
       inner_block_(nullptr),
       is_empty_(false),
-      has_updated_active_option_(false),
       inner_block_height_(LayoutUnit()),
-      options_width_(0),
-      last_active_index_(-1) {
+      options_width_(0) {
   DCHECK(IsA<HTMLSelectElement>(element));
 }
 
@@ -266,8 +264,6 @@ void LayoutMenuList::UpdateFromElement() {
 
   SetText(text.StripWhiteSpace());
 
-  DidUpdateActiveOption(option);
-
   DCHECK(inner_block_);
   if (HasOptionStyleChanged(inner_block_->StyleRef()))
     UpdateInnerStyle();
@@ -337,30 +333,6 @@ void LayoutMenuList::ComputeLogicalHeight(
   if (StyleRef().HasEffectiveAppearance())
     logical_height = inner_block_height_ + BorderAndPaddingHeight();
   LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
-}
-
-void LayoutMenuList::DidSelectOption(HTMLOptionElement* option) {
-  DidUpdateActiveOption(option);
-}
-
-void LayoutMenuList::DidUpdateActiveOption(HTMLOptionElement* option) {
-  if (!GetDocument().ExistingAXObjectCache())
-    return;
-
-  int option_index = option ? option->index() : -1;
-  if (last_active_index_ == option_index)
-    return;
-  last_active_index_ = option_index;
-
-  // We skip sending accessiblity notifications for the very first option,
-  // otherwise we get extra focus and select events that are undesired.
-  if (!has_updated_active_option_) {
-    has_updated_active_option_ = true;
-    return;
-  }
-
-  GetDocument().ExistingAXObjectCache()->HandleUpdateActiveMenuOption(
-      this, option_index);
 }
 
 LayoutUnit LayoutMenuList::ClientPaddingLeft() const {

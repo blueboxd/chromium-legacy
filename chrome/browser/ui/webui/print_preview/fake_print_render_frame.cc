@@ -39,6 +39,8 @@ void FakePrintRenderFrame::PrintingDone(bool success) {}
 
 void FakePrintRenderFrame::SetPrintingEnabled(bool enabled) {}
 
+void FakePrintRenderFrame::PrintNodeUnderContextMenu() {}
+
 void FakePrintRenderFrame::BindPrintRenderFrameReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::PrintRenderFrame>(

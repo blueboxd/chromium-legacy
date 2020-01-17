@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [7, 7, 183, 40],
+          "rect": [6, 6, 185, 42],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [7, 7, 183, 40],
+          "rect": [6, 6, 185, 42],
           "reason": "chunk appeared"
         },
         {

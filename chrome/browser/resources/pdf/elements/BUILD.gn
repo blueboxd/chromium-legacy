@@ -34,9 +34,7 @@ js_library("viewer-bookmark") {
 }
 
 js_library("viewer-error-screen") {
-  deps = [
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
-  ]
+  deps = [ "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m" ]
 }
 
 if (is_chromeos) {
@@ -64,15 +62,11 @@ js_library("viewer-page-indicator") {
 }
 
 js_library("viewer-page-selector") {
-  deps = [
-    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
-  ]
+  deps = [ "//ui/webui/resources/cr_elements/cr_input:cr_input.m" ]
 }
 
 js_library("viewer-password-screen") {
-  deps = [
-    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
-  ]
+  deps = [ "//ui/webui/resources/cr_elements/cr_input:cr_input.m" ]
 }
 
 js_library("viewer-pdf-toolbar") {

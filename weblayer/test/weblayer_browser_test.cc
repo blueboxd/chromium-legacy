@@ -5,7 +5,10 @@
 #include "weblayer/test/weblayer_browser_test.h"
 
 #include "base/base_paths.h"
-#include "base/command_line.h"
+#include "weblayer/browser/browser_context_impl.h"
+#include "weblayer/browser/profile_impl.h"
+#include "weblayer/browser/tab_impl.h"
+#include "weblayer/public/common/switches.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/shell/common/shell_switches.h"
 
@@ -27,6 +30,15 @@ void WebLayerBrowserTest::SetUp() {
 void WebLayerBrowserTest::PreRunTestOnMainThread() {
   ASSERT_EQ(Shell::windows().size(), 1u);
   shell_ = Shell::windows()[0];
+
+  // Don't fill machine's download directory from tests; instead place downloads
+  // in the temporary user-data-dir for this test.
+  auto* tab_impl = static_cast<TabImpl*>(shell_->tab());
+  auto* browser_context = tab_impl->web_contents()->GetBrowserContext();
+  auto* browser_context_impl =
+      static_cast<BrowserContextImpl*>(browser_context);
+  browser_context_impl->profile_impl()->SetDownloadDirectory(
+      browser_context->GetPath());
 }
 
 void WebLayerBrowserTest::PostRunTestOnMainThread() {

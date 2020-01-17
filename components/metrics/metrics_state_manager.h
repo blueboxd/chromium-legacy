@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/client_info.h"
+#include "components/metrics/entropy_state.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -108,17 +109,6 @@ class MetricsStateManager final {
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, CheckProviderResetIds);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, EntropySourceUsed_Low);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, EntropySourceUsed_High);
-  FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, LowEntropySource0NotReset);
-  FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, HaveNoLowEntropySource);
-  FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
-                           HaveOnlyNewLowEntropySource);
-  FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
-                           HaveOnlyOldLowEntropySource);
-  FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, HaveBothLowEntropySources);
-  FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
-                           CorruptNewLowEntropySources);
-  FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
-                           CorruptOldLowEntropySources);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
                            ProvisionalClientId_PromotedToClientId);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
@@ -135,9 +125,6 @@ class MetricsStateManager final {
     ENTROPY_SOURCE_HIGH,
     ENTROPY_SOURCE_ENUM_SIZE,
   };
-
-  // Default value for prefs::kMetricsLowEntropySource.
-  static constexpr int kLowEntropySourceNotSet = -1;
 
   // Creates the MetricsStateManager with the given |local_state|. Uses
   // |enabled_state_provider| to query whether there is consent for metrics
@@ -163,20 +150,11 @@ class MetricsStateManager final {
   // |provisional_client_id_| must be set before calling this.
   std::string GetHighEntropySource();
 
-  // Returns the low entropy source for this client. Generates a new value if
-  // there is none. See the |low_entropy_source_| comment for more info.
+  // Returns the low entropy source for this client.
   int GetLowEntropySource();
 
-  // Returns the old low entropy source for this client. Does not generate a new
-  // value, but instead returns |kLowEntropySourceNotSet|, if there is none. See
-  // the |old_low_entropy_source_| comment for more info.
+  // Returns the old low entropy source for this client.
   int GetOldLowEntropySource();
-
-  // Loads the low entropy source values from prefs. Creates the new source
-  // value if it doesn't exist, but doesn't create the old source value. After
-  // this function finishes, |low_entropy_source_| will be set, but
-  // |old_low_entropy_source_| may still be |kLowEntropySourceNotSet|.
-  void UpdateLowEntropySources();
 
   // Updates |entropy_source_returned_| with |type| iff the current value is
   // ENTROPY_SOURCE_NONE and logs the new value in a histogram.
@@ -192,10 +170,6 @@ class MetricsStateManager final {
   // Reset the client id and low entropy source if the kMetricsResetMetricIDs
   // pref is true.
   void ResetMetricsIDsIfNecessary();
-
-  // Checks whether a value is on the range of allowed low entropy source
-  // values.
-  static bool IsValidLowEntropySource(int value);
 
   // Whether an instance of this class exists. Used to enforce that there aren't
   // multiple instances of this class at a given time.
@@ -231,14 +205,8 @@ class MetricsStateManager final {
   // trials don't toggle state between first and second run.
   std::string provisional_client_id_;
 
-  // The non-identifying low entropy source values. These values seed the
-  // pseudorandom generators which pick experimental groups. The "old" value is
-  // thought to be biased in the wild, and is no longer used for experiments
-  // requiring low entropy. Clients which already have an "old" value continue
-  // incorporating it into the high entropy source, to avoid changing those
-  // group assignments. New clients only have the new source.
-  int low_entropy_source_;
-  int old_low_entropy_source_;
+  // An instance of EntropyState for getting the entropy source values.
+  EntropyState entropy_state_;
 
   // The last entropy source returned by this service, used for testing.
   EntropySourceType entropy_source_returned_;

@@ -23,6 +23,7 @@ source_set("tests") {
     "data_view_unittest.cc",
     "enum_headers_unittest.cc",
     "equals_unittest.cc",
+    "flush_async_unittest.cc",
     "handle_passing_unittest.cc",
     "hash_unittest.cc",
     "idle_tracking_unittest.cc",
@@ -76,9 +77,7 @@ source_set("tests") {
     "//testing/gtest",
   ]
 
-  data = [
-    "//mojo/public/interfaces/bindings/tests/data/validation/",
-  ]
+  data = [ "//mojo/public/interfaces/bindings/tests/data/validation/" ]
 
   if (is_ios) {
     assert_no_deps = [ "//third_party/blink/*" ]
@@ -141,6 +140,7 @@ mojom("test_mojom") {
     "binder_map_unittest.test-mojom",
     "connection_group_unittest.test-mojom",
     "enum_headers_unittest.test-mojom",
+    "flush_async_unittest.test-mojom",
     "idle_tracking_unittest.test-mojom",
     "receiver_unittest.test-mojom",
     "remote_unittest.test-mojom",
@@ -148,9 +148,7 @@ mojom("test_mojom") {
     "struct_headers_unittest.test-mojom",
   ]
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 
   support_lazy_serialization = true
 }
@@ -158,9 +156,7 @@ mojom("test_mojom") {
 source_set("perftests") {
   testonly = true
 
-  sources = [
-    "bindings_perftest.cc",
-  ]
+  sources = [ "bindings_perftest.cc" ]
 
   if (!is_ios) {
     sources += [ "e2e_perftest.cc" ]
@@ -184,7 +180,5 @@ source_set("mojo_public_bindings_test_utils") {
     "validation_test_input_parser.h",
   ]
 
-  deps = [
-    "//mojo/public/c/system",
-  ]
+  deps = [ "//mojo/public/c/system" ]
 }

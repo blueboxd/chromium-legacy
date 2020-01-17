@@ -39,16 +39,12 @@ source_set("net") {
     "//net:extras",
     "//url",
   ]
-  public_deps = [
-    ":net_types",
-  ]
+  public_deps = [ ":net_types" ]
   allow_circular_includes_from = [ "//ios/chrome/browser" ]
 }
 
 source_set("net_types") {
-  sources = [
-    "net_types.h",
-  ]
+  sources = [ "net_types.h" ]
   deps = [
     "//base",
     "//net",
@@ -80,9 +76,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "cookies_egtest.mm",
-  ]
+  sources = [ "cookies_egtest.mm" ]
   deps = [
     "//base",
     "//ios/chrome/test/app:test_support",
@@ -103,9 +97,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "cookies_egtest.mm",
-  ]
+  sources = [ "cookies_egtest.mm" ]
   deps = [
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",

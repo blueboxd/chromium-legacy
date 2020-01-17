@@ -27,6 +27,10 @@ bool AppTimeController::ArePerAppTimeLimitsEnabled() {
   return base::FeatureList::IsEnabled(features::kPerAppTimeLimits);
 }
 
+bool AppTimeController::IsAppActivityReportingEnabled() {
+  return base::FeatureList::IsEnabled(features::kAppActivityReporting);
+}
+
 // static
 void AppTimeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kPerAppTimeLimitsPolicy);

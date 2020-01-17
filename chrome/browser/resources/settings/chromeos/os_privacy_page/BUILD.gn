@@ -5,13 +5,10 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":os_privacy_page",
-  ]
+  deps = [ ":os_privacy_page" ]
 }
 
 js_library("os_privacy_page") {
-  deps = [
-    "//chrome/browser/resources/settings/controls:settings_toggle_button",
-  ]
+  deps =
+      [ "//chrome/browser/resources/settings/controls:settings_toggle_button" ]
 }

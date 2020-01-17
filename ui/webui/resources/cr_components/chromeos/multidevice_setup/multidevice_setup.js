@@ -175,7 +175,7 @@ cr.define('multidevice_setup', function() {
       this.mojoInterfaceProvider_.getMojoServiceRemote()
           .getEligibleActiveHostDevices()
           .then((responseParams) => {
-            if (responseParams.eligibleHostDevices.length == 0) {
+            if (responseParams.eligibleHostDevices.length === 0) {
               console.warn('Potential host list is empty.');
               return;
             }
@@ -214,7 +214,7 @@ cr.define('multidevice_setup', function() {
     /** @private */
     onBackwardNavigationRequested_() {
       // The back button is only visible on the password page.
-      assert(this.visiblePageName == PageName.PASSWORD);
+      assert(this.visiblePageName === PageName.PASSWORD);
 
       this.$$('password-page').clearPasswordTextInput();
       this.visiblePageName = PageName.START;
@@ -259,7 +259,7 @@ cr.define('multidevice_setup', function() {
     /** @private */
     setHostDevice_() {
       // An authentication token must be set if a password is required.
-      assert(this.delegate.isPasswordRequiredToSetHost() == !!this.authToken_);
+      assert(this.delegate.isPasswordRequiredToSetHost() === !!this.authToken_);
 
       const deviceId = /** @type {string} */ (this.selectedDeviceId_);
       this.delegate.setHostDevice(deviceId, this.authToken_)
@@ -305,7 +305,7 @@ cr.define('multidevice_setup', function() {
      * @private
      */
     shouldForwardButtonBeDisabled_() {
-      return (this.visiblePageName == PageName.PASSWORD) &&
+      return (this.visiblePageName === PageName.PASSWORD) &&
           this.passwordPageForwardButtonDisabled_;
     },
 

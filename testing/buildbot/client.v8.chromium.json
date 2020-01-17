@@ -488,40 +488,6 @@
         "test_target": "//content/shell:content_shell_crash_test"
       },
       {
-        "isolate_name": "devtools_lint_check",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "devtools_lint_check",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test_target": "//third_party/devtools-frontend/src:devtools_lint_check"
-      },
-      {
-        "isolate_name": "devtools_type_check",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "devtools_type_check",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test_target": "//third_party/devtools-frontend/src:devtools_type_check"
-      },
-      {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
           "args": [],
@@ -1072,40 +1038,6 @@
           ]
         },
         "test_target": "//content/shell:content_shell_crash_test"
-      },
-      {
-        "isolate_name": "devtools_lint_check",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "devtools_lint_check",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test_target": "//third_party/devtools-frontend/src:devtools_lint_check"
-      },
-      {
-        "isolate_name": "devtools_type_check",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "devtools_type_check",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ]
-        },
-        "test_target": "//third_party/devtools-frontend/src:devtools_type_check"
       },
       {
         "isolate_name": "telemetry_gpu_unittests",

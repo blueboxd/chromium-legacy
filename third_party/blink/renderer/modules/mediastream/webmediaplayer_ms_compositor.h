@@ -21,6 +21,7 @@
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace base {
@@ -58,6 +59,12 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
       public WTF::ThreadSafeRefCounted<WebMediaPlayerMSCompositor,
                                        WebMediaPlayerMSCompositorTraits> {
  public:
+  using OnNewFramePresentedCB = CrossThreadOnceFunction<void(
+      scoped_refptr<media::VideoFrame> presented_frame,
+      base::TimeTicks presentation_time,
+      base::TimeTicks expected_presentation_time,
+      uint32_t presentation_counter)>;
+
   WebMediaPlayerMSCompositor(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -111,6 +118,10 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   // preparation for dtor.
   void StopUsingProvider();
 
+  // Sets a hook to be notified when a new frame is presented, to fulfill a
+  // prending video.requestAnimationFrame() request.
+  void SetOnFramePresentedCallback(OnNewFramePresentedCB presented_cb);
+
  private:
   friend class WTF::ThreadSafeRefCounted<WebMediaPlayerMSCompositor,
                                          WebMediaPlayerMSCompositorTraits>;
@@ -148,12 +159,17 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
       scoped_refptr<media::VideoFrame> frame);
 
   // Update |current_frame_| and |dropped_frame_count_|
-  void SetCurrentFrame(scoped_refptr<media::VideoFrame> frame);
+  void SetCurrentFrame(
+      scoped_refptr<media::VideoFrame> frame,
+      base::Optional<base::TimeTicks> expected_presentation_time);
   // Following the update to |current_frame_|, this will check for changes that
   // require updating video layer.
   void CheckForFrameChanges(
       bool is_first_frame,
       bool has_frame_size_changed,
+      base::TimeTicks presentation_time,
+      base::TimeTicks expected_presentation_time,
+      int frame_count,
       base::Optional<media::VideoRotation> new_frame_rotation,
       base::Optional<bool> new_frame_opacity);
 
@@ -216,6 +232,11 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
 
   bool stopped_;
   bool render_started_;
+
+  // Called when a new frame is enqueued, either in RenderWithoutAlgorithm() or
+  // in RenderUsingAlgorithm(). Used to fulfill video.requestAnimationFrame()
+  // requests.
+  OnNewFramePresentedCB new_frame_presented_cb_;
 
   std::unique_ptr<WebVideoFrameSubmitter> submitter_;
 

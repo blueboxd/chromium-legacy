@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
+#include "components/security_interstitials/content/mitm_software_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page_base.h"
 
@@ -48,6 +49,17 @@ class ChromeSecurityBlockingPageFactory {
       const base::Time& time_triggered,
       ssl_errors::ClockState clock_state,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
+
+  // Creates a man-in-the-middle software blocking page. The caller is
+  // responsible for ownership of the returned object.
+  static MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
+      content::WebContents* web_contents,
+      int cert_error,
+      const GURL& request_url,
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      const net::SSLInfo& ssl_info,
+      const std::string& mitm_software_name,
+      bool is_enterprise_managed);
 
   // Does setup on |page| that is specific to the client (Chrome).
   static void DoChromeSpecificSetup(SSLBlockingPageBase* page);

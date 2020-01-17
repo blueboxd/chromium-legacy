@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/local_window_proxy.h"
 
 #include "base/debug/dump_without_crashing.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
@@ -80,29 +79,8 @@ void LocalWindowProxy::Trace(blink::Visitor* visitor) {
   WindowProxy::Trace(visitor);
 }
 
-bool LocalWindowProxy::IsSetDetachedWindowReasonEnabled(
-    v8::Context::DetachedWindowReason reason) {
-  switch (reason) {
-    case v8::Context::DetachedWindowReason::kWindowNotDetached:
-      // This shouldn't happen, but if it does, it's always safe to clear the
-      // reason.
-      return true;
-    case v8::Context::DetachedWindowReason::kDetachedWindowByNavigation:
-      return base::FeatureList::IsEnabled(
-          features::kSetDetachedWindowReasonByNavigation);
-    case v8::Context::DetachedWindowReason::kDetachedWindowByClosing:
-      return base::FeatureList::IsEnabled(
-          features::kSetDetachedWindowReasonByClosing);
-    case v8::Context::DetachedWindowReason::kDetachedWindowByOtherReason:
-      return base::FeatureList::IsEnabled(
-          features::kSetDetachedWindowReasonByOtherReason);
-  }
-}
-
-void LocalWindowProxy::DisposeContext(
-    Lifecycle next_status,
-    FrameReuseStatus frame_reuse_status,
-    v8::Context::DetachedWindowReason reason) {
+void LocalWindowProxy::DisposeContext(Lifecycle next_status,
+                                      FrameReuseStatus frame_reuse_status) {
   DCHECK(next_status == Lifecycle::kV8MemoryIsForciblyPurged ||
          next_status == Lifecycle::kGlobalObjectIsDetached ||
          next_status == Lifecycle::kFrameIsDetached ||
@@ -147,10 +125,6 @@ void LocalWindowProxy::DisposeContext(
 #if DCHECK_IS_ON()
     DidDetachGlobalObject();
 #endif
-  }
-
-  if (IsSetDetachedWindowReasonEnabled(reason)) {
-    context->SetDetachedWindowReason(reason);
   }
 
   script_state_->DisposePerContextData();

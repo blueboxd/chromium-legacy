@@ -32,9 +32,7 @@ source_set("tests") {
 
 if (enable_nocompile_tests) {
   nocompile_test("type_safety_nocompile_tests") {
-    sources = [
-      "pass_key_unittest.nc",
-    ]
+    sources = [ "pass_key_unittest.nc" ]
 
     deps = [
       ":type_safety",

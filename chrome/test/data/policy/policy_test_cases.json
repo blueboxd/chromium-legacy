@@ -588,6 +588,17 @@
     ]
   },
 
+  "LocalDiscoveryEnabled" : {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "LocalDiscoveryEnabled": false },
+        "prefs": { "local_discovery.enabled": {} }
+      }
+    ]
+  },
+
   "SafeBrowsingEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
@@ -2996,13 +3007,7 @@
   },
 
   "MachineLevelUserCloudPolicyEnrollmentToken": {
-    "os": ["win", "linux", "mac"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": { "MachineLevelUserCloudPolicyEnrollmentToken": "" },
-        "prefs": { "policy.machine_level_user_cloud_policy_enrollment_token": { "local_state": true } }
-      }
-    ]
+    "note": "This policy was replaced with CloudManagementEnrollmentToken in Chrome 72 and has been removed altogether in Chrome 81"
   },
 
   "CloudManagementEnrollmentToken": {},
@@ -4003,6 +4008,16 @@
     ]
   },
 
+  "AccessibilityShortcutsEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AccessibilityShortcutsEnabled": true },
+        "prefs": { "settings.a11y.shortcuts_enabled": {} }
+      }
+    ]
+  },
+
   "SelectToSpeakEnabled": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
@@ -4792,6 +4807,8 @@
 
   "ReportDeviceSessionStatus": {},
 
+  "ReportDeviceGraphicsStatus": {},
+
   "ReportDevicePowerStatus": {},
 
   "ReportDeviceStorageStatus": {},
@@ -4913,6 +4930,8 @@
   "DeviceLoginScreenDefaultHighContrastEnabled": {},
 
   "DeviceLoginScreenHighContrastEnabled": {},
+
+  "DeviceLoginScreenAccessibilityShortcutsEnabled": {},
 
   "DeviceLoginScreenDefaultScreenMagnifierType": {},
 
@@ -6491,7 +6510,7 @@
   },
 
   "UnsafeEventsReportingEnabled": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
@@ -6503,7 +6522,7 @@
   },
 
   "BlockLargeFileTransfer": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
@@ -6515,7 +6534,7 @@
   },
 
   "DelayDeliveryUntilVerdict": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
@@ -6527,7 +6546,7 @@
   },
 
   "AllowPasswordProtectedFiles": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
@@ -6539,7 +6558,7 @@
   },
 
   "CheckContentCompliance": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": { "CheckContentCompliance": 0 },
@@ -6548,11 +6567,35 @@
     ]
   },
 
-  "URLsToCheckComplianceOfDownloadedContent": {},
+  "URLsToCheckComplianceOfDownloadedContent": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "URLsToCheckComplianceOfDownloadedContent": ["[*.]google.com"] },
+        "prefs": { "safebrowsing.urls_to_check_compliance_of_downloaded_content": { "local_state": true } }
+      }
+    ]
+  },
 
-  "URLsToNotCheckComplianceOfUploadedContent": {},
+  "URLsToCheckForMalwareOfUploadedContent": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "URLsToCheckForMalwareOfUploadedContent": ["[*.]google.com"] },
+        "prefs": { "safebrowsing.urls_to_check_for_malware_of_uploaded_content": { "local_state": true } }
+      }
+    ]
+  },
 
-  "URLsToCheckForMalwareOfUploadedContent": {},
+  "URLsToNotCheckComplianceOfUploadedContent": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "URLsToNotCheckComplianceOfUploadedContent": ["[*.]google.com"] },
+        "prefs": { "policy.urls_to_not_check_compliance_of_uploaded_content": { "local_state": true } }
+      }
+    ]
+  },
 
   "RendererCodeIntegrityEnabled": {
     "os": ["win"],

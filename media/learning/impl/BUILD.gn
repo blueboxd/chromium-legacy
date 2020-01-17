@@ -53,9 +53,7 @@ component("impl") {
     "//services/metrics/public/cpp:ukm_builders",
   ]
 
-  public_deps = [
-    "//media/learning/common",
-  ]
+  public_deps = [ "//media/learning/common" ]
 }
 
 source_set("unit_tests") {
@@ -89,9 +87,7 @@ source_set("unit_tests") {
 }
 
 fuzzer_test("learning_fuzzer") {
-  sources = [
-    "learning_fuzzertest.cc",
-  ]
+  sources = [ "learning_fuzzertest.cc" ]
   deps = [
     ":impl",
     "//base",

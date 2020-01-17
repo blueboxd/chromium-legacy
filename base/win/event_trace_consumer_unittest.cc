@@ -29,7 +29,7 @@ namespace win {
 
 namespace {
 
-typedef std::list<EVENT_TRACE> EventQueue;
+using EventQueue = std::list<EVENT_TRACE>;
 
 class TestConsumer : public EtwTraceConsumerBase<TestConsumer> {
  public:

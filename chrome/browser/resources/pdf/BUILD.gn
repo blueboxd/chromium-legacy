@@ -18,9 +18,7 @@ js_library("annotation_tool") {
 }
 
 js_library("browser_api") {
-  deps = [
-    "//ui/webui/resources/js:assert.m",
-  ]
+  deps = [ "//ui/webui/resources/js:assert.m" ]
   externs_list = [
     "$externs_path/chrome_extensions.js",
     "$externs_path/mime_handler_private.js",
@@ -34,9 +32,7 @@ js_library("gesture_detector") {
 }
 
 js_library("open_pdf_params_parser") {
-  deps = [
-    ":pdf_fitting_type",
-  ]
+  deps = [ ":pdf_fitting_type" ]
 }
 
 js_library("pdf_scripting_api") {
@@ -65,9 +61,7 @@ js_library("zoom_manager") {
 }
 
 js_library("metrics") {
-  deps = [
-    ":pdf_fitting_type",
-  ]
+  deps = [ ":pdf_fitting_type" ]
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 

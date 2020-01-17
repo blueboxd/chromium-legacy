@@ -18,9 +18,7 @@ group("make_generated") {
     "//third_party/blink/renderer/platform:*",
   ]
 
-  public_deps = [
-    ":http_names",
-  ]
+  public_deps = [ ":http_names" ]
 }
 
 blink_platform_sources("network") {
@@ -70,9 +68,7 @@ blink_platform_sources("network") {
 
   sources += get_target_outputs(":http_names")
 
-  deps = [
-    "//media",
-  ]
+  deps = [ "//media" ]
 }
 
 jumbo_source_set("unit_tests") {
@@ -92,21 +88,15 @@ jumbo_source_set("unit_tests") {
 
   configs += [ "//third_party/blink/renderer/platform:blink_platform_config" ]
 
-  deps = [
-    "//testing/gtest",
-  ]
-  public_deps = [
-    "//third_party/blink/renderer/platform:platform",
-  ]
+  deps = [ "//testing/gtest" ]
+  public_deps = [ "//third_party/blink/renderer/platform:platform" ]
 }
 
 jumbo_source_set("test_support") {
   visibility = [ "//third_party/blink/renderer/platform:test_support" ]
   testonly = true
 
-  sources = [
-    "mime/mock_mime_registry.h",
-  ]
+  sources = [ "mime/mock_mime_registry.h" ]
 
   configs += [
     "//third_party/blink/renderer:non_test_config",

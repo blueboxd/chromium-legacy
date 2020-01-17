@@ -30,6 +30,8 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewViewB
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionViewBinder;
+import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionView;
+import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionViewBinder;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
@@ -137,6 +139,11 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                         () -> new BaseSuggestionView(mListView.getContext(),
                                                      R.layout.omnibox_entity_suggestion),
                         new EntitySuggestionViewBinder());
+
+                adapter.registerType(
+                        OmniboxSuggestionUiType.TAIL_SUGGESTION,
+                        () -> new BaseSuggestionView(new TailSuggestionView(mListView.getContext())),
+                        new TailSuggestionViewBinder());
                 // clang-format on
 
                 mHolder = new SuggestionListViewHolder(container, list);

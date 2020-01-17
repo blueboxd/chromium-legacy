@@ -13,7 +13,6 @@
 #include "media/capture/video/chromeos/camera_device_delegate.h"
 #include "media/capture/video/chromeos/mojom/camera3.mojom.h"
 #include "media/capture/video_capture_types.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {
 

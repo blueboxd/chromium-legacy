@@ -428,7 +428,8 @@ void PaintOpReader::Read(sk_sp<SkTextBlob>* blob) {
   if (data_bytes == 0u) {
     auto cached_blob = options_.paint_cache->GetTextBlob(blob_id);
     if (!cached_blob) {
-      SetInvalid();
+      // TODO(khushalsagar): Temporary for debugging crbug.com/1019634.
+      SetInvalid(true /* skip_crash_dump*/);
       return;
     }
 
@@ -645,8 +646,9 @@ void PaintOpReader::AlignMemory(size_t alignment) {
 }
 
 // Don't inline this function so that crash reports can show the caller.
-NOINLINE void PaintOpReader::SetInvalid() {
-  if (valid_ && options_.crash_dump_on_failure && base::RandInt(1, 10) == 1) {
+NOINLINE void PaintOpReader::SetInvalid(bool skip_crash_dump) {
+  if (!skip_crash_dump && valid_ && options_.crash_dump_on_failure &&
+      base::RandInt(1, 10) == 1) {
     base::debug::DumpWithoutCrashing();
   }
   valid_ = false;

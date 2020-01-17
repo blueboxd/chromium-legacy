@@ -44,19 +44,13 @@ if (!is_android) {
   action("concatenate_protocols") {
     script = _inspector_protocol + "/concatenate_protocols.py"
 
-    deps = [
-      "//third_party/blink/public/devtools_protocol:protocol_version",
-    ]
+    deps = [ "//third_party/blink/public/devtools_protocol:protocol_version" ]
 
     _blink_protocol_path =
         "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json"
-    inputs = [
-      _blink_protocol_path,
-    ]
+    inputs = [ _blink_protocol_path ]
     output_file = _concatenated_protocol_path
-    outputs = [
-      output_file,
-    ]
+    outputs = [ output_file ]
 
     args = [ rebase_path(_blink_protocol_path, root_build_dir) ]
     if (is_chromeos) {
@@ -70,9 +64,7 @@ if (!is_android) {
   inspector_protocol_generate("protocol_generated_sources") {
     inspector_protocol_dir = _inspector_protocol
     visibility = [ ":*" ]  # Only targets in this file can depend on this.
-    deps = [
-      ":concatenate_protocols",
-    ]
+    deps = [ ":concatenate_protocols" ]
     out_dir = target_gen_dir
     config_file = "inspector_protocol_config.json"
 

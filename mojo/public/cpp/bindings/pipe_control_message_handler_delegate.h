@@ -20,6 +20,10 @@ class PipeControlMessageHandlerDelegate {
       InterfaceId id,
       const base::Optional<DisconnectReason>& reason) = 0;
 
+  // The implementation should cease dispatching messages until the
+  // |flush_pipe|'s peer is closed.
+  virtual bool WaitForFlushToComplete(ScopedMessagePipeHandle flush_pipe) = 0;
+
  protected:
   virtual ~PipeControlMessageHandlerDelegate() {}
 };

@@ -7,6 +7,7 @@
 #include <android/bitmap.h>
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -17,8 +18,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial_params.h"
 #include "cc/layers/layer.h"
 #include "chrome/android/chrome_jni_headers/TabContentManager_jni.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/compositor/layer/thumbnail_layer.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/thumbnail/thumbnail.h"
@@ -51,7 +54,7 @@ class TabContentManager::TabReadbackRequest {
  public:
   TabReadbackRequest(content::RenderWidgetHostView* rwhv,
                      float thumbnail_scale,
-                     bool crop_to_square,
+                     bool crop_to_match_aspect_ratio,
                      TabReadbackCallback end_callback)
       : thumbnail_scale_(thumbnail_scale),
         end_callback_(std::move(end_callback)),
@@ -67,9 +70,14 @@ class TabContentManager::TabReadbackRequest {
       std::move(result_callback).Run(SkBitmap());
       return;
     }
-    if (crop_to_square) {
-      view_size_in_pixels.set_height(
-          std::min(view_size_in_pixels.height(), view_size_in_pixels.width()));
+    if (crop_to_match_aspect_ratio) {
+      double aspect_ratio = base::GetFieldTrialParamByFeatureAsDouble(
+          chrome::android::kTabGridLayoutAndroid, "thumbnail_aspect_ratio",
+          1.0);
+      aspect_ratio = ThumbnailCache::clampAspectRatio(aspect_ratio, 0.5, 2.0);
+      int height = std::min(view_size_in_pixels.height(),
+                            (int)(view_size_in_pixels.width() / aspect_ratio));
+      view_size_in_pixels.set_height(height);
     }
     gfx::Rect source_rect = gfx::Rect(view_size_in_pixels);
     gfx::Size thumbnail_size(
@@ -392,8 +400,13 @@ void TabContentManager::SendThumbnailToJava(
     // It's fine to horizontally center-align thumbnail saved in landscape
     // mode.
     int scale = need_downsampling ? 2 : 1;
-    SkIRect dest_subset = {0, 0, bitmap.width() / scale,
-                           std::min(bitmap.width(), bitmap.height()) / scale};
+    double aspect_ratio = base::GetFieldTrialParamByFeatureAsDouble(
+        chrome::android::kTabGridLayoutAndroid, "thumbnail_aspect_ratio", 1.0);
+    aspect_ratio = ThumbnailCache::clampAspectRatio(aspect_ratio, 0.5, 2.0);
+    SkIRect dest_subset = {
+        0, 0, bitmap.width() / scale,
+        std::min(bitmap.height() / scale,
+                 (int)(bitmap.width() / aspect_ratio / scale))};
     SkBitmap result_bitmap = skia::ImageOperations::Resize(
         bitmap, skia::ImageOperations::RESIZE_BETTER, bitmap.width() / scale,
         bitmap.height() / scale, dest_subset);

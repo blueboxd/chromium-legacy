@@ -21,9 +21,7 @@ cast_source_set("graphics") {
     "//ui/gfx",
   ]
 
-  public_deps = [
-    "//chromecast/ui/mojom",
-  ]
+  public_deps = [ "//chromecast/ui/mojom" ]
 
   if (use_aura) {
     sources += [
@@ -120,9 +118,7 @@ cast_shared_library("libcast_graphics_1.0") {
     "osd_plane_default.cc",
   ]
 
-  public_deps = [
-    "//chromecast/public",
-  ]
+  public_deps = [ "//chromecast/public" ]
 
   deps = [
     "//base",

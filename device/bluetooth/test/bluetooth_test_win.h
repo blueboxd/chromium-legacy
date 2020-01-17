@@ -38,6 +38,8 @@ class BluetoothTestWin : public BluetoothTestBase,
   bool DenyPermission() override;
   void StartLowEnergyDiscoverySession() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
+  base::Optional<BluetoothUUID> GetTargetGattService(
+      BluetoothDevice* device) override;
   void SimulateGattConnection(BluetoothDevice* device) override;
   void SimulateStatusChangeToDisconnect(BluetoothDevice* device) override;
   void SimulateGattServicesDiscovered(

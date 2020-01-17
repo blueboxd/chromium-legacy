@@ -7,14 +7,19 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-@class CommandDispatcher;
-
 // QRScannerLegacyCoordinator presents the public interface for the QR scanner
 // feature.
 @interface QRScannerLegacyCoordinator : ChromeCoordinator
 
-// Models.
-@property(nonatomic, readwrite, weak) CommandDispatcher* dispatcher;
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 @end
 

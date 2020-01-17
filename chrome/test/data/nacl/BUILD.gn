@@ -124,9 +124,7 @@ if (is_nacl) {
       "progress_event_listener.js",
       "simple_cc.js",
     ]
-    outputs = [
-      "${root_build_dir}/nacl_test_data/${nacl_toolchain_variant}/{{source_file_part}}",
-    ]
+    outputs = [ "${root_build_dir}/nacl_test_data/${nacl_toolchain_variant}/{{source_file_part}}" ]
   }
 
   source_set("ppapi_test_lib") {
@@ -149,12 +147,8 @@ if (is_nacl) {
   }
 
   nacl_test_data("irt_manifest_file") {
-    sources = [
-      "manifest_file/irt_manifest_file_test.cc",
-    ]
-    deps = [
-      "//ppapi/cpp",
-    ]
+    sources = [ "manifest_file/irt_manifest_file_test.cc" ]
+    deps = [ "//ppapi/cpp" ]
     nmfflags = [
       "-xtest_file:test_file.txt",
       "-xnmf says hello world:test_file.txt",
@@ -168,12 +162,8 @@ if (is_nacl) {
   }
 
   nacl_test_data("irt_exception_test") {
-    sources = [
-      "irt_exception/irt_exception_test.cc",
-    ]
-    deps = [
-      ":ppapi_test_lib",
-    ]
+    sources = [ "irt_exception/irt_exception_test.cc" ]
+    deps = [ ":ppapi_test_lib" ]
     libs = [ "nacl_exception" ]
     destination_dir = "nacl_test_data"
     test_files = [ "irt_exception/irt_exception_test.html" ]
@@ -183,35 +173,23 @@ if (is_nacl) {
 if (is_nacl && !is_nacl_nonsfi) {
   nacl_test_data("simple_test") {
     output_name = "simple"
-    sources = [
-      "simple.cc",
-    ]
-    deps = [
-      "//ppapi/cpp",
-    ]
+    sources = [ "simple.cc" ]
+    deps = [ "//ppapi/cpp" ]
     destination_dir = "nacl_test_data"
     test_files = [ "nacl_load_test.html" ]
   }
 
   nacl_test_data("exit_status_test") {
     output_name = "pm_exit_status_test"
-    sources = [
-      "exit_status/pm_exit_status_test.cc",
-    ]
-    deps = [
-      "//ppapi/cpp",
-    ]
+    sources = [ "exit_status/pm_exit_status_test.cc" ]
+    deps = [ "//ppapi/cpp" ]
     destination_dir = "nacl_test_data"
     test_files = [ "exit_status/pm_exit_status_test.html" ]
   }
 
   nacl_test_data("extension_validation_cache") {
-    sources = [
-      "simple.cc",
-    ]
-    deps = [
-      "//ppapi/cpp",
-    ]
+    sources = [ "simple.cc" ]
+    deps = [ "//ppapi/cpp" ]
 
     # Need a new directory to not clash with with other extension
     # tests's files (e.g., manifest.json).
@@ -233,130 +211,84 @@ if (is_nacl && !is_nacl_nonsfi) {
   }
 
   nacl_test_data("sysconf_nprocessors_onln_test") {
-    sources = [
-      "sysconf_nprocessors_onln/sysconf_nprocessors_onln_test.cc",
-    ]
-    deps = [
-      "//ppapi/cpp",
-    ]
+    sources = [ "sysconf_nprocessors_onln/sysconf_nprocessors_onln_test.cc" ]
+    deps = [ "//ppapi/cpp" ]
     destination_dir = "nacl_test_data"
     test_files =
         [ "sysconf_nprocessors_onln/sysconf_nprocessors_onln_test.html" ]
   }
 
   nacl_test_data("ppapi_progress_events") {
-    sources = [
-      "progress_events/ppapi_progress_events.cc",
-    ]
+    sources = [ "progress_events/ppapi_progress_events.cc" ]
     destination_dir = "nacl_test_data"
     test_files = [ "progress_events/ppapi_progress_events.html" ]
-    deps = [
-      ":ppapi_test_lib",
-    ]
+    deps = [ ":ppapi_test_lib" ]
   }
 
   nacl_test_data("ppapi_bad_ppp_initialize") {
-    sources = [
-      "bad/ppapi_bad_ppp_initialize.cc",
-    ]
+    sources = [ "bad/ppapi_bad_ppp_initialize.cc" ]
     destination_dir = "nacl_test_data"
   }
 
   nacl_test_data("ppapi_bad_ppp_initialize_crash") {
-    sources = [
-      "bad/ppapi_bad_ppp_initialize_crash.cc",
-    ]
+    sources = [ "bad/ppapi_bad_ppp_initialize_crash.cc" ]
     destination_dir = "nacl_test_data"
   }
 
   nacl_test_data("ppapi_bad_no_ppp_instance") {
-    sources = [
-      "bad/ppapi_bad_no_ppp_instance.cc",
-    ]
-    deps = [
-      "//native_client/src/shared/platform",
-    ]
+    sources = [ "bad/ppapi_bad_no_ppp_instance.cc" ]
+    deps = [ "//native_client/src/shared/platform" ]
     destination_dir = "nacl_test_data"
   }
 
   nacl_test_data("ppapi_bad_get_ppp_instance_crash") {
-    sources = [
-      "bad/ppapi_bad_get_ppp_instance_crash.cc",
-    ]
+    sources = [ "bad/ppapi_bad_get_ppp_instance_crash.cc" ]
     destination_dir = "nacl_test_data"
   }
 
   nacl_test_data("ppapi_bad_ppp_instance_didcreate") {
-    sources = [
-      "bad/ppapi_bad_ppp_instance_didcreate.cc",
-    ]
+    sources = [ "bad/ppapi_bad_ppp_instance_didcreate.cc" ]
     destination_dir = "nacl_test_data"
   }
 
   nacl_test_data("ppapi_bad_ppp_instance_didcreate_crash") {
-    sources = [
-      "bad/ppapi_bad_ppp_instance_didcreate_crash.cc",
-    ]
+    sources = [ "bad/ppapi_bad_ppp_instance_didcreate_crash.cc" ]
     destination_dir = "nacl_test_data"
   }
 
   nacl_test_data("ppapi_crash_via_check_failure") {
-    sources = [
-      "crash/ppapi_crash_via_check_failure.cc",
-    ]
+    sources = [ "crash/ppapi_crash_via_check_failure.cc" ]
     destination_dir = "nacl_test_data"
-    deps = [
-      ":ppapi_test_lib",
-    ]
+    deps = [ ":ppapi_test_lib" ]
   }
 
   nacl_test_data("ppapi_crash_via_exit_call") {
-    sources = [
-      "crash/ppapi_crash_via_exit_call.cc",
-    ]
+    sources = [ "crash/ppapi_crash_via_exit_call.cc" ]
     destination_dir = "nacl_test_data"
-    deps = [
-      ":ppapi_test_lib",
-    ]
+    deps = [ ":ppapi_test_lib" ]
   }
 
   nacl_test_data("ppapi_crash_in_callback") {
-    sources = [
-      "crash/ppapi_crash_in_callback.cc",
-    ]
+    sources = [ "crash/ppapi_crash_in_callback.cc" ]
     destination_dir = "nacl_test_data"
-    deps = [
-      ":ppapi_test_lib",
-    ]
+    deps = [ ":ppapi_test_lib" ]
   }
 
   nacl_test_data("ppapi_crash_off_main_thread") {
-    sources = [
-      "crash/ppapi_crash_off_main_thread.cc",
-    ]
+    sources = [ "crash/ppapi_crash_off_main_thread.cc" ]
     destination_dir = "nacl_test_data"
-    deps = [
-      ":ppapi_test_lib",
-    ]
+    deps = [ ":ppapi_test_lib" ]
   }
 
   nacl_test_data("ppapi_crash_ppapi_off_main_thread") {
-    sources = [
-      "crash/ppapi_crash_ppapi_off_main_thread.cc",
-    ]
+    sources = [ "crash/ppapi_crash_ppapi_off_main_thread.cc" ]
     destination_dir = "nacl_test_data"
-    deps = [
-      ":ppapi_test_lib",
-    ]
+    deps = [ ":ppapi_test_lib" ]
   }
 
   nacl_test_data("ppapi_extension_mime_handler") {
-    sources = [
-      "extension_mime_handler/ppapi_extension_mime_handler.cc",
-    ]
-    deps = [
-      ":ppapi_test_lib",
-    ]
+    sources = [ "extension_mime_handler/ppapi_extension_mime_handler.cc" ]
+    deps = [ ":ppapi_test_lib" ]
     destination_dir = "nacl_test_data"
     test_files = [
       "extension_mime_handler/ppapi_extension_mime_handler.html",
@@ -373,12 +305,8 @@ if (is_nacl && !is_nacl_nonsfi) {
 
   nacl_test_data("pnacl_debug_url_test") {
     output_name = "pnacl_debug_url"
-    sources = [
-      "simple.cc",
-    ]
-    deps = [
-      "//ppapi/cpp",
-    ]
+    sources = [ "simple.cc" ]
+    deps = [ "//ppapi/cpp" ]
     generate_nmf = false
     if (current_cpu == "pnacl") {
       debug_pexe = true
@@ -394,12 +322,8 @@ if (is_nacl && !is_nacl_nonsfi) {
 
   nacl_test_data("pnacl_error_handling_test") {
     output_name = "pnacl_errors"
-    sources = [
-      "simple.cc",
-    ]
-    deps = [
-      "//ppapi/cpp",
-    ]
+    sources = [ "simple.cc" ]
+    deps = [ "//ppapi/cpp" ]
     generate_nmf = false
     if (current_cpu == "pnacl") {
       nonstable_pexe = true
@@ -417,22 +341,14 @@ if (is_nacl && !is_nacl_nonsfi) {
   }
 
   copy("pnacl_mime_type_test") {
-    sources = [
-      "pnacl_mime_type/pnacl_mime_type.html",
-    ]
-    outputs = [
-      "${root_build_dir}/nacl_test_data/${nacl_toolchain_variant}/{{source_file_part}}",
-    ]
+    sources = [ "pnacl_mime_type/pnacl_mime_type.html" ]
+    outputs = [ "${root_build_dir}/nacl_test_data/${nacl_toolchain_variant}/{{source_file_part}}" ]
   }
 
   nacl_test_data("pnacl_options_test") {
     output_name = "pnacl_options"
-    sources = [
-      "simple.cc",
-    ]
-    deps = [
-      "//ppapi/cpp",
-    ]
+    sources = [ "simple.cc" ]
+    deps = [ "//ppapi/cpp" ]
     generate_nmf = false
     destination_dir = "nacl_test_data"
     test_files = [
@@ -445,12 +361,8 @@ if (is_nacl && !is_nacl_nonsfi) {
 
   nacl_test_data("pnacl_url_loader_test") {
     output_name = "pnacl_url_loader"
-    sources = [
-      "pnacl_url_loader/pnacl_url_loader.cc",
-    ]
-    deps = [
-      "//ppapi/cpp",
-    ]
+    sources = [ "pnacl_url_loader/pnacl_url_loader.cc" ]
+    deps = [ "//ppapi/cpp" ]
     generate_nmf = true
     destination_dir = "nacl_test_data"
     test_files = [ "pnacl_url_loader/pnacl_url_loader.html" ]
@@ -458,9 +370,8 @@ if (is_nacl && !is_nacl_nonsfi) {
 
   nacl_test_data("pnacl_dyncode_syscall_disabled_test") {
     output_name = "pnacl_dyncode_syscall_disabled"
-    sources = [
-      "pnacl_dyncode_syscall_disabled/pnacl_dyncode_syscall_disabled.cc",
-    ]
+    sources =
+        [ "pnacl_dyncode_syscall_disabled/pnacl_dyncode_syscall_disabled.cc" ]
     deps = [
       ":ppapi_test_lib",
       "//native_client/src/untrusted/nacl:nacl_dyncode_private",
@@ -472,9 +383,7 @@ if (is_nacl && !is_nacl_nonsfi) {
 
   nacl_test_data("pnacl_hw_eh_disabled_test") {
     output_name = "pnacl_hw_eh_disabled"
-    sources = [
-      "pnacl_hw_eh_disabled/pnacl_hw_eh_disabled.cc",
-    ]
+    sources = [ "pnacl_hw_eh_disabled/pnacl_hw_eh_disabled.cc" ]
     deps = [
       ":ppapi_test_lib",
       "//native_client/src/untrusted/nacl:nacl_exception_private",
@@ -485,34 +394,22 @@ if (is_nacl && !is_nacl_nonsfi) {
 
   # Legacy NaCl PPAPI interface tests being here.
   nacl_test_data("ppapi_ppb_core") {
-    sources = [
-      "ppapi/ppb_core/ppapi_ppb_core.cc",
-    ]
-    deps = [
-      ":ppapi_test_lib",
-    ]
+    sources = [ "ppapi/ppb_core/ppapi_ppb_core.cc" ]
+    deps = [ ":ppapi_test_lib" ]
     destination_dir = "nacl_test_data"
     test_files = [ "ppapi/ppb_core/ppapi_ppb_core.html" ]
   }
 
   nacl_test_data("ppapi_ppb_instance") {
-    sources = [
-      "ppapi/ppb_instance/ppapi_ppb_instance.cc",
-    ]
-    deps = [
-      ":ppapi_test_lib",
-    ]
+    sources = [ "ppapi/ppb_instance/ppapi_ppb_instance.cc" ]
+    deps = [ ":ppapi_test_lib" ]
     destination_dir = "nacl_test_data"
     test_files = [ "ppapi/ppb_instance/ppapi_ppb_instance.html" ]
   }
 
   nacl_test_data("ppapi_ppp_instance") {
-    sources = [
-      "ppapi/ppp_instance/ppapi_ppp_instance.cc",
-    ]
-    deps = [
-      ":ppapi_test_lib",
-    ]
+    sources = [ "ppapi/ppp_instance/ppapi_ppp_instance.cc" ]
+    deps = [ ":ppapi_test_lib" ]
     destination_dir = "nacl_test_data"
     test_files = [
       "ppapi/ppp_instance/ppapi_ppp_instance.html",
@@ -523,9 +420,7 @@ if (is_nacl && !is_nacl_nonsfi) {
   if (target_cpu != "arm") {
     # Source file does not have asm for ARM.
     nacl_test_data("partly_invalid") {
-      sources = [
-        "//native_client/tests/stubout_mode/partly_invalid.c",
-      ]
+      sources = [ "//native_client/tests/stubout_mode/partly_invalid.c" ]
       destination_dir = "nacl_test_data"
     }
   }
@@ -579,9 +474,7 @@ if (is_linux && is_clang) {
   executable("nonsfi_libc_free_nexe") {
     output_name = "libc_free_$arch"
     output_extension = "nexe"
-    sources = [
-      "nonsfi/libc_free.c",
-    ]
+    sources = [ "nonsfi/libc_free.c" ]
 
     no_default_deps = true
 
@@ -632,11 +525,8 @@ if (is_linux && is_clang) {
       "nonsfi/libc_free.html",
       "nonsfi/libc_free.nmf",
     ]
-    outputs = [
-      "${root_build_dir}/nacl_test_data/libc-free/{{source_file_part}}",
-    ]
-    deps = [
-      ":nonsfi_libc_free_nexe",
-    ]
+    outputs =
+        [ "${root_build_dir}/nacl_test_data/libc-free/{{source_file_part}}" ]
+    deps = [ ":nonsfi_libc_free_nexe" ]
   }
 }

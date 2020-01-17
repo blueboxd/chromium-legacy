@@ -100,9 +100,7 @@ component("ipc") {
     public_deps += [ "//third_party/protobuf:protobuf_lite" ]
   }
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   if (enable_ipc_fuzzer) {
     public_configs = [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
@@ -170,9 +168,7 @@ component("message_support") {
   if (is_win || is_mac) {
     # On Windows HandleAttachmentWin needs to generate random IDs.
     # On Mac MachPortAttachmentMac needs to generate random IDs.
-    deps = [
-      "//crypto",
-    ]
+    deps = [ "//crypto" ]
   }
 }
 
@@ -190,9 +186,7 @@ source_set("native_handle_type_converters") {
 mojom_component("mojom") {
   output_prefix = "ipc_mojom"
   macro_prefix = "IPC_MOJOM"
-  sources = [
-    "ipc.mojom",
-  ]
+  sources = [ "ipc.mojom" ]
   public_deps = [
     "//mojo/public/interfaces/bindings",
     "//mojo/public/mojom/base",
@@ -204,34 +198,26 @@ mojom_component("mojom") {
 }
 
 mojom("mojom_constants") {
-  sources = [
-    "constants.mojom",
-  ]
+  sources = [ "constants.mojom" ]
 }
 
 mojom("test_interfaces") {
   testonly = true
-  sources = [
-    "ipc_test.mojom",
-  ]
+  sources = [ "ipc_test.mojom" ]
   support_lazy_serialization = true
 }
 
 # This is provided as a separate target so other targets can provide param
 # traits implementations without necessarily linking to all of IPC.
 source_set("param_traits") {
-  public = [
-    "ipc_param_traits.h",
-  ]
+  public = [ "ipc_param_traits.h" ]
 }
 
 if (!is_ios) {
   source_set("run_all_unittests") {
     testonly = true
 
-    sources = [
-      "run_all_unittests.cc",
-    ]
+    sources = [ "run_all_unittests.cc" ]
 
     deps = [
       "//base",
@@ -242,9 +228,7 @@ if (!is_ios) {
   }
 
   proto_library("test_proto") {
-    sources = [
-      "test_proto.proto",
-    ]
+    sources = [ "test_proto.proto" ]
   }
 
   test("ipc_tests") {
@@ -338,9 +322,7 @@ if (!is_ios) {
       "ipc_test_sink.cc",
       "ipc_test_sink.h",
     ]
-    public_deps = [
-      ":ipc",
-    ]
+    public_deps = [ ":ipc" ]
     deps = [
       "//base",
       "//base/test:test_support",

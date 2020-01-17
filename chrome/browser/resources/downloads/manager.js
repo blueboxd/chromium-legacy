@@ -58,7 +58,7 @@ Polymer({
     /** @private {!Array<!downloads.Data>} */
     items_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -104,7 +104,7 @@ Polymer({
   boundOnKeyDown_: null,
 
   /** @override */
-  created: function() {
+  created() {
     const browserProxy = BrowserProxy.getInstance();
     this.mojoEventTarget_ = browserProxy.callbackRouter;
     this.mojoHandler_ = browserProxy.handler;
@@ -120,7 +120,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     document.documentElement.classList.remove('loading');
     this.listenerIds_ = [
       this.mojoEventTarget_.clearAll.addListener(this.clearAll_.bind(this)),
@@ -150,7 +150,7 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.listenerIds_.forEach(
         id => assert(this.mojoEventTarget_.removeListener(id)));
 
@@ -159,12 +159,12 @@ Polymer({
   },
 
   /** @private */
-  clearAll_: function() {
+  clearAll_() {
     this.set('items_', []);
   },
 
   /** @private */
-  hasDownloadsChanged_: function() {
+  hasDownloadsChanged_() {
     if (this.hasDownloads_) {
       this.$.downloadsList.fire('iron-resize');
     }
@@ -175,7 +175,7 @@ Polymer({
    * @param {!Array<downloads.Data>} items
    * @private
    */
-  insertItems_: function(index, items) {
+  insertItems_(index, items) {
     // Insert |items| at the given |index| via Array#splice().
     if (items.length > 0) {
       this.items_.splice.apply(this.items_, [index, 0].concat(items));
@@ -198,7 +198,7 @@ Polymer({
   },
 
   /** @private */
-  itemsChanged_: function() {
+  itemsChanged_() {
     this.hasDownloads_ = this.items_.length > 0;
     this.$.toolbar.hasClearableDownloads =
         loadTimeData.getBoolean('allowDeletingHistory') &&
@@ -224,7 +224,7 @@ Polymer({
    * @return {string} The text to show when no download items are showing.
    * @private
    */
-  noDownloadsText_: function() {
+  noDownloadsText_() {
     return loadTimeData.getString(
         this.inSearchMode_ ? 'noSearchResults' : 'noDownloads');
   },
@@ -233,7 +233,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyDown_: function(e) {
+  onKeyDown_(e) {
     let clearAllKey = 'c';
     // <if expr="is_macosx">
     // On Mac, pressing alt+c produces 'ç' as |event.key|.
@@ -282,7 +282,7 @@ Polymer({
   },
 
   /** @private */
-  onScroll_: function() {
+  onScroll_() {
     const container = this.$.downloadsList.scrollTarget;
     const distanceToBottom =
         container.scrollHeight - container.scrollTop - container.offsetHeight;
@@ -294,7 +294,7 @@ Polymer({
   },
 
   /** @private */
-  onSearchChanged_: function() {
+  onSearchChanged_() {
     this.inSearchMode_ = this.searchService_.isSearching();
   },
 
@@ -302,7 +302,7 @@ Polymer({
    * @param {number} index
    * @private
    */
-  removeItem_: function(index) {
+  removeItem_(index) {
     const removed = this.items_.splice(index, 1);
     this.updateHideDates_(index, index);
     this.notifySplices('items_', [{
@@ -316,7 +316,7 @@ Polymer({
   },
 
   /** @private */
-  onUndoClick_: function() {
+  onUndoClick_() {
     getToastManager().hide();
     this.mojoHandler_.undo();
   },
@@ -329,7 +329,7 @@ Polymer({
    * @param {number} end
    * @private
    */
-  updateHideDates_: function(start, end) {
+  updateHideDates_(start, end) {
     for (let i = start; i <= end; ++i) {
       const current = this.items_[i];
       if (!current) {
@@ -345,7 +345,7 @@ Polymer({
    * @param {!downloads.Data} data
    * @private
    */
-  updateItem_: function(index, data) {
+  updateItem_(index, data) {
     this.items_[index] = data;
     this.updateHideDates_(index, index);
 
@@ -357,7 +357,7 @@ Polymer({
   },
 
   // Override FindShortcutBehavior methods.
-  handleFindShortcut: function(modalContextOpen) {
+  handleFindShortcut(modalContextOpen) {
     if (modalContextOpen) {
       return false;
     }
@@ -366,7 +366,7 @@ Polymer({
   },
 
   // Override FindShortcutBehavior methods.
-  searchInputHasFocus: function() {
+  searchInputHasFocus() {
     return this.$.toolbar.isSearchFocused();
   },
 });

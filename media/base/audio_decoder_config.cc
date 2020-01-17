@@ -75,12 +75,14 @@ bool AudioDecoderConfig::Matches(const AudioDecoderConfig& config) const {
           (seek_preroll() == config.seek_preroll()) &&
           (codec_delay() == config.codec_delay()) &&
           (should_discard_decoder_delay() ==
-           config.should_discard_decoder_delay()));
+           config.should_discard_decoder_delay()) &&
+          (profile() == config.profile()));
 }
 
 std::string AudioDecoderConfig::AsHumanReadableString() const {
   std::ostringstream s;
   s << "codec: " << GetCodecName(codec())
+    << ", profile: " << GetProfileName(profile())
     << ", bytes_per_channel: " << bytes_per_channel()
     << ", channel_layout: " << ChannelLayoutToString(channel_layout())
     << ", channels: " << channels()

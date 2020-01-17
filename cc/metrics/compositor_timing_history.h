@@ -73,12 +73,11 @@ class CC_EXPORT CompositorTimingHistory {
   void WillBeginImplFrame(const viz::BeginFrameArgs& args,
                           bool new_active_tree_is_likely,
                           base::TimeTicks now);
-  void WillFinishImplFrame(bool needs_redraw);
+  void WillFinishImplFrame(bool needs_redraw, const viz::BeginFrameId& id);
   void BeginImplFrameNotExpectedSoon();
-  void WillBeginMainFrame(bool on_critical_path,
-                          base::TimeTicks main_frame_time);
+  void WillBeginMainFrame(const viz::BeginFrameArgs& args);
   void BeginMainFrameStarted(base::TimeTicks main_thread_start_time);
-  void BeginMainFrameAborted();
+  void BeginMainFrameAborted(const viz::BeginFrameId& id);
   void NotifyReadyToCommit(std::unique_ptr<BeginMainFrameMetrics> details);
   void WillCommit();
   void DidCommit();
@@ -96,7 +95,10 @@ class CC_EXPORT CompositorTimingHistory {
                bool current_frame_had_raf,
                bool next_frame_has_pending_raf,
                bool has_custom_property_animations);
-  void DidSubmitCompositorFrame(uint32_t frame_token);
+  void DidSubmitCompositorFrame(
+      uint32_t frame_token,
+      const viz::BeginFrameId& current_frame_id,
+      const viz::BeginFrameId& last_activated_frame_id);
   void DidReceiveCompositorFrameAck();
   void DidPresentCompositorFrame(uint32_t frame_token,
                                  const viz::FrameTimingDetails& details);

@@ -17,9 +17,7 @@ if (use_v4lplugin) {
     extra_header = "v4l2_stub_header.fragment"
     sigs = [ "v4l2.sig" ]
     output_name = "v4l2_stubs"
-    deps = [
-      "//base",
-    ]
+    deps = [ "//base" ]
   }
 }
 
@@ -87,9 +85,7 @@ source_set("v4l2") {
 
   configs += [ "//third_party/libyuv:libyuv_config" ]
 
-  public_deps = [
-    "//ui/gl",
-  ]
+  public_deps = [ "//ui/gl" ]
 
   deps = [
     "//base",
@@ -127,9 +123,7 @@ source_set("v4l2") {
 
 source_set("unit_test") {
   testonly = true
-  sources = [
-    "v4l2_device_unittest.cc",
-  ]
+  sources = [ "v4l2_device_unittest.cc" ]
   deps = [
     ":v4l2",
     "//media:test_support",

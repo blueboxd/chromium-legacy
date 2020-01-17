@@ -1726,15 +1726,16 @@ AtomicString GetUrlStringFromNode(const Node& node) {
   return AtomicString();
 }
 
-void WriteImageNodeToClipboard(const Node& node, const String& title) {
+void WriteImageNodeToClipboard(SystemClipboard& system_clipboard,
+                               const Node& node,
+                               const String& title) {
   const scoped_refptr<Image> image = ImageFromNode(node);
   if (!image.get())
     return;
   const KURL url_string = node.GetDocument().CompleteURL(
       StripLeadingAndTrailingHTMLSpaces(GetUrlStringFromNode(node)));
-  SystemClipboard::GetInstance().WriteImageWithTag(image.get(), url_string,
-                                                   title);
-  SystemClipboard::GetInstance().CommitWrite();
+  system_clipboard.WriteImageWithTag(image.get(), url_string, title);
+  system_clipboard.CommitWrite();
 }
 
 Element* FindEventTargetFrom(LocalFrame& frame,

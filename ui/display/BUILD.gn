@@ -122,9 +122,7 @@ component("display_manager_test_api") {
 
   defines = [ "DISPLAY_IMPLEMENTATION" ]
 
-  public_deps = [
-    "//ui/display/manager",
-  ]
+  public_deps = [ "//ui/display/manager" ]
 
   deps = [
     "//base",

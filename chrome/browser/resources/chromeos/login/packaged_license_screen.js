@@ -15,7 +15,7 @@ Polymer({
 
   },
 
-  ready: function() {
+  ready() {
     this.initializeLoginScreen('PackagedLicenseScreen', {
       resetAllowed: true,
     });
@@ -31,7 +31,7 @@ Polymer({
   /*
    * Executed on language change.
    */
-  updateLocalizedContent: function() {
+  updateLocalizedContent() {
     this.i18nUpdateLocale();
   },
 
@@ -40,7 +40,7 @@ Polymer({
    *
    * @private
    */
-  onDontEnrollButtonPressed_: function() {
+  onDontEnrollButtonPressed_() {
     chrome.send('login.PackagedLicenseScreen.userActed', ['dont-enroll']);
   },
 
@@ -49,7 +49,7 @@ Polymer({
    *
    * @private
    */
-  onEnrollButtonPressed_: function() {
+  onEnrollButtonPressed_() {
     chrome.send('login.PackagedLicenseScreen.userActed', ['enroll']);
   },
 

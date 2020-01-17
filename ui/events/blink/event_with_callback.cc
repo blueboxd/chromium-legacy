@@ -46,6 +46,11 @@ bool EventWithCallback::CanCoalesceWith(const EventWithCallback& other) const {
   return CanCoalesce(other.event(), event());
 }
 
+void EventWithCallback::SetScrollbarManipulationHandledOnCompositorThread() {
+  for (auto& original_event : original_events_)
+    original_event.event_->SetScrollbarManipulationHandledOnCompositorThread();
+}
+
 void EventWithCallback::CoalesceWith(EventWithCallback* other,
                                      base::TimeTicks timestamp_now) {
   // |other| should be a newer event than |this|.

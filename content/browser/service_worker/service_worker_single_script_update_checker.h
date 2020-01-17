@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -144,6 +145,10 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   bool network_accessed() const { return network_accessed_; }
+  network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
+      const {
+    return cross_origin_embedder_policy_;
+  }
 
   static const char* ResultToString(Result result);
 
@@ -183,6 +188,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   const base::TimeDelta time_since_last_check_;
   bool network_accessed_ = false;
+  network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy_ =
+      network::mojom::CrossOriginEmbedderPolicy::kNone;
 
   std::unique_ptr<
       ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>

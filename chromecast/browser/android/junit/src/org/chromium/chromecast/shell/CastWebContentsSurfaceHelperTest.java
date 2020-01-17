@@ -333,16 +333,6 @@ public class CastWebContentsSurfaceHelperTest {
         when(mWebContentsView.open(webContents)).thenReturn(scope);
         mSurfaceHelper.onNewStartParams(params);
         mSurfaceHelper.onDestroy();
-        verify(scope).close();
-    }
-
-    @Test
-    public void testOnDestroyNotifiesComponent() {
-        StartParams params = new StartParamsBuilder().withId("2").build();
-        mSurfaceHelper.onNewStartParams(params);
-        BroadcastAsserter intentWasSent =
-                new BroadcastAsserter(CastWebContentsIntentUtils.onActivityStopped("2"));
-        mSurfaceHelper.onDestroy();
-        intentWasSent.verify();
+        verify(scope, never()).close();
     }
 }

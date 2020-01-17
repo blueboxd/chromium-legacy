@@ -200,7 +200,5 @@ source_set("thunk") {
     "PPAPI_THUNK_IMPLEMENTATION",
   ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 }

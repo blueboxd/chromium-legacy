@@ -41,13 +41,6 @@ class MODULES_EXPORT PeerConnectionTracker
  public:
   static PeerConnectionTracker* GetInstance();
 
-  // TODO(crbug.com/787254): Make these ctors private, and accessible to
-  // tests only.
-  explicit PeerConnectionTracker(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
-  PeerConnectionTracker(
-      mojo::Remote<blink::mojom::blink::PeerConnectionTrackerHost> host,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~PeerConnectionTracker() override;
 
   enum Source { SOURCE_LOCAL, SOURCE_REMOTE };
@@ -127,6 +120,8 @@ class MODULES_EXPORT PeerConnectionTracker
                                     bool succeeded);
   // Sends an update when an Ice candidate error is receiver.
   virtual void TrackIceCandidateError(RTCPeerConnectionHandler* pc_handler,
+                                      const String& address,
+                                      base::Optional<uint16_t> port,
                                       const String& host_candidate,
                                       const String& url,
                                       int error_code,
@@ -225,7 +220,18 @@ class MODULES_EXPORT PeerConnectionTracker
                                      const WTF::Vector<uint8_t>& output);
 
  private:
+  // For tests.
+  friend class PeerConnectionTrackerTest;
+  friend class MockPeerConnectionTracker;
+
+  FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, CreatingObject);
   FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, OnSuspend);
+
+  explicit PeerConnectionTracker(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
+  PeerConnectionTracker(
+      mojo::Remote<mojom::blink::PeerConnectionTrackerHost> host,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
 
   // Assign a local ID to a peer connection so that the browser process can
   // uniquely identify a peer connection in the renderer process.

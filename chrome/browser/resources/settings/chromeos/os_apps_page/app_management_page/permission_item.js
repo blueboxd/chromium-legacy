@@ -58,7 +58,7 @@ Polymer({
 
   listeners: {click: 'onClick_', change: 'togglePermission_'},
 
-  attached: function() {
+  attached() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
     this.updateFromStore();
   },
@@ -70,7 +70,7 @@ Polymer({
    * @param {string} permissionType
    * @private
    */
-  isAvailable_: function(app, permissionType) {
+  isAvailable_(app, permissionType) {
     if (app === undefined || permissionType === undefined) {
       return false;
     }
@@ -85,7 +85,7 @@ Polymer({
    * @param {string} permissionType
    * @return {boolean}
    */
-  isManaged_: function(app, permissionType) {
+  isManaged_(app, permissionType) {
     if (app === undefined || permissionType === undefined ||
         !this.isAvailable_(app, permissionType)) {
       return false;
@@ -103,7 +103,7 @@ Polymer({
    * @param {string} permissionType
    * @return {boolean}
    */
-  getValue_: function(app, permissionType) {
+  getValue_(app, permissionType) {
     if (app === undefined || permissionType === undefined) {
       return false;
     }
@@ -116,14 +116,14 @@ Polymer({
   /**
    * @private
    */
-  onClick_: function() {
+  onClick_() {
     this.$$('#toggle-row').click();
   },
 
   /**
    * @private
    */
-  togglePermission_: function() {
+  togglePermission_() {
     assert(this.app_);
 
     /** @type {!Permission} */
@@ -162,7 +162,7 @@ Polymer({
    * @return {!Permission}
    * @private
    */
-  getNewPermissionBoolean_: function(app, permissionType) {
+  getNewPermissionBoolean_(app, permissionType) {
     let newPermissionValue;
     const currentPermission =
         app_management.util.getPermission(app, permissionType);
@@ -191,7 +191,7 @@ Polymer({
    * @return {!Permission}
    * @private
    */
-  getNewPermissionTriState_: function(app, permissionType) {
+  getNewPermissionTriState_(app, permissionType) {
     let newPermissionValue;
     const currentPermission =
         app_management.util.getPermission(app, permissionType);
@@ -227,7 +227,7 @@ Polymer({
    * @return {AppManagementUserAction}
    * @private
    */
-  getUserMetricActionForPermission_: function(permissionValue, permissionType) {
+  getUserMetricActionForPermission_(permissionValue, permissionType) {
     switch (permissionType) {
       case 'NOTIFICATIONS':
         return permissionValue ? AppManagementUserAction.NotificationsTurnedOn :

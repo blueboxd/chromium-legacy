@@ -33,9 +33,7 @@ jumbo_component("x11") {
     "//ui/gfx/x",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   if (is_chromeos) {
     deps += [ "//ui/events/ozone" ]

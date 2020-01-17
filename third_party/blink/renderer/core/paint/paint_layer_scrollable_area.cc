@@ -545,7 +545,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
   // The scrollOffsetTranslation paint property depends on the scroll offset.
   // (see: PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation).
-  GetLayoutBox()->SetNeedsPaintPropertyUpdate();
+  GetLayoutBox()->SetNeedsPaintPropertyUpdatePreservingCachedRects();
 
   // Don't enqueue a scroll event yet for scroll reasons that are not about
   // explicit changes to scroll. Instead, only do so at the time of the next
@@ -779,7 +779,7 @@ void PaintLayerScrollableArea::ContentsResized() {
   ScrollableArea::ContentsResized();
   // Need to update the bounds of the scroll property.
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
-  Layer()->SetNeedsCompositingInputsUpdate(false);
+  Layer()->SetNeedsCompositingInputsUpdate();
 }
 
 IntPoint PaintLayerScrollableArea::LastKnownMousePosition() const {
@@ -2032,7 +2032,7 @@ void PaintLayerScrollableArea::InvalidateAllStickyConstraints() {
     for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys()) {
       if (sticky_layer->GetLayoutObject().StyleRef().GetPosition() ==
           EPosition::kSticky) {
-        sticky_layer->SetNeedsCompositingInputsUpdate(false);
+        sticky_layer->SetNeedsCompositingInputsUpdate();
         sticky_layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
       }
     }
@@ -2047,7 +2047,7 @@ void PaintLayerScrollableArea::InvalidateStickyConstraintsFor(
     d->sticky_constraints_map_.erase(layer);
     if (needs_compositing_update &&
         layer->GetLayoutObject().StyleRef().HasStickyConstrainedPosition()) {
-      layer->SetNeedsCompositingInputsUpdate(false);
+      layer->SetNeedsCompositingInputsUpdate();
       layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
     }
   }

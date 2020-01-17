@@ -25,9 +25,7 @@ static_library("core") {
     "request_metadata.cc",
     "request_metadata.h",
   ]
-  deps = [
-    ":metrics",
-  ]
+  deps = [ ":metrics" ]
   public_deps = [
     "cache",
     "//base",
@@ -45,9 +43,7 @@ static_library("metrics") {
     "image_fetcher_metrics_reporter.cc",
     "image_fetcher_metrics_reporter.h",
   ]
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 }
 
 static_library("test_support") {

@@ -59,7 +59,12 @@ static constexpr int kMaxUmaValue = kMaxEnumValue + 1;
 
 // Number of buckets we want, which includes the overflow bucket but not the
 // implicit underflow bucket.
-static constexpr int kNumUmaBuckets = kMaxUmaValue - kMinUmaValue + 1;
+// NOTE: We add two here, else we don't quite get enough buckets.  This was
+// emperically determined by checking Histogram::bucket_ranges().  It might
+// be the case that we should subtract one here and from |kMaxUmaValue|, but
+// either way, i think it works out.  We just have one unused bucket at worst,
+// which won't be renumbered even if we start using it later.
+static constexpr int kNumUmaBuckets = kMaxUmaValue - kMinUmaValue + 2;
 
 // For example, if kMinEnum == 0 and kMaxEnum == 5 (inclusive), then:
 // kMinUma = 1 (0 is implicit), kMaxUma = 6, and we'll want the implicit
@@ -91,7 +96,7 @@ base::Optional<int> PowerStatusHelperImpl::BucketFor(
     media::VideoCodecProfile profile,
     gfx::Size natural_size,
     bool is_fullscreen,
-    base::TimeDelta average_duration) {
+    base::Optional<int> average_fps) {
   if (!is_playing)
     return {};
 
@@ -119,16 +124,16 @@ base::Optional<int> PowerStatusHelperImpl::BucketFor(
   else
     return {};
 
-  // Estimate the frame rate.
-  if (average_duration >= base::TimeDelta::FromSecondsD(1. / 62) &&
-      average_duration <= base::TimeDelta::FromSecondsD(1. / 58)) {
-    bucket |= kFrameRate60;
-  } else if (average_duration >= base::TimeDelta::FromSecondsD(1. / 31) &&
-             average_duration <= base::TimeDelta::FromSecondsD(1. / 29)) {
-    bucket |= kFrameRate30;
-  } else {
+  // Estimate the frame rate.  Since 24 is popular, allow a wide range around
+  // 30fps, since it's likely the same for power.
+  if (!average_fps)
     return {};
-  }
+  else if (*average_fps == 60)
+    bucket |= kFrameRate60;
+  else if (*average_fps >= 24 && *average_fps <= 30)
+    bucket |= kFrameRate30;
+  else
+    return {};
 
   bucket |= is_fullscreen ? kFullScreenYes : kFullScreenNo;
 
@@ -164,9 +169,9 @@ void PowerStatusHelperImpl::SetIsFullscreen(bool is_fullscreen) {
   OnAnyStateChange();
 }
 
-void PowerStatusHelperImpl::SetAverageDuration(
-    base::TimeDelta average_duration) {
-  average_duration_ = average_duration;
+void PowerStatusHelperImpl::SetAverageFrameRate(
+    base::Optional<int> average_fps) {
+  average_fps_ = average_fps;
   OnAnyStateChange();
 }
 
@@ -183,9 +188,8 @@ void PowerStatusHelperImpl::OnAnyStateChange() {
   // If we're the power experiment, then we might have a bucket.  Else, we
   // definitely don't.
   if (experiment_state_) {
-    current_bucket_ =
-        BucketFor(is_playing_, has_video_, codec_, profile_, natural_size_,
-                  is_fullscreen_, average_duration_);
+    current_bucket_ = BucketFor(is_playing_, has_video_, codec_, profile_,
+                                natural_size_, is_fullscreen_, average_fps_);
   }
 
   // If we're changing buckets, then request power updates with a new generation

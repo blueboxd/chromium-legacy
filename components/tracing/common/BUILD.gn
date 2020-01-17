@@ -6,8 +6,6 @@ import("//build/config/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
-  sources = [
-    "background_tracing_agent.mojom",
-  ]
+  sources = [ "background_tracing_agent.mojom" ]
   cpp_only = true
 }

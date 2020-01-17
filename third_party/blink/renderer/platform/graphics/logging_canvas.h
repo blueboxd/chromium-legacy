@@ -91,7 +91,10 @@ class LoggingCanvas : public InterceptingCanvasBase {
                      const SkMatrix*,
                      const SkPaint*) override;
   void didSetMatrix(const SkMatrix&) override;
+  void didConcat44(const SkScalar[16]) override;
   void didConcat(const SkMatrix&) override;
+  void didScale(SkScalar, SkScalar) override;
+  void didTranslate(SkScalar, SkScalar) override;
   void willSave() override;
   SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec&) override;
   void willRestore() override;

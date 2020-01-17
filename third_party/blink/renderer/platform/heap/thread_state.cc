@@ -424,6 +424,12 @@ void ThreadState::VisitPersistents(Visitor* visitor) {
   }
 }
 
+void ThreadState::VisitRememberedSets(MarkingVisitor* visitor) {
+  ThreadHeapStatsCollector::EnabledScope stats_scope(
+      Heap().stats_collector(), ThreadHeapStatsCollector::kVisitRememberedSets);
+  Heap().MarkRememberedSets(visitor);
+}
+
 void ThreadState::VisitWeakPersistents(Visitor* visitor) {
   ProcessHeap::GetCrossThreadWeakPersistentRegion().TraceNodes(visitor);
   weak_persistent_region_->TraceNodes(visitor);
@@ -529,7 +535,8 @@ void ThreadState::PerformConcurrentSweep() {
   // Concurrent sweeper doesn't call finalizers - this guarantees that sweeping
   // is not called recursively.
   ThreadHeapStatsCollector::EnabledConcurrentScope stats_scope(
-      Heap().stats_collector(), ThreadHeapStatsCollector::kConcurrentSweep);
+      Heap().stats_collector(),
+      ThreadHeapStatsCollector::kConcurrentSweepingStep);
   const bool finished = Heap().AdvanceSweep(
       ThreadHeap::SweepingType::kConcurrent,
       base::TimeTicks::Now() + kConcurrentSweepStepDuration);
@@ -1164,7 +1171,7 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
       // No active concurrent markers yet, so it is safe to write to
       // concurrently_marked_bytes_ without a lock.
       concurrently_marked_bytes_ = 0;
-      current_gc_data_.visitor->FlushMarkingWorklist();
+      current_gc_data_.visitor->FlushMarkingWorklists();
       // Check that the marking worklist has enough private segments for all
       // concurrent marking tasks.
       const uint8_t max_concurrent_task_id =
@@ -1231,7 +1238,7 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state,
 }
 
 bool ThreadState::ConcurrentMarkingStep() {
-  current_gc_data_.visitor->FlushMarkingWorklist();
+  current_gc_data_.visitor->FlushMarkingWorklists();
   if (!Heap().GetMarkingWorklist()->IsGlobalPoolEmpty()) {
     ScheduleConcurrentMarking();
     return false;
@@ -1607,6 +1614,13 @@ void ThreadState::MarkPhasePrologue(BlinkGC::CollectionType collection_type,
     Heap().Compaction()->Initialize(this);
   }
 
+#if BUILDFLAG(BLINK_HEAP_YOUNG_GENERATION)
+  if (collection_type == BlinkGC::CollectionType::kMajor) {
+    // Unmark heap before doing major collection cycle.
+    Heap().Unmark();
+  }
+#endif
+
   current_gc_data_.reason = reason;
   current_gc_data_.collection_type = collection_type;
   current_gc_data_.visitor =
@@ -1647,6 +1661,11 @@ void ThreadState::MarkPhaseVisitRoots() {
     ThreadHeapStatsCollector::Scope stack_stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kVisitStackRoots);
     PushRegistersAndVisitStack();
+  }
+
+  // Visit remembered sets (card tables) for minor collections.
+  if (current_gc_data_.collection_type == BlinkGC::CollectionType::kMinor) {
+    VisitRememberedSets(static_cast<MarkingVisitor*>(visitor));
   }
 }
 
@@ -1743,7 +1762,8 @@ void ThreadState::PerformConcurrentMark() {
   VLOG(2) << "[state:" << this << "] [threadid:" << CurrentThread() << "] "
           << "ConcurrentMark";
   ThreadHeapStatsCollector::EnabledConcurrentScope stats_scope(
-      Heap().stats_collector(), ThreadHeapStatsCollector::kConcurrentMark);
+      Heap().stats_collector(),
+      ThreadHeapStatsCollector::kConcurrentMarkingStep);
 
   uint8_t task_id;
   {

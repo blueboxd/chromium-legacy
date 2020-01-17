@@ -25,9 +25,9 @@
 
 #include "third_party/blink/renderer/modules/storage/storage_event.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_storage_event_init.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/storage/storage_area.h"
-#include "third_party/blink/renderer/modules/storage/storage_event_init.h"
 
 namespace blink {
 

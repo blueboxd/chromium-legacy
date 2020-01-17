@@ -54,9 +54,7 @@ source_set("libc++abi") {
     sources += [ "trunk/src/cxa_demangle.cpp" ]
   }
 
-  # This file should really be included on linux as well, but that
-  # would introduce an unwanted glibc 2.18 dependency.
-  if (is_fuchsia || (is_posix && !is_mac && !is_ios && !is_linux)) {
+  if (is_fuchsia || (is_posix && !is_mac && !is_ios)) {
     sources += [ "trunk/src/cxa_thread_atexit.cpp" ]
   }
 

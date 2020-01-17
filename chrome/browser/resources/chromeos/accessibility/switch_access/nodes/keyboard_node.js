@@ -106,15 +106,6 @@ class KeyboardRootNode extends RootNodeWrapper {
     chrome.accessibilityPrivate.setVirtualKeyboardVisible(false);
   }
 
-  // ================= Private methods =================
-
-  /**
-   * Custom logic when entering the node.
-   */
-  onEnter_() {
-    chrome.accessibilityPrivate.setVirtualKeyboardVisible(true);
-  }
-
   // ================= Static methods =================
 
   /**
@@ -123,6 +114,8 @@ class KeyboardRootNode extends RootNodeWrapper {
    * @return {!KeyboardRootNode}
    */
   static buildTree(desktop) {
+    KeyboardRootNode.loadKeyboard_();
+
     const keyboardContainer =
         desktop.find({role: chrome.automation.RoleType.KEYBOARD});
     const keyboard =
@@ -134,8 +127,15 @@ class KeyboardRootNode extends RootNodeWrapper {
             .node;
 
     const root = new KeyboardRootNode(keyboard);
-    root.onEnter_();
     KeyboardNode.findAndSetChildren(root);
     return root;
+  }
+
+  /**
+   * Loads the keyboard.
+   * @private
+   */
+  static loadKeyboard_() {
+    chrome.accessibilityPrivate.setVirtualKeyboardVisible(true);
   }
 }

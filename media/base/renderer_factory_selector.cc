@@ -15,6 +15,7 @@ RendererFactorySelector::~RendererFactorySelector() = default;
 void RendererFactorySelector::AddBaseFactory(
     RendererFactoryType type,
     std::unique_ptr<RendererFactory> factory) {
+  DVLOG(1) << __func__ << ": type=" << static_cast<int>(type);
   DCHECK(!base_factory_type_) << "At most one base factory!";
 
   AddFactory(type, std::move(factory));

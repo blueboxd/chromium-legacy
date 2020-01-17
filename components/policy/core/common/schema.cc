@@ -1353,7 +1353,7 @@ bool Schema::Normalize(base::Value* value,
       value->RemoveKey(drop_key);
     return true;
   } else if (value->is_list()) {
-    base::Value::ListStorage& list = value->GetList();
+    base::Value::ListStorage list = value->TakeList();
     // Instead of removing invalid list items afterwards, we push valid items
     // forward in the list by overriding invalid items. The next free position
     // is indicated by |write_index|, which gets increased for every valid item.
@@ -1381,6 +1381,7 @@ bool Schema::Normalize(base::Value* value,
     if (changed && write_index < list.size())
       *changed = true;
     list.resize(write_index);
+    *value = base::Value(std::move(list));
     return true;
   }
 

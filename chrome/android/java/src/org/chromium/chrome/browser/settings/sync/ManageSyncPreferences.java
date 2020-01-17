@@ -32,12 +32,14 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsUtils;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -214,6 +216,8 @@ public class ManageSyncPreferences extends PreferenceFragmentCompat
      * from this state.
      */
     private void updateSyncPreferences() {
+        // TODO(crbug.com/1041815): Migrate away from ChromeSigninController and use IdentityManager
+        // instead.
         String signedInAccountName = ChromeSigninController.get().getSignedInAccountName();
         if (signedInAccountName == null) {
             // May happen if account is removed from the device while this screen is shown.
@@ -264,6 +268,18 @@ public class ManageSyncPreferences extends PreferenceFragmentCompat
             closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
             return;
         }
+
+        if (mProfileSyncService.isTrustedVaultKeyRequired()) {
+            // The user cannot manually enter trusted vault keys, so it needs to gets treated as an
+            // error.
+            closeDialogIfOpen(FRAGMENT_CUSTOM_PASSPHRASE);
+            closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
+            mSyncEncryption.setSummary(mProfileSyncService.isEncryptEverythingEnabled()
+                            ? R.string.sync_error_card_title
+                            : R.string.sync_passwords_error_card_title);
+            return;
+        }
+
         if (!mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
             closeDialogIfOpen(FRAGMENT_ENTER_PASSPHRASE);
         }
@@ -398,12 +414,15 @@ public class ManageSyncPreferences extends PreferenceFragmentCompat
     private void onSyncEncryptionClicked() {
         if (!mProfileSyncService.isEngineInitialized()) return;
 
-        // TODO(crbug.com/1019687): The two below should probably operate independently of the
-        // preferred datatypes.
         if (mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
             displayPassphraseDialog();
-        } else if (mProfileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes()) {
-            TrustedVaultClient.get().displayKeyRetrievalDialog(getContext());
+        } else if (mProfileSyncService.isTrustedVaultKeyRequired()) {
+            CoreAccountInfo primaryAccountInfo =
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+            if (primaryAccountInfo != null) {
+                TrustedVaultClient.get().displayKeyRetrievalDialog(
+                        getActivity(), primaryAccountInfo);
+            }
         } else {
             displayPassphraseTypeDialog();
         }

@@ -215,10 +215,6 @@ SK_API void SkDebugf_FileLine(const char* file,
 #define SK_IGNORE_LINEONLY_AA_CONVEX_PATH_OPTS
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_CANVAS_MATRIX_VIRTUALS
-#define SK_SUPPORT_LEGACY_CANVAS_MATRIX_VIRTUALS
-#endif
-
 // Max. verb count for paths rendered by the edge-AA tessellating path renderer.
 #define GR_AA_TESSELLATOR_MAX_VERB_COUNT 100
 

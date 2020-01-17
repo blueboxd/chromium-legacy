@@ -127,9 +127,7 @@ static_library("vr_android") {
     deps += [ ":ar_jni_headers" ]
   }
 
-  public_deps = [
-    "//device/vr/public/mojom",
-  ]
+  public_deps = [ "//device/vr/public/mojom" ]
 
   libs = [ "android" ]
 
@@ -145,12 +143,8 @@ static_library("vr_android") {
 
 # The VR UI module factory interface.
 source_set("ui_factory") {
-  sources = [
-    "ui_factory.h",
-  ]
-  deps = [
-    "//chrome/browser/vr:vr_base",
-  ]
+  sources = [ "ui_factory.h" ]
+  deps = [ "//chrome/browser/vr:vr_base" ]
 }
 
 # The default UI factory implementation, which simply instantiates an object.
@@ -188,13 +182,9 @@ source_set("ui_module_factory") {
 # vr_android_with_factory).
 group("module_factory") {
   if (use_native_partitions) {
-    deps = [
-      ":ui_module_factory",
-    ]
+    deps = [ ":ui_module_factory" ]
   } else {
-    deps = [
-      ":ui_default_factory",
-    ]
+    deps = [ ":ui_default_factory" ]
   }
 }
 
@@ -205,9 +195,7 @@ android_library("ar_java") {
     "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
   ]
 
-  sources = [
-    "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreShimImpl.java",
-  ]
+  sources = [ "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreShimImpl.java" ]
 }
 
 if (enable_arcore) {
@@ -229,9 +217,7 @@ if (current_toolchain == default_toolchain) {
 }
 
 group("test_support") {
-  public_deps = [
-    ":ui_default_factory",
-  ]
+  public_deps = [ ":ui_default_factory" ]
 }
 
 test("vr_android_unittests") {

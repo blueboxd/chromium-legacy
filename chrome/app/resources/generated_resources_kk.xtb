@@ -78,7 +78,7 @@
 <translation id="1108600514891325577">&amp;Тоқтату</translation>
 <translation id="1110155001042129815">Күту</translation>
 <translation id="1112420131909513020">Фондық қойынды Bluetooth функциясын қолдануда</translation>
-<translation id="1113042067630273625">Бұл сақталған сайт деректерін (<ph name="TOTAL_USAGE" />) өшіреді.</translation>
+<translation id="1113042067630273625">Бұл — сақталған сайт деректерін (<ph name="TOTAL_USAGE" />) өшіреді.</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamond</translation>
 <translation id="1114335938027186412">Компьютеріңізде Сенімді платформа модулі (TPM) қауіпсіздік құрылғысы бар, ол Chrome операциялық жүйесіндегі көптеген маңызды қауіпсіздік мүмкіндіктерін орындауға қолданылады. Толығырақ білу үшін Chromebook анықтамалық орталығына кіріңіз: https://support.google.com/chromebook/?p=tpm</translation>
@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">Бұл пайдаланушы есептік жазбасы құрылғы тіркелген доменге жатпайды. Басқа доменге тіркегіңіз келсе, алдымен құрылғыны қалпына келтіруіңіз керек.</translation>
 <translation id="1274977772557788323">Adobe Flash Player жад параметрлері</translation>
 <translation id="1274997165432133392">Cookie файлдары және басқа сайт деректері</translation>
-<translation id="127668050356036882">Барлық терезелерді жабу</translation>
 <translation id="1280820357415527819">Мобильдік желілер ізделуде</translation>
 <translation id="1282420830958964167">Ата-анаңыздың "<ph name="APP_NAME" />" қолданбасына орнатқан шегінің уақыты өтіп кетті. Оны ертең <ph name="TIME_LIMIT" /> бойы пайдалана аласыз.</translation>
 <translation id="1285320974508926690">Бұл сайтты ешқашан аудармау</translation>
@@ -515,7 +514,6 @@
 <translation id="1712552549805331520"><ph name="URL" /> деректерді жергілікті компьютеріңізде біржола сақтағысы келеді</translation>
 <translation id="1714644264617423774">Құрылғыңызды пайдалануды жеңілдету үшін арнайы мүмкіндіктерді қосу. <ph name="LINK_BEGIN" />Толығырақ<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Қозғалыс датчиктері</translation>
-<translation id="171824261579749339">Кері <ph name="LINK_BEGIN" />Толығырақ<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">Соңғы сағат</translation>
 <translation id="1719312230114180055">Ескертпе: саусақ ізінің қауіпсіздік деңгейі күрделі өрнек не PIN кодына қарағанда төменірек болуы мүмкін.</translation>
 <translation id="1720318856472900922">TLS WWW сервер аутентификациясы</translation>
@@ -726,7 +724,6 @@
 <translation id="2006638907958895361">Сілтемені <ph name="APP" /> қолданбасында ашу</translation>
 <translation id="2007404777272201486">Ақау туралы хабарлау…</translation>
 <translation id="2010501376126504057">Үйлесімді құрылғылар</translation>
-<translation id="2016430552235416146">Дәстүрлі</translation>
 <translation id="2017334798163366053">Өнімділік деректерінің жинағын өшіру</translation>
 <translation id="2017836877785168846">Мекенжай жолағындағы тарихты және автотолтыруларды өшіреді.</translation>
 <translation id="2018352199541442911">Кешіріңіз, сыртқы жад құрылғысына қазір қолдау көрсетілмеген.</translation>
@@ -767,7 +764,6 @@
 <translation id="2076672359661571384">Орташа (ұсынылады)</translation>
 <translation id="2077129598763517140">Қолжетімді болғанда, жабдық жылдамдатуды пайдалану</translation>
 <translation id="2078019350989722914">Шығудан бұрын ескертілсін (<ph name="KEY_EQUIVALENT" />)</translation>
-<translation id="2078494137444990774">Өшірулі</translation>
 <translation id="2079053412993822885">Жеке сертификаттарыңыздың бірін жойсаңыз, оны бұдан былай өзіңізді анықтау үшін пайдалана алмайсыз.</translation>
 <translation id="2079545284768500474">Қайтару</translation>
 <translation id="2080070583977670716">Қосымша параметрлер</translation>
@@ -1206,7 +1202,6 @@
 <translation id="2665647207431876759">Мерзімі өтті</translation>
 <translation id="2665717534925640469">Бұл бет енді толық экранда көрсетілген және мұнда курсор жоқ.</translation>
 <translation id="2665919335226618153">Қап! Пішімдеу кезінде қате пайда болды.</translation>
-<translation id="2666990579225592931">Қонаққа арналған терезені ашу</translation>
 <translation id="2667463864537187133">Орфографиялық сөздікті басқару</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> қолданбасы Chrome қойындысын бөлісуде.</translation>
 <translation id="2670429602441959756">Бұл бетте VR режимінде қолдау көрсетілмейтін мүмкіндіктер бар. Шығуда...</translation>
@@ -2403,7 +2398,6 @@
 <translation id="4364327530094270451">Қауын</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> терезені бөлісуде.</translation>
 <translation id="4364830672918311045">Дисплей хабарландырулары</translation>
-<translation id="436499142539576997">Қолданба деректерін алу мүмкін болмады. Қолданбаны іке қосудамыз…</translation>
 <translation id="4370975561335139969">Сіз енгізген электрондық пошта және құпия сөз сәйкес емес</translation>
 <translation id="437184764829821926">Кеңейтілген қаріп параметрлері</translation>
 <translation id="4374831787438678295">Linux орнату құралы</translation>
@@ -3430,7 +3424,6 @@
 <translation id="5867841422488265304">Вебмекенжайды іздеңіз не енгізіңіз</translation>
 <translation id="5869029295770560994">Жарайды, түсінікті</translation>
 <translation id="5869522115854928033">Сақталған құпия сөздер</translation>
-<translation id="5869948122057593679">Барлық терезелерді жабу</translation>
 <translation id="5870086504539785141">Арнайы мүмкіндіктер мәзірін жабу</translation>
 <translation id="5870155679953074650">Елеулі қателер</translation>
 <translation id="5876851302954717356">Оң жақтағы жаңа қойынды</translation>
@@ -4479,7 +4472,6 @@
 <translation id="7385854874724088939">Басып шығару пәрмені таңдалғанда, қате шықты. Принтеріңізді тексеріп, қайталап көріңіз.</translation>
 <translation id="7385896526023870365">Бұл кеңейтімде сайтқа қосымша кіру мүмкіндігі жоқ.</translation>
 <translation id="7388044238629873883">Аяқтап қалдыңыз!</translation>
-<translation id="7388222713940428051">Қонаққа арналған терезені ашу</translation>
 <translation id="7392118418926456391">Вирустарды тексеру сәтсіз аяқталды</translation>
 <translation id="7392915005464253525">Жабылған терезені қа&amp;йта ашу</translation>
 <translation id="7396845648024431313">Жүйе қосылғанда, <ph name="APP_NAME" /> ашылады және барлық басқа <ph name="PRODUCT_NAME" /> терезелерін жапсаңыз да, фонда істеп тұра береді.</translation>
@@ -4744,7 +4736,6 @@
 <translation id="7784067724422331729">Компьютеріңіздегі қауіпсіздік параметрлері бұл файлды бөгеді.</translation>
 <translation id="7784796923038949829">Сайттың деректерін оқу немесе өзгерту мүмкін емес</translation>
 <translation id="778480864305029524">Лездік тетерингті пайдалану үшін Google Play Services хабарландыруларын қосыңыз.</translation>
-<translation id="7786207843293321886">Қонақ сеансынан шығу</translation>
 <translation id="7786889348652477777">&amp;Қолданбаны қайта жүктеу</translation>
 <translation id="7787308148023287649">Басқа экраннан көрсету</translation>
 <translation id="7788298548579301890">Компьютеріңіздегі басқа бір бағдарлама жаңа қолданбаны енгізді, ол Chrome жұмысын өзгертуі мүмкін.
@@ -4858,7 +4849,6 @@
 <translation id="7908378463497120834">Кешіріңіз, сыртқы жад құрылғыңыздағы кемінде бір бөлімді орнату мүмкін емес.</translation>
 <translation id="7909969815743704077">Инкогнито режимінде жүктелген</translation>
 <translation id="7910768399700579500">&amp;Жаңа қалта</translation>
-<translation id="7910831464510799808">Қосулы</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Сервердегі құпия сөзіңіз өзгертілді. Жүйеден шығып, қайта кіріңіз.</translation>
 <translation id="7915457674565721553">Ата-ана бақылауын реттеу үшін интернетке қосылыңыз.</translation>

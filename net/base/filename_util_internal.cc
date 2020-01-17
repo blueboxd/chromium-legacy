@@ -155,14 +155,15 @@ std::string GetFileNameFromURL(const GURL& url,
 bool IsShellIntegratedExtension(const base::FilePath::StringType& extension) {
   base::FilePath::StringType extension_lower = base::ToLowerASCII(extension);
 
-  // http://msdn.microsoft.com/en-us/library/ms811694.aspx
-  // Right-clicking on shortcuts can be magical.
+  // .lnk files may be used to execute arbitrary code (see
+  // https://nvd.nist.gov/vuln/detail/CVE-2010-2568). .local files are used by
+  // Windows to determine which DLLs to load for an application.
   if ((extension_lower == FILE_PATH_LITERAL("local")) ||
       (extension_lower == FILE_PATH_LITERAL("lnk")))
     return true;
 
-  // http://www.juniper.net/security/auto/vulnerabilities/vuln2612.html
-  // Files become magical if they end in a CLSID, so block such extensions.
+  // Setting a file's extension to a CLSID may conceal its actual file type on
+  // some Windows versions (see https://nvd.nist.gov/vuln/detail/CVE-2004-0420).
   if (!extension_lower.empty() &&
       (extension_lower.front() == FILE_PATH_LITERAL('{')) &&
       (extension_lower.back() == FILE_PATH_LITERAL('}')))

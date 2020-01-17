@@ -66,7 +66,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
     WIDE_GAMUT_COLOR_SPIN,
     // Primaries defined by the primary matrix |custom_primary_matrix_|.
     CUSTOM,
-    LAST = CUSTOM,
+    kMaxValue = CUSTOM,
   };
 
   enum class TransferID : uint8_t {
@@ -101,7 +101,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
     CUSTOM,
     // An HDR parametric transfer function defined by |transfer_params_|.
     CUSTOM_HDR,
-    LAST = CUSTOM_HDR,
+    // An HDR transfer function that is piecewise sRGB, and piecewise linear.
+    PIECEWISE_HDR,
+    kMaxValue = PIECEWISE_HDR,
   };
 
   enum class MatrixID : uint8_t {
@@ -117,7 +119,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
     BT2020_CL,
     YDZDX,
     GBR,
-    LAST = GBR,
+    kMaxValue = GBR,
   };
 
   enum class RangeID : uint8_t {
@@ -128,7 +130,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
     FULL,
     // Range is defined by TransferID/MatrixID.
     DERIVED,
-    LAST = DERIVED,
+    kMaxValue = DERIVED,
   };
 
   constexpr ColorSpace() {}
@@ -188,6 +190,21 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
   // HDR10 uses BT.2020 primaries with SMPTE ST 2084 PQ transfer function.
   static ColorSpace CreateHDR10(float sdr_white_point = 0.f);
+
+  // Create a piecewise-HDR color space.
+  // - If |primaries| is CUSTOM, then |custom_primary_matrix| must be
+  //   non-nullptr.
+  // - The SDR joint is the encoded pixel value where the SDR portion reaches 1,
+  //   usually 0.25 or 0.5, corresponding to giving 8 or 9 of 10 bits to SDR.
+  //   This must be in the open interval (0, 1).
+  // - The HDR level the value that the transfer function will evaluate to at 1,
+  //   and represents the maximum HDR brightness relative to the maximum SDR
+  //   brightness. This must be strictly greater than 1.
+  static ColorSpace CreatePiecewiseHDR(
+      PrimaryID primaries,
+      float sdr_joint,
+      float hdr_level,
+      const skcms_Matrix3x3* custom_primary_matrix = nullptr);
 
   // TODO(ccameron): Remove these, and replace with more generic constructors.
   static constexpr ColorSpace CreateJpeg() {
@@ -269,6 +286,10 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // no value was specified, then use kDefaultSDRWhiteLevel. If the transfer
   // function is not PQ then return false.
   bool GetPQSDRWhiteLevel(float* sdr_white_level) const;
+
+  // Returns the parameters for a PIECEWISE_HDR transfer function. See
+  // CreatePiecewiseHDR for parameter meanings.
+  bool GetPiecewiseHDRParams(float* sdr_point, float* hdr_level) const;
 
   // For most formats, this is the RGB to YUV matrix.
   void GetTransferMatrix(SkMatrix44* matrix) const;

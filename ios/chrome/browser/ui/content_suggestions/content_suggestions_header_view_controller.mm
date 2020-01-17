@@ -114,9 +114,15 @@ using base::UserMetricsAction;
         if (IsSplitToolbarMode()) {
           [self.toolbarDelegate setScrollProgressForTabletOmnibox:1];
         }
+        [self.headerView updateForTopSafeAreaInset:[self topInset]];
       };
 
   [coordinator animateAlongsideTransition:transition completion:nil];
+}
+
+- (void)viewSafeAreaInsetsDidChange {
+  [super viewSafeAreaInsetsDidChange];
+  [self.headerView updateForTopSafeAreaInset:[self topInset]];
 }
 
 - (void)dealloc {
@@ -183,7 +189,7 @@ using base::UserMetricsAction;
 
   CGFloat offsetY =
       headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
-  if (!IsRegularXRegularSizeClass(self)) {
+  if (IsSplitToolbarMode(self)) {
     offsetY -= ToolbarExpandedHeight(
                    self.traitCollection.preferredContentSizeCategory) +
                [self topInset];

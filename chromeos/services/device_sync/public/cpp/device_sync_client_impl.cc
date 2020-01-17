@@ -128,9 +128,8 @@ multidevice::RemoteDeviceRefList DeviceSyncClientImpl::GetSyncedDevices() {
 base::Optional<multidevice::RemoteDeviceRef>
 DeviceSyncClientImpl::GetLocalDeviceMetadata() {
   DCHECK(is_ready());
-  return local_device_id_
-             ? expiring_device_cache_->GetRemoteDevice(*local_device_id_)
-             : base::nullopt;
+  return expiring_device_cache_->GetRemoteDevice(local_instance_id_,
+                                                 local_legacy_device_id_);
 }
 
 void DeviceSyncClientImpl::SetSoftwareFeatureState(
@@ -259,7 +258,15 @@ void DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted(
     return;
   }
 
-  local_device_id_ = local_device_metadata->GetDeviceId();
+  local_instance_id_ = local_device_metadata->instance_id.empty()
+                           ? base::nullopt
+                           : base::make_optional<std::string>(
+                                 local_device_metadata->instance_id);
+  local_legacy_device_id_ = local_device_metadata->GetDeviceId().empty()
+                                ? base::nullopt
+                                : base::make_optional<std::string>(
+                                      local_device_metadata->GetDeviceId());
+
   expiring_device_cache_->UpdateRemoteDevice(*local_device_metadata);
 
   waiting_for_local_device_metadata_ = false;
@@ -285,14 +292,16 @@ void DeviceSyncClientImpl::OnFindEligibleDevicesCompleted(
     std::transform(
         response->eligible_devices.begin(), response->eligible_devices.end(),
         std::back_inserter(eligible_devices), [this](const auto& device) {
-          return *expiring_device_cache_->GetRemoteDevice(device.GetDeviceId());
+          return *expiring_device_cache_->GetRemoteDevice(device.instance_id,
+                                                          device.GetDeviceId());
         });
-    std::transform(
-        response->ineligible_devices.begin(),
-        response->ineligible_devices.end(),
-        std::back_inserter(ineligible_devices), [this](const auto& device) {
-          return *expiring_device_cache_->GetRemoteDevice(device.GetDeviceId());
-        });
+    std::transform(response->ineligible_devices.begin(),
+                   response->ineligible_devices.end(),
+                   std::back_inserter(ineligible_devices),
+                   [this](const auto& device) {
+                     return *expiring_device_cache_->GetRemoteDevice(
+                         device.instance_id, device.GetDeviceId());
+                   });
   }
 
   std::move(callback).Run(result_code, eligible_devices, ineligible_devices);

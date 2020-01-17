@@ -59,7 +59,7 @@ Polymer({
   metrics_: MetricsContext.printSettingsUi(),
 
   /** @override */
-  attached: function() {
+  attached() {
     this.metrics_.record(
         Metrics.PrintSettingsUiBucket.ADVANCED_SETTINGS_DIALOG_SHOWN);
     this.$.dialog.showModal();
@@ -69,7 +69,7 @@ Polymer({
    * @param {!KeyboardEvent} e Event containing the key
    * @private
    */
-  onKeydown_: function(e) {
+  onKeydown_(e) {
     e.stopPropagation();
     const searchInput = this.$.searchBox.getSearchInput();
     const eventInSearchBox = e.composedPath().includes(searchInput);
@@ -95,7 +95,7 @@ Polymer({
    * @return {boolean} Whether there is more than one vendor item to display.
    * @private
    */
-  hasMultipleItems_: function() {
+  hasMultipleItems_() {
     return this.destination.capabilities.printer.vendor_capability.length > 1;
   },
 
@@ -103,7 +103,7 @@ Polymer({
    * @return {boolean} Whether there is a setting matching the query.
    * @private
    */
-  computeHasMatching_: function() {
+  computeHasMatching_() {
     if (!this.shadowRoot) {
       return true;
     }
@@ -130,12 +130,12 @@ Polymer({
    * @return {boolean} Whether the no matching settings hint should be shown.
    * @private
    */
-  shouldShowHint_: function() {
+  shouldShowHint_() {
     return !!this.searchQuery_ && !this.hasMatching_;
   },
 
   /** @private */
-  onCloseOrCancel_: function() {
+  onCloseOrCancel_() {
     if (this.searchQuery_) {
       this.$.searchBox.setValue('');
     }
@@ -146,12 +146,12 @@ Polymer({
   },
 
   /** @private */
-  onCancelButtonClick_: function() {
+  onCancelButtonClick_() {
     this.$.dialog.cancel();
   },
 
   /** @private */
-  onApplyButtonClick_: function() {
+  onApplyButtonClick_() {
     const settingsValues = {};
     this.shadowRoot.querySelectorAll('print-preview-advanced-settings-item')
         .forEach(item => {
@@ -161,7 +161,7 @@ Polymer({
     this.$.dialog.close();
   },
 
-  close: function() {
+  close() {
     this.$.dialog.close();
   },
 
@@ -169,7 +169,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  isSearching_: function() {
+  isSearching_() {
     return this.searchQuery_ ? 'searching' : '';
   },
 });

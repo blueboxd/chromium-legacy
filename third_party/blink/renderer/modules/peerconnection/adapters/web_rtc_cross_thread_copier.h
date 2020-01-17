@@ -165,8 +165,9 @@ struct CrossThreadCopier<blink::MediaStreamVideoTrack>
 };
 
 template <>
-struct CrossThreadCopier<webrtc::VideoTrackInterface>
-    : public CrossThreadCopierPassThrough<webrtc::VideoTrackInterface> {
+struct CrossThreadCopier<rtc::scoped_refptr<webrtc::VideoTrackInterface>>
+    : public CrossThreadCopierPassThrough<
+          rtc::scoped_refptr<webrtc::VideoTrackInterface>> {
   STATIC_ONLY(CrossThreadCopier);
 };
 

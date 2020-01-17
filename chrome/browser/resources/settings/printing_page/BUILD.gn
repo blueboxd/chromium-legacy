@@ -16,21 +16,18 @@ js_type_check("closure_compile") {
 }
 
 js_library("cloud_printers") {
-  deps = [
-    "//ui/webui/resources/js:load_time_data",
-  ]
+  deps = [ "//ui/webui/resources/js:load_time_data" ]
 }
 
 js_library("printing_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("printing_page") {
   deps = [
     ":printing_browser_proxy",
     "..:route",
+    "..:router",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:load_time_data",

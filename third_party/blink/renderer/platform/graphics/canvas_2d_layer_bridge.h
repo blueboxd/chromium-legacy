@@ -35,6 +35,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
+#include "cc/base/invalidation_region.h"
 #include "cc/layers/texture_layer_client.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -202,6 +203,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   void SkipQueuedDrawCommands();
 
   bool ShouldAccelerate(AccelerationHint) const;
+  void CalculateDirtyRegion(int canvas_width, int canvas_height);
 
   std::unique_ptr<PaintRecorder> recorder_;
   sk_sp<SkImage> hibernation_image_;
@@ -254,6 +256,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   Deque<RasterTimer> pending_raster_timers_;
 
   sk_sp<cc::PaintRecord> last_recording_;
+  cc::InvalidationRegion dirty_invalidate_region_;
 
   void SetNeedsFlush();
   base::RepeatingClosure set_needs_flush_callback_;

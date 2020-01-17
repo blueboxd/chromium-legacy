@@ -53,15 +53,13 @@ PresentationReceiver* PresentationReceiver::From(Document& document) {
 }
 
 ScriptPromise PresentationReceiver::connectionList(ScriptState* script_state) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  RecordOriginTypeAccess(*execution_context);
   if (!connection_list_property_) {
     connection_list_property_ = MakeGarbageCollected<ConnectionListProperty>(
-        execution_context, this, ConnectionListProperty::kReady);
+        ExecutionContext::From(script_state));
   }
 
-  if (!connection_list_->IsEmpty() && connection_list_property_->GetState() ==
-                                          ScriptPromisePropertyBase::kPending)
+  if (!connection_list_->IsEmpty() &&
+      connection_list_property_->GetState() == ConnectionListProperty::kPending)
     connection_list_property_->Resolve(connection_list_);
 
   return connection_list_property_->Promise(script_state->World());
@@ -102,10 +100,10 @@ void PresentationReceiver::OnReceiverConnectionAvailable(
     return;
 
   if (connection_list_property_->GetState() ==
-      ScriptPromisePropertyBase::kPending) {
+      ConnectionListProperty::kPending) {
     connection_list_property_->Resolve(connection_list_);
   } else if (connection_list_property_->GetState() ==
-             ScriptPromisePropertyBase::kResolved) {
+             ConnectionListProperty::kResolved) {
     connection_list_->DispatchConnectionAvailableEvent(connection);
   }
 }
@@ -114,18 +112,6 @@ void PresentationReceiver::RegisterConnection(
     ReceiverPresentationConnection* connection) {
   DCHECK(connection_list_);
   connection_list_->AddConnection(connection);
-}
-
-// static
-void PresentationReceiver::RecordOriginTypeAccess(
-    ExecutionContext& execution_context) {
-  if (execution_context.IsSecureContext()) {
-    UseCounter::Count(&execution_context,
-                      WebFeature::kPresentationReceiverSecureOrigin);
-  } else {
-    Deprecation::CountDeprecation(
-        &execution_context, WebFeature::kPresentationReceiverInsecureOrigin);
-  }
 }
 
 void PresentationReceiver::ContextDestroyed(ExecutionContext*) {

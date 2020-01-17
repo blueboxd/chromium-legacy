@@ -23,13 +23,9 @@ js_library("download_internals") {
 }
 
 js_library("download_internals_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 js_library("download_internals_visuals") {
-  deps = [
-    ":download_internals_browser_proxy",
-  ]
+  deps = [ ":download_internals_browser_proxy" ]
 }

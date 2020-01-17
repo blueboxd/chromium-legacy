@@ -5,9 +5,7 @@
 executable("infoplist_strings_tool") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  sources = [
-    "infoplist_strings_util.mm",
-  ]
+  sources = [ "infoplist_strings_util.mm" ]
 
   deps = [
     "//base",

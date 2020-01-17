@@ -62,7 +62,7 @@
     { "site_name": "dicks_sporting_goods" },
     { "site_name": "dish" },
     { "site_name": "dsw" },
-    { "site_name": "duluthtrading" },
+    { "site_name": "duluthtrading", "disabled":true, "bug_number":1041744},
     { "site_name": "ebags" },
     { "site_name": "ebay", "disabled":true, "bug_number":984664 },
     { "site_name": "eddiebauer" },

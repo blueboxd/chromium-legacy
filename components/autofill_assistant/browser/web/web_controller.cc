@@ -138,6 +138,8 @@ const char* const kSetAttributeScript =
 const char* const kGetOuterHtmlScript =
     "function () { return this.outerHTML; }";
 
+const char* const kGetElementTagScript = "function () { return this.tagName; }";
+
 // Javascript code to query whether the document is ready for interact.
 const char* const kIsDocumentReadyForInteract =
     R"(function () {
@@ -1267,18 +1269,6 @@ void WebController::OnFindElementForSendKeyboardInput(
                      delay_in_millisecond, std::move(callback)));
 }
 
-void WebController::GetOuterHtml(
-    const Selector& selector,
-    base::OnceCallback<void(const ClientStatus&, const std::string&)>
-        callback) {
-  DVLOG(3) << __func__ << " " << selector;
-  FindElement(
-      selector,
-      /* strict_mode= */ true,
-      base::BindOnce(&WebController::OnFindElementForGetOuterHtml,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
 void WebController::GetVisualViewport(
     base::OnceCallback<void(bool, const RectF&)> callback) {
   devtools_client_->GetRuntime()->Evaluate(
@@ -1384,6 +1374,18 @@ void WebController::OnGetElementPositionResult(
   std::move(callback).Run(true, rect);
 }
 
+void WebController::GetOuterHtml(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&, const std::string&)>
+        callback) {
+  DVLOG(3) << __func__ << " " << selector;
+  FindElement(
+      selector,
+      /* strict_mode= */ true,
+      base::BindOnce(&WebController::OnFindElementForGetOuterHtml,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void WebController::OnFindElementForGetOuterHtml(
     base::OnceCallback<void(const ClientStatus&, const std::string&)> callback,
     const ClientStatus& status,
@@ -1413,6 +1415,55 @@ void WebController::OnGetOuterHtml(
       CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
   if (!status.ok()) {
     DVLOG(2) << __func__ << " Failed to get HTML content for GetOuterHtml";
+    std::move(callback).Run(status, "");
+    return;
+  }
+  std::string value;
+  SafeGetStringValue(result->GetResult(), &value);
+  std::move(callback).Run(OkClientStatus(), value);
+}
+
+void WebController::GetElementTag(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&, const std::string&)>
+        callback) {
+  DVLOG(3) << __func__ << " " << selector;
+  FindElement(
+      selector,
+      /* strict_mode= */ true,
+      base::BindOnce(&WebController::OnFindElementForGetElementTag,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnFindElementForGetElementTag(
+    base::OnceCallback<void(const ClientStatus&, const std::string&)> callback,
+    const ClientStatus& status,
+    std::unique_ptr<ElementFinder::Result> element_result) {
+  if (!status.ok()) {
+    DVLOG(2) << __func__ << " Failed to find element for GetElementTag";
+    std::move(callback).Run(status, "");
+    return;
+  }
+
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(element_result->object_id)
+          .SetFunctionDeclaration(std::string(kGetElementTagScript))
+          .SetReturnByValue(true)
+          .Build(),
+      element_result->node_frame_id,
+      base::BindOnce(&WebController::OnGetElementTag,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnGetElementTag(
+    base::OnceCallback<void(const ClientStatus&, const std::string&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
+  if (!status.ok()) {
+    DVLOG(2) << __func__ << " Failed to get element tag for GetElementTag";
     std::move(callback).Run(status, "");
     return;
   }

@@ -22,7 +22,7 @@ Polymer({
   behaviors: [I18nBehavior],
 
   /** @private */
-  onDialogClose_: function() {
+  onDialogClose_() {
     chrome.send('dialogClose');
   },
 });

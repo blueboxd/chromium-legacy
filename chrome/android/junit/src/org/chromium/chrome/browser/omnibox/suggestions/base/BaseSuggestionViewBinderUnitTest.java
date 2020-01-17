@@ -25,7 +25,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.RoundedCornerImageView;
+import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;

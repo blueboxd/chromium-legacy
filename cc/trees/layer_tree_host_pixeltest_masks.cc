@@ -585,7 +585,7 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerList, Test) {
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
           : base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter.png"));
 
-  if (renderer_type() == RENDERER_SKIA_VK && raster_type() == GPU) {
+  if (use_vulkan() && raster_type() == GPU) {
     // Vulkan with GPU raster has 4 pixels errors (the circle mask shape is
     // slight different).
     float percentage_pixels_large_error = 0.04f;  // 4px / (100*100)
@@ -644,7 +644,7 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestWithLayerTree, Test) {
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
           : base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter.png"));
 
-  if (renderer_type() == RENDERER_SKIA_VK && raster_type() == GPU) {
+  if (use_vulkan() && raster_type() == GPU) {
     // Vulkan with GPU raster has 4 pixels errors (the circle mask shape is
     // slight different).
     float percentage_pixels_large_error = 0.04f;  // 4px / (100*100)
@@ -756,7 +756,7 @@ class LayerTreeHostMaskAsBlendingPixelTest
     float average_error_allowed_in_bad_pixels = 0.f;
     int large_error_allowed = 0;
     int small_error_allowed = 0;
-    if (renderer_type() != RENDERER_SOFTWARE) {
+    if (!use_software_renderer()) {
       percentage_pixels_error = 6.0f;
       percentage_pixels_small_error = 2.f;
       average_error_allowed_in_bad_pixels = 2.1f;

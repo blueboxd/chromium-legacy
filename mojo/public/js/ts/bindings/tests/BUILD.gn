@@ -18,7 +18,5 @@ mojom("test_interfaces") {
 
 source_set("tests") {
   testonly = true
-  deps = [
-    ":test_interfaces_js",
-  ]
+  deps = [ ":test_interfaces_js" ]
 }

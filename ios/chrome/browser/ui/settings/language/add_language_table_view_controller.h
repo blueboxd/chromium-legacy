@@ -30,10 +30,7 @@
 - (instancetype)initWithDataSource:(id<LanguageSettingsDataSource>)dataSource
                           delegate:(id<AddLanguageTableViewControllerDelegate>)
                                        delegate NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-    NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 // Called when the list of supported languages changes so that the view
 // controller can update its model from |dataSource|.

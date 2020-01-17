@@ -41,13 +41,15 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.fullscreen.FullscreenManagerTestUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
+import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager.Variations;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -80,18 +82,12 @@ public class TabGroupPopupUiTest {
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
         FeatureUtilities.setIsBottomToolbarEnabledForTesting(true);
         FeatureUtilities.setDuetTabStripIntegrationAndroidEnabledForTesting(true);
-        mActivityTestRule.startMainActivityFromLauncher();
-        Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
-        assertTrue(layout instanceof StartSurfaceLayout);
-        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
-                                            .getTabModelSelector()
-                                            .getTabModelFilterProvider()
-                                            .getCurrentTabModelFilter()::isTabModelRestored);
     }
 
     @Test
     @MediumTest
-    public void testOnAnchorViewChanged() throws InterruptedException {
+    public void testOnAnchorViewChanged_HOME_SEARCH_TAB_SWITCHER() throws InterruptedException {
+        launchActivity(Variations.HOME_SEARCH_TAB_SWITCHER);
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Tab strip should show automatically when entering tab group.
         createTabGroupAndEnterTabPage(cta, 2, null);
@@ -111,7 +107,50 @@ public class TabGroupPopupUiTest {
 
     @Test
     @MediumTest
+    public void testOnAnchorViewChanged_HOME_SEARCH_SHARE() throws InterruptedException {
+        launchActivity(Variations.HOME_SEARCH_SHARE);
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        // Tab strip should show automatically when entering tab group.
+        createTabGroupAndEnterTabPage(cta, 2, null);
+        CriteriaHelper.pollInstrumentationThread(() -> isAnchoredOnTopToolbar(cta));
+        verifyShowingTabStrip(cta, 2);
+
+        // In portrait mode, tab strip should anchor on bottom toolbar; in landscape mode, bottom
+        // toolbar hides and tab strip should anchor on top toolbar.
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        CriteriaHelper.pollInstrumentationThread(() -> isAnchoredOnTopToolbar(cta));
+        verifyShowingTabStrip(cta, 2);
+
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
+        CriteriaHelper.pollInstrumentationThread(() -> isAnchoredOnTopToolbar(cta));
+        verifyShowingTabStrip(cta, 2);
+    }
+
+    @Test
+    @MediumTest
+    public void testOnAnchorViewChanged_NEW_TAB_SEARCH_SHARE() throws InterruptedException {
+        launchActivity(Variations.NEW_TAB_SEARCH_SHARE);
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        // Tab strip should show automatically when entering tab group.
+        createTabGroupAndEnterTabPage(cta, 2, null);
+        CriteriaHelper.pollInstrumentationThread(() -> isAnchoredOnTopToolbar(cta));
+        verifyShowingTabStrip(cta, 2);
+
+        // In portrait mode, tab strip should anchor on bottom toolbar; in landscape mode, bottom
+        // toolbar hides and tab strip should anchor on top toolbar.
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        CriteriaHelper.pollInstrumentationThread(() -> isAnchoredOnTopToolbar(cta));
+        verifyShowingTabStrip(cta, 2);
+
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
+        CriteriaHelper.pollInstrumentationThread(() -> isAnchoredOnTopToolbar(cta));
+        verifyShowingTabStrip(cta, 2);
+    }
+
+    @Test
+    @MediumTest
     public void testTabStripShowHide() throws InterruptedException {
+        launchActivity();
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Try to trigger tab strip in a single tab page.
         triggerTabStripAndVerify(cta, 0);
@@ -144,6 +183,7 @@ public class TabGroupPopupUiTest {
     @Test
     @MediumTest
     public void testTabStripUpdate() throws InterruptedException {
+        launchActivity();
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
         // Tab strip should show automatically when entering tab group.
@@ -180,6 +220,7 @@ public class TabGroupPopupUiTest {
     @MediumTest
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_MINIMUM_SHOW_DURATION})
     public void testTabStripChangeWithScrolling() throws InterruptedException {
+        launchActivity();
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         FullscreenManagerTestUtils.disableBrowserOverrides();
 
@@ -286,5 +327,20 @@ public class TabGroupPopupUiTest {
                                      .getCurrentTabModelFilter()
                                      .getRelatedTabList(currentTab.getId());
         return tabGroup.indexOf(currentTab);
+    }
+
+    private void launchActivity() {
+        launchActivity(Variations.HOME_SEARCH_TAB_SWITCHER);
+    }
+
+    private void launchActivity(@Variations String variation) {
+        BottomToolbarVariationManager.setVariation(variation);
+        mActivityTestRule.startMainActivityFromLauncher();
+        Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
+        assertTrue(layout instanceof StartSurfaceLayout);
+        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
+                                            .getTabModelSelector()
+                                            .getTabModelFilterProvider()
+                                            .getCurrentTabModelFilter()::isTabModelRestored);
     }
 }

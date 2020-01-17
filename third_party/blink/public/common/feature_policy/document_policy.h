@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/feature_policy/policy_value.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-forward.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
 
 namespace blink {
@@ -88,11 +88,6 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   // Returns the value of the given feature on the given origin.
   PolicyValue GetFeatureValue(mojom::FeaturePolicyFeature feature) const;
 
-  // Returns the current threshold values assigned to all document policies.
-  // the declared header policy as well as any unadvertised required policies
-  // (such as sandbox policies).
-  FeatureState GetFeatureState() const;
-
   // Returns true if the incoming policy is compatible with the given required
   // policy, i.e. incoming policy is at least as strict as required policy.
   static bool IsPolicyCompatible(const FeatureState& required_policy,
@@ -124,11 +119,10 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
 
   void UpdateFeatureState(const FeatureState& feature_state);
 
-  // Threshold values for each defined feature.
-  // TODO(iclelland): Generate these members; pack booleans in bitfields if
-  // possible.
-  bool font_display_ = true;
-  double unoptimized_lossless_images_ = std::numeric_limits<double>::infinity();
+  // Internal feature state is represented as an array to avoid overhead
+  // in using container classes.
+  PolicyValue internal_feature_state_
+      [static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1];
 
   DISALLOW_COPY_AND_ASSIGN(DocumentPolicy);
 };

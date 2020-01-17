@@ -81,7 +81,6 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
@@ -178,6 +177,7 @@
 #include "components/search/search.h"
 #include "components/security_state/content/content_utils.h"
 #include "components/security_state/core/security_state.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
@@ -1143,8 +1143,8 @@ void Browser::TabPinnedStateChanged(TabStripModel* tab_strip_model,
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile());
   if (session_service) {
-    SessionTabHelper* session_tab_helper =
-        SessionTabHelper::FromWebContents(contents);
+    sessions::SessionTabHelper* session_tab_helper =
+        sessions::SessionTabHelper::FromWebContents(contents);
     session_service->SetPinnedState(session_id(),
                                     session_tab_helper->session_id(),
                                     tab_strip_model_->IsTabPinned(index));
@@ -1159,8 +1159,8 @@ void Browser::TabGroupedStateChanged(
   if (session_service) {
     content::WebContents* const web_contents =
         tab_strip_model_->GetWebContentsAt(index);
-    SessionTabHelper* const session_tab_helper =
-        SessionTabHelper::FromWebContents(web_contents);
+    sessions::SessionTabHelper* const session_tab_helper =
+        sessions::SessionTabHelper::FromWebContents(web_contents);
     session_service->SetTabGroup(session_id(), session_tab_helper->session_id(),
                                  std::move(group));
   }
@@ -1446,6 +1446,10 @@ std::unique_ptr<content::WebContents> Browser::SwapWebContents(
   // directly about tab contents swaps.
   resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
       old_contents, new_contents.get());
+
+  // Clear the task manager tag. The TabStripModel will associate its own task
+  // manager tag.
+  task_manager::WebContentsTags::ClearTag(new_contents.get());
 
   int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
   DCHECK_NE(TabStripModel::kNoTab, index);
@@ -1754,6 +1758,15 @@ void Browser::WebContentsCreated(WebContents* source_contents,
 
 void Browser::PortalWebContentsCreated(WebContents* portal_web_contents) {
   TabHelpers::AttachTabHelpers(portal_web_contents);
+
+  // Make the portal show up in the task manager.
+  task_manager::WebContentsTags::CreateForPortal(portal_web_contents);
+}
+
+void Browser::WebContentsBecamePortal(WebContents* portal_web_contents) {
+  // Make the contents show up as a portal in the task manager.
+  task_manager::WebContentsTags::ClearTag(portal_web_contents);
+  task_manager::WebContentsTags::CreateForPortal(portal_web_contents);
 }
 
 void Browser::RendererUnresponsive(
@@ -2179,7 +2192,8 @@ void Browser::OnTranslateEnabledChanged(content::WebContents* source) {
 void Browser::OnTabInsertedAt(WebContents* contents, int index) {
   SetAsDelegate(contents, true);
 
-  SessionTabHelper::FromWebContents(contents)->SetWindowID(session_id());
+  sessions::SessionTabHelper::FromWebContents(contents)->SetWindowID(
+      session_id());
 
   SyncHistoryWithTabs(index);
 
@@ -2332,8 +2346,8 @@ void Browser::OnActiveTabChanged(WebContents* old_contents,
   if (session_service && !tab_strip_model_->closing_all()) {
     session_service->SetSelectedTabInWindow(session_id(),
                                             tab_strip_model_->active_index());
-    SessionTabHelper* session_tab_helper =
-        SessionTabHelper::FromWebContents(new_contents);
+    sessions::SessionTabHelper* session_tab_helper =
+        sessions::SessionTabHelper::FromWebContents(new_contents);
     session_service->SetLastActiveTime(
         session_id(), session_tab_helper->session_id(), base::TimeTicks::Now());
   }
@@ -2541,8 +2555,8 @@ void Browser::SyncHistoryWithTabs(int index) {
     for (int i = index; i < tab_strip_model_->count(); ++i) {
       WebContents* web_contents = tab_strip_model_->GetWebContentsAt(i);
       if (web_contents) {
-        SessionTabHelper* session_tab_helper =
-            SessionTabHelper::FromWebContents(web_contents);
+        sessions::SessionTabHelper* session_tab_helper =
+            sessions::SessionTabHelper::FromWebContents(web_contents);
         session_service->SetTabIndexInWindow(
             session_id(), session_tab_helper->session_id(), i);
         session_service->SetPinnedState(session_id(),

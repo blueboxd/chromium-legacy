@@ -57,7 +57,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  computeIsExpandable_: function() {
+  computeIsExpandable_() {
     return this.data.countsByUrl.size > 0;
   },
 
@@ -68,7 +68,7 @@ Polymer({
    * @private
    * @return {!Array<PageUrlItem>}
    */
-  getPageUrls_: function() {
+  getPageUrls_() {
     return Array.from(this.data.countsByUrl.entries())
         .map(e => ({page: e[0], count: e[1]}))
         .sort(function(a, b) {
@@ -80,14 +80,14 @@ Polymer({
   },
 
   /** @private */
-  onDeleteTap_: function(e) {
+  onDeleteTap_(e) {
     e.stopPropagation();
     this.fire(
         'delete-activity-log-item', Array.from(this.data.activityIds.values()));
   },
 
   /** @private */
-  onExpandTap_: function() {
+  onExpandTap_() {
     if (this.isExpandable_) {
       this.set('data.expanded', !this.data.expanded);
     }
@@ -99,7 +99,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  shouldShowPageUrlCount_: function() {
+  shouldShowPageUrlCount_() {
     return this.data.countsByUrl.size > 1;
   },
 });

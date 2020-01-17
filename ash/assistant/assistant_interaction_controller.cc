@@ -67,9 +67,40 @@ chromeos::assistant::mojom::AssistantSuggestionPtr CreateSearchSuggestion(
   return suggestion;
 }
 
+ash::TabletModeController* GetTabletModeController() {
+  return Shell::Get()->tablet_mode_controller();
+}
+
 // Returns true if device is in tablet mode, false otherwise.
 bool IsTabletMode() {
-  return Shell::Get()->tablet_mode_controller()->InTabletMode();
+  return GetTabletModeController()->InTabletMode();
+}
+
+bool launch_with_mic_open() {
+  return AssistantState::Get()->launch_with_mic_open().value_or(false);
+}
+
+// Returns whether the Assistant UI should open in voice mode by default.
+// Note that this can be overruled by the entry-point (for example using hotword
+// will always open in voice mode).
+bool IsPreferVoice() {
+  return launch_with_mic_open() || IsTabletMode();
+}
+
+PrefService* pref_service() {
+  auto* result =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  DCHECK(result);
+  return result;
+}
+
+int num_warmer_welcome_triggered() {
+  return pref_service()->GetInteger(prefs::kAssistantNumWarmerWelcomeTriggered);
+}
+
+void IncrementNumWarmerWelcomeTriggered() {
+  pref_service()->SetInteger(prefs::kAssistantNumWarmerWelcomeTriggered,
+                             num_warmer_welcome_triggered() + 1);
 }
 
 }  // namespace
@@ -82,9 +113,11 @@ AssistantInteractionController::AssistantInteractionController(
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
+  GetTabletModeController()->AddObserver(this);
 }
 
 AssistantInteractionController::~AssistantInteractionController() {
+  GetTabletModeController()->RemoveObserver(this);
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
   assistant_controller_->RemoveObserver(this);
   RemoveModelObserver(this);
@@ -221,7 +254,7 @@ void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode,
       // interaction by changing input modality. When this is the case, the
       // modality will be correctly set in |OnInteractionStarted| if needed.
       if (!due_to_interaction)
-        model_.SetInputModality(InputModality::kKeyboard);
+        model_.SetInputModality(GetDefaultInputModality());
       break;
     case InputModality::kVoice:
       // When transitioning to web UI we abort any in progress voice query. We
@@ -249,7 +282,7 @@ void AssistantInteractionController::OnUiVisibilityChanged(
       // reset the interaction state and restore the default input modality.
       StopActiveInteraction(true);
       model_.ClearInteraction();
-      model_.SetInputModality(InputModality::kKeyboard);
+      model_.SetInputModality(GetDefaultInputModality());
       break;
     case AssistantVisibility::kHidden:
       // When the UI is hidden we stop any voice query in progress so that we
@@ -258,7 +291,7 @@ void AssistantInteractionController::OnUiVisibilityChanged(
       if (model_.pending_query().type() == AssistantQueryType::kVoice) {
         StopActiveInteraction(false);
       }
-      model_.SetInputModality(InputModality::kKeyboard);
+      model_.SetInputModality(GetDefaultInputModality());
       break;
     case AssistantVisibility::kVisible:
       OnUiVisible(entry_point.value());
@@ -297,7 +330,7 @@ void AssistantInteractionController::OnHighlighterSelectionRecognized(
 
 void AssistantInteractionController::OnInteractionStateChanged(
     InteractionState interaction_state) {
-  if (interaction_state != InteractionState::kActive)
+  if (!HasActiveInteraction())
     return;
 
   // Metalayer mode should not be sticky. Disable it on interaction start.
@@ -306,10 +339,8 @@ void AssistantInteractionController::OnInteractionStateChanged(
 
 void AssistantInteractionController::OnInputModalityChanged(
     InputModality input_modality) {
-  if (assistant_controller_->ui_controller()->model()->visibility() !=
-      AssistantVisibility::kVisible) {
+  if (!IsVisible())
     return;
-  }
 
   if (input_modality == InputModality::kVoice)
     return;
@@ -487,7 +518,7 @@ void AssistantInteractionController::OnInteractionFinished(
 void AssistantInteractionController::OnHtmlResponse(
     const std::string& response,
     const std::string& fallback) {
-  if (model_.interaction_state() != InteractionState::kActive) {
+  if (!HasActiveInteraction()) {
     return;
   }
 
@@ -536,9 +567,24 @@ void AssistantInteractionController::OnSuggestionChipPressed(
           : AssistantQuerySource::kSuggestionChip);
 }
 
+void AssistantInteractionController::OnTabletModeStarted() {
+  OnTabletModeChanged();
+}
+
+void AssistantInteractionController::OnTabletModeEnded() {
+  OnTabletModeChanged();
+}
+
+void AssistantInteractionController::OnTabletModeChanged() {
+  // The default input modality is different for tablet and normal mode.
+  // Change input modality to the new default input modality.
+  if (!HasActiveInteraction() && !IsVisible())
+    model_.SetInputModality(GetDefaultInputModality());
+}
+
 void AssistantInteractionController::OnSuggestionsResponse(
     std::vector<AssistantSuggestionPtr> response) {
-  if (model_.interaction_state() != InteractionState::kActive) {
+  if (!HasActiveInteraction()) {
     return;
   }
 
@@ -554,7 +600,7 @@ void AssistantInteractionController::OnSuggestionsResponse(
 
 void AssistantInteractionController::OnTextResponse(
     const std::string& response) {
-  if (model_.interaction_state() != InteractionState::kActive) {
+  if (!HasActiveInteraction()) {
     return;
   }
 
@@ -599,7 +645,7 @@ void AssistantInteractionController::OnSpeechLevelUpdated(float speech_level) {
 }
 
 void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
-  if (model_.interaction_state() != InteractionState::kActive) {
+  if (!HasActiveInteraction()) {
     return;
   }
 
@@ -637,7 +683,7 @@ void AssistantInteractionController::OnTtsStarted(bool due_to_error) {
 }
 
 void AssistantInteractionController::OnWaitStarted() {
-  if (model_.interaction_state() != InteractionState::kActive)
+  if (!HasActiveInteraction())
     return;
 
   // Commit the pending query in whatever state it's in. Note that the server
@@ -657,7 +703,7 @@ void AssistantInteractionController::OnWaitStarted() {
 
 void AssistantInteractionController::OnOpenUrlResponse(const GURL& url,
                                                        bool in_background) {
-  if (model_.interaction_state() != InteractionState::kActive)
+  if (!HasActiveInteraction())
     return;
   // We need to indicate that the navigation attempt is occurring as a result of
   // a server response so that we can differentiate from navigation attempts
@@ -668,7 +714,7 @@ void AssistantInteractionController::OnOpenUrlResponse(const GURL& url,
 void AssistantInteractionController::OnOpenAppResponse(
     chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
     OnOpenAppResponseCallback callback) {
-  if (model_.interaction_state() != InteractionState::kActive)
+  if (!HasActiveInteraction())
     return;
 
   auto* android_helper = AndroidIntentHelper::GetInstance();
@@ -733,6 +779,10 @@ bool AssistantInteractionController::HasUnprocessedPendingResponse() {
              AssistantResponse::ProcessingState::kUnprocessed;
 }
 
+bool AssistantInteractionController::HasActiveInteraction() const {
+  return model_.interaction_state() == InteractionState::kActive;
+}
+
 void AssistantInteractionController::OnProcessPendingResponse() {
   // It's possible that the pending response is already being processed. This
   // can occur if the response contains TTS, as we begin processing before the
@@ -742,15 +792,8 @@ void AssistantInteractionController::OnProcessPendingResponse() {
     return;
   }
 
-  // Bind an interface to a navigable contents factory that is needed for
-  // processing card elements.
-  mojo::Remote<content::mojom::NavigableContentsFactory> factory;
-  assistant_controller_->GetNavigableContentsFactory(
-      factory.BindNewPipeAndPassReceiver());
-
   // Start processing.
   model_.pending_response()->Process(
-      std::move(factory),
       base::BindOnce(
           &AssistantInteractionController::OnPendingResponseProcessed,
           weak_factory_.GetWeakPtr()));
@@ -767,25 +810,20 @@ void AssistantInteractionController::OnPendingResponseProcessed(bool success) {
 
 void AssistantInteractionController::OnUiVisible(
     AssistantEntryPoint entry_point) {
-  DCHECK_EQ(AssistantVisibility::kVisible,
-            assistant_controller_->ui_controller()->model()->visibility());
+  DCHECK(IsVisible());
 
-  const bool launch_with_mic_open =
-      AssistantState::Get()->launch_with_mic_open().value_or(false);
-  const bool prefer_voice = launch_with_mic_open || IsTabletMode();
+  ++number_of_times_shown_;
 
   // We don't explicitly start a new voice interaction if the entry point
   // is hotword since in such cases a voice interaction will already be in
   // progress.
-  if (assistant::util::IsVoiceEntryPoint(entry_point, prefer_voice) &&
+  if (assistant::util::IsVoiceEntryPoint(entry_point, IsPreferVoice()) &&
       entry_point != AssistantEntryPoint::kHotword) {
-    should_attempt_warmer_welcome_ = false;
     StartVoiceInteraction();
     return;
   }
 
   if (entry_point == AssistantEntryPoint::kProactiveSuggestions) {
-    should_attempt_warmer_welcome_ = false;
     // When entering Assistant with a proactive suggestions interaction, there
     // will be no server latency as the response for the interaction has already
     // been cached on the client. To avoid jank, we need to post a task to start
@@ -802,7 +840,6 @@ void AssistantInteractionController::OnUiVisible(
   }
 
   if (entry_point == AssistantEntryPoint::kStylus) {
-    should_attempt_warmer_welcome_ = false;
     // When the embedded Assistant feature is enabled, we call ShowUi(kStylus)
     // OnHighlighterSelectionRecognized. But we are not actually using stylus.
     if (!app_list_features::IsAssistantLauncherUIEnabled())
@@ -810,45 +847,48 @@ void AssistantInteractionController::OnUiVisible(
     return;
   }
 
+  if (ShouldAttemptWarmerWelcome(entry_point))
+    AttemptWarmerWelcome();
+}
+
+bool AssistantInteractionController::ShouldAttemptWarmerWelcome(
+    AssistantEntryPoint entry_point) const {
   if (!chromeos::assistant::features::IsWarmerWelcomeEnabled())
-    return;
+    return false;
 
-  should_attempt_warmer_welcome_ =
-      should_attempt_warmer_welcome_ &&
-      assistant::util::ShouldAttemptWarmerWelcome(entry_point);
+  if (number_of_times_shown_ > 1)
+    return false;
 
-  // Explicitly check the interaction state to ensure warmer welcome will
-  // not interrupt any ongoing active interactions. This happens, for example,
-  // when the first Assistant launch of the current user session is trigger by
-  // Assistant notification, or directly sending query without showing Ui
-  // during integration test.
-  if (model_.interaction_state() == InteractionState::kActive)
-    should_attempt_warmer_welcome_ = false;
+  if (!assistant::util::ShouldAttemptWarmerWelcome(entry_point))
+    return false;
 
-  if (!should_attempt_warmer_welcome_)
-    return;
+  // Explicitly check the interaction state to ensure warmer welcome will not
+  // interrupt any ongoing active interactions. This happens, for example, when
+  // the first Assistant launch of the current user session is trigger by
+  // Assistant notification, or directly sending query without showing Ui during
+  // integration test.
+  if (HasActiveInteraction())
+    return false;
 
+  if (num_warmer_welcome_triggered() >= kWarmerWelcomesMaxTimesTriggered)
+    return false;
+
+  return true;
+}
+
+void AssistantInteractionController::AttemptWarmerWelcome() {
   // TODO(yileili): Currently WW is only triggered when the first Assistant
   // launch of the user session does not automatically start an interaction that
-  // would otherwise cause us to interrupt the user. Need further UX design to
+  // would otherwise cause us to interrupt the user.  Need further UX design to
   // attempt WW after the first interaction.
-  auto* pref_service =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
 
-  DCHECK(pref_service);
+  // If the user has opted to launch Assistant with the mic open, we
+  // can reasonably assume there is an expectation of TTS.
+  bool allow_tts = launch_with_mic_open();
 
-  auto num_warmer_welcome_triggered =
-      pref_service->GetInteger(prefs::kAssistantNumWarmerWelcomeTriggered);
-  if (num_warmer_welcome_triggered < kWarmerWelcomesMaxTimesTriggered) {
-    // If the user has opted to launch Assistant with the mic open, we can
-    // reasonably assume there is an expectation of TTS.
-    assistant_->StartWarmerWelcomeInteraction(
-        num_warmer_welcome_triggered,
-        /*allow_tts=*/launch_with_mic_open);
-    pref_service->SetInteger(prefs::kAssistantNumWarmerWelcomeTriggered,
-                             ++num_warmer_welcome_triggered);
-  }
-  should_attempt_warmer_welcome_ = false;
+  assistant_->StartWarmerWelcomeInteraction(num_warmer_welcome_triggered(),
+                                            allow_tts);
+  IncrementNumWarmerWelcomeTriggered();
 }
 
 void AssistantInteractionController::StartMetalayerInteraction(
@@ -944,6 +984,22 @@ void AssistantInteractionController::StopActiveInteraction(
   // response for it that is cached to prevent it from being finalized when the
   // interaction is finished.
   model_.ClearPendingResponse();
+}
+
+ash::InputModality AssistantInteractionController::GetDefaultInputModality()
+    const {
+  if (IsPreferVoice())
+    return ash::InputModality::kVoice;
+  else
+    return ash::InputModality::kKeyboard;
+}
+
+AssistantVisibility AssistantInteractionController::GetVisibility() const {
+  return assistant_controller_->ui_controller()->model()->visibility();
+}
+
+bool AssistantInteractionController::IsVisible() const {
+  return GetVisibility() == AssistantVisibility::kVisible;
 }
 
 }  // namespace ash

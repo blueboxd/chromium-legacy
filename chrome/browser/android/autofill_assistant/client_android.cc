@@ -129,8 +129,8 @@ bool ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jobject>& jcaller,
                           const JavaParamRef<jstring>& jinitial_url,
                           const JavaParamRef<jstring>& jexperiment_ids,
-                          const JavaParamRef<jobjectArray>& parameter_names,
-                          const JavaParamRef<jobjectArray>& parameter_values,
+                          const JavaParamRef<jobjectArray>& jparameter_names,
+                          const JavaParamRef<jobjectArray>& jparameter_values,
                           const JavaParamRef<jobject>& jonboarding_coordinator,
                           jboolean jonboarding_shown,
                           jlong jservice) {
@@ -150,12 +150,27 @@ bool ClientAndroid::Start(JNIEnv* env,
     AttachUI(jonboarding_coordinator);
   }
 
-  std::unique_ptr<TriggerContextImpl> trigger_context = CreateTriggerContext(
-      env, jexperiment_ids, parameter_names, parameter_values);
+  GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
+  auto trigger_context = CreateTriggerContext(
+      env, jexperiment_ids, jparameter_names, jparameter_values);
   trigger_context->SetCCT(true);
   trigger_context->SetOnboardingShown(jonboarding_shown);
 
-  GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
+  if (VLOG_IS_ON(2)) {
+    std::string experiment_ids =
+        base::android::ConvertJavaStringToUTF8(env, jexperiment_ids);
+    std::map<std::string, std::string> parameters;
+    FillStringMapFromJava(env, jparameter_names, jparameter_values,
+                          &parameters);
+
+    DVLOG(2) << "Starting autofill assistant with parameters:";
+    DVLOG(2) << "\tinitial_url: " << initial_url;
+    DVLOG(2) << "\texperiment_ids: " << experiment_ids;
+    DVLOG(2) << "\tparameters:";
+    for (const auto& param : parameters) {
+      DVLOG(2) << "\t\t" << param.first << ": " << param.second;
+    }
+  }
   return controller_->Start(initial_url, std::move(trigger_context));
 }
 
@@ -216,16 +231,16 @@ void ClientAndroid::FetchWebsiteActions(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jexperiment_ids,
-    const base::android::JavaParamRef<jobjectArray>& jargument_names,
-    const base::android::JavaParamRef<jobjectArray>& jargument_values,
+    const base::android::JavaParamRef<jobjectArray>& jparameter_names,
+    const base::android::JavaParamRef<jobjectArray>& jparameter_values,
     const base::android::JavaParamRef<jobject>& jcallback) {
   if (!controller_)
     CreateController(nullptr);
 
   base::android::ScopedJavaGlobalRef<jobject> scoped_jcallback(env, jcallback);
   controller_->Track(
-      CreateTriggerContext(env, jexperiment_ids, jargument_names,
-                           jargument_values),
+      CreateTriggerContext(env, jexperiment_ids, jparameter_names,
+                           jparameter_values),
       base::BindOnce(&ClientAndroid::OnFetchWebsiteActions,
                      weak_ptr_factory_.GetWeakPtr(), scoped_jcallback));
 }
@@ -334,17 +349,18 @@ bool ClientAndroid::PerformDirectAction(
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jaction_name,
     const base::android::JavaParamRef<jstring>& jexperiment_ids,
-    const base::android::JavaParamRef<jobjectArray>& jargument_names,
-    const base::android::JavaParamRef<jobjectArray>& jargument_values,
+    const base::android::JavaParamRef<jobjectArray>& jparameter_names,
+    const base::android::JavaParamRef<jobjectArray>& jparameter_values,
     const base::android::JavaParamRef<jobject>& jonboarding_coordinator) {
   std::string action_name =
       base::android::ConvertJavaStringToUTF8(env, jaction_name);
 
   int action_index = FindDirectAction(action_name);
 
-  std::unique_ptr<TriggerContextImpl> trigger_context = CreateTriggerContext(
-      env, jexperiment_ids, jargument_names, jargument_values);
+  auto trigger_context = CreateTriggerContext(
+      env, jexperiment_ids, jparameter_names, jparameter_values);
   trigger_context->SetDirectAction(true);
+
   // Cancel through the UI if it is up. This allows the user to undo. This is
   // always available, even if no action was found and action_index == -1.
   if (action_name == kCancelActionName && ui_controller_android_) {

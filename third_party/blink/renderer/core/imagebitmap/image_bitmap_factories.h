@@ -73,7 +73,8 @@ class ImageBitmapFactories final
   static ScriptPromise CreateImageBitmap(ScriptState*,
                                          EventTarget&,
                                          const ImageBitmapSourceUnion&,
-                                         const ImageBitmapOptions*);
+                                         const ImageBitmapOptions*,
+                                         ExceptionState&);
   static ScriptPromise CreateImageBitmap(ScriptState*,
                                          EventTarget&,
                                          const ImageBitmapSourceUnion&,
@@ -81,12 +82,14 @@ class ImageBitmapFactories final
                                          int sy,
                                          int sw,
                                          int sh,
-                                         const ImageBitmapOptions*);
+                                         const ImageBitmapOptions*,
+                                         ExceptionState&);
   static ScriptPromise CreateImageBitmap(ScriptState*,
                                          EventTarget&,
                                          ImageBitmapSource*,
                                          base::Optional<IntRect> crop_rect,
-                                         const ImageBitmapOptions*);
+                                         const ImageBitmapOptions*,
+                                         ExceptionState&);
   static ScriptPromise CreateImageBitmapFromBlob(
       ScriptState*,
       EventTarget&,

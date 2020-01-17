@@ -105,26 +105,33 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
 #endif
 }
 
-- (void)ensureAppLaunchedWithFeaturesEnabled:
-            (const std::vector<base::Feature>&)featuresEnabled
-                                    disabled:(const std::vector<base::Feature>&)
-                                                 featuresDisabled
-                              relaunchPolicy:(RelaunchPolicy)relaunchPolicy {
-  NSMutableArray<NSString*>* namesToEnable =
-      [NSMutableArray arrayWithCapacity:featuresEnabled.size()];
-  NSMutableArray<NSString*>* namesToDisable =
-      [NSMutableArray arrayWithCapacity:featuresDisabled.size()];
+- (void)ensureAppLaunchedWithConfiguration:
+    (AppLaunchConfiguration)configuration {
+  NSMutableArray<NSString*>* namesToEnable = [NSMutableArray array];
+  NSMutableArray<NSString*>* namesToDisable = [NSMutableArray array];
+  NSMutableArray<NSString*>* variations = [NSMutableArray array];
 
-  for (const base::Feature& feature : featuresEnabled) {
+  for (const base::Feature& feature : configuration.features_enabled) {
     [namesToEnable addObject:base::SysUTF8ToNSString(feature.name)];
   }
 
-  for (const base::Feature& feature : featuresDisabled) {
+  for (const base::Feature& feature : configuration.features_disabled) {
     [namesToDisable addObject:base::SysUTF8ToNSString(feature.name)];
+  }
+
+  for (const variations::VariationID& variation :
+       configuration.variations_enabled) {
+    [variations addObject:[NSString stringWithFormat:@"%d", variation]];
+  }
+
+  for (const variations::VariationID& variation :
+       configuration.trigger_variations_enabled) {
+    [variations addObject:[NSString stringWithFormat:@"t%d", variation]];
   }
 
   NSString* enabledString = @"";
   NSString* disabledString = @"";
+  NSString* variationString = @"";
   if ([namesToEnable count] > 0) {
     enabledString = [NSString
         stringWithFormat:@"--enable-features=%@",
@@ -135,10 +142,29 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
         stringWithFormat:@"--disable-features=%@",
                          [namesToDisable componentsJoinedByString:@","]];
   }
+  if (variations.count > 0) {
+    variationString =
+        [NSString stringWithFormat:@"--force-variation-ids=%@",
+                                   [variations componentsJoinedByString:@","]];
+  }
 
-  NSArray<NSString*>* arguments = @[ enabledString, disabledString ];
+  NSArray<NSString*>* arguments =
+      @[ enabledString, disabledString, variationString ];
 
-  [self ensureAppLaunchedWithArgs:arguments relaunchPolicy:relaunchPolicy];
+  [self ensureAppLaunchedWithArgs:arguments
+                   relaunchPolicy:configuration.relaunch_policy];
+}
+
+- (void)ensureAppLaunchedWithFeaturesEnabled:
+            (std::vector<base::Feature>)featuresEnabled
+                                    disabled:(std::vector<base::Feature>)
+                                                 featuresDisabled
+                              relaunchPolicy:(RelaunchPolicy)relaunchPolicy {
+  AppLaunchConfiguration config;
+  config.features_enabled = std::move(featuresEnabled);
+  config.features_disabled = std::move(featuresDisabled);
+  config.relaunch_policy = relaunchPolicy;
+  [self ensureAppLaunchedWithConfiguration:config];
 }
 
 - (void)backgroundAndForegroundApp {

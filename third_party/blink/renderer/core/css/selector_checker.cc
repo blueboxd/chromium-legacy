@@ -1394,7 +1394,11 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
     }
     case CSSSelector::kPseudoPart:
       DCHECK(part_names_);
-      return part_names_->Contains(selector.Argument());
+      for (const auto& part_name : *selector.PartNames()) {
+        if (!part_names_->Contains(part_name))
+          return false;
+      }
+      return true;
     case CSSSelector::kPseudoPlaceholder:
       if (ShadowRoot* root = element.ContainingShadowRoot()) {
         return root->IsUserAgent() &&

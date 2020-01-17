@@ -19,7 +19,7 @@ CallbackHelper.prototype = {
    * @param {Function=} opt_callback
    * @return {Function}
    */
-  wrap: function(opt_callback) {
+  wrap(opt_callback) {
     var callback = opt_callback || function() {};
     var savedArgs = new SaveMockArguments();
     var lastCall = null;

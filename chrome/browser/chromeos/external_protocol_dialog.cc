@@ -58,11 +58,31 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 ///////////////////////////////////////////////////////////////////////////////
 // ExternalProtocolDialog
 
-ExternalProtocolDialog::~ExternalProtocolDialog() {
+ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
+                                               const GURL& url)
+    : creation_time_(base::TimeTicks::Now()), scheme_(url.scheme()) {
+  views::DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT));
+
+  views::MessageBoxView::InitParams params((base::string16()));
+  params.message_width = kMessageWidth;
+  message_box_view_ = new views::MessageBoxView(params);
+
+  gfx::NativeWindow parent_window;
+  if (web_contents) {
+    parent_window = web_contents->GetTopLevelNativeWindow();
+  } else {
+    // Dialog is top level if we don't have a web_contents associated with us.
+    parent_window = nullptr;
+  }
+  views::DialogDelegate::CreateDialogWidget(this, nullptr, parent_window)
+      ->Show();
+  chrome::RecordDialogCreation(
+      chrome::DialogIdentifier::EXTERNAL_PROTOCOL_CHROMEOS);
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// ExternalProtocolDialog, views::DialogDelegate implementation:
+ExternalProtocolDialog::~ExternalProtocolDialog() = default;
 
 int ExternalProtocolDialog::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
@@ -91,37 +111,6 @@ views::View* ExternalProtocolDialog::GetContentsView() {
   return message_box_view_;
 }
 
-const views::Widget* ExternalProtocolDialog::GetWidget() const {
+const views::Widget* ExternalProtocolDialog::GetWidgetImpl() const {
   return message_box_view_->GetWidget();
-}
-
-views::Widget* ExternalProtocolDialog::GetWidget() {
-  return message_box_view_->GetWidget();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// ExternalProtocolDialog, private:
-
-ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
-                                               const GURL& url)
-    : creation_time_(base::TimeTicks::Now()),
-      scheme_(url.scheme()) {
-  views::DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT));
-
-  views::MessageBoxView::InitParams params((base::string16()));
-  params.message_width = kMessageWidth;
-  message_box_view_ = new views::MessageBoxView(params);
-
-  gfx::NativeWindow parent_window;
-  if (web_contents) {
-    parent_window = web_contents->GetTopLevelNativeWindow();
-  } else {
-    // Dialog is top level if we don't have a web_contents associated with us.
-    parent_window = NULL;
-  }
-  views::DialogDelegate::CreateDialogWidget(this, NULL, parent_window)->Show();
-  chrome::RecordDialogCreation(
-      chrome::DialogIdentifier::EXTERNAL_PROTOCOL_CHROMEOS);
 }

@@ -144,7 +144,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
 
   // Used by Android pre-SurfaceControl to notify promotion hints.
   virtual void NotifyOverlayPromotion(
-      DisplayResourceProvider* resource_provider,
+      DisplayResourceProvider* display_resource_provider,
       const OverlayCandidateList& candidate_list,
       const QuadList& quad_list);
 

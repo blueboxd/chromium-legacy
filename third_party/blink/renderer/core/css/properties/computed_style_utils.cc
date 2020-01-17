@@ -1844,6 +1844,11 @@ CSSValueID ValueForQuoteType(const QuoteType quote_type) {
 
 CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style,
                                                   bool allow_visited_style) {
+  if (style.ContentPreventsBoxGeneration())
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
+  if (style.ContentBehavesAsNormal())
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
+
   CSSValueList* outer_list = CSSValueList::CreateSlashSeparated();
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
@@ -1888,12 +1893,7 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style,
       NOTREACHED();
     }
   }
-  if (!list->length()) {
-    PseudoId pseudoId = style.StyleType();
-    if (pseudoId == kPseudoIdBefore || pseudoId == kPseudoIdAfter)
-      return CSSIdentifierValue::Create(CSSValueID::kNone);
-    return CSSIdentifierValue::Create(CSSValueID::kNormal);
-  }
+  DCHECK(list->length());
 
   outer_list->Append(*list);
   if (alt_text)

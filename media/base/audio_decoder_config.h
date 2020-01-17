@@ -112,8 +112,14 @@ class MEDIA_EXPORT AudioDecoderConfig {
     return target_output_channel_layout_;
   }
 
+  // Optionally set if the AudioCodec has a profile which may preclude certain
+  // decoders from having support.
+  void set_profile(AudioCodecProfile profile) { profile_ = profile; }
+  AudioCodecProfile profile() const { return profile_; }
+
  private:
   AudioCodec codec_ = kUnknownAudioCodec;
+  AudioCodecProfile profile_ = AudioCodecProfile::kUnknown;
   SampleFormat sample_format_ = kUnknownSampleFormat;
   int bytes_per_channel_ = 0;
   int samples_per_second_ = 0;

@@ -39,7 +39,6 @@
 <translation id="124678866338384709">നിലവിലെ ടാബ് അടയ്‌ക്കുക</translation>
 <translation id="1258753120186372309">Google ഡൂഡിൽ: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">തിരയുക, അടുത്തറിയുക</translation>
-<translation id="1264974993859112054">കായികം</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> പങ്കിടാനായില്ല</translation>
 <translation id="1272079795634619415">നിര്‍ത്തുക</translation>
 <translation id="1283039547216852943">വികസിപ്പിക്കാൻ ടാപ്പ് ചെയ്യുക</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്‌മാർക്കുകൾ ലഭിക്കാൻ, സൈൻ ഇൻ ചെയ്‌ത് സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" /> എന്നതിനുള്ള എല്ലാ സൈറ്റ് അനുമതികളും പുനഃസജ്ജീകരിക്കണമെന്ന് നിങ്ങൾക്ക് ഉറപ്പാണോ?</translation>
 <translation id="2842985007712546952">പാരന്റ് ഫോൾഡർ</translation>
-<translation id="2858138569776157458">മികച്ച സൈറ്റുകൾ</translation>
 <translation id="2860954141821109167">ഈ ഉപകരണത്തിൽ ഫോൺ ആപ്പ് പ്രവർത്തനക്ഷമമാക്കിയിട്ടുണ്ടെന്ന് ഉറപ്പാക്കുക</translation>
 <translation id="2870560284913253234">സൈറ്റ്</translation>
 <translation id="2874939134665556319">മുമ്പത്തെ ട്രാക്ക്</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Chrome-ലേക്ക് സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="3288003805934695103">പേജ് റീലോഡുചെയ്യുന്നു</translation>
 <translation id="32895400574683172">അറിയിപ്പുകൾ അനുവദിച്ചിരിക്കുന്നു</translation>
+<translation id="3290926146403723641">വെബിലെ ടാസ്കുകൾ Google അസിസ്റ്റന്റിലൂടെ പൂർത്തിയാക്കാൻ സൈറ്റിന്റെ URL, സൈറ്റ് ഉള്ളടക്കം, പ്രസക്തമായ വ്യക്തിഗത വിവരം എന്നിവ Google-ന് Chrome അയയ്ക്കുന്നു</translation>
 <translation id="3295530008794733555">വേഗത്തിൽ ബ്രൗസ് ചെയ്യൂ. കുറച്ച് ഡാറ്റ ഉപയോഗിക്കൂ.</translation>
 <translation id="3298243779924642547">ലൈറ്റ്</translation>
 <translation id="3303414029551471755">ഉള്ളടക്കം ഡൗൺലോഡ് ചെയ്യുന്നതിലേക്ക് തുടരണോ?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">ഫോൺ നമ്പറുകൾ</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ഡൗൺലോഡുകൾ ഇല്ലാതാക്കി</translation>
 <translation id="3822502789641063741">സൈറ്റ് സ്‌റ്റോറേജ് മായ്‌ക്കണോ?</translation>
-<translation id="3853625385350850937">തുടരാൻ നിങ്ങളുടെ ഉപകരണത്തിൽ NFC ഓണാക്കുക</translation>
 <translation id="3859306556332390985">മുന്നോട്ട് നീക്കുക</translation>
 <translation id="388596076286380598">നിങ്ങൾ ഓഫ്‌ലൈനിൽ ആണെങ്കിലും കണക്ഷന് വേഗത കുറവാണെങ്കിലും നിങ്ങൾ ഇഷ്‌ടപ്പെടുന്ന സൈറ്റുകളിൽ നിന്ന് ലേഖനങ്ങളും വീഡിയോകളും മറ്റ് ഉള്ളടക്കവും നേടുക.</translation>
 <translation id="3894427358181296146">ഫോൾഡർ ചേർക്കുക</translation>
@@ -764,7 +762,6 @@
 <translation id="6697947395630195233">Chrome-ന് ഈ സൈറ്റുമായി ലൊക്കേഷൻ പങ്കിടാൻ നിങ്ങളുടെ ലൊക്കേഷനിലേക്കുള്ള ആക്‌സസ് ആവശ്യമാണ്.</translation>
 <translation id="6698801883190606802">സമന്വിത ഡാറ്റ നിയന്ത്രിക്കുക</translation>
 <translation id="6699370405921460408">നിങ്ങള്‍ സന്ദര്‍ശിക്കുന്ന പേജുകള്‍ Google സെര്‍‌വറുകള്‍ ഒപ്‌റ്റിമൈസ് ചെയ്യും.</translation>
-<translation id="6709133671862442373">വാർത്ത</translation>
 <translation id="6710213216561001401">മുമ്പത്തേത്</translation>
 <translation id="671481426037969117">നിങ്ങളുടെ <ph name="FQDN" /> ടൈമർ അവസാനിച്ചു. ഇത് നാളെ വീണ്ടും ആരംഭിക്കും.</translation>
 <translation id="6738867403308150051">ഡൗൺലോഡുചെയ്യുന്നു...</translation>
@@ -1079,7 +1076,6 @@
 <translation id="9133397713400217035">ഓഫ്‍ലൈൻ ഉള്ളടക്കങ്ങൾ അടുത്തറിയൂ</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">യഥാര്‍ത്ഥമായത് കാണിക്കുക</translation>
-<translation id="9139318394846604261">ഷോപ്പിംഗ്</translation>
 <translation id="9155898266292537608">ഒരു വാക്കിൽ പെട്ടെന്ന് ടാപ്പ് ചെയ്‌തും നിങ്ങൾക്ക് തിരയാൻ കഴിയും</translation>
 <translation id="9169507124922466868">നാവിഗേഷൻ ചരിത്രം പകുതിയായി തുറന്നിരിക്കുന്നു</translation>
 <translation id="9204836675896933765">ഒരു ഫയൽ ശേഷിക്കുന്നു</translation>

@@ -53,9 +53,7 @@ static_library("test_support") {
     "//base",
     "//chrome/test:test_support",
   ]
-  public_deps = [
-    ":router",
-  ]
+  public_deps = [ ":router" ]
   sources = [
     "test/test_helper.cc",
     "test/test_helper.h",

@@ -63,8 +63,3 @@ export class BackgroundOps {
    */
   notifySuspension() {}
 }
-
-/** @const */
-cca.bg.ForegroundOps = ForegroundOps;
-/** @const */
-cca.bg.BackgroundOps = BackgroundOps;

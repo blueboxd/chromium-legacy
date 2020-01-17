@@ -122,7 +122,7 @@ BrailleInputHandler.prototype = {
   /**
    * Starts to listen for connections from the Chrome OS braille IME.
    */
-  init: function() {
+  init() {
     chrome.runtime.onConnectExternal.addListener(this.onImeConnect_.bind(this));
   },
 
@@ -133,7 +133,7 @@ BrailleInputHandler.prototype = {
    * @param {function()} listener Called when the uncommitted cells
    *     have changed.
    */
-  onDisplayContentChanged: function(text, listener) {
+  onDisplayContentChanged(text, listener) {
     var valueSpan = text.getSpanInstanceOf(ValueSpan);
     var selectionSpan = text.getSpanInstanceOf(ValueSelectionSpan);
     if (!(valueSpan && selectionSpan)) {
@@ -174,7 +174,7 @@ BrailleInputHandler.prototype = {
    * @return {boolean} {@code true} if the event was handled, {@code false}
    *     if it should propagate further.
    */
-  onBrailleKeyEvent: function(event) {
+  onBrailleKeyEvent(event) {
     if (event.command === BrailleKeyCommand.DOTS) {
       return this.onBrailleDots_(/** @type {number} */ (event.brailleDots));
     }
@@ -199,7 +199,7 @@ BrailleInputHandler.prototype = {
    * @return {ExpandingBrailleTranslator.ExpansionType}
    *     The current expansion type.
    */
-  getExpansionType: function() {
+  getExpansionType() {
     if (this.inAlwaysUncontractedContext_()) {
       return ExpandingBrailleTranslator.ExpansionType.ALL;
     }
@@ -216,7 +216,7 @@ BrailleInputHandler.prototype = {
    *     uncontracted braille should always be used for that context.
    * @private
    */
-  inAlwaysUncontractedContext_: function() {
+  inAlwaysUncontractedContext_() {
     var inputType = this.inputContext_ ? this.inputContext_.type : '';
     return inputType === 'url' || inputType === 'email';
   },
@@ -228,7 +228,7 @@ BrailleInputHandler.prototype = {
    *    propagate further.
    * @private
    */
-  onBrailleDots_: function(dots) {
+  onBrailleDots_(dots) {
     if (!this.imeActive_) {
       this.pendingCells_.push(dots);
       return true;
@@ -251,7 +251,7 @@ BrailleInputHandler.prototype = {
    *     if it wasn't and should propagate further.
    * @private
    */
-  onBackspace_: function() {
+  onBackspace_() {
     if (this.imeActive_ && this.entryState_) {
       this.entryState_.deleteLastCell();
       return true;
@@ -267,7 +267,7 @@ BrailleInputHandler.prototype = {
    *     translator available yet).
    * @private
    */
-  createEntryState_: function() {
+  createEntryState_() {
     var translator = this.translatorManager_.getDefaultTranslator();
     if (!translator) {
       return null;
@@ -295,7 +295,7 @@ BrailleInputHandler.prototype = {
    * Commits the current entry state and clears it, if any.
    * @private
    */
-  commitAndClearEntryState_: function() {
+  commitAndClearEntryState_() {
     if (this.entryState_) {
       this.entryState_.commit();
       this.clearEntryState_();
@@ -306,7 +306,7 @@ BrailleInputHandler.prototype = {
    * Clears the current entry state without committing it.
    * @private
    */
-  clearEntryState_: function() {
+  clearEntryState_() {
     if (this.entryState_) {
       if (this.entryState_.usesUncommittedCells) {
         this.updateUncommittedCells_(new ArrayBuffer(0));
@@ -320,7 +320,7 @@ BrailleInputHandler.prototype = {
    * @param {ArrayBuffer} cells
    * @private
    */
-  updateUncommittedCells_: function(cells) {
+  updateUncommittedCells_(cells) {
     if (this.uncommittedCellsSpan_) {
       this.uncommittedCellsSpan_.cells = cells;
     }
@@ -336,7 +336,7 @@ BrailleInputHandler.prototype = {
    * @param {Port} port The port used to communicate with the other extension.
    * @private
    */
-  onImeConnect_: function(port) {
+  onImeConnect_(port) {
     if (port.name !== BrailleInputHandler.IME_PORT_NAME_ ||
         port.sender.id !== BrailleInputHandler.IME_EXTENSION_ID_) {
       return;
@@ -354,7 +354,7 @@ BrailleInputHandler.prototype = {
    * @param {*} message The message.
    * @private
    */
-  onImeMessage_: function(message) {
+  onImeMessage_(message) {
     if (!goog.isObject(message)) {
       console.error(
           'Unexpected message from Braille IME: ', JSON.stringify(message));
@@ -399,7 +399,7 @@ BrailleInputHandler.prototype = {
    * @param {Port} port The port that was disconnected.
    * @private
    */
-  onImeDisconnect_: function(port) {
+  onImeDisconnect_(port) {
     this.imePort_ = null;
     this.clearEntryState_();
     this.imeActive_ = false;
@@ -413,7 +413,7 @@ BrailleInputHandler.prototype = {
    *     there was no connection open to the IME.
    * @private
    */
-  postImeMessage_: function(message) {
+  postImeMessage_(message) {
     if (this.imePort_) {
       this.imePort_.postMessage(message);
       return true;
@@ -428,7 +428,7 @@ BrailleInputHandler.prototype = {
    *     key events on.
    * @private
    */
-  sendKeyEventPair_: function(event) {
+  sendKeyEventPair_(event) {
     chrome.virtualKeyboardPrivate.getKeyboardConfig(function(config) {
       // Use the virtual keyboard API instead of the IME key event API
       // so that these keys work even if the Braille IME is not active.
@@ -512,7 +512,7 @@ BrailleInputHandler.EntryState_.prototype = {
    * necessary.
    * @param {number} cell The braille cell to append.
    */
-  appendCell: function(cell) {
+  appendCell(cell) {
     this.cells_.push(cell);
     this.updateText_();
   },
@@ -522,7 +522,7 @@ BrailleInputHandler.EntryState_.prototype = {
    * If there's no more input in this object afterwards, clears the entry state
    * of the input handler.
    */
-  deleteLastCell: function() {
+  deleteLastCell() {
     if (--this.cells_.length <= 0) {
       this.sendTextChange_('');
       this.inputHandler_.clearEntryState_();
@@ -537,7 +537,7 @@ BrailleInputHandler.EntryState_.prototype = {
    * wasn't expected.
    * @param {string} newText New text before the cursor.
    */
-  onTextBeforeChanged: function(newText) {
+  onTextBeforeChanged(newText) {
     // See if we are expecting this change as a result of one of our own edits.
     // Allow changes to be coalesced by the input system in an attempt to not
     // be too brittle.
@@ -557,7 +557,7 @@ BrailleInputHandler.EntryState_.prototype = {
    * Makes sure the current text is permanently added to the edit field.
    * After this call, this object should be abandoned.
    */
-  commit: function() {},
+  commit() {},
 
   /**
    * @return {boolean} true if the entry state uses uncommitted cells.
@@ -571,7 +571,7 @@ BrailleInputHandler.EntryState_.prototype = {
    * delta to the IME.
    * @private
    */
-  updateText_: function() {
+  updateText_() {
     var cellsBuffer = new Uint8Array(this.cells_).buffer;
     var commit = this.lastCellIsBlank_;
     if (!commit && this.usesUncommittedCells) {
@@ -607,7 +607,7 @@ BrailleInputHandler.EntryState_.prototype = {
    * @param {string} newText Text to send.
    * @private
    */
-  sendTextChange_: function(newText) {}
+  sendTextChange_(newText) {}
 };
 
 /**
@@ -627,7 +627,7 @@ BrailleInputHandler.EditsEntryState_.prototype = {
   __proto__: BrailleInputHandler.EntryState_.prototype,
 
   /** @override */
-  sendTextChange_: function(newText) {
+  sendTextChange_(newText) {
     var oldText = this.text_;
     // Find the common prefix of the old and new text.
     var commonPrefixLength =
@@ -681,7 +681,7 @@ BrailleInputHandler.LateCommitEntryState_.prototype = {
   __proto__: BrailleInputHandler.EntryState_.prototype,
 
   /** @override */
-  commit: function() {
+  commit() {
     this.inputHandler_.postImeMessage_({
       type: 'commitUncommitted',
       contextID: this.inputHandler_.inputContext_.contextID
@@ -694,7 +694,7 @@ BrailleInputHandler.LateCommitEntryState_.prototype = {
   },
 
   /** @override */
-  sendTextChange_: function(newText) {
+  sendTextChange_(newText) {
     this.inputHandler_.postImeMessage_({
       type: 'setUncommitted',
       contextID: this.inputHandler_.inputContext_.contextID,

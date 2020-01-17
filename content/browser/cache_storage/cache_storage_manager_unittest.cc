@@ -255,7 +255,7 @@ class TestCacheStorageContext : public CacheStorageContextWithManager {
     NOTREACHED();
   }
 
-  void DeleteForOrigin(const GURL& origin_url) override { NOTREACHED(); }
+  void DeleteForOrigin(const url::Origin& origin) override { NOTREACHED(); }
 
  private:
   ~TestCacheStorageContext() override = default;

@@ -19,6 +19,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/metadata_batch.h"
@@ -45,9 +46,11 @@ namespace {
 
 using sync_pb::EntityMetadata;
 using sync_pb::SessionSpecifics;
+using syncer::CommitResponseDataList;
 using syncer::DataBatch;
 using syncer::EntityChangeList;
 using syncer::EntityData;
+using syncer::FailedCommitResponseDataList;
 using syncer::IsEmptyMetadataBatch;
 using syncer::MetadataBatch;
 using syncer::MetadataChangeList;
@@ -913,9 +916,11 @@ TEST_F(SessionSyncBridgeTest, ShouldRecycleTabNodeAfterCommitCompleted) {
   ASSERT_TRUE(real_processor()->HasLocalChangesForTest());
   sync_pb::ModelTypeState state;
   state.set_initial_sync_done(true);
-  real_processor()->OnCommitCompleted(state,
-                                      {CreateSuccessResponse(kLocalSessionTag),
-                                       CreateSuccessResponse(tab_client_tag1)});
+  real_processor()->OnCommitCompleted(
+      state,
+      {CreateSuccessResponse(kLocalSessionTag),
+       CreateSuccessResponse(tab_client_tag1)},
+      /*error_response_list=*/FailedCommitResponseDataList());
   ASSERT_FALSE(real_processor()->HasLocalChangesForTest());
 
   // Open a second tab.
@@ -957,8 +962,9 @@ TEST_F(SessionSyncBridgeTest, ShouldRecycleTabNodeAfterCommitCompleted) {
   // deletion. For that to trigger, we need to trigger the next association,
   // which we do by navigating in one of the open tabs.
   EXPECT_CALL(mock_processor(), Delete(tab_storage_key2, _));
-  real_processor()->OnCommitCompleted(state,
-                                      {CreateSuccessResponse(tab_client_tag2)});
+  real_processor()->OnCommitCompleted(
+      state, {CreateSuccessResponse(tab_client_tag2)},
+      /*error_response_list=*/FailedCommitResponseDataList());
   tab1->Navigate("http://foo3.com/");
   EXPECT_THAT(GetAllData(), UnorderedElementsAre(Pair(header_storage_key, _),
                                                  Pair(tab_storage_key1, _),
@@ -1235,7 +1241,8 @@ TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
   // session.
   ASSERT_TRUE(real_processor()->HasLocalChangesForTest());
   real_processor()->OnCommitCompleted(
-      state, {CreateSuccessResponse(kLocalSessionTag)});
+      state, {CreateSuccessResponse(kLocalSessionTag)},
+      /*error_response_list=*/FailedCommitResponseDataList());
   ASSERT_FALSE(real_processor()->HasLocalChangesForTest());
 
   const sessions::SessionTab* foreign_session_tab = nullptr;
@@ -1352,8 +1359,10 @@ TEST_F(SessionSyncBridgeTest, ShouldIgnoreRemoteDeletionOfLocalTab) {
   sync_pb::ModelTypeState state;
   state.set_initial_sync_done(true);
   real_processor()->OnCommitCompleted(
-      state, {CreateSuccessResponse(tab_client_tag1),
-              CreateSuccessResponse(kLocalSessionTag)});
+      state,
+      {CreateSuccessResponse(tab_client_tag1),
+       CreateSuccessResponse(kLocalSessionTag)},
+      /*error_response_list=*/FailedCommitResponseDataList());
   ASSERT_FALSE(real_processor()->HasLocalChangesForTest());
 
   // Mimic receiving a remote deletion of both entities.

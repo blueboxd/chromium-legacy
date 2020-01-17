@@ -390,6 +390,11 @@ bool PannerHandler::SetPanningModel(unsigned model) {
   }
 
   if (!panner_.get() || model != panning_model_) {
+    // We need the graph lock to secure the panner backend because
+    // BaseAudioContext::Handle{Pre,Post}RenderTasks() from the audio thread
+    // can touch it.
+    BaseAudioContext::GraphAutoLocker context_locker(Context());
+
     // This synchronizes with process().
     MutexLocker process_locker(process_lock_);
     panner_ = Panner::Create(model, Context()->sampleRate(),

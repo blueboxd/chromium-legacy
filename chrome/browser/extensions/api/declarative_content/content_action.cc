@@ -18,7 +18,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -375,8 +375,8 @@ void RequestContentScript::InstructRenderProcessToInject(
   content::RenderFrameHost* render_frame_host = contents->GetMainFrame();
   render_frame_host->Send(new ExtensionMsg_ExecuteDeclarativeScript(
       render_frame_host->GetRoutingID(),
-      SessionTabHelper::IdForTab(contents).id(), extension->id(), script_.id(),
-      contents->GetLastCommittedURL()));
+      sessions::SessionTabHelper::IdForTab(contents).id(), extension->id(),
+      script_.id(), contents->GetLastCommittedURL()));
 }
 
 // static

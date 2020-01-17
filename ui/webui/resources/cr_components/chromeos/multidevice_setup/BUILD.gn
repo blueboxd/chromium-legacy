@@ -53,15 +53,11 @@ js_library("multidevice_setup") {
 }
 
 js_library("multidevice_setup_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("multidevice_setup_delegate") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("password_page") {

@@ -260,6 +260,19 @@ void AppServiceAppWindowLauncherController::OnWindowActivated(
 
 void AppServiceAppWindowLauncherController::OnInstanceUpdate(
     const apps::InstanceUpdate& update) {
+  if (update.StateChanged() &&
+      update.State() == apps::InstanceState::kDestroyed) {
+    // For Chrome apps edge case, it could be added for the inactive users, and
+    // then removed. Since it is not registered we don't need to do anything
+    // anyways. As such, all which is left to do here is to get rid of our own
+    // reference.
+    WindowList::iterator it =
+        std::find(window_list_.begin(), window_list_.end(), update.Window());
+    if (it != window_list_.end())
+      window_list_.erase(it);
+    return;
+  }
+
   aura::Window* window = update.Window();
   if (!observed_windows_.IsObserving(window))
     return;
@@ -317,18 +330,6 @@ void AppServiceAppWindowLauncherController::OnInstanceUpdate(
       RemoveAppWindowFromShelf(app_window_it->second.get());
       aura_window_to_app_window_.erase(app_window_it);
     }
-  }
-
-  if (update.StateChanged() &&
-      update.State() == apps::InstanceState::kDestroyed) {
-    // For Chrome apps edge case, it could be added for the inactive users, and
-    // then removed. Since it is not registered we don't need to do anything
-    // anyways. As such, all which is left to do here is to get rid of our own
-    // reference.
-    WindowList::iterator it =
-        std::find(window_list_.begin(), window_list_.end(), update.Window());
-    if (it != window_list_.end())
-      window_list_.erase(it);
   }
 }
 

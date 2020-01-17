@@ -153,7 +153,7 @@ PanStrategy.prototype = {
    * @return {ArrayBuffer} Buffer of the slice of braille cells within the
    *    bounds of the viewport.
    */
-  getCurrentBrailleViewportContents: function(opt_showCursor) {
+  getCurrentBrailleViewportContents(opt_showCursor) {
     opt_showCursor = opt_showCursor === undefined ? true : opt_showCursor;
     var buf =
         this.panStrategyWrapped_ ? this.wrappedBuffer_ : this.fixedBuffer_;
@@ -191,7 +191,7 @@ PanStrategy.prototype = {
    * @return {string} String of the slice of text letters corresponding with
    *    the current braille slice.
    */
-  getCurrentTextViewportContents: function() {
+  getCurrentTextViewportContents() {
     var brailleToText = this.brailleToText;
     // Index of last braille character in slice.
     var index = (this.viewPort_.lastRow + 1) * this.displaySize_.columns - 1;
@@ -211,7 +211,7 @@ PanStrategy.prototype = {
   /**
    * Sets the current pan strategy and resets the viewport.
    */
-  setPanStrategy: function(wordWrap) {
+  setPanStrategy(wordWrap) {
     this.panStrategyWrapped_ = wordWrap;
     this.panToPosition_(0);
   },
@@ -223,7 +223,7 @@ PanStrategy.prototype = {
    * @param {number} columnCount the new column size, or {@code 0}
    *    if no display is present.
    */
-  setDisplaySize: function(rowCount, columnCount) {
+  setDisplaySize(rowCount, columnCount) {
     this.displaySize_ = {rows: rowCount, columns: columnCount};
     this.setContent(
         this.textBuffer_, this.fixedBuffer_, this.fixedBrailleToText_, 0);
@@ -239,7 +239,7 @@ PanStrategy.prototype = {
    * @param {number} targetPosition Target position.  The viewport is changed
    *     to overlap this position.
    */
-  setContent: function(
+  setContent(
       textBuffer, translatedContent, fixedBrailleToText, targetPosition) {
     this.viewPort_.firstRow = 0;
     this.viewPort_.lastRow = this.displaySize_.rows - 1;
@@ -321,7 +321,7 @@ PanStrategy.prototype = {
    * @param {number} startIndex
    * @param {number} endIndex
    */
-  setCursor: function(startIndex, endIndex) {
+  setCursor(startIndex, endIndex) {
     this.cursor_ = {start: startIndex, end: endIndex};
   },
 
@@ -329,7 +329,7 @@ PanStrategy.prototype = {
    * Gets the current cursor.
    * @return {{start: (number), end: (number)}}
    */
-  getCursor: function() {
+  getCursor() {
     return this.cursor_;
   },
 
@@ -339,7 +339,7 @@ PanStrategy.prototype = {
    * @param {number} unwrappedIndex
    * @param {number} wrappedIndex
    */
-  maybeSetWrappedCursor_: function(unwrappedIndex, wrappedIndex) {
+  maybeSetWrappedCursor_(unwrappedIndex, wrappedIndex) {
     // We only care about the bounds of the index start/end.
     if (this.cursor_.start != unwrappedIndex &&
         this.cursor_.end != unwrappedIndex) {
@@ -357,7 +357,7 @@ PanStrategy.prototype = {
    * the current viewport.
    * @return {boolean} {@code true} if the viewport was changed.
    */
-  next: function() {
+  next() {
     var contentLength =
         this.panStrategyWrapped_ ? this.wrappedLineCount : this.fixedLineCount;
     var newStart = this.viewPort_.lastRow + 1;
@@ -379,7 +379,7 @@ PanStrategy.prototype = {
    * the current viewport.
    * @return {boolean} {@code true} if the viewport was changed.
    */
-  previous: function() {
+  previous() {
     var contentLength =
         this.panStrategyWrapped_ ? this.wrappedLineCount : this.fixedLineCount;
     if (this.viewPort_.firstRow > 0) {
@@ -404,7 +404,7 @@ PanStrategy.prototype = {
    * the current viewport position into consideration.
    * @param {number} position Target position.
    */
-  panToPosition_: function(position) {
+  panToPosition_(position) {
     if (this.displaySize_.rows * this.displaySize_.columns > 0) {
       this.viewPort_ = {firstRow: -1, lastRow: -1};
       while (this.next() &&

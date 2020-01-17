@@ -129,8 +129,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         sRecordWholeDocumentEnabledByApi = true;
     }
 
-    // Used to record the UMA histogram WebView.WebViewApiCall. Since these value are persisted to
-    // logs, they should never be renumbered nor reused.
+    // Used to record the UMA histogram WebView.WebViewApiCall. Since these values are persisted to
+    // logs, they should never be renumbered or reused.
     @IntDef({ApiCall.ADD_JAVASCRIPT_INTERFACE, ApiCall.AUTOFILL, ApiCall.CAN_GO_BACK,
             ApiCall.CAN_GO_BACK_OR_FORWARD, ApiCall.CAN_GO_FORWARD, ApiCall.CAN_ZOOM_IN,
             ApiCall.CAN_ZOOM_OUT, ApiCall.CAPTURE_PICTURE, ApiCall.CLEAR_CACHE,

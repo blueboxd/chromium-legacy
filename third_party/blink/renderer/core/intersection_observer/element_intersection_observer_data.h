@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_ELEMENT_INTERSECTION_OBSERVER_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_ELEMENT_INTERSECTION_OBSERVER_DATA_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -14,7 +15,7 @@ namespace blink {
 class IntersectionObservation;
 class IntersectionObserver;
 
-class ElementIntersectionObserverData final
+class CORE_EXPORT ElementIntersectionObserverData final
     : public GarbageCollected<ElementIntersectionObserverData>,
       public NameClient {
  public:
@@ -36,6 +37,9 @@ class ElementIntersectionObserverData final
   // tracking.
   bool ComputeIntersectionsForLifecycleUpdate(unsigned flags);
   bool NeedsOcclusionTracking() const;
+  // Indicates that geometry information cached during the previous run of the
+  // algorithm is invalid and must be recomputed.
+  void InvalidateCachedRects();
 
   void Trace(blink::Visitor*);
   const char* NameInHeapSnapshot() const override {

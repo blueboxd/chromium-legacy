@@ -31,7 +31,7 @@ AccessibilityTest.define('GoogleAssistantA11yTest', {
 
   /** @override */
   setup: function() {
-    settings.router.navigateTo(settings.routes.GOOGLE_ASSISTANT);
+    settings.Router.getInstance().navigateTo(settings.routes.GOOGLE_ASSISTANT);
     Polymer.dom.flush();
   },
 

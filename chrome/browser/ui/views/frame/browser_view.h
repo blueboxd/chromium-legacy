@@ -476,8 +476,6 @@ class BrowserView : public BrowserWindow,
   void OnWindowBeginUserBoundsChange() override;
   void OnWindowEndUserBoundsChange() override;
   void OnWidgetMove() override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
   void GetAccessiblePanes(std::vector<View*>* panes) override;
 
   // views::WidgetObserver:
@@ -500,7 +498,6 @@ class BrowserView : public BrowserWindow,
       const views::ViewHierarchyChangedDetails& details) override;
   void AddedToWidget() override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void ChildPreferredSizeChanged(View* child) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
@@ -878,15 +875,7 @@ class BrowserView : public BrowserWindow,
   ScopedObserver<banners::AppBannerManager, banners::AppBannerManager::Observer>
       app_banner_manager_observer_{this};
 
-  struct ResizeSession {
-    // The time when user started resizing the window.
-    base::TimeTicks begin_timestamp;
-    base::TimeTicks last_resize_timestamp;
-    // The number of times the window size is changed from the start (i.e. since
-    // begin_timestamp).
-    size_t step_count = 0;
-  };
-  base::Optional<ResizeSession> interactive_resize_;
+  bool interactive_resize_in_progress_ = false;
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_{
       this};

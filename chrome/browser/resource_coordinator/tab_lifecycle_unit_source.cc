@@ -173,11 +173,15 @@ class TabLifecycleStateObserver
 };
 
 TabLifecycleUnitSource::TabLifecycleUnitSource(
+    InterventionPolicyDatabase* intervention_policy_database,
     UsageClock* usage_clock)
     : browser_tab_strip_tracker_(this, nullptr, this),
+      intervention_policy_database_(intervention_policy_database),
       usage_clock_(usage_clock) {
   // In unit tests, tabs might already exist when TabLifecycleUnitSource is
   // instantiated. No TabLifecycleUnit is created for these tabs.
+
+  DCHECK(intervention_policy_database_);
 
   browser_tab_strip_tracker_.Init();
 }

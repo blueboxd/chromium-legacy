@@ -4,19 +4,31 @@
 
 #include "third_party/blink/renderer/modules/webtransport/quic_transport.h"
 
+#include <array>
 #include <memory>
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
+#include "base/test/mock_callback.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/quic_transport.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_default_reader.h"
+#include "third_party/blink/renderer/core/streams/writable_stream.h"
+#include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/webtransport/web_transport_close_info.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -27,6 +39,13 @@
 namespace blink {
 
 namespace {
+
+using ::testing::_;
+using ::testing::ElementsAre;
+using ::testing::Invoke;
+using ::testing::Mock;
+using ::testing::StrictMock;
+using ::testing::Truly;
 
 class QuicTransportConnector final
     : public mojom::blink::QuicTransportConnector {
@@ -62,28 +81,32 @@ class QuicTransportConnector final
   Vector<ConnectArgs> connect_args_;
 };
 
-class MockQuicTransport final : public network::mojom::blink::QuicTransport {
+class MockQuicTransport : public network::mojom::blink::QuicTransport {
  public:
   MockQuicTransport(mojo::PendingReceiver<network::mojom::blink::QuicTransport>
                         pending_receiver)
       : receiver_(this, std::move(pending_receiver)) {}
 
-  void SendDatagram(base::span<const uint8_t> data,
-                    base::OnceCallback<void(bool)> callback) override {}
+  MOCK_METHOD2(SendDatagram,
+               void(base::span<const uint8_t> data,
+                    base::OnceCallback<void(bool)> callback));
 
-  void CreateStream(
-      mojo::ScopedDataPipeConsumerHandle readable,
-      mojo::ScopedDataPipeProducerHandle writable,
-      base::OnceCallback<void(bool, uint32_t)> callback) override {}
+  MOCK_METHOD3(CreateStream,
+               void(mojo::ScopedDataPipeConsumerHandle readable,
+                    mojo::ScopedDataPipeProducerHandle writable,
+                    base::OnceCallback<void(bool, uint32_t)> callback));
 
-  void AcceptBidirectionalStream(
-      base::OnceCallback<void(uint32_t,
-                              mojo::ScopedDataPipeConsumerHandle,
-                              mojo::ScopedDataPipeProducerHandle)>) override {}
+  MOCK_METHOD1(
+      AcceptBidirectionalStream,
+      void(base::OnceCallback<void(uint32_t,
+                                   mojo::ScopedDataPipeConsumerHandle,
+                                   mojo::ScopedDataPipeProducerHandle)>));
 
-  void AcceptUnidirectionalStream(
-      base::OnceCallback<void(uint32_t, mojo::ScopedDataPipeConsumerHandle)>)
-      override {}
+  MOCK_METHOD1(AcceptUnidirectionalStream,
+               void(base::OnceCallback<
+                    void(uint32_t, mojo::ScopedDataPipeConsumerHandle)>));
+
+  void SendFin(uint32_t stream_id) override {}
 
  private:
   mojo::Receiver<network::mojom::blink::QuicTransport> receiver_;
@@ -100,20 +123,23 @@ class QuicTransportTest : public ::testing::Test {
                             weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // Creates, connects and returns a QuicTransport object with the given |url|.
-  // Runs the event loop.
-  QuicTransport* ConnectSuccessfully(const V8TestingScope& scope,
-                                     const String& url) {
+  // Creates a QuicTransport object with the given |url|.
+  QuicTransport* Create(const V8TestingScope& scope, const String& url) {
     AddBinder(scope);
-    auto* quic_transport =
-        QuicTransport::Create(scope.GetScriptState(), url, ASSERT_NO_EXCEPTION);
+    return QuicTransport::Create(scope.GetScriptState(), url,
+                                 ASSERT_NO_EXCEPTION);
+  }
+
+  // Connects a QuicTransport object. Runs the event loop.
+  void ConnectSuccessfully(QuicTransport* quic_transport) {
+    DCHECK(!mock_quic_transport_) << "Only one connection supported, sorry";
 
     test::RunPendingTasks();
 
     auto args = connector_.TakeConnectArgs();
     if (args.size() != 1u) {
       ADD_FAILURE() << "args.size() should be 1, but is " << args.size();
-      return nullptr;
+      return;
     }
 
     mojo::Remote<network::mojom::blink::QuicTransportHandshakeClient>
@@ -124,15 +150,23 @@ class QuicTransportTest : public ::testing::Test {
     mojo::PendingRemote<network::mojom::blink::QuicTransportClient>
         client_remote;
 
-    mock_quic_transport_ = std::make_unique<MockQuicTransport>(
+    mock_quic_transport_ = std::make_unique<StrictMock<MockQuicTransport>>(
         quic_transport_to_pass.InitWithNewPipeAndPassReceiver());
 
     handshake_client->OnConnectionEstablished(
         std::move(quic_transport_to_pass),
         client_remote.InitWithNewPipeAndPassReceiver());
+    client_remote_.Bind(std::move(client_remote));
 
     test::RunPendingTasks();
+  }
 
+  // Creates, connects and returns a QuicTransport object with the given |url|.
+  // Runs the event loop.
+  QuicTransport* CreateAndConnectSuccessfully(const V8TestingScope& scope,
+                                              const String& url) {
+    auto* quic_transport = Create(scope, url);
+    ConnectSuccessfully(quic_transport);
     return quic_transport;
   }
 
@@ -151,6 +185,7 @@ class QuicTransportTest : public ::testing::Test {
   BrowserInterfaceBrokerProxy* interface_broker_ = nullptr;
   QuicTransportConnector connector_;
   std::unique_ptr<MockQuicTransport> mock_quic_transport_;
+  mojo::Remote<network::mojom::blink::QuicTransportClient> client_remote_;
 
   base::WeakPtrFactory<QuicTransportTest> weak_ptr_factory_{this};
 };
@@ -231,8 +266,8 @@ TEST_F(QuicTransportTest, FailByCSP) {
   scope.GetExecutionContext()
       ->GetContentSecurityPolicyForWorld()
       ->DidReceiveHeader("connect-src 'none'",
-                         kContentSecurityPolicyHeaderTypeEnforce,
-                         kContentSecurityPolicyHeaderSourceHTTP);
+                         network::mojom::ContentSecurityPolicyType::kEnforce,
+                         network::mojom::ContentSecurityPolicySource::kHTTP);
   QuicTransport::Create(scope.GetScriptState(),
                         String("quic-transport://example.com/"),
                         exception_state);
@@ -252,8 +287,8 @@ TEST_F(QuicTransportTest, PassCSP) {
   scope.GetExecutionContext()
       ->GetContentSecurityPolicyForWorld()
       ->DidReceiveHeader("connect-src quic-transport://example.com",
-                         kContentSecurityPolicyHeaderTypeEnforce,
-                         kContentSecurityPolicyHeaderSourceHTTP);
+                         network::mojom::ContentSecurityPolicyType::kEnforce,
+                         network::mojom::ContentSecurityPolicySource::kHTTP);
   QuicTransport::Create(scope.GetScriptState(),
                         String("quic-transport://example.com/"),
                         exception_state);
@@ -278,7 +313,7 @@ TEST_F(QuicTransportTest, SendConnect) {
 TEST_F(QuicTransportTest, SuccessfulConnect) {
   V8TestingScope scope;
   auto* quic_transport =
-      ConnectSuccessfully(scope, "quic-transport://example.com");
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
   EXPECT_TRUE(quic_transport->HasPendingActivity());
 }
 
@@ -325,7 +360,7 @@ TEST_F(QuicTransportTest, CloseDuringConnect) {
 TEST_F(QuicTransportTest, CloseAfterConnection) {
   V8TestingScope scope;
   auto* quic_transport =
-      ConnectSuccessfully(scope, "quic-transport://example.com");
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
 
   WebTransportCloseInfo close_info;
   close_info.setErrorCode(42);
@@ -347,8 +382,17 @@ TEST_F(QuicTransportTest, CloseAfterConnection) {
 // When the underlying connection is shut down, the connection will be swept.
 TEST_F(QuicTransportTest, GarbageCollection) {
   V8TestingScope scope;
-  WeakPersistent<QuicTransport> quic_transport =
-      ConnectSuccessfully(scope, "quic-transport://example.com");
+
+  WeakPersistent<QuicTransport> quic_transport;
+
+  {
+    // The streams created when creating a QuicTransport create some v8 handles.
+    // To ensure these are collected, we need to create a handle scope. This is
+    // not a problem for garbage collection in normal operation.
+    v8::HandleScope handle_scope(scope.GetIsolate());
+    quic_transport =
+        CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+  }
 
   // Pretend the stack is empty. This will avoid accidentally treating any
   // copies of the |quic_transport| pointer as references.
@@ -369,11 +413,17 @@ TEST_F(QuicTransportTest, GarbageCollection) {
 
 TEST_F(QuicTransportTest, GarbageCollectMojoConnectionError) {
   V8TestingScope scope;
-  WeakPersistent<QuicTransport> quic_transport =
-      ConnectSuccessfully(scope, "quic-transport://example.com");
 
-  // Deleting the server-side object causes a mojo connection error.
-  mock_quic_transport_ = nullptr;
+  WeakPersistent<QuicTransport> quic_transport;
+
+  {
+    v8::HandleScope handle_scope(scope.GetIsolate());
+    quic_transport =
+        CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+  }
+
+  // Closing the server-side of the pipe causes a mojo connection error.
+  client_remote_.reset();
 
   test::RunPendingTasks();
 
@@ -381,6 +431,187 @@ TEST_F(QuicTransportTest, GarbageCollectMojoConnectionError) {
       scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
 
   EXPECT_FALSE(quic_transport);
+}
+
+TEST_F(QuicTransportTest, SendDatagram) {
+  V8TestingScope scope;
+  auto* quic_transport =
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+
+  EXPECT_CALL(*mock_quic_transport_, SendDatagram(ElementsAre('A'), _))
+      .WillOnce(Invoke([](base::span<const uint8_t>,
+                          MockQuicTransport::SendDatagramCallback callback) {
+        std::move(callback).Run(true);
+      }));
+
+  auto* writable = quic_transport->sendDatagrams();
+  auto* script_state = scope.GetScriptState();
+  auto* writer = writable->getWriter(script_state, ASSERT_NO_EXCEPTION);
+  auto* chunk = DOMUint8Array::Create(1);
+  *chunk->Data() = 'A';
+  ScriptPromise result =
+      writer->write(script_state, ScriptValue::From(script_state, chunk),
+                    ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester(script_state, result);
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsFulfilled());
+  EXPECT_TRUE(tester.Value().IsUndefined());
+}
+
+TEST_F(QuicTransportTest, SendDatagramBeforeConnect) {
+  V8TestingScope scope;
+  auto* quic_transport = Create(scope, "quic-transport://example.com");
+
+  auto* writable = quic_transport->sendDatagrams();
+  auto* script_state = scope.GetScriptState();
+  auto* writer = writable->getWriter(script_state, ASSERT_NO_EXCEPTION);
+  auto* chunk = DOMUint8Array::Create(1);
+  *chunk->Data() = 'A';
+  ScriptPromise result =
+      writer->write(script_state, ScriptValue::From(script_state, chunk),
+                    ASSERT_NO_EXCEPTION);
+
+  ConnectSuccessfully(quic_transport);
+
+  // No datagram is sent.
+
+  ScriptPromiseTester tester(script_state, result);
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsFulfilled());
+  EXPECT_TRUE(tester.Value().IsUndefined());
+}
+
+TEST_F(QuicTransportTest, SendDatagramAfterClose) {
+  V8TestingScope scope;
+  auto* quic_transport =
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+
+  quic_transport->close(nullptr);
+  test::RunPendingTasks();
+
+  auto* writable = quic_transport->sendDatagrams();
+  auto* script_state = scope.GetScriptState();
+  auto* writer = writable->getWriter(script_state, ASSERT_NO_EXCEPTION);
+
+  auto* chunk = DOMUint8Array::Create(1);
+  *chunk->Data() = 'A';
+  ScriptPromise result =
+      writer->write(script_state, ScriptValue::From(script_state, chunk),
+                    ASSERT_NO_EXCEPTION);
+
+  // No datagram is sent.
+
+  ScriptPromiseTester tester(script_state, result);
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsRejected());
+}
+
+Vector<uint8_t> GetValueAsVector(ScriptState* script_state,
+                                 ScriptValue iterator_result) {
+  bool done = false;
+  v8::Local<v8::Value> value;
+  if (!V8UnpackIteratorResult(script_state,
+                              iterator_result.V8Value().As<v8::Object>(), &done)
+           .ToLocal(&value)) {
+    ADD_FAILURE() << "unable to unpack iterator_result";
+    return {};
+  }
+
+  EXPECT_FALSE(done);
+  auto* array =
+      V8Uint8Array::ToImplWithTypeCheck(script_state->GetIsolate(), value);
+  if (!array) {
+    ADD_FAILURE() << "value was not a Uint8Array";
+    return {};
+  }
+
+  Vector<uint8_t> result;
+  result.Append(array->Data(), array->lengthAsSizeT());
+  return result;
+}
+
+TEST_F(QuicTransportTest, ReceiveDatagramBeforeRead) {
+  V8TestingScope scope;
+  auto* quic_transport =
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+
+  const std::array<uint8_t, 1> chunk = {'A'};
+  client_remote_->OnDatagramReceived(chunk);
+
+  test::RunPendingTasks();
+
+  auto* readable = quic_transport->receiveDatagrams();
+  auto* script_state = scope.GetScriptState();
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromise result = reader->read(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester tester(script_state, result);
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsFulfilled());
+
+  EXPECT_THAT(GetValueAsVector(script_state, tester.Value()), ElementsAre('A'));
+}
+
+TEST_F(QuicTransportTest, ReceiveDatagramDuringRead) {
+  V8TestingScope scope;
+  auto* quic_transport =
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+  auto* readable = quic_transport->receiveDatagrams();
+  auto* script_state = scope.GetScriptState();
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromise result = reader->read(script_state, ASSERT_NO_EXCEPTION);
+
+  const std::array<uint8_t, 1> chunk = {'A'};
+  client_remote_->OnDatagramReceived(chunk);
+
+  ScriptPromiseTester tester(script_state, result);
+  tester.WaitUntilSettled();
+  EXPECT_TRUE(tester.IsFulfilled());
+
+  EXPECT_THAT(GetValueAsVector(script_state, tester.Value()), ElementsAre('A'));
+}
+
+// This test documents the current behaviour. If you improve the behaviour,
+// change the test!
+TEST_F(QuicTransportTest, DatagramsAreDropped) {
+  V8TestingScope scope;
+  auto* quic_transport =
+      CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+
+  // Chunk 'A' gets placed in the readable queue.
+  const std::array<uint8_t, 1> chunk1 = {'A'};
+  client_remote_->OnDatagramReceived(chunk1);
+
+  // Chunk 'B' gets dropped, because there is no space in the readable queue.
+  const std::array<uint8_t, 1> chunk2 = {'B'};
+  client_remote_->OnDatagramReceived(chunk2);
+
+  // Make sure that the calls have run.
+  test::RunPendingTasks();
+
+  auto* readable = quic_transport->receiveDatagrams();
+  auto* script_state = scope.GetScriptState();
+  auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromise result1 = reader->read(script_state, ASSERT_NO_EXCEPTION);
+  ScriptPromise result2 = reader->read(script_state, ASSERT_NO_EXCEPTION);
+
+  ScriptPromiseTester tester1(script_state, result1);
+  ScriptPromiseTester tester2(script_state, result2);
+  tester1.WaitUntilSettled();
+  EXPECT_TRUE(tester1.IsFulfilled());
+  EXPECT_FALSE(tester2.IsFulfilled());
+
+  EXPECT_THAT(GetValueAsVector(script_state, tester1.Value()),
+              ElementsAre('A'));
+
+  // Chunk 'C' fulfills the pending read.
+  const std::array<uint8_t, 1> chunk3 = {'C'};
+  client_remote_->OnDatagramReceived(chunk3);
+
+  tester2.WaitUntilSettled();
+  EXPECT_TRUE(tester2.IsFulfilled());
+
+  EXPECT_THAT(GetValueAsVector(script_state, tester2.Value()),
+              ElementsAre('C'));
 }
 
 }  // namespace

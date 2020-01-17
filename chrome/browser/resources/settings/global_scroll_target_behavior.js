@@ -51,13 +51,14 @@ cr.define('settings', function() {
     },
 
     /** @override */
-    attached: function() {
-      this.active_ = settings.getCurrentRoute() == this.subpageRoute;
+    attached() {
+      this.active_ =
+          settings.Router.getInstance().getCurrentRoute() == this.subpageRoute;
       scrollTargetResolver.promise.then(this._setScrollTarget.bind(this));
     },
 
     /** @param {!settings.Route} route */
-    currentRouteChanged: function(route) {
+    currentRouteChanged(route) {
       // Immediately set the scroll target to active when this page is
       // activated, but wait a task to remove the scroll target when the page is
       // deactivated. This gives scroll handlers like iron-list a chance to
@@ -81,7 +82,7 @@ cr.define('settings', function() {
      * @return {?HTMLElement}
      * @private
      */
-    getActiveTarget_: function(target, active) {
+    getActiveTarget_(target, active) {
       if (target === undefined || active === undefined) {
         return undefined;
       }

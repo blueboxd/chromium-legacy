@@ -165,9 +165,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "reading_list_egtest.mm",
-  ]
+  sources = [ "reading_list_egtest.mm" ]
   deps = [
     ":reading_list",
     ":reading_list_constants",
@@ -214,9 +212,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "reading_list_egtest.mm",
-  ]
+  sources = [ "reading_list_egtest.mm" ]
   deps = [
     ":eg_test_support+eg2",
     ":reading_list_constants",

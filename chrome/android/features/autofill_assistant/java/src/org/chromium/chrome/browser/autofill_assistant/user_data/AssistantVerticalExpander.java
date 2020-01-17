@@ -17,7 +17,7 @@ import android.widget.LinearLayout;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.ui.widget.TintedDrawable;
+import org.chromium.components.browser_ui.widget.TintedDrawable;
 
 /**
  * This class provides a vertical expander widget, which allows to toggle between a collapsed and an

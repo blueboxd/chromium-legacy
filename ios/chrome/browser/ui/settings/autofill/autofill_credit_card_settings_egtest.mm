@@ -28,6 +28,7 @@
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SettingsDoneButton;
 
 namespace {
@@ -59,17 +60,6 @@ id<GREYMatcher> NavigationBarEditButton() {
 // screen.
 id<GREYMatcher> BottomToolbar() {
   return grey_accessibilityID(kAutofillPaymentMethodsToolbarId);
-}
-
-id<GREYMatcher> SettingsMenuBackButton(NSString* backItemTitle) {
-#if defined(CHROME_EARL_GREY_2)
-  return grey_allOf(
-      grey_accessibilityLabel(backItemTitle),
-      grey_kindOfClassName(@"UIAccessibilityBackButtonElement"),
-      grey_ancestor(grey_accessibilityID(@"SettingNavigationBar")), nil);
-#else
-  return chrome_test_util::SettingsMenuBackButton();
-#endif
 }
 
 }  // namespace
@@ -125,9 +115,7 @@ id<GREYMatcher> SettingsMenuBackButton(NSString* backItemTitle) {
 
 // Close the settings.
 - (void)exitSettingsMenu {
-  [[EarlGrey
-      selectElementWithMatcher:SettingsMenuBackButton(l10n_util::GetNSString(
-                                   IDS_IOS_SETTINGS_TITLE))]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -152,9 +140,7 @@ id<GREYMatcher> SettingsMenuBackButton(NSString* backItemTitle) {
   }
 
   // Go back to the list view page.
-  [[EarlGrey
-      selectElementWithMatcher:SettingsMenuBackButton(l10n_util::GetNSString(
-                                   IDS_AUTOFILL_PAYMENT_METHODS))]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
 
   [self exitSettingsMenu];
@@ -168,9 +154,7 @@ id<GREYMatcher> SettingsMenuBackButton(NSString* backItemTitle) {
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
   // Go back to the list view page.
-  [[EarlGrey
-      selectElementWithMatcher:SettingsMenuBackButton(l10n_util::GetNSString(
-                                   IDS_AUTOFILL_PAYMENT_METHODS))]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
 
   [self exitSettingsMenu];
@@ -187,9 +171,7 @@ id<GREYMatcher> SettingsMenuBackButton(NSString* backItemTitle) {
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
   // Go back to the list view page.
-  [[EarlGrey
-      selectElementWithMatcher:SettingsMenuBackButton(l10n_util::GetNSString(
-                                   IDS_AUTOFILL_PAYMENT_METHODS))]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
 
   [self exitSettingsMenu];

@@ -9,9 +9,7 @@ visibility = [ "//chrome/chrome_cleaner/*" ]
 
 group("engine_target_factory") {
   if (is_internal_chrome_cleaner_build) {
-    deps = [
-      "${chrome_cleaner_internal_root}:engine_target_factory",
-    ]
+    deps = [ "${chrome_cleaner_internal_root}:engine_target_factory" ]
   } else {
     deps = [
       "//chrome/chrome_cleaner/engines/target:dummy_engine_delegate_factory",
@@ -96,9 +94,7 @@ template("chrome_cleaner_executable") {
 }
 
 chrome_cleaner_executable("chrome_cleanup_tool") {
-  sources = [
-    "chrome_cleaner_main.cc",
-  ]
+  sources = [ "chrome_cleaner_main.cc" ]
 
   libs = [ "comctl32.lib" ]
 
@@ -123,9 +119,7 @@ chrome_cleaner_executable("chrome_cleanup_tool") {
 }
 
 chrome_cleaner_executable("software_reporter_tool") {
-  sources = [
-    "chrome_reporter_main.cc",
-  ]
+  sources = [ "chrome_reporter_main.cc" ]
 
   deps = [
     "//chrome/chrome_cleaner/constants:reporter_version_resource",

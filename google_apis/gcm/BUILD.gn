@@ -104,9 +104,7 @@ static_library("test_support") {
     "monitoring/fake_gcm_stats_recorder.h",
   ]
 
-  public_deps = [
-    ":gcm",
-  ]
+  public_deps = [ ":gcm" ]
   deps = [
     "//base",
     "//mojo/public/cpp/system:system",
@@ -120,9 +118,7 @@ static_library("test_support") {
 if (!is_ios) {
   executable("mcs_probe") {
     testonly = true
-    sources = [
-      "tools/mcs_probe.cc",
-    ]
+    sources = [ "tools/mcs_probe.cc" ]
 
     deps = [
       ":gcm",

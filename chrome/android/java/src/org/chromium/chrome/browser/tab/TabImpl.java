@@ -13,7 +13,6 @@ import android.graphics.Rect;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
-import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 
 import androidx.annotation.Nullable;
@@ -95,7 +94,7 @@ public class TabImpl implements Tab {
     private WebContents mWebContents;
 
     /** The parent view of the ContentView and the InfoBarContainer. */
-    private ViewGroup mContentView;
+    private ContentView mContentView;
 
     /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
     private final ObserverList<TabObserver> mObservers = new ObserverList<>();
@@ -334,7 +333,7 @@ public class TabImpl implements Tab {
     }
 
     @Override
-    public ViewGroup getContentView() {
+    public ContentView getContentView() {
         return mContentView;
     }
 
@@ -1210,6 +1209,7 @@ public class TabImpl implements Tab {
                 : null;
         if (bounds != null) original.set(bounds);
 
+        mWebContents.setFocus(false);
         destroyWebContents(false /* do not delete native web contents */);
         hideNativePage(false, () -> {
             // Size of the new content is zero at this point. Set the view size in advance

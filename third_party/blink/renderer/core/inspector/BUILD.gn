@@ -187,9 +187,7 @@ inspector_protocol_generate("protocol_sources") {
     "inspector/protocol/WebAudio.h",
   ]
 
-  deps = [
-    "//third_party/blink/public/devtools_protocol:protocol_version",
-  ]
+  deps = [ "//third_party/blink/public/devtools_protocol:protocol_version" ]
 }
 
 # Compiles the sources generated above.
@@ -217,7 +215,5 @@ jumbo_source_set("generated") {
     "//v8",
   ]
 
-  public_deps = [
-    "//third_party/inspector_protocol:crdtp",
-  ]
+  public_deps = [ "//third_party/inspector_protocol:crdtp" ]
 }

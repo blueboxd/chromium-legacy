@@ -128,7 +128,7 @@ Polymer({
    */
   onPointerDown_(e) {
     // Don't do anything if this was not a primary button click or touch event.
-    if (e.button != 0) {
+    if (e.button !== 0) {
       return;
     }
 
@@ -185,7 +185,7 @@ Polymer({
    * @private
    */
   onKeyDown_(e) {
-    if (e.key != ' ' && e.key != 'Enter') {
+    if (e.key !== ' ' && e.key !== 'Enter') {
       return;
     }
 
@@ -195,7 +195,7 @@ Polymer({
       return;
     }
 
-    if (e.key == 'Enter') {
+    if (e.key === 'Enter') {
       this.toggleState_(/* fromKeyboard= */ true);
     }
   },
@@ -205,14 +205,14 @@ Polymer({
    * @private
    */
   onKeyUp_(e) {
-    if (e.key != ' ' && e.key != 'Enter') {
+    if (e.key !== ' ' && e.key !== 'Enter') {
       return;
     }
 
     e.preventDefault();
     e.stopPropagation();
 
-    if (e.key == ' ') {
+    if (e.key === ' ') {
       this.toggleState_(/* fromKeyboard= */ true);
     }
   },

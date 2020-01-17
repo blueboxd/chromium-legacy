@@ -102,6 +102,9 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Inform UnifiedSystemTrayView of focus being acquired.
   void FocusEntered(bool reverse);
 
+  // Called when the message center widget is activated.
+  void OnMessageCenterActivated();
+
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
   TrayBubbleView* GetBubbleView() const override;

@@ -28,6 +28,7 @@
 <translation id="7792771145871471484">پیشنهاد‌ها مرور شود.</translation>
 <translation id="7885132941432959125">انتقال برگه به چپ</translation>
 <translation id="7966321538264951561">پیشنهادها رد شود.</translation>
+<translation id="814503310257431685">نمایش همه</translation>
 <translation id="8205266828577616993">انتقال برگه به بالا</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{بستن <ph name="TABS_COUNT_ONE" /> برگه انتخابی}one{بستن <ph name="TABS_COUNT_MANY" /> برگه انتخابی}other{بستن <ph name="TABS_COUNT_MANY" /> برگه انتخابی}}</translation>
 <translation id="9150694013019234766">جابه‌جایی بین برگه‌ها در گروه برگه شما واقع در نزدیک پایین صفحه‌نمایش</translation>

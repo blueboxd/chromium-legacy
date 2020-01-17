@@ -50,6 +50,7 @@ blink_core_sources("script") {
     "pending_import_map.h",
     "pending_script.cc",
     "pending_script.h",
+    "script.cc",
     "script.h",
     "script_element_base.cc",
     "script_element_base.h",

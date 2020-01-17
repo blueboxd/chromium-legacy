@@ -24,14 +24,14 @@ function UpdateNotification() {
 
 UpdateNotification.prototype = {
   /** @return {boolean} */
-  shouldShow: function() {
+  shouldShow() {
     return !localStorage['notifications_update_notification_shown'] &&
         chrome.runtime.getManifest().version >= '63' &&
         chrome.runtime.getManifest().version < '64';
   },
 
   /** Shows the notification. */
-  show: function() {
+  show() {
     if (!this.shouldShow()) {
       return;
     }
@@ -44,7 +44,7 @@ UpdateNotification.prototype = {
    * Handles the chrome.notifications event.
    * @param {string} notificationId
    */
-  onClicked: function(notificationId) {
+  onClicked(notificationId) {
     (new PanelCommand(PanelCommandType.TUTORIAL)).send();
   },
 
@@ -52,14 +52,14 @@ UpdateNotification.prototype = {
    * Handles the chrome.notifications event.
    * @param {string} id
    */
-  onClosed: function(id) {
+  onClosed(id) {
     localStorage['notifications_update_notification_shown'] = true;
   },
 
   /**
    * Removes all listeners added by this object.
    */
-  removeAllListeners: function() {
+  removeAllListeners() {
     chrome.notifications.onClicked.removeListener(this.onClicked);
     chrome.notifications.onClosed.removeListener(this.onClosed);
   }

@@ -27,9 +27,7 @@ template("generate_resource_whitelist") {
 
     script = "//tools/resources/generate_resource_whitelist.py"
 
-    outputs = [
-      invoker.output,
-    ]
+    outputs = [ invoker.output ]
 
     args = [
       "-o",

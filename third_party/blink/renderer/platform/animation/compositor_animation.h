@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/scroll_timeline.h"
-#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/worklet_animation.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -41,11 +41,10 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
       std::unique_ptr<cc::AnimationOptions>,
       std::unique_ptr<cc::AnimationEffectTimings> effect_timings);
 
-  explicit CompositorAnimation(
-      scoped_refptr<cc::SingleKeyframeEffectAnimation>);
+  explicit CompositorAnimation(scoped_refptr<cc::Animation>);
   ~CompositorAnimation() override;
 
-  cc::SingleKeyframeEffectAnimation* CcAnimation() const;
+  cc::Animation* CcAnimation() const;
 
   // An animation delegate is notified when animations are started and stopped.
   // The CompositorAnimation does not take ownership of the delegate, and
@@ -85,7 +84,7 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
   void NotifyLocalTimeUpdated(
       base::Optional<base::TimeDelta> local_time) override;
 
-  scoped_refptr<cc::SingleKeyframeEffectAnimation> animation_;
+  scoped_refptr<cc::Animation> animation_;
   CompositorAnimationDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorAnimation);

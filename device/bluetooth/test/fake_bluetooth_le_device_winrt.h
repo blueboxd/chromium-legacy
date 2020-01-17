@@ -122,6 +122,7 @@ class FakeBluetoothLEDeviceWinrt
 
   void SimulateDevicePaired(bool is_paired);
   void SimulatePairingPinCode(std::string pin_code);
+  base::Optional<BluetoothUUID> GetTargetGattService() const;
   void SimulateGattConnection();
   void SimulateGattConnectionError(
       BluetoothDevice::ConnectErrorCode error_code);
@@ -165,6 +166,8 @@ class FakeBluetoothLEDeviceWinrt
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               IGattDeviceServicesResult>)>
       gatt_services_callback_;
+  // Contains the last GUID passed to GetGattServicesForUuidAsync.
+  base::Optional<GUID> service_uuid_;
 
   std::vector<Microsoft::WRL::ComPtr<FakeGattDeviceServiceWinrt>>
       fake_services_;

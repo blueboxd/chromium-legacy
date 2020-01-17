@@ -209,9 +209,7 @@ template("mac_toolchain") {
       command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "CC {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("cxx") {
@@ -220,9 +218,7 @@ template("mac_toolchain") {
       command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "CXX {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("asm") {
@@ -231,9 +227,7 @@ template("mac_toolchain") {
       command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{asmflags}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "ASM {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("objc") {
@@ -242,9 +236,7 @@ template("mac_toolchain") {
       command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "OBJC {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("objcxx") {
@@ -253,9 +245,7 @@ template("mac_toolchain") {
       command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objcc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "OBJCXX {{output}}"
-      outputs = [
-        "$object_subdir/{{source_name_part}}.o",
-      ]
+      outputs = [ "$object_subdir/{{source_name_part}}.o" ]
     }
 
     tool("alink") {
@@ -277,9 +267,7 @@ template("mac_toolchain") {
       libtool = mac_bin_path + "libtool"
       command = "rm -f {{output}} && TOOL_VERSION=${tool_versions.filter_libtool} python $script $libtool -static {{arflags}} -o {{output}} -filelist $rspfile"
       description = "LIBTOOL-STATIC {{output}}"
-      outputs = [
-        "{{output_dir}}/{{target_output_name}}{{output_extension}}",
-      ]
+      outputs = [ "{{output_dir}}/{{target_output_name}}{{output_extension}}" ]
       default_output_dir = "{{target_out_dir}}"
       default_output_extension = ".a"
       output_prefix = "lib"
@@ -379,9 +367,7 @@ template("mac_toolchain") {
       default_output_dir = "{{root_out_dir}}"
       default_output_extension = ".so"
 
-      outputs = [
-        sofile,
-      ]
+      outputs = [ sofile ]
 
       if (_enable_dsyms) {
         outputs += dsym_output
@@ -407,9 +393,7 @@ template("mac_toolchain") {
       command = "$linker_driver $ld $dsym_switch {{ldflags}} -o \"$outfile\" -Wl,-filelist,\"$rspfile\" {{solibs}} {{libs}}"
       description = "LINK $outfile"
       rspfile_content = "{{inputs_newline}}"
-      outputs = [
-        outfile,
-      ]
+      outputs = [ outfile ]
 
       if (_enable_dsyms) {
         outputs += dsym_output

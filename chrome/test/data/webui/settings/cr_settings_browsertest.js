@@ -930,6 +930,7 @@ CrSettingsPrivacyPageTest.prototype = {
     '../test_util.js',
     '../test_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
+    'test_metrics_browser_proxy.js',
     'test_sync_browser_proxy.js',
     'privacy_page_test.js',
   ]),
@@ -977,6 +978,40 @@ GEN('#endif');
 
 /**
  * Test fixture for
+ * chrome/browser/resources/settings/site_settings_page/site_settings_page.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSiteSettingsPageTest() {}
+
+CrSettingsSiteSettingsPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/site_settings_page/site_settings_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '//ui/webui/resources/js/promise_resolver.js',
+    '../test_util.js',
+    '../test_browser_proxy.js',
+    'test_metrics_browser_proxy.js',
+    'site_settings_page_test.js',
+  ])
+};
+
+TEST_F('CrSettingsSiteSettingsPageTest', 'UMALoggingTests', function() {
+  settings_site_settings_page.registerUMALoggingTests();
+  mocha.run();
+});
+
+TEST_F('CrSettingsSiteSettingsPageTest', 'UMALoggingTestsPart2', function() {
+  settings_site_settings_page.registerUMALoggingTestsPart2();
+  mocha.run();
+});
+
+/**
+ * Test fixture for
  * chrome/browser/resources/settings/privacy_page/
  *        passwords-leak-detection-toggle.html.
  * @constructor
@@ -995,6 +1030,7 @@ CrSettingsPasswordsLeakDetectionToggleTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     'sync_test_util.js',
     '../test_browser_proxy.js',
+    'test_metrics_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
     'test_sync_browser_proxy.js',
     'passwords_leak_detection_toggle_test.js',
@@ -1242,6 +1278,7 @@ CrSettingsSecurityPageTest.prototype = {
     '../test_browser_proxy.js',
     'test_sync_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
+    'test_metrics_browser_proxy.js',
     'security_page_test.js',
   ]),
 };
@@ -1683,7 +1720,9 @@ GEN('#endif');
 TEST_F('CrSettingsNonExistentRouteTest', 'MAYBE_NonExistentRoute', function() {
   suite('NonExistentRoutes', function() {
     test('redirect to basic', function() {
-      assertEquals(settings.routes.BASIC, settings.getCurrentRoute());
+      assertEquals(
+          settings.routes.BASIC,
+          settings.Router.getInstance().getCurrentRoute());
       assertEquals('/', location.pathname);
     });
   });
@@ -1706,24 +1745,41 @@ CrSettingsRouteDynamicParametersTest.prototype = {
 TEST_F('CrSettingsRouteDynamicParametersTest', 'All', function() {
   suite('DynamicParameters', function() {
     test('get parameters from URL and navigation', function(done) {
-      assertEquals(settings.routes.SEARCH, settings.getCurrentRoute());
-      assertEquals('a/b', settings.getQueryParameters().get('guid'));
-      assertEquals('42', settings.getQueryParameters().get('foo'));
+      assertEquals(
+          settings.routes.SEARCH,
+          settings.Router.getInstance().getCurrentRoute());
+      assertEquals(
+          'a/b',
+          settings.Router.getInstance().getQueryParameters().get('guid'));
+      assertEquals(
+          '42', settings.Router.getInstance().getQueryParameters().get('foo'));
 
       const params = new URLSearchParams();
       params.set('bar', 'b=z');
       params.set('biz', '3');
-      settings.navigateTo(settings.routes.SEARCH_ENGINES, params);
-      assertEquals(settings.routes.SEARCH_ENGINES, settings.getCurrentRoute());
-      assertEquals('b=z', settings.getQueryParameters().get('bar'));
-      assertEquals('3', settings.getQueryParameters().get('biz'));
+      settings.Router.getInstance().navigateTo(
+          settings.routes.SEARCH_ENGINES, params);
+      assertEquals(
+          settings.routes.SEARCH_ENGINES,
+          settings.Router.getInstance().getCurrentRoute());
+      assertEquals(
+          'b=z', settings.Router.getInstance().getQueryParameters().get('bar'));
+      assertEquals(
+          '3', settings.Router.getInstance().getQueryParameters().get('biz'));
       assertEquals('?bar=b%3Dz&biz=3', window.location.search);
 
       window.addEventListener('popstate', function(event) {
-        assertEquals('/search', settings.getCurrentRoute().path);
-        assertEquals(settings.routes.SEARCH, settings.getCurrentRoute());
-        assertEquals('a/b', settings.getQueryParameters().get('guid'));
-        assertEquals('42', settings.getQueryParameters().get('foo'));
+        assertEquals(
+            '/search', settings.Router.getInstance().getCurrentRoute().path);
+        assertEquals(
+            settings.routes.SEARCH,
+            settings.Router.getInstance().getCurrentRoute());
+        assertEquals(
+            'a/b',
+            settings.Router.getInstance().getQueryParameters().get('guid'));
+        assertEquals(
+            '42',
+            settings.Router.getInstance().getQueryParameters().get('foo'));
         done();
       });
       window.history.back();

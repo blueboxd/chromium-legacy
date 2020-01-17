@@ -53,7 +53,7 @@ cr.define('bluetooth_internals', function() {
   PageObserver.prototype = {
     __proto__: PageManager.Observer.prototype,
 
-    updateHistory: function(path) {
+    updateHistory(path) {
       window.location.hash = '#' + path;
     },
 
@@ -62,7 +62,7 @@ cr.define('bluetooth_internals', function() {
      * @override
      * @param {string} title
      */
-    updateTitle: function(title) {
+    updateTitle(title) {
       document.querySelector('.page-title').textContent = title;
     },
   };

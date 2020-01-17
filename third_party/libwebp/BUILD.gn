@@ -84,9 +84,7 @@ static_library("libwebp_dec") {
 }
 
 static_library("libwebp_demux") {
-  sources = [
-    "src/demux/demux.c",
-  ]
+  sources = [ "src/demux/demux.c" ]
   all_dependent_configs = [ ":libwebp_config" ]
   configs += [ ":libwebp_config_internal" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -377,9 +375,7 @@ static_library("libwebp_utils") {
 
   public_configs = [ ":libwebp_utils_warnings" ]
 
-  deps = [
-    ":libwebp_webp",
-  ]
+  deps = [ ":libwebp_webp" ]
 }
 
 group("libwebp") {
@@ -391,9 +387,7 @@ group("libwebp") {
     ":libwebp_mux",
     ":libwebp_utils",
   ]
-  public_deps = [
-    ":libwebp_webp",
-  ]
+  public_deps = [ ":libwebp_webp" ]
   public_configs = [ ":libwebp_config" ]
   if (use_dsp_neon) {
     deps += [ ":libwebp_dsp_neon" ]
@@ -438,9 +432,7 @@ if (current_toolchain == host_toolchain) {
       configs += [ "//build/config/compiler:optimize_max" ]
     }
 
-    deps = [
-      ":libwebp_webp",
-    ]
+    deps = [ ":libwebp_webp" ]
     configs += [ ":libwebp_config" ]
     configs += [ ":libwebp_config_internal" ]
     visibility = [ ":*" ]
@@ -565,9 +557,7 @@ if (current_toolchain == host_toolchain) {
 #     Eliminated need for cflags_cc.
 
 fuzzer_test("libwebp_simple_api_fuzzer") {
-  sources = [
-    "fuzzing/fuzz_simple_api.cc",
-  ]
+  sources = [ "fuzzing/fuzz_simple_api.cc" ]
   dict = "fuzzing/fuzz.dict"
   seed_corpus = "fuzzing/fuzz_seed_corpus"
   deps = [
@@ -580,9 +570,7 @@ fuzzer_test("libwebp_simple_api_fuzzer") {
 }
 
 fuzzer_test("libwebp_advanced_api_fuzzer") {
-  sources = [
-    "fuzzing/fuzz_advanced_api.cc",
-  ]
+  sources = [ "fuzzing/fuzz_advanced_api.cc" ]
   dict = "fuzzing/fuzz.dict"
   seed_corpus = "fuzzing/fuzz_seed_corpus"
   deps = [
@@ -611,9 +599,7 @@ fuzzer_test("libwebp_animation_api_fuzzer") {
 }
 
 fuzzer_test("libwebp_demux_api_fuzzer") {
-  sources = [
-    "fuzzing/fuzz_demux_api.cc",
-  ]
+  sources = [ "fuzzing/fuzz_demux_api.cc" ]
   dict = "fuzzing/fuzz.dict"
   seed_corpus = "fuzzing/fuzz_seed_corpus"
   deps = [
@@ -626,9 +612,7 @@ fuzzer_test("libwebp_demux_api_fuzzer") {
 }
 
 fuzzer_test("libwebp_enc_dec_api_fuzzer") {
-  sources = [
-    "fuzzing/fuzz_webp_enc_dec.cc",
-  ]
+  sources = [ "fuzzing/fuzz_webp_enc_dec.cc" ]
   dict = "fuzzing/fuzz.dict"
   seed_corpus = "fuzzing/fuzz_seed_corpus"
   deps = [

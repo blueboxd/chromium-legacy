@@ -82,9 +82,7 @@ if (enable_nocompile_tests) {
 
       result_path = "$target_gen_dir/{{source_name_part}}_nc.cc"
       depfile = "${result_path}.d"
-      outputs = [
-        result_path,
-      ]
+      outputs = [ result_path ]
       args = [
         rebase_path("$clang_base_path/bin/clang++", root_build_dir),
         "4",  # number of compilers to invoke in parallel.

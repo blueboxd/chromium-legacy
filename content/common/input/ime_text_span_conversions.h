@@ -18,6 +18,12 @@ ui::mojom::ImeTextSpanThickness ConvertUiThicknessToUiImeTextSpanThickness(
     ui::ImeTextSpan::Thickness thickness);
 ui::ImeTextSpan::Thickness ConvertUiImeTextSpanThicknessToUiThickness(
     ui::mojom::ImeTextSpanThickness thickness);
+ui::mojom::ImeTextSpanUnderlineStyle
+ConvertUiUnderlineStyleToUiImeTextSpanUnderlineStyle(
+    ui::ImeTextSpan::UnderlineStyle underline_style);
+ui::ImeTextSpan::UnderlineStyle
+ConvertUiImeTextSpanUnderlineStyleToUiUnderlineStyle(
+    ui::mojom::ImeTextSpanUnderlineStyle underline_style);
 blink::WebImeTextSpan ConvertUiImeTextSpanToBlinkImeTextSpan(
     const ui::ImeTextSpan&);
 ui::ImeTextSpan ConvertBlinkImeTextSpanToUiImeTextSpan(

@@ -8,9 +8,9 @@ import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 /**
  * Collection of configurable parameters and default values given to the Feed. Every getter passes

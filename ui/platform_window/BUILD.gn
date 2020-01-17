@@ -38,9 +38,7 @@ component("platform_window") {
 }
 
 group("platform_impls") {
-  public_deps = [
-    "//ui/platform_window/stub",
-  ]
+  public_deps = [ "//ui/platform_window/stub" ]
   if (use_x11) {
     public_deps += [ "//ui/platform_window/x11" ]
   } else if (is_win) {

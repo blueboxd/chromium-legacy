@@ -148,9 +148,7 @@ static_library("test_support") {
     "test_installer.h",
   ]
 
-  public_deps = [
-    ":update_client",
-  ]
+  public_deps = [ ":update_client" ]
 
   deps = [
     ":network_impl",
@@ -188,22 +186,16 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/update_client/updatecheck_reply_parse_error.json",
     "//components/test/data/update_client/updatecheck_reply_unknownapp.json",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 bundle_data("recovery_component_tests_bundle_data") {
   visibility = [ "//chrome/test:unit_tests" ]
   testonly = true
-  sources = [
-    "//components/test/data/update_client/ChromeRecovery.crx3",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  sources = [ "//components/test/data/update_client/ChromeRecovery.crx3" ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 source_set("unit_tests") {
@@ -255,9 +247,7 @@ source_set("unit_tests") {
 }
 
 fuzzer_test("update_client_protocol_serializer_fuzzer") {
-  sources = [
-    "protocol_serializer_fuzzer.cc",
-  ]
+  sources = [ "protocol_serializer_fuzzer.cc" ]
   deps = [
     ":update_client",
     "//base:base",
@@ -266,9 +256,7 @@ fuzzer_test("update_client_protocol_serializer_fuzzer") {
 }
 
 fuzzer_test("update_client_protocol_parser_fuzzer") {
-  sources = [
-    "protocol_parser_fuzzer.cc",
-  ]
+  sources = [ "protocol_parser_fuzzer.cc" ]
   deps = [
     ":update_client",
     "//base:base",

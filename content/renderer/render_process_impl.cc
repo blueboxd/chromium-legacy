@@ -141,13 +141,10 @@ RenderProcessImpl::RenderProcessImpl()
   if (base::FeatureList::IsEnabled(features::kWebAssemblyThreads)) {
     constexpr char kFlags[] =
         "--harmony-sharedarraybuffer "
-        "--no-wasm-disable-structured-cloning "
         "--experimental-wasm-threads";
 
     v8::V8::SetFlagsFromString(kFlags, sizeof(kFlags));
   } else {
-    SetV8FlagIfNotFeature(features::kWebAssembly,
-                          "--wasm-disable-structured-cloning");
     SetV8FlagIfFeature(features::kSharedArrayBuffer,
                        "--harmony-sharedarraybuffer");
     SetV8FlagIfNotFeature(features::kSharedArrayBuffer,

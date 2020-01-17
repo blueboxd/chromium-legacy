@@ -24,7 +24,7 @@ Polymer({
      */
     accounts_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -40,12 +40,12 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener('accounts-changed', this.refreshAccounts_.bind(this));
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = settings.AccountManagerBrowserProxyImpl.getInstance();
     this.refreshAccounts_();
   },
@@ -54,7 +54,7 @@ Polymer({
    * @param {!settings.Route} newRoute
    * @param {settings.Route} oldRoute
    */
-  currentRouteChanged: function(newRoute, oldRoute) {
+  currentRouteChanged(newRoute, oldRoute) {
     if (newRoute == settings.routes.ACCOUNT_MANAGER) {
       this.browserProxy_.showWelcomeDialogIfRequired();
     }
@@ -65,7 +65,7 @@ Polymer({
    *    otherwise.
    * @private
    */
-  isSecondaryGoogleAccountSigninAllowed_: function() {
+  isSecondaryGoogleAccountSigninAllowed_() {
     return loadTimeData.getBoolean('secondaryGoogleAccountSigninAllowed');
   },
 
@@ -74,7 +74,7 @@ Polymer({
    *    account type
    * @private
    */
-  getSecondaryAccountsDisabledUserMessage_: function() {
+  getSecondaryAccountsDisabledUserMessage_() {
     return loadTimeData.getBoolean('isChild')
       ? this.i18n('accountManagerSecondaryAccountsDisabledChildText')
       : this.i18n('accountManagerSecondaryAccountsDisabledText');
@@ -85,7 +85,7 @@ Polymer({
    * @return {string} A CSS image-set for multiple scale factors.
    * @private
    */
-  getIconImageSet_: function(iconUrl) {
+  getIconImageSet_(iconUrl) {
     return cr.icon.getImage(iconUrl);
   },
 
@@ -93,7 +93,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  addAccount_: function(event) {
+  addAccount_(event) {
     this.browserProxy_.addAccount();
   },
 
@@ -103,7 +103,7 @@ Polymer({
    *    shown, false otherwise.
    * @private
    */
-  shouldShowReauthenticationButton_: function(account) {
+  shouldShowReauthenticationButton_(account) {
     // Device account re-authentication cannot be handled in-session, primarily
     // because the user may have changed their password (leading to an LST
     // invalidation) and we do not have a mechanism to change the cryptohome
@@ -118,7 +118,7 @@ Polymer({
    *    for Enterprise managed accounts etc.
    * @private
    */
-  getManagementLabel_: function(account) {
+  getManagementLabel_(account) {
     if (account.organization) {
       return this.i18n('accountManagerManagedLabel', account.organization);
     }
@@ -130,7 +130,7 @@ Polymer({
    * @param {boolean} unmigrated
    * @private
    */
-  getAccountManagerSignedOutName_: function(unmigrated) {
+  getAccountManagerSignedOutName_(unmigrated) {
     return this.i18n(unmigrated ? 'accountManagerUnmigratedAccountName'
                                 : 'accountManagerSignedOutAccountName');
   },
@@ -139,7 +139,7 @@ Polymer({
    * @param {boolean} unmigrated
    * @private
    */
-  getAccountManagerSignedOutLabel_: function(unmigrated) {
+  getAccountManagerSignedOutLabel_(unmigrated) {
     return this.i18n(unmigrated ? 'accountManagerMigrationLabel'
                                 : 'accountManagerReauthenticationLabel');
   },
@@ -149,7 +149,7 @@ Polymer({
    * @param {!settings.Account} account
    * @private
    */
-  getAccountManagerSignedOutTitle_: function(account) {
+  getAccountManagerSignedOutTitle_(account) {
     const label = account.unmigrated ? 'accountManagerMigrationTooltip'
                                      : 'accountManagerReauthenticationTooltip';
     return loadTimeData.getStringF(label, account.email);
@@ -159,7 +159,7 @@ Polymer({
    * @param {!settings.Account} account
    * @private
    */
-  getMoreActionsTitle_: function(account) {
+  getMoreActionsTitle_(account) {
     return loadTimeData.getStringF('accountManagerMoreActionsTooltip',
                                     account.email);
   },
@@ -168,7 +168,7 @@ Polymer({
    * @param {!CustomEvent<!{model: !{item: !settings.Account}}>} event
    * @private
    */
-  onReauthenticationTap_: function(event) {
+  onReauthenticationTap_(event) {
     if (event.model.item.unmigrated) {
       this.browserProxy_.migrateAccount(event.model.item.email);
     } else {
@@ -179,7 +179,7 @@ Polymer({
   /**
    * @private
    */
-  refreshAccounts_: function() {
+  refreshAccounts_() {
     this.browserProxy_.getAccounts().then(accounts => {
       this.set('accounts_', accounts);
     });
@@ -190,7 +190,7 @@ Polymer({
    * @param {!{model: !{item: settings.Account}, target: !Element}} event
    * @private
    */
-  onAccountActionsMenuButtonTap_: function(event) {
+  onAccountActionsMenuButtonTap_(event) {
     this.actionMenuAccount_ = event.model.item;
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
         .showAt(event.target);
@@ -200,7 +200,7 @@ Polymer({
    * Closes action menu and resets action menu model.
    * @private
    */
-  closeActionMenu_: function() {
+  closeActionMenu_() {
     this.$$('cr-action-menu').close();
     this.actionMenuAccount_ = null;
   },
@@ -209,7 +209,7 @@ Polymer({
    * Removes the account being pointed to by |this.actionMenuAccount_|.
    * @private
    */
-  onRemoveAccountTap_: function() {
+  onRemoveAccountTap_() {
     this.browserProxy_.removeAccount(
         /** @type {?settings.Account} */ (this.actionMenuAccount_));
     this.closeActionMenu_();

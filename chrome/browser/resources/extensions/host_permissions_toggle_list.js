@@ -38,8 +38,8 @@ Polymer({
    *     requested sites.
    * @private
    */
-  allowedOnAllHosts_: function() {
-    return this.permissions.hostAccess ==
+  allowedOnAllHosts_() {
+    return this.permissions.hostAccess ===
         chrome.developerPrivate.HostAccess.ON_ALL_SITES;
   },
 
@@ -49,7 +49,7 @@ Polymer({
    * @return {!Array<!chrome.developerPrivate.SiteControl>}
    * @private
    */
-  getSortedHosts_: function() {
+  getSortedHosts_() {
     return this.permissions.hosts.sort((a, b) => {
       if (a.host < b.host) {
         return -1;
@@ -62,7 +62,7 @@ Polymer({
   },
 
   /** @private */
-  onAllHostsToggleChanged_: function() {
+  onAllHostsToggleChanged_() {
     // TODO(devlin): In the case of going from all sites to specific sites,
     // we'll withhold all sites (i.e., all specific site toggles will move to
     // unchecked, and the user can check them individually). This is slightly
@@ -78,7 +78,7 @@ Polymer({
   },
 
   /** @private */
-  onHostAccessChanged_: function(e) {
+  onHostAccessChanged_(e) {
     const host = e.target.host;
     const checked = e.target.checked;
 

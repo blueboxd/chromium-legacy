@@ -101,16 +101,18 @@ export class App {
     util.setupI18nElements(document.body);
     this.setupToggles_();
 
+    const resolutionSettings = new ResolutionSettings(
+        this.infoUpdater_, this.photoPreferrer_, this.videoPreferrer_);
+
     // Set up views navigation by their DOM z-order.
     nav.setup([
       this.cameraView_,
       new MasterSettings(),
       new BaseSettings(ViewName.GRID_SETTINGS),
       new BaseSettings(ViewName.TIMER_SETTINGS),
-      new ResolutionSettings(
-          this.infoUpdater_, this.photoPreferrer_, this.videoPreferrer_),
-      new BaseSettings(ViewName.PHOTO_RESOLUTION_SETTINGS),
-      new BaseSettings(ViewName.VIDEO_RESOLUTION_SETTINGS),
+      resolutionSettings,
+      resolutionSettings.photoResolutionSettings,
+      resolutionSettings.videoResolutionSettings,
       new BaseSettings(ViewName.EXPERT_SETTINGS),
       new Warning(),
       new Dialog(ViewName.MESSAGE_DIALOG),
@@ -175,7 +177,8 @@ export class App {
         .initialize(() => {
           // Prompt to migrate pictures if needed.
           const message = chrome.i18n.getMessage('migrate_pictures_msg');
-          return nav.open('message-dialog', {message, cancellable: false})
+          return nav
+              .open(ViewName.MESSAGE_DIALOG, {message, cancellable: false})
               .then((acked) => {
                 if (!acked) {
                   throw new Error('no-migrate');
@@ -183,7 +186,7 @@ export class App {
                 ackMigrate = true;
               });
         })
-        .then((external) => {
+        .then(() => {
           const externalDir = filesystem.getExternalDirectory();
           assert(externalDir !== null);
           this.galleryButton_.initialize(externalDir);
@@ -195,7 +198,7 @@ export class App {
             chrome.app.window.current().close();
             return;
           }
-          nav.open('warning', 'filesystem-failure');
+          nav.open(ViewName.WARNING, 'filesystem-failure');
         })
         .finally(() => {
           metrics.log(metrics.Type.LAUNCH, ackMigrate);

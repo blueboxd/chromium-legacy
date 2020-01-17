@@ -69,9 +69,7 @@ static_library("test_support") {
     "data_reduction_proxy_params_test_utils.h",
   ]
 
-  public_deps = [
-    ":common",
-  ]
+  public_deps = [ ":common" ]
   deps = [
     "//base",
     "//components/prefs",
@@ -109,9 +107,7 @@ source_set("unit_tests") {
 
 process_version("version_header") {
   template_file = "version.h.in"
-  sources = [
-    "//chrome/VERSION",
-  ]
+  sources = [ "//chrome/VERSION" ]
   output = "$target_gen_dir/version.h"
   extra_args = [
     "-e",
@@ -120,9 +116,7 @@ process_version("version_header") {
 }
 
 mojom("interfaces") {
-  sources = [
-    "data_reduction_proxy.mojom",
-  ]
+  sources = [ "data_reduction_proxy.mojom" ]
 
   deps = [
     "//mojo/public/mojom/base",

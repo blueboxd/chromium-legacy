@@ -111,7 +111,7 @@ class CONTENT_EXPORT CacheStorageContextImpl
 
   // CacheStorageContext
   void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
-  void DeleteForOrigin(const GURL& origin) override;
+  void DeleteForOrigin(const url::Origin& origin) override;
 
   // Callable on any sequence.
   void AddObserver(CacheStorageContextImpl::Observer* observer);

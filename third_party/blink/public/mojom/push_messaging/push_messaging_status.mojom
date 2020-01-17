@@ -136,6 +136,9 @@ enum PushRegistrationStatus {
   // happen when a subscription is invalidated by the push service.
   SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE = 16,
 
+  // Registration failed because a GCM Sender ID was used.
+  UNSUPPORTED_GCM_SENDER_ID = 17,
+
   // NOTE: Do not renumber or delete these as that would confuse interpretation
   // of previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync.

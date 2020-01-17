@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/test/null_task_runner.h"
-#include "cc/animation/single_keyframe_effect_animation.h"
+#include "cc/animation/animation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -184,7 +184,7 @@ TEST_F(LayerOwnerTestWithCompositor, DetachTimelineOnAnimatorDeletion) {
   layer->SetOpacity(0.5f);
   root_layer->Add(layer);
 
-  scoped_refptr<cc::SingleKeyframeEffectAnimation> animation =
+  scoped_refptr<cc::Animation> animation =
       layer->GetAnimator()->GetAnimationForTesting();
   EXPECT_TRUE(animation);
   EXPECT_TRUE(animation->animation_timeline());
@@ -207,7 +207,7 @@ TEST_F(LayerOwnerTestWithCompositor,
 
   layer->SetOpacity(0.5f);
 
-  scoped_refptr<cc::SingleKeyframeEffectAnimation> animation =
+  scoped_refptr<cc::Animation> animation =
       layer->GetAnimator()->GetAnimationForTesting();
   EXPECT_TRUE(animation);
   EXPECT_TRUE(animation->animation_timeline());

@@ -124,9 +124,7 @@ test("media_blink_unittests") {
     "//url",
   ]
 
-  data = [
-    "//media/test/data/",
-  ]
+  data = [ "//media/test/data/" ]
 
   configs += [
     "//build/config/compiler:no_size_t_to_int_warning",

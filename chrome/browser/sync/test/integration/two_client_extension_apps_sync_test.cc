@@ -59,9 +59,6 @@ class TwoClientExtensionAppsSyncTest : public SyncTest {
 
   ~TwoClientExtensionAppsSyncTest() override {}
 
-  // Needed for AwaitQuiescence().
-  bool TestUsesSelfNotifications() override { return true; }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientExtensionAppsSyncTest);
 };
@@ -322,8 +319,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionAppsSyncTest,
                        E2E_ENABLED(UpdateLaunchType)) {
   ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync());
-  // Wait until sync settles before we override the apps below.
-  ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AppsMatchChecker().Wait());
 
   // Change the launch type to window.

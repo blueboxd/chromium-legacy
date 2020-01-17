@@ -121,7 +121,8 @@ class WorkerThreadForTest : public WorkerThread {
       const KURL& script_url = KURL("http://fake.url/"),
       WorkerClients* worker_clients = nullptr) {
     Vector<CSPHeaderAndType> headers{
-        {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
+        {"contentSecurityPolicy",
+         network::mojom::ContentSecurityPolicyType::kReport}};
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
         script_url, mojom::ScriptType::kClassic,
         OffMainThreadWorkerScriptFetchOption::kDisabled,

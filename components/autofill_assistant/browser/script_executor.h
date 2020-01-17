@@ -174,6 +174,10 @@ class ScriptExecutor : public ActionDelegate,
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback) override;
+  void GetElementTag(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback) override;
   void ExpectNavigation() override;
   bool ExpectedNavigationHasStarted() override;
   bool WaitForNavigation(base::OnceCallback<void(bool)> callback) override;

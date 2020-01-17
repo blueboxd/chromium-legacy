@@ -23,9 +23,7 @@ source_set("public") {
     "//ios/chrome/browser/ui/util",
     "//ios/public/provider/chrome/browser/voice",
   ]
-  public_deps = [
-    ":constants",
-  ]
+  public_deps = [ ":constants" ]
 }
 
 source_set("constants") {
@@ -41,8 +39,6 @@ source_set("feature_flags") {
     "features.h",
     "features.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

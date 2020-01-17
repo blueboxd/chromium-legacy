@@ -178,9 +178,7 @@ if (!is_android) {
   }
 
   js_library("permission_toggle") {
-    deps = [
-      ":util",
-    ]
+    deps = [ ":util" ]
   }
 
   js_library("permission_view_header") {
@@ -261,9 +259,7 @@ if (!is_android) {
   }
 
   js_library("types") {
-    deps = [
-      "//chrome/browser/ui/webui/app_management:mojo_bindings_js_library_for_compile",
-    ]
+    deps = [ "//chrome/browser/ui/webui/app_management:mojo_bindings_js_library_for_compile" ]
   }
 
   js_library("util") {

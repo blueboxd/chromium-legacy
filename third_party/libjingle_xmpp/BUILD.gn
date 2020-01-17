@@ -51,12 +51,8 @@ static_library("rtc_xmllite") {
     "xmllite/xmlprinter.h",
   ]
 
-  deps = [
-    "//base",
-  ]
-  public_deps = [
-    "//third_party/expat",
-  ]
+  deps = [ "//base" ]
+  public_deps = [ "//third_party/expat" ]
   all_dependent_configs = [ ":libjingle_xmpp_common_config" ]
 }
 
@@ -111,12 +107,8 @@ static_library("rtc_xmpp") {
 }
 
 fuzzer_test("libjingle_xmpp_xmlparser_fuzzer") {
-  sources = [
-    "xmllite/xmlparser_fuzzer.cc",
-  ]
-  deps = [
-    ":libjingle_xmpp",
-  ]
+  sources = [ "xmllite/xmlparser_fuzzer.cc" ]
+  deps = [ ":libjingle_xmpp" ]
 }
 
 test("libjingle_xmpp_unittests") {

@@ -83,6 +83,13 @@ bool ElementIntersectionObserverData::NeedsOcclusionTracking() const {
   return false;
 }
 
+void ElementIntersectionObserverData::InvalidateCachedRects() {
+  for (auto& observer : intersection_observers_)
+    observer->InvalidateCachedRects();
+  for (auto& entry : intersection_observations_)
+    entry.value->InvalidateCachedRects();
+}
+
 void ElementIntersectionObserverData::Trace(blink::Visitor* visitor) {
   visitor->Trace(intersection_observations_);
   visitor->Trace(intersection_observers_);

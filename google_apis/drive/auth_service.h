@@ -44,7 +44,7 @@ class AuthService : public AuthServiceInterface,
   // Overriden from AuthServiceInterface:
   void AddObserver(AuthServiceObserver* observer) override;
   void RemoveObserver(AuthServiceObserver* observer) override;
-  void StartAuthentication(const AuthStatusCallback& callback) override;
+  void StartAuthentication(AuthStatusCallback callback) override;
   bool HasAccessToken() const override;
   bool HasRefreshToken() const override;
   const std::string& access_token() const override;
@@ -63,7 +63,7 @@ class AuthService : public AuthServiceInterface,
 
   // Called when authentication request from StartAuthentication() is
   // completed.
-  void OnAuthCompleted(const AuthStatusCallback& callback,
+  void OnAuthCompleted(AuthStatusCallback callback,
                        DriveApiErrorCode error,
                        const std::string& access_token);
 

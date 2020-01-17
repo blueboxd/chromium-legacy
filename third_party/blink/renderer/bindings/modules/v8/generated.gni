@@ -173,9 +173,10 @@ generated_modules_dictionary_files = []
 
 if (use_v8_bind_gen_for_dictionary) {
   generated_modules_dictionary_files +=
-      process_file_template(modules_dictionary_idl_files,
-                            [
-                              "{{source_gen_dir}}/{{source_name_part}}.cc",
-                              "{{source_gen_dir}}/{{source_name_part}}.h",
-                            ])
+      process_file_template(
+          modules_dictionary_idl_files,
+          [
+            "$bindings_modules_v8_output_dir/v8_{{source_name_part}}.cc",
+            "$bindings_modules_v8_output_dir/v8_{{source_name_part}}.h",
+          ])
 }

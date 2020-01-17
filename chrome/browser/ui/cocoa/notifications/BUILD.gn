@@ -59,7 +59,5 @@ static_library("common") {
     "xpc_mach_port.mm",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

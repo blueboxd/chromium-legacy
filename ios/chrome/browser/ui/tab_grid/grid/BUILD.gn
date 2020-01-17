@@ -51,9 +51,7 @@ source_set("grid_ui") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "grid_view_controller_unittest.mm",
-  ]
+  sources = [ "grid_view_controller_unittest.mm" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 

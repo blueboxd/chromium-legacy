@@ -47,9 +47,7 @@ jumbo_component("clipboard_types") {
 
   defines = [ "IS_UI_BASE_CLIPBOARD_TYPES_IMPL" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   libs = []
   if (is_mac) {
@@ -111,9 +109,7 @@ jumbo_component("clipboard") {
     "//ui/gfx/geometry",
   ]
 
-  public_deps = [
-    ":clipboard_types",
-  ]
+  public_deps = [ ":clipboard_types" ]
 
   if (use_aura) {
     # Aura clipboard.

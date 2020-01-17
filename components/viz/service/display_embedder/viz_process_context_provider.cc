@@ -336,4 +336,8 @@ VizProcessContextProvider::GetGpuTaskSchedulerHelper() {
   return gpu_task_scheduler_helper_;
 }
 
+gpu::SharedImageManager* VizProcessContextProvider::GetSharedImageManager() {
+  return command_buffer_->GetSharedImageManager();
+}
+
 }  // namespace viz

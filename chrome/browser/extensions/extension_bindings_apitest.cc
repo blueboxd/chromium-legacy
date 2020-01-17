@@ -8,12 +8,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/embedder_support/switches.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -584,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
       first_tab, "domAutomationController.send(window.tabEventId)",
       &result_tab_id));
-  EXPECT_EQ(SessionTabHelper::IdForTab(new_tab).id(), result_tab_id);
+  EXPECT_EQ(sessions::SessionTabHelper::IdForTab(new_tab).id(), result_tab_id);
 }
 
 // Verifies that user gestures are carried through extension messages.

@@ -15,7 +15,7 @@ js_library("about_page") {
   deps = [
     ":about_page_browser_proxy",
     "..:lifetime_browser_proxy",
-    "..:route",
+    "..:router",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:parse_html_subset",
@@ -24,8 +24,6 @@ js_library("about_page") {
 }
 
 js_library("about_page_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }

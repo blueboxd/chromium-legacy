@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/model/syncable_service.h"
@@ -252,7 +253,8 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Removes information about credentials compromised on |url| for |username|.
   void RemoveCompromisedCredentials(const GURL& url,
-                                    const base::string16& username);
+                                    const base::string16& username,
+                                    RemoveCompromisedCredentialsReason reason);
 
   // Retrieves all compromised credentials and notifies |consumer| on
   // completion. The request will be cancelled if the consumer is destroyed.
@@ -489,7 +491,8 @@ class PasswordStore : protected PasswordStoreSync,
   // TODO(bdea): Add CompromiseType as a filter.
   virtual void RemoveCompromisedCredentialsImpl(
       const GURL& url,
-      const base::string16& username) = 0;
+      const base::string16& username,
+      RemoveCompromisedCredentialsReason reason) = 0;
   virtual std::vector<CompromisedCredentials>
   GetAllCompromisedCredentialsImpl() = 0;
   virtual void RemoveCompromisedCredentialsByUrlAndTimeImpl(

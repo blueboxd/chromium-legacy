@@ -103,6 +103,22 @@ void SetCookies(BasicHttpResponse* http_response,
                                        kTestCookieAttributes));
 }
 
+std::string FormatCookieForMultilogin(std::string name, std::string value) {
+  std::string format = R"(
+    {
+      "name":"%s",
+      "value":"%s",
+      "domain":".google.fr",
+      "path":"/",
+      "isSecure":true,
+      "isHttpOnly":false,
+      "priority":"HIGH",
+      "maxAge":63070000
+    }
+  )";
+  return base::StringPrintf(format.c_str(), name.c_str(), value.c_str());
+}
+
 }  // namespace
 
 FakeGaia::AccessTokenInfo::AccessTokenInfo() = default;
@@ -205,6 +221,10 @@ void FakeGaia::Initialize() {
   // Handles /MergeSession GAIA call.
   REGISTER_RESPONSE_HANDLER(
       gaia_urls->merge_session_url(), HandleMergeSession);
+
+  // Handles /oauth/multilogin GAIA call.
+  REGISTER_RESPONSE_HANDLER(gaia_urls->oauth_multilogin_url(),
+                            HandleMultilogin);
 
   // Handles /embedded/setup/v2/chromeos GAIA call.
   REGISTER_RESPONSE_HANDLER(gaia_urls->embedded_setup_chromeos_url(2),
@@ -837,4 +857,34 @@ void FakeGaia::HandleGetReAuthProofToken(const HttpRequest& request,
                  << static_cast<int>(next_reauth_status_);
       break;
   }
+}
+
+void FakeGaia::HandleMultilogin(const HttpRequest& request,
+                                BasicHttpResponse* http_response) {
+  http_response->set_code(net::HTTP_UNAUTHORIZED);
+
+  if (merge_session_params_.session_sid_cookie.empty() ||
+      merge_session_params_.session_lsid_cookie.empty()) {
+    http_response->set_code(net::HTTP_BAD_REQUEST);
+    return;
+  }
+
+  GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
+  std::string request_query = request_url.query();
+
+  std::string source;
+  if (!GetQueryParameter(request_query, "source", &source)) {
+    LOG(ERROR) << "Missing or invalid 'source' param in /Multilogin call";
+    return;
+  }
+
+  http_response->set_content(
+      ")]}'\n{\"status\":\"OK\",\"cookies\":[" +
+      FormatCookieForMultilogin("SID",
+                                merge_session_params_.session_sid_cookie) +
+      "," +
+      FormatCookieForMultilogin("LSID",
+                                merge_session_params_.session_lsid_cookie) +
+      "]}");
+  http_response->set_code(net::HTTP_OK);
 }

@@ -197,10 +197,17 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // another one.
   std::unique_ptr<PasswordFormManager> Clone();
 
+  // Because of the android integration tests, it can't be guarded by if
+  // defined(UNIT_TEST).
+  static void DisableFillingServerPredictionsForTesting() {
+    wait_for_server_predictions_for_filling_ = false;
+  }
+
 #if defined(UNIT_TEST)
   static void set_wait_for_server_predictions_for_filling(bool value) {
     wait_for_server_predictions_for_filling_ = value;
   }
+
   FormSaver* form_saver() const {
     return password_save_manager_->GetFormSaver();
   }

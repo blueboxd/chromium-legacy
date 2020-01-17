@@ -30,7 +30,7 @@ Polymer({
      */
     tabs: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
       observer: 'updateIcons_'
@@ -68,7 +68,7 @@ Polymer({
    * one for each result if the card is open.
    * @return {!Array<!FocusRow>}
    */
-  createFocusRows: function() {
+  createFocusRows() {
     const titleRow = new FocusRow(this.$['card-heading'], null);
     titleRow.addItem('menu', '#menu-button');
     titleRow.addItem('collapse', '#collapse-button');
@@ -88,7 +88,7 @@ Polymer({
    * @param {MouseEvent} e
    * @private
    */
-  openTab_: function(e) {
+  openTab_(e) {
     const model = /** @type {{model: Object}} */ (e).model;
     const tab = /** @type {ForeignSessionTab} */ (model.tab);
     const browserService = BrowserService.getInstance();
@@ -103,7 +103,7 @@ Polymer({
   /**
    * Toggles the dropdown display of synced tabs for each device card.
    */
-  toggleTabCard: function() {
+  toggleTabCard() {
     const histogramValue = this.$.collapse.opened ?
         SyncedTabsHistogram.COLLAPSE_SESSION :
         SyncedTabsHistogram.EXPAND_SESSION;
@@ -117,7 +117,7 @@ Polymer({
   },
 
   /** @private */
-  notifyFocusUpdate_: function() {
+  notifyFocusUpdate_() {
     // Refresh focus after all rows are rendered.
     this.fire('update-focus-grid');
   },
@@ -127,7 +127,7 @@ Polymer({
    * website is also set.
    * @private
    */
-  updateIcons_: function() {
+  updateIcons_() {
     this.async(function() {
       const icons = this.shadowRoot.querySelectorAll('.website-icon');
 
@@ -141,7 +141,7 @@ Polymer({
   },
 
   /** @private */
-  isWindowSeparatorIndex_: function(index, separatorIndexes) {
+  isWindowSeparatorIndex_(index, separatorIndexes) {
     return this.separatorIndexes.indexOf(index) !== -1;
   },
 
@@ -150,7 +150,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getCollapseIcon_: function(opened) {
+  getCollapseIcon_(opened) {
     return opened ? 'cr:expand-less' : 'cr:expand-more';
   },
 
@@ -159,7 +159,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getCollapseTitle_: function(opened) {
+  getCollapseTitle_(opened) {
     return opened ? loadTimeData.getString('collapseSessionButton') :
                     loadTimeData.getString('expandSessionButton');
   },
@@ -168,7 +168,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onMenuButtonTap_: function(e) {
+  onMenuButtonTap_(e) {
     this.fire('open-menu', {
       target: dom(e).localTarget,
       tag: this.sessionTag,
@@ -176,7 +176,7 @@ Polymer({
     e.stopPropagation();  // Prevent iron-collapse.
   },
 
-  onLinkRightClick_: function() {
+  onLinkRightClick_() {
     BrowserService.getInstance().recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.LINK_RIGHT_CLICKED,
         SyncedTabsHistogram.LIMIT);

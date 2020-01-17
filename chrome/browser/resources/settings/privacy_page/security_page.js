@@ -17,7 +17,7 @@ Polymer({
     enableSecurityKeysSubpage_: {
       type: Boolean,
       readOnly: true,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('enableSecurityKeysSubpage');
       }
     },
@@ -25,7 +25,7 @@ Polymer({
     /** @private */
     passwordsLeakDetectionEnabled_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('passwordsLeakDetectionEnabled');
       },
     },
@@ -33,7 +33,7 @@ Polymer({
     /** @private {chrome.settingsPrivate.PrefObject} */
     safeBrowsingReportingPref_: {
       type: Object,
-      value: function() {
+      value() {
         return /** @type {chrome.settingsPrivate.PrefObject} */ ({
           key: '',
           type: chrome.settingsPrivate.PrefType.BOOLEAN,
@@ -51,27 +51,29 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = settings.PrivacyPageBrowserProxyImpl.getInstance();
+
+    this.metricsBrowserProxy_ = settings.MetricsBrowserProxyImpl.getInstance();
   },
 
   /**
    * @return {boolean}
    * @private
    */
-  getDisabledExtendedSafeBrowsing_: function() {
+  getDisabledExtendedSafeBrowsing_() {
     return !this.getPref('safebrowsing.enabled').value;
   },
 
   /** @private */
-  onSafeBrowsingReportingToggleChange_: function() {
+  onSafeBrowsingReportingToggleChange_() {
     this.setPrefValue(
         'safebrowsing.scout_reporting_enabled',
         this.$$('#safeBrowsingReportingToggle').checked);
   },
 
   /** @private */
-  onSafeBrowsingReportingPrefChange_: function() {
+  onSafeBrowsingReportingPrefChange_() {
     if (this.prefs === undefined) {
       return;
     }
@@ -89,26 +91,26 @@ Polymer({
   },
 
   /** @private */
-  onManageCertificatesClick_: function() {
+  onManageCertificatesClick_() {
     // <if expr="use_nss_certs">
-    settings.navigateTo(settings.routes.CERTIFICATES);
+    settings.Router.getInstance().navigateTo(settings.routes.CERTIFICATES);
     // </if>
     // <if expr="is_win or is_macosx">
     this.browserProxy_.showManageSSLCertificates();
     // </if>
-    this.browserProxy_.recordSettingsPageHistogram(
+    this.metricsBrowserProxy_.recordSettingsPageHistogram(
         settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES);
   },
 
   /** @private */
-  onAdvancedProtectionProgramLinkClick_: function() {
+  onAdvancedProtectionProgramLinkClick_() {
     window.open('https://landing.google.com/advancedprotection/');
   },
 
   /** @private */
-  onSecurityKeysClick_: function() {
-    settings.navigateTo(settings.routes.SECURITY_KEYS);
-    this.browserProxy_.recordSettingsPageHistogram(
+  onSecurityKeysClick_() {
+    settings.Router.getInstance().navigateTo(settings.routes.SECURITY_KEYS);
+    this.metricsBrowserProxy_.recordSettingsPageHistogram(
         settings.SettingsPageInteractions.PRIVACY_SECURITY_KEYS);
   },
 });

@@ -371,8 +371,8 @@ TEST_P(LinkLoaderPreloadNonceTest, Preload) {
   dummy_page_holder_->GetDocument()
       .GetContentSecurityPolicy()
       ->DidReceiveHeader(test_case.content_security_policy,
-                         kContentSecurityPolicyHeaderTypeEnforce,
-                         kContentSecurityPolicyHeaderSourceHTTP);
+                         network::mojom::ContentSecurityPolicyType::kEnforce,
+                         network::mojom::ContentSecurityPolicySource::kHTTP);
   LinkLoadParameters params(
       LinkRelAttribute("preload"), kCrossOriginAttributeNotSet, String(),
       "script", String(), test_case.nonce, String(), String(),

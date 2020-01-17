@@ -12,9 +12,7 @@ static_library("feature_list") {
     "invalidation_switches.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 static_library("impl") {
@@ -258,9 +256,7 @@ if (is_android) {
   }
   proto_java_library("proto_java") {
     proto_path = "android/proto"
-    sources = [
-      "$proto_path/serialized_invalidation.proto",
-    ]
+    sources = [ "$proto_path/serialized_invalidation.proto" ]
   }
   android_resources("javatests__resources") {
     testonly = true
@@ -289,9 +285,7 @@ if (is_android) {
     ]
   }
   junit_binary("components_invalidation_impl_junit_tests") {
-    sources = [
-      "android/junit/src/org/chromium/components/invalidation/PendingInvalidationTest.java",
-    ]
+    sources = [ "android/junit/src/org/chromium/components/invalidation/PendingInvalidationTest.java" ]
     deps = [
       ":java",
       "//base:base_java",
@@ -300,8 +294,6 @@ if (is_android) {
     ]
   }
   generate_jni("jni_headers") {
-    sources = [
-      "android/java/src/org/chromium/components/invalidation/InvalidationService.java",
-    ]
+    sources = [ "android/java/src/org/chromium/components/invalidation/InvalidationService.java" ]
   }
 }

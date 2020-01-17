@@ -46,7 +46,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isStepHidden_: function(currentStep, step) {
+  isStepHidden_(currentStep, step) {
     return currentStep != step;
   },
 
@@ -55,7 +55,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onNextClick_: function(event) {
+  onNextClick_(event) {
     this.currentStep_ =
         event.composedPath().find(e => e.tagName == 'CR-BUTTON').dataset.next;
   },
@@ -66,7 +66,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onAddUserTap_: function(event) {
+  onAddUserTap_(event) {
     this.onDissmissTap_();
     // Event is caught by user-manager-pages.
     this.fire('change-page', {page: 'create-user-page'});
@@ -75,7 +75,7 @@ Polymer({
   /**
    * Starts the tutorial.
    */
-  startTutorial: function() {
+  startTutorial() {
     this.currentStep_ = TutorialSteps.YOUR_CHROME;
     this.hidden_ = false;
 
@@ -95,7 +95,7 @@ Polymer({
    * Ends the tutorial.
    * @private
    */
-  onDissmissTap_: function() {
+  onDissmissTap_() {
     $('inner-container').classList.remove('disabled');
     this.hidden_ = true;
   }

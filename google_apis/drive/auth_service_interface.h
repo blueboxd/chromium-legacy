@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 
 namespace google_apis {
@@ -15,8 +15,8 @@ namespace google_apis {
 class AuthServiceObserver;
 
 // Called when fetching of access token is complete.
-typedef base::Callback<void(DriveApiErrorCode error,
-                            const std::string& access_token)>
+typedef base::OnceCallback<void(DriveApiErrorCode error,
+                                const std::string& access_token)>
     AuthStatusCallback;
 
 // This defines an interface for the authentication service which is required
@@ -32,7 +32,7 @@ class AuthServiceInterface {
 
   // Starts fetching OAuth2 access token from the refresh token.
   // |callback| must not be null.
-  virtual void StartAuthentication(const AuthStatusCallback& callback) = 0;
+  virtual void StartAuthentication(AuthStatusCallback callback) = 0;
 
   // True if an OAuth2 access token is retrieved and believed to be fresh.
   // The access token is used to access the Drive server.

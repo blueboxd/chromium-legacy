@@ -145,6 +145,10 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // area.
   virtual bool IsAnchoredToStatusArea() const;
 
+  // Stops rerouting key events to this view. If this view is not currently
+  // rerouting events, then this function will be idempotent.
+  void StopReroutingEvents();
+
   Delegate* delegate() { return delegate_; }
 
   void set_gesture_dragging(bool dragging) { is_gesture_dragging_ = dragging; }

@@ -53,8 +53,9 @@ PresentAddPassesDialogResult GetUmaResult(
 @synthesize pass = _pass;
 @synthesize webState = _webState;
 
-- (instancetype)initWithBaseViewController:(UIViewController*)viewController {
-  self = [super initWithBaseViewController:viewController];
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser {
+  self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
   }

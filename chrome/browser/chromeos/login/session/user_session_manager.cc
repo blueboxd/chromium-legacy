@@ -1415,16 +1415,18 @@ void UserSessionManager::InitProfilePreferences(
       // already present in |AccountManager|.
 
       // 2. Make sure that IdentityManager has been notified about it.
-      base::Optional<AccountInfo> maybe_account_info =
+      base::Optional<AccountInfo> account_info =
           identity_manager
               ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
                   gaia_id);
-      DCHECK(maybe_account_info.has_value());
-      // Make sure that the google service username is properly set (we do this
-      // on every sign in, not just the first login, to deal with existing
-      // profiles that might not have it set yet).
-      identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
-          maybe_account_info->account_id);
+      DCHECK(account_info.has_value());
+      if (user_manager->IsCurrentUserNew() || profile->IsNewProfile()) {
+        identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
+            account_info->account_id);
+      } else {
+        CHECK(identity_manager->HasPrimaryAccount());
+        CHECK_EQ(identity_manager->GetPrimaryAccountInfo().gaia, gaia_id);
+      }
     } else {
       // Make sure that the google service username is properly set (we do this
       // on every sign in, not just the first login, to deal with existing

@@ -13,6 +13,6 @@ def CheckChangeOnUpload(input_api, output_api):
   results += input_api.RunTests(
       input_api.canned_checks.GetUnitTests(input_api, output_api, [
           'scripts/extract_sqlite_api_unittest.py'
-      ]))
+      ], env=None, run_on_python2=False, run_on_python3=True))
 
   return results

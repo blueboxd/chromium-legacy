@@ -28,6 +28,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -63,6 +64,10 @@ const char* kDefaultPinnedApps10Apps[] = {extension_misc::kGmailAppId,
                                           extension_misc::kCameraAppId,
                                           extension_misc::kGooglePhotosAppId,
                                           arc::kPlayStoreAppId};
+
+const char* kTabletFormFactorDefaultPinnedApps[] = {
+    arc::kGmailAppId, extension_misc::kGoogleDocAppId, arc::kYoutubeAppId,
+    arc::kPlayStoreAppId};
 
 const char kDefaultPinnedAppsKey[] = "default";
 const char kDefaultPinnedApps7AppsKey[] = "7apps";
@@ -117,10 +122,21 @@ struct ComparePinInfo {
   }
 };
 
+// Helper function that returns the right pref string based on device type.
+// This is required because tablet form factor devices do not sync app
+// positions and pin preferences.
+const std::string GetShelfDefaultPinLayoutPref() {
+  if (chromeos::switches::IsTabletFormFactor())
+    return prefs::kShelfDefaultPinLayoutRollsForTabletFormFactor;
+
+  return prefs::kShelfDefaultPinLayoutRolls;
+}
+
 // Returns true in case some configuration was rolled.
 bool IsAnyDefaultPinLayoutRolled(Profile* profile) {
   const auto* layouts_rolled =
-      profile->GetPrefs()->GetList(prefs::kShelfDefaultPinLayoutRolls);
+      profile->GetPrefs()->GetList(GetShelfDefaultPinLayoutPref());
+
   return layouts_rolled && !layouts_rolled->GetList().empty();
 }
 
@@ -129,7 +145,7 @@ bool IsAnyDefaultPinLayoutRolled(Profile* profile) {
 bool IsDefaultPinLayoutRolled(Profile* profile,
                               const std::string& default_pin_layout) {
   const auto* layouts_rolled =
-      profile->GetPrefs()->GetList(prefs::kShelfDefaultPinLayoutRolls);
+      profile->GetPrefs()->GetList(GetShelfDefaultPinLayoutPref());
   if (!layouts_rolled)
     return false;
 
@@ -146,8 +162,7 @@ void MarkDefaultPinLayoutRolled(Profile* profile,
                                 const std::string& default_pin_layout) {
   DCHECK(!IsDefaultPinLayoutRolled(profile, default_pin_layout));
 
-  ListPrefUpdate update(profile->GetPrefs(),
-                        prefs::kShelfDefaultPinLayoutRolls);
+  ListPrefUpdate update(profile->GetPrefs(), GetShelfDefaultPinLayoutPref());
   update->AppendString(default_pin_layout);
 }
 
@@ -159,6 +174,10 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
       ProfileSyncServiceFactory::GetForProfile(profile);
   // No |sync_service| in incognito mode.
   if (!sync_service)
+    return true;
+
+  // Tablet form-factor devices do not have position sync.
+  if (chromeos::switches::IsTabletFormFactor())
     return true;
 
   const syncer::SyncUserSettings* settings = sync_service->GetUserSettings();
@@ -241,6 +260,9 @@ void RegisterChromeLauncherUserPrefs(
   registry->RegisterListPref(
       prefs::kShelfDefaultPinLayoutRolls,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterListPref(
+      prefs::kShelfDefaultPinLayoutRollsForTabletFormFactor,
+      PrefRegistry::NO_REGISTRATION_FLAGS);
 }
 
 void InitLocalPref(PrefService* prefs, const char* local, const char* synced) {
@@ -561,6 +583,9 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
         default_app_ids.push_back(default_app_id);
     } else if (shelf_layout == kDefaultPinnedApps10AppsKey) {
       for (const char* default_app_id : kDefaultPinnedApps10Apps)
+        default_app_ids.push_back(default_app_id);
+    } else if (chromeos::switches::IsTabletFormFactor()) {
+      for (const char* default_app_id : kTabletFormFactorDefaultPinnedApps)
         default_app_ids.push_back(default_app_id);
     } else {
       for (const char* default_app_id : kDefaultPinnedApps)

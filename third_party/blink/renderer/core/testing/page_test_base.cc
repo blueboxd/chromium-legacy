@@ -4,8 +4,10 @@
 
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
+#include "base/callback.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/default_tick_clock.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/core/css/font_face_descriptors.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
@@ -34,6 +36,30 @@ Element* GetOrCreateElement(ContainerNode* parent,
 
 }  // namespace
 
+PageTestBase::MockClipboardHostProvider::MockClipboardHostProvider(
+    blink::BrowserInterfaceBrokerProxy& interface_broker) {
+  Install(interface_broker);
+}
+
+PageTestBase::MockClipboardHostProvider::MockClipboardHostProvider() = default;
+
+PageTestBase::MockClipboardHostProvider::~MockClipboardHostProvider() = default;
+
+void PageTestBase::MockClipboardHostProvider::Install(
+    blink::BrowserInterfaceBrokerProxy& interface_broker) {
+  interface_broker.SetBinderForTesting(
+      blink::mojom::blink::ClipboardHost::Name_,
+      base::BindRepeating(
+          &PageTestBase::MockClipboardHostProvider::BindClipboardHost,
+          base::Unretained(this)));
+}
+
+void PageTestBase::MockClipboardHostProvider::BindClipboardHost(
+    mojo::ScopedMessagePipeHandle handle) {
+  host_.Bind(mojo::PendingReceiver<blink::mojom::blink::ClipboardHost>(
+      std::move(handle)));
+}
+
 PageTestBase::PageTestBase() = default;
 
 PageTestBase::~PageTestBase() = default;
@@ -52,6 +78,10 @@ void PageTestBase::SetUp() {
   });
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(
       IntSize(800, 600), nullptr, nullptr, std::move(setter), GetTickClock());
+
+  // Mock out clipboard calls so that tests don't mess
+  // with each other's copies/pastes when running in parallel.
+  mock_clipboard_host_provider_.Install(GetFrame().GetBrowserInterfaceBroker());
 
   // Use no-quirks (ake "strict") mode by default.
   GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);

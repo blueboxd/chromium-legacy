@@ -623,4 +623,11 @@ void WebContentsViewAndroid::OnPhysicalBackingSizeChanged() {
     web_contents_->SendScreenRects();
 }
 
+void WebContentsViewAndroid::OnBrowserControlsHeightChanged() {
+  auto* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                      base::nullopt);
+}
+
 } // namespace content

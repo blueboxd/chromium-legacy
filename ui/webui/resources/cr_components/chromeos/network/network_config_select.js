@@ -66,7 +66,7 @@ Polymer({
     // Wait for the dom-repeat to populate the <option> entries.
     this.async(function() {
       const select = this.$$('select');
-      if (select.value != this.value) {
+      if (select.value !== this.value) {
         select.value = this.value;
       }
     });

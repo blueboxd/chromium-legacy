@@ -17,9 +17,7 @@ if (is_android) {
 }
 
 group("blink") {
-  public_deps = [
-    ":blink_headers",
-  ]
+  public_deps = [ ":blink_headers" ]
   deps = [
     "//third_party/blink/renderer/controller",
     "//third_party/blink/renderer/core",
@@ -461,21 +459,15 @@ source_set("blink_headers") {
 devtools_frontend_path = "//third_party/devtools-frontend/src"
 
 group("blink_devtools_frontend_resources") {
-  public_deps = [
-    "$devtools_frontend_path:devtools_frontend_resources",
-  ]
+  public_deps = [ "$devtools_frontend_path:devtools_frontend_resources" ]
 }
 
 group("blink_devtools_frontend_resources_files") {
-  data_deps = [
-    "$devtools_frontend_path:devtools_all_files",
-  ]
+  data_deps = [ "$devtools_frontend_path:devtools_all_files" ]
 }
 
 group("blink_generate_devtools_grd") {
-  public_deps = [
-    "$devtools_frontend_path:generate_devtools_grd",
-  ]
+  public_deps = [ "$devtools_frontend_path:generate_devtools_grd" ]
 }
 
 resources_out_dir = "$root_gen_dir/third_party/blink/public/resources"
@@ -512,9 +504,7 @@ repack("scaled_resources_100_percent") {
     "$root_gen_dir/third_party/blink/public/resources/blink_image_resources_100_percent.pak",
     "$root_gen_dir/third_party/blink/renderer/modules/media_controls/resources/media_controls_resources_100_percent.pak",
   ]
-  deps = [
-    ":scaled_resources",
-  ]
+  deps = [ ":scaled_resources" ]
 }
 
 repack("scaled_resources_200_percent") {
@@ -523,7 +513,5 @@ repack("scaled_resources_200_percent") {
     "$root_gen_dir/third_party/blink/public/resources/blink_image_resources_200_percent.pak",
     "$root_gen_dir/third_party/blink/renderer/modules/media_controls/resources/media_controls_resources_200_percent.pak",
   ]
-  deps = [
-    ":scaled_resources",
-  ]
+  deps = [ ":scaled_resources" ]
 }

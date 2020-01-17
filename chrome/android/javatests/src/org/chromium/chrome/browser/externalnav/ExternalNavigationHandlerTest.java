@@ -34,16 +34,17 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappScopePolicy;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.ui.base.PageTransition;
@@ -51,7 +52,6 @@ import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -59,11 +59,18 @@ import java.util.regex.Pattern;
  * Instrumentation tests for {@link ExternalNavigationHandler}.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+// clang-format off
 @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
         sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+@Features.EnableFeatures({ChromeFeatureList.CCT_EXTERNAL_LINK_HANDLING,
+        ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE})
 public class ExternalNavigationHandlerTest {
+    // clang-format on
     @Rule
     public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
+
+    @Rule
+    public Features.JUnitProcessor processor = new Features.JUnitProcessor();
 
     // Expectations
     private static final int IGNORE = 0x0;
@@ -123,6 +130,12 @@ public class ExternalNavigationHandlerTest {
             "com.google.android.instantapps.START", "com.google.android.instantapps.nmr1.INSTALL",
             "com.google.android.instantapps.nmr1.VIEW"};
 
+    private static final String AUTOFILL_ASSISTANT_INTENT_URL =
+            "intent://www.example.com#Intent;scheme=https;"
+            + "B.org.chromium.chrome.browser.autofill_assistant.ENABLED=true;"
+            + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
+            + Uri.encode("https://www.example.com") + ";end";
+
     private Context mContext;
     private final TestExternalNavigationDelegate mDelegate;
     private ExternalNavigationHandler mUrlHandler;
@@ -137,11 +150,6 @@ public class ExternalNavigationHandlerTest {
         RecordHistogram.setDisabledForTests(true);
         mContext = new TestContext(InstrumentationRegistry.getTargetContext(), mDelegate);
         ContextUtils.initApplicationContextForTests(mContext);
-
-        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
-        features.put(ChromeFeatureList.CCT_EXTERNAL_LINK_HANDLING, true);
-        features.put(ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE, true);
-        ChromeFeatureList.setTestFeatures(features);
 
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
     }
@@ -1589,6 +1597,69 @@ public class ExternalNavigationHandlerTest {
         Assert.assertTrue(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(
                 mDelegate.startActivityIntent));
         Assert.assertTrue(mDelegate.startIncognitoIntentCalled);
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
+    public void
+    testAssistantAutofillIntent_catchNavigationFromGoogleSearch() {
+        mDelegate.setIsSerpReferrer(true);
+
+        checkUrl(AUTOFILL_ASSISTANT_INTENT_URL)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
+
+        Assert.assertNull(mDelegate.startActivityIntent);
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
+    public void
+    testAssistantAutofillIntent_doNotCatchNavigationInIncognito() {
+        mDelegate.setIsSerpReferrer(true);
+
+        checkUrl(AUTOFILL_ASSISTANT_INTENT_URL)
+                .withIsIncognito(true)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+
+        Assert.assertNotNull(mDelegate.startActivityIntent);
+        Assert.assertTrue(mDelegate.startActivityIntent.getScheme().startsWith("https"));
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
+    public void
+    testAssistantAutofillIntent_doNotCatchNavigationFromDifferentOrigin() {
+        mDelegate.setIsSerpReferrer(false);
+
+        checkUrl(AUTOFILL_ASSISTANT_INTENT_URL)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+
+        Assert.assertNotNull(mDelegate.startActivityIntent);
+        Assert.assertTrue(mDelegate.startActivityIntent.getScheme().startsWith("https"));
+    }
+
+    @Test
+    @SmallTest
+    @Features.DisableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
+    public void
+    testAssistantAutofillIntent_doNotCatchNavigationForNonEnabledFeature() {
+        mDelegate.setIsSerpReferrer(true);
+
+        checkUrl(AUTOFILL_ASSISTANT_INTENT_URL)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+
+        Assert.assertNotNull(mDelegate.startActivityIntent);
+        Assert.assertTrue(mDelegate.startActivityIntent.getScheme().startsWith("https"));
     }
 
     private static ResolveInfo newResolveInfo(String packageName) {

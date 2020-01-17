@@ -48,38 +48,8 @@ constexpr uint64_t kFeaturesToIgnoreMask =
     1 << static_cast<size_t>(blink::scheduler::WebSchedulerTrackedFeature::
                                  kOutstandingNetworkRequest);
 
-using UkmMetrics = std::map<std::string, int64_t>;
-using UkmEntry = std::pair<ukm::SourceId, UkmMetrics>;
-
-std::vector<UkmEntry> GetEntries(ukm::TestUkmRecorder* recorder,
-                                 std::string entry_name,
-                                 const std::vector<std::string>& metrics) {
-  std::vector<UkmEntry> results;
-  for (const ukm::mojom::UkmEntry* entry :
-       recorder->GetEntriesByName(entry_name)) {
-    UkmEntry result;
-    result.first = entry->source_id;
-    for (const std::string& metric_name : metrics) {
-      const int64_t* metric_value =
-          ukm::TestUkmRecorder::GetEntryMetric(entry, metric_name);
-      EXPECT_TRUE(metric_value) << "Metric " << metric_name
-                                << " is not found in entry " << entry_name;
-      result.second[metric_name] = *metric_value;
-    }
-    results.push_back(std::move(result));
-  }
-  return results;
-}
-
-std::vector<UkmMetrics> GetMetrics(ukm::TestUkmRecorder* recorder,
-                                   std::string entry_name,
-                                   const std::vector<std::string>& metrics) {
-  std::vector<UkmMetrics> result;
-  for (const auto& entry : GetEntries(recorder, entry_name, metrics)) {
-    result.push_back(entry.second);
-  }
-  return result;
-}
+using UkmMetrics = ukm::TestUkmRecorder::HumanReadableUkmMetrics;
+using UkmEntry = ukm::TestUkmRecorder::HumanReadableUkmEntry;
 
 }  // namespace
 
@@ -181,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, UKM) {
   // Second back-forward navigation (#8) navigates back to navigation #2,
   // but it is subframe navigation and not reflected here. Third back-forward
   // navigation (#9) navigates back to navigation #1.
-  EXPECT_THAT(GetEntries(&recorder, "HistoryNavigation", {last_navigation_id}),
+  EXPECT_THAT(recorder.GetEntries("HistoryNavigation", {last_navigation_id}),
               testing::ElementsAre(UkmEntry{id6, {{last_navigation_id, id2}}},
                                    UkmEntry{id9, {{last_navigation_id, id1}}}));
 }
@@ -229,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
   // The second back/forward navigation is a subframe one and should be ignored.
   // The last one navigates to the actual entry.
   EXPECT_THAT(
-      GetMetrics(&recorder, "HistoryNavigation", {navigated_to_last_entry}),
+      recorder.GetMetrics("HistoryNavigation", {navigated_to_last_entry}),
       testing::ElementsAre(UkmMetrics{{navigated_to_last_entry, false}},
                            UkmMetrics{{navigated_to_last_entry, true}}));
 }
@@ -287,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, CloneAndGoBack) {
   // The fourth goes back, but the metrics are not recorded due to it being
   // cloned and the metrics objects missing.
   // The last two navigations, however, should have metrics.
-  EXPECT_THAT(GetEntries(&recorder, "HistoryNavigation", {last_navigation_id}),
+  EXPECT_THAT(recorder.GetEntries("HistoryNavigation", {last_navigation_id}),
               testing::ElementsAre(UkmEntry{id5, {{last_navigation_id, id3}}},
                                    UkmEntry{id6, {{last_navigation_id, id4}}}));
 }
@@ -322,17 +292,18 @@ std::vector<FeatureUsage> GetFeatureUsageMetrics(
     ukm::TestAutoSetUkmRecorder* recorder) {
   std::vector<FeatureUsage> result;
   for (const auto& entry :
-       GetEntries(recorder, "HistoryNavigation",
-                  {"MainFrameFeatures", "SameOriginSubframesFeatures",
-                   "CrossOriginSubframesFeatures"})) {
+       recorder->GetEntries("HistoryNavigation",
+                            {"MainFrameFeatures", "SameOriginSubframesFeatures",
+                             "CrossOriginSubframesFeatures"})) {
     FeatureUsage feature_usage;
-    feature_usage.source_id = entry.first;
+    feature_usage.source_id = entry.source_id;
     feature_usage.main_frame_features =
-        entry.second.at("MainFrameFeatures") & ~kFeaturesToIgnoreMask;
+        entry.metrics.at("MainFrameFeatures") & ~kFeaturesToIgnoreMask;
     feature_usage.same_origin_subframes_features =
-        entry.second.at("SameOriginSubframesFeatures") & ~kFeaturesToIgnoreMask;
+        entry.metrics.at("SameOriginSubframesFeatures") &
+        ~kFeaturesToIgnoreMask;
     feature_usage.cross_origin_subframes_features =
-        entry.second.at("CrossOriginSubframesFeatures") &
+        entry.metrics.at("CrossOriginSubframesFeatures") &
         ~kFeaturesToIgnoreMask;
     result.push_back(feature_usage);
   }

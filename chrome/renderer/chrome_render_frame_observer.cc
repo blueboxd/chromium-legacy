@@ -69,11 +69,6 @@
 #include "chrome/common/mhtml_page_notifier.mojom.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING)
-#include "components/printing/common/print_messages.h"
-#include "components/printing/renderer/print_render_frame_helper.h"
-#endif
-
 using blink::WebDocumentLoader;
 using blink::WebElement;
 using blink::WebFrameContentDumper;
@@ -180,6 +175,8 @@ bool ChromeRenderFrameObserver::OnAssociatedInterfaceRequestForFrame(
 bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
   // Filter only.
   bool handled = true;
+  // Messages in this message map have multiple handlers. Please do not add more
+  // messages here.
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderFrameObserver, message)
     IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -187,11 +184,10 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
   if (handled)
     return false;
 
+  // Normal message handlers. Legacy IPC is deprecated, but leaving this as a
+  // placeholder in case new messages are added before legacy IPC handling is
+  // wholly removed from this class.
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderFrameObserver, message)
-#if BUILDFLAG(ENABLE_PRINTING)
-    IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
-                        OnPrintNodeUnderContextMenu)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -268,15 +264,6 @@ void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
       break;
   }
   std::move(callback).Run(thumbnail_data, original_size);
-}
-
-void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
-#if BUILDFLAG(ENABLE_PRINTING)
-  printing::PrintRenderFrameHelper* helper =
-      printing::PrintRenderFrameHelper::Get(render_frame());
-  if (helper)
-    helper->PrintNode(render_frame()->GetWebFrame()->ContextMenuNode());
-#endif
 }
 
 void ChromeRenderFrameObserver::GetWebApplicationInfo(

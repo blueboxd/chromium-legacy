@@ -31,8 +31,14 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
   using StatusCallback = base::RepeatingCallback<DeepScanningClientResponse(
       const base::FilePath&)>;
 
+  // Callback that determines the encryption of the file specified.  Returns
+  // true if the file is considered encrypted for tests.
+  using EncryptionStatusCallback =
+      base::RepeatingCallback<bool(const base::FilePath&)>;
+
   FakeDeepScanningDialogDelegate(base::RepeatingClosure delete_closure,
                                  StatusCallback status_callback,
+                                 EncryptionStatusCallback encryption_callback,
                                  std::string dm_token,
                                  content::WebContents* web_contents,
                                  Data data,
@@ -45,6 +51,7 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
   static std::unique_ptr<DeepScanningDialogDelegate> Create(
       base::RepeatingClosure delete_closure,
       StatusCallback status_callback,
+      EncryptionStatusCallback encryption_callback,
       std::string dm_token,
       content::WebContents* web_contents,
       Data data,
@@ -80,6 +87,8 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
                 std::unique_ptr<BinaryUploadService::Request> request);
 
   // DeepScanningDialogDelegate overrides.
+  void PrepareFileRequest(base::FilePath path,
+                          AnalyzeCallback callback) override;
   void UploadTextForDeepScanning(
       std::unique_ptr<BinaryUploadService::Request> request) override;
   void UploadFileForDeepScanning(
@@ -89,6 +98,7 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
 
   base::RepeatingClosure delete_closure_;
   StatusCallback status_callback_;
+  EncryptionStatusCallback encryption_callback_;
   std::string dm_token_;
 };
 

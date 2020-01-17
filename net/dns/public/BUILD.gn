@@ -23,11 +23,7 @@ source_set("public") {
     "util.h",
   ]
 
-  deps = [
-    "//net:net_deps",
-  ]
+  deps = [ "//net:net_deps" ]
 
-  public_deps = [
-    "//net:net_public_deps",
-  ]
+  public_deps = [ "//net:net_public_deps" ]
 }

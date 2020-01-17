@@ -10,6 +10,7 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image'",
       "position": [8, 8],
       "bounds": [110, 44],
+      "contentsOpaque": true,
       "backgroundColor": "#000000",
       "paintInvalidations": [
         {
@@ -28,6 +29,7 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image size-contain'",
       "position": [108, 8],
       "bounds": [110, 44],
+      "contentsOpaque": true,
       "backgroundColor": "#000000",
       "paintInvalidations": [
         {
@@ -46,6 +48,7 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image percent-height'",
       "position": [208, 8],
       "bounds": [110, 44],
+      "contentsOpaque": true,
       "backgroundColor": "#000000",
       "paintInvalidations": [
         {
@@ -64,6 +67,7 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image bottom'",
       "position": [308, 8],
       "bounds": [110, 44],
+      "contentsOpaque": true,
       "backgroundColor": "#000000",
       "paintInvalidations": [
         {
@@ -97,103 +101,105 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='test image repeat-round'",
-      "position": [8, 8],
-      "bounds": [560, 144],
+      "position": [508, 8],
+      "bounds": [60, 44],
+      "contentsOpaque": true,
+      "backfaceVisibility": "hidden",
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow (positioned) DIV class='test image repeat-round'",
-          "rect": [500, 0, 60, 44],
+          "rect": [0, 0, 60, 44],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='test generated'",
+      "position": [8, 108],
+      "bounds": [110, 44],
+      "contentsOpaque": true,
+      "backgroundColor": "#000000",
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV class='test generated size-cover'",
+          "rect": [50, 0, 60, 44],
           "reason": "background"
         },
         {
           "object": "LayoutNGBlockFlow (positioned) DIV class='test generated'",
-          "rect": [0, 100, 60, 44],
-          "reason": "background"
-        }
-      ]
-    },
-    {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='test generated size-cover'",
-      "position": [58, 108],
-      "bounds": [110, 44],
-      "backgroundColor": "#000000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='test generated size-contain'",
-          "rect": [50, 0, 60, 44],
-          "reason": "background"
-        },
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='test generated size-cover'",
           "rect": [0, 0, 60, 44],
           "reason": "background"
         }
       ]
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='test generated percent-height'",
-      "position": [208, 108],
-      "bounds": [110, 44],
+      "name": "LayoutNGBlockFlow (positioned) DIV class='test generated size-contain'",
+      "position": [108, 108],
+      "bounds": [160, 44],
       "backgroundColor": "#000000",
       "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='test generated top'",
-          "rect": [50, 0, 60, 44],
-          "reason": "background"
-        },
         {
           "object": "LayoutNGBlockFlow (positioned) DIV class='test generated percent-height'",
+          "rect": [100, 0, 60, 44],
+          "reason": "background"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV class='test generated size-contain'",
           "rect": [0, 0, 60, 44],
           "reason": "background"
         }
       ]
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='test generated bottom'",
-      "position": [308, 108],
+      "name": "LayoutNGBlockFlow (positioned) DIV class='test generated top'",
+      "position": [258, 108],
       "bounds": [110, 44],
+      "contentsOpaque": true,
       "backgroundColor": "#000000",
       "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='test generated center'",
-          "rect": [50, 0, 60, 44],
-          "reason": "background"
-        },
         {
           "object": "LayoutNGBlockFlow (positioned) DIV class='test generated bottom'",
-          "rect": [0, 0, 60, 44],
-          "reason": "background"
-        }
-      ]
-    },
-    {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='test generated no-repeat'",
-      "position": [408, 108],
-      "bounds": [110, 44],
-      "backgroundColor": "#000000",
-      "paintInvalidations": [
-        {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='test generated repeat-space'",
           "rect": [50, 0, 60, 44],
           "reason": "background"
         },
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='test generated no-repeat'",
+          "object": "LayoutNGBlockFlow (positioned) DIV class='test generated top'",
           "rect": [0, 0, 60, 44],
           "reason": "background"
         }
       ]
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='test generated repeat-round'",
-      "position": [508, 108],
-      "bounds": [60, 44],
-      "contentsOpaque": true,
-      "backfaceVisibility": "hidden",
+      "name": "LayoutNGBlockFlow (positioned) DIV class='test generated center'",
+      "position": [358, 108],
+      "bounds": [110, 44],
+      "backgroundColor": "#000000",
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV class='test generated no-repeat'",
+          "rect": [50, 0, 60, 44],
+          "reason": "background"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV class='test generated center'",
+          "rect": [0, 0, 60, 44],
+          "reason": "background"
+        }
+      ]
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='test generated repeat-space'",
+      "position": [458, 108],
+      "bounds": [110, 44],
       "backgroundColor": "#000000",
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow (positioned) DIV class='test generated repeat-round'",
+          "rect": [50, 0, 60, 44],
+          "reason": "background"
+        },
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV class='test generated repeat-space'",
           "rect": [0, 0, 60, 44],
           "reason": "background"
         }

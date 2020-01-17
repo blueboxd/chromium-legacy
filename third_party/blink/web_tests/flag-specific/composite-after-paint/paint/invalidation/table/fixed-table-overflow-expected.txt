@@ -28,6 +28,7 @@
       "name": "LayoutNGBlockFlow (positioned) TD id='moveMe' class='fixed'",
       "position": [-100, 0],
       "bounds": [200, 100],
+      "contentsOpaque": true,
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {

@@ -28,13 +28,13 @@ const CupsPrintersEntryListBehavior = {
   },
 
   /** @override */
-  created: function() {
+  created() {
     this.entryManager_ =
         settings.printing.CupsPrintersEntryManager.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.entryManager_.addOnSavedPrintersChangedListener(
         this.onSavedPrintersChanged_.bind(this));
     this.entryManager_.addOnNearbyPrintersChangedListener(
@@ -48,7 +48,7 @@ const CupsPrintersEntryListBehavior = {
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.entryManager_.removeOnSavedPrintersChangedListener(
         this.onSavedPrintersChanged_.bind(this));
     this.entryManager_.removeOnNearbyPrintersChangedListener(
@@ -62,8 +62,7 @@ const CupsPrintersEntryListBehavior = {
    * @param {!Array<!PrinterListEntry>} removedPrinters
    * @private
    */
-  onSavedPrintersChanged_: function(
-      savedPrinters, addedPrinters, removedPrinters) {
+  onSavedPrintersChanged_(savedPrinters, addedPrinters, removedPrinters) {
     this.updateList(
         'savedPrinters', printer => printer.printerInfo.printerId,
         savedPrinters);
@@ -81,7 +80,7 @@ const CupsPrintersEntryListBehavior = {
    * @param {!Array<!PrinterListEntry>} printerList
    * @private
    */
-  onNearbyPrintersChanged_: function(printerList) {
+  onNearbyPrintersChanged_(printerList) {
     this.updateList(
         'nearbyPrinters', printer => printer.printerInfo.printerId,
         printerList);
@@ -91,8 +90,8 @@ const CupsPrintersEntryListBehavior = {
   // implementations.
 
   /** @param{!Array<!PrinterListEntry>} addedPrinters */
-  onSavedPrintersAdded: function(addedPrinters) {},
+  onSavedPrintersAdded(addedPrinters) {},
 
   /** @param{!Array<!PrinterListEntry>} removedPrinters */
-  onSavedPrintersRemoved: function(removedPrinters) {},
+  onSavedPrintersRemoved(removedPrinters) {},
 };

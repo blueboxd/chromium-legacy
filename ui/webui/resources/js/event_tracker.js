@@ -53,8 +53,8 @@
    */
   remove(target, eventType) {
     this.listeners_ = this.listeners_.filter(listener => {
-      if (listener.target == target &&
-          (!eventType || (listener.eventType == eventType))) {
+      if (listener.target === target &&
+          (!eventType || (listener.eventType === eventType))) {
         EventTracker.removeEventListener(listener);
         return false;
       }

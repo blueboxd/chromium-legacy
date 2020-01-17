@@ -7,9 +7,11 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "weblayer/browser/tab_impl.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
@@ -41,6 +43,14 @@ class AutofillBrowserTest : public WebLayerBrowserTest {
  public:
   AutofillBrowserTest() = default;
   ~AutofillBrowserTest() override = default;
+
+  void SetUp() override {
+#if defined(OS_ANDROID)
+    TabImpl::DisableAutofillSystemIntegrationForTesting();
+#endif
+
+    WebLayerBrowserTest::SetUp();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillBrowserTest);

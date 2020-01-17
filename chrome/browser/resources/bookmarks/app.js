@@ -64,7 +64,7 @@ Polymer({
   dndManager_: null,
 
   /** @override */
-  created: function() {
+  created() {
     // Regular expression that captures the leading slash, the content and the
     // trailing slash in three different groups.
     const CANONICAL_PATH_REGEX = /(^\/)([\/-\w]+)(\/$)/;
@@ -75,7 +75,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     document.documentElement.classList.remove('loading');
 
     this.watch('searchTerm_', function(state) {
@@ -117,7 +117,7 @@ Polymer({
     this.dndManager_.init();
   },
 
-  detached: function() {
+  detached() {
     window.removeEventListener('resize', this.boundUpdateSidebarWidth_);
     this.dndManager_.destroy();
     destroyApiListener();
@@ -127,7 +127,7 @@ Polymer({
    * Set up the splitter and set the initial width from localStorage.
    * @private
    */
-  initializeSplitter_: function() {
+  initializeSplitter_() {
     const splitter = this.$.splitter;
     const splitterTarget = this.$.sidebar;
 
@@ -150,13 +150,13 @@ Polymer({
   },
 
   /** @private */
-  updateSidebarWidth_: function() {
+  updateSidebarWidth_() {
     this.sidebarWidth_ =
         /** @type {string} */ (getComputedStyle(this.$.sidebar).width);
   },
 
   /** @private */
-  searchTermChanged_: function(newValue, oldValue) {
+  searchTermChanged_(newValue, oldValue) {
     if (oldValue !== undefined && !newValue) {
       this.fire(
           'iron-announce', {text: loadTimeData.getString('searchCleared')});
@@ -180,13 +180,13 @@ Polymer({
   },
 
   /** @private */
-  folderOpenStateChanged_: function() {
+  folderOpenStateChanged_() {
     window.localStorage[LOCAL_STORAGE_FOLDER_STATE_KEY] =
         JSON.stringify(Array.from(this.folderOpenState_));
   },
 
   // Override FindShortcutBehavior methods.
-  handleFindShortcut: function(modalContextOpen) {
+  handleFindShortcut(modalContextOpen) {
     if (modalContextOpen) {
       return false;
     }
@@ -195,12 +195,12 @@ Polymer({
   },
 
   // Override FindShortcutBehavior methods.
-  searchInputHasFocus: function() {
+  searchInputHasFocus() {
     return this.$$('bookmarks-toolbar').searchField.isSearchFocused();
   },
 
   /** @private */
-  onUndoClick_: function() {
+  onUndoClick_() {
     this.fire('command-undo');
   },
 });

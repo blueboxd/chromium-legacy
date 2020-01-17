@@ -2009,7 +2009,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkRelations) {
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kRootWebArea;
-  root.AddIntAttribute(ax::mojom::IntAttribute::kDetailsId, 2);
+  root.AddIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds, {2});
 
   AXNodeData child1;
   child1.id = 2;
@@ -2029,7 +2029,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkRelations) {
   AXNodeData child3;
   child3.id = 4;
   child3.role = ax::mojom::Role::kStaticText;
-  child3.AddIntAttribute(ax::mojom::IntAttribute::kDetailsId, 2);
+  child3.AddIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds, {2});
   child3.AddIntAttribute(ax::mojom::IntAttribute::kMemberOfId, 1);
 
   root.child_ids.push_back(4);
@@ -2139,8 +2139,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAllReverseAtkRelations) {
     test_relation(setter, expected_relation, expected_reverse_relation);
   };
 
-  test_int_relation(ax::mojom::IntAttribute::kDetailsId, ATK_RELATION_DETAILS,
-                    ATK_RELATION_DETAILS_FOR);
+  test_int_list_relation(ax::mojom::IntListAttribute::kDetailsIds,
+                         ATK_RELATION_DETAILS, ATK_RELATION_DETAILS_FOR);
   test_int_relation(ax::mojom::IntAttribute::kErrormessageId,
                     ATK_RELATION_ERROR_MESSAGE, ATK_RELATION_ERROR_FOR);
   test_int_list_relation(ax::mojom::IntListAttribute::kControlsIds,

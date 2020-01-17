@@ -44,9 +44,7 @@ android_library("public_java") {
 junit_binary("touch_to_fill_junit_tests") {
   testonly = true
 
-  sources = [
-    "junit/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillControllerTest.java",
-  ]
+  sources = [ "junit/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillControllerTest.java" ]
 
   deps = [
     "//base:base_java_test_support",

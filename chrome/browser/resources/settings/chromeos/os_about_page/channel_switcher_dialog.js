@@ -49,7 +49,7 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = settings.AboutPageBrowserProxyImpl.getInstance();
     this.browserProxy_.getChannelInfo().then(info => {
       this.currentChannel_ = info.currentChannel;
@@ -62,17 +62,17 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.dialog.showModal();
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.close();
   },
 
   /** @private */
-  onChangeChannelTap_: function() {
+  onChangeChannelTap_() {
     const selectedChannel = this.$$('cr-radio-group').selected;
     this.browserProxy_.setChannel(selectedChannel, false);
     this.$.dialog.close();
@@ -80,7 +80,7 @@ Polymer({
   },
 
   /** @private */
-  onChangeChannelAndPowerwashTap_: function() {
+  onChangeChannelAndPowerwashTap_() {
     const selectedChannel = this.$$('cr-radio-group').selected;
     this.browserProxy_.setChannel(selectedChannel, true);
     this.$.dialog.close();
@@ -94,7 +94,7 @@ Polymer({
    *     changeChannelAndPowerwash button should be visible.
    * @private
    */
-  updateButtons_: function(changeChannel, changeChannelAndPowerwash) {
+  updateButtons_(changeChannel, changeChannelAndPowerwash) {
     if (changeChannel || changeChannelAndPowerwash) {
       // Ensure that at most one button is visible at any given time.
       assert(changeChannel != changeChannelAndPowerwash);
@@ -107,7 +107,7 @@ Polymer({
   },
 
   /** @private */
-  onChannelSelectionChanged_: function() {
+  onChannelSelectionChanged_() {
     const selectedChannel = this.$$('cr-radio-group').selected;
 
     // Selected channel is the same as the target channel so only show 'cancel'.
@@ -153,7 +153,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  substituteString_: function(format, replacement) {
+  substituteString_(format, replacement) {
     return loadTimeData.substituteString(format, replacement);
   },
 });

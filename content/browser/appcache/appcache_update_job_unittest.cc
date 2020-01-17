@@ -4145,11 +4145,11 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     expected = 1;
     ASSERT_EQ(expected, cache->fallback_namespaces_.size());
-    EXPECT_TRUE(cache->fallback_namespaces_[0] ==
-                AppCacheNamespace(
-                    APPCACHE_FALLBACK_NAMESPACE,
-                    MockHttpServer::GetMockUrl("files/fallback1"),
-                    MockHttpServer::GetMockUrl("files/fallback1a"), false));
+    EXPECT_TRUE(
+        cache->fallback_namespaces_[0] ==
+        AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
+                          MockHttpServer::GetMockUrl("files/fallback1"),
+                          MockHttpServer::GetMockUrl("files/fallback1a")));
 
     EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
     EXPECT_TRUE(cache->online_whitelist_all_);
@@ -4191,16 +4191,16 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     expected = 2;
     ASSERT_EQ(expected, cache->fallback_namespaces_.size());
-    EXPECT_TRUE(cache->fallback_namespaces_[0] ==
-                AppCacheNamespace(
-                    APPCACHE_FALLBACK_NAMESPACE,
-                    MockHttpServer::GetMockUrl("files/fallback1"),
-                    MockHttpServer::GetMockUrl("files/fallback1a"), false));
-    EXPECT_TRUE(cache->fallback_namespaces_[1] ==
-                AppCacheNamespace(
-                    APPCACHE_FALLBACK_NAMESPACE,
-                    MockHttpServer::GetMockUrl("bar/fallback2"),
-                    MockHttpServer::GetMockUrl("files/fallback2a"), false));
+    EXPECT_TRUE(
+        cache->fallback_namespaces_[0] ==
+        AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
+                          MockHttpServer::GetMockUrl("files/fallback1"),
+                          MockHttpServer::GetMockUrl("files/fallback1a")));
+    EXPECT_TRUE(
+        cache->fallback_namespaces_[1] ==
+        AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
+                          MockHttpServer::GetMockUrl("bar/fallback2"),
+                          MockHttpServer::GetMockUrl("files/fallback2a")));
 
     EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
     EXPECT_TRUE(cache->online_whitelist_all_);
@@ -4237,11 +4237,11 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     expected = 1;
     ASSERT_EQ(expected, cache->fallback_namespaces_.size());
-    EXPECT_TRUE(cache->fallback_namespaces_[0] ==
-                AppCacheNamespace(
-                    APPCACHE_FALLBACK_NAMESPACE,
-                    MockHttpServer::GetMockUrl("files/fallback1"),
-                    MockHttpServer::GetMockUrl("files/fallback1a"), false));
+    EXPECT_TRUE(
+        cache->fallback_namespaces_[0] ==
+        AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
+                          MockHttpServer::GetMockUrl("files/fallback1"),
+                          MockHttpServer::GetMockUrl("files/fallback1a")));
 
     EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
     EXPECT_TRUE(cache->online_whitelist_all_);
@@ -4265,17 +4265,17 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     expected = 1;
     ASSERT_EQ(expected, cache->fallback_namespaces_.size());
-    EXPECT_TRUE(cache->fallback_namespaces_[0] ==
-                AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
-                                  MockHttpServer::GetMockUrl("files/fallback1"),
-                                  MockHttpServer::GetMockUrl("files/explicit1"),
-                                  false));
+    EXPECT_TRUE(
+        cache->fallback_namespaces_[0] ==
+        AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
+                          MockHttpServer::GetMockUrl("files/fallback1"),
+                          MockHttpServer::GetMockUrl("files/explicit1")));
 
     EXPECT_EQ(expected, cache->online_whitelist_namespaces_.size());
     EXPECT_TRUE(cache->online_whitelist_namespaces_[0] ==
                 AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE,
                                   MockHttpServer::GetMockUrl("files/online1"),
-                                  GURL(), false));
+                                  GURL()));
     EXPECT_FALSE(cache->online_whitelist_all_);
 
     EXPECT_TRUE(cache->update_time_ > base::Time());
@@ -4368,24 +4368,23 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Set up the expected intercepts.
     std::vector<AppCacheNamespace> expected_root = {
-        AppCacheNamespace(
-            APPCACHE_INTERCEPT_NAMESPACE, MockHttpServer::GetMockUrl(""),
-            MockHttpServer::GetMockUrl("intercept-newroot/foo"), false),
+        AppCacheNamespace(APPCACHE_INTERCEPT_NAMESPACE,
+                          MockHttpServer::GetMockUrl(""),
+                          MockHttpServer::GetMockUrl("intercept-newroot/foo")),
     };
     std::vector<AppCacheNamespace> expected_bar = {
-        AppCacheNamespace(
-            APPCACHE_INTERCEPT_NAMESPACE, MockHttpServer::GetMockUrl("bar/foo"),
-            MockHttpServer::GetMockUrl("intercept-newbar/foo"), false),
+        AppCacheNamespace(APPCACHE_INTERCEPT_NAMESPACE,
+                          MockHttpServer::GetMockUrl("bar/foo"),
+                          MockHttpServer::GetMockUrl("intercept-newbar/foo")),
         AppCacheNamespace(
             APPCACHE_INTERCEPT_NAMESPACE,
             MockHttpServer::GetMockUrl("bar/baz/foo"),
-            MockHttpServer::GetMockUrl("intercept-newbar/newbaz/foo"), false),
+            MockHttpServer::GetMockUrl("intercept-newbar/newbaz/foo")),
     };
     std::vector<AppCacheNamespace> expected_other = {
         AppCacheNamespace(APPCACHE_INTERCEPT_NAMESPACE,
                           MockHttpServer::GetMockUrl("other/foo"),
-                          MockHttpServer::GetMockUrl("intercept-newother/foo"),
-                          false),
+                          MockHttpServer::GetMockUrl("intercept-newother/foo")),
     };
 
     switch (tested_manifest_) {
@@ -4417,24 +4416,23 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Set up the expected fallbacks.
     std::vector<AppCacheNamespace> expected_root = {
-        AppCacheNamespace(
-            APPCACHE_FALLBACK_NAMESPACE, MockHttpServer::GetMockUrl(""),
-            MockHttpServer::GetMockUrl("fallback-newroot/foo"), false),
+        AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
+                          MockHttpServer::GetMockUrl(""),
+                          MockHttpServer::GetMockUrl("fallback-newroot/foo")),
     };
     std::vector<AppCacheNamespace> expected_bar = {
-        AppCacheNamespace(
-            APPCACHE_FALLBACK_NAMESPACE, MockHttpServer::GetMockUrl("bar/foo"),
-            MockHttpServer::GetMockUrl("fallback-newbar/foo"), false),
+        AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
+                          MockHttpServer::GetMockUrl("bar/foo"),
+                          MockHttpServer::GetMockUrl("fallback-newbar/foo")),
         AppCacheNamespace(
             APPCACHE_FALLBACK_NAMESPACE,
             MockHttpServer::GetMockUrl("bar/baz/foo"),
-            MockHttpServer::GetMockUrl("fallback-newbar/newbaz/foo"), false),
+            MockHttpServer::GetMockUrl("fallback-newbar/newbaz/foo")),
     };
     std::vector<AppCacheNamespace> expected_other = {
         AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
                           MockHttpServer::GetMockUrl("other/foo"),
-                          MockHttpServer::GetMockUrl("fallback-newother/foo"),
-                          false),
+                          MockHttpServer::GetMockUrl("fallback-newother/foo")),
     };
 
     switch (tested_manifest_) {

@@ -48,7 +48,7 @@ BackgroundMouseHandler.prototype = {
    * Starts a timer which, when it finishes, calls runHitTest if an event was
    * waiting to resolve to a node.
    */
-  startTimer: function() {
+  startTimer() {
     this.isWaitingBeforeHitTest_ = true;
     setTimeout(() => {
       this.isWaitingBeforeHitTest_ = false;
@@ -66,7 +66,7 @@ BackgroundMouseHandler.prototype = {
    * Note that runHitTest is only ever called when |isWaitingBeforeHitTest| is
    * false and |hasPendingEvents| is true.
    */
-  runHitTest: function() {
+  runHitTest() {
     this.desktop_.hitTest(this.mouseX_, this.mouseY_, EventType.HOVER);
     this.hasPendingEvents_ = false;
     this.startTimer();
@@ -77,7 +77,7 @@ BackgroundMouseHandler.prototype = {
    * hittest on the most recent event; otherwise request a hittest immediately.
    * @param {AutomationEvent} evt The mouse move event to process.
    */
-  onMouseMove: function(evt) {
+  onMouseMove(evt) {
     this.mouseX_ = evt.mouseX;
     this.mouseY_ = evt.mouseY;
     this.hasPendingEvents_ = true;

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 
 #include <memory>
+#include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
@@ -90,16 +91,16 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     // settings."
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kModuleDedicatedWorker);
-    network::mojom::CredentialsMode credentials_mode;
-    bool result = Request::ParseCredentialsMode(options->credentials(),
-                                                &credentials_mode);
-    DCHECK(result);
+    base::Optional<network::mojom::CredentialsMode> credentials_mode =
+        Request::ParseCredentialsMode(options->credentials());
+    DCHECK(credentials_mode);
+
     auto* resource_timing_notifier =
         WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
             *GetExecutionContext());
     GetWorkerThread()->FetchAndRunModuleScript(
         script_url, outside_settings_object.CopyData(),
-        resource_timing_notifier, credentials_mode);
+        resource_timing_notifier, *credentials_mode);
   } else {
     NOTREACHED();
   }

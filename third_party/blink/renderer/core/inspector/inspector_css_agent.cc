@@ -2411,18 +2411,22 @@ Response InspectorCSSAgent::stopRuleUsageTracking(
     std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result) {
   for (Document* document : dom_agent_->Documents())
     document->UpdateStyleAndLayoutTree();
-  Response response = takeCoverageDelta(result);
+  double timestamp;
+  Response response = takeCoverageDelta(result, &timestamp);
   SetCoverageEnabled(false);
   return response;
 }
 
 Response InspectorCSSAgent::takeCoverageDelta(
-    std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result) {
+    std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result,
+    double* out_timestamp) {
   if (!tracker_)
     return Response::Error("CSS rule usage tracking is not enabled");
 
   StyleRuleUsageTracker::RuleListByStyleSheet coverage_delta =
       tracker_->TakeDelta();
+
+  *out_timestamp = base::TimeTicks::Now().since_origin().InSecondsF();
 
   *result = std::make_unique<protocol::Array<protocol::CSS::RuleUsage>>();
 

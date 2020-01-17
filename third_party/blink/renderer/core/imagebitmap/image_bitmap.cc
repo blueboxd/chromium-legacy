@@ -423,6 +423,9 @@ scoped_refptr<StaticBitmapImage> ApplyColorSpaceConversion(
   sk_sp<SkColorSpace> color_space = options.color_params.GetSkColorSpace();
   SkColorType color_type = kN32_SkColorType;
   sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();
+  if (!sk_image)
+    return nullptr;
+
   // If we should preserve color precision, don't lose it in color space
   // conversion.
   if (options.pixel_format == kImageBitmapPixelFormat_Default &&
@@ -1084,14 +1087,14 @@ IntSize ImageBitmap::Size() const {
   return IntSize(image_->width(), image_->height());
 }
 
-ScriptPromise ImageBitmap::CreateImageBitmap(
-    ScriptState* script_state,
-    EventTarget& event_target,
-    base::Optional<IntRect> crop_rect,
-    const ImageBitmapOptions* options) {
+ScriptPromise ImageBitmap::CreateImageBitmap(ScriptState* script_state,
+                                             EventTarget& event_target,
+                                             base::Optional<IntRect> crop_rect,
+                                             const ImageBitmapOptions* options,
+                                             ExceptionState& exception_state) {
   return ImageBitmapSource::FulfillImageBitmap(
-      script_state,
-      MakeGarbageCollected<ImageBitmap>(this, crop_rect, options));
+      script_state, MakeGarbageCollected<ImageBitmap>(this, crop_rect, options),
+      exception_state);
 }
 
 scoped_refptr<Image> ImageBitmap::GetSourceImageForCanvas(

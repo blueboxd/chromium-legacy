@@ -128,9 +128,6 @@ class GPU_GLES2_EXPORT SharedContextState
     return &scratch_deserialization_buffer_;
   }
   size_t max_resource_cache_bytes() const { return max_resource_cache_bytes_; }
-  size_t glyph_cache_max_texture_bytes() const {
-    return glyph_cache_max_texture_bytes_;
-  }
   bool use_virtualized_gl_contexts() const {
     return use_virtualized_gl_contexts_;
   }

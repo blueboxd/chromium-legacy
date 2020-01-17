@@ -7,49 +7,45 @@
 
 #include "base/feature_list.h"
 
-// Feature to choose whether to use the new Messages Infobar design, or the
-// legacy one.
-// Use IsInfobarUIRebootEnabled() instead of this constant directly.
-extern const base::Feature kInfobarUIReboot;
-
 // Feature to choose whether to use OverlayPresenter to show the new Messages
-// Infobar design.  In order for it to work, kInfobarUIReboot needs to also be
-// enabled.
-// Use IsInfobarOverlayUIEnabled() instead of this constant directly.
+// Infobar design.  In order for it to work, kIOSInfobarUIReboot needs to also
+// be enabled. Use IsInfobarOverlayUIEnabled() instead of this constant
+// directly.
 extern const base::Feature kInfobarOverlayUI;
 
 // Feature to choose whether Confirm Infobars use the new Messages UI or the
-// legacy one. Also, in order for it to work kInfobarUIReboot needs to be
+// legacy one. Also, in order for it to work kIOSInfobarUIReboot needs to be
 // enabled.
 // Use IsConfirmInfobarMessagesUIEnabled() instead of this constant directly.
 extern const base::Feature kConfirmInfobarMessagesUI;
 
 // Feature to choose whether Confirm Infobars use the new Messages UI or the
-// legacy one. Also, in order for it to work kInfobarUIReboot needs to be
+// legacy one. Also, in order for it to work kIOSInfobarUIReboot needs to be
 // enabled.
 // Use IsCrashRestoreInfobarMessagesUIEnabled() instead of this constant
 // directly.
 extern const base::Feature kCrashRestoreInfobarMessagesUI;
 
 // Feature to choose whether Downloads uses the new Messages UI or the
-// legacy one. Also, in order for it to work kInfobarUIReboot needs to be
+// legacy one. Also, in order for it to work kIOSInfobarUIReboot needs to be
 // enabled.
 // Use IsDownloadInfobarMessagesUIEnabled() instead of this constant directly.
 extern const base::Feature kDownloadInfobarMessagesUI;
 
 // Feature to choose whether Save Card Infobar uses the new Messages UI or the
-// legacy one. Also, in order for it to work kInfobarUIReboot needs to be
+// legacy one. Also, in order for it to work kIOSInfobarUIReboot needs to be
 // enabled.
 // Use IsSaveCardInfobarMessagesUIEnabled() instead of this constant directly.
 extern const base::Feature kSaveCardInfobarMessagesUI;
 
 // Feature to choose whether Translate Infobar uses the new Messages UI or the
-// legacy one. In order for it to work, kInfobarUIReboot needs to also be
+// legacy one. In order for it to work, kIOSInfobarUIReboot needs to also be
 // enabled.
 // Use IsTranslateInfobarMessagesUIEnabled() instead of this constant directly.
 extern const base::Feature kTranslateInfobarMessagesUI;
 
-// Whether the Messages Infobar UI is enabled.
+// Whether the Messages Infobar UI is enabled. Prefer to use this method instead
+// of kIOSInfobarUIReboot directly.
 bool IsInfobarUIRebootEnabled();
 
 // Whether the Messages Infobar UI is presented using OverlayPresenter.

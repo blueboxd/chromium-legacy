@@ -23,9 +23,7 @@ source_set("passwords") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "save_password_infobar_banner_overlay_mediator_unittest.mm",
-  ]
+  sources = [ "save_password_infobar_banner_overlay_mediator_unittest.mm" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
@@ -43,6 +41,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/overlays/public/infobar_banner",
     "//ios/chrome/browser/overlays/test",
     "//ios/chrome/browser/passwords:infobar_delegates",
+    "//ios/chrome/browser/passwords/test",
     "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ios/chrome/browser/ui/infobars/banners/test",
     "//ios/chrome/browser/ui/infobars/test",

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator.h"
+#import "ios/chrome/browser/ui/overlays/overlay_request_coordinator+subclassing.h"
 
 #include "base/logging.h"
 #include "ios/chrome/browser/overlays/public/overlay_request_support.h"

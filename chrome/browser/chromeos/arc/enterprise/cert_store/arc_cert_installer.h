@@ -42,17 +42,23 @@ class ArcCertInstaller : public policy::RemoteCommandsQueue::Observer {
 
   // Install missing certificates via ARC remote commands.
   //
-  // Return set of the names of certificates required being installed on ARC.
+  // Return map of certificate names required being installed on ARC to dummy
+  // SPKI.
+  // The dummy SPKI may be empty if the key is not installed during this call
+  // (either error or already installed key pair).
   // Return false via |callback| in case of any error, and true otherwise.
   // Made virtual for override in test.
-  virtual std::set<std::string> InstallArcCerts(
+  virtual std::map<std::string, std::string> InstallArcCerts(
       const std::vector<net::ScopedCERTCertificate>& certs,
       InstallArcCertsCallback callback);
 
  private:
   // Install ARC certificate if not installed yet.
-  void InstallArcCert(const std::string& name,
-                      const net::ScopedCERTCertificate& nss_cert);
+  // Return RSA public key material for the NSS cert encoded in base 64
+  // or an empty string if the key is not installed during this call
+  // (either error or already installed key pair).
+  std::string InstallArcCert(const std::string& name,
+                             const net::ScopedCERTCertificate& nss_cert);
 
   // RemoteCommandsQueue::Observer overrides:
   void OnJobStarted(policy::RemoteCommandJob* command) override {}

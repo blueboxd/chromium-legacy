@@ -54,7 +54,7 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ = settings.LocalDataBrowserProxyImpl.getInstance();
 
     this.addWebUIListener(
@@ -66,12 +66,12 @@ Polymer({
    * @param {!settings.Route} route
    * @protected
    */
-  currentRouteChanged: function(route) {
-    if (settings.getCurrentRoute() !=
+  currentRouteChanged(route) {
+    if (settings.Router.getInstance().getCurrentRoute() !=
         settings.routes.SITE_SETTINGS_DATA_DETAILS) {
       return;
     }
-    const site = settings.getQueryParameters().get('site');
+    const site = settings.Router.getInstance().getQueryParameters().get('site');
     if (!site) {
       return;
     }
@@ -81,7 +81,7 @@ Polymer({
   },
 
   /** @private */
-  getCookieDetails_: function() {
+  getCookieDetails_() {
     if (!this.site_) {
       return;
     }
@@ -95,7 +95,7 @@ Polymer({
    * @return {!Array<!CookieDataForDisplay>}
    * @private
    */
-  getCookieNodes_: function(node) {
+  getCookieNodes_(node) {
     return getCookieData(node);
   },
 
@@ -103,7 +103,7 @@ Polymer({
    * @param {!CookieList} cookies
    * @private
    */
-  onCookiesLoaded_: function(cookies) {
+  onCookiesLoaded_(cookies) {
     this.siteId_ = cookies.id;
     this.entries_ = cookies.children;
     // Set up flag for expanding cookie details.
@@ -117,7 +117,7 @@ Polymer({
    * site URL parameter may be mistyped.
    * @private
    */
-  onCookiesLoadFailed_: function() {
+  onCookiesLoadFailed_() {
     this.siteId_ = '';
     this.entries_ = [];
   },
@@ -128,7 +128,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getEntryDescription_: function(item) {
+  getEntryDescription_(item) {
     // Frequently there are multiple cookies per site. To avoid showing a list
     // of '1 cookie', '1 cookie', ... etc, it is better to show the title of the
     // cookie to differentiate them.
@@ -146,7 +146,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onRemove_: function(event) {
+  onRemove_(event) {
     this.browserProxy_.removeCookie(
         /** @type {!CookieDetails} */ (event.currentTarget.dataset).idPath);
   },
@@ -154,7 +154,7 @@ Polymer({
   /**
    * A handler for when the user opts to remove all cookies.
    */
-  removeAll: function() {
+  removeAll() {
     this.browserProxy_.removeCookie(this.siteId_);
   },
 });

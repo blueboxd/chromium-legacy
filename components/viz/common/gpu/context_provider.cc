@@ -18,4 +18,8 @@ ContextProvider::ScopedContextLock::~ScopedContextLock() {
   context_provider_->CacheController()->ClientBecameNotBusy(std::move(busy_));
 }
 
+gpu::SharedImageManager* ContextProvider::GetSharedImageManager() {
+  return nullptr;
+}
+
 }  // namespace viz

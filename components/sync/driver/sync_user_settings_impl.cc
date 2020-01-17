@@ -189,6 +189,10 @@ bool SyncUserSettingsImpl::IsPassphraseRequiredForPreferredDataTypes() const {
   return IsEncryptedDatatypeEnabled() && IsPassphraseRequired();
 }
 
+bool SyncUserSettingsImpl::IsTrustedVaultKeyRequired() const {
+  return crypto_->IsTrustedVaultKeyRequired();
+}
+
 bool SyncUserSettingsImpl::IsTrustedVaultKeyRequiredForPreferredDataTypes()
     const {
   return IsEncryptedDatatypeEnabled() && crypto_->IsTrustedVaultKeyRequired();

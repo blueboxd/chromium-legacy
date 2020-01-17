@@ -41,6 +41,7 @@ include_rules = [
   "+components/safe_browsing/core/db",
   "+components/search_engines",
   "+components/services/quarantine",
+  "+components/sessions",
   "+components/signin/public",
   "+components/spellcheck",
   "+components/storage_monitor",

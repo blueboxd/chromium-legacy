@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 /** @fileoverview A helper object used for Internet page. */
-cr.exportPath('settings');
-
 cr.define('settings', function() {
   /** @interface */
   class InternetPageBrowserProxy {
@@ -79,8 +77,5 @@ cr.define('settings', function() {
 
   cr.addSingletonGetter(InternetPageBrowserProxyImpl);
 
-  return {
-    InternetPageBrowserProxy: InternetPageBrowserProxy,
-    InternetPageBrowserProxyImpl: InternetPageBrowserProxyImpl,
-  };
+  return {InternetPageBrowserProxy, InternetPageBrowserProxyImpl};
 });

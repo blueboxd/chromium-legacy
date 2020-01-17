@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -17,6 +17,10 @@ For example, the following renaming macro is produced for sqlite3_initialize().
 
 import re
 import sys
+
+class ExtractError(ValueError):
+  def __init__(self, message):
+    self.message = message
 
 def ExtractLineTuples(string):
   '''Returns a list of lines, with start/end whitespace stripped.
@@ -197,7 +201,7 @@ IDENTIFIER_RE = re.compile(r'^[a-zA-Z_0-9]+$')
 def ExtractApiExport(macro_names, api_export_macro, statement):
   '''Extracts the symbol name from a statement exporting a function.
 
-  Returns None if the statement does not export a symbol. Throws ValueError if
+  Returns None if the statement does not export a symbol. Throws ExtractError if
   the parser cannot understand the statement.
   '''
   # See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf, section 6.7
@@ -237,7 +241,7 @@ def ExtractApiExport(macro_names, api_export_macro, statement):
   seen_simple_type = False
   for word in words:
     if word in UNSUPPORTED_KEYWORDS:
-      raise ValueError("Unsupported keyword %s" % word)
+      raise ExtractError("Unsupported keyword %s" % word)
 
     if word in QUALIFIER_KEYWORDS:
       continue
@@ -249,7 +253,7 @@ def ExtractApiExport(macro_names, api_export_macro, statement):
 
     if word in COMPOSITE_TYPE_SPECIFIERS:
       if seen_simple_type:
-        raise ValueError('Mixed simple (struct_name) and composite (int) types')
+        raise ExtractError('Mixed simple (struct_name) and composite (int) types')
       seen_composite_type = True
       continue
 
@@ -260,16 +264,16 @@ def ExtractApiExport(macro_names, api_export_macro, statement):
     if not seen_composite_type and not seen_simple_type:
       seen_simple_type = True
       if IDENTIFIER_RE.match(word) is None:
-        raise ValueError(
+        raise ExtractError(
             "%s parsed as type name, which doesn't make sense" % word)
       continue
 
     if IDENTIFIER_RE.match(word) is None:
-      raise ValueError(
+      raise ExtractError(
           "%s parsed as symbol name, which doesn't make sense" % word)
     return word
 
-  raise ValueError('Failed to find symbol name')
+  raise ExtractError('Failed to find symbol name')
 
 
 def ExportedSymbolLine(symbol_prefix, symbol, statement_tuple):
@@ -311,7 +315,7 @@ def ProcessSource(api_export_macro, symbol_prefix, header_line, footer_line,
       if symbol_name:
         output_lines.append(
             ExportedSymbolLine(symbol_prefix, symbol_name, statement_tuple))
-    except ValueError as exception:
+    except ExtractError as exception:
       output_lines.append(ExportedExceptionLine(exception, statement_tuple))
 
   output_lines.sort()

@@ -19,9 +19,7 @@ android_library("variations_java") {
 }
 
 junit_binary("components_variations_junit_tests") {
-  sources = [
-    "junit/src/org/chromium/components/variations/firstrun/VariationsSeedFetcherTest.java",
-  ]
+  sources = [ "junit/src/org/chromium/components/variations/firstrun/VariationsSeedFetcherTest.java" ]
   deps = [
     ":variations_java",
     "//base:base_java",

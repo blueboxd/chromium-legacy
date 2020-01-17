@@ -14,13 +14,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/predictors/loading_predictor_key_value_table.h"
-#include "chrome/browser/predictors/predictor_table_base.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.pb.h"
-
-namespace base {
-class Location;
-}
+#include "components/sqlite_proto/loading_predictor_key_value_table.h"
+#include "components/sqlite_proto/predictor_table_base.h"
 
 namespace predictors {
 
@@ -33,12 +29,6 @@ namespace predictors {
 //  - OriginTable - key: host, value: OriginData
 class ResourcePrefetchPredictorTables : public PredictorTableBase {
  public:
-  typedef base::OnceCallback<void(sql::Database*)> DBTask;
-
-  virtual void ScheduleDBTask(const base::Location& from_here, DBTask task);
-
-  virtual void ExecuteDBTaskOnDBSequence(DBTask task);
-
   virtual LoadingPredictorKeyValueTable<RedirectData>* host_redirect_table();
   virtual LoadingPredictorKeyValueTable<OriginData>* origin_table();
 
@@ -64,7 +54,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
  protected:
   // Protected for testing. Use PredictorDatabase::resource_prefetch_tables()
   // instead of this constructor.
-  ResourcePrefetchPredictorTables(
+  explicit ResourcePrefetchPredictorTables(
       scoped_refptr<base::SequencedTaskRunner> db_task_runner);
   ~ResourcePrefetchPredictorTables() override;
 

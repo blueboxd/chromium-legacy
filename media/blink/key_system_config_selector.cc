@@ -368,9 +368,10 @@ EmeConfigRule KeySystemConfigSelector::GetEncryptionSchemeConfigRule(
     const std::string& key_system,
     const EmeEncryptionScheme encryption_scheme) {
   switch (encryption_scheme) {
-    // https://github.com/WICG/encrypted-media-encryption-scheme/blob/master/explainer.md
-    // "A missing or null value indicates that any encryption scheme is
-    // acceptable."
+    // https://w3c.github.io/encrypted-media/#dom-mediakeysystemmediacapability-encryptionscheme
+    // "A value which is null or not present indicates to the user agent that
+    // no specific encryption scheme is required by the application, and
+    // therefore any encryption scheme is acceptable."
     // To fully implement this, we need to get the config rules for both kCenc
     // and kCbcs, which could be conflicting, and choose a final config rule
     // somehow. If we end up choosing the rule for kCbcs, we could actually
@@ -381,8 +382,16 @@ EmeConfigRule KeySystemConfigSelector::GetEncryptionSchemeConfigRule(
       return key_systems_->GetEncryptionSchemeConfigRule(
           key_system, EncryptionScheme::kCenc);
     case EmeEncryptionScheme::kCbcs:
+    case EmeEncryptionScheme::kCbcs_1_9:
       return key_systems_->GetEncryptionSchemeConfigRule(
           key_system, EncryptionScheme::kCbcs);
+    case EmeEncryptionScheme::kUnrecognized:
+      // https://w3c.github.io/encrypted-media/#get-supported-capabilities-for-audio-video-type
+      // "If encryption scheme is non-null and is not recognized or not
+      // supported by implementation, continue to the next iteration."
+      // The value provided was an empty string or some other value that is
+      // not recognized, so treat it as a scheme that is not supported.
+      return EmeConfigRule::NOT_SUPPORTED;
   }
 
   NOTREACHED();

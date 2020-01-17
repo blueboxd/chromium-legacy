@@ -10,11 +10,12 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "components/os_crypt/key_storage_util_linux.h"
 
 namespace base {
 class SequencedTaskRunner;
 class WaitableEvent;
-}
+}  // namespace base
 
 namespace os_crypt {
 struct Config;
@@ -54,6 +55,14 @@ class COMPONENT_EXPORT(OS_CRYPT) KeyStorageLinux {
   static const char kKey[];
 
  private:
+#if defined(USE_LIBSECRET) || defined(USE_KEYRING) || defined(USE_KWALLET)
+  // Tries to load the appropriate key storage. Returns null if none succeed.
+  static std::unique_ptr<KeyStorageLinux> CreateServiceInternal(
+      os_crypt::SelectedLinuxBackend selected_backend,
+      const os_crypt::Config& config);
+#endif  // defined(USE_LIBSECRET) || defined(USE_KEYRING) ||
+        // defined(USE_KWALLET)
+
   // Performs Init() on the backend's preferred thread.
   bool WaitForInitOnTaskRunner();
 

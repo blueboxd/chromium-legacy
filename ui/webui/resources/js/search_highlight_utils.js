@@ -47,7 +47,7 @@ cr.define('cr.search_highlight_utils', function() {
    */
   /* #export */ function findAndRemoveHighlights(node) {
     const wrappers = Array.from(node.querySelectorAll(`.${WRAPPER_CSS_CLASS}`));
-    assert(wrappers.length == 1);
+    assert(wrappers.length === 1);
     removeHighlights(wrappers);
   }
 
@@ -90,7 +90,7 @@ cr.define('cr.search_highlight_utils', function() {
     tokens.push(text.substr(last.start + last.length));
 
     for (let i = 0; i < tokens.length; ++i) {
-      if (i % 2 == 0) {
+      if (i % 2 === 0) {
         wrapper.appendChild(document.createTextNode(tokens[i]));
       } else {
         const hitSpan = document.createElement('span');

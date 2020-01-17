@@ -151,6 +151,8 @@ void OmniboxTextView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void OmniboxTextView::ApplyTextColor(OmniboxPart part) {
+  if (text().empty())
+    return;
   render_text_->SetColor(result_view_->GetColor(part));
   SchedulePaint();
 }
@@ -236,6 +238,10 @@ int OmniboxTextView::GetLineHeight() const {
 }
 
 void OmniboxTextView::ReapplyStyling() {
+  // No work required if there are no preexisting styles.
+  if (!cached_classifications_)
+    return;
+
   const size_t text_length = text().length();
   for (size_t i = 0; i < cached_classifications_->size(); ++i) {
     const size_t text_start = (*cached_classifications_)[i].offset;

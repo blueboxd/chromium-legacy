@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/fake_web_plugin.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -76,7 +77,7 @@ using blink::test::RunPendingTasks;
 
 namespace blink {
 
-class WebPluginContainerTest : public testing::Test {
+class WebPluginContainerTest : public PageTestBase {
  public:
   WebPluginContainerTest() : base_url_("http://www.test.com/") {}
 
@@ -221,6 +222,10 @@ class TestPluginWebFrameClient : public frame_test_helpers::TestWebFrameClient {
   }
 
  public:
+  TestPluginWebFrameClient() {
+    mock_clipboard_host_provider_.Install(*GetBrowserInterfaceBroker());
+  }
+
   void OnPrintPage() { printed_page_ = true; }
   bool PrintedAtLeastOnePage() const { return printed_page_; }
   void SetHasEditableText(bool has_editable_text) {
@@ -230,6 +235,7 @@ class TestPluginWebFrameClient : public frame_test_helpers::TestWebFrameClient {
  private:
   bool printed_page_ = false;
   bool has_editable_text_ = false;
+  PageTestBase::MockClipboardHostProvider mock_clipboard_host_provider_;
 };
 
 void TestPlugin::PrintPage(int page_number, cc::PaintCanvas* canvas) {
@@ -253,17 +259,17 @@ WebPluginContainer* GetWebPluginContainer(WebViewImpl* web_view,
   return element.PluginContainer();
 }
 
-String ReadClipboard() {
+String ReadClipboard(LocalFrame& frame) {
   // Run all tasks in a message loop to allow asynchronous clipboard writing
   // to happen before reading from it synchronously.
   test::RunPendingTasks();
-  return SystemClipboard::GetInstance().ReadPlainText();
+  return frame.GetSystemClipboard()->ReadPlainText();
 }
 
-void ClearClipboardBuffer() {
-  SystemClipboard::GetInstance().WritePlainText(String(""));
-  SystemClipboard::GetInstance().CommitWrite();
-  EXPECT_EQ(String(""), ReadClipboard());
+void ClearClipboardBuffer(LocalFrame& frame) {
+  frame.GetSystemClipboard()->WritePlainText(String(""));
+  frame.GetSystemClipboard()->CommitWrite();
+  EXPECT_EQ(String(""), ReadClipboard(frame));
 }
 
 void CreateAndHandleKeyboardEvent(WebElement* plugin_container_one_element,
@@ -376,8 +382,10 @@ TEST_F(WebPluginContainerTest, Copy) {
       ->getElementById("translated-plugin")
       ->focus();
   EXPECT_TRUE(web_view->MainFrame()->ToWebLocalFrame()->ExecuteCommand("Copy"));
-  EXPECT_EQ(String("x"), ReadClipboard());
-  ClearClipboardBuffer();
+
+  LocalFrame* local_frame = web_view->MainFrameImpl()->GetFrame();
+  EXPECT_EQ(String("x"), ReadClipboard(*local_frame));
+  ClearClipboardBuffer(*local_frame);
 }
 
 TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
@@ -391,8 +399,10 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
 
   // Make sure the right-click + command works in common scenario.
   ExecuteContextMenuCommand(web_view, "Copy");
-  EXPECT_EQ(String("x"), ReadClipboard());
-  ClearClipboardBuffer();
+
+  LocalFrame* local_frame = web_view->MainFrameImpl()->GetFrame();
+  EXPECT_EQ(String("x"), ReadClipboard(*local_frame));
+  ClearClipboardBuffer(*local_frame);
 
   auto event = frame_test_helpers::CreateMouseEvent(
       WebMouseEvent::kMouseDown, WebMouseEvent::Button::kRight,
@@ -407,8 +417,9 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
   // 3) Copy should still operate on the context node, even though the focus had
   //    shifted.
   EXPECT_TRUE(web_view->MainFrameImpl()->ExecuteCommand("Copy"));
-  EXPECT_EQ(String("x"), ReadClipboard());
-  ClearClipboardBuffer();
+
+  EXPECT_EQ(String("x"), ReadClipboard(*local_frame));
+  ClearClipboardBuffer(*local_frame);
 }
 
 // Verifies |Ctrl-C| and |Ctrl-Insert| keyboard events, results in copying to
@@ -429,13 +440,14 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest) {
       kEditingModifier | WebInputEvent::kNumLockOn | WebInputEvent::kIsLeft);
   CreateAndHandleKeyboardEvent(&plugin_container_one_element, modifier_key,
                                VKEY_C);
-  EXPECT_EQ(String("x"), ReadClipboard());
-  ClearClipboardBuffer();
+  LocalFrame* local_frame = web_view->MainFrameImpl()->GetFrame();
+  EXPECT_EQ(String("x"), ReadClipboard(*local_frame));
+  ClearClipboardBuffer(*local_frame);
 
   CreateAndHandleKeyboardEvent(&plugin_container_one_element, modifier_key,
                                VKEY_INSERT);
-  EXPECT_EQ(String("x"), ReadClipboard());
-  ClearClipboardBuffer();
+  EXPECT_EQ(String("x"), ReadClipboard(*local_frame));
+  ClearClipboardBuffer(*local_frame);
 }
 
 // Verifies |Ctrl-X| and |Shift-Delete| keyboard events, results in the "Cut"

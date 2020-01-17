@@ -94,9 +94,7 @@ source_set("translate_ui_constants") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "translate_infobar_mediator_unittest.mm",
-  ]
+  sources = [ "translate_infobar_mediator_unittest.mm" ]
   deps = [
     ":legacy_translate",
     "//components/language/ios/browser",

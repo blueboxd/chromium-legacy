@@ -14,7 +14,7 @@ var testUtils = {
    * @param {Object|string} An error with stack trace or a string error that
    *     describes the failure reason.
    */
-  forceFailure: function(error) {
+  forceFailure(error) {
     console.error(error.stack || error);
     setTimeout(function() {
       expect(false).to.be.true;

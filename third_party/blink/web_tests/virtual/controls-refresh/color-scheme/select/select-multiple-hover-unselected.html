@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src="../../../../fast/forms/resources/common.js"></script>
+<script src="../../../../resources/run-after-layout-and-paint.js"></script>
+<body>
+
+<select multiple>
+  <optgroup label="unstyled">
+    <option selected>selected</option>
+    <option id="hoverTarget">unselected (hovered)</option
+  </optgroup>
+</select>
+
+<script>
+  runAfterLayoutAndPaint(function () {
+    let hoverTarget = document.getElementById('hoverTarget');
+    hoverOverElement(hoverTarget);
+  }, true);
+</script>
+</body>

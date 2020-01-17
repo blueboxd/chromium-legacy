@@ -47,12 +47,12 @@ Polymer({
   DEFAULT_MODEL_INDEX: -1,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.SearchEnginesBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     if (this.model) {
       this.dialogTitle_ =
           loadTimeData.getString('searchEnginesEditSearchEngine');
@@ -77,7 +77,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.async(this.updateActionButtonState_.bind(this));
     this.browserProxy_.searchEngineEditStarted(
         this.model ? this.model.modelIndex : this.DEFAULT_MODEL_INDEX);
@@ -88,7 +88,7 @@ Polymer({
    * @param {!SearchEnginesInfo} searchEnginesInfo
    * @private
    */
-  enginesChanged_: function(searchEnginesInfo) {
+  enginesChanged_(searchEnginesInfo) {
     if (this.model) {
       const engineWasRemoved = ['defaults', 'others', 'extensions'].every(
           engineType =>
@@ -104,12 +104,12 @@ Polymer({
   },
 
   /** @private */
-  cancel_: function() {
+  cancel_() {
     this.$.dialog.cancel();
   },
 
   /** @private */
-  onActionButtonTap_: function() {
+  onActionButtonTap_() {
     this.browserProxy_.searchEngineEditCompleted(
         this.searchEngine_, this.keyword_, this.queryUrl_);
     this.$.dialog.close();
@@ -119,7 +119,7 @@ Polymer({
    * @param {!Element} inputElement
    * @private
    */
-  validateElement_: function(inputElement) {
+  validateElement_(inputElement) {
     // If element is empty, disable the action button, but don't show the red
     // invalid message.
     if (inputElement.value == '') {
@@ -140,13 +140,13 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  validate_: function(event) {
+  validate_(event) {
     const inputElement = /** @type {!Element} */ (event.target);
     this.validateElement_(inputElement);
   },
 
   /** @private */
-  updateActionButtonState_: function() {
+  updateActionButtonState_() {
     const allValid = [
       this.$.searchEngine, this.$.keyword, this.$.queryUrl
     ].every(function(inputElement) {

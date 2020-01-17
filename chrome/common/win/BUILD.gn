@@ -13,18 +13,14 @@ message_compiler("eventlog_messages") {
     ":eventlog_provider",
   ]
 
-  sources = [
-    "eventlog_messages.mc",
-  ]
+  sources = [ "eventlog_messages.mc" ]
 
   user_mode_logging = false
   compile_generated_code = false
 }
 
 process_version_rc_template("eventlog_provider_dll_version") {
-  sources = [
-    "eventlog_provider.ver",
-  ]
+  sources = [ "eventlog_provider.ver" ]
   output = "$target_gen_dir/eventlog_provider_dll_version.rc"
 }
 

@@ -192,9 +192,7 @@ js_library("drag_selector") {
 }
 
 js_library("empty_folder") {
-  deps = [
-    "//ui/webui/resources/js:util",
-  ]
+  deps = [ "//ui/webui/resources/js:util" ]
 }
 
 js_library("file_grid") {
@@ -338,9 +336,7 @@ js_unittest("file_table_list_unittest") {
 }
 
 js_library("file_tap_handler") {
-  deps = [
-    "//ui/file_manager/file_manager/common/js:util",
-  ]
+  deps = [ "//ui/file_manager/file_manager/common/js:util" ]
 }
 
 js_unittest("file_tap_handler_unittest") {
@@ -354,17 +350,13 @@ js_unittest("file_tap_handler_unittest") {
 # TODO(tapted): Move this into //ui/file_manager/base.
 js_library("files_alert_dialog") {
   visibility += [ "//ui/file_manager/gallery/*" ]
-  deps = [
-    "//ui/webui/resources/js/cr/ui:dialogs",
-  ]
+  deps = [ "//ui/webui/resources/js/cr/ui:dialogs" ]
 }
 
 # TODO(tapted): Move this into //ui/file_manager/base.
 js_library("files_confirm_dialog") {
   visibility += [ "//ui/file_manager/gallery/*" ]
-  deps = [
-    "//ui/webui/resources/js/cr/ui:dialogs",
-  ]
+  deps = [ "//ui/webui/resources/js/cr/ui:dialogs" ]
 }
 
 js_library("files_menu") {
@@ -400,9 +392,7 @@ js_library("import_crostini_image_dialog") {
 }
 
 js_library("gear_menu") {
-  deps = [
-    "//ui/file_manager/file_manager/common/js:util",
-  ]
+  deps = [ "//ui/file_manager/file_manager/common/js:util" ]
 }
 
 js_library("list_container") {

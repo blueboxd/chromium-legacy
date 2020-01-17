@@ -227,6 +227,13 @@ quic::ParsedQuicVersionVector ParseQuicVersions(
       }
       ++it;
     }
+
+    for (const auto& supported_version : quic::AllSupportedVersions()) {
+      if (quic::AlpnForVersion(supported_version) == version) {
+        supported_versions.push_back(supported_version);
+        break;
+      }
+    }
   }
   return supported_versions;
 }

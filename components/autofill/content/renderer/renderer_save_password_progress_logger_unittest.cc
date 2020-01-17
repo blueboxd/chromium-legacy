@@ -41,17 +41,16 @@ class FakeContentPasswordManagerDriver : public mojom::PasswordManagerDriver {
  private:
   // autofill::mojom::PasswordManagerDriver:
   void PasswordFormsParsed(
-      const std::vector<autofill::PasswordForm>& forms) override {}
+      const std::vector<autofill::FormData>& form_data) override {}
 
   void PasswordFormsRendered(
-      const std::vector<autofill::PasswordForm>& visible_forms,
+      const std::vector<autofill::FormData>& visible_forms_data,
       bool did_stop_loading) override {}
 
-  void PasswordFormSubmitted(
-      const autofill::PasswordForm& password_form) override {}
+  void PasswordFormSubmitted(const autofill::FormData& form_data) override {}
 
   void ShowManualFallbackForSaving(
-      const autofill::PasswordForm& password_form) override {}
+      const autofill::FormData& form_data) override {}
 
   void HideManualFallbackForSaving() override {}
 

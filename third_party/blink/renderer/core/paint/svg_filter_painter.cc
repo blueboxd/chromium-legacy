@@ -59,13 +59,15 @@ void SVGFilterRecordingContext::Abort() {
 
 static void PaintFilteredContent(GraphicsContext& context,
                                  const LayoutObject& object,
+                                 const DisplayItemClient& display_item_client,
                                  const FloatRect& bounds,
                                  FilterEffect* effect) {
-  if (DrawingRecorder::UseCachedDrawingIfPossible(context, object,
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, display_item_client,
                                                   DisplayItem::kSVGFilter))
     return;
 
-  DrawingRecorder recorder(context, object, DisplayItem::kSVGFilter);
+  DrawingRecorder recorder(context, display_item_client,
+                           DisplayItem::kSVGFilter);
   sk_sp<PaintFilter> image_filter =
       paint_filter_builder::Build(effect, kInterpolationSpaceSRGB);
   context.Save();
@@ -122,6 +124,7 @@ GraphicsContext* SVGFilterPainter::PrepareEffect(
 
 void SVGFilterPainter::FinishEffect(
     const LayoutObject& object,
+    const DisplayItemClient& display_item_client,
     SVGFilterRecordingContext& recording_context) {
   SVGResourceClient* client = SVGResources::GetClient(object);
   FilterData* filter_data = filter_.GetFilterDataForClient(client);
@@ -160,8 +163,8 @@ void SVGFilterPainter::FinishEffect(
 
   DCHECK_EQ(filter_data->state_, FilterData::kReadyToPaint);
   filter_data->state_ = FilterData::kPaintingFilter;
-  PaintFilteredContent(recording_context.PaintingContext(), object, bounds,
-                       filter_data->last_effect);
+  PaintFilteredContent(recording_context.PaintingContext(), object,
+                       display_item_client, bounds, filter_data->last_effect);
   filter_data->state_ = FilterData::kReadyToPaint;
 }
 

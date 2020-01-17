@@ -24,6 +24,7 @@ class WebTimeLimitEnforcer;
 class AppTimeController {
  public:
   static bool ArePerAppTimeLimitsEnabled();
+  static bool IsAppActivityReportingEnabled();
 
   // Registers preferences
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -40,6 +41,12 @@ class AppTimeController {
   }
 
   WebTimeLimitEnforcer* web_time_enforcer() { return web_time_enforcer_.get(); }
+
+  const AppActivityRegistry* app_registry() const {
+    return app_registry_.get();
+  }
+
+  AppActivityRegistry* app_registry() { return app_registry_.get(); }
 
  private:
   void RegisterProfilePrefObservers(PrefService* pref_service);

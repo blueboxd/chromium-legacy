@@ -4662,5 +4662,29 @@
     {
         "duration": "52.0",
         "name": "webrtc/pause_play_peerconnections"
+    },
+    {
+        "duration": "16.0",
+        "name": "media_perftests/_gtest_"
+    },
+    {
+        "duration": "7.0",
+        "name": "views_perftests/_gtest_"
+    },
+    {
+        "duration": "270.0",
+        "name": "base_perftests/_gtest_"
+    },
+    {
+        "duration": "270.0",
+        "name": "dawn_perf_tests/_gtest_"
+    },
+    {
+        "duration": "1988.0",
+        "name": "angle_perftests/_gtest_"
+    },
+    {
+        "duration": "110.0",
+        "name": "components_perftests/_gtest_"
     }
 ]

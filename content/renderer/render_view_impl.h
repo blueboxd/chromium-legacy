@@ -189,10 +189,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void PropagatePageZoomToNewlyAttachedFrame(bool use_zoom_for_dsf,
                                              float device_scale_factor);
 
-  // Sets page-level focus in this view and notifies plugins and Blink's
-  // FocusController.
-  void SetFocus(bool enable);
-
   // Starts a timer to send an UpdateState message on behalf of |frame|, if the
   // timer isn't already running. This allows multiple state changing events to
   // be coalesced into one update.
@@ -314,11 +310,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void ApplyPageVisibilityState(PageVisibilityState visibility_state,
                                 bool initial_setting);
 
-  // Instead of creating a new RenderWidget, a RenderFrame for a main frame
-  // revives the undead RenderWidget;
-  RenderWidget* ReviveUndeadMainFrameRenderWidget();
-  // Closes the main frame RenderWidget. If not shutting down, this will close
-  // my marking it undead, to be revived later.
+  // Closes the main frame RenderWidget.
+  // TODO(crbug.com/419087): Move ownership of the RenderWidget to
+  // RenderFrameImpl.
   void CloseMainFrameRenderWidget();
 
  private:
@@ -402,7 +396,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void SetActiveForWidget(bool active) override;
   bool SupportsMultipleWindowsForWidget() override;
   bool ShouldAckSyntheticInputImmediately() override;
-  void CancelPagePopupForWidget() override;
   void ApplyNewDisplayModeForWidget(
       blink::mojom::DisplayMode new_display_mode) override;
   void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
@@ -534,21 +527,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // fullscreen widgets are never contained by this pointer. Child frame
   // local roots are owned by a RenderFrame. The others are owned by the IPC
   // system.
-  //
-  // Note that when the main frame moves out of process, |render_widget_|
-  // is moved in to |undead_render_widget_|. In the future, the
-  // |render_widget_| should just be deleted and recreated. However, this
-  // requires reattached various objects browser process so it cannot be
-  // done yet.
   std::unique_ptr<RenderWidget> render_widget_;
-
-  // Instances of RenderViewImpl with a proxy main frame do not need a
-  // RenderWidget. Unfortunately, we can't delete the object because the browser
-  // side RenderWidgetHost/RenderViewHost lifetimes are still entangled. We
-  // store the RenderWidget in this member, but it should not be used.
-  // TODO(crbug.com/419087): Remove this once RenderWidgets are owned by the
-  // main frame.
-  std::unique_ptr<RenderWidget> undead_render_widget_;
 
   // Routing ID that allows us to communicate with the corresponding
   // RenderViewHost in the parent browser process.

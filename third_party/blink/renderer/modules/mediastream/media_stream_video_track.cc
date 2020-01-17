@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace {
@@ -122,9 +123,8 @@ class MediaStreamVideoTrack::FrameDeliverer
 
   using VideoIdCallbackPair =
       std::pair<VideoSinkId, VideoCaptureDeliverFrameInternalCallback>;
-  std::vector<VideoIdCallbackPair> callbacks_;
-  WTF::HashMap<VideoSinkId, EncodedVideoFrameInternalCallback>
-      encoded_callbacks_;
+  Vector<VideoIdCallbackPair> callbacks_;
+  HashMap<VideoSinkId, EncodedVideoFrameInternalCallback> encoded_callbacks_;
   bool await_next_key_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
@@ -149,7 +149,7 @@ MediaStreamVideoTrack::FrameDeliverer::FrameDeliverer(
 }
 
 MediaStreamVideoTrack::FrameDeliverer::~FrameDeliverer() {
-  DCHECK(callbacks_.empty());
+  DCHECK(callbacks_.IsEmpty());
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
@@ -203,7 +203,7 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
     VideoSinkId id,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  auto it = callbacks_.begin();
+  auto* it = callbacks_.begin();
   for (; it != callbacks_.end(); ++it) {
     if (it->first == id) {
       // Callback destruction needs to happen on the specified task runner.

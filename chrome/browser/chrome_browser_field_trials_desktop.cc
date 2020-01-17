@@ -32,8 +32,10 @@
 #include "media/media_buildflags.h"
 
 #if defined(OS_WIN)
+#include "base/metrics/persistent_memory_allocator.h"
 #include "base/win/pe_image.h"
 #include "chrome/install_static/install_util.h"
+#include "components/browser_watcher/activity_tracker_annotation.h"
 #include "components/browser_watcher/features.h"
 #include "components/browser_watcher/stability_data_names.h"
 #include "components/browser_watcher/stability_debugging.h"
@@ -117,63 +119,85 @@ void SetupStabilityDebugging() {
   const int kStackDepth = 4;
   const uint64_t kAllocatorId = 0;
 
-  // Ensure the stability directory exists and determine the stability file's
-  // path.
-  base::FilePath user_data_dir;
-  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir) ||
-      !base::CreateDirectory(browser_watcher::GetStabilityDir(user_data_dir))) {
-    return;
-  }
-  browser_watcher::LogStabilityRecordEvent(
-      browser_watcher::StabilityRecordEvent::kStabilityDirectoryExists);
+  // Check whether activities are to be recorded persistently or only in-memory.
+  const bool in_memory_only = base::GetFieldTrialParamByFeatureAsBool(
+      browser_watcher::kStabilityDebuggingFeature,
+      browser_watcher::kInMemoryOnlyParam, true);
+  if (in_memory_only) {
+    base::debug::GlobalActivityTracker::CreateWithAllocator(
+        std::make_unique<base::LocalPersistentMemoryAllocator>(
+            kMemorySize, kAllocatorId,
+            browser_watcher::kStabilityDebuggingFeature.name),
+        kStackDepth, 0);
+  } else {
+    // Ensure the stability directory exists and determine the stability file's
+    // path.
+    base::FilePath user_data_dir;
+    if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir) ||
+        !base::CreateDirectory(
+            browser_watcher::GetStabilityDir(user_data_dir))) {
+      return;
+    }
+    browser_watcher::LogStabilityRecordEvent(
+        browser_watcher::StabilityRecordEvent::kStabilityDirectoryExists);
 
-  base::FilePath stability_file;
-  if (!browser_watcher::GetStabilityFileForProcess(
-          base::Process::Current(), user_data_dir, &stability_file)) {
-    return;
+    base::FilePath stability_file;
+    if (!browser_watcher::GetStabilityFileForProcess(
+            base::Process::Current(), user_data_dir, &stability_file)) {
+      return;
+    }
+    browser_watcher::LogStabilityRecordEvent(
+        browser_watcher::StabilityRecordEvent::kGotStabilityPath);
+
+    base::debug::GlobalActivityTracker::CreateWithFile(
+        stability_file, kMemorySize, kAllocatorId, "", kStackDepth);
   }
-  browser_watcher::LogStabilityRecordEvent(
-      browser_watcher::StabilityRecordEvent::kGotStabilityPath);
 
   // Track code activities (such as posting task, blocking on locks, and
   // joining threads) that can cause hanging threads and general instability
-  base::debug::GlobalActivityTracker::CreateWithFile(
-      stability_file, kMemorySize, kAllocatorId,
-      browser_watcher::kStabilityDebuggingFeature.name, kStackDepth);
 
-  // Record basic information.
   base::debug::GlobalActivityTracker* global_tracker =
       base::debug::GlobalActivityTracker::Get();
-  if (global_tracker) {
-    browser_watcher::LogStabilityRecordEvent(
-        browser_watcher::StabilityRecordEvent::kGotTracker);
-    // Record product, version, channel, special build and platform.
-    wchar_t exe_file[MAX_PATH] = {};
-    CHECK(::GetModuleFileName(nullptr, exe_file, base::size(exe_file)));
+  if (!global_tracker)
+    return;
 
-    base::string16 product_name;
-    base::string16 version_number;
-    base::string16 channel_name;
-    base::string16 special_build;
-    install_static::GetExecutableVersionDetails(exe_file, &product_name,
-                                                &version_number, &special_build,
-                                                &channel_name);
+  // Record the location and size of the tracker memory range in a Crashpad
+  // annotation to allow the handler to retrieve it on crash.
+  // Record the buffer size and location for the annotation beacon.
+  auto* allocator = global_tracker->allocator();
+  static browser_watcher::ActivityTrackerAnnotation activity_tracker_annotation(
+      allocator->data(), allocator->size());
 
-    base::debug::ActivityUserData& proc_data = global_tracker->process_data();
-    proc_data.SetString(browser_watcher::kStabilityProduct, product_name);
-    proc_data.SetString(browser_watcher::kStabilityVersion, version_number);
-    proc_data.SetString(browser_watcher::kStabilityChannel, channel_name);
-    proc_data.SetString(browser_watcher::kStabilitySpecialBuild, special_build);
+  browser_watcher::LogStabilityRecordEvent(
+      browser_watcher::StabilityRecordEvent::kGotTracker);
+  // Record product, version, channel, special build and platform.
+  wchar_t exe_file[MAX_PATH] = {};
+  CHECK(::GetModuleFileName(nullptr, exe_file, base::size(exe_file)));
+
+  base::string16 product_name;
+  base::string16 version_number;
+  base::string16 channel_name;
+  base::string16 special_build;
+  install_static::GetExecutableVersionDetails(
+      exe_file, &product_name, &version_number, &special_build, &channel_name);
+
+  base::debug::ActivityUserData& proc_data = global_tracker->process_data();
+  proc_data.SetString(browser_watcher::kStabilityProduct, product_name);
+  proc_data.SetString(browser_watcher::kStabilityVersion, version_number);
+  proc_data.SetString(browser_watcher::kStabilityChannel, channel_name);
+  proc_data.SetString(browser_watcher::kStabilitySpecialBuild, special_build);
 #if defined(ARCH_CPU_X86)
-    proc_data.SetString(browser_watcher::kStabilityPlatform, "Win32");
+  proc_data.SetString(browser_watcher::kStabilityPlatform, "Win32");
 #elif defined(ARCH_CPU_X86_64)
-    proc_data.SetString(browser_watcher::kStabilityPlatform, "Win64");
+  proc_data.SetString(browser_watcher::kStabilityPlatform, "Win64");
 #endif
-    proc_data.SetInt(browser_watcher::kStabilityStartTimestamp,
-                     base::Time::Now().ToInternalValue());
-    proc_data.SetInt(browser_watcher::kStabilityProcessType,
-                     browser_watcher::ProcessState::BROWSER_PROCESS);
+  proc_data.SetInt(
+      browser_watcher::kStabilityStartTimestamp,
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  proc_data.SetInt(browser_watcher::kStabilityProcessType,
+                   browser_watcher::ProcessState::BROWSER_PROCESS);
 
+  if (!in_memory_only) {
     // Record information about chrome's module. We want this to be done early.
     RecordChromeModuleInfo(global_tracker);
 
@@ -197,9 +221,9 @@ void SetupStabilityDebugging() {
     // of this, there is no need to flush it here.
     metrics::GlobalPersistentSystemProfile::GetInstance()
         ->RegisterPersistentAllocator(global_tracker->allocator());
-
-    browser_watcher::RegisterStabilityVEH();
   }
+
+  browser_watcher::RegisterStabilityVEH();
 }
 #endif  // defined(OS_WIN)
 

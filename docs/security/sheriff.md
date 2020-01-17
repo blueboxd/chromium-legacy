@@ -154,7 +154,7 @@ i like that.")
   asks reporters to **attach files directly**, not in zip or other archives, and
   not hosted at an external resource (e.g. Google Cloud Storage). If the report
   mentions an online demo hosted somewhere, make sure the reporters attach the
-  the source code for the demo as well.
+  source code for the demo as well.
 * **If the bug is a security bug, but is only applicable to Chrome OS**:
 	* The Chrome OS Security team now has their own sheriffing rotation. To get
     bugs into their triage queue, just set OS to the single value of "Chrome".
@@ -181,7 +181,7 @@ Tips for reproducing bugs:
   [https://dev.chromium.org/getting-involved/dev-channel](https://dev.chromium.org/getting-involved/dev-channel)
   or
   [https://commondatastorage.googleapis.com/chromium-browser-asan/index.html](https://commondatastorage.googleapis.com/chromium-browser-asan/index.html)
-  for latest release of a specific version.
+  for the latest release of a specific version.
 * There are many tools available to help you reproduce various memory issues
   reliably. If you aren't already familiar with them, check out
   [AddressSanitizer](https://www.chromium.org/developers/testing/addresssanitizer),
@@ -225,7 +225,7 @@ severity later and change it if necessary.
 
 Much of Chrome's development and release process depends on bugs having the
 right labels and components. Labels and components are vitally important for
-our metrics, the visiblity of bugs, and tracking our progress over time.
+our metrics, the visibility of bugs, and tracking our progress over time.
 
 Labels to **double-check** (that should already be there if the bug was filed
 using the Security template):
@@ -258,7 +258,7 @@ Generally, see [the Security Labels document](security-labels.md).
 * Label **ExternalDependency**.
 * Label **Hotlist-WebKit**. This label is monitored by Apple friends.
 * File a security bug at [bugs.webkit.org](https://bugs.webkit.org), and CC
-  chrome-ios-security-bugs@google.com. This alias is monitored by iOS Chrome
+  chrome-ios-security-bugs@google.com. This alias is monitored by the iOS Chrome
   team so they can be notified when the WebKit bug is fixed.
 * Note the WebKit bug ID in the crbug report.
 
@@ -286,7 +286,7 @@ stand out. If you aren't sure, don't be afraid to add CCs to the bug and ask!
 
 At this point, you'll probably need to dive in and attempt to root cause the
 bug, which is another complicated grey area that you'll figure out with
-experience. Try not to spend too much time for this on any given bug, as some
+experience. Try not to spend too much time on this for any given bug, as some
 cases will simply be too difficult without a deep understanding of certain
 portions of the codebase.
 

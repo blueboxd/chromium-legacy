@@ -19,7 +19,7 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
   setup: function() {
-    settings.navigateTo(settings.routes.MANAGE_PROFILE);
+    settings.Router.getInstance().navigateTo(settings.routes.MANAGE_PROFILE);
     Polymer.dom.flush();
   },
   /** @override */

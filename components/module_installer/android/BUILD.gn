@@ -63,15 +63,11 @@ junit_binary("module_installer_junit_tests") {
 
 java_library("module_interface_java") {
   supports_android = true
-  sources = [
-    "java/src/org/chromium/components/module_installer/builder/ModuleInterface.java",
-  ]
+  sources = [ "java/src/org/chromium/components/module_installer/builder/ModuleInterface.java" ]
 }
 
 java_annotation_processor("module_interface_processor") {
-  sources = [
-    "java/src/org/chromium/components/module_installer/builder/ModuleInterfaceProcessor.java",
-  ]
+  sources = [ "java/src/org/chromium/components/module_installer/builder/ModuleInterfaceProcessor.java" ]
   main_class = "org.chromium.components.module_installer.builder.ModuleInterfaceProcessor"
   annotation_processor_deps =
       [ "//third_party/android_deps:auto_service_processor" ]
@@ -85,9 +81,7 @@ java_annotation_processor("module_interface_processor") {
 }
 
 source_set("native") {
-  sources = [
-    "module.cc",
-  ]
+  sources = [ "module.cc" ]
   deps = [
     ":jni_headers",
     "//base",

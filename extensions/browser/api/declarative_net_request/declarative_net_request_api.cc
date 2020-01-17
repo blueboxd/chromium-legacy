@@ -25,6 +25,7 @@
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
@@ -52,6 +53,29 @@ bool HasRegisteredRuleset(content::BrowserContext* context,
 
   *error = "The extension must have a ruleset in order to call this function.";
   return false;
+}
+
+// Returns whether |extension| can call getMatchedRules for the specified
+// |tab_id| and populates |error| if it can't. If no tab ID is specified, then
+// the API call is for all tabs.
+bool CanCallGetMatchedRules(content::BrowserContext* browser_context,
+                            const Extension* extension,
+                            base::Optional<int> tab_id,
+                            std::string* error) {
+  const PermissionsData* permissions_data = extension->permissions_data();
+
+  const auto kFeedbackPermission =
+      APIPermission::kDeclarativeNetRequestFeedback;
+
+  bool can_call = tab_id.has_value()
+                      ? permissions_data->HasAPIPermissionForTab(
+                            *tab_id, kFeedbackPermission)
+                      : permissions_data->HasAPIPermission(kFeedbackPermission);
+
+  if (!can_call)
+    *error = declarative_net_request::kErrorGetMatchedRulesMissingPermissions;
+
+  return can_call;
 }
 
 }  // namespace
@@ -291,6 +315,12 @@ DeclarativeNetRequestGetMatchedRulesFunction::Run() {
 
     if (params->filter->min_time_stamp)
       min_time_stamp = base::Time::FromJsTime(*params->filter->min_time_stamp);
+  }
+
+  std::string permission_error;
+  if (!CanCallGetMatchedRules(browser_context(), extension(), tab_id,
+                              &permission_error)) {
+    return RespondNow(Error(permission_error));
   }
 
   declarative_net_request::RulesMonitorService* rules_monitor_service =

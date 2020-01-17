@@ -18,7 +18,7 @@ class PrerenderTag : public WebContentsTag {
   ~PrerenderTag() override;
 
   // task_manager::WebContentsTag:
-  PrerenderTask* CreateTask() const override;
+  PrerenderTask* CreateTask(WebContentsTaskProvider*) const override;
 
  private:
   friend class WebContentsTags;

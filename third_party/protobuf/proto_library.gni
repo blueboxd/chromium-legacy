@@ -311,12 +311,8 @@ template("proto_library") {
     }
 
     # System protoc is not used so it's necessary to build a chromium one.
-    inputs = [
-      _protoc_path,
-    ]
-    deps = [
-      _protoc_label,
-    ]
+    inputs = [ _protoc_path ]
+    deps = [ _protoc_label ]
 
     if (generate_with_plugin) {
       inputs += [ plugin_path ]
@@ -485,16 +481,12 @@ template("protoc_convert") {
 
     inputs = invoker.inputs
 
-    deps = [
-      _protoc_label,
-    ]
+    deps = [ _protoc_label ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
 
-    outputs = [
-      invoker.output_pattern,
-    ]
+    outputs = [ invoker.output_pattern ]
 
     args = [
              "--protoc",

@@ -39,7 +39,7 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.AppearanceBrowserProxyImpl.getInstance();
     this.noExtensionIndicator = true;  // Prevent double indicator.
   },
@@ -47,7 +47,7 @@ Polymer({
   /**
    * Focuses the 'input' element.
    */
-  focus: function() {
+  focus() {
     this.$.input.focus();
   },
 
@@ -55,7 +55,7 @@ Polymer({
    * Polymer changed observer for |pref|.
    * @private
    */
-  prefChanged_: function() {
+  prefChanged_() {
     if (!this.pref) {
       return;
     }
@@ -70,7 +70,7 @@ Polymer({
   },
 
   /** @private */
-  setInputValueFromPref_: function() {
+  setInputValueFromPref_() {
     assert(this.pref.type == chrome.settingsPrivate.PrefType.URL);
     this.value = /** @type {string} */ (this.pref.value);
   },
@@ -81,7 +81,7 @@ Polymer({
    * @return {number}
    * @private
    */
-  getTabindex_: function(canTab) {
+  getTabindex_(canTab) {
     return canTab ? 0 : -1;
   },
 
@@ -90,7 +90,7 @@ Polymer({
    * settings-input uses the change event because it is fired by the Enter key.
    * @private
    */
-  onChange_: function() {
+  onChange_() {
     if (this.invalid) {
       this.resetValue_();
       return;
@@ -101,7 +101,7 @@ Polymer({
   },
 
   /** @private */
-  resetValue_: function() {
+  resetValue_() {
     this.invalid = false;
     this.setInputValueFromPref_();
     this.$.input.blur();
@@ -112,7 +112,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onKeydown_: function(event) {
+  onKeydown_(event) {
     // If pressed enter when input is invalid, do not trigger on-change.
     if (event.key == 'Enter' && this.invalid) {
       event.preventDefault();
@@ -129,7 +129,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  stopKeyEventPropagation_: function(e) {
+  stopKeyEventPropagation_(e) {
     e.stopPropagation();
   },
 
@@ -138,12 +138,12 @@ Polymer({
    * @return {boolean} Whether the element should be disabled.
    * @private
    */
-  isDisabled_: function(disabled) {
+  isDisabled_(disabled) {
     return disabled || this.isPrefEnforced();
   },
 
   /** @private */
-  validate_: function() {
+  validate_() {
     if (this.value == '') {
       this.invalid = false;
       return;

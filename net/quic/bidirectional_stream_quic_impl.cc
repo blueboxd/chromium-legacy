@@ -98,11 +98,11 @@ void BidirectionalStreamQuicImpl::Start(
 
   if (rv != OK) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&BidirectionalStreamQuicImpl::NotifyError,
-                                  weak_factory_.GetWeakPtr(),
-                                  session_->IsCryptoHandshakeConfirmed()
-                                      ? rv
-                                      : ERR_QUIC_HANDSHAKE_FAILED));
+        FROM_HERE,
+        base::BindOnce(
+            &BidirectionalStreamQuicImpl::NotifyError,
+            weak_factory_.GetWeakPtr(),
+            session_->OneRttKeysAvailable() ? rv : ERR_QUIC_HANDSHAKE_FAILED));
     return;
   }
 
@@ -264,7 +264,7 @@ void BidirectionalStreamQuicImpl::PopulateNetErrorDetails(
   details->connection_info =
       QuicHttpStream::ConnectionInfoFromQuicVersion(session_->GetQuicVersion());
   session_->PopulateNetErrorDetails(details);
-  if (session_->IsCryptoHandshakeConfirmed() && stream_)
+  if (session_->OneRttKeysAvailable() && stream_)
     details->quic_connection_error = stream_->connection_error();
 }
 

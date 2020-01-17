@@ -30,9 +30,7 @@ struct PasswordForm;
         (nonnull id<ReauthenticationProtocol>)reauthenticationModule
     NS_DESIGNATED_INITIALIZER;
 
-- (nullable instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                                    appBarStyle:(ChromeTableViewControllerStyle)
-                                                    appBarStyle NS_UNAVAILABLE;
+- (nullable instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 @end
 

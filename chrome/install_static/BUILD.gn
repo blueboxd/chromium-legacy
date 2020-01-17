@@ -17,9 +17,7 @@ static_library("install_static_util") {
     "//components/version_info:generate_version_info",
   ]
 
-  public_deps = [
-    "//chrome/chrome_elf:nt_registry",
-  ]
+  public_deps = [ "//chrome/chrome_elf:nt_registry" ]
 
   sources = [
     "../app/chrome_dll_resource.h",
@@ -62,9 +60,7 @@ static_library("install_static_util") {
 # A source set for use by the module in a process that creates the process-wide
 # InstallDetails instance (i.e., chrome_elf.dll).
 source_set("primary_module") {
-  sources = [
-    "get_install_details_payload.cc",
-  ]
+  sources = [ "get_install_details_payload.cc" ]
 }
 
 # A source set for use by modules in a process that fetch the process-wide
@@ -76,9 +72,7 @@ source_set("secondary_module") {
     "initialize_from_primary_module.cc",
     "initialize_from_primary_module.h",
   ]
-  deps = [
-    ":install_static_util",
-  ]
+  deps = [ ":install_static_util" ]
 }
 
 test("install_static_unittests") {

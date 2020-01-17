@@ -5,12 +5,8 @@
 import("//build/config/compiler/compiler.gni")
 
 source_set("language_code_locator") {
-  sources = [
-    "language_code_locator.h",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "language_code_locator.h" ]
+  deps = [ "//base" ]
 }
 
 static_library("browser") {

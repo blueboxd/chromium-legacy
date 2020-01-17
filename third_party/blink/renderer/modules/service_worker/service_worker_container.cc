@@ -33,6 +33,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
@@ -98,15 +100,6 @@ mojom::ServiceWorkerUpdateViaCache ParseUpdateViaCache(const String& value) {
     return mojom::ServiceWorkerUpdateViaCache::kNone;
   // Default value.
   return mojom::ServiceWorkerUpdateViaCache::kImports;
-}
-
-mojom::ScriptType ParseScriptType(const String& type) {
-  if (type == "classic")
-    return mojom::ScriptType::kClassic;
-  if (type == "module")
-    return mojom::ScriptType::kModule;
-  NOTREACHED() << "Invalid type: " << type;
-  return mojom::ScriptType::kClassic;
 }
 
 class GetRegistrationCallback : public WebServiceWorkerProvider::
@@ -354,7 +347,9 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 
   mojom::ServiceWorkerUpdateViaCache update_via_cache =
       ParseUpdateViaCache(options->updateViaCache());
-  mojom::ScriptType type = ParseScriptType(options->type());
+  base::Optional<mojom::ScriptType> script_type =
+      Script::ParseScriptType(options->type());
+  DCHECK(script_type);
 
   WebFetchClientSettingsObject fetch_client_settings_object(
       execution_context->Fetcher()
@@ -367,7 +362,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   }
 
   provider_->RegisterServiceWorker(
-      scope_url, script_url, type, update_via_cache,
+      scope_url, script_url, *script_type, update_via_cache,
       std::move(fetch_client_settings_object), std::move(callbacks));
   return promise;
 }
@@ -620,8 +615,7 @@ ServiceWorkerContainer::ServiceWorkerContainer(Document* document)
 
 ServiceWorkerContainer::ReadyProperty*
 ServiceWorkerContainer::CreateReadyProperty() {
-  return MakeGarbageCollected<ReadyProperty>(GetExecutionContext(), this,
-                                             ReadyProperty::kReady);
+  return MakeGarbageCollected<ReadyProperty>(GetExecutionContext());
 }
 
 void ServiceWorkerContainer::EnableClientMessageQueue() {

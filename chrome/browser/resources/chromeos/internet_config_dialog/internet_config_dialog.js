@@ -17,7 +17,7 @@ Polymer({
     /** @private */
     shareAllowEnable_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('shareNetworkAllowEnable');
       }
     },
@@ -25,7 +25,7 @@ Polymer({
     /** @private */
     shareDefault_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('shareNetworkDefault');
       }
     },
@@ -57,7 +57,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     var dialogArgs = chrome.getVariableValue('dialogArguments');
     if (dialogArgs) {
       var args = JSON.parse(dialogArgs);
@@ -77,7 +77,7 @@ Polymer({
   },
 
   /** @private */
-  close_: function() {
+  close_() {
     chrome.send('dialogClose');
   },
 
@@ -85,7 +85,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getDialogTitle_: function() {
+  getDialogTitle_() {
     var type = this.i18n('OncType' + this.type_);
     return this.i18n('internetJoinType', type);
   },
@@ -94,19 +94,19 @@ Polymer({
    * @return {string}
    * @private
    */
-  getError_: function() {
+  getError_() {
     if (this.i18nExists(this.error_))
       return this.i18n(this.error_);
     return this.i18n('networkErrorUnknown');
   },
 
   /** @private */
-  onCancelClick_: function() {
+  onCancelClick_() {
     this.close_();
   },
 
   /** @private */
-  onConnectClick_: function() {
+  onConnectClick_() {
     this.$.networkConfig.connect();
   },
 });

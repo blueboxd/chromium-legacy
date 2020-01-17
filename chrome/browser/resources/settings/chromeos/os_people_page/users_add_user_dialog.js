@@ -63,7 +63,7 @@ Polymer({
 
   usersPrivate_: chrome.usersPrivate,
 
-  open: function() {
+  open() {
     this.$.addUserInput.value = '';
     this.onInput_();
     this.$.dialog.showModal();
@@ -72,7 +72,7 @@ Polymer({
   },
 
   /** @private */
-  addUser_: function() {
+  addUser_() {
     // May be submitted by the Enter key even if the input value is invalid.
     if (this.$.addUserInput.disabled) {
       return;
@@ -111,17 +111,17 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  canAddUser_: function() {
+  canAddUser_() {
     return this.isEmail_ && !this.isEmpty_;
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.cancel();
   },
 
   /** @private */
-  onInput_: function() {
+  onInput_() {
     const input = this.$.addUserInput.value;
     this.isEmail_ = NAME_ONLY_REGEX.test(input) || EMAIL_REGEX.test(input);
     this.isEmpty_ = input.length == 0;
@@ -138,7 +138,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  shouldShowError_: function() {
+  shouldShowError_() {
     return this.errorCode_ != UserAddError.NO_ERROR;
   },
 
@@ -146,7 +146,7 @@ Polymer({
    * @private
    * @return {string}
    */
-  getErrorString_: function(errorCode_) {
+  getErrorString_(errorCode_) {
     if (errorCode_ == UserAddError.USER_EXISTS) {
       return this.i18n('userExistsError');
     }

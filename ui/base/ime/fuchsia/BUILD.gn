@@ -25,7 +25,5 @@ jumbo_component("fuchsia") {
     "//ui/events",
   ]
 
-  deps = [
-    "//ui/events:dom_keycode_converter",
-  ]
+  deps = [ "//ui/events:dom_keycode_converter" ]
 }

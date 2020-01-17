@@ -628,17 +628,6 @@ void LayerTreeHost::SetNeedsCommitWithForcedRedraw() {
   proxy_->SetNeedsCommit();
 }
 
-void LayerTreeHost::SetAnimationEvents(std::unique_ptr<MutatorEvents> events) {
-  DCHECK(task_runner_provider_->IsMainThread());
-  mutator_host_->SetAnimationEvents(std::move(events));
-
-  // Events are added to a queue to be dispatched but we need a main frame
-  // in order to dispatch the events. Also, finished animations require
-  // a commit in order to clean up their KeyframeModels but without a main
-  // frame we could indefinitely delay cleaning up the animation.
-  SetNeedsAnimate();
-}
-
 void LayerTreeHost::SetDebugState(const LayerTreeDebugState& debug_state) {
   LayerTreeDebugState new_debug_state =
       LayerTreeDebugState::Unite(settings_.initial_debug_state, debug_state);
@@ -948,6 +937,12 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   RecordManipulationTypeCounts(*info);
 }
 
+void LayerTreeHost::ApplyMutatorEvents(std::unique_ptr<MutatorEvents> events) {
+  DCHECK(task_runner_provider_->IsMainThread());
+  if (!events->IsEmpty())
+    mutator_host_->SetAnimationEvents(std::move(events));
+}
+
 void LayerTreeHost::RecordStartOfFrameMetrics() {
   client_->RecordStartOfFrameMetrics();
 }
@@ -1077,13 +1072,9 @@ void LayerTreeHost::RegisterViewportPropertyIds(
   DCHECK(IsUsingLayerLists());
   viewport_property_ids_ = ids;
   // Outer viewport properties exist only if inner viewport property exists.
-  // TODO(bokan): Temporarily make this a CHECK to debug crbug.com/1037759.
-  if (ids.inner_scroll == ScrollTree::kInvalidNodeId) {
-    CHECK_EQ(ids.outer_scroll, ScrollTree::kInvalidNodeId);
-    CHECK_EQ(ids.outer_clip, ClipTree::kInvalidNodeId);
-  } else {
-    CHECK_NE(ids.outer_scroll, ScrollTree::kInvalidNodeId);
-  }
+  DCHECK(ids.inner_scroll != ScrollTree::kInvalidNodeId ||
+         (ids.outer_scroll == ScrollTree::kInvalidNodeId &&
+          ids.outer_clip == ClipTree::kInvalidNodeId));
 }
 
 Layer* LayerTreeHost::InnerViewportScrollLayerForTesting() const {

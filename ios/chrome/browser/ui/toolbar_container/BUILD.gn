@@ -26,15 +26,11 @@ source_set("feature_flags") {
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("toolbar_collapsing") {
-  sources = [
-    "toolbar_collapsing.h",
-  ]
+  sources = [ "toolbar_collapsing.h" ]
 }
 
 source_set("ui") {

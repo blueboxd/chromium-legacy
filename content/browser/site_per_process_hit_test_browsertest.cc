@@ -42,6 +42,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/test/mock_overscroll_observer.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -6665,7 +6666,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessUserActivationHitTestBrowserTest,
 
   // Clear the activation state.
   root->UpdateUserActivationState(
-      blink::UserActivationUpdateType::kClearActivation);
+      blink::mojom::UserActivationUpdateType::kClearActivation);
 
   // Send a mouse down to child frame.
   mouse_event.SetType(blink::WebInputEvent::kMouseDown);
@@ -6751,8 +6752,7 @@ class SitePerProcessHitTestDataGenerationBrowserTest
  protected:
   // Load the page |host_name| and retrieve the hit test data from HitTestQuery.
   std::vector<viz::AggregatedHitTestRegion> SetupAndGetHitTestData(
-      const std::string& host_name,
-      unsigned skipped_child = -1) {
+      const std::string& host_name) {
     GURL main_url(embedded_test_server()->GetURL(host_name));
     EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -6765,11 +6765,7 @@ class SitePerProcessHitTestDataGenerationBrowserTest
             root->current_frame_host()->GetRenderWidgetHost()->GetView());
 
     for (unsigned i = 0; i < root->child_count(); i++) {
-      // Child with pointer-events: none property will never submit a hit test
-      // region in /2 hit testing.
-      if (i != skipped_child) {
         WaitForHitTestData(root->child_at(i)->current_frame_host());
-      }
     }
 
     HitTestRegionObserver observer(rwhv_root->GetRootFrameSinkId());
@@ -7071,7 +7067,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
 IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
                        PointerEventsNoneOOPIF) {
   auto hit_test_data = SetupAndGetHitTestData(
-      "/frame_tree/page_with_positioned_frame_pointer-events_none.html", 0);
+      "/frame_tree/page_with_positioned_frame_pointer-events_none.html");
   float device_scale_factor = current_device_scale_factor();
   gfx::Transform expected_transform;
   gfx::Rect expected_region = gfx::ScaleToEnclosingRect(

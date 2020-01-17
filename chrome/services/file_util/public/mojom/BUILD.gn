@@ -7,18 +7,14 @@ import("//components/safe_browsing/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "file_util_service.mojom",
-  ]
+  sources = [ "file_util_service.mojom" ]
 
   if (safe_browsing_mode == 1) {
     sources += [ "safe_archive_analyzer.mojom" ]
     enabled_features = [ "full_safe_browsing" ]
   }
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 
   if (is_chromeos) {
     sources += [ "zip_file_creator.mojom" ]

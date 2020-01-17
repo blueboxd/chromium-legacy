@@ -610,14 +610,7 @@ class LocalNtpSource::SearchConfigurationProvider
                                ->IsAccessibleBrowser());
 
     if (is_google) {
-      config_data.SetBoolean(
-          "richerPicker",
-          base::FeatureList::IsEnabled(ntp_features::kCustomizationMenuV2));
-      config_data.SetBoolean("chromeColors", base::FeatureList::IsEnabled(
-                                                 ntp_features::kChromeColors));
-      config_data.SetBoolean("chromeColorsCustomColorPicker",
-                             base::FeatureList::IsEnabled(
-                                 ntp_features::kChromeColorsCustomColorPicker));
+      config_data.SetBoolean("richerPicker", true);
       config_data.SetBoolean("realboxEnabled",
                              ntp_features::IsRealboxEnabled());
       config_data.SetBoolean("realboxMatchOmniboxTheme",

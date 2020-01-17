@@ -191,17 +191,13 @@ int AudioRendererAlgorithm::ResampleAndFill(AudioBus* dest,
                             base::Unretained(this)));
   }
 
-  const int num_chunks = static_cast<int>(std::ceil(
-      static_cast<float>(requested_frames) / resampler_->ChunkSize()));
-
   // |resampler_| can request more than |requested_frames|, due to the
   // requests size not being aligned. To prevent having to fill it with silence,
   // we find the max number of reads it could request, and make sure we have
   // enough data to satisfy all of those reads.
-  const int min_frames_required =
-      num_chunks * SincResampler::kDefaultRequestSize;
-
-  if (!reached_end_of_stream_ && audio_buffer_.frames() < min_frames_required) {
+  if (!reached_end_of_stream_ &&
+      audio_buffer_.frames() <
+          resampler_->GetMaxInputFramesRequested(requested_frames)) {
     // Exit early, forgoing at most a total of |audio_buffer_.frames()| +
     // |resampler_->BufferedFrames()|.
     // If we have reached the end of stream, |resampler_| will output silence

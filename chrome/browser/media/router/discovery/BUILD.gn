@@ -5,9 +5,7 @@
 assert(!is_android)
 
 static_library("discovery") {
-  inputs = [
-    "$root_gen_dir/chrome/grit/generated_resources.h",
-  ]
+  inputs = [ "$root_gen_dir/chrome/grit/generated_resources.h" ]
   deps = [
     "//base",
     "//base:i18n",

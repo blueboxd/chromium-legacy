@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/web_ui_controller.h"
 
@@ -30,9 +31,6 @@ class DownloadItem;
 
 namespace content {
 
-class IndexedDBContextImpl;
-class StoragePartition;
-
 // The implementation for the chrome://indexeddb-internals page.
 class IndexedDBInternalsUI : public WebUIController {
  public:
@@ -41,23 +39,15 @@ class IndexedDBInternalsUI : public WebUIController {
 
  private:
   void GetAllOrigins(const base::ListValue* args);
-  void GetAllOriginsOnIndexedDBThread(scoped_refptr<IndexedDBContext> context,
-                                      const base::FilePath& context_path);
-  void OnOriginsReady(std::unique_ptr<base::ListValue> origins,
-                      const base::FilePath& path);
-
-  void AddContextFromStoragePartition(StoragePartition* partition);
+  void OnOriginsReady(const base::Value& origins, const base::FilePath& path);
 
   void DownloadOriginData(const base::ListValue* args);
-  void DownloadOriginDataOnIndexedDBThread(
-      const base::FilePath& partition_path,
-      const scoped_refptr<IndexedDBContextImpl> context,
-      const url::Origin& origin);
   void OnDownloadDataReady(const base::FilePath& partition_path,
                            const url::Origin& origin,
-                           const base::FilePath temp_path,
-                           const base::FilePath zip_path,
-                           size_t connection_count);
+                           uint64_t connection_count,
+                           bool success,
+                           const base::FilePath& temp_path,
+                           const base::FilePath& zip_path);
   void OnDownloadStarted(const base::FilePath& partition_path,
                          const url::Origin& origin,
                          const base::FilePath& temp_path,
@@ -66,22 +56,19 @@ class IndexedDBInternalsUI : public WebUIController {
                          download::DownloadInterruptReason interrupt_reason);
 
   void ForceCloseOrigin(const base::ListValue* args);
-  void ForceCloseOriginOnIndexedDBThread(
-      const base::FilePath& partition_path,
-      const scoped_refptr<IndexedDBContextImpl> context,
-      const url::Origin& origin);
   void OnForcedClose(const base::FilePath& partition_path,
                      const url::Origin& origin,
-                     size_t connection_count);
+                     uint64_t connection_count);
 
-  bool GetOriginContext(const base::FilePath& path,
+  bool GetOriginControl(const base::FilePath& path,
                         const url::Origin& origin,
-                        scoped_refptr<IndexedDBContextImpl>* context);
+                        storage::mojom::IndexedDBControl** control);
   bool GetOriginData(const base::ListValue* args,
                      base::FilePath* path,
                      url::Origin* origin,
-                     scoped_refptr<IndexedDBContextImpl>* context);
+                     storage::mojom::IndexedDBControl** control);
 
+  base::WeakPtrFactory<IndexedDBInternalsUI> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(IndexedDBInternalsUI);
 };
 

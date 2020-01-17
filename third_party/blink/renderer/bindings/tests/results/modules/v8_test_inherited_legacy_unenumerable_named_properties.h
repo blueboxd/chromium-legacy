@@ -61,12 +61,6 @@ class V8TestInheritedLegacyUnenumerableNamedProperties {
 };
 
 template <>
-struct NativeValueTraits<TestInheritedLegacyUnenumerableNamedProperties> : public NativeValueTraitsBase<TestInheritedLegacyUnenumerableNamedProperties> {
-  MODULES_EXPORT static TestInheritedLegacyUnenumerableNamedProperties* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  MODULES_EXPORT static TestInheritedLegacyUnenumerableNamedProperties* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestInheritedLegacyUnenumerableNamedProperties> {
   typedef V8TestInheritedLegacyUnenumerableNamedProperties Type;
 };

@@ -65,12 +65,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
-#include "third_party/blink/public/mojom/remote_objects/remote_objects.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+#include "third_party/blink/public/mojom/remote_objects/remote_objects.mojom.h"
 #endif  // defined(OS_ANDROID)
 
 namespace content {

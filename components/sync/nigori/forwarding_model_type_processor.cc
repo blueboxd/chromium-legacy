@@ -35,8 +35,10 @@ void ForwardingModelTypeProcessor::GetLocalChanges(
 
 void ForwardingModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
-    const CommitResponseDataList& response_list) {
-  processor_->OnCommitCompleted(type_state, response_list);
+    const CommitResponseDataList& committed_response_list,
+    const FailedCommitResponseDataList& error_response_list) {
+  processor_->OnCommitCompleted(type_state, committed_response_list,
+                                error_response_list);
 }
 
 void ForwardingModelTypeProcessor::OnUpdateReceived(

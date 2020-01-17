@@ -4,10 +4,10 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_pipeline_layout_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group_layout.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_pipeline_layout_descriptor.h"
 
 namespace blink {
 

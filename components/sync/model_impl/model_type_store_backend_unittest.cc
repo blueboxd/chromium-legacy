@@ -9,7 +9,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "components/sync/protocol/model_type_store_schema_descriptor.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -209,7 +208,6 @@ TEST(ModelTypeStoreBackendTest, RecoverAfterCorruption) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  base::HistogramTester tester;
   leveldb::Status s;
 
   // Prepare environment that looks corrupt to leveldb.
@@ -221,13 +219,6 @@ TEST(ModelTypeStoreBackendTest, RecoverAfterCorruption) {
       ModelTypeStoreBackend::CreateUninitialized();
   base::Optional<ModelError> error = backend->Init(temp_dir.GetPath());
   ASSERT_FALSE(error) << error->ToString();
-
-  // Check that both recovery and consecutive initialization are recorded in
-  // histograms.
-  tester.ExpectBucketCount(ModelTypeStoreBackend::kStoreInitResultHistogramName,
-                           STORE_INIT_RESULT_SUCCESS, 1);
-  tester.ExpectBucketCount(ModelTypeStoreBackend::kStoreInitResultHistogramName,
-                           STORE_INIT_RESULT_RECOVERED_AFTER_CORRUPTION, 1);
 }
 
 }  // namespace

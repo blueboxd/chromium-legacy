@@ -20,30 +20,30 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ =
         settings.ExtensionControlBrowserProxyImpl.getInstance();
   },
 
   /** @private */
-  onManageTap_: function() {
+  onManageTap_() {
     this.closePopupMenu_();
     this.browserProxy_.manageExtension(this.engine.extension.id);
   },
 
   /** @private */
-  onDisableTap_: function() {
+  onDisableTap_() {
     this.closePopupMenu_();
     this.browserProxy_.disableExtension(this.engine.extension.id);
   },
 
   /** @private */
-  closePopupMenu_: function() {
+  closePopupMenu_() {
     this.$$('cr-action-menu').close();
   },
 
   /** @private */
-  onDotsTap_: function() {
+  onDotsTap_() {
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
         .showAt(assert(this.$$('cr-icon-button')), {
           anchorAlignmentY: AnchorAlignment.AFTER_END,

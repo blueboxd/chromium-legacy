@@ -19,6 +19,10 @@
 #include "media/formats/mp4/box_definitions.h"
 #include "media/media_buildflags.h"
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#include "media/formats/mp4/aac.h"
+#endif
+
 namespace media {
 
 namespace {
@@ -386,6 +390,18 @@ bool AVCodecContextToAudioDecoderConfig(const AVCodecContext* codec_context,
   // a known sample format size.
   if (codec == kCodecAC3 || codec == kCodecEAC3)
     return true;
+#endif
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  // TODO(dalecurtis): Just use the profile from the codec context if ffmpeg
+  // ever starts supporting xHE-AAC.
+  if (codec == kCodecAAC && codec_context->profile == FF_PROFILE_UNKNOWN) {
+    // Errors aren't fatal here, so just drop any MediaLog messages.
+    NullMediaLog media_log;
+    mp4::AAC aac_parser;
+    if (aac_parser.Parse(extra_data, &media_log))
+      config->set_profile(aac_parser.GetProfile());
+  }
 #endif
 
   // Verify that AudioConfig.bits_per_channel was calculated correctly for

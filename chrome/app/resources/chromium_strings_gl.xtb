@@ -56,7 +56,6 @@
 <translation id="328888136576916638">Non se atopan as claves da API de Google. Desactivaranse algunhas funcións de Chromium.</translation>
 <translation id="3296368748942286671">Continuar executando aplicacións en segundo plano cando se peche Chromium</translation>
 <translation id="331951419404882060">Chromium OS non puido sincronizar os teus datos debido a un erro ao iniciar sesión.</translation>
-<translation id="3340978935015468852">configuración</translation>
 <translation id="3474745554856756813">Esta acción eliminará <ph name="ITEMS_COUNT" /> elementos deste dispositivo. Para recuperar os teus datos máis tarde, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="3509308970982693815">Pecha todas as ventás de Chromium e téntao de novo.</translation>
 <translation id="3575459661164320785">O teu ordenador ten software daniño. Chromium pode quitalo, restaurar a configuración e desactivar as extensións para que o navegador funcione con normalidade de novo.</translation>
@@ -205,7 +204,6 @@ Chromium non pode recuperar a túa configuración.</translation>
       configuración do navegador Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Tamén controla a páxina que se mostra ao iniciar Chromium ou ao realizar unha busca desde Omnibox.</translation>
 <translation id="8704119203788522458">Este é o teu Chromium</translation>
-<translation id="8739167630197873875">As cookies bórranse ao pechar Chromium. Para seguir coa sincronización, cambia esta <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="8796602469536043152">Chromium necesita permiso para acceder á cámara e ao micrófono neste sitio</translation>
 <translation id="8803635938069941624">Condicións de Chromium OS</translation>
 <translation id="8821041990367117597">Chromium non puido sincronizar os teus datos porque os detalles de inicio de sesión da túa conta están desactualizados.</translation>

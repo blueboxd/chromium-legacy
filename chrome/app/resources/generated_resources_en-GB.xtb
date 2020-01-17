@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">This user account does not belong to the domain that the device is enrolled to.  If you want to enrol to a different domain you need to go through device recovery first.</translation>
 <translation id="1274977772557788323">Adobe Flash Player Storage settings</translation>
 <translation id="1274997165432133392">Cookies and other site data</translation>
-<translation id="127668050356036882">Close all your windows</translation>
 <translation id="1280820357415527819">Searching for mobile networks</translation>
 <translation id="1282420830958964167">The limit on '<ph name="APP_NAME" />' that your parent set ran out. You can use it for <ph name="TIME_LIMIT" /> tomorrow.</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
@@ -518,7 +517,6 @@
 <translation id="1712552549805331520"><ph name="URL" /> wants to permanently store data on your local computer</translation>
 <translation id="1714644264617423774">Enable accessibility features to make your device easier to use. <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Motion sensors</translation>
-<translation id="171824261579749339">Australian <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">Last hour</translation>
 <translation id="1719312230114180055">Note: Your fingerprint may be less secure than a strong password or PIN.</translation>
 <translation id="1720318856472900922">TLS WWW Server Authentication</translation>
@@ -729,7 +727,6 @@
 <translation id="2006638907958895361">Open Link in <ph name="APP" /></translation>
 <translation id="2007404777272201486">Report an Issue...</translation>
 <translation id="2010501376126504057">Compatible devices</translation>
-<translation id="2016430552235416146">Traditional</translation>
 <translation id="2017334798163366053">Disable performance data collection</translation>
 <translation id="2017836877785168846">Clears history and autocompletions in the address bar.</translation>
 <translation id="2018352199541442911">Sorry, your external storage device is not supported at present.</translation>
@@ -770,7 +767,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2076672359661571384">Medium (Recommended)</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2078019350989722914">Warn Before Quitting (<ph name="KEY_EQUIVALENT" />)</translation>
-<translation id="2078494137444990774">Off</translation>
 <translation id="2079053412993822885">If you delete one of your own certificates, you can no longer use it to identify yourself.</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="2080070583977670716">More settings</translation>
@@ -1209,7 +1205,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2665647207431876759">Expired</translation>
 <translation id="2665717534925640469">This page is now full screen and has disabled your mouse cursor.</translation>
 <translation id="2665919335226618153">Oh no! There was an error during formatting.</translation>
-<translation id="2666990579225592931">Open Guest window</translation>
 <translation id="2667463864537187133">Manage spell check</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> is sharing a Chrome tab.</translation>
 <translation id="2670429602441959756">This page contains features not yet supported in VR. Exiting...</translation>
@@ -2406,7 +2401,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> is sharing a window.</translation>
 <translation id="4364830672918311045">Display notifications</translation>
-<translation id="436499142539576997">Failed to obtain app data; still trying to run the app…</translation>
 <translation id="4370975561335139969">The email and password that you entered don't match.</translation>
 <translation id="437184764829821926">Advanced font settings</translation>
 <translation id="4374831787438678295">Linux installer</translation>
@@ -3433,7 +3427,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5867841422488265304">Search or type web address</translation>
 <translation id="5869029295770560994">OK, got it</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
-<translation id="5869948122057593679">Close all your windows</translation>
 <translation id="5870086504539785141">Close accessibility menu</translation>
 <translation id="5870155679953074650">Hard faults</translation>
 <translation id="5876851302954717356">New Tab to the Right</translation>
@@ -4482,7 +4475,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7385854874724088939">Something went wrong when trying to print.  Please check your printer and try again.</translation>
 <translation id="7385896526023870365">This extension has no additional site access.</translation>
 <translation id="7388044238629873883">You've almost finished!</translation>
-<translation id="7388222713940428051">Open Guest window</translation>
 <translation id="7392118418926456391">Virus scan failed</translation>
 <translation id="7392915005464253525">R&amp;eopen closed window</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> will launch at system startup and continue to run in the background, even once you've closed all other <ph name="PRODUCT_NAME" /> windows.</translation>
@@ -4747,7 +4739,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7784067724422331729">Security settings on your computer blocked this file.</translation>
 <translation id="7784796923038949829">Can't read or change site's data</translation>
 <translation id="778480864305029524">To use Instant Tethering, turn on notifications for Google Play Services.</translation>
-<translation id="7786207843293321886">Exit Guest</translation>
 <translation id="7786889348652477777">&amp;Reload App</translation>
 <translation id="7787308148023287649">Display on another screen</translation>
 <translation id="7788298548579301890">Another program on your computer added an app that may change the way Chrome works.
@@ -4861,7 +4852,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7908378463497120834">Sorry, at least one partition on your external storage device could not be mounted.</translation>
 <translation id="7909969815743704077">Downloaded in Incognito</translation>
 <translation id="7910768399700579500">&amp;New folder</translation>
-<translation id="7910831464510799808">On</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Your password has been changed on the server. Please sign out then sign in again.</translation>
 <translation id="7915457674565721553">Connect to the Internet to set up parental controls</translation>

@@ -10,7 +10,7 @@
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_utils.h"
 
 namespace ash {
 
@@ -47,29 +47,23 @@ void OverviewWallpaperController::Blur(bool animate_only) {
 void OverviewWallpaperController::Unblur() {
   if (!IsWallpaperChangeAllowed())
     return;
-  OnBlurChange(/*should_blur=*/false, /*animate_only=*/false);
+  OnBlurChange(/*should_blur=*/false, /*animate_only=*/true);
 }
 
 void OverviewWallpaperController::OnBlurChange(bool should_blur,
                                                bool animate_only) {
-  if (animate_only)
-    DCHECK(should_blur);
-
   // Don't apply wallpaper change while the session is blocked.
   if (Shell::Get()->session_controller()->IsUserSessionBlocked())
     return;
 
-  OverviewSession* overview_session =
-      Shell::Get()->overview_controller()->overview_session();
   for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
-    // |overview_session| may be null on overview exit because we call this
-    // after the animations are done running. We don't support animation on exit
-    // so just set |should_animate| to false.
-    OverviewGrid* grid = overview_session
-                             ? overview_session->GetGridWithRootWindow(root)
-                             : nullptr;
-    bool should_animate = grid && grid->ShouldAnimateWallpaper();
-    if (should_animate != animate_only)
+    const bool should_animate = ShouldAnimateWallpaper(root);
+    // On adding blur, we want to blur immediately if there are no animations
+    // and blur after the rest of the overview animations have completed if
+    // there is to be wallpaper animations. |OnBlurChange| will get called twice
+    // when blurring, but only change the wallpaper when |should_animate|
+    // matches |animate_only|.
+    if (should_blur && should_animate != animate_only)
       continue;
 
     auto* wallpaper_widget_controller = GetWallpaperWidgetController(root);
@@ -80,6 +74,9 @@ void OverviewWallpaperController::OnBlurChange(bool should_blur,
                      : (Shell::Get()->tablet_mode_controller()->InTabletMode()
                             ? wallpaper_constants::kOverviewInTabletState
                             : wallpaper_constants::kOverviewState);
+    // TODO(sammiequon): Move this check to wallpaper code.
+    if (property == wallpaper_widget_controller->GetWallpaperProperty())
+      continue;
     wallpaper_widget_controller->SetWallpaperProperty(
         property, should_animate ? kBlurSlideDuration : base::TimeDelta());
   }

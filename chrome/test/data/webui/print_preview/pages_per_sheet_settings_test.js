@@ -34,17 +34,6 @@ suite('PagesPerSheetSettingsTest', function() {
     assertEquals('4', select.value);
   });
 
-  // Tests that setting the pages per sheet setting resets margins to DEFAULT.
-  test('resets margins setting', async () => {
-    pagesPerSheetSection.setSetting('margins', MarginsType.NO_MARGINS);
-    assertEquals(1, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
-    pagesPerSheetSection.setSetting('pagesPerSheet', 4);
-    await eventToPromise('process-select-change', pagesPerSheetSection);
-    assertEquals(4, pagesPerSheetSection.getSettingValue('pagesPerSheet'));
-    assertEquals(
-        MarginsType.DEFAULT, pagesPerSheetSection.getSettingValue('margins'));
-  });
-
   // Tests that selecting a new option in the dropdown updates the setting.
   test('select option', async () => {
     // Verify that the selected option and names are as expected.

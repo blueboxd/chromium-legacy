@@ -49,6 +49,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   SkiaRenderer(const RendererSettings* settings,
                OutputSurface* output_surface,
                DisplayResourceProvider* resource_provider,
+               OverlayProcessorInterface* overlay_processor,
                SkiaOutputSurface* skia_output_surface,
                DrawMode mode);
   ~SkiaRenderer() override;

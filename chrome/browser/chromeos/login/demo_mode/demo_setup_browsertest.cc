@@ -605,10 +605,12 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest,
        {"fr", "France"},
        {"de", "Germany"},
        {"ie", "Ireland"},
+       {"it", "Italy"},
        {"jp", "Japan"},
        {"lu", "Luxembourg"},
        {"nl", "Netherlands"},
        {"no", "Norway"},
+       {"es", "Spain"},
        {"se", "Sweden"},
        {"gb", "United Kingdom"}});
   for (const std::string country_code : DemoSession::kSupportedCountries) {

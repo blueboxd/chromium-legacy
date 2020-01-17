@@ -21,18 +21,15 @@ android_library("java") {
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
-  sources = [
-    "java/src/org/chromium/chrome/features/test_dummy/TestDummyImpl.java",
-  ]
+  sources =
+      [ "java/src/org/chromium/chrome/features/test_dummy/TestDummyImpl.java" ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   deps += [ "//base:jni_java" ]
 }
 
 source_set("native") {
-  sources = [
-    "test_dummy_impl.cc",
-  ]
+  sources = [ "test_dummy_impl.cc" ]
 
   deps = [
     ":jni_headers",
@@ -61,9 +58,8 @@ android_library("base_module_java") {
 }
 
 generate_jni("jni_headers") {
-  sources = [
-    "java/src/org/chromium/chrome/features/test_dummy/TestDummyImpl.java",
-  ]
+  sources =
+      [ "java/src/org/chromium/chrome/features/test_dummy/TestDummyImpl.java" ]
 }
 
 # Cannot call this just "resources" since all targets with that name in

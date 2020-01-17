@@ -593,18 +593,12 @@ blink_core_sources("html") {
 copy("form_controls_pickers_js") {
   testonly = true
 
-  sources = [
-    "forms/resources/color_picker.js",
-  ]
+  sources = [ "forms/resources/color_picker.js" ]
 
-  outputs = [
-    "{{source_gen_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{source_gen_dir}}/{{source_file_part}}" ]
 }
 
 group("js_files_for_form_controls_web_tests") {
   testonly = true
-  data_deps = [
-    ":form_controls_pickers_js",
-  ]
+  data_deps = [ ":form_controls_pickers_js" ]
 }

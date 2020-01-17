@@ -33,9 +33,7 @@ source_set("omaha") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "omaha_service_unittest.mm",
-  ]
+  sources = [ "omaha_service_unittest.mm" ]
   deps = [
     ":omaha",
     "//base",

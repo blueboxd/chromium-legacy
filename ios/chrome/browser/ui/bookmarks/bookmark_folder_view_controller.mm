@@ -119,8 +119,7 @@ using bookmarks::BookmarkNode;
   DCHECK(bookmarkModel);
   DCHECK(bookmarkModel->loaded());
   DCHECK(selectedFolder == NULL || selectedFolder->is_folder());
-  self = [super initWithTableViewStyle:UITableViewStylePlain
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     _allowsCancel = allowsCancel;
     _allowsNewFolders = allowsNewFolders;

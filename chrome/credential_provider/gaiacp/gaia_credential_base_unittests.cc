@@ -605,6 +605,24 @@ TEST_F(GcpGaiaCredentialBaseTest, FailedUserCreation) {
   ASSERT_EQ(S_OK, FinishLogonProcess(false, false, IDS_INTERNAL_ERROR_BASE));
 }
 
+TEST_F(GcpGaiaCredentialBaseTest, FailedUserCreation_PasswordTooShort) {
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  // Fail user creation.
+  fake_os_user_manager()->SetShouldFailUserCreation(true);
+  fake_os_user_manager()->SetShouldUserCreationFailureReason(
+      HRESULT_FROM_WIN32(NERR_PasswordTooShort));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  // Logon process should fail with an internal error.
+  ASSERT_EQ(S_OK, FinishLogonProcess(false, false,
+                                     IDS_CREATE_USER_PASSWORD_TOO_SHORT_BASE));
+}
+
 TEST_F(GcpGaiaCredentialBaseTest, FailOnInvalidDomain) {
   const base::string16 allowed_email_domains =
       L"acme.com,acme2.com,acme3.com";
@@ -734,8 +752,8 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   ASSERT_EQ(S_OK, cred.As(&test));
 
   // User should have invalid token handle and be locked.
-  EXPECT_FALSE(
-      fake_associated_user_validator()->IsTokenHandleValidForUser(OLE2W(sid)));
+  EXPECT_TRUE(
+      fake_associated_user_validator()->IsAuthEnforcedForUser(OLE2W(sid)));
   EXPECT_EQ(true,
             fake_associated_user_validator()->IsUserAccessBlockedForTesting(
                 OLE2W(sid)));
@@ -784,25 +802,7 @@ TEST_F(GcpGaiaCredentialBaseTest, SigninNotBlockedWhenValidChromeNotFound) {
 
   // Create with invalid token handle response.
   SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
-  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
-
-  Microsoft::WRL::ComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.As(&test));
-
-  // User should have invalid token handle but sign-in should not be blocked
-  // just because Chrome was not found and GCPW cannot load.
-  EXPECT_FALSE(
-      fake_associated_user_validator()->IsTokenHandleValidForUser(OLE2W(sid)));
-  EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
-      OLE2W(sid)));
-
-  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
-
-  // Logon process should not raise an error message.
-  ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
-
-  EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
-      OLE2W(sid)));
+  ASSERT_EQ(E_FAIL, InitializeProviderAndGetCredential(0, &cred));
 }
 
 TEST_F(GcpGaiaCredentialBaseTest, DenySigninBlockedDuringSignin) {
@@ -821,6 +821,9 @@ TEST_F(GcpGaiaCredentialBaseTest, DenySigninBlockedDuringSignin) {
                       base::UTF8ToUTF16(kDefaultGaiaId), base::string16(),
                       &first_sid));
   ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+
+  std::vector<base::string16> reauth_sids;
+  reauth_sids.push_back((BSTR)first_sid);
 
   // Create provider and start logon.
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
@@ -844,8 +847,9 @@ TEST_F(GcpGaiaCredentialBaseTest, DenySigninBlockedDuringSignin) {
 
   // Signin process has already started. User should not be locked even if their
   // token handle is invalid.
-  EXPECT_FALSE(fake_associated_user_validator()
-                   ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_FALSE(
+      fake_associated_user_validator()
+          ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON, reauth_sids));
   EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
       OLE2W(first_sid)));
 
@@ -858,16 +862,18 @@ TEST_F(GcpGaiaCredentialBaseTest, DenySigninBlockedDuringSignin) {
   EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
 
   // Result has not been reported yet, user signin should still not be denied.
-  EXPECT_FALSE(fake_associated_user_validator()
-                   ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_FALSE(
+      fake_associated_user_validator()
+          ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON, reauth_sids));
   EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
       OLE2W(first_sid)));
 
   ReportLogonProcessResult(cred);
 
   // Now signin can be denied for the user if their token handle is invalid.
-  EXPECT_TRUE(fake_associated_user_validator()
-                  ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_TRUE(
+      fake_associated_user_validator()
+          ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON, reauth_sids));
   EXPECT_TRUE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
       OLE2W(first_sid)));
 
@@ -899,6 +905,9 @@ TEST_F(GcpGaiaCredentialBaseTest,
                       &first_sid));
   ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
 
+  std::vector<base::string16> reauth_sids;
+  reauth_sids.push_back((BSTR)first_sid);
+
   // Move the current time beyond staleness time period.
   base::Time last_online_login = base::Time::Now();
   base::string16 last_online_login_millis = base::NumberToString16(
@@ -929,8 +938,9 @@ TEST_F(GcpGaiaCredentialBaseTest,
   ASSERT_EQ(S_OK, cred.As(&test));
 
   // User access shouldn't be blocked before login starts.
-  EXPECT_FALSE(fake_associated_user_validator()
-                   ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_FALSE(
+      fake_associated_user_validator()
+          ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON, reauth_sids));
   EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
       OLE2W(first_sid)));
 
@@ -946,8 +956,9 @@ TEST_F(GcpGaiaCredentialBaseTest,
       &BaseTimeClockOverrideValue::NowOverride, nullptr, nullptr);
 
   // User access should be blocked now that the time has been moved.
-  ASSERT_TRUE(fake_associated_user_validator()
-                  ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  ASSERT_TRUE(
+      fake_associated_user_validator()
+          ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON, reauth_sids));
   EXPECT_TRUE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
       OLE2W(first_sid)));
 
@@ -968,8 +979,9 @@ TEST_F(GcpGaiaCredentialBaseTest,
   ReportLogonProcessResult(cred);
 
   // User access shouldn't be blocked after login completes.
-  EXPECT_FALSE(fake_associated_user_validator()
-                   ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_FALSE(
+      fake_associated_user_validator()
+          ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON, reauth_sids));
   EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
       OLE2W(first_sid)));
 
@@ -2280,6 +2292,161 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Combine(::testing::Values(0, 1, 2),
                                             ::testing::Values(0, 1, 2),
                                             ::testing::Values(0, 1, 2)));
+
+// Tests failures in NetUserChangePassword attempt after password is
+// successfully retrieved.
+// 1. int - Password change attempt fails due to multiple reasons. Values are
+//          0 - ERROR_INVALID_PASSWORD, 1 - NERR_InvalidComputer,
+//          2 - NERR_NotPrimary, 3 - NERR_UserNotFound, 4 -
+//          NERR_PasswordTooShort, 5 - UnknownStatus
+class GcpGaiaCredentialBasePasswordChangeFailureTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<int> {};
+
+TEST_P(GcpGaiaCredentialBasePasswordChangeFailureTest, Fail) {
+  // Enable standard escrow service features in non-Chrome builds so that
+  // the escrow service code can be tested by the build machines.
+  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
+  USES_CONVERSION;
+
+  int failure_reason = GetParam();
+
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
+                                          L"https://escrow.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
+
+  GoogleMdmEnrolledStatusForTesting force_success(true);
+
+  // Create a fake user associated to a gaia id.
+  CComBSTR sid;
+  constexpr wchar_t kOldPassword[] = L"password";
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                kDefaultUsername, kOldPassword, L"Full Name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+
+  // Change token response to an invalid one.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+
+  // Make a dummy response for successful public key generation and private key
+  // retrieval.
+  std::string generate_success_response =
+      fake_password_recovery_manager()->MakeGenerateKeyPairResponseForTesting(
+          kTestPublicKey, kFakeResourceId);
+
+  std::string get_key_success_response =
+      fake_password_recovery_manager()->MakeGetPrivateKeyResponseForTesting(
+          kTestPrivateKey);
+
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      fake_password_recovery_manager()->GetEscrowServiceGenerateKeyPairUrl(),
+      FakeWinHttpUrlFetcher::Headers(), generate_success_response,
+      INVALID_HANDLE_VALUE);
+
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      fake_password_recovery_manager()->GetEscrowServiceGetPrivateKeyUrl(
+          kFakeResourceId),
+      FakeWinHttpUrlFetcher::Headers(), get_key_success_response,
+      INVALID_HANDLE_VALUE);
+
+  // Sign on once to store the password in the LSA
+  {
+    // Create provider and start logon.
+    Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+    ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+    ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+    // Finish logon successfully to propagate password recovery information to
+    // LSA.
+    ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+
+    ASSERT_EQ(S_OK, ReleaseProvider());
+  }
+
+  constexpr char kNewPassword[] = "password2";
+
+  // Sign in a second time with a different password and see if it is updated
+  // automatically.
+  {
+    HRESULT net_api_status;
+    base::string16 expected_error_msg;
+    switch (failure_reason) {
+      case 0:
+        net_api_status = HRESULT_FROM_WIN32(ERROR_INVALID_PASSWORD);
+        expected_error_msg = GetStringResource(IDS_INVALID_PASSWORD_BASE);
+        break;
+      case 1:
+        net_api_status = HRESULT_FROM_WIN32(NERR_InvalidComputer);
+        expected_error_msg =
+            GetStringResource(IDS_INVALID_COMPUTER_NAME_ERROR_BASE);
+        break;
+      case 2:
+        net_api_status = HRESULT_FROM_WIN32(NERR_NotPrimary);
+        expected_error_msg =
+            GetStringResource(IDS_AD_PASSWORD_CHANGE_DENIED_BASE);
+        break;
+      case 3:
+        net_api_status = HRESULT_FROM_WIN32(NERR_UserNotFound);
+        expected_error_msg =
+            GetStringResource(IDS_USER_NOT_FOUND_PASSWORD_ERROR_BASE);
+        break;
+      case 4:
+        net_api_status = HRESULT_FROM_WIN32(NERR_PasswordTooShort);
+        expected_error_msg =
+            GetStringResource(IDS_PASSWORD_COMPLEXITY_ERROR_BASE);
+        break;
+      default:
+        net_api_status = E_FAIL;
+        expected_error_msg = GetStringResource(IDS_UNKNOWN_PASSWORD_ERROR_BASE);
+        break;
+    }
+
+    // Set reason for failing the password change attempt.
+    fake_os_user_manager()->ShouldFailChangePassword(true, net_api_status);
+
+    // Create provider and start logon.
+    Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+    ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+    Microsoft::WRL::ComPtr<ITestCredential> test;
+    ASSERT_EQ(S_OK, cred.As(&test));
+
+    // Send back a different gaia password to force a password update.
+    ASSERT_EQ(S_OK, test->SetGlsGaiaPassword(kNewPassword));
+
+    // Don't send a forced e-mail. It will be sent from the user that was
+    // updated during the last sign in.
+    ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
+
+    ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+    Microsoft::WRL::ComPtr<ITestCredentialProvider> test_provider;
+    ASSERT_EQ(S_OK, created_provider().As(&test_provider));
+
+    ASSERT_EQ(net_api_status, FinishLogonProcess(true, true, 0));
+
+    // Make sure password textbox is shown due to password change failure.
+    ASSERT_EQ(CPFS_DISPLAY_IN_SELECTED_TILE,
+              fake_credential_provider_credential_events()->GetFieldState(
+                  cred.Get(), FID_CURRENT_PASSWORD_FIELD));
+
+    // Make sure password textbox is shown due to passwor change failure.
+    EXPECT_STREQ(expected_error_msg.c_str(),
+                 fake_credential_provider_credential_events()->GetFieldString(
+                     cred.Get(), FID_DESCRIPTION));
+
+    ASSERT_EQ(S_OK, ReleaseProvider());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpGaiaCredentialBasePasswordChangeFailureTest,
+                         ::testing::Values(0, 1, 2, 3, 4, 5));
 
 // Test password recovery system being disabled by registry settings.
 // Parameter is a pointer to an escrow service url. Can be empty or nullptr.

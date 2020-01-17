@@ -417,20 +417,20 @@ class TabStripModel : public TabGroupController {
   // be sorted in ascending order. This feature is in development and gated
   // behind a feature flag (see https://crbug.com/915956).
   void AddToExistingGroup(const std::vector<int>& indices,
-                          tab_groups::TabGroupId group);
+                          const tab_groups::TabGroupId& group);
 
   // Moves the set of tabs indicated by |indices| to precede the tab at index
   // |destination_index|, maintaining their order and the order of tabs not
   // being moved, and adds them to the tab group |group|.
   void MoveTabsAndSetGroup(const std::vector<int>& indices,
                            int destination_index,
-                           tab_groups::TabGroupId group);
+                           const tab_groups::TabGroupId& group);
 
   // Similar to AddToExistingGroup(), but creates a group with id |group| if it
   // doesn't exist. This is only intended to be called from session restore
   // code.
   void AddToGroupForRestore(const std::vector<int>& indices,
-                            tab_groups::TabGroupId group);
+                            const tab_groups::TabGroupId& group);
 
   // Updates the tab group of the tab at |index|. If |group| is nullopt, the tab
   // will be removed from the current group. If |group| does not exist, it will
@@ -486,7 +486,7 @@ class TabStripModel : public TabGroupController {
   // Adds the tab at |context_index| to the given tab group |group|. If
   // |context_index| is selected the command applies to all selected tabs.
   void ExecuteAddToExistingGroupCommand(int context_index,
-                                        tab_groups::TabGroupId group);
+                                        const tab_groups::TabGroupId& group);
 
   // Returns true if 'CommandToggleSiteMuted' will mute. |index| is the
   // index supplied to |ExecuteContextMenuCommand|.
@@ -650,12 +650,12 @@ class TabStripModel : public TabGroupController {
   // Adds tabs to newly-allocated group id |new_group|. This group must be new
   // and have no tabs in it.
   void AddToNewGroupImpl(const std::vector<int>& indices,
-                         tab_groups::TabGroupId new_group);
+                         const tab_groups::TabGroupId& new_group);
 
   // Adds tabs to existing group |group|. This group must have been initialized
   // by a previous call to |AddToNewGroupImpl()|.
   void AddToExistingGroupImpl(const std::vector<int>& indices,
-                              tab_groups::TabGroupId group);
+                              const tab_groups::TabGroupId& group);
 
   // Implementation of MoveTabsAndSetGroupImpl. Moves the set of tabs in
   // |indices| to the |destination_index| and updates the tabs to the
@@ -676,7 +676,7 @@ class TabStripModel : public TabGroupController {
   base::Optional<tab_groups::TabGroupId> UngroupTab(int index);
 
   // Helper function for MoveAndSetGroup. Adds the tab at |index| to |group|.
-  void GroupTab(int index, tab_groups::TabGroupId group);
+  void GroupTab(int index, const tab_groups::TabGroupId& group);
 
   // TabGroupController:
   void CreateTabGroup(const tab_groups::TabGroupId& group) override;

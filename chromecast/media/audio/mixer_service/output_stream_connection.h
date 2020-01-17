@@ -29,6 +29,14 @@ class OutputStreamConnection : public MixerConnection,
  public:
   class Delegate {
    public:
+    // Keep in sync with mixer_service.proto:MixerUnderrun.Type
+    enum class MixerUnderrunType {
+      // An underrun was detected on mixer input.
+      kStream = 0,
+      // An underrun was detected on mixer output.
+      kMixer = 1,
+    };
+
     // Called to fill more audio data. The implementation should write up to
     // |frames| frames of audio data into |buffer|, and then call
     // SendNextBuffer() with the actual number of frames that were filled (or
@@ -51,6 +59,9 @@ class OutputStreamConnection : public MixerConnection,
     // Called when a mixer error has occurred; audio from this stream will no
     // longer be played out.
     virtual void OnMixerError() {}
+
+    // Called when an underrun happens on mixer input/output.
+    virtual void OnMixerUnderrun(MixerUnderrunType type) {}
 
    protected:
     virtual ~Delegate() = default;

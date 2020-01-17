@@ -47,27 +47,27 @@ Polymer({
     },
   },
 
-  focus: function() {
+  focus() {
     this.$.resetDialog.focus();
   },
 
   /** @private */
-  isState_: function(uiState_, state_) {
+  isState_(uiState_, state_) {
     return uiState_ == state_;
   },
 
   /** @private */
-  isCancelHidden_: function(uiState_) {
+  isCancelHidden_(uiState_) {
     return uiState_ == 'revert-promise-view';
   },
 
   /** @private */
-  isHelpLinkHidden_: function(uiState_, isOfficial_) {
+  isHelpLinkHidden_(uiState_, isOfficial_) {
     return !isOfficial_ || (uiState_ == 'revert-promise-view');
   },
 
   /** @private */
-  isTPMFirmwareUpdateHidden_: function(uiState_, tpmFirmwareUpdateAvailable_) {
+  isTPMFirmwareUpdateHidden_(uiState_, tpmFirmwareUpdateAvailable_) {
     var inProposalView = [
       'powerwash-proposal-view', 'rollback-proposal-view'
     ].includes(uiState_);
@@ -79,7 +79,7 @@ Polymer({
    *
    * @private
    */
-  onCancelTap_: function() {
+  onCancelTap_() {
     chrome.send('login.ResetScreen.userActed', ['cancel-reset']);
   },
 
@@ -88,7 +88,7 @@ Polymer({
    *
    * @private
    */
-  onRestartTap_: function() {
+  onRestartTap_() {
     chrome.send('login.ResetScreen.userActed', ['restart-pressed']);
   },
 
@@ -97,7 +97,7 @@ Polymer({
    *
    * @private
    */
-  onPowerwashTap_: function() {
+  onPowerwashTap_() {
     chrome.send('login.ResetScreen.userActed', ['show-confirmation']);
   },
 
@@ -106,7 +106,7 @@ Polymer({
    *
    * @private
    */
-  onLearnMoreTap_: function() {
+  onLearnMoreTap_() {
     chrome.send('login.ResetScreen.userActed', ['learn-more-link']);
   },
 
@@ -115,7 +115,7 @@ Polymer({
    *
    * @private
    */
-  onTPMFirmwareUpdateChanged_: function() {
+  onTPMFirmwareUpdateChanged_() {
     this.screen.onTPMFirmwareUpdateChanged_(
         this.$.tpmFirmwareUpdateCheckbox.checked);
   },
@@ -126,7 +126,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onTPMFirmwareUpdateLearnMore_: function(event) {
+  onTPMFirmwareUpdateLearnMore_(event) {
     chrome.send(
         'login.ResetScreen.userActed', ['tpm-firmware-update-learn-more-link']);
     event.stopPropagation();

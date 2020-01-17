@@ -143,9 +143,7 @@ grit("resources") {
 source_set("export") {
   # Must only be used inside of content.
   visibility = [ "//content/*" ]
-  sources = [
-    "common/content_export.h",
-  ]
+  sources = [ "common/content_export.h" ]
 }
 
 # In the GYP build, this file is listed in several targets. In GN just have
@@ -158,8 +156,6 @@ source_set("sandbox_helper_win") {
       "public/app/sandbox_helper_win.h",
     ]
 
-    deps = [
-      "//sandbox",
-    ]
+    deps = [ "//sandbox" ]
   }
 }

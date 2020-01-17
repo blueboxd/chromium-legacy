@@ -107,7 +107,7 @@ Polymer({
   listenerInstance_: () => {},
 
   /** @override */
-  attached: function() {
+  attached() {
     // Since this component is not restamped, this will only be called once
     // in its lifecycle.
     this.listenerInstance_ = this.extensionActivityListener_.bind(this);
@@ -115,15 +115,15 @@ Polymer({
   },
 
   /** @private */
-  onResizeStream_: function(e) {
+  onResizeStream_(e) {
     this.$$('iron-list').notifyResize();
   },
 
-  clearStream: function() {
+  clearStream() {
     this.splice('activityStream_', 0, this.activityStream_.length);
   },
 
-  startStream: function() {
+  startStream() {
     if (this.isStreamOn_) {
       return;
     }
@@ -132,7 +132,7 @@ Polymer({
     this.delegate.getOnExtensionActivity().addListener(this.listenerInstance_);
   },
 
-  pauseStream: function() {
+  pauseStream() {
     if (!this.isStreamOn_) {
       return;
     }
@@ -143,7 +143,7 @@ Polymer({
   },
 
   /** @private */
-  onToggleButtonClick_: function() {
+  onToggleButtonClick_() {
     if (this.isStreamOn_) {
       this.pauseStream();
     } else {
@@ -155,7 +155,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  isStreamEmpty_: function() {
+  isStreamEmpty_() {
     return this.activityStream_.length === 0;
   },
 
@@ -163,7 +163,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  isFilteredStreamEmpty_: function() {
+  isFilteredStreamEmpty_() {
     return this.filteredActivityStream_.length === 0;
   },
 
@@ -171,7 +171,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  shouldShowEmptySearchMessage_: function() {
+  shouldShowEmptySearchMessage_() {
     return !this.isStreamEmpty_() && this.isFilteredStreamEmpty_();
   },
 
@@ -179,7 +179,7 @@ Polymer({
    * @private
    * @param {!chrome.activityLogPrivate.ExtensionActivity} activity
    */
-  extensionActivityListener_: function(activity) {
+  extensionActivityListener_(activity) {
     if (activity.extensionId !== this.extensionId) {
       return;
     }
@@ -196,7 +196,7 @@ Polymer({
    * @private
    * @param {!CustomEvent<string>} e
    */
-  onSearchChanged_: function(e) {
+  onSearchChanged_(e) {
     // Remove all whitespaces from the search term, as API call names and
     // URLs should not contain any whitespace. As of now, only single term
     // search queries are allowed.
@@ -212,7 +212,7 @@ Polymer({
    * @private
    * @return {!Array<!StreamItem>}
    */
-  computeFilteredActivityStream_: function() {
+  computeFilteredActivityStream_() {
     if (!this.lastSearch_) {
       return this.activityStream_.slice();
     }

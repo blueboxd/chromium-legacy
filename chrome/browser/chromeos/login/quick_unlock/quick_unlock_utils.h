@@ -30,8 +30,9 @@ enum class PasswordConfirmationFrequency {
 // Enumeration specifying the possible fingerprint sensor locations.
 enum class FingerprintLocation {
   TABLET_POWER_BUTTON = 0,
-  KEYBOARD_TOP_RIGHT = 1,
+  KEYBOARD_BOTTOM_LEFT = 1,
   KEYBOARD_BOTTOM_RIGHT = 2,
+  KEYBOARD_TOP_RIGHT = 3,
 };
 
 base::TimeDelta PasswordConfirmationFrequencyToTimeDelta(

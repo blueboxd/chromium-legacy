@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS Test that a text fragment directive requires a user activation (user_activation=true).
+PASS Test that a text fragment directive requires a user activation (user_activation=false).
+PASS Test that a text fragment directive is not activated when there is a window opener (noopener=true).
+FAIL Test that a text fragment directive is not activated when there is a window opener (noopener=false). assert_equals: Expected window.open() with opener to not activate text fragment directive. expected "top" but got "text"
+FAIL Test that a text fragment directive is not activated within an iframe. assert_equals: Expected iframe navigation to not activate text fragment directive. expected "top" but got "text"
+Harness: the test ran to completion.
+

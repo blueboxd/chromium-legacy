@@ -5,6 +5,8 @@
 module storage.mojom;
 
 import "mojo/public/mojom/base/big_buffer.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/blob/blob.mojom";
 
 // A reader for the data and side data in a cache storage entry.
@@ -44,10 +46,23 @@ struct BlobDataItem {
   pending_remote<BlobDataItemReader> reader;
 };
 
+// The result of writing a blob to disk.
+enum WriteBlobToFileResult {
+  kError,             // There was an error writing the blob to a file.
+  kBadPath,           // The path given is not accessible or has references.
+  kInvalidBlob,       // The blob is invalid and cannot be read.
+  kIOError,           // Error writing bytes on disk.
+  kTimestampError,    // Error writing the last modified timestamp.
+  kSuccess,
+};
+
 // This interface is the primary access point to the browser's blob system
-// for chrome internals.  This is a simplified version of the
-// blink.mojom.BlobRegistry interface.  To avoid giving the renderer
-// different capabilities, this is a separate interface.
+// for chrome internals. This interface lives in the browser process. This is a
+// simplified version of the blink.mojom.BlobRegistry interface.
+//
+// This interface has enhanced capabilities that should NOT be accessible to a
+// renderer, which is why it is a separate interface. For example,
+// WriteBlobToFile writes a blob to an arbitrary file path.
 interface BlobStorageContext {
   // Create a blob with a particular uuid and consisting of a single
   // BlobDataItem::DataHandle constructed from |item|.
@@ -57,4 +72,17 @@ interface BlobStorageContext {
   // in |data|.
   RegisterFromMemory(pending_receiver<blink.mojom.Blob> blob, string uuid,
                      mojo_base.mojom.BigBuffer data);
+
+  // Writes the given blob to the given file path. If the given |path| is not
+  // under the blob storage context's profile directory or if it has references
+  // (like "..") then the implementation returns kBadPath. If the directory
+  // that contains the file at |path| does not exist, then this function will
+  // return kIOError. If a file already exists at |path| then it is
+  // overwritten. If |flush_on_write| is true, then Flush will be called on the
+  // new file before it is closed.
+  WriteBlobToFile(pending_remote<blink.mojom.Blob> blob,
+                  mojo_base.mojom.FilePath path,
+                  bool flush_on_write,
+                  mojo_base.mojom.Time? last_modified)
+      => (WriteBlobToFileResult result);
 };

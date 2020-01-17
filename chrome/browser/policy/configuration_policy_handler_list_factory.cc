@@ -303,9 +303,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEnableOnlineRevocationChecks,
     prefs::kCertRevocationCheckingEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kMachineLevelUserCloudPolicyEnrollmentToken,
-    policy_prefs::kMachineLevelUserCloudPolicyEnrollmentToken,
-    base::Value::Type::STRING },
   { key::kCloudManagementEnrollmentMandatory,
     policy_prefs::kCloudManagementEnrollmentMandatory,
     base::Value::Type::BOOLEAN },
@@ -668,6 +665,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kHighContrastEnabled,
     ash::prefs::kAccessibilityHighContrastEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kAccessibilityShortcutsEnabled,
+    ash::prefs::kAccessibilityShortcutsEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kVirtualKeyboardEnabled,
     ash::prefs::kAccessibilityVirtualKeyboardEnabled,
     base::Value::Type::BOOLEAN },
@@ -699,6 +699,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     nullptr,
     base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenDefaultVirtualKeyboardEnabled,
+    nullptr,
+    base::Value::Type::BOOLEAN },
+  { key::kDeviceLoginScreenAccessibilityShortcutsEnabled,
     nullptr,
     base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenVirtualKeyboardEnabled,
@@ -1181,6 +1184,25 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBrowserSwitcherDelay,
     browser_switcher::prefs::kDelay,
     base::Value::Type::INTEGER },
+#endif
+#if defined(OS_WIN)
+  { key::kBrowserSwitcherUseIeSitelist,
+    browser_switcher::prefs::kUseIeSitelist,
+    base::Value::Type::BOOLEAN },
+  { key::kBrowserSwitcherChromePath,
+    browser_switcher::prefs::kChromePath,
+    base::Value::Type::STRING },
+  { key::kBrowserSwitcherChromeParameters,
+    browser_switcher::prefs::kChromeParameters,
+    base::Value::Type::LIST },
+#endif
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
+  { key::kBrowserGuestModeEnforced,
+    prefs::kBrowserGuestModeEnforced,
+    base::Value::Type::BOOLEAN },
+  { key::kUnsafeEventsReportingEnabled,
+    prefs::kUnsafeEventsReportingEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kDelayDeliveryUntilVerdict,
     prefs::kDelayDeliveryUntilVerdict,
     base::Value::Type::INTEGER },
@@ -1202,25 +1224,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kURLsToNotCheckComplianceOfUploadedContent,
     prefs::kURLsToNotCheckComplianceOfUploadedContent,
     base::Value::Type::LIST },
-#endif
-#if defined(OS_WIN)
-  { key::kBrowserSwitcherUseIeSitelist,
-    browser_switcher::prefs::kUseIeSitelist,
-    base::Value::Type::BOOLEAN },
-  { key::kBrowserSwitcherChromePath,
-    browser_switcher::prefs::kChromePath,
-    base::Value::Type::STRING },
-  { key::kBrowserSwitcherChromeParameters,
-    browser_switcher::prefs::kChromeParameters,
-    base::Value::Type::LIST },
-#endif
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
-  { key::kBrowserGuestModeEnforced,
-    prefs::kBrowserGuestModeEnforced,
-    base::Value::Type::BOOLEAN },
-  { key::kUnsafeEventsReportingEnabled,
-    prefs::kUnsafeEventsReportingEnabled,
-    base::Value::Type::BOOLEAN },
 #endif
   { key::kPasswordLeakDetectionEnabled,
     password_manager::prefs::kPasswordLeakDetectionEnabled,
@@ -1261,6 +1264,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDNSInterceptionChecksEnabled,
     prefs::kDNSInterceptionChecksEnabled,
     base::Value::Type::BOOLEAN },
+
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
+  { key::kLocalDiscoveryEnabled,
+    prefs::kLocalDiscoveryEnabled,
+    base::Value::Type::BOOLEAN },
+#endif
 };
 // clang-format on
 

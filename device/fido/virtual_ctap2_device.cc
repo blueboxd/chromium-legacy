@@ -1644,6 +1644,26 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
         NOTREACHED() << "Invalid current enrollment or template id parameter.";
         return CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
       }
+      if (mutable_state()->bio_enrollment_next_sample_error) {
+        response_map.emplace(
+            static_cast<int>(BioEnrollmentResponseKey::kLastEnrollSampleStatus),
+            static_cast<int>(BioEnrollmentSampleStatus::kTooHigh));
+        response_map.emplace(
+            static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples),
+            mutable_state()->bio_remaining_samples);
+        mutable_state()->bio_enrollment_next_sample_error = false;
+        break;
+      }
+      if (mutable_state()->bio_enrollment_next_sample_timeout) {
+        response_map.emplace(
+            static_cast<int>(BioEnrollmentResponseKey::kLastEnrollSampleStatus),
+            static_cast<int>(BioEnrollmentSampleStatus::kNoUserActivity));
+        response_map.emplace(
+            static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples),
+            mutable_state()->bio_remaining_samples);
+        mutable_state()->bio_enrollment_next_sample_timeout = false;
+        break;
+      }
       response_map.emplace(
           static_cast<int>(BioEnrollmentResponseKey::kLastEnrollSampleStatus),
           static_cast<int>(BioEnrollmentSampleStatus::kGood));

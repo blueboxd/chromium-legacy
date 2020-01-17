@@ -108,8 +108,9 @@ class IndexedDBFactoryTest : public testing::Test {
             ->leveldb_state()
             ->RequestDestruction(callback,
                                  base::SequencedTaskRunnerHandle::Get());
-        context_->ForceClose(origin,
-                             IndexedDBContextImpl::FORCE_CLOSE_DELETE_ORIGIN);
+        context_->ForceCloseSync(
+            origin,
+            storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN);
       }
       loop.Run();
     }

@@ -655,8 +655,15 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemorySecureTransport) {
   ExpectHeader("https://www.example.com/1.gif", "Viewport-Width", false, "");
   // Without a feature policy header, the client hints should be sent only to
   // the first party origins.
+  // Device-memory is a legacy hint that's sent on Android regardless of Feature
+  // Policy delegation.
+#if defined(OS_ANDROID)
+  ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory", true,
+               "4");
+#else
   ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory",
                false, "");
+#endif
 }
 
 // Verify that client hints are not attached when the resources do not belong to
@@ -989,15 +996,28 @@ TEST_F(FrameFetchContextHintsTest, MonitorSomeHintsFeaturePolicy) {
   // With a feature policy header, the client hints should be sent to the
   // declared third party origins.
   ExpectHeader("https://www.example.net/1.gif", "Device-Memory", true, "4");
+  // Device-memory is a legacy hint that's sent on Android regardless of Feature
+  // Policy delegation.
+#if defined(OS_ANDROID)
+  ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory", true,
+               "4");
+#else
   ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory",
                false, "");
+#endif
   // `Sec-CH-UA` is special.
   ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA", true, "");
 
   // Other hints not declared in the policy are still not attached.
   ExpectHeader("https://www.example.net/1.gif", "downlink", false, "");
   ExpectHeader("https://www.example.net/1.gif", "ect", false, "");
+  // DPR is a legacy hint that's sent on Android regardless of Feature Policy
+  // delegation.
+#if defined(OS_ANDROID)
+  ExpectHeader("https://www.example.net/1.gif", "DPR", true, "1");
+#else
   ExpectHeader("https://www.example.net/1.gif", "DPR", false, "");
+#endif
   ExpectHeader("https://www.example.net/1.gif", "Sec-CH-Lang", false, "");
   ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Arch", false, "");
   ExpectHeader("https://www.example.net/1.gif", "Sec-CH-UA-Platform", false,

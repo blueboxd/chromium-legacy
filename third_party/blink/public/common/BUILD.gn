@@ -73,7 +73,6 @@ source_set("headers") {
     "frame/sandbox_flags.h",
     "frame/user_activation_state.h",
     "frame/user_activation_update_source.h",
-    "frame/user_activation_update_type.h",
     "http/structured_header.h",
     "indexeddb/indexed_db_default_mojom_traits.h",
     "indexeddb/indexeddb_key.h",
@@ -133,6 +132,7 @@ source_set("headers") {
     "page/page_visibility_state.h",
     "page/page_zoom.h",
     "peerconnection/webrtc_ip_handling_policy.h",
+    "permissions/permission_utils.h",
     "plugin/plugin_action.h",
     "prerender/prerender_rel_type.h",
     "presentation/presentation_receiver_flags.h",
@@ -203,8 +203,6 @@ source_set("headers") {
 
 if (is_android || is_win) {
   proto_library("font_unique_name_table_proto") {
-    sources = [
-      "font_unique_name_lookup/font_unique_name_table.proto",
-    ]
+    sources = [ "font_unique_name_lookup/font_unique_name_table.proto" ]
   }
 }

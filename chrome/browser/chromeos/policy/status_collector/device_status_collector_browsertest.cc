@@ -154,13 +154,14 @@ class TestingDeviceStatusCollectorOptions {
   policy::DeviceStatusCollector::VolumeInfoFetcher volume_info_fetcher;
   policy::DeviceStatusCollector::CPUStatisticsFetcher cpu_fetcher;
   policy::DeviceStatusCollector::CPUTempFetcher cpu_temp_fetcher;
-  policy::DeviceStatusCollector::AndroidStatusFetcher android_status_fetcher;
+  policy::StatusCollector::AndroidStatusFetcher android_status_fetcher;
   policy::DeviceStatusCollector::TpmStatusFetcher tpm_status_fetcher;
   policy::DeviceStatusCollector::EMMCLifetimeFetcher emmc_lifetime_fetcher;
   policy::DeviceStatusCollector::StatefulPartitionInfoFetcher
       stateful_partition_info_fetcher;
   policy::DeviceStatusCollector::CrosHealthdDataFetcher
       cros_healthd_data_fetcher;
+  policy::DeviceStatusCollector::GraphicsStatusFetcher graphics_status_fetcher;
 };
 
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
@@ -178,7 +179,8 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
                                       options->tpm_status_fetcher,
                                       options->emmc_lifetime_fetcher,
                                       options->stateful_partition_info_fetcher,
-                                      options->cros_healthd_data_fetcher) {
+                                      options->cros_healthd_data_fetcher,
+                                      options->graphics_status_fetcher) {
     // Set the baseline time to a fixed value (1 hour after day start) to
     // prevent test flakiness due to a single activity period spanning two days.
     SetBaselineTime(Time::Now().LocalMidnight() + kHour);
@@ -311,14 +313,14 @@ std::vector<em::CPUTempInfo> GetFakeCPUTempInfo(
 }
 
 void CallAndroidStatusReceiver(
-    const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver,
+    const policy::StatusCollector::AndroidStatusReceiver& receiver,
     const std::string& status,
     const std::string& droid_guard_info) {
   receiver.Run(status, droid_guard_info);
 }
 
 bool GetEmptyAndroidStatus(
-    const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver) {
+    const policy::StatusCollector::AndroidStatusReceiver& receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, receiver, "", ""));
@@ -328,7 +330,7 @@ bool GetEmptyAndroidStatus(
 bool GetFakeAndroidStatus(
     const std::string& status,
     const std::string& droid_guard_info,
-    const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver) {
+    const policy::StatusCollector::AndroidStatusReceiver& receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, receiver, status,
@@ -400,6 +402,17 @@ void GetFakeCrosHealthdData(
   samples.push_back(std::move(sample));
 
   std::move(receiver).Run(fake_info.Clone(), samples);
+}
+
+void GetEmptyGraphicsStatus(
+    policy::DeviceStatusCollector::GraphicsStatusReceiver receiver) {
+  std::move(receiver).Run(em::GraphicsStatus());
+}
+
+void GetFakeGraphicsStatus(
+    const em::GraphicsStatus& value,
+    policy::DeviceStatusCollector::GraphicsStatusReceiver receiver) {
+  std::move(receiver).Run(value);
 }
 
 }  // namespace
@@ -554,6 +567,8 @@ class DeviceStatusCollectorTest : public testing::Test {
         base::BindRepeating(&GetEmptyStatefulPartitionInfo);
     options->cros_healthd_data_fetcher =
         base::BindRepeating(&GetEmptyCrosHealthdData);
+    options->graphics_status_fetcher =
+        base::BindRepeating(&GetEmptyGraphicsStatus);
     return options;
   }
 
@@ -2344,6 +2359,67 @@ TEST_F(DeviceStatusCollectorTest, TestStatefulPartitionInfo) {
             device_status_.stateful_partition_info().available_space());
   EXPECT_EQ(fakeStatefulPartitionInfo.total_space(),
             device_status_.stateful_partition_info().total_space());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestGraphicsStatus) {
+  // Create a fake graphics status and populate it with some arbitrary values.
+  em::GraphicsStatus fakeGraphicsStatus;
+
+  // Create a fake display and populate it with some arbitrary values.
+  uint64 num_displays = 0;
+  for (uint64 i = 0; i < num_displays; i++) {
+    em::DisplayInfo* display_info = fakeGraphicsStatus.add_displays();
+    display_info->set_resolution_width(1920 * i);
+    display_info->set_resolution_height(1080 * i);
+    display_info->set_refresh_rate(60 * i);
+    display_info->set_is_internal(i == 1);
+  }
+
+  em::GraphicsAdapterInfo* graphics_info = fakeGraphicsStatus.mutable_adapter();
+  graphics_info->set_name("fake_adapter_name");
+  graphics_info->set_driver_version("fake_driver_version");
+  graphics_info->set_device_id(12345);
+  graphics_info->set_system_ram_usage(15 * 1024 * 1024);
+
+  auto options = CreateEmptyDeviceStatusCollectorOptions();
+  options->graphics_status_fetcher =
+      base::BindRepeating(&GetFakeGraphicsStatus, fakeGraphicsStatus);
+  RestartStatusCollector(std::move(options));
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceGraphicsStatus, true);
+
+  GetStatus();
+
+  EXPECT_TRUE(device_status_.has_graphics_status());
+
+  for (uint64 i = 0; i < num_displays; i++) {
+    EXPECT_EQ(fakeGraphicsStatus.displays(i).resolution_width(),
+              device_status_.graphics_status().displays(i).resolution_width());
+    EXPECT_EQ(fakeGraphicsStatus.displays(i).resolution_height(),
+              device_status_.graphics_status().displays(i).resolution_height());
+    EXPECT_EQ(fakeGraphicsStatus.displays(i).refresh_rate(),
+              device_status_.graphics_status().displays(i).refresh_rate());
+    EXPECT_EQ(fakeGraphicsStatus.displays(i).is_internal(),
+              device_status_.graphics_status().displays(i).is_internal());
+  }
+
+  EXPECT_EQ(fakeGraphicsStatus.adapter().name(),
+            device_status_.graphics_status().adapter().name());
+  EXPECT_EQ(fakeGraphicsStatus.adapter().driver_version(),
+            device_status_.graphics_status().adapter().driver_version());
+  EXPECT_EQ(fakeGraphicsStatus.adapter().device_id(),
+            device_status_.graphics_status().adapter().device_id());
+  EXPECT_EQ(fakeGraphicsStatus.adapter().system_ram_usage(),
+            device_status_.graphics_status().adapter().system_ram_usage());
+
+  // Change the policy to not report display and graphics statuses
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceGraphicsStatus, false);
+
+  GetStatus();
+
+  EXPECT_FALSE(device_status_.has_graphics_status());
 }
 
 TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {

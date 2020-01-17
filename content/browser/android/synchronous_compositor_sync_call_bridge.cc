@@ -78,14 +78,13 @@ bool SynchronousCompositorSyncCallBridge::BeginFrameResponseOnIOThread(
   return true;
 }
 
-bool SynchronousCompositorSyncCallBridge::WaitAfterVSyncOnUIThread(
-    ui::WindowAndroid* window_android) {
+bool SynchronousCompositorSyncCallBridge::WaitAfterVSyncOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
   if (remote_state_ != RemoteState::READY)
     return false;
   CHECK(!begin_frame_response_valid_);
-  window_android->AddBeginFrameCompletionCallback(base::BindOnce(
+  host_->AddBeginFrameCompletionCallback(base::BindOnce(
       &SynchronousCompositorSyncCallBridge::BeginFrameCompleteOnUIThread,
       this));
   return true;

@@ -207,9 +207,7 @@ test("zucchini_unittests") {
 }
 
 test("zucchini_integration_test") {
-  sources = [
-    "integration_test.cc",
-  ]
+  sources = [ "integration_test.cc" ]
 
   deps = [
     ":zucchini_lib",

@@ -6,9 +6,7 @@ import("//build/compiled_action.gni")
 
 if (!is_ios && !is_android) {
   executable("make_top_domain_skeletons") {
-    sources = [
-      "make_top_domain_skeletons.cc",
-    ]
+    sources = [ "make_top_domain_skeletons.cc" ]
 
     deps = [
       "//base",
@@ -46,9 +44,7 @@ compiled_action("generate_top_domains_trie") {
     "//components/url_formatter/spoof_checks/top_domains/domains.skeletons",
     "//components/url_formatter/spoof_checks/top_domains/top_domains_trie.template",
   ]
-  outputs = [
-    "$target_gen_dir/domains-trie-inc.cc",
-  ]
+  outputs = [ "$target_gen_dir/domains-trie-inc.cc" ]
   args =
       rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
 }
@@ -63,9 +59,7 @@ compiled_action("generate_top_domains_test_trie") {
     "//components/url_formatter/spoof_checks/top_domains/test_domains.skeletons",
     "//components/url_formatter/spoof_checks/top_domains/top_domains_trie.template",
   ]
-  outputs = [
-    "$target_gen_dir/test_domains-trie-inc.cc",
-  ]
+  outputs = [ "$target_gen_dir/test_domains-trie-inc.cc" ]
 
   # Passing --for_testing flag marks only the first site with is_top_500.
   args = rebase_path(inputs, root_build_dir) +
@@ -73,9 +67,7 @@ compiled_action("generate_top_domains_test_trie") {
 }
 
 executable("make_top_domain_list_variables") {
-  sources = [
-    "make_top_domain_list_variables.cc",
-  ]
+  sources = [ "make_top_domain_list_variables.cc" ]
   deps = [
     ":common",
     "//base",
@@ -101,9 +93,7 @@ source_set("common") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "top_domain_util_unittest.cc",
-  ]
+  sources = [ "top_domain_util_unittest.cc" ]
   deps = [
     ":common",
     "//testing/gtest",
@@ -116,12 +106,9 @@ compiled_action("generate_top_domain_list_variables_file") {
   tool = ":make_top_domain_list_variables"
 
   # Inputs in order expected by the command line of the tool.
-  inputs = [
-    "//components/url_formatter/spoof_checks/top_domains/domains.list",
-  ]
-  outputs = [
-    "$target_gen_dir/top500-domains-inc.cc",
-  ]
+  inputs =
+      [ "//components/url_formatter/spoof_checks/top_domains/domains.list" ]
+  outputs = [ "$target_gen_dir/top500-domains-inc.cc" ]
   args =
       rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
 }
@@ -133,9 +120,7 @@ source_set("top500_domains") {
   # This empty public is intentional to remove unnecessary build dependency.
   public = []
 
-  sources = [
-    "$target_gen_dir/top500-domains-inc.cc",
-  ]
+  sources = [ "$target_gen_dir/top500-domains-inc.cc" ]
 
   deps = [
     ":generate_top_domain_list_variables_file",
@@ -144,7 +129,5 @@ source_set("top500_domains") {
 }
 
 source_set("top500_domains_header") {
-  sources = [
-    "top500_domains.h",
-  ]
+  sources = [ "top500_domains.h" ]
 }

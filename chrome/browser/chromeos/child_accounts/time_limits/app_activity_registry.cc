@@ -5,9 +5,49 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 
 #include "base/stl_util.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace chromeos {
 namespace app_time {
+
+namespace {
+enterprise_management::App::AppType AppTypeForReporting(
+    apps::mojom::AppType type) {
+  switch (type) {
+    case apps::mojom::AppType::kArc:
+      return enterprise_management::App::ARC;
+    case apps::mojom::AppType::kBuiltIn:
+      return enterprise_management::App::BUILT_IN;
+    case apps::mojom::AppType::kCrostini:
+      return enterprise_management::App::CROSTINI;
+    case apps::mojom::AppType::kExtension:
+      return enterprise_management::App::EXTENSION;
+    case apps::mojom::AppType::kWeb:
+      return enterprise_management::App::WEB;
+    default:
+      return enterprise_management::App::UNKNOWN;
+  }
+}
+
+enterprise_management::AppActivity::AppState AppStateForReporting(
+    AppState state) {
+  switch (state) {
+    case AppState::kAvailable:
+      return enterprise_management::AppActivity::DEFAULT;
+    case AppState::kAlwaysAvailable:
+      return enterprise_management::AppActivity::ALWAYS_AVAILABLE;
+    case AppState::kBlocked:
+      return enterprise_management::AppActivity::BLOCKED;
+    case AppState::kLimitReached:
+      return enterprise_management::AppActivity::LIMIT_REACHED;
+    case AppState::kUninstalled:
+      return enterprise_management::AppActivity::UNINSTALLED;
+    default:
+      return enterprise_management::AppActivity::UNKNOWN;
+  }
+}
+
+}  // namespace
 
 AppActivityRegistry::AppDetails::AppDetails() = default;
 
@@ -130,6 +170,65 @@ base::TimeDelta AppActivityRegistry::GetActiveTime(const AppId& app_id) const {
   return activity_registry_.at(app_id).activity.RunningActiveTime();
 }
 
+AppActivityReportInterface::ReportParams
+AppActivityRegistry::GenerateAppActivityReport(
+    enterprise_management::ChildStatusReportRequest* report) const {
+  // TODO(agawronska): We should also report the ongoing activity if it started
+  // before the reporting, because it could have been going for a long time.
+  const base::Time timestamp = base::Time::Now();
+  bool anything_reported = false;
+
+  for (const auto& entry : activity_registry_) {
+    const AppId& app_id = entry.first;
+    const AppActivity& registered_activity = entry.second.activity;
+
+    // Do not report if there is no activity.
+    if (registered_activity.active_times().empty())
+      continue;
+
+    enterprise_management::AppActivity* app_activity =
+        report->add_app_activity();
+    enterprise_management::App* app_info = app_activity->mutable_app_info();
+    app_info->set_app_id(app_id.app_id());
+    app_info->set_app_type(AppTypeForReporting(app_id.app_type()));
+    // AppService is is only different for ARC++ apps.
+    if (app_id.app_type() == apps::mojom::AppType::kArc) {
+      app_info->add_additional_app_id(
+          app_service_wrapper_->GetAppServiceId(app_id));
+    }
+    app_activity->set_app_state(
+        AppStateForReporting(registered_activity.app_state()));
+    app_activity->set_populated_at(timestamp.ToJavaTime());
+
+    for (const auto& active_time : registered_activity.active_times()) {
+      enterprise_management::TimePeriod* time_period =
+          app_activity->add_active_time_periods();
+      time_period->set_start_timestamp(active_time.active_from().ToJavaTime());
+      time_period->set_end_timestamp(active_time.active_to().ToJavaTime());
+    }
+    anything_reported = true;
+  }
+
+  return AppActivityReportInterface::ReportParams{timestamp, anything_reported};
+}
+
+void AppActivityRegistry::CleanRegistry(base::Time timestamp) {
+  for (auto it = activity_registry_.begin(); it != activity_registry_.end();) {
+    const AppId& app_id = it->first;
+    AppActivity& registered_activity = it->second.activity;
+    // TODO(agawronska): Update data stored in user pref.
+    registered_activity.RemoveActiveTimeEarlierThan(timestamp);
+    // Remove app that was uninstalled and does not have any past activity
+    // stored.
+    if (GetAppState(app_id) == AppState::kUninstalled &&
+        registered_activity.active_times().empty()) {
+      it = activity_registry_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+}
+
 void AppActivityRegistry::Add(const AppId& app_id) {
   auto result = activity_registry_.emplace(
       app_id, AppDetails(AppActivity(AppState::kAvailable)));
@@ -156,17 +255,6 @@ void AppActivityRegistry::SetAppInactive(const AppId& app_id,
                                          base::Time timestamp) {
   DCHECK(base::Contains(activity_registry_, app_id));
   activity_registry_.at(app_id).activity.SetAppInactive(timestamp);
-}
-
-void AppActivityRegistry::CleanRegistry() {
-  for (auto it = activity_registry_.cbegin();
-       it != activity_registry_.cend();) {
-    if (GetAppState(it->first) == AppState::kUninstalled) {
-      it = activity_registry_.erase(it);
-    } else {
-      ++it;
-    }
-  }
 }
 
 }  // namespace app_time

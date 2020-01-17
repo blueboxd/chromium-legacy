@@ -25,17 +25,17 @@ Polymer({
     return this.$.dialog.open;
   },
 
-  show: function() {
+  show() {
     this.$.dialog.showModal();
   },
 
-  close: function() {
+  close() {
     if (this.active) {
       this.$.dialog.close();
     }
   },
 
-  deny: function() {
+  deny() {
     const password = /** @type {!CrInputElement} */ (this.$.password);
     password.disabled = false;
     this.$.submit.disabled = false;
@@ -43,7 +43,7 @@ Polymer({
     password.select();
   },
 
-  submit: function() {
+  submit() {
     const password = /** @type {!CrInputElement} */ (this.$.password);
     if (password.value.length == 0) {
       return;
@@ -60,7 +60,7 @@ Polymer({
    * @param {string} message
    * @return {string}
    */
-  getErrorMessage_: function(message) {
+  getErrorMessage_(message) {
     return this.invalid ? message : '';
   }
 });

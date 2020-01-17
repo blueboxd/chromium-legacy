@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
@@ -128,8 +129,15 @@ bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
   if (!element)
     return false;
 
-  if (element->ContentFrame() && element->ContentFrame()->IsRemoteFrame())
-    return true;
+  if (Frame* content_frame = element->ContentFrame()) {
+    if (content_frame->IsRemoteFrame())
+      return true;
+    if (base::FeatureList::IsEnabled(
+            blink::features::kCompositeCrossOriginIframes) &&
+        content_frame->IsCrossOriginSubframe()) {
+      return true;
+    }
+  }
 
   if (Document* content_document = element->contentDocument()) {
     auto* layout_view = content_document->GetLayoutView();

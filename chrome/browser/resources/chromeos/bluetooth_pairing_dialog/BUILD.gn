@@ -17,9 +17,7 @@ optimize_webui("build") {
 }
 
 js_type_check("closure_compile") {
-  deps = [
-    ":bluetooth_pairing_dialog",
-  ]
+  deps = [ ":bluetooth_pairing_dialog" ]
 }
 
 js_library("bluetooth_pairing_dialog") {

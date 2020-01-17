@@ -119,14 +119,4 @@ TestArrayBufferView* V8ArrayBufferView::ToImplWithTypeCheck(
   return value->IsArrayBufferView() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestArrayBufferView* NativeValueTraits<TestArrayBufferView>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestArrayBufferView* native_value = V8ArrayBufferView::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "ArrayBufferView"));
-  }
-  return native_value;
-}
-
 }  // namespace blink

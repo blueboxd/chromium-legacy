@@ -28,9 +28,7 @@ source_set("upgrade") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "upgrade_center_unittest.mm",
-  ]
+  sources = [ "upgrade_center_unittest.mm" ]
   deps = [
     ":upgrade",
     "//base",

@@ -15,7 +15,7 @@ import "extension_install.proto";
 
 // Stores information about the user's brower and system configuration.
 // The system configuration fields are recorded once per client session.
-// Next tag: 31
+// Next tag: 33
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -73,6 +73,17 @@ message SystemProfileProto {
   // The time when the client was installed, in seconds since the epoch.
   // For privacy, this is rounded to the nearest hour.
   optional int64 install_date = 16;
+
+  // The non-identifying low entropy source value. This value seeds the
+  // pseudorandom generator which picks experimental groups.
+  optional int32 low_entropy_source = 31;
+
+  // The old low entropy value. This value is thought to be biased in the wild,
+  // and is no longer used for experiments requiring low entropy. Clients which
+  // already have an "old" value continue incorporating it into the high entropy
+  // source, to avoid changing those group assignments. New clients only have
+  // the new source.
+  optional int32 old_low_entropy_source = 32;
 
   // The user's selected application locale, i.e. the user interface language.
   // The locale includes a language code and, possibly, also a country code,

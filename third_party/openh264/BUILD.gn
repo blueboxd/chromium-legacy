@@ -159,9 +159,7 @@ source_set("processing") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   configs += [ ":config" ]
-  deps = [
-    ":common",
-  ]
+  deps = [ ":common" ]
   if (use_assembler) {
     defines = [ "X86_ASM" ]
     deps += [ ":openh264_processing_yasm" ]

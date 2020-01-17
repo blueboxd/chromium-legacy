@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/layout_list_box.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 
@@ -113,9 +112,9 @@ void AutoscrollController::StartAutoscrollForSelection(
     return;
   LayoutBox* scrollable = LayoutBox::FindAutoscrollable(
       layout_object, /*is_middle_click_autoscroll*/ false);
-  if (!scrollable)
-    scrollable =
-        layout_object->IsListBox() ? ToLayoutListBox(layout_object) : nullptr;
+  if (!scrollable && layout_object->GetNode()) {
+    scrollable = layout_object->GetNode()->AutoscrollBox();
+  }
   if (!scrollable)
     return;
 
@@ -129,7 +128,8 @@ void AutoscrollController::StartAutoscrollForSelection(
 
 void AutoscrollController::StopAutoscroll() {
   if (pressed_layout_object_) {
-    pressed_layout_object_->StopAutoscroll();
+    if (pressed_layout_object_->GetNode())
+      pressed_layout_object_->GetNode()->StopAutoscroll();
     pressed_layout_object_ = nullptr;
   }
   autoscroll_layout_object_ = nullptr;

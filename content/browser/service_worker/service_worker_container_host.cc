@@ -291,7 +291,7 @@ void ServiceWorkerContainerHost::GetRegistration(
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerContainerHost::GetRegistration",
                            trace_id, "Client URL", client_url.spec());
-  context_->storage()->FindRegistrationForClientUrl(
+  context_->registry()->FindRegistrationForClientUrl(
       client_url,
       base::AdaptCallbackForRepeating(base::BindOnce(
           &ServiceWorkerContainerHost::GetRegistrationComplete,
@@ -1417,6 +1417,15 @@ void ServiceWorkerContainerHost::GetRegistrationsComplete(
           CreateServiceWorkerRegistrationObjectInfo(std::move(registration)));
     }
   }
+
+  // Sort by Insertion order. Detail discussion can be found in:
+  // https://github.com/w3c/ServiceWorker/issues/1465
+  std::sort(
+      object_infos.begin(), object_infos.end(),
+      [](const blink::mojom::ServiceWorkerRegistrationObjectInfoPtr& ptr1,
+         const blink::mojom::ServiceWorkerRegistrationObjectInfoPtr& ptr2) {
+        return ptr1->registration_id < ptr2->registration_id;
+      });
 
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
                           base::nullopt, std::move(object_infos));

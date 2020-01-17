@@ -16,7 +16,7 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
     ignoreAccelerators: true,
 
     /** @override */
-    decorate: function() {
+    decorate() {
       this.setSerialNumberAndEnrollmentDomain('', null);
     },
 
@@ -28,12 +28,12 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
      * method will be shown when the user actually clicks the button. Make sure
      * that this is a no-op.
      */
-    cancel: function() {},
+    cancel() {},
 
     /**
      * Event handler that is invoked just before the screen in shown.
      */
-    onBeforeShow: function() {
+    onBeforeShow() {
       Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
     },
 
@@ -45,8 +45,7 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
      * @param {string} serial_number The serial number of the device.
      * @param {string} enrollment_domain The domain that owns the device.
      */
-    setSerialNumberAndEnrollmentDomain: function(
-        serial_number, enrollment_domain) {
+    setSerialNumberAndEnrollmentDomain(serial_number, enrollment_domain) {
       if (enrollment_domain) {
         // The contents of |enrollment_domain| is untrusted. Set the resulting
         // string as |textContent| so that it gets treated as plain text and
@@ -65,7 +64,7 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
      * Sets the message to show to the user.
      * @param {string} message The message to show to the user.
      */
-    setMessage: function(message) {
+    setMessage(message) {
       // The contents of |message| is untrusted. Set it as |textContent| so that
       // it gets treated as plain text and cannot be used to inject JS or HTML.
       $('device-disabled-message').textContent = message;

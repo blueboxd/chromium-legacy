@@ -41,15 +41,16 @@ class PanedWidgetDelegate : public views::WidgetDelegate {
     accessible_panes_ = panes;
   }
 
-  // views::WidgetDelegate.
+  // views::WidgetDelegate:
   void GetAccessiblePanes(std::vector<views::View*>* panes) override {
     std::copy(accessible_panes_.begin(), accessible_panes_.end(),
               std::back_inserter(*panes));
   }
-  views::Widget* GetWidget() override { return widget_; }
-  const views::Widget* GetWidget() const override { return widget_; }
 
  private:
+  // views::WidgetDelegate:
+  const views::Widget* GetWidgetImpl() const override { return widget_; }
+
   views::Widget* widget_;
   std::vector<views::View*> accessible_panes_;
 };

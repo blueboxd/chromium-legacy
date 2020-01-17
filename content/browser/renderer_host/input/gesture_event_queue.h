@@ -132,6 +132,8 @@ class CONTENT_EXPORT GestureEventQueue {
                        InputEventAckSource ack_source,
                        InputEventAckState ack_result);
 
+  bool IsFlingActiveForTest() { return FlingInProgressForTest(); }
+
  private:
   friend class GestureEventQueueTest;
   friend class MockRenderWidgetHost;

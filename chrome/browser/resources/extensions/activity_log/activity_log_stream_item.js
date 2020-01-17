@@ -82,7 +82,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  computeIsExpandable_: function() {
+  computeIsExpandable_() {
     return this.hasPageUrl_() || this.hasArgs_() || this.hasWebRequestInfo_();
   },
 
@@ -90,7 +90,7 @@ Polymer({
    * @private
    * @return {string}
    */
-  getFormattedTime_: function() {
+  getFormattedTime_() {
     // Format the activity's time to HH:MM:SS.mmm format. Use ToLocaleString
     // for HH:MM:SS and padLeft for milliseconds.
     const activityDate = new Date(this.data.timestamp);
@@ -109,7 +109,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  hasPageUrl_: function() {
+  hasPageUrl_() {
     return !!this.data.pageUrl;
   },
 
@@ -117,7 +117,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  hasArgs_: function() {
+  hasArgs_() {
     return this.argsList_.length > 0;
   },
 
@@ -125,7 +125,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  hasWebRequestInfo_: function() {
+  hasWebRequestInfo_() {
     return !!this.data.webRequestInfo && this.data.webRequestInfo !== '{}';
   },
 
@@ -133,7 +133,7 @@ Polymer({
    * @private
    * @return {!Array<!StreamArgItem>}
    */
-  computeArgsList_: function() {
+  computeArgsList_() {
     const parsedArgs = JSON.parse(this.data.args);
     if (!Array.isArray(parsedArgs)) {
       return [];
@@ -152,7 +152,7 @@ Polymer({
   },
 
   /** @private */
-  onExpandClick_: function() {
+  onExpandClick_() {
     if (this.isExpandable_) {
       this.set('data.expanded', !this.data.expanded);
       this.fire('resize-stream');

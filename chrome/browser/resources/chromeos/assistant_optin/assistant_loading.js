@@ -50,7 +50,7 @@ Polymer({
    *
    * @private
    */
-  onRetryTap_: function() {
+  onRetryTap_() {
     this.fire('reload');
   },
 
@@ -59,7 +59,7 @@ Polymer({
    *
    * @private
    */
-  onSkipTap_: function() {
+  onSkipTap_() {
     if (this.buttonsDisabled) {
       return;
     }
@@ -73,7 +73,7 @@ Polymer({
    *
    * @private
    */
-  addClass_: function(className) {
+  addClass_(className) {
     this.$['loading-dialog'].classList.add(className);
   },
 
@@ -83,14 +83,14 @@ Polymer({
    *
    * @private
    */
-  removeClass_: function(className) {
+  removeClass_(className) {
     this.$['loading-dialog'].classList.remove(className);
   },
 
   /**
    * Reloads the page.
    */
-  reloadPage: function() {
+  reloadPage() {
     window.clearTimeout(this.animationTimeout_);
     window.clearTimeout(this.loadingTimeout_);
     this.removeClass_('loaded');
@@ -109,7 +109,7 @@ Polymer({
   /**
    * Handles event when page content cannot be loaded.
    */
-  onErrorOccurred: function(details) {
+  onErrorOccurred(details) {
     this.loadingError_ = true;
     window.clearTimeout(this.animationTimeout_);
     window.clearTimeout(this.loadingTimeout_);
@@ -125,7 +125,7 @@ Polymer({
   /**
    * Handles event when all the page content has been loaded.
    */
-  onPageLoaded: function() {
+  onPageLoaded() {
     window.clearTimeout(this.animationTimeout_);
     window.clearTimeout(this.loadingTimeout_);
     this.removeClass_('loading-animation');
@@ -137,7 +137,7 @@ Polymer({
   /**
    * Called when the loading timeout is triggered.
    */
-  onLoadingTimeout: function() {
+  onLoadingTimeout() {
     chrome.send('login.AssistantOptInFlowScreen.LoadingScreen.timeout');
     this.onErrorOccurred();
   },
@@ -145,7 +145,7 @@ Polymer({
   /**
    * Signal from host to show the screen.
    */
-  onShow: function() {
+  onShow() {
     this.reloadPage();
   },
 });

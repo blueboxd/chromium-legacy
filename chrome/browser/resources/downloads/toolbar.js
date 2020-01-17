@@ -42,41 +42,41 @@ Polymer({
   mojoHandler_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.mojoHandler_ = BrowserProxy.getInstance().handler;
   },
 
   /** @return {boolean} Whether removal can be undone. */
-  canUndo: function() {
+  canUndo() {
     return !this.isSearchFocused();
   },
 
   /** @return {boolean} Whether "Clear all" should be allowed. */
-  canClearAll: function() {
+  canClearAll() {
     return this.getSearchText().length === 0 && this.hasClearableDownloads;
   },
 
   /** @return {string} The full text being searched. */
-  getSearchText: function() {
+  getSearchText() {
     return /** @type {!CrToolbarElement} */ (this.$.toolbar)
         .getSearchField()
         .getValue();
   },
 
-  focusOnSearchInput: function() {
+  focusOnSearchInput() {
     return /** @type {!CrToolbarElement} */ (this.$.toolbar)
         .getSearchField()
         .showAndFocus();
   },
 
-  isSearchFocused: function() {
+  isSearchFocused() {
     return /** @type {!CrToolbarElement} */ (this.$.toolbar)
         .getSearchField()
         .isSearchFocused();
   },
 
   /** @private */
-  onClearAllTap_: function() {
+  onClearAllTap_() {
     assert(this.canClearAll());
     this.mojoHandler_.clearAll();
     this.$.moreActionsMenu.close();
@@ -87,7 +87,7 @@ Polymer({
   },
 
   /** @private */
-  onMoreActionsTap_: function() {
+  onMoreActionsTap_() {
     this.$.moreActionsMenu.showAt(this.$.moreActions);
   },
 
@@ -95,7 +95,7 @@ Polymer({
    * @param {!CustomEvent<string>} event
    * @private
    */
-  onSearchChanged_: function(event) {
+  onSearchChanged_(event) {
     const searchService = SearchService.getInstance();
     if (searchService.search(event.detail)) {
       this.spinnerActive = searchService.isSearching();
@@ -104,13 +104,13 @@ Polymer({
   },
 
   /** @private */
-  onOpenDownloadsFolderTap_: function() {
+  onOpenDownloadsFolderTap_() {
     this.mojoHandler_.openDownloadsFolderRequiringGesture();
     this.$.moreActionsMenu.close();
   },
 
   /** @private */
-  updateClearAll_: function() {
+  updateClearAll_() {
     this.$$('.clear-all').hidden = !this.canClearAll();
   },
 });

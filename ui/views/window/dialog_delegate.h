@@ -284,23 +284,20 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(DialogDelegate);
 };
 
-// A DialogDelegate implementation that is-a View. Used to override GetWidget()
-// to call View's GetWidget() for the common case where a DialogDelegate
-// implementation is-a View. Note that DialogDelegateView is not owned by
-// view's hierarchy and is expected to be deleted on DeleteDelegate call.
+// A DialogDelegate implementation that is-a View. Note that DialogDelegateView
+// is not owned by view's hierarchy and is expected to be deleted on
+// DeleteDelegate call.
 class VIEWS_EXPORT DialogDelegateView : public DialogDelegate,
                                         public View {
  public:
   DialogDelegateView();
   ~DialogDelegateView() override;
 
-  // Overridden from DialogDelegate:
+  // DialogDelegate:
   void DeleteDelegate() override;
-  Widget* GetWidget() override;
-  const Widget* GetWidget() const override;
   View* GetContentsView() override;
 
-  // Overridden from View:
+  // View:
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 

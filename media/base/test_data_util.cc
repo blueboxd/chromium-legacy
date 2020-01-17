@@ -40,6 +40,7 @@ const char kMp4Vp9Profile2Video[] =
     "video/mp4; codecs=\"vp09.02.10.10.01.02.02.02.00\"";
 const char kMp4Vp9Video[] =
     "video/mp4; codecs=\"vp09.00.10.08.01.02.02.02.00\"";
+const char kMp4XheAacAudio[] = "audio/mp4; codecs=\"mp4a.40.42\"";
 // WebM
 const char kWebMAv110bitVideo[] = "video/webm; codecs=\"av01.0.04M.10\"";
 const char kWebMAv1Video[] = "video/webm; codecs=\"av01.0.04M.08\"";
@@ -139,6 +140,7 @@ const FileToMimeTypeMap& GetFileToMimeTypeMap() {
       {"bear-vp9.webm", kWebMVp9Video},
       {"frame_size_change-av_enc-v.webm", kWebMVorbisAudioVp8Video},
       {"icy_sfx.mp3", kMp3Audio},
+      {"noise-xhe-aac.mp4", kMp4XheAacAudio},
       {"opus-trimming-test.mp4", kMp4OpusAudio},
       {"opus-trimming-test.webm", kWebMOpusAudio},
       {"sfx-flac_frag.mp4", kMp4FlacAudio},

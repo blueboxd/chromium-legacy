@@ -18,3 +18,15 @@ const base::Feature kSharingDeviceExpiration{"SharingDeviceExpiration",
 
 const base::FeatureParam<int> kSharingDeviceExpirationHours = {
     &kSharingDeviceExpiration, "SharingDeviceExpirationHours", 48};
+
+const base::Feature kSharingMessageTTL{"SharingMessageTTL",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<int> kSharingMessageTTLSeconds = {
+    &kSharingMessageTTL, "SharingMessageTTLSeconds", 16};
+
+const base::Feature kSharingAckMessageTTL{"SharingAckMessageTTL",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<int> kSharingAckMessageTTLSeconds = {
+    &kSharingAckMessageTTL, "SharingAckMessageTTLSeconds", 8};

@@ -116,15 +116,16 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
       auto* result =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kPerspective);
       result->Append(*CSSNumericLiteralValue::Create(
-          perspective.Perspective(), CSSPrimitiveValue::UnitType::kPixels));
+          perspective.Perspective() / zoom,
+          CSSPrimitiveValue::UnitType::kPixels));
       return result;
     }
     case TransformOperation::kMatrix: {
       const auto& matrix = ToMatrixTransformOperation(operation).Matrix();
       auto* result =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix);
-      double values[6] = {matrix.A(), matrix.B(), matrix.C(),
-                          matrix.D(), matrix.E(), matrix.F()};
+      double values[6] = {matrix.A(), matrix.B(),        matrix.C(),
+                          matrix.D(), matrix.E() / zoom, matrix.F() / zoom};
       for (double value : values) {
         result->Append(*CSSNumericLiteralValue::Create(
             value, CSSPrimitiveValue::UnitType::kNumber));
@@ -136,10 +137,12 @@ const CSSValue* ComputedTransformComponent(const TransformOperation& operation,
       CSSFunctionValue* result =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix3d);
       double values[16] = {
-          matrix.M11(), matrix.M12(), matrix.M13(), matrix.M14(),
-          matrix.M21(), matrix.M22(), matrix.M23(), matrix.M24(),
-          matrix.M31(), matrix.M32(), matrix.M33(), matrix.M34(),
-          matrix.M41(), matrix.M42(), matrix.M43(), matrix.M44()};
+          matrix.M11(),        matrix.M12(),        matrix.M13(),
+          matrix.M14(),        matrix.M21(),        matrix.M22(),
+          matrix.M23(),        matrix.M24(),        matrix.M31(),
+          matrix.M32(),        matrix.M33(),        matrix.M34(),
+          matrix.M41() / zoom, matrix.M42() / zoom, matrix.M43() / zoom,
+          matrix.M44()};
       for (double value : values) {
         result->Append(*CSSNumericLiteralValue::Create(
             value, CSSPrimitiveValue::UnitType::kNumber));

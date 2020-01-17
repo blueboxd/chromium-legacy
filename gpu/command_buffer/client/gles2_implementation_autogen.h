@@ -1399,4 +1399,8 @@ void BeginSharedImageAccessDirectCHROMIUM(GLuint texture, GLenum mode) override;
 
 void EndSharedImageAccessDirectCHROMIUM(GLuint texture) override;
 
+void BeginBatchReadAccessSharedImageCHROMIUM() override;
+
+void EndBatchReadAccessSharedImageCHROMIUM() override;
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_

@@ -6,9 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojo_types") {
   generate_java = true
-  sources = [
-    "autofill_types.mojom",
-  ]
+  sources = [ "autofill_types.mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",
@@ -19,24 +17,16 @@ mojom("mojo_types") {
 }
 
 mojom("mojo_test_types") {
-  sources = [
-    "test_autofill_types.mojom",
-  ]
+  sources = [ "test_autofill_types.mojom" ]
 
-  public_deps = [
-    ":mojo_types",
-  ]
+  public_deps = [ ":mojo_types" ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "autofill_types_mojom_traits_unittest.cc",
-  ]
+  sources = [ "autofill_types_mojom_traits_unittest.cc" ]
 
-  public_deps = [
-    ":mojo_test_types",
-  ]
+  public_deps = [ ":mojo_test_types" ]
 
   deps = [
     "//base",

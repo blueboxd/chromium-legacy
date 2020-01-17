@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/shared_image_backing_factory_ahardwarebuffer.h"
 
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/bind_helpers.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -605,6 +606,43 @@ GlLegacySharedImage::GlLegacySharedImage(
 GlLegacySharedImage::~GlLegacySharedImage() {
   shared_image_.reset();
   EXPECT_FALSE(mailbox_manager_->ConsumeTexture(mailbox_));
+}
+
+TEST_F(SharedImageBackingFactoryAHBTest, Overlay) {
+  if (!base::AndroidHardwareBufferCompat::IsSupportAvailable())
+    return;
+
+  GlLegacySharedImage gl_legacy_shared_image{
+      backing_factory_.get(),     false /* is_thread_safe */,
+      &mailbox_manager_,          &shared_image_manager_,
+      memory_type_tracker_.get(), shared_image_representation_factory_.get()};
+
+  auto skia_representation = shared_image_representation_factory_->ProduceSkia(
+      gl_legacy_shared_image.mailbox(), context_state_.get());
+
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  std::vector<GrBackendSemaphore> end_semaphores;
+  auto scoped_write_access = skia_representation->BeginScopedWriteAccess(
+      &begin_semaphores, &end_semaphores,
+      SharedImageRepresentation::AllowUnclearedAccess::kYes);
+  EXPECT_TRUE(scoped_write_access);
+  EXPECT_EQ(0u, begin_semaphores.size());
+  EXPECT_EQ(0u, end_semaphores.size());
+  scoped_write_access.reset();
+
+  auto overlay_representation =
+      shared_image_representation_factory_->ProduceOverlay(
+          gl_legacy_shared_image.mailbox());
+  EXPECT_TRUE(overlay_representation);
+
+  auto scoped_read_access =
+      overlay_representation->BeginScopedReadAccess(true /* needs_gl_image */);
+  EXPECT_TRUE(scoped_read_access);
+  EXPECT_TRUE(scoped_read_access->gl_image());
+  auto buffer = scoped_read_access->gl_image()->GetAHardwareBuffer();
+  DCHECK(buffer);
+  scoped_read_access.reset();
+  skia_representation.reset();
 }
 
 }  // anonymous namespace

@@ -198,6 +198,11 @@ bool OutputStreamConnection::HandleMetadata(const Generic& message) {
   if (message.has_error()) {
     delegate_->OnMixerError();
   }
+
+  if (message.has_mixer_underrun()) {
+    delegate_->OnMixerUnderrun(static_cast<Delegate::MixerUnderrunType>(
+        message.mixer_underrun().type()));
+  }
   return true;
 }
 

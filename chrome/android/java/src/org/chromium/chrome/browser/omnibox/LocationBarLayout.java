@@ -573,8 +573,7 @@ public class LocationBarLayout extends FrameLayout
      * @return The margin to be applied to the URL bar based on the buttons currently visible next
      *         to it, used to avoid text overlapping the buttons and vice versa.
      */
-    @Override
-    public int getUrlContainerMarginEnd() {
+    private int getUrlContainerMarginEnd() {
         int urlContainerMarginEnd = 0;
         for (View childView : getUrlContainerViewsForMargin()) {
             ViewGroup.MarginLayoutParams childLayoutParams =

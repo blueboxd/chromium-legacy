@@ -77,9 +77,7 @@ if (is_win) {
     testonly = true
     output_zip_file = "$root_out_dir/mini_installer_tests.zip"
     script = "create_zip.py"
-    outputs = [
-      output_zip_file,
-    ]
+    outputs = [ output_zip_file ]
     data = files
     args = [
       "--o",
@@ -87,8 +85,6 @@ if (is_win) {
       "--chromedriver-path",
       rebase_path("$root_out_dir/chromedriver.exe", root_build_dir),
     ]
-    deps = [
-      "//chrome/test/chromedriver:chromedriver",
-    ]
+    deps = [ "//chrome/test/chromedriver:chromedriver" ]
   }
 }

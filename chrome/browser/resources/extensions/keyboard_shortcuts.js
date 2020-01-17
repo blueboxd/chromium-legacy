@@ -44,7 +44,7 @@ Polymer({
   },
 
   /** @private */
-  onViewEnter_: function() {
+  onViewEnter_() {
     chrome.metricsPrivate.recordUserAction('Options_ExtensionCommands');
   },
 
@@ -52,7 +52,7 @@ Polymer({
    * @return {!Array<!chrome.developerPrivate.ExtensionInfo>}
    * @private
    */
-  calculateShownItems_: function() {
+  calculateShownItems_() {
     return this.items.filter(function(item) {
       return item.commands.length > 0;
     });
@@ -66,7 +66,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasKeybinding_: function(keybinding) {
+  hasKeybinding_(keybinding) {
     return !!keybinding;
   },
 
@@ -76,7 +76,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeScopeDisabled_: function(command) {
+  computeScopeDisabled_(command) {
     return command.isExtensionAction || !command.isActive;
   },
 
@@ -86,12 +86,12 @@ Polymer({
    * @param {string} scope
    * @return {string}
    */
-  triggerScopeChange_: function(scope) {
+  triggerScopeChange_(scope) {
     return scope;
   },
 
   /** @private */
-  onCloseButtonClick_: function() {
+  onCloseButtonClick_() {
     this.fire('close');
   },
 
@@ -99,7 +99,7 @@ Polymer({
    * @param {!{target: HTMLSelectElement, model: Object}} event
    * @private
    */
-  onScopeChanged_: function(event) {
+  onScopeChanged_(event) {
     this.delegate.updateExtensionCommandScope(
         event.model.get('item.id'), event.model.get('command.name'),
         /** @type {chrome.developerPrivate.CommandScope} */

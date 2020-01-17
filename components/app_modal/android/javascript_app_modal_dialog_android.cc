@@ -13,7 +13,6 @@
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/javascript_dialog_manager.h"
-#include "components/app_modal/javascript_native_dialog_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -33,60 +32,12 @@ JavascriptAppModalDialogAndroid::JavascriptAppModalDialogAndroid(
     app_modal::JavaScriptAppModalDialog* dialog,
     gfx::NativeWindow parent)
     : dialog_(dialog),
-      parent_jobject_weak_ref_(env, parent->GetJavaObject().obj()) {}
+      parent_jobject_weak_ref_(env, parent->GetJavaObject().obj()) {
+  dialog->web_contents()->GetDelegate()->ActivateContents(
+      dialog->web_contents());
+}
 
 void JavascriptAppModalDialogAndroid::ShowAppModalDialog() {
-  DoShowAppModalDialog();
-}
-
-void JavascriptAppModalDialogAndroid::ActivateAppModalDialog() {
-  ShowAppModalDialog();
-}
-
-void JavascriptAppModalDialogAndroid::CloseAppModalDialog() {
-  CancelAppModalDialog();
-}
-
-void JavascriptAppModalDialogAndroid::AcceptAppModalDialog() {
-  base::string16 prompt_text;
-  dialog_->OnAccept(prompt_text, false);
-  delete this;
-}
-
-void JavascriptAppModalDialogAndroid::DidAcceptAppModalDialog(
-    JNIEnv* env,
-    const JavaParamRef<jobject>&,
-    const JavaParamRef<jstring>& prompt,
-    bool should_suppress_js_dialogs) {
-  base::string16 prompt_text =
-      base::android::ConvertJavaStringToUTF16(env, prompt);
-  dialog_->OnAccept(prompt_text, should_suppress_js_dialogs);
-  delete this;
-}
-
-void JavascriptAppModalDialogAndroid::CancelAppModalDialog() {
-  dialog_->OnCancel(false);
-  delete this;
-}
-
-bool JavascriptAppModalDialogAndroid::IsShowing() const {
-  return true;
-}
-
-void JavascriptAppModalDialogAndroid::DidCancelAppModalDialog(
-    JNIEnv* env,
-    const JavaParamRef<jobject>&,
-    bool should_suppress_js_dialogs) {
-  dialog_->OnCancel(should_suppress_js_dialogs);
-  delete this;
-}
-
-const ScopedJavaGlobalRef<jobject>&
-JavascriptAppModalDialogAndroid::GetDialogObject() const {
-  return dialog_jobject_;
-}
-
-void JavascriptAppModalDialogAndroid::DoShowAppModalDialog() {
   JNIEnv* env = AttachCurrentThread();
   // Keep a strong ref to the parent window while we make the call to java to
   // display the dialog.
@@ -136,6 +87,57 @@ void JavascriptAppModalDialogAndroid::DoShowAppModalDialog() {
 
   Java_JavascriptAppModalDialog_showJavascriptAppModalDialog(
       env, dialog_object, parent_jobj, reinterpret_cast<intptr_t>(this));
+}
+
+void JavascriptAppModalDialogAndroid::ActivateAppModalDialog() {
+  // This is called on desktop (Views) when interacting with a browser window
+  // that does not host the currently active app modal dialog, as a way to
+  // redirect activation to the app modal dialog host. It's not relevant on
+  // Android.
+  NOTREACHED();
+}
+
+void JavascriptAppModalDialogAndroid::CloseAppModalDialog() {
+  CancelAppModalDialog();
+}
+
+void JavascriptAppModalDialogAndroid::AcceptAppModalDialog() {
+  base::string16 prompt_text;
+  dialog_->OnAccept(prompt_text, false);
+  delete this;
+}
+
+void JavascriptAppModalDialogAndroid::DidAcceptAppModalDialog(
+    JNIEnv* env,
+    const JavaParamRef<jobject>&,
+    const JavaParamRef<jstring>& prompt,
+    bool should_suppress_js_dialogs) {
+  base::string16 prompt_text =
+      base::android::ConvertJavaStringToUTF16(env, prompt);
+  dialog_->OnAccept(prompt_text, should_suppress_js_dialogs);
+  delete this;
+}
+
+void JavascriptAppModalDialogAndroid::CancelAppModalDialog() {
+  dialog_->OnCancel(false);
+  delete this;
+}
+
+bool JavascriptAppModalDialogAndroid::IsShowing() const {
+  return true;
+}
+
+void JavascriptAppModalDialogAndroid::DidCancelAppModalDialog(
+    JNIEnv* env,
+    const JavaParamRef<jobject>&,
+    bool should_suppress_js_dialogs) {
+  dialog_->OnCancel(should_suppress_js_dialogs);
+  delete this;
+}
+
+const ScopedJavaGlobalRef<jobject>&
+JavascriptAppModalDialogAndroid::GetDialogObject() const {
+  return dialog_jobject_;
 }
 
 JavascriptAppModalDialogAndroid::~JavascriptAppModalDialogAndroid() {

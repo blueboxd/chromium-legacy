@@ -89,9 +89,7 @@ appiconset("remoting_icons") {
 
 action("infoplist_strings") {
   _source = "InfoPlist.strings.jinja2"
-  sources = [
-    _source,
-  ]
+  sources = [ _source ]
 
   script = "//remoting/tools/build/remoting_localize.py"
   args = [
@@ -124,9 +122,7 @@ foreach(locale, remoting_locales_with_underscores) {
       "$root_gen_dir/remoting/ios/app/InfoPlist_Strings/$locale.lproj/InfoPlist.strings",
       "$root_out_dir/remoting/resources/$locale.lproj/locale.pak",
     ]
-    outputs = [
-      "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}",
-    ]
+    outputs = [ "{{bundle_resources_dir}}/$locale.lproj/{{source_file_part}}" ]
     public_deps = [
       ":infoplist_strings",
       "//remoting/resources:copy_locales",

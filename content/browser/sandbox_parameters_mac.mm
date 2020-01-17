@@ -221,7 +221,7 @@ void SetupSandboxParameters(service_manager::SandboxType sandbox_type,
     case service_manager::SandboxType::kAudio:
     case service_manager::SandboxType::kSoda:
     case service_manager::SandboxType::kNaClLoader:
-    case service_manager::SandboxType::kPdfCompositor:
+    case service_manager::SandboxType::kPrintCompositor:
     case service_manager::SandboxType::kRenderer:
       SetupCommonSandboxParameters(client);
       break;

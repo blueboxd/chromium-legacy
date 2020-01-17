@@ -48,9 +48,7 @@ source_set("facade") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "host_list_service_unittest.mm",
-  ]
+  sources = [ "host_list_service_unittest.mm" ]
   deps = [
     ":facade",
     "//remoting/base/grpc_test_support",

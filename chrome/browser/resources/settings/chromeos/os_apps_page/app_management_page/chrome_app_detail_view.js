@@ -23,7 +23,7 @@ Polymer({
     messages_: Object,
   },
 
-  attached: function() {
+  attached() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
     this.updateFromStore();
   },
@@ -38,7 +38,7 @@ Polymer({
     this.messages_ = messages;
   },
 
-  onClickExtensionsSettingsButton_: function() {
+  onClickExtensionsSettingsButton_() {
     app_management.BrowserProxy.getInstance().handler.openNativeSettings(
         this.app_.id);
     app_management.util.recordAppManagementUserAction(
@@ -50,7 +50,7 @@ Polymer({
    * @return {Array<string>}
    * @private
    */
-  getPermissionMessages_: function(messages) {
+  getPermissionMessages_(messages) {
     return messages.map(m => m.message);
   },
 
@@ -60,7 +60,7 @@ Polymer({
    * @return {?Array<string>}
    * @private
    */
-  getPermissionSubmessagesByMessage_: function(index, messages) {
+  getPermissionSubmessagesByMessage_(index, messages) {
     // Dom-repeat still tries to access messages[0] when app has no
     // permission therefore we add an extra check.
     if (!messages[index]) {
@@ -74,7 +74,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasPermissions_: function(messages) {
+  hasPermissions_(messages) {
     return messages.length > 0;
   },
 });

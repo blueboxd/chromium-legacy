@@ -97,7 +97,7 @@ var PeerConnectionUpdateTable = (function() {
       }[update.type] ||
           update.type;
 
-      if (update.value.length == 0) {
+      if (update.value.length === 0) {
         row.innerHTML += '<td>' + type + '</td>';
         return;
       }

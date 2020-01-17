@@ -26,7 +26,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_FUCHSIA) InputMethodFuchsia
       public InputEventDispatcherDelegate,
       public fuchsia::ui::input::InputMethodEditorClient {
  public:
-  explicit InputMethodFuchsia(internal::InputMethodDelegate* delegate);
+  InputMethodFuchsia(internal::InputMethodDelegate* delegate,
+                     gfx::AcceleratedWidget widget);
   ~InputMethodFuchsia() override;
 
   fuchsia::ui::input::ImeService* ime_service() const {

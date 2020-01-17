@@ -314,12 +314,12 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // multiplier. The goal is to get many randomly distributed samples early
   // during page load and initial interaction, then samples at an exponentially
   // decreasing rate to effectively cap the number of samples. The particular
-  // parameters chosen here give roughly 10-15 samples in the first 100 frames,
+  // parameters chosen here give roughly 5-10 samples in the first 100 frames,
   // decaying to several hours between samples by the 40th sample. The
-  // multiplier value should be tuned to achieve a total sample count that
-  // avoids throttling by the UKM system.
-  double sample_decay_rate_ = 3;
-  double sample_rate_multiplier_ = 4;
+  // multiplier value and sample_decay_rate_ should be tuned to achieve a total
+  // sample count that avoids throttling by the UKM system.
+  double sample_decay_rate_ = 1;
+  double sample_rate_multiplier_ = 2;
   unsigned samples_so_far_ = 0;
   unsigned frames_to_next_event_ = 0;
 

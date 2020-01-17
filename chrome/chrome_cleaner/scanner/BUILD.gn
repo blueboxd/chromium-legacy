@@ -6,13 +6,9 @@
 visibility = [ "//chrome/chrome_cleaner/*" ]
 
 source_set("signature_matcher_api") {
-  sources = [
-    "signature_matcher_api.h",
-  ]
+  sources = [ "signature_matcher_api.h" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("matcher_util") {
@@ -46,9 +42,7 @@ source_set("signature_matcher") {
 }
 
 source_set("scanner_api") {
-  sources = [
-    "scanner.h",
-  ]
+  sources = [ "scanner.h" ]
 
   deps = [
     "//base",
@@ -122,9 +116,7 @@ source_set("unittest_sources") {
 }
 
 source_set("force_installed_extension_scanner_api") {
-  sources = [
-    "force_installed_extension_scanner.h",
-  ]
+  sources = [ "force_installed_extension_scanner.h" ]
 
   deps = [
     "//chrome/chrome_cleaner/chrome_utils:force_installed_extension",

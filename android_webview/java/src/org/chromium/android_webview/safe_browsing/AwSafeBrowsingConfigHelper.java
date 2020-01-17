@@ -35,7 +35,7 @@ public class AwSafeBrowsingConfigHelper {
     private static volatile boolean sEnabledByManifest;
 
     // Used to record the UMA histogram SafeBrowsing.WebView.AppOptIn. Since these values are
-    // persisted to logs, they should never be renumbered nor reused.
+    // persisted to logs, they should never be renumbered or reused.
     @IntDef({AppOptIn.NO_PREFERENCE, AppOptIn.OPT_IN, AppOptIn.OPT_OUT})
     @interface AppOptIn {
         int NO_PREFERENCE = 0;
@@ -46,7 +46,7 @@ public class AwSafeBrowsingConfigHelper {
     }
 
     // Used to record the UMA histogram SafeBrowsing.WebView.UserOptIn. Since these values are
-    // persisted to logs, they should never be renumbered nor reused.
+    // persisted to logs, they should never be renumbered or reused.
     @IntDef({UserOptIn.UNABLE_TO_DETERMINE, UserOptIn.OPT_IN, UserOptIn.OPT_OUT})
     @interface UserOptIn {
         int OPT_OUT = 0;

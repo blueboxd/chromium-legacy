@@ -49,9 +49,6 @@ class VerifiedContents {
   // signature" mode, this can return false.
   bool valid_signature() { return valid_signature_; }
 
-  static base::FilePath::StringType NormalizeResourcePath(
-      const base::FilePath& relative_path);
-
  private:
   // Note: the public_key must remain valid for the lifetime of this object.
   explicit VerifiedContents(base::span<const uint8_t> public_key);
@@ -85,15 +82,19 @@ class VerifiedContents {
   std::string extension_id_;
   base::Version version_;
 
-  // The expected treehash root hashes for each file, lower cased so we can do
+  // The expected treehash root hashes for each file.
+  // For case-sensitive systems (linux/chromeos) the key is exact cased, but for
+  // case-insensitive systems (win/macos) the key is lower cased to support
   // case-insensitive lookups.
   //
   // We use a multi-map here so that we can do fast lookups of paths from
   // requests on case-insensitive systems (windows, mac) where the request path
-  // might not have the exact right capitalization, but not break
-  // case-sensitive systems (linux, chromeos). TODO(asargent) - we should give
-  // developers client-side warnings in each of those cases, and have the
-  // webstore reject the cases they can statically detect. See crbug.com/29941
+  // might not have the exact right capitalization. Note that this doesn't
+  // affect case-sensitive systems (linux, chromeos) as we use the exact cased
+  // keys.
+  // TODO(crbug.com/29941) - we should give developers client-side warnings in
+  // each of those cases, and have the webstore reject the cases they can
+  // statically detect.
   typedef std::multimap<base::FilePath::StringType, std::string> RootHashes;
   RootHashes root_hashes_;
 

@@ -103,7 +103,21 @@ cr.define('settings', function() {
    */
   const CANONICAL_PATH_REGEX = /(^\/)([\/-\w]+)(\/$)/;
 
+  /** @type {?settings.Router} */
+  let routerInstance = null;
+
   class Router {
+    /** @return {!settings.Router} The singleton instance. */
+    static getInstance() {
+      return assert(routerInstance);
+    }
+
+    /** @param {!settings.Router} instance */
+    static setInstance(instance) {
+      assert(!routerInstance);
+      routerInstance = instance;
+    }
+
     /** @param {!SettingsRoutes} availableRoutes */
     constructor(availableRoutes) {
       /**
@@ -309,8 +323,34 @@ cr.define('settings', function() {
     }
   }
 
+  /** @polymerBehavior */
+  const RouteObserverBehavior = {
+    /** @override */
+    attached() {
+      routerInstance.addObserver(this);
+
+      // Emulating Polymer data bindings, the observer is called when the
+      // element starts observing the route.
+      this.currentRouteChanged(routerInstance.currentRoute, undefined);
+    },
+
+    /** @override */
+    detached() {
+      routerInstance.removeObserver(this);
+    },
+
+    /**
+     * @param {!settings.Route|undefined} opt_newRoute
+     * @param {!settings.Route|undefined} opt_oldRoute
+     */
+    currentRouteChanged(opt_newRoute, opt_oldRoute) {
+      assertNotReached();
+    },
+  };
+
   return {
     Route: Route,    // The Route class definition.
     Router: Router,  // The Router class definition.
+    RouteObserverBehavior: RouteObserverBehavior,
   };
 });

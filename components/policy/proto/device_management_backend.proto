@@ -999,6 +999,37 @@ message CpuInfo {
   optional uint32 max_clock_speed_khz = 3;
 }
 
+// Status for a single display.  A display screen with resolution 1920x1080
+// would have resolution_width: 1920 and resolution_height: 1080.
+message DisplayInfo {
+  // Resolution width
+  optional uint32 resolution_width = 1;
+  // Resolution height
+  optional uint32 resolution_height = 2;
+  // Refresh rate (Hz)
+  optional uint32 refresh_rate = 3;
+  // Set to true if display is internal, otherwise set to false.
+  optional bool is_internal = 4;
+}
+
+// Status of a single graphics adapter (GPU).
+message GraphicsAdapterInfo {
+  // Adapter name. Example: Mesa DRI Intel(R) UHD Graphics 620 (Kabylake GT2)
+  optional string name = 1;
+  // Driver version
+  optional string driver_version = 2;
+  // Represents the graphics card device id
+  optional uint64 device_id = 3;
+  // GPU consumption of system RAM (bytes)
+  optional uint64 system_ram_usage = 4;
+}
+
+// Status of the graphics subsystem.
+message GraphicsStatus {
+  optional GraphicsAdapterInfo adapter = 1;
+  repeated DisplayInfo displays = 2;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   reserved 4, 7, 13, 20;
@@ -1093,6 +1124,9 @@ message DeviceStatusReportRequest {
 
   // Information about a devices physical CPU(s).
   repeated CpuInfo cpu_info = 32;
+
+  // Status of the graphics adapter(s) and display(s).
+  optional GraphicsStatus graphics_status = 33;
 }
 
 message OsUpdateStatus {
@@ -2448,6 +2482,9 @@ message AppInstallReportLogEvent {
 
   // Type of session state change. Set for event type SESSION_STATE_CHANGE.
   optional SessionStateChangeType session_state_change_type = 8;
+
+  // ARC++ Android id.
+  optional int64 android_id = 9;
 }
 
 // Log bucket for an app.

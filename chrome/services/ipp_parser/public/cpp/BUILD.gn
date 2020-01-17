@@ -12,9 +12,7 @@ if (use_cups) {
       "ipp_converter.h",
     ]
 
-    public_deps = [
-      "//chrome/services/ipp_parser/public/mojom",
-    ]
+    public_deps = [ "//chrome/services/ipp_parser/public/mojom" ]
 
     deps = [
       "//base",
@@ -29,12 +27,8 @@ if (use_cups) {
   # TODO(crbug.com/831914): Enable this fuzzer once its running on CrOS only.
   if (false) {  # use_fuzzing_engine && is_chromeos
     fuzzer_test("ipp_message_parser_fuzzer") {
-      sources = [
-        "ipp_message_parser_fuzzer.cc",
-      ]
-      deps = [
-        ":cpp",
-      ]
+      sources = [ "ipp_message_parser_fuzzer.cc" ]
+      deps = [ ":cpp" ]
 
       dict = "ipp_message_parser_fuzzer.dict"
     }

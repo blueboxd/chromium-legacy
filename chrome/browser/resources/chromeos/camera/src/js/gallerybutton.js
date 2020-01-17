@@ -98,7 +98,7 @@ export class GalleryButton {
      */
     this.directory_ = null;
 
-    this.button_.addEventListener('click', async (event) => {
+    this.button_.addEventListener('click', async () => {
       // Check if the last picture serving as cover photo still exists before
       // opening it in the gallery.
       // TODO(yuli): Remove this workaround for unable watching changed-files.
@@ -228,8 +228,3 @@ export class GalleryButton {
     await this.updateCover_(file);
   }
 }
-
-/**
- * @typedef {GalleryButton}
- */
-cca.GalleryButton = GalleryButton;

@@ -39,7 +39,6 @@
 <translation id="124678866338384709">လက်ရှိတဘ်ကို ပိတ်ရန်</translation>
 <translation id="1258753120186372309">Google doodle- <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">ရှာဖွေပြီး စူးစမ်းလေ့လာပါ</translation>
-<translation id="1264974993859112054">အားကစား</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> ကို မျှဝေ၍မရပါ။</translation>
 <translation id="1272079795634619415">ရပ်ရန်</translation>
 <translation id="1283039547216852943">ချဲ့ရန် တို့ပါ</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">သင်၏ဝဘ်လိပ်စာများကို စက်အားလုံးတွင် ရယူနိုင်ရန် လက်မှတ်ထိုးဝင်ပြီး စင့်ခ်လုပ်ခြင်းကို ဖွင့်ပါ</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" /> အတွက် ဝဘ်ဆိုက်ခွင့်ပြုချက်အားလုံးကို ပြင်ဆင်သတ်မှတ်လိုသည်မှာ သေချာသလား။</translation>
 <translation id="2842985007712546952">မူရင်း ဖိုင်တွဲ</translation>
-<translation id="2858138569776157458">ထိပ်တန်းဆိုက်များ</translation>
 <translation id="2860954141821109167">ဤကိရိယာတွင် ဖုန်းအက်ပ်ဖွင့်ထားခြင်း ရှိမရှိ စစ်ဆေးပါ</translation>
 <translation id="2870560284913253234">ဆိုဒ်</translation>
 <translation id="2874939134665556319">ယခင်တစ်ပုဒ်</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Chrome သို့ လက်မှတ်ထိုး ဝင်</translation>
 <translation id="3288003805934695103">စာမျက်နှာကို ပြန်ဖွင့်နေသည်</translation>
 <translation id="32895400574683172">အကြောင်းကြားချက်များ ခွင့်ပြုထားသည်</translation>
+<translation id="3290926146403723641">Google Assistant အသုံးပြုပြီး ဝဘ်ပေါ်တွင် လုပ်ဆောင်စရာများ အပြီးသတ်ရန် Chrome က ဝဘ်ဆိုက်၏ URL၊ အကြောင်းအရာနှင့် သက်ဆိုင်ရာ ကိုယ်ရေးကိုယ်တာအချက်အလက်များကို Google သို့ ပို့သည်</translation>
 <translation id="3295530008794733555">ပိုမိုမြန်ဆန်စွာ ရှာဖွေပါ။ ဒေတာ လျှော့၍သုံးပါ။</translation>
 <translation id="3298243779924642547">အပေါ့စား</translation>
 <translation id="3303414029551471755">အကြောင်းအရာအား ဒေါင်းလုပ်လုပ်ရန် ရှေ့ဆက်မလား?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">ဖုန်းနံပါတ်များ</translation>
 <translation id="3819178904835489326">ဒေါင်းလုဒ် <ph name="NUMBER_OF_DOWNLOADS" /> ခုကို ဖျက်လိုက်သည်</translation>
 <translation id="3822502789641063741">ဆိုက်နေရာကိုရှင်းမလား။</translation>
-<translation id="3853625385350850937">ရှေ့ဆက်ရန် သင့်စက်ပေါ်ရှိ NFC ကို ဖွင့်ပါ</translation>
 <translation id="3859306556332390985">အရှေ့သို့ ရစ်ရန်</translation>
 <translation id="388596076286380598">အော့ဖ်လိုင်းဖြစ်နေစဉ် သို့မဟုတ် လိုင်းမကောင်းသည့်အချိန်တွင်ပင် သင်ကြိုက်နှစ်သက်သည့် ဝဘ်ဆိုက်များမှ ဆောင်းပါး၊ ဗီဒီယိုနှင့် အခြားအကြောင်းအရာများကို ရယူလိုက်ပါ။</translation>
 <translation id="3894427358181296146">ဖိုလ်ဒါ ထည့်ရန်</translation>
@@ -572,7 +570,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{ဖွင့်ထားသောတဘ် <ph name="OPEN_TABS_ONE" /> ခု၊ တဘ်များပြောင်းရန် တို့ပါ}other{ဖွင့်ထားသောတဘ် <ph name="OPEN_TABS_MANY" /> ခု၊ တဘ်များပြောင်းရန် တို့ပါ}}</translation>
 <translation id="5391532827096253100">ဤဝဘ်ဆိုက်သို့ သင်၏ချိတ်ဆက်မှုသည် လုံခြုံမှုမရှိပါ။ ဝဘ်ဆိုက် အချက်အလက်</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ နောက်ထပ် ၁ ခု)}other{(+ နောက်ထပ် # ခု)}}</translation>
-<translation id="5400569084694353794">ဤအပလီကေးရှင်းကို သုံးခြင်းအားဖြင့်၊<ph name="BEGIN_LINK1" />ဝန်ဆောင်မှုဆိုင်ရာ စည်းမျဉ်းများ<ph name="END_LINK1" /> နှင့် <ph name="BEGIN_LINK2" />ကိုယ်ရေးကိုယ်တာ သတိပေးချက်ကို သဘောတူပါသည်။<ph name="END_LINK2" /></translation>
+<translation id="5400569084694353794">ဤအပလီကေးရှင်းကို သုံးခြင်းအားဖြင့်၊<ph name="BEGIN_LINK1" />ဝန်ဆောင်မှု စည်းမျဉ်းများ<ph name="END_LINK1" /> နှင့် <ph name="BEGIN_LINK2" />ကိုယ်ရေးကိုယ်တာ သတိပေးချက်ကို သဘောတူပါသည်။<ph name="END_LINK2" /></translation>
 <translation id="5403592356182871684">အမည်များ</translation>
 <translation id="5403644198645076998">ဆိုက်အချို့ကိုသာ ခွင့်ပြုပါ</translation>
 <translation id="5414836363063783498">စိစစ်နေ…</translation>
@@ -763,7 +761,6 @@
 <translation id="6697947395630195233">ဤဝဘ်ဆိုက်နှင့် သင်၏တည်နေရာကို မျှဝေရန် Chrome သည် သင့်တည်နေရာကို အသုံးပြုခွင့် လိုအပ်သည်။</translation>
 <translation id="6698801883190606802">ထပ်တူပြုထားသည့် ဒေတာကို စီမံကွပ်ကဲရန်</translation>
 <translation id="6699370405921460408">Google ဆာဗာများသည် သင်ဝင်ကြည့်သည့် စာမျက်နှာများကို ပိုမိုကောင်းမွန်အောင် ပြုလုပ်ပေးပါမည်။</translation>
-<translation id="6709133671862442373">သတင်းများ</translation>
 <translation id="6710213216561001401">အရင်</translation>
 <translation id="671481426037969117">သင်၏ <ph name="FQDN" /> တိုင်မာ အချိန်ကုန်သွားပါပြီ။ မနက်ဖြန် ထပ်မံစတင်ပါမည်။</translation>
 <translation id="6738867403308150051">ဒေါင်းလုဒ် လုပ်နေ…</translation>
@@ -1078,7 +1075,6 @@
 <translation id="9133397713400217035">အော့ဖ်လိုင်းတွင် စူးစမ်းလေ့လာရန်</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">မူရင်းအား ပြ</translation>
-<translation id="9139318394846604261">စျေးဝယ်ခြင်း</translation>
 <translation id="9155898266292537608">စာလုံးပေါ်ကို အမြန်တို့၍လည်း ရှာနိုင်သည်</translation>
 <translation id="9169507124922466868">လမ်းညွှန်မှု မှတ်တမ်း တစ်ဝက်ဖွင့်ထားသည်</translation>
 <translation id="9204836675896933765">ဖိုင် ၁ ဖိုင် ကျန်ပါသည်</translation>

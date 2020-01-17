@@ -38,7 +38,7 @@ EventStreamLogger.prototype = {
    * @param {chrome.automation.EventType} eventType
    * @protected
    */
-  addWatcher_: function(eventType) {
+  addWatcher_(eventType) {
     this.node_.addEventListener(eventType, this.watcher_, false);
   },
 
@@ -47,14 +47,14 @@ EventStreamLogger.prototype = {
    * @param {chrome.automation.EventType} eventType
    * @protected
    */
-  removeWatcher_: function(eventType) {
+  removeWatcher_(eventType) {
     this.node_.removeEventListener(eventType, this.watcher_, false);
   },
 
   /**
    * @param {!AutomationEvent} evt
    */
-  eventStreamLogging: function(evt) {
+  eventStreamLogging(evt) {
     const eventLog = new EventLog(evt);
     LogStore.getInstance().writeLog(eventLog);
     console.log(eventLog.toString());
@@ -64,7 +64,7 @@ EventStreamLogger.prototype = {
    * @param {chrome.automation.EventType} eventType
    * @param {boolean} checked
    */
-  notifyEventStreamFilterChanged: function(eventType, checked) {
+  notifyEventStreamFilterChanged(eventType, checked) {
     if (checked) {
       this.addWatcher_(eventType);
     } else {
@@ -75,7 +75,7 @@ EventStreamLogger.prototype = {
   /**
    * @param {boolean} checked
    */
-  notifyEventStreamFilterChangedAll: function(checked) {
+  notifyEventStreamFilterChangedAll(checked) {
     for (var type in EventType) {
       if (localStorage[EventType[type]] == 'true') {
         this.notifyEventStreamFilterChanged(EventType[type], checked);

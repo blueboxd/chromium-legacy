@@ -116,7 +116,7 @@ void DevToolsAgent::AttachDevToolsSession(
   client_->DebuggerTaskFinished();
 }
 
-void DevToolsAgent::InspectElement(const WebPoint& point) {
+void DevToolsAgent::InspectElement(const gfx::Point& point) {
   client_->InspectElement(point);
 }
 

@@ -43,9 +43,7 @@ if (is_win || (is_linux && use_udev) || is_mac) {
 
     public_configs = [ ":platform_support" ]
 
-    public_deps = [
-      "//services/device/public/mojom",
-    ]
+    public_deps = [ "//services/device/public/mojom" ]
 
     deps = [
       "//base",

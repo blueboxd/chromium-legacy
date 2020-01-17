@@ -121,7 +121,8 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
                                   base::Optional<IntRect>,
-                                  const ImageBitmapOptions*) override;
+                                  const ImageBitmapOptions*,
+                                  ExceptionState&) override;
 
   struct ParsedOptions {
     bool flip_y = false;

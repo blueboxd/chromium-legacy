@@ -274,7 +274,8 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   request_headers_ = request.HttpHeaderFields();
   report_upload_progress_ = request.ReportUploadProgress();
 
-  ResourceRequest new_request(request);
+  ResourceRequest new_request;
+  new_request.CopyFrom(request);
 
   // Set the service worker mode to none if "bypass for network" in DevTools is
   // enabled.
@@ -319,7 +320,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
     // Save the request to fallback_request_for_service_worker to use when the
     // service worker doesn't handle (call respondWith()) a CORS enabled
     // request.
-    fallback_request_for_service_worker_ = ResourceRequest(request);
+    fallback_request_for_service_worker_.CopyFrom(request);
     // Skip the service worker for the fallback request.
     fallback_request_for_service_worker_.SetSkipServiceWorker(true);
   }
@@ -356,7 +357,7 @@ void ThreadableLoader::LoadPreflightRequest(
   std::unique_ptr<ResourceRequest> preflight_request =
       CreateAccessControlPreflightRequest(actual_request, GetSecurityOrigin());
 
-  actual_request_ = actual_request;
+  actual_request_.CopyFrom(actual_request);
   actual_options_ = actual_options;
 
   // Explicitly set |skip_service_worker| to true here. Although the page is
@@ -405,7 +406,8 @@ void ThreadableLoader::MakeCrossOriginAccessRequest(
     return;
   }
 
-  ResourceRequest cross_origin_request(request);
+  ResourceRequest cross_origin_request;
+  cross_origin_request.CopyFrom(request);
   ResourceLoaderOptions cross_origin_options(resource_loader_options_);
 
   cross_origin_request.RemoveUserAndPassFromURL();
@@ -678,7 +680,8 @@ bool ThreadableLoader::RedirectReceived(
   // We're initiating a new request (for redirect), so update
   // |last_request_url_| by destroying |assign_on_scope_exit|.
 
-  ResourceRequest cross_origin_request(new_request);
+  ResourceRequest cross_origin_request;
+  cross_origin_request.CopyFrom(new_request);
   cross_origin_request.SetInitialUrlForResourceTiming(initial_request_url_);
 
   // Remove any headers that may have been added by the network layer that cause
@@ -949,15 +952,17 @@ void ThreadableLoader::LoadFallbackRequestForServiceWorker() {
   if (GetResource())
     checker_.WillRemoveClient();
   ClearResource();
-  ResourceRequest fallback_request(fallback_request_for_service_worker_);
-  fallback_request_for_service_worker_ = ResourceRequest();
+  ResourceRequest fallback_request;
+  fallback_request.CopyFrom(fallback_request_for_service_worker_);
+  fallback_request_for_service_worker_.CopyFrom(ResourceRequest());
   DispatchInitialRequest(fallback_request);
 }
 
 void ThreadableLoader::LoadActualRequest() {
-  ResourceRequest actual_request = actual_request_;
+  ResourceRequest actual_request;
+  actual_request.CopyFrom(actual_request_);
   ResourceLoaderOptions actual_options = actual_options_;
-  actual_request_ = ResourceRequest();
+  actual_request_.CopyFrom(ResourceRequest());
   actual_options_ = ResourceLoaderOptions();
 
   if (GetResource())

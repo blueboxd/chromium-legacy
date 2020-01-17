@@ -612,7 +612,8 @@ void Editor::CountEvent(ExecutionContext* execution_context,
 }
 
 void Editor::CopyImage(const HitTestResult& result) {
-  WriteImageNodeToClipboard(*result.InnerNodeOrImageMapImage(),
+  WriteImageNodeToClipboard(*frame_->GetSystemClipboard(),
+                            *result.InnerNodeOrImageMapImage(),
                             result.AltDisplayString());
 }
 

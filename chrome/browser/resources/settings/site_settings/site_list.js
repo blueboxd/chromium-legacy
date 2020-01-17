@@ -47,7 +47,7 @@ Polymer({
      */
     sites: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -142,7 +142,7 @@ Polymer({
   observers: ['configureWidget_(category, categorySubtype)'],
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener(
         'contentSettingSitePermissionChanged',
         this.siteWithinCategoryChanged_.bind(this));
@@ -163,7 +163,7 @@ Polymer({
    * @param {string} site The site that changed.
    * @private
    */
-  siteWithinCategoryChanged_: function(category, site) {
+  siteWithinCategoryChanged_(category, site) {
     if (category == this.category) {
       this.configureWidget_();
     }
@@ -175,7 +175,7 @@ Polymer({
    * Another message is sent when the *last* incognito window closes.
    * @private
    */
-  onIncognitoStatusChanged_: function(hasIncognito) {
+  onIncognitoStatusChanged_(hasIncognito) {
     this.hasIncognito_ = hasIncognito;
 
     // The SESSION_ONLY list won't have any incognito exceptions. (Minor
@@ -193,7 +193,7 @@ Polymer({
    * Configures the action menu, visibility of the widget and shows the list.
    * @private
    */
-  configureWidget_: function() {
+  configureWidget_() {
     if (this.category == undefined) {
       return;
     }
@@ -227,7 +227,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasSites_: function() {
+  hasSites_() {
     return this.sites.length > 0;
   },
 
@@ -237,7 +237,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShowAddSiteButton_: function() {
+  computeShowAddSiteButton_() {
     return !(
         this.readOnlyList ||
         (this.category ==
@@ -249,7 +249,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showNoSearchResults_: function() {
+  showNoSearchResults_() {
     return this.sites.length > 0 && this.getFilteredSites_().length == 0;
   },
 
@@ -257,13 +257,13 @@ Polymer({
    * A handler for the Add Site button.
    * @private
    */
-  onAddSiteTap_: function() {
+  onAddSiteTap_() {
     assert(!this.readOnlyList);
     this.showAddSiteDialog_ = true;
   },
 
   /** @private */
-  onAddSiteDialogClosed_: function() {
+  onAddSiteDialogClosed_() {
     this.showAddSiteDialog_ = false;
     cr.ui.focusWithoutInk(assert(this.$.addSite));
   },
@@ -274,7 +274,7 @@ Polymer({
    * @param {!CustomEvent<!{target: HTMLElement, text: string}>} e
    * @private
    */
-  onShowTooltip_: function(e) {
+  onShowTooltip_(e) {
     this.tooltipText_ = e.detail.text;
     const target = e.detail.target;
     // paper-tooltip normally determines the target from the |for| property,
@@ -303,7 +303,7 @@ Polymer({
    * property. Returns a promise that resolves when load is complete.
    * @private
    */
-  updateAndroidSmsInfo_: function() {
+  updateAndroidSmsInfo_() {
     // |androidSmsInfo_| is only relevant for NOTIFICATIONS category. Don't
     // bother fetching it for other categories.
     if (this.category === settings.ContentSettingsTypes.NOTIFICATIONS &&
@@ -325,7 +325,7 @@ Polymer({
    * the required exception item.
    * @private
    */
-  processExceptionsForAndroidSmsInfo_: function(sites) {
+  processExceptionsForAndroidSmsInfo_(sites) {
     if (!this.androidSmsInfo_ || !this.androidSmsInfo_.enabled) {
       return sites;
     }
@@ -343,7 +343,7 @@ Polymer({
    * Populate the sites list for display.
    * @private
    */
-  populateList_: function() {
+  populateList_() {
     this.browserProxy_.getExceptionList(this.category).then(exceptionList => {
       this.processExceptions_(exceptionList);
       this.closeActionMenu_();
@@ -355,7 +355,7 @@ Polymer({
    * @param {!Array<RawSiteException>} exceptionList
    * @private
    */
-  processExceptions_: function(exceptionList) {
+  processExceptions_(exceptionList) {
     let sites =
         exceptionList
             .filter(
@@ -373,7 +373,7 @@ Polymer({
    * Set up the values to use for the action menu.
    * @private
    */
-  setUpActionMenu_: function() {
+  setUpActionMenu_() {
     this.showAllowAction_ =
         this.categorySubtype != settings.ContentSetting.ALLOW;
     this.showBlockAction_ =
@@ -388,7 +388,7 @@ Polymer({
    *     currently active site.
    * @private
    */
-  showSessionOnlyActionForSite_: function() {
+  showSessionOnlyActionForSite_() {
     // It makes no sense to show "clear on exit" for exceptions that only apply
     // to incognito. It gives the impression that they might under some
     // circumstances not be cleared on exit, which isn't true.
@@ -403,7 +403,7 @@ Polymer({
    * @param {!settings.ContentSetting} contentSetting
    * @private
    */
-  setContentSettingForActionMenuSite_: function(contentSetting) {
+  setContentSettingForActionMenuSite_(contentSetting) {
     assert(this.actionMenuSite_);
     this.browserProxy.setCategoryPermissionForPattern(
         this.actionMenuSite_.origin, this.actionMenuSite_.embeddingOrigin,
@@ -411,26 +411,26 @@ Polymer({
   },
 
   /** @private */
-  onAllowTap_: function() {
+  onAllowTap_() {
     this.setContentSettingForActionMenuSite_(settings.ContentSetting.ALLOW);
     this.closeActionMenu_();
   },
 
   /** @private */
-  onBlockTap_: function() {
+  onBlockTap_() {
     this.setContentSettingForActionMenuSite_(settings.ContentSetting.BLOCK);
     this.closeActionMenu_();
   },
 
   /** @private */
-  onSessionOnlyTap_: function() {
+  onSessionOnlyTap_() {
     this.setContentSettingForActionMenuSite_(
         settings.ContentSetting.SESSION_ONLY);
     this.closeActionMenu_();
   },
 
   /** @private */
-  onEditTap_: function() {
+  onEditTap_() {
     // Close action menu without resetting |this.actionMenuSite_| since it is
     // bound to the dialog.
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu')).close();
@@ -438,7 +438,7 @@ Polymer({
   },
 
   /** @private */
-  onEditExceptionDialogClosed_: function() {
+  onEditExceptionDialogClosed_() {
     this.showEditExceptionDialog_ = false;
     this.actionMenuSite_ = null;
     if (this.activeDialogAnchor_) {
@@ -448,7 +448,7 @@ Polymer({
   },
 
   /** @private */
-  onResetTap_: function() {
+  onResetTap_() {
     const site = this.actionMenuSite_;
     assert(site);
     this.browserProxy.resetCategoryPermissionForPattern(
@@ -460,7 +460,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onShowActionMenu_: function(e) {
+  onShowActionMenu_(e) {
     this.activeDialogAnchor_ = /** @type {!HTMLElement} */ (e.detail.anchor);
     this.actionMenuSite_ = e.detail.model;
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
@@ -468,7 +468,7 @@ Polymer({
   },
 
   /** @private */
-  closeActionMenu_: function() {
+  closeActionMenu_() {
     this.actionMenuSite_ = null;
     this.activeDialogAnchor_ = null;
     const actionMenu =
@@ -482,7 +482,7 @@ Polymer({
    * @return {!Array<!SiteException>}
    * @private
    */
-  getFilteredSites_: function() {
+  getFilteredSites_() {
     if (!this.searchFilter) {
       return this.sites.slice();
     }

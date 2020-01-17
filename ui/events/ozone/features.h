@@ -21,6 +21,9 @@ COMPONENT_EXPORT(EVENTS_OZONE)
 extern const base::Feature kEnableNeuralStylusReportFilter;
 
 COMPONENT_EXPORT(EVENTS_OZONE)
+extern const base::Feature kEnablePalmOnMaxTouchMajor;
+
+COMPONENT_EXPORT(EVENTS_OZONE)
 extern const base::FeatureParam<std::string> kNeuralPalmRadiusPolynomial;
 
 COMPONENT_EXPORT(EVENTS_OZONE)

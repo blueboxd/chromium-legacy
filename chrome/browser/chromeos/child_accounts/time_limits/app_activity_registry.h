@@ -9,12 +9,17 @@
 #include <set>
 
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_report_interface.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 
 namespace aura {
 class Window;
 }  // namespace aura
+
+namespace enterprise_management {
+class ChildStatusReportRequest;
+}  // namespace enterprise_management
 
 namespace chromeos {
 namespace app_time {
@@ -52,6 +57,16 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // reset.
   base::TimeDelta GetActiveTime(const AppId& app_id) const;
 
+  // Populates |report| with collected app activity. Returns whether any data
+  // were reported.
+  AppActivityReportInterface::ReportParams GenerateAppActivityReport(
+      enterprise_management::ChildStatusReportRequest* report) const;
+
+  // Removes data older than |timestamp| from the registry.
+  // Removes entries for uninstalled apps if there is no more relevant activity
+  // data left.
+  void CleanRegistry(base::Time timestamp);
+
  private:
   // Bundles detailed data stored for a specific app.
   struct AppDetails {
@@ -82,10 +97,6 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Methods to set the application as active and inactive respectively.
   void SetAppActive(const AppId& app_id, base::Time timestamp);
   void SetAppInactive(const AppId& app_id, base::Time timestamp);
-
-  // Removes uninstalled apps from the registry. Should be called after the
-  // recent data was successfully uploaded to server.
-  void CleanRegistry();
 
   // Owned by AppTimeController.
   AppServiceWrapper* const app_service_wrapper_;

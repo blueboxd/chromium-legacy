@@ -39,9 +39,7 @@ static_library("constrained_window") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "constrained_window_views_unittest.cc",
-  ]
+  sources = [ "constrained_window_views_unittest.cc" ]
 
   deps = [
     ":constrained_window",

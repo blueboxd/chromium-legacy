@@ -8,10 +8,6 @@
 #include "components/favicon_base/favicon_callback.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace base {
-class CancelableTaskTracker;
-}
-
 class GURL;
 
 namespace favicon {
@@ -51,8 +47,7 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
       favicon_base::FaviconRawBitmapCallback callback,
       FaviconRequestPlatform request_platform,
       HistoryUiFaviconRequestOrigin request_origin_for_uma,
-      const GURL& icon_url_for_uma,
-      base::CancelableTaskTracker* tracker) = 0;
+      const GURL& icon_url_for_uma) = 0;
 
   // Requests favicon image at |page_url|.
   // Tries to fetch the icon from local storage and falls back to sync, or to
@@ -65,8 +60,7 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
       const GURL& page_url,
       favicon_base::FaviconImageCallback callback,
       HistoryUiFaviconRequestOrigin request_origin_for_uma,
-      const GURL& icon_url_for_uma,
-      base::CancelableTaskTracker* tracker) = 0;
+      const GURL& icon_url_for_uma) = 0;
 };
 
 }  // namespace favicon

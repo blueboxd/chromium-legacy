@@ -29,9 +29,7 @@ source_set("lib") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "av_products_unittest.cc",
-  ]
+  sources = [ "av_products_unittest.cc" ]
 
   deps = [
     ":lib",

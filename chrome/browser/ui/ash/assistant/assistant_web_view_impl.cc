@@ -31,6 +31,10 @@ const char* AssistantWebViewImpl::GetClassName() const {
   return "AssistantWebViewImpl";
 }
 
+gfx::NativeView AssistantWebViewImpl::GetNativeView() {
+  return web_contents_->GetNativeView();
+}
+
 void AssistantWebViewImpl::ChildPreferredSizeChanged(views::View* child) {
   DCHECK_EQ(web_view_.get(), child);
   SetPreferredSize(web_view_->GetPreferredSize());
@@ -109,6 +113,13 @@ bool AssistantWebViewImpl::TakeFocus(content::WebContents* web_contents,
   return false;
 }
 
+void AssistantWebViewImpl::NavigationStateChanged(
+    content::WebContents* web_contents,
+    content::InvalidateTypes changed_flags) {
+  DCHECK_EQ(web_contents_.get(), web_contents);
+  UpdateCanGoBack();
+}
+
 void AssistantWebViewImpl::DidStopLoading() {
   for (auto& observer : observers_)
     observer.DidStopLoading();
@@ -141,6 +152,18 @@ void AssistantWebViewImpl::RenderViewHostChanged(
                                                              max_size);
 }
 
+void AssistantWebViewImpl::NavigationEntriesDeleted() {
+  UpdateCanGoBack();
+}
+
+void AssistantWebViewImpl::DidAttachInterstitialPage() {
+  UpdateCanGoBack();
+}
+
+void AssistantWebViewImpl::DidDetachInterstitialPage() {
+  UpdateCanGoBack();
+}
+
 void AssistantWebViewImpl::InitWebContents(Profile* profile) {
   web_contents_ =
       content::WebContents::Create(content::WebContents::CreateParams(
@@ -167,4 +190,15 @@ void AssistantWebViewImpl::InitLayout(Profile* profile) {
   web_view_->set_owned_by_client();
   web_view_->SetWebContents(web_contents_.get());
   AddChildView(web_view_.get());
+}
+
+void AssistantWebViewImpl::UpdateCanGoBack() {
+  const bool can_go_back = web_contents_->GetController().CanGoBack();
+  if (can_go_back_ == can_go_back)
+    return;
+
+  can_go_back_ = can_go_back;
+
+  for (auto& observer : observers_)
+    observer.DidChangeCanGoBack(can_go_back_);
 }

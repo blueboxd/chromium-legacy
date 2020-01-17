@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -668,26 +669,28 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     base::Optional<IntRect> crop_rect,
-    const ImageBitmapOptions* options) {
+    const ImageBitmapOptions* options,
+    ExceptionState& exception_state) {
   DCHECK(event_target.ToLocalDOMWindow());
   if (getNetworkState() == HTMLMediaElement::kNetworkEmpty) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "The provided element has not retrieved data."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The provided element has not retrieved data.");
+    return ScriptPromise();
   }
   if (getReadyState() <= HTMLMediaElement::kHaveMetadata) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kInvalidStateError,
-            "The provided element's player has no current data."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The provided element's player has no current data.");
+    return ScriptPromise();
   }
 
   return ImageBitmapSource::FulfillImageBitmap(
-      script_state, MakeGarbageCollected<ImageBitmap>(
-                        this, crop_rect,
-                        event_target.ToLocalDOMWindow()->document(), options));
+      script_state,
+      MakeGarbageCollected<ImageBitmap>(
+          this, crop_rect, event_target.ToLocalDOMWindow()->document(),
+          options),
+      exception_state);
 }
 
 void HTMLVideoElement::MediaRemotingStarted(

@@ -170,7 +170,7 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   Platform::SetCurrentPlatformForTesting(dummy_platform_.get());
 
   WTF::Partitions::Initialize();
-  WTF::Initialize(nullptr);
+  WTF::Initialize();
 
   // This must be called after WTF::Initialize(), because ThreadSpecific<>
   // used in this function depends on WTF::IsMainThread().

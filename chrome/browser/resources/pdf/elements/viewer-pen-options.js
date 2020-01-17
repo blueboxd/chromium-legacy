@@ -91,23 +91,23 @@ Polymer({
   expandAnimations_: null,
 
   /** @param {Event} e */
-  sizeChanged_: function(e) {
+  sizeChanged_(e) {
     this.selectedSize = Number(e.target.value);
   },
 
   /** @param {Event} e */
-  colorChanged_: function(e) {
+  colorChanged_(e) {
     this.selectedColor = e.target.value;
   },
 
   /** @private */
-  toggleExpanded_: function() {
+  toggleExpanded_() {
     this.expanded_ = !this.expanded_;
     this.updateExpandedState_();
   },
 
   /** @private */
-  updateExpandedStateAndFinishAnimations_: function() {
+  updateExpandedStateAndFinishAnimations_() {
     this.updateExpandedState_();
     for (const animation of /** @type {!Array<!Animation>} */ (
              this.expandAnimations_)) {
@@ -116,7 +116,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     beforeNextRender(this, () => {
       this.updateExpandedStateAndFinishAnimations_();
     });
@@ -126,7 +126,7 @@ Polymer({
    * Updates the state of the UI to reflect the current value of `expanded`.
    * Starts or reverses animations and enables/disable controls.
    */
-  updateExpandedState_: function() {
+  updateExpandedState_() {
     const colors = this.$.colors;
     if (!this.expandAnimations_) {
       const separator = this.$.separator;
@@ -190,7 +190,7 @@ Polymer({
    * @param {*} a
    * @param {*} b
    */
-  equal_: function(a, b) {
+  equal_(a, b) {
     return a == b;
   },
 
@@ -201,7 +201,7 @@ Polymer({
    * @param {string} name
    * @return {string}
    */
-  lookup_: function(strings, name) {
+  lookup_(strings, name) {
     return strings ? strings[name] : '';
   },
 

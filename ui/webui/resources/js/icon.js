@@ -83,7 +83,7 @@ cr.define('cr.icon', function() {
 
       s += getUrlForCss(pathWithScaleFactor) + ' ' + scaleFactor + 'x';
 
-      if (i != supportedScaleFactors.length - 1) {
+      if (i !== supportedScaleFactors.length - 1) {
         s += ', ';
       }
     }
@@ -100,7 +100,7 @@ cr.define('cr.icon', function() {
   /* #export */ function getImage(path) {
     const chromeThemePath = 'chrome://theme';
     const isChromeThemeUrl =
-        (path.slice(0, chromeThemePath.length) == chromeThemePath);
+        (path.slice(0, chromeThemePath.length) === chromeThemePath);
     return isChromeThemeUrl ? getImageSet(path + '@SCALEFACTORx') :
                               getUrlForCss(path);
   }

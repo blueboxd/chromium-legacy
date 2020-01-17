@@ -264,6 +264,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   void QueryCache(blink::mojom::FetchAPIRequestPtr request,
                   blink::mojom::CacheQueryOptionsPtr options,
                   QueryTypes query_types,
+                  CacheStorageSchedulerPriority priority,
                   QueryCacheCallback callback);
   void QueryCacheDidOpenFastPath(
       std::unique_ptr<QueryCacheContext> query_cache_context,
@@ -286,6 +287,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   void MatchImpl(blink::mojom::FetchAPIRequestPtr request,
                  blink::mojom::CacheQueryOptionsPtr match_options,
                  int64_t trace_id,
+                 CacheStorageSchedulerPriority priority,
                  ResponseCallback callback);
   void MatchDidMatchAll(
       ResponseCallback callback,
@@ -296,6 +298,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   void MatchAllImpl(blink::mojom::FetchAPIRequestPtr request,
                     blink::mojom::CacheQueryOptionsPtr options,
                     int64_t trace_id,
+                    CacheStorageSchedulerPriority priority,
                     ResponsesCallback callback);
   void MatchAllDidQueryCache(
       ResponsesCallback callback,

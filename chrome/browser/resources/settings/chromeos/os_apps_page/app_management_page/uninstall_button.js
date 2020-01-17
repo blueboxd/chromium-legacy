@@ -16,7 +16,7 @@ Polymer({
     app_: Object,
   },
 
-  attached: function() {
+  attached() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
     this.updateFromStore();
   },
@@ -28,7 +28,7 @@ Polymer({
    * @return {?boolean}
    * @private
    */
-  getDisableState_: function(app) {
+  getDisableState_(app) {
     if (!app) {
       return true;
     }
@@ -55,7 +55,7 @@ Polymer({
    * @returns {boolean}
    * @private
    */
-  showPolicyIndicator_: function(app) {
+  showPolicyIndicator_(app) {
     if (!app) {
       return false;
     }
@@ -67,7 +67,7 @@ Polymer({
    *
    * @param {App} app
    */
-  showUninstallButton_: function(app) {
+  showUninstallButton_(app) {
     if (!app) {
       return false;
     }
@@ -77,7 +77,7 @@ Polymer({
   /**
    * @private
    */
-  onClick_: function() {
+  onClick_() {
     app_management.BrowserProxy.getInstance().handler.uninstall(this.app_.id);
     app_management.util.recordAppManagementUserAction(
         this.app_.type, AppManagementUserAction.UninstallDialogLaunched);

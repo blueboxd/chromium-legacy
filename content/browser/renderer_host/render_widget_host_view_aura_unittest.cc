@@ -30,10 +30,6 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
-#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "components/viz/service/hit_test/hit_test_manager.h"
-#include "components/viz/service/surfaces/surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/fake_surface_observer.h"
@@ -1247,12 +1243,14 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
   // Focused segment
   composition_text.ime_text_spans.push_back(
       ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, 3,
-                      ui::ImeTextSpan::Thickness::kThick, 0x78563412));
+                      ui::ImeTextSpan::Thickness::kThick,
+                      ui::ImeTextSpan::UnderlineStyle::kSolid, 0x78563412));
 
   // Non-focused segment, with different background color.
   composition_text.ime_text_spans.push_back(
       ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 3, 4,
-                      ui::ImeTextSpan::Thickness::kThin, 0xefcdab90));
+                      ui::ImeTextSpan::Thickness::kThin,
+                      ui::ImeTextSpan::UnderlineStyle::kSolid, 0xefcdab90));
 
   const ui::ImeTextSpans& ime_text_spans = composition_text.ime_text_spans;
 
@@ -1305,12 +1303,14 @@ TEST_F(RenderWidgetHostViewAuraTest, FinishCompositionByMouse) {
   // Focused segment
   composition_text.ime_text_spans.push_back(
       ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, 3,
-                      ui::ImeTextSpan::Thickness::kThick, 0x78563412));
+                      ui::ImeTextSpan::Thickness::kThick,
+                      ui::ImeTextSpan::UnderlineStyle::kSolid, 0x78563412));
 
   // Non-focused segment, with different background color.
   composition_text.ime_text_spans.push_back(
       ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 3, 4,
-                      ui::ImeTextSpan::Thickness::kThin, 0xefcdab90));
+                      ui::ImeTextSpan::Thickness::kThin,
+                      ui::ImeTextSpan::UnderlineStyle::kSolid, 0xefcdab90));
 
   // Caret is at the end. (This emulates Japanese MSIME 2007 and later)
   composition_text.selection = gfx::Range(4);

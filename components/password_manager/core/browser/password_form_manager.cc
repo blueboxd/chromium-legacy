@@ -566,6 +566,9 @@ void PasswordFormManager::OnFetchCompleted() {
     return;
   }
 
+  if (is_submitted_)
+    CreatePendingCredentials();
+
   if (IsHttpAuth()) {
     // No server prediction for http auth, so no need to wait.
     FillHttpAuth();

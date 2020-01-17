@@ -3,41 +3,44 @@
 // found in the LICENSE file.
 
 #include <sstream>
+
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "content/common/content_security_policy/csp_context.h"
+#include "services/network/public/cpp/content_security_policy.h"
 
 namespace content {
 
+using CSPDirectiveName = network::mojom::CSPDirectiveName;
 namespace {
 
-static CSPDirective::Name CSPFallback(CSPDirective::Name directive) {
+static CSPDirectiveName CSPFallback(CSPDirectiveName directive) {
   switch (directive) {
-    case CSPDirective::DefaultSrc:
-    case CSPDirective::FormAction:
-    case CSPDirective::UpgradeInsecureRequests:
-    case CSPDirective::NavigateTo:
-    case CSPDirective::FrameAncestors:
-      return CSPDirective::Unknown;
+    case CSPDirectiveName::DefaultSrc:
+    case CSPDirectiveName::FormAction:
+    case CSPDirectiveName::UpgradeInsecureRequests:
+    case CSPDirectiveName::NavigateTo:
+    case CSPDirectiveName::FrameAncestors:
+      return CSPDirectiveName::Unknown;
 
-    case CSPDirective::FrameSrc:
-      return CSPDirective::ChildSrc;
+    case CSPDirectiveName::FrameSrc:
+      return CSPDirectiveName::ChildSrc;
 
-    case CSPDirective::ChildSrc:
-      return CSPDirective::DefaultSrc;
+    case CSPDirectiveName::ChildSrc:
+      return CSPDirectiveName::DefaultSrc;
 
-    case CSPDirective::Unknown:
+    case CSPDirectiveName::Unknown:
       NOTREACHED();
-      return CSPDirective::Unknown;
+      return CSPDirectiveName::Unknown;
   }
   NOTREACHED();
-  return CSPDirective::Unknown;
+  return CSPDirectiveName::Unknown;
 }
 
 // Looks by name for a directive in a list of directives.
 // If it is not found, returns nullptr.
 static const CSPDirective* FindDirective(
-    const CSPDirective::Name name,
+    CSPDirectiveName name,
     const std::vector<CSPDirective>& directives) {
   for (const CSPDirective& directive : directives) {
     if (directive.name == name) {
@@ -56,25 +59,25 @@ std::string ElideURLForReportViolation(const GURL& url) {
 // Return the error message specific to one CSP |directive|.
 // $1: Blocked URL.
 // $2: Blocking policy.
-const char* ErrorMessage(CSPDirective::Name directive) {
+const char* ErrorMessage(CSPDirectiveName directive) {
   switch (directive) {
-    case CSPDirective::FormAction:
+    case CSPDirectiveName::FormAction:
       return "Refused to send form data to '$1' because it violates the "
              "following Content Security Policy directive: \"$2\".";
-    case CSPDirective::FrameAncestors:
+    case CSPDirectiveName::FrameAncestors:
       return "Refused to frame '$1' because an ancestor violates the following "
              "Content Security Policy directive: \"$2\".";
-    case CSPDirective::FrameSrc:
+    case CSPDirectiveName::FrameSrc:
       return "Refused to frame '$1' because it violates the "
              "following Content Security Policy directive: \"$2\".";
-    case CSPDirective::NavigateTo:
+    case CSPDirectiveName::NavigateTo:
       return "Refused to navigate to '$1' because it violates the "
              "following Content Security Policy directive: \"$2\".";
 
-    case CSPDirective::ChildSrc:
-    case CSPDirective::DefaultSrc:
-    case CSPDirective::Unknown:
-    case CSPDirective::UpgradeInsecureRequests:
+    case CSPDirectiveName::ChildSrc:
+    case CSPDirectiveName::DefaultSrc:
+    case CSPDirectiveName::Unknown:
+    case CSPDirectiveName::UpgradeInsecureRequests:
       NOTREACHED();
       return nullptr;
   };
@@ -83,7 +86,7 @@ const char* ErrorMessage(CSPDirective::Name directive) {
 void ReportViolation(CSPContext* context,
                      const ContentSecurityPolicy& policy,
                      const CSPDirective& directive,
-                     const CSPDirective::Name directive_name,
+                     const CSPDirectiveName directive_name,
                      const GURL& url,
                      bool has_followed_redirect,
                      const SourceLocation& source_location) {
@@ -91,7 +94,7 @@ void ReportViolation(CSPContext* context,
   // blocked url and the source location of the error. Care must be taken to
   // ensure that these are not transmitted between different cross-origin
   // renderers.
-  GURL blocked_url = (directive_name == CSPDirective::FrameAncestors)
+  GURL blocked_url = (directive_name == CSPDirectiveName::FrameAncestors)
                          ? GURL(context->self_source()->ToString())
                          : url;
   SourceLocation safe_source_location = source_location;
@@ -109,18 +112,19 @@ void ReportViolation(CSPContext* context,
       {ElideURLForReportViolation(blocked_url), directive.ToString()}, nullptr);
 
   if (directive.name != directive_name) {
-    message << " Note that '" << CSPDirective::NameToString(directive_name)
+    message << " Note that '"
+            << network::ContentSecurityPolicy::ToString(directive_name)
             << "' was not explicitly set, so '"
-            << CSPDirective::NameToString(directive.name)
+            << network::ContentSecurityPolicy::ToString(directive.name)
             << "' is used as a fallback.";
   }
 
   message << "\n";
 
   context->ReportContentSecurityPolicyViolation(CSPViolationParams(
-      CSPDirective::NameToString(directive.name),
-      CSPDirective::NameToString(directive_name), message.str(), blocked_url,
-      policy.report_endpoints, policy.use_reporting_api,
+      network::ContentSecurityPolicy::ToString(directive.name),
+      network::ContentSecurityPolicy::ToString(directive_name), message.str(),
+      blocked_url, policy.report_endpoints, policy.use_reporting_api,
       policy.header.header_value, policy.header.type, has_followed_redirect,
       safe_source_location));
 }
@@ -128,7 +132,7 @@ void ReportViolation(CSPContext* context,
 bool AllowDirective(CSPContext* context,
                     const ContentSecurityPolicy& policy,
                     const CSPDirective& directive,
-                    CSPDirective::Name directive_name,
+                    CSPDirectiveName directive_name,
                     const GURL& url,
                     bool has_followed_redirect,
                     bool is_response_check,
@@ -164,7 +168,7 @@ bool ShouldBypassContentSecurityPolicy(CSPContext* context, const GURL& url) {
 ContentSecurityPolicy::ContentSecurityPolicy() = default;
 
 ContentSecurityPolicy::ContentSecurityPolicy(
-    const ContentSecurityPolicyHeader& header,
+    const network::mojom::ContentSecurityPolicyHeader& header,
     const std::vector<CSPDirective>& directives,
     const std::vector<std::string>& report_endpoints,
     bool use_reporting_api)
@@ -177,7 +181,7 @@ ContentSecurityPolicy::ContentSecurityPolicy(
 // struct.
 ContentSecurityPolicy::ContentSecurityPolicy(
     network::mojom::ContentSecurityPolicyPtr csp)
-    : header("", csp->type, csp->source),
+    : header(*(csp->header)),
       report_endpoints(std::move(csp->report_endpoints)),
       use_reporting_api(csp->use_reporting_api) {
   for (auto& directive : csp->directives)
@@ -191,7 +195,7 @@ ContentSecurityPolicy::~ContentSecurityPolicy() = default;
 
 // static
 bool ContentSecurityPolicy::Allow(const ContentSecurityPolicy& policy,
-                                  CSPDirective::Name directive_name,
+                                  CSPDirectiveName directive_name,
                                   const GURL& url,
                                   bool has_followed_redirect,
                                   bool is_response_check,
@@ -203,12 +207,12 @@ bool ContentSecurityPolicy::Allow(const ContentSecurityPolicy& policy,
 
   // 'navigate-to' has no effect when doing a form submission and a
   // 'form-action' directive is present.
-  if (is_form_submission && directive_name == CSPDirective::Name::NavigateTo &&
-      FindDirective(CSPDirective::Name::FormAction, policy.directives)) {
+  if (is_form_submission && directive_name == CSPDirectiveName::NavigateTo &&
+      FindDirective(CSPDirectiveName::FormAction, policy.directives)) {
     return true;
   }
 
-  CSPDirective::Name current_directive_name = directive_name;
+  CSPDirectiveName current_directive_name = directive_name;
   do {
     const CSPDirective* current_directive =
         FindDirective(current_directive_name, policy.directives);
@@ -220,7 +224,7 @@ bool ContentSecurityPolicy::Allow(const ContentSecurityPolicy& policy,
                             network::mojom::ContentSecurityPolicyType::kReport;
     }
     current_directive_name = CSPFallback(current_directive_name);
-  } while (current_directive_name != CSPDirective::Unknown);
+  } while (current_directive_name != CSPDirectiveName::Unknown);
   return true;
 }
 
@@ -250,7 +254,7 @@ std::string ContentSecurityPolicy::ToString() const {
 bool ContentSecurityPolicy::ShouldUpgradeInsecureRequest(
     const ContentSecurityPolicy& policy) {
   for (const CSPDirective& directive : policy.directives) {
-    if (directive.name == CSPDirective::UpgradeInsecureRequests)
+    if (directive.name == CSPDirectiveName::UpgradeInsecureRequests)
       return true;
   }
   return false;

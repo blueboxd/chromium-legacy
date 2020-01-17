@@ -17,8 +17,8 @@ class XRPlaneDetectionState : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRPlaneDetectionState(
-      XRPlaneDetectionStateInit* plane_detection_state_init = nullptr);
+  explicit XRPlaneDetectionState(
+      XRPlaneDetectionStateInit* plane_detection_state_init);
 
   bool enabled() const { return enabled_; }
 

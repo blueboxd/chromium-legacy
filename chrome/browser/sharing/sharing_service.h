@@ -40,7 +40,7 @@ enum class SharingDeviceRegistrationResult;
 
 // Class to manage lifecycle of sharing feature, and provide APIs to send
 // sharing messages to other devices.
-class SharingService : public KeyedService, syncer::SyncServiceObserver {
+class SharingService : public KeyedService, public syncer::SyncServiceObserver {
  public:
   using SharingDeviceList = std::vector<std::unique_ptr<syncer::DeviceInfo>>;
 
@@ -63,6 +63,8 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
       std::unique_ptr<SharingDeviceSource> device_source,
       std::unique_ptr<SharingFCMHandler> fcm_handler,
       syncer::SyncService* sync_service);
+  SharingService(const SharingService&) = delete;
+  SharingService& operator=(const SharingService&) = delete;
   ~SharingService() override;
 
   // Returns the device matching |guid|, or nullptr if no match was found.
@@ -139,8 +141,6 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
 #endif  // defined(OS_ANDROID)
 
   base::WeakPtrFactory<SharingService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SharingService);
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_SERVICE_H_

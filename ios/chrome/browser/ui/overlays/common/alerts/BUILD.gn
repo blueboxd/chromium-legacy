@@ -25,9 +25,7 @@ source_set("alerts") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "alert_overlay_mediator_unittest.mm",
-  ]
+  sources = [ "alert_overlay_mediator_unittest.mm" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 

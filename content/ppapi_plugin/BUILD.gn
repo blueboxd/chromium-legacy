@@ -10,13 +10,9 @@ group("ppapi_plugin") {
   visibility = [ "//content/*" ]  # This is an internal content API.
 
   if (is_component_build) {
-    public_deps = [
-      "//content",
-    ]
+    public_deps = [ "//content" ]
   } else {
-    public_deps = [
-      ":ppapi_plugin_sources",
-    ]
+    public_deps = [ ":ppapi_plugin_sources" ]
   }
 }
 

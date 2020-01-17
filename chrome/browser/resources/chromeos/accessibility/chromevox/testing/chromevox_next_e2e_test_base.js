@@ -57,7 +57,7 @@ ChromeVoxNextE2ETest.prototype = {
    *     Called once the document is ready.
    * @param {string=} opt_url Optional url to wait for. Defaults to undefined.
    */
-  runWithLoadedTree: function(doc, callback, opt_url) {
+  runWithLoadedTree(doc, callback, opt_url) {
     callback = this.newCallback(callback);
     chrome.automation.getDesktop(function(r) {
       var url = opt_url || TestUtils.createUrlForDoc(doc);
@@ -83,7 +83,7 @@ ChromeVoxNextE2ETest.prototype = {
     }.bind(this));
   },
 
-  listenOnce: function(node, eventType, callback, capture) {
+  listenOnce(node, eventType, callback, capture) {
     var innerCallback = this.newCallback(function() {
       node.removeEventListener(eventType, innerCallback, capture);
       callback.apply(this, arguments);
@@ -95,7 +95,7 @@ ChromeVoxNextE2ETest.prototype = {
    * Forces output to place context utterances at the end of output. This eases
    * rebaselining when changing context ordering for a specific role.
    */
-  forceContextualLastOutput: function() {
+  forceContextualLastOutput() {
     for (var role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] = undefined;
     }
@@ -104,14 +104,14 @@ ChromeVoxNextE2ETest.prototype = {
   /**
    * Forces output to place context utterances at the beginning of output.
    */
-  forceContextualFirstOutput: function() {
+  forceContextualFirstOutput() {
     for (var role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] = true;
     }
   },
 
   /** Resets contextual output values to their defaults. */
-  resetContextualOutput: function() {
+  resetContextualOutput() {
     for (var role in Output.ROLE_INFO_) {
       Output.ROLE_INFO_[role]['outputContextFirst'] =
           this.originalOutputContextValues_[role];

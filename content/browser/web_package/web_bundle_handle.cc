@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/browser/web_package/web_bundle_handle_tracker.h"
 #include "content/browser/web_package/web_bundle_navigation_info.h"
 #include "content/browser/web_package/web_bundle_reader.h"
@@ -45,6 +46,9 @@ namespace {
 using DoneCallback = base::OnceCallback<void(
     const GURL& target_inner_url,
     std::unique_ptr<WebBundleURLLoaderFactory> url_loader_factory)>;
+
+constexpr char kNoSniffErrorMessage[] =
+    "Web Bundle response must have \"X-Content-Type-Options: nosniff\" header.";
 
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("web_bundle_start_url_loader",
@@ -463,6 +467,12 @@ class InterceptorForNetwork final : public NavigationLoaderInterceptor {
     }
     *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
 
+    if (!signed_exchange_utils::HasNoSniffHeader(**response_head)) {
+      CompleteWithInvalidWebBundleError(std::move(forwarding_client_),
+                                        frame_tree_node_id_,
+                                        kNoSniffErrorMessage);
+      return true;
+    }
     auto source = WebBundleSource::MaybeCreateFromNetworkUrl(request.url);
     if (!source) {
       CompleteWithInvalidWebBundleError(
@@ -1039,6 +1049,12 @@ class InterceptorForHistoryNavigationFromNetwork final
       CompleteWithInvalidWebBundleError(std::move(forwarding_client_),
                                         frame_tree_node_id_,
                                         "Unexpected content type.");
+      return true;
+    }
+    if (!signed_exchange_utils::HasNoSniffHeader(**response_head)) {
+      CompleteWithInvalidWebBundleError(std::move(forwarding_client_),
+                                        frame_tree_node_id_,
+                                        kNoSniffErrorMessage);
       return true;
     }
     uint64_t length_hint =

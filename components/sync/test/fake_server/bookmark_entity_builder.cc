@@ -78,11 +78,10 @@ sync_pb::EntitySpecifics BookmarkEntityBuilder::CreateBaseEntitySpecifics(
   sync_pb::EntitySpecifics entity_specifics;
   sync_pb::BookmarkSpecifics* bookmark_specifics =
       entity_specifics.mutable_bookmark();
+
   if (!is_legacy) {
     bookmark_specifics->set_title(title_);
-    // TODO(crbug.com/516866): Use originator_client_item_id here instead of a
-    // new GUID, ensuring the value is of valid GUID format.
-    bookmark_specifics->set_guid(base::GenerateGUID());
+    bookmark_specifics->set_guid(originator_client_item_id_);
   }
 
   return entity_specifics;

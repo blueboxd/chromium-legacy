@@ -76,7 +76,7 @@ Polymer({
     /** @type {!Service} */
     delegate: {
       type: Object,
-      value: function() {
+      value() {
         return Service.getInstance();
       },
     },
@@ -211,7 +211,7 @@ Polymer({
   navigationListener_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     const service = Service.getInstance();
 
     const onProfileStateChanged = profileInfo => {
@@ -242,7 +242,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     document.documentElement.classList.remove('loading');
     document.fonts.load('bold 12px Roboto');
 
@@ -252,7 +252,7 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     assert(navigation.removeListener(
         /** @type {number} */ (this.navigationListener_)));
     this.navigationListener_ = null;
@@ -263,7 +263,7 @@ Polymer({
    * the user visits chrome://extensions/?id=..., we land on the proper page.
    * @private
    */
-  initPage_: function() {
+  initPage_() {
     this.didInitPage_ = true;
     this.changePage_(navigation.getCurrentPage());
   },
@@ -272,7 +272,7 @@ Polymer({
    * @param {!chrome.developerPrivate.EventData} eventData
    * @private
    */
-  onItemStateChanged_: function(eventData) {
+  onItemStateChanged_(eventData) {
     const EventType = chrome.developerPrivate.EventType;
     switch (eventData.event_type) {
       case EventType.VIEW_REGISTERED:
@@ -321,7 +321,7 @@ Polymer({
    * @param {!CustomEvent<string>} event
    * @private
    */
-  onFilterChanged_: function(event) {
+  onFilterChanged_(event) {
     if (this.currentPage_.page !== Page.LIST) {
       navigation.navigateTo({page: Page.LIST});
     }
@@ -329,7 +329,7 @@ Polymer({
   },
 
   /** @private */
-  onMenuButtonTap_: function() {
+  onMenuButtonTap_() {
     this.showDrawer_ = true;
     this.async(() => {
       this.$$('#drawer').openDrawer();
@@ -341,7 +341,7 @@ Polymer({
    * @return {string} The ID of the list that the item belongs in.
    * @private
    */
-  getListId_: function(item) {
+  getListId_(item) {
     const ExtensionType = chrome.developerPrivate.ExtensionType;
     switch (item.type) {
       case ExtensionType.HOSTED_APP:
@@ -364,7 +364,7 @@ Polymer({
    * @return {number} The index of the item in the list, or -1 if not found.
    * @private
    */
-  getIndexInList_: function(listId, itemId) {
+  getIndexInList_(listId, itemId) {
     return this[listId].findIndex(function(item) {
       return item.id === itemId;
     });
@@ -374,7 +374,7 @@ Polymer({
    * @return {?chrome.developerPrivate.ExtensionInfo}
    * @private
    */
-  getData_: function(id) {
+  getData_(id) {
     return this.extensions_[this.getIndexInList_('extensions_', id)] ||
         this.apps_[this.getIndexInList_('apps_', id)];
   },
@@ -385,7 +385,7 @@ Polymer({
    * @param {!Array<!chrome.developerPrivate.ExtensionInfo>} extensionsAndApps
    * @private
    */
-  initExtensionsAndApps_: function(extensionsAndApps) {
+  initExtensionsAndApps_(extensionsAndApps) {
     extensionsAndApps.sort(compareExtensions);
     const apps = [];
     const extensions = [];
@@ -405,7 +405,7 @@ Polymer({
    *     the new element is representing.
    * @private
    */
-  addItem_: function(listId, item) {
+  addItem_(listId, item) {
     // We should never try and add an existing item.
     assert(this.getIndexInList_(listId, item.id) === -1);
     let insertBeforeChild = this[listId].findIndex(function(listEl) {
@@ -422,7 +422,7 @@ Polymer({
    *     item to update.
    * @private
    */
-  updateItem_: function(listId, index, item) {
+  updateItem_(listId, index, item) {
     // We should never try and update a non-existent item.
     assert(index >= 0);
     this.set([listId, index], item);
@@ -450,7 +450,7 @@ Polymer({
    * @param {string} itemId The id of item to remove.
    * @private
    */
-  removeItem_: function(itemId) {
+  removeItem_(itemId) {
     // Search for the item to be deleted in |extensions_|.
     let listId = 'extensions_';
     let index = this.getIndexInList_(listId, itemId);
@@ -476,7 +476,7 @@ Polymer({
    * @param {!CustomEvent<!chrome.developerPrivate.LoadError>} e
    * @private
    */
-  onLoadError_: function(e) {
+  onLoadError_(e) {
     this.showLoadErrorDialog_ = true;
     this.async(() => {
       const dialog = this.$$('#load-error');
@@ -490,7 +490,7 @@ Polymer({
    * @param {PageState} newPage
    * @private
    */
-  changePage_: function(newPage) {
+  changePage_(newPage) {
     this.onCloseDrawer_();
 
     const optionsDialog = this.$$('#options-dialog');
@@ -563,7 +563,7 @@ Polymer({
    * triggered by the dialog's 'close' event.
    * @private
    */
-  onDrawerClose_: function() {
+  onDrawerClose_() {
     this.showDrawer_ = false;
   },
 
@@ -571,7 +571,7 @@ Polymer({
    * This method animates the closing of the drawer.
    * @private
    */
-  onCloseDrawer_: function() {
+  onCloseDrawer_() {
     const drawer = this.$$('#drawer');
     if (drawer && drawer.open) {
       drawer.close();
@@ -579,18 +579,18 @@ Polymer({
   },
 
   /** @private */
-  onLoadErrorDialogClose_: function() {
+  onLoadErrorDialogClose_() {
     this.showLoadErrorDialog_ = false;
   },
 
   /** @private */
-  onOptionsDialogClose_: function() {
+  onOptionsDialogClose_() {
     this.showOptionsDialog_ = false;
     this.$$('extensions-detail-view').focusOptionsButton();
   },
 
   /** @private */
-  onViewEnterStart_: function() {
+  onViewEnterStart_() {
     this.fromActivityLog_ = false;
   },
 
@@ -598,7 +598,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onViewExitStart_: function(e) {
+  onViewExitStart_(e) {
     const viewType = e.composedPath()[0].tagName;
     this.fromActivityLog_ = viewType === 'EXTENSIONS-ACTIVITY-LOG';
   },
@@ -607,7 +607,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onViewExitFinish_: function(e) {
+  onViewExitFinish_(e) {
     const viewType = e.composedPath()[0].tagName;
     if (viewType === 'EXTENSIONS-ITEM-LIST' ||
         viewType === 'EXTENSIONS-KEYBOARD-SHORTCUTS' ||
@@ -632,7 +632,7 @@ Polymer({
    * @param {!CustomEvent<!Array<string>>} e
    * @private
    */
-  onShowInstallWarnings_: function(e) {
+  onShowInstallWarnings_(e) {
     // Leverage Polymer data bindings instead of just assigning the
     // installWarnings on the dialog since the dialog hasn't been stamped
     // in the DOM yet.
@@ -641,18 +641,18 @@ Polymer({
   },
 
   /** @private */
-  onInstallWarningsDialogClose_: function() {
+  onInstallWarningsDialogClose_() {
     this.installWarnings_ = null;
     this.showInstallWarningsDialog_ = false;
   },
 
   // <if expr="chromeos">
   /** @private */
-  onKioskTap_: function() {
+  onKioskTap_() {
     this.showKioskDialog_ = true;
   },
 
-  onKioskDialogClose_: function() {
+  onKioskDialogClose_() {
     this.showKioskDialog_ = false;
   },
   // </if>

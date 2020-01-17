@@ -223,16 +223,12 @@ jumbo_source_set("test_support_internal") {
     "//ui/platform_window:platform_window",
   ]
 
-  public_deps = [
-    "//base/test:test_support",
-  ]
+  public_deps = [ "//base/test:test_support" ]
 }
 
 jumbo_static_library("test_support") {
   testonly = true
-  public_deps = [
-    ":test_support_internal",
-  ]
+  public_deps = [ ":test_support_internal" ]
 }
 
 action("generate_ozone_platform_list") {
@@ -257,12 +253,8 @@ action("generate_ozone_platform_list") {
 action("generate_constructor_list") {
   script = "generate_constructor_list.py"
 
-  inputs = [
-    platform_list_txt_file,
-  ]
-  outputs = [
-    constructor_list_cc_file,
-  ]
+  inputs = [ platform_list_txt_file ]
+  outputs = [ constructor_list_cc_file ]
 
   args = [
     "--platform_list=" + rebase_path(platform_list_txt_file, root_build_dir),
@@ -275,15 +267,11 @@ action("generate_constructor_list") {
     "--include=\"ui/ozone/public/ozone_platform.h\"",
   ]
 
-  deps = [
-    ":generate_ozone_platform_list",
-  ]
+  deps = [ ":generate_ozone_platform_list" ]
 }
 
 test("ozone_unittests") {
-  deps = [
-    ":test_support",
-  ]
+  deps = [ ":test_support" ]
 
   # Add tests of platform internals.
   deps += ozone_platform_test_deps
@@ -292,18 +280,14 @@ test("ozone_unittests") {
   # 2nd copy of any code via the component.
   assert_no_deps = [ "//ui/ozone" ]
 
-  data_deps = [
-    "//testing/buildbot/filters:ozone_unittests_filters",
-  ]
+  data_deps = [ "//testing/buildbot/filters:ozone_unittests_filters" ]
 }
 
 # X11 backend has its own test suite only built when we are using the x11
 # backend.
 if (ozone_platform_x11) {
   test("ozone_x11_unittests") {
-    deps = [
-      ":test_support",
-    ]
+    deps = [ ":test_support" ]
 
     deps += [ "platform/x11:x11_unittests" ]
 

@@ -39,7 +39,7 @@ FocusAutomationHandler.prototype = {
   /**
    * @param {!AutomationEvent} evt
    */
-  onFocus: function(evt) {
+  onFocus(evt) {
     this.removeAllListeners();
     this.previousActiveDescendant_ = evt.target.activeDescendant;
     this.node_ = evt.target;
@@ -51,7 +51,7 @@ FocusAutomationHandler.prototype = {
    * Handles active descendant changes.
    * @param {!AutomationEvent} evt
    */
-  onActiveDescendantChanged: function(evt) {
+  onActiveDescendantChanged(evt) {
     if (!evt.target.activeDescendant || !evt.target.state.focused) {
       return;
     }

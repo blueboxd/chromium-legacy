@@ -17,17 +17,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/browser/safe_browsing/download_protection/check_native_file_system_write_request.h"
+#include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_url_sb_client.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/common/google_util.h"
 #include "components/safe_browsing/core/common/safebrowsing_switches.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -403,7 +405,8 @@ DownloadProtectionService::IdentifyReferrerChain(
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(
           const_cast<download::DownloadItem*>(&item));
-  SessionID download_tab_id = SessionTabHelper::IdForTab(web_contents);
+  SessionID download_tab_id =
+      sessions::SessionTabHelper::IdForTab(web_contents);
   UMA_HISTOGRAM_BOOLEAN(
       "SafeBrowsing.ReferrerHasInvalidTabID.DownloadAttribution",
       !download_tab_id.is_valid());
@@ -459,7 +462,7 @@ DownloadProtectionService::IdentifyReferrerChain(
   std::unique_ptr<ReferrerChain> referrer_chain =
       std::make_unique<ReferrerChain>();
 
-  SessionID tab_id = SessionTabHelper::IdForTab(item.web_contents);
+  SessionID tab_id = sessions::SessionTabHelper::IdForTab(item.web_contents);
   UMA_HISTOGRAM_BOOLEAN(
       "SafeBrowsing.ReferrerHasInvalidTabID.NativeFileSystemWriteAttribution",
       !tab_id.is_valid());
@@ -545,11 +548,28 @@ bool DownloadProtectionService::MaybeBeginFeedbackForDownload(
 }
 
 void DownloadProtectionService::UploadForDeepScanning(
-    Profile* profile,
-    std::unique_ptr<BinaryUploadService::Request> request) {
+    download::DownloadItem* item,
+    CheckDownloadRepeatingCallback callback,
+    DeepScanningRequest::DeepScanTrigger trigger) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  sb_service_->GetBinaryUploadService(profile)->MaybeUploadForDeepScanning(
-      std::move(request));
+  auto request =
+      std::make_unique<DeepScanningRequest>(item, trigger, callback, this);
+  DeepScanningRequest* request_raw = request.get();
+  auto insertion_result = deep_scanning_requests_.insert(
+      std::make_pair(request_raw, std::move(request)));
+  DCHECK(insertion_result.second);
+  insertion_result.first->second->Start();
+}
+
+void DownloadProtectionService::RequestFinished(DeepScanningRequest* request) {
+  auto it = deep_scanning_requests_.find(request);
+  DCHECK(it != deep_scanning_requests_.end());
+  deep_scanning_requests_.erase(it);
+}
+
+BinaryUploadService* DownloadProtectionService::GetBinaryUploadService(
+    Profile* profile) {
+  return sb_service_->GetBinaryUploadService(profile);
 }
 
 }  // namespace safe_browsing

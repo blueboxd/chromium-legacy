@@ -21,11 +21,10 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -355,14 +354,6 @@ public class BookmarkManager
      */
     public void setBasicNativePage(BasicNativePage nativePage) {
         mNativePage = nativePage;
-    }
-
-    /**
-     * Sets the delegate object needed for history navigation logic.
-     * @param delegate {@link HistoryNavigationDelegate} object.
-     */
-    public void setHistoryNavigationDelegate(HistoryNavigationDelegate delegate) {
-        mSelectableListLayout.setHistoryNavigationDelegate(delegate);
     }
 
     /**

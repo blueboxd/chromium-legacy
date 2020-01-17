@@ -119,6 +119,8 @@ class TestStoragePartition : public StoragePartition {
   }
   ServiceWorkerContext* GetServiceWorkerContext() override;
 
+  DedicatedWorkerService* GetDedicatedWorkerService() override;
+
   void set_shared_worker_service(SharedWorkerService* service) {
     shared_worker_service_ = service;
   }
@@ -219,6 +221,7 @@ class TestStoragePartition : public StoragePartition {
   mojo::Remote<storage::mojom::IndexedDBControl> indexed_db_control_;
   IndexedDBContext* indexed_db_context_ = nullptr;
   ServiceWorkerContext* service_worker_context_ = nullptr;
+  DedicatedWorkerService* dedicated_worker_service_ = nullptr;
   SharedWorkerService* shared_worker_service_ = nullptr;
   CacheStorageContext* cache_storage_context_ = nullptr;
   GeneratedCodeCacheContext* generated_code_cache_context_ = nullptr;

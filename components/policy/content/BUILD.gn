@@ -30,9 +30,7 @@ jumbo_source_set("content") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "policy_blacklist_navigation_throttle_unittest.cc",
-  ]
+  sources = [ "policy_blacklist_navigation_throttle_unittest.cc" ]
   deps = [
     ":content",
     "//base",

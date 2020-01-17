@@ -7,30 +7,22 @@ import("//tools/polymer/polymer.gni")
 import("../../tools/js_modulizer.gni")
 
 js_type_check("closure_compile") {
-  deps = [
-    ":cr_radio_button",
-  ]
+  deps = [ ":cr_radio_button" ]
 }
 
 js_library("cr_radio_button") {
-  deps = [
-    ":cr_radio_button_behavior",
-  ]
+  deps = [ ":cr_radio_button_behavior" ]
 }
 
 js_library("cr_radio_button_behavior") {
-  deps = [
-    "//third_party/polymer/v1_0/components-chromium/paper-behaviors:paper-ripple-behavior-extracted",
-  ]
+  deps = [ "//third_party/polymer/v1_0/components-chromium/paper-behaviors:paper-ripple-behavior-extracted" ]
 }
 
 # Targets for auto-generating and typechecking Polymer 3 JS modules
 
 js_modulizer("modulize") {
   input_files = [ "cr_radio_button_behavior.js" ]
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/paper-behaviors:paper-ripple-behavior",
-  ]
+  deps = [ "//third_party/polymer/v3_0/components-chromium/paper-behaviors:paper-ripple-behavior" ]
   namespace_rewrites = [ "Polymer.PaperRippleBehavior|PaperRippleBehavior" ]
 }
 
@@ -56,9 +48,7 @@ js_type_check("closure_compile_module") {
 }
 
 js_library("cr_radio_button.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_radio_button/cr_radio_button.m.js",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_radio_button/cr_radio_button.m.js" ]
   deps = [
     ":cr_radio_button_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -67,11 +57,7 @@ js_library("cr_radio_button.m") {
 }
 
 js_library("cr_radio_button_behavior.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_radio_button/cr_radio_button_behavior.m.js",
-  ]
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/paper-behaviors:paper-ripple-behavior",
-  ]
+  sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_radio_button/cr_radio_button_behavior.m.js" ]
+  deps = [ "//third_party/polymer/v3_0/components-chromium/paper-behaviors:paper-ripple-behavior" ]
   extra_deps = [ ":modulize" ]
 }

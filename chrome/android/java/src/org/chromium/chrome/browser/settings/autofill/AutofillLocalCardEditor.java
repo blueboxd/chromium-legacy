@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
-import org.chromium.chrome.browser.settings.MainPreferences;
 import org.chromium.components.browser_ui.widget.text.ChromeTextInputLayout;
 
 import java.text.SimpleDateFormat;
@@ -188,7 +187,7 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
         }
         CreditCard card = personalDataManager.getCreditCardForNumber(cardNumber);
         card.setGUID(mGUID);
-        card.setOrigin(MainPreferences.SETTINGS_ORIGIN);
+        card.setOrigin(SETTINGS_ORIGIN);
         card.setName(mNameText.getText().toString().trim());
         card.setMonth(String.valueOf(mExpirationMonth.getSelectedItemPosition() + 1));
         card.setYear((String) mExpirationYear.getSelectedItem());

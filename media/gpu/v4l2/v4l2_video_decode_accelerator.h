@@ -589,8 +589,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Image processor. Accessed on |decoder_thread_|.
   std::unique_ptr<ImageProcessor> image_processor_;
 
-  // The V4L2Device EGLImage is created from.
-  scoped_refptr<V4L2Device> egl_image_device_;
   // The format of EGLImage.
   base::Optional<Fourcc> egl_image_format_fourcc_;
   // The logical dimensions of EGLImage buffer in pixels.

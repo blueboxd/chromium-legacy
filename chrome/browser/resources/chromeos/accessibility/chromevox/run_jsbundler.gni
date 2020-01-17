@@ -37,15 +37,11 @@ template("run_jsbundler") {
         depfile = "$target_out_dir/" +
                   get_path_info(invoker.output_file, "name") + ".d"
       }
-      outputs = [
-        invoker.output_file,
-      ]
+      outputs = [ invoker.output_file ]
     } else {
       assert(!defined(invoker.modules))
       stampfile = "$target_out_dir/${target_name}_copy.stamp"
-      outputs = [
-        stampfile,
-      ]
+      outputs = [ stampfile ]
     }
     args = [
       "-m",

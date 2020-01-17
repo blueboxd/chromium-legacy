@@ -88,9 +88,9 @@ var TimelineDataSeries = (function() {
      */
     getValues: function(startTime, stepSize, count) {
       // Use cached values, if we can.
-      if (this.cacheStartTime_ == startTime &&
-          this.cacheStepSize_ == stepSize &&
-          this.cacheValues_.length == count) {
+      if (this.cacheStartTime_ === startTime &&
+          this.cacheStepSize_ === stepSize &&
+          this.cacheValues_.length === count) {
         return this.cacheValues_;
       }
 

@@ -5,16 +5,10 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "seatbelt_extension_token.mojom",
-  ]
+  sources = [ "seatbelt_extension_token.mojom" ]
 }
 
 mojom("test_interfaces") {
-  sources = [
-    "traits_test_service.mojom",
-  ]
-  public_deps = [
-    ":mojom",
-  ]
+  sources = [ "traits_test_service.mojom" ]
+  public_deps = [ ":mojom" ]
 }

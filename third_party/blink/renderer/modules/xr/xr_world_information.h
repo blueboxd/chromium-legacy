@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class XRLightEstimation;
 class XRSession;
 
 class XRWorldInformation : public ScriptWrappable {
@@ -23,6 +24,8 @@ class XRWorldInformation : public ScriptWrappable {
   // disabled.
   XRPlaneSet* detectedPlanes() const;
 
+  XRLightEstimation* lightEstimation() const;
+
   void Trace(blink::Visitor* visitor) override;
 
   // Applies changes to the stored plane information based on the contents of
@@ -32,12 +35,18 @@ class XRWorldInformation : public ScriptWrappable {
       const device::mojom::blink::XRPlaneDetectionData* detected_planes_data,
       double timestamp);
 
+  void ProcessLightEstimationData(
+      const device::mojom::blink::XRLightEstimationData* data,
+      double timestamp);
+
  private:
   // Signifies if we should return null from `detectedPlanes()`.
   // This is the case if we have a freshly constructed instance, or if our
   // last `ProcessPlaneInformation()` was called with base::nullopt.
   bool is_detected_planes_null_ = true;
   HeapHashMap<uint64_t, Member<XRPlane>> plane_ids_to_planes_;
+
+  Member<XRLightEstimation> light_estimation_;
 
   Member<XRSession> session_;
 };

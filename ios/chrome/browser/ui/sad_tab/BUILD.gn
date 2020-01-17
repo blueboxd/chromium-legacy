@@ -79,9 +79,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "sad_tab_view_egtest.mm",
-  ]
+  sources = [ "sad_tab_view_egtest.mm" ]
 
   deps = [
     ":sad_tab",
@@ -106,9 +104,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "sad_tab_view_egtest.mm",
-  ]
+  sources = [ "sad_tab_view_egtest.mm" ]
 
   deps = [
     "//components/strings",

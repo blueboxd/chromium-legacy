@@ -28,6 +28,14 @@ TestBrowser::TestBrowser(ios::ChromeBrowserState* browser_state,
       browser_state_(browser_state),
       web_state_list_(web_state_list) {}
 
+TestBrowser::TestBrowser(ios::ChromeBrowserState* browser_state)
+    : command_dispatcher_([[CommandDispatcher alloc] init]),
+      browser_state_(browser_state) {
+  owned_web_state_list_ =
+      std::make_unique<WebStateList>(&web_state_list_delegate_);
+  web_state_list_ = owned_web_state_list_.get();
+}
+
 TestBrowser::TestBrowser()
     : command_dispatcher_([[CommandDispatcher alloc] init]) {
   // Production code creates the browser state before the WebStateList, so

@@ -140,6 +140,8 @@ class ArCoreImpl : public ArCore {
 
   mojom::XRAnchorsDataPtr GetAnchorsData() override;
 
+  mojom::XRLightEstimationDataPtr GetLightEstimationData() override;
+
   void Pause() override;
   void Resume() override;
 
@@ -204,6 +206,9 @@ class ArCoreImpl : public ArCore {
   // Allows reuse of the list across updates; ARCore clears the list on each
   // call to the ARCore SDK.
   internal::ScopedArCoreObject<ArAnchorList*> arcore_anchors_;
+
+  // ArCore light estimation data
+  internal::ScopedArCoreObject<ArLightEstimate*> arcore_light_estimate_;
 
   // Initializes |arcore_planes_| list.
   void EnsureArCorePlanesList();

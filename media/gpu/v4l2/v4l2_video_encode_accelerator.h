@@ -145,9 +145,10 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // any error occurs, |flush_callback| will be called to notify client.
   void FlushTask(FlushCallback flush_callback);
 
-  // Service I/O on the V4L2 devices.  This task should only be scheduled from
-  // DevicePollTask().
-  void ServiceDeviceTask();
+  // Service I/O on the V4L2 devices, called by the V4L2 device poller on the
+  // |encoder_task_runner_|. |event| is set to true if a V4L2 event was
+  // detected.
+  void ServiceDeviceTask(bool event);
 
   // Handle the device queues.
   void Enqueue();
@@ -156,16 +157,13 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   bool EnqueueInputRecord(V4L2WritableBufferRef input_buf);
   bool EnqueueOutputRecord(V4L2WritableBufferRef output_buf);
 
-  // Attempt to start/stop device_poll_thread_.
+  // Attempt to start/stop the V4L2 device poller.
   bool StartDevicePoll();
   bool StopDevicePoll();
 
-  //
-  // Device tasks, to be run on device_poll_thread_.
-  //
-
-  // The device task.
-  void DevicePollTask(bool poll_device);
+  // Called by the V4L2 device poller on the |encoder_task_runner_| whenever an
+  // error occurred.
+  void OnPollError();
 
   //
   // Safe from any thread.
@@ -232,10 +230,6 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // Set controls in |ctrls| and return true if successful.
   bool SetExtCtrls(std::vector<struct v4l2_ext_control> ctrls);
-
-  // Return true if a V4L2 control of |ctrl_id| is supported by the device,
-  // false otherwise.
-  bool IsCtrlExposed(uint32_t ctrl_id);
 
   // Allocates |count| video frames with |visible_size| for image processor's
   // output buffers. Returns false if there's something wrong.
@@ -341,10 +335,6 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   const scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner_;
   SEQUENCE_CHECKER(encoder_sequence_checker_);
-
-  // The device polling thread handles notifications of V4L2 device changes.
-  // TODO(sheu): replace this thread with an TYPE_IO encoder_thread_.
-  base::Thread device_poll_thread_;
 
   // To expose client callbacks from VideoEncodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on

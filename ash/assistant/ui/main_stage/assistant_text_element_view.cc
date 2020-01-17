@@ -29,6 +29,12 @@ const char* AssistantTextElementView::GetClassName() const {
 }
 
 ui::Layer* AssistantTextElementView::GetLayerForAnimating() {
+  if (!layer()) {
+    // We'll be animating this view on its own layer so we need to initialize
+    // the layer for the view if we haven't done so already.
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+  }
   return layer();
 }
 

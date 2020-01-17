@@ -35,16 +35,12 @@ js_library("nux_google_apps") {
 }
 
 js_library("google_app_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
 js_library("google_apps_metrics_proxy") {
-  deps = [
-    "../shared:module_metrics_proxy",
-  ]
+  deps = [ "../shared:module_metrics_proxy" ]
 }
 
 polymer_modulizer("nux_google_apps") {

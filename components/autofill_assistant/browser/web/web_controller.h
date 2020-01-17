@@ -159,6 +159,12 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback);
 
+  // Return the tag of |selector|.
+  virtual void GetElementTag(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback);
+
   // Gets the visual viewport coordinates and size.
   //
   // The rectangle is expressed in absolute CSS coordinates.
@@ -407,6 +413,15 @@ class WebController {
                                               const std::string&)> callback,
                       const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnFindElementForGetElementTag(
+      base::OnceCallback<void(const ClientStatus&, const std::string&)>
+          callback,
+      const ClientStatus& status,
+      std::unique_ptr<ElementFinder::Result> element_result);
+  void OnGetElementTag(base::OnceCallback<void(const ClientStatus&,
+                                               const std::string&)> callback,
+                       const DevtoolsClient::ReplyStatus& reply_status,
+                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForPosition(
       base::OnceCallback<void(bool, const RectF&)> callback,
       const ClientStatus& status,

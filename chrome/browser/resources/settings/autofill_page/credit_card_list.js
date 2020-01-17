@@ -13,7 +13,7 @@ Polymer({
   properties: {
     /**
      * An array of all saved credit cards.
-     * @type {!Array<!PaymentsManager.CreditCardEntry>}
+     * @type {!Array<!settings.PaymentsManager.CreditCardEntry>}
      */
     creditCards: Array,
   },
@@ -24,7 +24,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasSome_: function(list) {
+  hasSome_(list) {
     return !!(list && list.length);
   },
 });

@@ -17,10 +17,12 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -59,6 +61,42 @@ bool CanCoverAvailableWorkspace(aura::Window* window) {
   if (split_view_controller->InSplitViewMode())
     return split_view_controller->CanSnapWindow(window);
   return WindowState::Get(window)->IsMaximizedOrFullscreenOrPinned();
+}
+
+bool ShouldAnimateWallpaper(aura::Window* root_window) {
+  // |overview_session| will be null on overview exit because we call this
+  // after the animations are done running. Check the mru window list windows in
+  // this case to see if they cover the workspace.
+  OverviewSession* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  if (overview_session) {
+    // Never animate when doing app dragging or when immediately exiting.
+    const auto enter_exit_type = overview_session->enter_exit_overview_type();
+    if (enter_exit_type ==
+            OverviewSession::EnterExitOverviewType::kImmediateEnter ||
+        enter_exit_type ==
+            OverviewSession::EnterExitOverviewType::kImmediateExit) {
+      return false;
+    }
+
+    OverviewGrid* grid = overview_session->GetGridWithRootWindow(root_window);
+    // If one of the windows covers the workspace, we do not need to animate.
+    for (const auto& overview_item : grid->window_list()) {
+      if (CanCoverAvailableWorkspace(overview_item->GetWindow()))
+        return false;
+    }
+
+    return true;
+  }
+
+  auto windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
+  for (auto* window : windows) {
+    if (window->GetRootWindow() == root_window &&
+        CanCoverAvailableWorkspace(window))
+      return false;
+  }
+  return true;
 }
 
 void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
@@ -338,8 +376,7 @@ gfx::Rect GetGridBoundsInScreen(
   return bounds;
 }
 
-base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
-    aura::Window* window) {
+base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio() {
   if (!ShouldAllowSplitView())
     return base::nullopt;
   if (!Shell::Get()->tablet_mode_controller()->InTabletMode())

@@ -124,7 +124,7 @@ void TestClipboard::ReadBookmark(base::string16* title,
                                  std::string* url) const {
   const DataStore& store = GetDefaultStore();
   if (url) {
-    auto it = store.data.find(ClipboardFormatType::GetUrlWType());
+    auto it = store.data.find(ClipboardFormatType::GetUrlType());
     if (it != store.data.end())
       *url = it->second;
   }
@@ -170,8 +170,10 @@ void TestClipboard::WritePlatformRepresentations(
 void TestClipboard::WriteText(const char* text_data, size_t text_len) {
   std::string text(text_data, text_len);
   GetDefaultStore().data[ClipboardFormatType::GetPlainTextType()] = text;
+#if defined(OS_WIN)
   // Create a dummy entry.
-  GetDefaultStore().data[ClipboardFormatType::GetPlainTextWType()];
+  GetDefaultStore().data[ClipboardFormatType::GetPlainTextAType()];
+#endif
   if (IsSupportedClipboardBuffer(ClipboardBuffer::kSelection))
     GetStore(ClipboardBuffer::kSelection)
         .data[ClipboardFormatType::GetPlainTextType()] = text;
@@ -198,7 +200,7 @@ void TestClipboard::WriteBookmark(const char* title_data,
                                   size_t title_len,
                                   const char* url_data,
                                   size_t url_len) {
-  GetDefaultStore().data[ClipboardFormatType::GetUrlWType()] =
+  GetDefaultStore().data[ClipboardFormatType::GetUrlType()] =
       std::string(url_data, url_len);
   GetDefaultStore().url_title = std::string(title_data, title_len);
 }

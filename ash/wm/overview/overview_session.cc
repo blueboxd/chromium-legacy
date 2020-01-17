@@ -406,7 +406,7 @@ void OverviewSession::AddItem(
     return;
 
   grid->AddItem(window, reposition, animate, ignored_items, index);
-  OnItemAdded();
+  OnItemAdded(window);
 }
 
 void OverviewSession::AppendItem(aura::Window* window,
@@ -418,7 +418,7 @@ void OverviewSession::AppendItem(aura::Window* window,
     return;
 
   grid->AppendItem(window, reposition, animate, /*use_spawn_animation=*/true);
-  OnItemAdded();
+  OnItemAdded(window);
 }
 
 void OverviewSession::AddItemInMruOrder(aura::Window* window, bool animate) {
@@ -428,7 +428,7 @@ void OverviewSession::AddItemInMruOrder(aura::Window* window, bool animate) {
     return;
 
   grid->AddItemInMruOrder(window, animate);
-  OnItemAdded();
+  OnItemAdded(window);
 }
 
 void OverviewSession::RemoveItem(OverviewItem* overview_item) {
@@ -1120,9 +1120,15 @@ void OverviewSession::RefreshNoWindowsWidgetBounds(bool animate) {
                                           animate);
 }
 
-void OverviewSession::OnItemAdded() {
+void OverviewSession::OnItemAdded(aura::Window* window) {
   ++num_items_;
   UpdateNoWindowsWidget();
+
+  OverviewGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
+  // The drop target window is non-activatable, so no need to transfer focus.
+  if (grid && grid->IsDropTargetWindow(window))
+    return;
+
   // Transfer focus from |window| to |overview_focus_widget_| to match the
   // behavior of entering overview mode in the beginning.
   DCHECK(overview_focus_widget_);

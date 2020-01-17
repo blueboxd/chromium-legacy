@@ -125,7 +125,7 @@ Polymer({
   initialized_: false,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.$$('.promo-text').innerHTML =
         this.i18nAdvanced('cloudPrintPromotion', {
           substitutions: ['<a is="action-link" class="sign-in">', '</a>'],
@@ -139,13 +139,13 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.tracker_.add(
         assert(this.$$('.sign-in')), 'click', this.onSignInClick_.bind(this));
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.tracker_.removeAll();
   },
 
@@ -153,7 +153,7 @@ Polymer({
    * @param {!KeyboardEvent} e Event containing the key
    * @private
    */
-  onKeydown_: function(e) {
+  onKeydown_(e) {
     e.stopPropagation();
     const searchInput = this.$.searchBox.getSearchInput();
     if (e.key === 'Escape' &&
@@ -164,7 +164,7 @@ Polymer({
   },
 
   /** @private */
-  onDestinationStoreSet_: function() {
+  onDestinationStoreSet_() {
     assert(this.destinations_.length === 0);
     const destinationStore = assert(this.destinationStore);
     this.tracker_.add(
@@ -177,7 +177,7 @@ Polymer({
   },
 
   /** @private */
-  onInvitationStoreSet_: function() {
+  onInvitationStoreSet_() {
     const invitationStore = assert(this.invitationStore);
     this.tracker_.add(
         invitationStore, InvitationStore.EventType.INVITATION_SEARCH_DONE,
@@ -188,7 +188,7 @@ Polymer({
   },
 
   /** @private */
-  onActiveUserChange_: function() {
+  onActiveUserChange_() {
     if (this.activeUser) {
       this.$$('select').value = this.activeUser;
     }
@@ -197,7 +197,7 @@ Polymer({
   },
 
   /** @private */
-  updateDestinationsAndInvitations_: function() {
+  updateDestinationsAndInvitations_() {
     if (!this.initialized_) {
       return;
     }
@@ -209,7 +209,7 @@ Polymer({
   },
 
   /** @private */
-  updateDestinations_: function() {
+  updateDestinations_() {
     if (this.destinationStore === undefined) {
       return;
     }
@@ -223,7 +223,7 @@ Polymer({
   },
 
   /** @private */
-  onCloseOrCancel_: function() {
+  onCloseOrCancel_() {
     if (this.searchQuery_) {
       this.$.searchBox.setValue('');
     }
@@ -239,7 +239,7 @@ Polymer({
   },
 
   /** @private */
-  onCancelButtonClick_: function() {
+  onCancelButtonClick_() {
     this.$.dialog.cancel();
   },
 
@@ -248,7 +248,7 @@ Polymer({
    *     containing the selected destination list item element.
    * @private
    */
-  onDestinationSelected_: function(e) {
+  onDestinationSelected_(e) {
     const listItem = e.detail;
     const destination = listItem.destination;
 
@@ -315,12 +315,12 @@ Polymer({
    * @param {!Destination} destination The destination to select.
    * @private
    */
-  selectDestination_: function(destination) {
+  selectDestination_(destination) {
     this.destinationStore.selectDestination(destination);
     this.$.dialog.close();
   },
 
-  show: function() {
+  show() {
     this.$.dialog.showModal();
     this.loadingDestinations_ = this.destinationStore === undefined ||
         this.destinationStore.isPrintDestinationSearchInProgress;
@@ -333,18 +333,18 @@ Polymer({
   },
 
   /** @return {boolean} Whether the dialog is open. */
-  isOpen: function() {
+  isOpen() {
     return this.$.dialog.hasAttribute('open');
   },
 
   /** @private */
-  onSignInClick_: function() {
+  onSignInClick_() {
     this.metrics_.record(Metrics.DestinationSearchBucket.SIGNIN_TRIGGERED);
     NativeLayer.getInstance().signIn(false);
   },
 
   /** @private */
-  onCloudPrintPromoDismissed_: function() {
+  onCloudPrintPromoDismissed_() {
     this.cloudPrintPromoDismissed_ = true;
   },
 
@@ -352,7 +352,7 @@ Polymer({
    * Updates printer sharing invitations UI.
    * @private
    */
-  updateInvitations_: function() {
+  updateInvitations_() {
     const invitations = this.activeUser ?
         this.invitationStore.invitations(this.activeUser) :
         [];
@@ -369,7 +369,7 @@ Polymer({
    *     invitation.
    * @private
    */
-  getAcceptButtonText_: function() {
+  getAcceptButtonText_() {
     if (!this.invitation_) {
       return '';
     }
@@ -382,7 +382,7 @@ Polymer({
    * @return {string} The formatted text to show for the invitation promo.
    * @private
    */
-  getInvitationText_: function() {
+  getInvitationText_() {
     if (!this.invitation_) {
       return '';
     }
@@ -403,21 +403,21 @@ Polymer({
   },
 
   /** @private */
-  onInvitationAcceptClick_: function() {
+  onInvitationAcceptClick_() {
     this.metrics_.record(Metrics.DestinationSearchBucket.INVITATION_ACCEPTED);
     this.invitationStore.processInvitation(assert(this.invitation_), true);
     this.updateInvitations_();
   },
 
   /** @private */
-  onInvitationRejectClick_: function() {
+  onInvitationRejectClick_() {
     this.metrics_.record(Metrics.DestinationSearchBucket.INVITATION_REJECTED);
     this.invitationStore.processInvitation(assert(this.invitation_), false);
     this.updateInvitations_();
   },
 
   /** @private */
-  onUserChange_: function() {
+  onUserChange_() {
     const select = this.$$('select');
     const account = select.value;
     if (account) {
@@ -436,13 +436,13 @@ Polymer({
    * @return {boolean} Whether to show the cloud print promo.
    * @private
    */
-  computeShouldShowCloudPrintPromo_: function() {
+  computeShouldShowCloudPrintPromo_() {
     return !this.activeUser && !this.cloudPrintDisabled &&
         !this.cloudPrintPromoDismissed_;
   },
 
   /** @private */
-  onShouldShowCloudPrintPromoChanged_: function() {
+  onShouldShowCloudPrintPromoChanged_() {
     if (this.shouldShowCloudPrintPromo_) {
       this.metrics_.record(Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
     } else {
@@ -456,12 +456,12 @@ Polymer({
    * @return {boolean} Whether to show the footer.
    * @private
    */
-  shouldShowFooter_: function() {
+  shouldShowFooter_() {
     return this.shouldShowCloudPrintPromo_ || !!this.invitation_;
   },
 
   /** @private */
-  onOpenSettingsPrintPage_: function() {
+  onOpenSettingsPrintPage_() {
     this.metrics_.record(Metrics.DestinationSearchBucket.MANAGE_BUTTON_CLICKED);
     NativeLayer.getInstance().openSettingsPrintPage();
   },

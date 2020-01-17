@@ -47,7 +47,7 @@ Polymer({
     /** @private */
     isAssistantAllowed_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isAssistantAllowed');
       },
     },
@@ -61,7 +61,7 @@ Polymer({
     /** @private */
     hotwordDspAvailable_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('hotwordDspAvailable');
       },
     },
@@ -69,7 +69,7 @@ Polymer({
     /** @private */
     hotwordDropdownList_: {
       type: Array,
-      value: function() {
+      value() {
         return [
           {
             name: loadTimeData.getString(
@@ -112,12 +112,12 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.GoogleAssistantBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener('hotwordDeviceUpdated', (hasHotword) => {
       this.hotwordDspAvailable_ = hasHotword;
     });
@@ -130,30 +130,30 @@ Polymer({
    * @return {string}
    * @private
    */
-  getAssistantOnOffLabel_: function(toggleValue) {
+  getAssistantOnOffLabel_(toggleValue) {
     return this.i18n(
         toggleValue ? 'searchGoogleAssistantOn' : 'searchGoogleAssistantOff');
   },
 
   /** @private */
-  onGoogleAssistantSettingsTapped_: function() {
+  onGoogleAssistantSettingsTapped_() {
     this.browserProxy_.showGoogleAssistantSettings();
   },
 
   /** @private */
-  onRetrainVoiceModelTapped_: function() {
+  onRetrainVoiceModelTapped_() {
     this.browserProxy_.retrainAssistantVoiceModel();
   },
 
   /** @private */
-  onEnableHotwordChange_: function(event) {
+  onEnableHotwordChange_(event) {
     if (event.target.checked) {
       this.browserProxy_.syncVoiceModelStatus();
     }
   },
 
   /** @private */
-  onDspHotwordStateChange_: function() {
+  onDspHotwordStateChange_() {
     switch (Number(this.$$('#dsp-hotword-state').value)) {
       case DspHotwordState.DEFAULT_ON:
         this.setPrefValue('settings.voice_interaction.hotword.enabled', true);
@@ -181,12 +181,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isDspHotwordStateMatch_: function(state) {
+  isDspHotwordStateMatch_(state) {
     return state == this.dspHotwordState_;
   },
 
   /** @private */
-  onPrefsChanged_: function() {
+  onPrefsChanged_() {
     if (this.getPref('settings.assistant.disabled_by_policy.value')) {
       this.setPrefValue('settings.voice_interaction.enabled', false);
       return;
@@ -209,7 +209,7 @@ Polymer({
   },
 
   /** @private */
-  refreshDspHotwordState_: function() {
+  refreshDspHotwordState_() {
     if (!this.getPref('settings.voice_interaction.hotword.enabled.value')) {
       this.dspHotwordState_ = DspHotwordState.OFF;
     } else if (this.getPref(

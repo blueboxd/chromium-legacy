@@ -199,7 +199,7 @@ std::map<SectionType, PopularSites::SitesVector> ParseSites(
 void SetDefaultResourceForSite(size_t index,
                                int resource_id,
                                base::Value* sites) {
-  base::Value::ListStorage& list = sites->GetList();
+  base::Value::ListView list = sites->GetList();
   if (index >= list.size() || !list[index].is_dict())
     return;
 

@@ -54,7 +54,6 @@
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
-#include "third_party/blink/renderer/core/dom/sink_document.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/events/hash_change_event.h"
@@ -245,8 +244,7 @@ TrustedTypePolicyFactory* LocalDOMWindow::trustedTypes() const {
   return trusted_types_.Get();
 }
 
-Document* LocalDOMWindow::CreateDocument(const String& mime_type,
-                                         const DocumentInit& init,
+Document* LocalDOMWindow::CreateDocument(const DocumentInit& init,
                                          bool force_xhtml) {
   Document* document = nullptr;
   if (force_xhtml) {
@@ -254,14 +252,7 @@ Document* LocalDOMWindow::CreateDocument(const String& mime_type,
     // XSLTProcessor::createDocumentFromSource().
     document = MakeGarbageCollected<Document>(init);
   } else {
-    document = DOMImplementation::createDocument(
-        mime_type, init,
-        init.GetFrame() ? init.GetFrame()->InViewSourceMode() : false);
-    if (IsA<PluginDocument>(document) &&
-        document->IsSandboxed(WebSandboxFlags::kPlugins)) {
-      // document->Shutdown();
-      document = MakeGarbageCollected<SinkDocument>(init);
-    }
+    document = DOMImplementation::createDocument(init);
   }
 
   return document;
@@ -272,14 +263,13 @@ LocalDOMWindow* LocalDOMWindow::From(const ScriptState* script_state) {
   return blink::ToLocalDOMWindow(script_state->GetContext());
 }
 
-Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
-                                             const DocumentInit& init,
+Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init,
                                              bool force_xhtml) {
   DCHECK_EQ(init.GetFrame(), GetFrame());
 
   ClearDocument();
 
-  document_ = CreateDocument(mime_type, init, force_xhtml);
+  document_ = CreateDocument(init, force_xhtml);
   document_->Initialize();
 
   if (!GetFrame())

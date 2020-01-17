@@ -754,21 +754,12 @@
     "label": "//device:device_unittests",
     "type": "console_test_launcher",
   },
-  "devtools_type_check": {
+  "disk_usage_tast_test": {
     "args": [
-      "../../third_party/devtools-frontend/src/scripts/test/run_type_check.py",
+      "--vm-logs-dir=${ISOLATED_OUTDIR}",
     ],
-    "label": "//third_party/devtools-frontend/src:devtools_type_check",
-    "script": "//testing/scripts/run_devtools_check.py",
-    "type": "script",
-  },
-  "devtools_lint_check": {
-    "args": [
-      "../../third_party/devtools-frontend/src/scripts/test/run_lint_check.py",
-    ],
-    "label": "//third_party/devtools-frontend/src:devtools_lint_check",
-    "script": "//testing/scripts/run_devtools_check.py",
-    "type": "script",
+    "label": "//chromeos:disk_usage_tast_test",
+    "type": "raw",
   },
   "display_unittests": {
     "label": "//ui/display:display_unittests",
@@ -802,10 +793,12 @@
     "label": "//extensions:extensions_unittests",
     "type": "windowed_test_launcher",
   },
-  "fidlgen_js_unittests": {
-    "label": "//build/fuchsia/fidlgen_js:fidlgen_js_unittests",
-    "type": "console_test_launcher",
-  },
+  # TODO(https://bugs.fuchsia.dev/44191): Fix the build and re-instate this
+  # target.
+  #"fidlgen_js_unittests": {
+  #  "label": "//build/fuchsia/fidlgen_js:fidlgen_js_unittests",
+  #  "type": "console_test_launcher",
+  #},
   "filesystem_service_unittests": {
     "label": "//components/services/filesystem:filesystem_service_unittests",
     "type": "console_test_launcher",
@@ -866,6 +859,7 @@
       "src/third_party/android_sdk/public/platform-tools/adb",
     ],
     "label": "//gpu:gpu_perftests",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
@@ -1635,6 +1629,14 @@
   },
   "traffic_annotation_auditor_unittests": {
     "label": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests",
+    "type": "console_test_launcher",
+  },
+  "trichrome_chrome_bundle_smoke_test": {
+    "label": "//chrome/android:trichrome_chrome_bundle_smoke_test",
+    "type": "console_test_launcher",
+  },
+  "trichrome_chrome_bundle_fake_modules_smoke_test": {
+    "label": "//chrome/android:trichrome_chrome_bundle_fake_modules_smoke_test",
     "type": "console_test_launcher",
   },
   "ui_android_unittests": {

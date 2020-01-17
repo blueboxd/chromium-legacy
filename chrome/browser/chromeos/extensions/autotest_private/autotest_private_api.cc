@@ -3921,6 +3921,28 @@ void AutotestPrivateStopTracingFunction::OnTracingComplete(
   base::Value value(*trace.get());
   Respond(OneArgument(base::Value::ToUniquePtrValue(std::move(value))));
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetArcTouchModeFunction
+///////////////////////////////////////////////////////////////////////////////
+AutotestPrivateSetArcTouchModeFunction::
+    AutotestPrivateSetArcTouchModeFunction() = default;
+AutotestPrivateSetArcTouchModeFunction::
+    ~AutotestPrivateSetArcTouchModeFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetArcTouchModeFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetArcTouchMode::Params> params(
+      api::autotest_private::SetArcTouchMode::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateSetArcTouchModeFunction " << params->enabled;
+
+  if (!arc::SetTouchMode(params->enabled))
+    return RespondNow(Error("Could not send intent to ARC."));
+
+  return RespondNow(NoArguments());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateAPI
 ///////////////////////////////////////////////////////////////////////////////

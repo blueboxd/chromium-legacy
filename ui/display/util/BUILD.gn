@@ -37,9 +37,7 @@ jumbo_component("util") {
 }
 
 fuzzer_test("edid_parser_fuzzer") {
-  sources = [
-    "edid_parser_fuzzer.cc",
-  ]
+  sources = [ "edid_parser_fuzzer.cc" ]
   deps = [
     ":util",
     "//base",

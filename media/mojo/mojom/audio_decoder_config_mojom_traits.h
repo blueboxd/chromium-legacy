@@ -50,6 +50,11 @@ struct StructTraits<media::mojom::AudioDecoderConfigDataView,
     return input.encryption_scheme();
   }
 
+  static media::AudioCodecProfile profile(
+      const media::AudioDecoderConfig& input) {
+    return input.profile();
+  }
+
   static bool Read(media::mojom::AudioDecoderConfigDataView input,
                    media::AudioDecoderConfig* output);
 };

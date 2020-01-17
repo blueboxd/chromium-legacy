@@ -26,15 +26,14 @@ js_library("device_page") {
   deps = [
     ":device_page_browser_proxy",
     "../..:route",
+    "../..:router",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
 
 js_library("device_page_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("pointers") {
@@ -49,6 +48,7 @@ js_library("keyboard") {
   deps = [
     ":device_page_browser_proxy",
     "../..:route",
+    "../..:router",
     "../../controls:settings_dropdown_menu",
     "../../prefs:prefs_types",
     "//ui/webui/resources/js:assert",
@@ -107,15 +107,11 @@ js_library("display_overscan_dialog") {
 }
 
 js_library("drag_behavior") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("layout_behavior") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
   externs_list = [ "$externs_path/system_display.js" ]
   extra_sources = [ "$interfaces_path/system_display_interface.js" ]
 }
@@ -131,7 +127,7 @@ js_library("night_light_slider") {
 js_library("power") {
   deps = [
     ":device_page_browser_proxy",
-    "../..:route",
+    "../..:router",
     "../../prefs:prefs_types",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:web_ui_listener_behavior",
@@ -143,6 +139,7 @@ js_library("storage") {
   deps = [
     "..:route_origin_behavior",
     "../..:route",
+    "../..:router",
     "../localized_link:localized_link",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:load_time_data",

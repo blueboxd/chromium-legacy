@@ -224,7 +224,8 @@ void BioEnrollmentHandler::OnEnrollResponse(
     return;
   }
 
-  if (!response || !response->last_status || !response->remaining_samples) {
+  if (!response || !response->last_status || !response->remaining_samples ||
+      response->remaining_samples < 0) {
     Finish(BioEnrollmentStatus::kAuthenticatorResponseInvalid);
     return;
   }
@@ -239,21 +240,25 @@ void BioEnrollmentHandler::OnEnrollResponse(
     current_template_id = *response->template_id;
   }
 
-  if (*response->remaining_samples > 0) {
-    // FidoAuthenticator automatically requests the next sample and
-    // will invoke this method again on response.
-    sample_callback.Run(*response->last_status, *response->remaining_samples);
-    authenticator_->BioEnrollFingerprint(
-        *pin_token_response_, current_template_id,
-        base::BindOnce(&BioEnrollmentHandler::OnEnrollResponse,
-                       weak_factory_.GetWeakPtr(), std::move(sample_callback),
-                       std::move(completion_callback), current_template_id));
+  if (*response->remaining_samples == 0) {
+    // Enrollment succeeded.
+    state_ = State::kReady;
+    std::move(completion_callback)
+        .Run(CtapDeviceResponseCode::kSuccess, std::move(*current_template_id));
     return;
   }
 
-  state_ = State::kReady;
-  std::move(completion_callback)
-      .Run(CtapDeviceResponseCode::kSuccess, std::move(*current_template_id));
+  // Pass the result of the current sample to the UI (but filter out "no user
+  // activity", so the UI doesn't have to), and immediately request the next
+  // sample.
+  if (response->last_status != BioEnrollmentSampleStatus::kNoUserActivity) {
+    sample_callback.Run(*response->last_status, *response->remaining_samples);
+  }
+  authenticator_->BioEnrollFingerprint(
+      *pin_token_response_, current_template_id,
+      base::BindOnce(&BioEnrollmentHandler::OnEnrollResponse,
+                     weak_factory_.GetWeakPtr(), std::move(sample_callback),
+                     std::move(completion_callback), current_template_id));
 }
 
 void BioEnrollmentHandler::OnCancel(CompletionCallback callback,

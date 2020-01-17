@@ -33,14 +33,14 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
     ],
 
     /** @param {boolean} connected */
-    setIsConnected: function(connected) {
+    setIsConnected(connected) {
       $('update-required-card').isConnected = connected;
     },
 
     /**
      * @param {boolean} unavailable.
      */
-    setUpdateProgressUnavailable: function(unavailable) {
+    setUpdateProgressUnavailable(unavailable) {
       $('update-required-card').updateProgressUnavailable = unavailable;
     },
 
@@ -48,7 +48,7 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
      * Sets update's progress bar value.
      * @param {number} progress Percentage of the progress bar.
      */
-    setUpdateProgressValue: function(progress) {
+    setUpdateProgressValue(progress) {
       $('update-required-card').updateProgressValue = progress;
     },
 
@@ -56,7 +56,7 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
      * Sets message below progress bar.
      * @param {string} message Message that should be shown.
      */
-    setUpdateProgressMessage: function(message) {
+    setUpdateProgressMessage(message) {
       $('update-required-card').updateProgressMessage = message;
     },
 
@@ -64,7 +64,7 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
      * Shows or hides downloading ETA message.
      * @param {boolean} visible Are ETA message visible?
      */
-    setEstimatedTimeLeftVisible: function(visible) {
+    setEstimatedTimeLeftVisible(visible) {
       $('update-required-card').estimatedTimeLeftVisible = visible;
     },
 
@@ -72,7 +72,7 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
      * Sets estimated time left until download will complete.
      * @param {number} seconds Time left in seconds.
      */
-    setEstimatedTimeLeft: function(seconds) {
+    setEstimatedTimeLeft(seconds) {
       var minutes = Math.ceil(seconds / 60);
       var message = '';
       if (minutes > 60) {
@@ -96,7 +96,7 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
      * Sets current UI state of the screen.
      * @param {number} ui_state New UI state of the screen.
      */
-    setUIState: function(ui_state) {
+    setUIState(ui_state) {
       $('update-required-card').ui_state = UI_STATES[ui_state];
     },
   };

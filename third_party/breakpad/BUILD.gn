@@ -206,9 +206,7 @@ if (!is_win) {
         "breakpad/src/processor/microdump_stackwalk.cc",
       ]
 
-      deps = [
-        ":stackwalk_common",
-      ]
+      deps = [ ":stackwalk_common" ]
 
       configs -= [ "//build/config/compiler:chromium_code" ]
       configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -223,9 +221,7 @@ if (!is_win) {
         "breakpad/src/processor/minidump_stackwalk.cc",
       ]
 
-      deps = [
-        ":stackwalk_common",
-      ]
+      deps = [ ":stackwalk_common" ]
 
       configs -= [ "//build/config/compiler:chromium_code" ]
       configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -424,9 +420,7 @@ if (is_mac) {
       "Foundation.framework",
     ]
 
-    deps = [
-      ":utilities",
-    ]
+    deps = [ ":utilities" ]
   }
 
   # TODO(GYP) this target has some mac_bundle_resources stuff.
@@ -754,12 +748,8 @@ if (is_linux || is_android) {
   executable("linux_dumper_unittest_helper") {
     set_sources_assignment_filter([])
     testonly = true
-    sources = [
-      "breakpad/src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc",
-    ]
-    deps = [
-      ":processor_support",
-    ]
+    sources = [ "breakpad/src/client/linux/minidump_writer/linux_dumper_unittest_helper.cc" ]
+    deps = [ ":processor_support" ]
 
     configs += [ ":client_config" ]
 
@@ -771,9 +761,7 @@ if (is_linux || is_android) {
   executable("generate_test_dump") {
     set_sources_assignment_filter([])
     testonly = true
-    sources = [
-      "linux/generate-test-dump.cc",
-    ]
+    sources = [ "linux/generate-test-dump.cc" ]
 
     # This file has an unused variable warning.
     configs -= [ "//build/config/compiler:chromium_code" ]
@@ -782,9 +770,7 @@ if (is_linux || is_android) {
       "//build/config/compiler:no_chromium_code",
     ]
 
-    deps = [
-      ":client",
-    ]
+    deps = [ ":client" ]
 
     if (is_android) {
       libs = [ "log" ]
@@ -801,20 +787,14 @@ if (is_linux || is_android) {
 
     include_dirs = [ "breakpad/src" ]
 
-    deps = [
-      ":client",
-    ]
+    deps = [ ":client" ]
   }
 
   executable("core-2-minidump") {
     set_sources_assignment_filter([])
-    sources = [
-      "breakpad/src/tools/linux/core2md/core2md.cc",
-    ]
+    sources = [ "breakpad/src/tools/linux/core2md/core2md.cc" ]
 
-    deps = [
-      ":client",
-    ]
+    deps = [ ":client" ]
 
     include_dirs = [ "breakpad/src" ]
   }
@@ -862,9 +842,7 @@ if (is_win) {
         "breakpad/src/tools/windows/converter/ms_symbol_server_converter.cc",
       ]
 
-      deps = [
-        "//third_party/breakpad:common_windows",
-      ]
+      deps = [ "//third_party/breakpad:common_windows" ]
 
       libs = [ "Pathcch.lib" ]
     }
@@ -877,13 +855,9 @@ if (is_win) {
         "breakpad/src",
       ]
 
-      sources = [
-        "breakpad/src/tools/windows/dump_syms/dump_syms.cc",
-      ]
+      sources = [ "breakpad/src/tools/windows/dump_syms/dump_syms.cc" ]
 
-      deps = [
-        "//third_party/breakpad:common_windows",
-      ]
+      deps = [ "//third_party/breakpad:common_windows" ]
 
       lib_dirs = []
       if (current_cpu == "x64") {
@@ -910,13 +884,9 @@ if (is_win) {
         "breakpad/src",
       ]
 
-      sources = [
-        "breakpad/src/tools/windows/symupload/symupload.cc",
-      ]
+      sources = [ "breakpad/src/tools/windows/symupload/symupload.cc" ]
 
-      deps = [
-        "//third_party/breakpad:common_windows",
-      ]
+      deps = [ "//third_party/breakpad:common_windows" ]
 
       ldflags = [ "/LARGEADDRESSAWARE" ]
 

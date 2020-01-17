@@ -819,6 +819,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_NewTabInGroup">
+  <owner>connily@chromium.org</owner>
+  <owner>cyan@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User added a new tab to the existing group by keyboard shortcut Ctrl-T.
+  </description>
+</action>
+
 <action name="Accel_Next_Ime">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -5682,6 +5691,13 @@ should be able to be added at any place in this file.
   <owner>tbuckley@chromium.org</owner>
   <description>
     User pushes &quot;Annotate&quot; button on download notification.
+  </description>
+</action>
+
+<action name="DownloadNotification.Button_BypassDeepScanning">
+  <owner>drubery@chromium.org</owner>
+  <description>
+    User pushes &quot;Open now&quot; on the prompt for download deep scanning
   </description>
 </action>
 
@@ -17882,6 +17898,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_SignInAgainDisplayed">
+  <obsolete>No longer recorded after the revamp of the profile menu</obsolete>
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>
   <description>
@@ -22083,6 +22100,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="TabContextMenu_NewTabInGroup">
+  <owner>connily@chromium.org</owner>
+  <owner>cyan@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User added a tab to an existing group by choosing 'Add to existing group'
+    from the tabstrip context menu.
+  </description>
+</action>
+
 <action name="TabContextMenu_OpenTabsLeftToRight">
   <obsolete>Could not find traces of this used in code.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -22250,6 +22277,23 @@ should be able to be added at any place in this file.
   <description>
     Users tapped &quot;v&quot; button on tab group bottom sheet toolbar, causing
     tab group bottom sheet to be hidden.
+  </description>
+</action>
+
+<action name="TabGroups_SwitchGroupedTab">
+  <owner>connily@chromium.org</owner>
+  <owner>cyan@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>User switched to a tab that belongs in a group.</description>
+</action>
+
+<action name="TabGroups_TabGroupBubble_NewTabInGroup">
+  <owner>connily@chromium.org</owner>
+  <owner>cyan@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User added a new tab to an existing group by choosing 'New tab in group'
+    from the tab group editor bubble.
   </description>
 </action>
 
@@ -23730,6 +23774,7 @@ should be able to be added at any place in this file.
   <suffix name="DownloadPage" label="For DownloadPage feature."/>
   <suffix name="DownloadPageScreenshot"
       label="For DownloadPageScreenshot feature."/>
+  <suffix name="EphemeralTab" label="For Ephemeral Tab."/>
   <suffix name="ExploreSitesTile" label="For Explore Sites feature."/>
   <suffix name="FeedCardMenu" label="For FeedCardMenu feature."/>
   <suffix name="GlobalMediaControls" label="For GlobalMediaControls feature."/>
@@ -23864,6 +23909,9 @@ should be able to be added at any place in this file.
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">
+  <suffix name="NewTabTile"
+      label="Users tapped the new tab tile in GridTabSwitcher, causing a new
+             tab to be created."/>
   <suffix name="TabGridDialogFromStrip"
       label="Users tapped '+' button on the tab group dialog toolbar, causing
              a new tab to be created in the group. The dialog is expanded

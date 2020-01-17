@@ -11,14 +11,11 @@
 
 namespace blink {
 
-class Document;
-
 // A LayoutObject subclass for outside-positioned list markers in LayoutNG.
 class CORE_EXPORT LayoutNGListMarker final
     : public LayoutNGBlockFlowMixin<LayoutBlockFlow> {
  public:
   explicit LayoutNGListMarker(Element*);
-  static LayoutNGListMarker* CreateAnonymous(Document*);
 
   void WillCollectInlines() override;
 

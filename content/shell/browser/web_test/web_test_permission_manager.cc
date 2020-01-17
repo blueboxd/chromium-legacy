@@ -207,11 +207,32 @@ void WebTestPermissionManager::SetPermission(
   OnPermissionChanged(description, status);
 }
 
+void WebTestPermissionManager::SetPermission(
+    blink::mojom::PermissionDescriptorPtr descriptor,
+    blink::mojom::PermissionStatus status,
+    const GURL& url,
+    const GURL& embedding_url,
+    blink::test::mojom::PermissionAutomation::SetPermissionCallback callback) {
+  auto type = PermissionDescriptorToPermissionType(descriptor);
+  if (!type) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  SetPermission(*type, status, url, embedding_url);
+  std::move(callback).Run(true);
+}
+
 void WebTestPermissionManager::ResetPermissions() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::AutoLock lock(permissions_lock_);
   permissions_.clear();
+}
+
+void WebTestPermissionManager::Bind(
+    mojo::PendingReceiver<blink::test::mojom::PermissionAutomation> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void WebTestPermissionManager::OnPermissionChanged(

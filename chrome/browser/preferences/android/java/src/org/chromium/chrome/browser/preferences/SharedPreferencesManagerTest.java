@@ -134,6 +134,28 @@ public class SharedPreferencesManagerTest {
 
     @Test
     @SmallTest
+    public void testWriteReadFloat() {
+        // Verify default return values when no value is written.
+        assertEquals(1.5f, mSubject.readFloat("float_key", 1.5f), 0.001f);
+        assertFalse(mSubject.contains("float_key"));
+
+        // Write a value.
+        mSubject.writeFloat("float_key", 42.42f);
+
+        // Verify value written can be read.
+        assertEquals(42.42f, mSubject.readFloat("float_key", 1.5f), 0.001f);
+        assertTrue(mSubject.contains("float_key"));
+
+        // Remove the value.
+        mSubject.removeKey("float_key");
+
+        // Verify the removed value is not returned anymore.
+        assertEquals(1.5f, mSubject.readFloat("float_key", 1.5f), 0.001f);
+        assertFalse(mSubject.contains("float_key"));
+    }
+
+    @Test
+    @SmallTest
     public void testWriteReadStringSet() {
         Set<String> defaultStringSet = new HashSet<>(Arrays.asList("a", "b", "c"));
         Set<String> exampleStringSet = new HashSet<>(Arrays.asList("d", "e"));
@@ -222,6 +244,11 @@ public class SharedPreferencesManagerTest {
         verify(mChecker, times(1)).checkIsKeyInUse("long_key");
         mSubject.readLong("long_key");
         verify(mChecker, times(2)).checkIsKeyInUse("long_key");
+
+        mSubject.writeFloat("float_key", 2.5f);
+        verify(mChecker, times(1)).checkIsKeyInUse("float_key");
+        mSubject.readFloat("float_key", 0f);
+        verify(mChecker, times(2)).checkIsKeyInUse("float_key");
 
         mSubject.writeStringSet("string_set_key", new HashSet<>());
         verify(mChecker, times(1)).checkIsKeyInUse("string_set_key");

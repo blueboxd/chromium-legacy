@@ -19,11 +19,11 @@ Polymer({
     strings: Object,
   },
 
-  show: function() {
+  show() {
     /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
   },
 
-  reload: function() {
+  reload() {
     if (this.reloadFn) {
       this.reloadFn();
     }

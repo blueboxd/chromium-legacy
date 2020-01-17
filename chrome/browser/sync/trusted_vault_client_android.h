@@ -13,6 +13,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/driver/trusted_vault_client.h"
 
 // JNI bridge for a Java implementation of the TrustedVaultClient interface,
@@ -48,25 +49,25 @@ class TrustedVaultClientAndroid : public syncer::TrustedVaultClient {
   std::unique_ptr<Subscription> AddKeysChangedObserver(
       const base::RepeatingClosure& cb) override;
   void FetchKeys(
-      const std::string& gaia_id,
+      const CoreAccountInfo& account_info,
       base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb)
       override;
   void StoreKeys(const std::string& gaia_id,
                  const std::vector<std::vector<uint8_t>>& keys,
                  int last_key_version) override;
-  void MarkKeysAsStale(const std::string& gaia_id,
+  void MarkKeysAsStale(const CoreAccountInfo& account_info,
                        base::OnceCallback<void(bool)> cb) override;
 
  private:
   // Struct representing an in-flight FetchKeys() call invoked from C++.
   struct OngoingFetchKeys {
     OngoingFetchKeys(
-        const std::string& gaia_id,
+        const CoreAccountInfo& account_info,
         base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)>
             callback);
     ~OngoingFetchKeys();
 
-    const std::string gaia_id;
+    const CoreAccountInfo account_info;
     base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> callback;
   };
 

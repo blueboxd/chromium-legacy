@@ -9,16 +9,16 @@ import * as toast from '../toast.js';
  * @enum {string}
  */
 export const ViewName = {
-  CAMERA: 'camera',
-  EXPERT_SETTINGS: 'expertsettings',
-  GRID_SETTINGS: 'gridsettings',
-  MESSAGE_DIALOG: 'message-dialog',
-  PHOTO_RESOLUTION_SETTINGS: 'photoresolutionsettings',
-  RESOLUTION_SETTINGS: 'resolutionsettings',
-  SETTINGS: 'settings',
-  TIMER_SETTINGS: 'timersettings',
-  VIDEO_RESOLUTION_SETTINGS: 'videoresolutionsettings',
-  WARNING: 'warning',
+  CAMERA: 'view-camera',
+  EXPERT_SETTINGS: 'view-expert-settings',
+  GRID_SETTINGS: 'view-grid-settings',
+  MESSAGE_DIALOG: 'view-message-dialog',
+  PHOTO_RESOLUTION_SETTINGS: 'view-photo-resolution-settings',
+  RESOLUTION_SETTINGS: 'view-resolution-settings',
+  SETTINGS: 'view-settings',
+  TIMER_SETTINGS: 'view-timer-settings',
+  VIDEO_RESOLUTION_SETTINGS: 'view-video-resolution-settings',
+  WARNING: 'view-warning',
 };
 
 /* eslint-disable no-unused-vars */
@@ -189,8 +189,3 @@ export class View {
     return false;
   }
 }
-
-/** @const */
-cca.views.ViewName = ViewName;
-/** @const */
-cca.views.View = View;

@@ -10,38 +10,63 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.BlockJUnit4ClassRunner;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.ParameterizedRobolectricTestRunner;
+import org.robolectric.ParameterizedRobolectricTestRunner.Parameter;
+import org.robolectric.ParameterizedRobolectricTestRunner.Parameters;
+import org.robolectric.annotation.Config;
 
+import org.chromium.base.metrics.test.DisableHistogramsRule;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Stack;
 
 /**
  * Tests for {@link CloseButtonNavigator}.
  */
-@RunWith(BlockJUnit4ClassRunner.class)
+@RunWith(ParameterizedRobolectricTestRunner.class)
+@Config(sdk = 21, manifest = Config.NONE)
 public class CloseButtonNavigatorTest {
+    @Rule
+    public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
+
+    @Parameters
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {{true}, {false}});
+    }
+
+    @Parameter(0)
+    public boolean mIsWebapp;
+
     @Mock public CustomTabActivityTabController mTabController;
     @Mock public CustomTabActivityTabProvider mTabProvider;
+    @Mock
+    public WebappExtras mWebappExtras;
+    @Mock
+    public BrowserServicesIntentDataProvider mIntentDataProvider;
 
-    // private final List<Tab> mTabs = new ArrayList<>();
     private final Stack<Tab> mTabs = new Stack<>();
     private CloseButtonNavigator mCloseButtonNavigator;
 
@@ -49,7 +74,13 @@ public class CloseButtonNavigatorTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mCloseButtonNavigator = new CloseButtonNavigator(mTabController, mTabProvider);
+        if (!mIsWebapp) {
+            mWebappExtras = null;
+        }
+        doReturn(mWebappExtras).when(mIntentDataProvider).getWebappExtras();
+
+        mCloseButtonNavigator =
+                new CloseButtonNavigator(mTabController, mTabProvider, mIntentDataProvider);
 
         // Set up our mTabs to act as the mock tab model:
         // - mTabController.closeTab removes the top tab.
@@ -83,8 +114,13 @@ public class CloseButtonNavigatorTest {
         when(tab.getWebContents()).thenReturn(webContents);
         when(webContents.getNavigationController()).thenReturn(navigationController);
         when(navigationController.getNavigationHistory()).thenReturn(history);
+        setParentTabId(tab, Tab.INVALID_TAB_ID);
 
         return tab;
+    }
+
+    private void setParentTabId(Tab childTab, int parentTabId) {
+        when(childTab.getParentId()).thenReturn(parentTabId);
     }
 
     private NavigationController currentTabsNavigationController() {
@@ -113,10 +149,16 @@ public class CloseButtonNavigatorTest {
     public void noCriteria_multipleTabs() {
         mTabs.push(createTabWithNavigationHistory( "www.blue.com/page1"));
         mTabs.push(createTabWithNavigationHistory( "www.blue.com/page2"));
+        setParentTabId(mTabs.get(1), mTabs.get(0).getId());
 
         mCloseButtonNavigator.navigateOnClose();
 
-        assertTrue(mTabs.empty());
+        if (mIsWebapp) {
+            assertEquals(1, mTabs.size());
+            verify(currentTabsNavigationController(), never()).goToNavigationIndex(anyInt());
+        } else {
+            assertTrue(mTabs.empty());
+        }
     }
 
     @Test
@@ -137,10 +179,16 @@ public class CloseButtonNavigatorTest {
         mCloseButtonNavigator.setLandingPageCriteria(CloseButtonNavigatorTest::isRed);
         mTabs.push(createTabWithNavigationHistory( "www.blue.com/page1"));
         mTabs.push(createTabWithNavigationHistory( "www.blue.com/page2"));
+        setParentTabId(mTabs.get(1), mTabs.get(0).getId());
 
         mCloseButtonNavigator.navigateOnClose();
 
-        assertTrue(mTabs.empty());
+        if (mIsWebapp) {
+            assertEquals(1, mTabs.size());
+            verify(currentTabsNavigationController(), never()).goToNavigationIndex(anyInt());
+        } else {
+            assertTrue(mTabs.empty());
+        }
     }
 
     @Test
@@ -172,6 +220,7 @@ public class CloseButtonNavigatorTest {
                 "www.blue.com/page1",
                 "www.blue.com/page2"
         ));
+        setParentTabId(mTabs.get(1), mTabs.get(0).getId());
 
         mCloseButtonNavigator.navigateOnClose();
 
@@ -190,12 +239,17 @@ public class CloseButtonNavigatorTest {
                 "www.blue.com/page2",
                 "www.blue.com/page3"
         ));
+        setParentTabId(mTabs.get(1), mTabs.get(0).getId());
 
         mCloseButtonNavigator.navigateOnClose();
 
         assertEquals(1, mTabs.size());
-        verify(currentTabsNavigationController()).goToNavigationIndex(eq(0));
-        verify(currentTabsNavigationController()).goToNavigationIndex(anyInt());
+        if (mIsWebapp) {
+            verify(currentTabsNavigationController(), never()).goToNavigationIndex(anyInt());
+        } else {
+            verify(currentTabsNavigationController()).goToNavigationIndex(eq(0));
+            verify(currentTabsNavigationController()).goToNavigationIndex(anyInt());
+        }
     }
 
     @Test

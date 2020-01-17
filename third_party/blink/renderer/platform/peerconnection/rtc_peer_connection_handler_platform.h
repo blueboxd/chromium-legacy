@@ -81,8 +81,8 @@ class PLATFORM_EXPORT RTCPeerConnectionHandlerPlatform {
 
   virtual bool Initialize(
       const webrtc::PeerConnectionInterface::RTCConfiguration&,
-      const MediaConstraints&) = 0;
-  virtual void AssociateWithFrame(WebLocalFrame*) {}
+      const MediaConstraints&,
+      WebLocalFrame*) = 0;
 
   // Unified Plan: The list of transceivers after the createOffer() call.
   // Because of offerToReceive[Audio/Video] it is possible for createOffer() to

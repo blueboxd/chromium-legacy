@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/metrics/histogram_macros.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/core/features.h"
 
@@ -35,14 +36,24 @@ void CompromisedCredentialsObserver::OnLoginsChanged(
       !base::FeatureList::IsEnabled(password_manager::features::kLeakHistory))
     return;
 
-  for (const auto& change : changes) {
-    if (change.password_changed()) {
-      store_->RemoveCompromisedCredentials(GURL(change.form().signon_realm),
-                                           change.form().username_value);
-      UMA_HISTOGRAM_ENUMERATION("PasswordManager.RemoveCompromisedCredentials",
-                                change.type());
-    }
+  // If the change is an UPDATE and the password did not change, there is
+  // nothing to remove. If the change is an ADD there is also nothing to remove.
+  if (changes[0].type() == PasswordStoreChange::ADD ||
+      (changes[0].type() == PasswordStoreChange::UPDATE &&
+       !changes[0].password_changed())) {
+    return;
   }
+
+  // An internal update could be a (REMOVE + ADD) or (UPDATE).
+  RemoveCompromisedCredentialsReason reason =
+      changes.size() != 1 || changes[0].type() == PasswordStoreChange::UPDATE
+          ? RemoveCompromisedCredentialsReason::kUpdate
+          : RemoveCompromisedCredentialsReason::kRemove;
+  store_->RemoveCompromisedCredentials(GURL(changes[0].form().signon_realm),
+                                       changes[0].form().username_value,
+                                       reason);
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.RemoveCompromisedCredentials",
+                            changes[0].type());
 }
 
 }  // namespace password_manager

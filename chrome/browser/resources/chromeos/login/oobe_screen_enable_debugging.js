@@ -16,7 +16,7 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
     EXTERNAL_API: ['updateState'],
 
     /** @override */
-    decorate: function() {
+    decorate() {
       $('enable-debugging-help-link')
           .addEventListener('click', function(event) {
             chrome.send('enableDebuggingOnLearnMore');
@@ -102,7 +102,7 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
      * Cancels the enable debugging screen and drops the user back to the
      * network settings.
      */
-    cancel: function() {
+    cancel() {
       chrome.send('enableDebuggingOnCancel');
     },
 
@@ -110,11 +110,11 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
      * Event handler that is invoked just before the screen in shown.
      * @param {Object} data Screen init payload.
      */
-    onBeforeShow: function(data) {
+    onBeforeShow(data) {
       this.setDialogView_(this.UI_STATE.NONE);
     },
 
-    onPasswordChanged_: function() {
+    onPasswordChanged_() {
       var enableButton = $('debugging-enable-button');
       var password = $('enable-debugging-password');
       var password2 = $('enable-debugging-password2');
@@ -130,7 +130,7 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
      * @param {number} state.
      * @private
      */
-    setDialogView_: function(state) {
+    setDialogView_(state) {
       this.state_ = state;
       this.classList.toggle(
           'remove-protection-view', state == this.UI_STATE.REMOVE_PROTECTION);
@@ -144,7 +144,7 @@ login.createScreen('EnableDebuggingScreen', 'debugging', function() {
         Oobe.getInstance().updateScreenSize(this);
     },
 
-    updateState: function(state) {
+    updateState(state) {
       this.setDialogView_(state);
     }
   };

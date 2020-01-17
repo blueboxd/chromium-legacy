@@ -19,6 +19,7 @@ js_library("date_time_page") {
     ":timezone_selector",
     ":timezone_subpage",
     "../..:route",
+    "../..:router",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/cr_elements/policy:cr_policy_indicator_behavior",
     "//ui/webui/resources/js:cr",
@@ -29,9 +30,7 @@ js_library("date_time_page") {
 }
 
 js_library("date_time_types") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("timezone_selector") {

@@ -12,7 +12,5 @@ jumbo_source_set("public") {
     "sample.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

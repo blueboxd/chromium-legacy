@@ -29,9 +29,7 @@ android_library("jni_sample_java") {
 }
 
 android_library("jni_annotation_sample_java") {
-  sources = [
-    "java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java",
-  ]
+  sources = [ "java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java" ]
   deps = [
     "//base:base_java",
     "//base:jni_java",
@@ -86,9 +84,7 @@ group("jni_generator_tests") {
 
 java_cpp_template("processor_args_java") {
   package_path = "org/chromium/jni_generator"
-  sources = [
-    "ProcessorArgs.template",
-  ]
+  sources = [ "ProcessorArgs.template" ]
   defines = [ "HASH_JNI_NAMES_VALUE=$use_hashed_jni_names" ]
 }
 

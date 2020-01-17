@@ -21,7 +21,7 @@ class P2PQuicCryptoStreamFactory {
       quic::QuicCryptoClientConfig* crypto_config,
       quic::QuicCryptoClientStream::ProofHandler* proof_handler) = 0;
 
-  virtual std::unique_ptr<quic::QuicCryptoServerStream>
+  virtual std::unique_ptr<quic::QuicCryptoServerStreamBase>
   CreateServerCryptoStream(
       const quic::QuicCryptoServerConfig* crypto_config,
       quic::QuicCompressedCertsCache* compressed_certs_cache,

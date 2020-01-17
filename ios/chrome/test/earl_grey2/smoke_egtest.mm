@@ -207,6 +207,27 @@
                   @"Exactly one new tab should be opened.");
 }
 
+// Tests enabling variations and trigger variations through [AppLaunchManager
+// ensureAppLaunchedWithLaunchConfiguration:]
+- (void)testAppLaunchManagerLaunchWithVariations {
+  AppLaunchConfiguration config;
+  config.variations_enabled = {111111, 222222};
+  config.trigger_variations_enabled = {999999, 777777};
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  GREYAssertTrue([ChromeEarlGrey isTriggerVariationEnabled:999999],
+                 @"Trigger variation 123456 should be enabled");
+  GREYAssertTrue([ChromeEarlGrey isTriggerVariationEnabled:777777],
+                 @"Trigger variation 123456 should be enabled");
+  GREYAssertTrue([ChromeEarlGrey isVariationEnabled:111111],
+                 @"Variation 987654 should be enabled");
+  GREYAssertTrue([ChromeEarlGrey isVariationEnabled:222222],
+                 @"Variation 987654 should be enabled");
+
+  GREYAssertEqual([ChromeEarlGrey mainTabCount], 1U,
+                  @"Exactly one new tab should be opened.");
+}
+
 // Tests gracefully kill through AppLaunchManager.
 - (void)testAppLaunchManagerForceRelaunchByCleanShutdown {
   [ChromeEarlGrey openNewTab];

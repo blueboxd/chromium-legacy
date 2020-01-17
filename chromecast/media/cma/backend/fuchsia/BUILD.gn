@@ -9,9 +9,7 @@ import("//testing/test.gni")
 assert(is_fuchsia)
 
 cast_source_set("media_backend") {
-  sources = [
-    "cast_media_shlib_fuchsia.cc",
-  ]
+  sources = [ "cast_media_shlib_fuchsia.cc" ]
 
   deps = [
     ":volume_control",
@@ -57,9 +55,7 @@ cast_source_set("mixer_output") {
 
 cast_source_set("unit_tests") {
   testonly = true
-  sources = [
-    "mixer_output_stream_fuchsia_unittest.cc",
-  ]
+  sources = [ "mixer_output_stream_fuchsia_unittest.cc" ]
 
   configs += [ "//chromecast/public:public_config" ]
 

@@ -726,6 +726,7 @@ enum CSSSampleId {
     kIntrinsicSize = 651,
     kIntrinsicWidth = 652,
     kRenderSubtree = 653,
+    kOriginTrialTestProperty = 654,
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Run the update_use_counter_css.py script in

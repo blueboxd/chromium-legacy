@@ -11,9 +11,7 @@ js_type_check("closure_compile") {
                     "js_module_root=../../chrome/browser/resources/welcome/",
                     "js_module_root=gen/chrome/browser/resources/welcome/",
                   ]
-  deps = [
-    ":nux_set_as_default",
-  ]
+  deps = [ ":nux_set_as_default" ]
 }
 
 js_library("nux_set_as_default") {
@@ -28,9 +26,7 @@ js_library("nux_set_as_default") {
 }
 
 js_library("nux_set_as_default_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr.m",
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 

@@ -51,9 +51,7 @@ static_library("fake_shortcut_parser") {
 source_set("unittest_sources") {
   testonly = true
 
-  sources = [
-    "sandboxed_shortcut_parser_unittest.cc",
-  ]
+  sources = [ "sandboxed_shortcut_parser_unittest.cc" ]
   deps = [
     ":sandboxed_shortcut_parser",
     "//base",

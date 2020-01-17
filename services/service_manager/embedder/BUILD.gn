@@ -67,14 +67,10 @@ component("embedder_switches") {
     "switches.cc",
     "switches.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   defines = [ "IS_SERVICE_MANAGER_EMBEDDER_SWITCHES_IMPL" ]
 }
 
 source_set("embedder_result_codes") {
-  sources = [
-    "result_codes.h",
-  ]
+  sources = [ "result_codes.h" ]
 }

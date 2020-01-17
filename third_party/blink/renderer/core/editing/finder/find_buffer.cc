@@ -283,7 +283,7 @@ void FindBuffer::CollectScopedForcedUpdates(Node& start_node,
           start_node.GetExecutionContext()))
     return;
   if (start_node.GetDocument().LockedDisplayLockCount() ==
-      start_node.GetDocument().ActivationBlockingDisplayLockCount())
+      start_node.GetDocument().DisplayLockBlockingAllActivationCount())
     return;
 
   Node* node = &start_node;

@@ -15,9 +15,7 @@ js_type_check("closure_compile") {
 }
 
 js_library("cr_camera") {
-  deps = [
-    ":cr_png_behavior",
-  ]
+  deps = [ ":cr_png_behavior" ]
 }
 
 js_library("cr_picture_list") {

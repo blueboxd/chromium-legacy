@@ -40,9 +40,7 @@ blink_modules_sources("gamepad") {
 
 jumbo_source_set("unit_tests") {
   testonly = true
-  sources = [
-    "gamepad_comparisons_test.cc",
-  ]
+  sources = [ "gamepad_comparisons_test.cc" ]
 
   configs += [
     "//third_party/blink/renderer:config",

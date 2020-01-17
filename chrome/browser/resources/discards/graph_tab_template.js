@@ -93,20 +93,20 @@ Polymer({
   changeListener_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.graphDump_ =
         discards.mojom.GraphDump.getRemote(/*useBrowserInterfaceBroker=*/ true);
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     // TODO(siggi): Is there a way to tear down the binding explicitly?
     this.graphDump_ = null;
     this.changeListener_ = null;
   },
 
   /** @private */
-  onWebViewReady_: function() {
+  onWebViewReady_() {
     this.changeListener_ =
         new DiscardsGraphChangeStreamImpl(this.$.webView.contentWindow);
     this.client_ =

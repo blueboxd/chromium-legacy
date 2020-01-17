@@ -7,25 +7,19 @@ import("//build/config/android/rules.gni")
 
 java_library("build_hooks_java") {
   jacoco_never_instrument = true
-  sources = [
-    "java/org/chromium/build/BuildHooks.java",
-  ]
+  sources = [ "java/org/chromium/build/BuildHooks.java" ]
 
   # Make all targets pull in the try-with-resources support files.
   # If an apk ends up not using any such statements, ProGuard will remove
   # them.
-  deps = [
-    "//third_party/bazel/desugar:desugar_runtime_java",
-  ]
+  deps = [ "//third_party/bazel/desugar:desugar_runtime_java" ]
   srcjar_deps = [ ":base_build_hooks_config" ]
   no_build_hooks = true
   supports_android = true
 }
 
 java_cpp_template("base_build_hooks_config") {
-  sources = [
-    "java/templates/BuildHooksConfig.template",
-  ]
+  sources = [ "java/templates/BuildHooksConfig.template" ]
   package_path = "org/chromium/build"
 
   defines = []
@@ -52,11 +46,7 @@ android_library("build_hooks_android_java") {
 # specify a different implementation via build_hooks_android_impl_deps.
 android_library("build_hooks_android_impl_java") {
   jacoco_never_instrument = true
-  sources = [
-    build_hooks_android_impl,
-  ]
-  deps = [
-    ":build_hooks_android_java",
-  ]
+  sources = [ build_hooks_android_impl ]
+  deps = [ ":build_hooks_android_java" ]
   no_build_hooks = true
 }

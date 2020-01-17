@@ -461,8 +461,10 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() const {
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBoundsForWorkAreaCalculation() const {
-  if (!IsTabletModeEnabled() || !chromeos::switches::ShouldShowShelfHotseat())
+  if (!IsTabletModeEnabled() || !chromeos::switches::ShouldShowShelfHotseat() ||
+      state_.session_state != session_manager::SessionState::ACTIVE) {
     return GetIdealBounds();
+  }
 
   // For the work-area calculation in tablet mode, always use in-app shelf
   // bounds, because when the shelf is not in-app the UI is either showing
@@ -1256,10 +1258,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       ((overview_controller && overview_controller->InOverviewSession()) ||
        overview_mode_will_start_) &&
       !overview_controller->IsCompletingShutdownAnimations();
-  const bool app_list_visible =
-      app_list_controller->IsVisible() ||
-      app_list_controller->GetTargetVisibility() ||
-      (!in_overview && app_list_controller->ShouldHomeLauncherBeVisible());
+  const bool app_list_visible = app_list_controller->GetTargetVisibility();
 
   // Only force to show if there is not a pending drag operation.
   if (shelf_widget_->is_hotseat_forced_to_show() && drag_status_ == kDragNone)
@@ -1281,13 +1280,8 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
         case AppListControllerImpl::HomeLauncherTransitionState::kMostlyHidden:
           return in_overview ? HotseatState::kExtended : HotseatState::kHidden;
         case AppListControllerImpl::HomeLauncherTransitionState::kFinished:
-          // Consider the AppList visible if it is beginning to show. Also
-          // detect the case where the last window is being minimized.
-          if (app_list_controller->GetTargetVisibility() ||
-              (!in_overview &&
-               app_list_controller->ShouldHomeLauncherBeVisible())) {
+          if (app_list_visible)
             return HotseatState::kShown;
-          }
 
           // Show the hotseat if the shelf view's context menu is showing.
           if (shelf_widget_->hotseat_widget()->IsShowingShelfMenu())
@@ -1903,13 +1897,14 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (shelf_->auto_hide_lock())
     return state_.auto_hide_state;
 
+  const bool in_tablet_mode = IsTabletModeEnabled();
   // Don't let the shelf auto-hide when in tablet mode and Chromevox is on.
-  if (IsTabletModeEnabled() &&
+  if (in_tablet_mode &&
       Shell::Get()->accessibility_controller()->spoken_feedback_enabled()) {
     return SHELF_AUTO_HIDE_SHOWN;
   }
 
-  if (shelf_widget_->IsShowingAppList() && !IsTabletModeEnabled())
+  if (!in_tablet_mode && shelf_widget_->IsShowingAppList())
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_widget_->status_area_widget() &&
@@ -1981,10 +1976,8 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
       display::Screen::GetScreen()->GetCursorScreenPoint();
   // Cursor is invisible in tablet mode and plug in an external mouse in tablet
   // mode will switch to clamshell mode.
-  if (shelf_region.Contains(cursor_position_in_screen) &&
-      !IsTabletModeEnabled()) {
+  if (shelf_region.Contains(cursor_position_in_screen) && !in_tablet_mode)
     return SHELF_AUTO_HIDE_SHOWN;
-  }
 
   // When the shelf is auto hidden and the shelf is on the boundary between two
   // displays, it is hard to trigger showing the shelf. For instance, if a

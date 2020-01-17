@@ -31,7 +31,6 @@ class SigninViewControllerDelegateViews
       public content::WebContentsDelegate,
       public ChromeWebModalDialogManagerDelegate {
  public:
-
   static std::unique_ptr<views::WebView> CreateSyncConfirmationWebView(
       Browser* browser);
 
@@ -40,8 +39,6 @@ class SigninViewControllerDelegateViews
 
   // views::DialogDelegateView:
   views::View* GetContentsView() override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
   void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
@@ -90,6 +87,9 @@ class SigninViewControllerDelegateViews
   void DisplayModal();
 
   Browser* browser() { return browser_; }
+
+  // views::DialogDelegateView:
+  const views::Widget* GetWidgetImpl() const override;
 
   SigninViewController* signin_view_controller_;  // Not owned.
   content::WebContents* const web_contents_;      // Not owned.

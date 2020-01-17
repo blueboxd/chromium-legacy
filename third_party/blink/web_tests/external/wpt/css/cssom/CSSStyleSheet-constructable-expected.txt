@@ -14,8 +14,10 @@ PASS Stylesheet constructed on iframe cannot be used in the main Document
 PASS Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when the owner document of the stylesheet is in the same document tree as the AdoptedStyleSheets
 PASS Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when the owner document of the stylesheet and the AdoptedStyleSheets are in different document trees
 PASS CSSStyleSheet.replaceSync replaces stylesheet text synchronously
+PASS CSSStyleSheet.replaceSync correctly updates the style of its adopters synchronously
 PASS CSSStyleSheet.replaceSync throws exception when there is import rule inside
 PASS Inserting an @import rule through insertRule on a constructed stylesheet throws an exception
+PASS CSSStyleSheet.replaceSync should not trigger any loads from @import rules
 PASS CSSStyleSheet.replace allows import rule inside
 PASS CSSStyleSheet.replace returns rejected promise on failed imports
 PASS Cloning a shadow host will not clone shadow root, and also adoptedStyleSheets

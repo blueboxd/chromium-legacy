@@ -10,12 +10,36 @@
 namespace extensions {
 namespace content_verifier_utils {
 
-#if defined(OS_WIN)
 // Returns true if |path| ends with (.| )+.
 // |out_path| will contain "." and/or " " suffix removed from |path|.
 bool TrimDotSpaceSuffix(const base::FilePath::StringType& path,
                         base::FilePath::StringType* out_path);
-#endif  // defined(OS_WIN)
+
+// Returns true if this system/OS's file access is case sensitive.
+constexpr bool IsFileAccessCaseSensitive() {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  return false;
+#else
+  return true;
+#endif
+}
+
+// Returns true if this system/OS ignores (.| )+ suffix in a filepath while
+// accessing the file.
+constexpr bool IsDotSpaceFilenameSuffixIgnored() {
+#if defined(OS_WIN)
+  static_assert(!IsFileAccessCaseSensitive(),
+                "DotSpace suffix should only be ignored in case-insensitive"
+                "systems");
+  return true;
+#else
+  return false;
+#endif
+}
+
+// Returns platform specific canonicalized version of |path| for content
+// verification system.
+base::FilePath::StringType CanonicalizeFilePath(const base::FilePath& path);
 
 }  // namespace content_verifier_utils
 }  // namespace extensions

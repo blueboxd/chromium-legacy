@@ -1077,8 +1077,12 @@ bool FocusController::AdvanceFocusInDocumentOrder(
   auto* owner = DynamicTo<HTMLFrameOwnerElement>(element);
   bool has_remote_frame =
       owner && owner->ContentFrame() && owner->ContentFrame()->IsRemoteFrame();
-  if (owner && (has_remote_frame || !IsA<HTMLPlugInElement>(*element) ||
-                !element->IsKeyboardFocusable())) {
+  // Portals do not currently allow input events, so we block focus from
+  // advancing into the portal's content frame.
+  bool is_portal = IsA<HTMLPortalElement>(owner);
+  if (owner && !is_portal &&
+      (has_remote_frame || !IsA<HTMLPlugInElement>(*element) ||
+       !element->IsKeyboardFocusable())) {
     // FIXME: We should not focus frames that have no scrollbars, as focusing
     // them isn't useful to the user.
     if (!owner->ContentFrame())

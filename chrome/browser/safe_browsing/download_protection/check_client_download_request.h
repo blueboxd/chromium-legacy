@@ -62,16 +62,10 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
                                   const std::string& request_data,
                                   const std::string& response_body) override;
 
-  // Returns true if the CheckClientDownloadRequest returned the
-  // ASYNC_SCANNING result while it does deep scanning.
-  bool MaybeReturnAsynchronousVerdict(
-      DownloadCheckResultReason reason) override;
-
   // Uploads the binary for deep scanning if the reason and policies indicate
   // it should be.
   bool ShouldUploadBinary(DownloadCheckResultReason reason) override;
-  void UploadBinary(DownloadCheckResult result,
-                    DownloadCheckResultReason reason) override;
+  void UploadBinary() override;
 
   // Called when this request is completed.
   void NotifyRequestFinished(DownloadCheckResult result,
@@ -85,11 +79,6 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
   // consults the SendFilesForMalwareCheck enterprise policy.
   bool ShouldUploadForMalwareScan(DownloadCheckResultReason reason);
 
-  // Called when deep scanning is complete. Where appropriate, it updates the
-  // download UX, and sends a real time report about the download.
-  void OnDeepScanningComplete(BinaryUploadService::Result result,
-                              DeepScanningClientResponse response);
-
   // The DownloadItem we are checking. Will be NULL if the request has been
   // canceled. Must be accessed only on UI thread.
   download::DownloadItem* item_;
@@ -97,11 +86,6 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
 
   // Upload start time used for UMA duration histograms.
   base::TimeTicks upload_start_time_;
-
-  // When uploading files for deep scanning, we need to preserve the original
-  // result and reason from the server, just in case deep scanning fails.
-  DownloadCheckResult saved_result_;
-  DownloadCheckResultReason saved_reason_;
 
   base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_{this};
 

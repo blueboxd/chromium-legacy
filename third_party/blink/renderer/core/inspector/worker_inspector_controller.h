@@ -92,7 +92,7 @@ class WorkerInspectorController final
   // DevToolsAgent::Client implementation.
   void AttachSession(DevToolsSession*, bool restore) override;
   void DetachSession(DevToolsSession*) override;
-  void InspectElement(const WebPoint&) override;
+  void InspectElement(const gfx::Point&) override;
   void DebuggerTaskStarted() override;
   void DebuggerTaskFinished() override;
 

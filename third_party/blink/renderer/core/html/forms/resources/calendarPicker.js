@@ -2950,6 +2950,7 @@ function MonthPopupButton(maxWidth) {
   this.element.style.maxWidth = maxWidth + 'px';
 
   this.element.addEventListener('click', this.onClick, false);
+  this.element.addEventListener('keydown', this.onKeyDown, false);
 }
 
 MonthPopupButton.prototype = Object.create(View.prototype);
@@ -2993,6 +2994,20 @@ MonthPopupButton.prototype.onClick = function(event) {
 };
 
 /**
+ * @param {?Event} event
+ */
+MonthPopupButton.prototype.onKeyDown = function(event) {
+  if (event.key === 'Enter') {
+    // Prevent an Enter keypress on the month selector from submitting the
+    // popup.  The click handler will also run for a keypress even though this
+    // event is suppressed, so the month popup will still open from the
+    // Enter key.
+    event.stopPropagation();
+    event.preventDefault();
+  }
+};
+
+/**
  * @constructor
  * @extends View
  */
@@ -3017,6 +3032,7 @@ function CalendarNavigationButton() {
    */
   this._timer = null;
   this.element.addEventListener('click', this.onClick, false);
+  this.element.addEventListener('keydown', this.onKeyDown, false);
   this.element.addEventListener('mousedown', this.onMouseDown, false);
   this.element.addEventListener('touchstart', this.onTouchStart, false);
 };
@@ -3044,6 +3060,20 @@ CalendarNavigationButton.prototype.setDisabled = function(disabled) {
  */
 CalendarNavigationButton.prototype.onClick = function(event) {
   this.dispatchEvent(CalendarNavigationButton.EventTypeButtonClick, this);
+};
+
+/**
+ * @param {?Event} event
+ */
+CalendarNavigationButton.prototype.onKeyDown = function(event) {
+  if (event.key === 'Enter') {
+    // Prevent an Enter keypress on the previous/next month and Today buttons
+    // from submitting the popup.  The click handler will also run for a
+    // keypress even though this event is suppressed, so the action for the
+    // button will still be triggered from the Enter key.
+    event.stopPropagation();
+    event.preventDefault();
+  }
 };
 
 /**
@@ -3149,6 +3179,7 @@ function CalendarHeaderView(calendarPicker) {
      */
     this._todayButton = new CalendarNavigationButton();
     this._todayButton.attachTo(this);
+    this._todayButton.isTodayButton = true;
     this._todayButton.on(
         CalendarNavigationButton.EventTypeButtonClick,
         this.onNavigationButtonClick);
@@ -3646,6 +3677,7 @@ function CalendarTableView(calendarPicker) {
      * @const
      */
     var todayButton = new CalendarNavigationButton();
+    todayButton.isTodayButton = true;
     todayButton.attachTo(this);
     todayButton.on(
         CalendarNavigationButton.EventTypeButtonClick, this.onTodayButtonClick);
@@ -4065,9 +4097,23 @@ function CalendarPicker(type, config) {
         Month.createFromDay(initialSelection.middleDay()),
         CalendarPicker.NavigationBehavior.None);
     this.setSelection(initialSelection);
-  } else
+  } else {
     this.setCurrentMonth(
         Month.createFromToday(), CalendarPicker.NavigationBehavior.None);
+    if (global.params.isFormControlsRefreshEnabled &&
+        this.type == 'datetime-local') {
+      // When used with datetime-local, ensure that today's date is selected to start with
+      // so that if the user only edits the time, they can still submit the popup without
+      // also needing to edit the calendar view.
+      this.setSelection(Day.createFromToday());
+    }
+  }
+
+  /**
+   * @type {?DateType}
+   * @protected
+   */
+  this._initialSelection = this._selection;
 }
 
 CalendarPicker.prototype = Object.create(View.prototype);
@@ -4086,6 +4132,10 @@ CalendarPicker.VisibleRowsRefresh = 6;
 CalendarPicker.prototype.onWindowResize = function(event) {
   this.element.classList.remove(CalendarPicker.ClassNamePreparing);
   window.removeEventListener('resize', this.onWindowResize, false);
+};
+
+CalendarPicker.prototype.resetToInitialValue = function() {
+  this.setSelection(this._initialSelection);
 };
 
 /**
@@ -4289,6 +4339,11 @@ CalendarPicker.prototype.setSelection = function(dayOrWeekOrMonth) {
     return;
   if (this._selection && this._selection.equals(dayOrWeekOrMonth))
     return;
+  if (this._selection && !dayOrWeekOrMonth) {
+    this._selection = null;
+    this._setHighlight(null);
+    return;
+  }
   var firstDayInSelection = dayOrWeekOrMonth.firstDay();
   var lastDayInSelection = dayOrWeekOrMonth.lastDay();
   var candidateCurrentMonth = Month.createFromDay(firstDayInSelection);
@@ -4526,8 +4581,14 @@ CalendarPicker.prototype.onBodyKeyDown = function(event) {
   var offset = 0;
   switch (key) {
     case 'Escape':
-      window.pagePopupController.closePopup();
-      eventHandled = true;
+      // The datetime-local control handles submission/cancellation at
+      // the top level, so if we're in a datetime-local let event bubble
+      // up instead of handling it here and closing the popup.
+      if (!(global.params.isFormControlsRefreshEnabled &&
+            this.type == 'datetime-local')) {
+        window.pagePopupController.closePopup();
+        eventHandled = true;
+      }
       break;
     case 'm':
     case 'M':

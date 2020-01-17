@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/javascript_dialog_extensions_client.h"
-#include "components/app_modal/javascript_native_dialog_factory.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
@@ -64,7 +63,7 @@ JavaScriptDialogManager* JavaScriptDialogManager::GetInstance() {
 }
 
 void JavaScriptDialogManager::SetNativeDialogFactory(
-    std::unique_ptr<JavaScriptNativeDialogFactory> factory) {
+    JavaScriptNativeDialogFactory factory) {
   native_dialog_factory_ = std::move(factory);
 }
 

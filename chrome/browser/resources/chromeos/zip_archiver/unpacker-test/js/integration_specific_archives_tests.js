@@ -87,7 +87,7 @@ PassphraseAppWindowFactory.prototype.create = function(url, options, callback) {
   var appWindow = {
     contentWindow: {},
     onClosed: {
-      addListener: function(callback) {
+      addListener(callback) {
         closeCallbacks.push(callback);
       }
     }

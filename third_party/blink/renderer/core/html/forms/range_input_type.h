@@ -86,6 +86,7 @@ class RangeInputType final : public InputType, public InputTypeView {
   // InputTypeView function:
   void UpdateView() override;
   void ValueAttributeChanged() override;
+  bool IsDraggedSlider() const override;
 
   bool tick_mark_values_dirty_;
   Vector<Decimal> tick_mark_values_;

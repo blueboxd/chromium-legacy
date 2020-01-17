@@ -7,10 +7,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/strings/string_piece.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread_checker_impl.h"
 
 // ThreadChecker is a helper class used to help verify that some methods of a
-// class are called from the same thread (for thread-affinity).
+// class are called from the same thread (for thread-affinity).  It supports
+// thread safety annotations (see base/thread_annotations.h).
 //
 // Use the macros below instead of the ThreadChecker directly so that the unused
 // member doesn't result in an extra byte (four when padded) per instance in
@@ -56,17 +59,32 @@
 //       ... (do stuff) ...
 //     }
 //
+//     void MyOtherMethod()
+//         VALID_CONTEXT_REQUIRED(thread_checker_) {
+//       foo_ = 42;
+//     }
+//
 //    private:
+//     int foo_ GUARDED_BY_CONTEXT(thread_checker_);
+//
 //     THREAD_CHECKER(thread_checker_);
 //   }
 
+#define THREAD_CHECKER_INTERNAL_CONCAT2(a, b) a##b
+#define THREAD_CHECKER_INTERNAL_CONCAT(a, b) \
+  THREAD_CHECKER_INTERNAL_CONCAT2(a, b)
+#define THREAD_CHECKER_INTERNAL_UID(prefix) \
+  THREAD_CHECKER_INTERNAL_CONCAT(prefix, __LINE__)
+
 #if DCHECK_IS_ON()
 #define THREAD_CHECKER(name) base::ThreadChecker name
-#define DCHECK_CALLED_ON_VALID_THREAD(name) DCHECK((name).CalledOnValidThread())
+#define DCHECK_CALLED_ON_VALID_THREAD(name, ...)                 \
+  base::ScopedValidateThreadChecker THREAD_CHECKER_INTERNAL_UID( \
+      scoped_validate_thread_checker_)(name, ##__VA_ARGS__);
 #define DETACH_FROM_THREAD(name) (name).DetachFromThread()
 #else  // DCHECK_IS_ON()
 #define THREAD_CHECKER(name) static_assert(true, "")
-#define DCHECK_CALLED_ON_VALID_THREAD(name) EAT_STREAM_PARAMETERS
+#define DCHECK_CALLED_ON_VALID_THREAD(name, ...) EAT_STREAM_PARAMETERS
 #define DETACH_FROM_THREAD(name)
 #endif  // DCHECK_IS_ON()
 
@@ -76,7 +94,9 @@ namespace base {
 //
 // Note: You should almost always use the ThreadChecker class (through the above
 // macros) to get the right version for your build configuration.
-class ThreadCheckerDoNothing {
+// Note: This is only a check, not a "lock". It is marked "LOCKABLE" only in
+// order to support thread_annotations.h.
+class LOCKABLE ThreadCheckerDoNothing {
  public:
   ThreadCheckerDoNothing() = default;
 
@@ -103,6 +123,25 @@ class ThreadChecker : public ThreadCheckerImpl {
 class ThreadChecker : public ThreadCheckerDoNothing {
 };
 #endif  // DCHECK_IS_ON()
+
+class SCOPED_LOCKABLE ScopedValidateThreadChecker {
+ public:
+  explicit ScopedValidateThreadChecker(const ThreadChecker& checker)
+      EXCLUSIVE_LOCK_FUNCTION(checker) {
+    DCHECK(checker.CalledOnValidThread());
+  }
+
+  explicit ScopedValidateThreadChecker(const ThreadChecker& checker,
+                                       const StringPiece& msg)
+      EXCLUSIVE_LOCK_FUNCTION(checker) {
+    DCHECK(checker.CalledOnValidThread()) << msg;
+  }
+
+  ~ScopedValidateThreadChecker() UNLOCK_FUNCTION() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedValidateThreadChecker);
+};
 
 }  // namespace base
 

@@ -10,12 +10,15 @@ source_set("earl_grey_support") {
   deps = [
     "//base/test:test_support",
     "//build/config/ios:xctest",
+    "//components/variations",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web/common",
     "//testing/gtest:gtest",
   ]
 
   sources = [
+    "app_launch_configuration.h",
+    "app_launch_configuration.mm",
     "app_launch_manager.h",
     "app_launch_manager.mm",
     "base_earl_grey_test_case.h",
@@ -71,6 +74,8 @@ source_set("eg_test_support+eg2") {
   testonly = true
 
   sources = [
+    "app_launch_configuration.h",
+    "app_launch_configuration.mm",
     "app_launch_manager.h",
     "app_launch_manager.mm",
     "base_earl_grey_test_case.h",
@@ -91,6 +96,7 @@ source_set("eg_test_support+eg2") {
 
   deps = [
     "//base",
+    "//components/variations",
     "//ios/third_party/earl_grey2:test_lib",
     "//ios/web/common",
     "//testing/gtest:gtest",

@@ -36,7 +36,7 @@ Polymer({
      */
     isManaged_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isManaged');
       },
     },
@@ -122,7 +122,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.DETAILED_BUILD_INFO) {
           map.set(
@@ -170,7 +170,7 @@ Polymer({
   lifetimeBrowserProxy_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.aboutBrowserProxy_ = settings.AboutPageBrowserProxyImpl.getInstance();
     this.aboutBrowserProxy_.pageReady();
 
@@ -204,7 +204,8 @@ Polymer({
       this.hasInternetConnection_ = result;
     });
 
-    if (settings.getQueryParameters().get('checkForUpdate') == 'true') {
+    if (settings.Router.getInstance().getQueryParameters().get(
+            'checkForUpdate') == 'true') {
       this.onCheckUpdatesClick_();
     }
   },
@@ -213,18 +214,18 @@ Polymer({
    * @param {!settings.Route} newRoute
    * @param {settings.Route} oldRoute
    */
-  currentRouteChanged: function(newRoute, oldRoute) {
+  currentRouteChanged(newRoute, oldRoute) {
     settings.MainPageBehavior.currentRouteChanged.call(
         this, newRoute, oldRoute);
   },
 
   // Override settings.MainPageBehavior method.
-  containsRoute: function(route) {
+  containsRoute(route) {
     return !route || settings.routes.ABOUT.contains(route);
   },
 
   /** @private */
-  startListening_: function() {
+  startListening_() {
     this.addWebUIListener(
         'update-status-changed', this.onUpdateStatusChanged_.bind(this));
     this.aboutBrowserProxy_.refreshUpdateStatus();
@@ -238,7 +239,7 @@ Polymer({
    * @param {!UpdateStatusChangedEvent} event
    * @private
    */
-  onUpdateStatusChanged_: function(event) {
+  onUpdateStatusChanged_(event) {
     if (event.status == UpdateStatus.CHECKING) {
       this.hasCheckedForUpdates_ = true;
     } else if (event.status == UpdateStatus.NEED_PERMISSION_TO_UPDATE) {
@@ -252,29 +253,29 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onLearnMoreClick_: function(event) {
+  onLearnMoreClick_(event) {
     // Stop the propagation of events, so that clicking on links inside
     // actionable items won't trigger action.
     event.stopPropagation();
   },
 
   /** @private */
-  onReleaseNotesTap_: function() {
+  onReleaseNotesTap_() {
     this.aboutBrowserProxy_.launchReleaseNotes();
   },
 
   /** @private */
-  onHelpClick_: function() {
+  onHelpClick_() {
     this.aboutBrowserProxy_.openOsHelpPage();
   },
 
   /** @private */
-  onRelaunchClick_: function() {
+  onRelaunchClick_() {
     this.lifetimeBrowserProxy_.relaunch();
   },
 
   /** @private */
-  updateShowUpdateStatus_: function() {
+  updateShowUpdateStatus_() {
     // Do not show the "updated" status if we haven't checked yet or the update
     // warning dialog is shown to user.
     if (this.currentUpdateStatusEvent_.status == UpdateStatus.UPDATED &&
@@ -298,13 +299,13 @@ Polymer({
    * container displays an unwanted border (see separator class).
    * @private
    */
-  updateShowButtonContainer_: function() {
+  updateShowButtonContainer_() {
     this.showButtonContainer_ = this.showRelaunch_ ||
         this.showRelaunchAndPowerwash_ || this.showCheckUpdates_;
   },
 
   /** @private */
-  updateShowRelaunch_: function() {
+  updateShowRelaunch_() {
     this.showRelaunch_ =
         this.checkStatus_(UpdateStatus.NEARLY_UPDATED) && !this.isRollback_();
   },
@@ -313,7 +314,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowLearnMoreLink_: function() {
+  shouldShowLearnMoreLink_() {
     return this.currentUpdateStatusEvent_.status == UpdateStatus.FAILED;
   },
 
@@ -321,7 +322,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getUpdateStatusMessage_: function() {
+  getUpdateStatusMessage_() {
     switch (this.currentUpdateStatusEvent_.status) {
       case UpdateStatus.CHECKING:
       case UpdateStatus.NEED_PERMISSION_TO_UPDATE:
@@ -387,7 +388,7 @@ Polymer({
    * @return {?string}
    * @private
    */
-  getUpdateStatusIcon_: function() {
+  getUpdateStatusIcon_() {
     // If Chrome OS has reached end of life, display a special icon and
     // ignore UpdateStatus.
     if (this.hasEndOfLife_) {
@@ -411,7 +412,7 @@ Polymer({
    * @return {?string}
    * @private
    */
-  getThrobberSrcIfUpdating_: function() {
+  getThrobberSrcIfUpdating_() {
     if (this.hasEndOfLife_) {
       return null;
     }
@@ -430,12 +431,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  checkStatus_: function(status) {
+  checkStatus_(status) {
     return this.currentUpdateStatusEvent_.status == status;
   },
 
   /** @private */
-  onManagementPageClick_: function() {
+  onManagementPageClick_() {
     window.open('chrome://management');
   },
 
@@ -443,7 +444,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isRollback_: function() {
+  isRollback_() {
     assert(this.currentChannel_.length > 0);
     assert(this.targetChannel_.length > 0);
     if (this.currentUpdateStatusEvent_.rollback) {
@@ -455,12 +456,13 @@ Polymer({
   },
 
   /** @private */
-  onDetailedBuildInfoClick_: function() {
-    settings.navigateTo(settings.routes.DETAILED_BUILD_INFO);
+  onDetailedBuildInfoClick_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.DETAILED_BUILD_INFO);
   },
 
   /** @private */
-  onRelaunchAndPowerwashClick_: function() {
+  onRelaunchAndPowerwashClick_() {
     if (this.currentUpdateStatusEvent_.rollback) {
       // Wipe already initiated, simply relaunch.
       this.lifetimeBrowserProxy_.relaunch();
@@ -474,12 +476,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShowRelaunchAndPowerwash_: function() {
+  computeShowRelaunchAndPowerwash_() {
     return this.checkStatus_(UpdateStatus.NEARLY_UPDATED) && this.isRollback_();
   },
 
   /** @private */
-  onCheckUpdatesClick_: function() {
+  onCheckUpdatesClick_() {
     this.onUpdateStatusChanged_({status: UpdateStatus.CHECKING});
     this.aboutBrowserProxy_.requestUpdate();
   },
@@ -488,7 +490,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShowCheckUpdates_: function() {
+  computeShowCheckUpdates_() {
     // Disable update button if the device is end of life.
     if (this.hasEndOfLife_) {
       return false;
@@ -508,7 +510,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getAboutProductOsLicense_: function(showCrostiniLicense) {
+  getAboutProductOsLicense_(showCrostiniLicense) {
     return showCrostiniLicense ?
         this.i18nAdvanced('aboutProductOsWithLinuxLicense') :
         this.i18nAdvanced('aboutProductOsLicense');
@@ -518,7 +520,7 @@ Polymer({
    * @param {boolean} enabled True if Crostini is enabled.
    * @private
    */
-  handleCrostiniEnabledChanged_: function(enabled) {
+  handleCrostiniEnabledChanged_(enabled) {
     this.showCrostiniLicense_ = enabled && this.showCrostini;
   },
 
@@ -526,7 +528,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowSafetyInfo_: function() {
+  shouldShowSafetyInfo_() {
     return loadTimeData.getBoolean('shouldShowSafetyInfo');
   },
 
@@ -534,7 +536,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowRegulatoryInfo_: function() {
+  shouldShowRegulatoryInfo_() {
     return this.regulatoryInfo_ !== null;
   },
 
@@ -542,12 +544,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowRegulatoryOrSafetyInfo_: function() {
+  shouldShowRegulatoryOrSafetyInfo_() {
     return this.shouldShowSafetyInfo_() || this.shouldShowRegulatoryInfo_();
   },
 
   /** @private */
-  onUpdateWarningDialogClose_: function() {
+  onUpdateWarningDialogClose_() {
     this.showUpdateWarningDialog_ = false;
     // Shows 'check for updates' button in case that the user cancels the
     // dialog and then intends to check for update again.
@@ -558,22 +560,22 @@ Polymer({
    * @param {!TPMFirmwareUpdateStatusChangedEvent} event
    * @private
    */
-  onTPMFirmwareUpdateStatusChanged_: function(event) {
+  onTPMFirmwareUpdateStatusChanged_(event) {
     this.showTPMFirmwareUpdateLineItem_ = event.updateAvailable;
   },
 
   /** @private */
-  onTPMFirmwareUpdateClick_: function() {
+  onTPMFirmwareUpdateClick_() {
     this.showTPMFirmwareUpdateDialog_ = true;
   },
 
   /** @private */
-  onPowerwashDialogClose_: function() {
+  onPowerwashDialogClose_() {
     this.showTPMFirmwareUpdateDialog_ = false;
   },
 
   /** @private */
-  onProductLogoClick_: function() {
+  onProductLogoClick_() {
     this.$['product-logo'].animate(
         {
           transform: ['none', 'rotate(-10turn)'],
@@ -586,7 +588,7 @@ Polymer({
 
   // <if expr="_google_chrome">
   /** @private */
-  onReportIssueClick_: function() {
+  onReportIssueClick_() {
     this.aboutBrowserProxy_.openFeedbackDialog();
   },
   // </if>
@@ -595,7 +597,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowIcons_: function() {
+  shouldShowIcons_() {
     if (this.hasEndOfLife_) {
       return true;
     }

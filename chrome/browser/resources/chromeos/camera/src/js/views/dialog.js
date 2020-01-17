@@ -62,6 +62,3 @@ export class Dialog extends View {
     this.positiveButton_.focus();
   }
 }
-
-/** @const */
-cca.views.Dialog = Dialog;

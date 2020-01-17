@@ -138,30 +138,30 @@ void PaintRenderingContext2D::WillOverwriteCanvas() {
   }
 }
 
-// On a platform where zoom_for_dsf is not enabled, the recording canvas has its
-// logic to account for the device scale factor. Therefore, when the transform
-// of the canvas happen, we must divide the transformation matrix by the device
-// scale factor such that the recording canvas would have the correct behavior.
-void PaintRenderingContext2D::setTransform(double m11,
-                                           double m12,
-                                           double m21,
-                                           double m22,
-                                           double dx,
-                                           double dy) {
-  BaseRenderingContext2D::setTransform(
-      m11 * effective_zoom_, m12 * effective_zoom_, m21 * effective_zoom_,
-      m22 * effective_zoom_, dx * effective_zoom_, dy * effective_zoom_);
+DOMMatrix* PaintRenderingContext2D::getTransform() {
+  const AffineTransform& t = GetState().Transform();
+  DOMMatrix* m = DOMMatrix::Create();
+  m->setA(t.A() / effective_zoom_);
+  m->setB(t.B() / effective_zoom_);
+  m->setC(t.C() / effective_zoom_);
+  m->setD(t.D() / effective_zoom_);
+  m->setE(t.E() / effective_zoom_);
+  m->setF(t.F() / effective_zoom_);
+  return m;
 }
 
-void PaintRenderingContext2D::setTransform(DOMMatrix2DInit* transform,
-                                           ExceptionState& exception_state) {
-  DOMMatrixReadOnly* m =
-      DOMMatrixReadOnly::fromMatrix2D(transform, exception_state);
-
-  if (!m)
-    return;
-
-  setTransform(m->m11(), m->m12(), m->m21(), m->m22(), m->m41(), m->m42());
+// On a platform where zoom_for_dsf is not enabled, the recording canvas has its
+// logic to account for the device scale factor. Therefore, when the transform
+// of the canvas happen, we must account for the effective_zoom_ such that the
+// recording canvas would have the correct behavior.
+//
+// The BaseRenderingContext2D::setTransform calls resetTransform, so integrating
+// the effective_zoom_ in here instead of setTransform, to avoid integrating it
+// twice if we have resetTransform and setTransform API calls.
+void PaintRenderingContext2D::resetTransform() {
+  BaseRenderingContext2D::resetTransform();
+  BaseRenderingContext2D::transform(effective_zoom_, 0, 0, effective_zoom_, 0,
+                                    0);
 }
 
 sk_sp<PaintRecord> PaintRenderingContext2D::GetRecord() {

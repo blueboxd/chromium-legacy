@@ -361,7 +361,7 @@ struct FileGroupDescriptorData;
 template <>
 struct FileGroupDescriptorData<FILEGROUPDESCRIPTORW> {
   static bool get(IDataObject* data_object, STGMEDIUM* medium) {
-    return GetData(data_object, ClipboardFormatType::GetFileDescriptorWType(),
+    return GetData(data_object, ClipboardFormatType::GetFileDescriptorType(),
                    medium);
   }
 };
@@ -369,7 +369,7 @@ struct FileGroupDescriptorData<FILEGROUPDESCRIPTORW> {
 template <>
 struct FileGroupDescriptorData<FILEGROUPDESCRIPTORA> {
   static bool get(IDataObject* data_object, STGMEDIUM* medium) {
-    return GetData(data_object, ClipboardFormatType::GetFileDescriptorType(),
+    return GetData(data_object, ClipboardFormatType::GetFileDescriptorAType(),
                    medium);
   }
 };
@@ -445,16 +445,16 @@ bool GetFileNameFromFirstDescriptor(IDataObject* data_object,
 bool ClipboardUtil::HasUrl(IDataObject* data_object, bool convert_filenames) {
   DCHECK(data_object);
   return HasData(data_object, ClipboardFormatType::GetMozUrlType()) ||
-         HasData(data_object, ClipboardFormatType::GetUrlWType()) ||
          HasData(data_object, ClipboardFormatType::GetUrlType()) ||
+         HasData(data_object, ClipboardFormatType::GetUrlAType()) ||
          (convert_filenames && HasFilenames(data_object));
 }
 
 bool ClipboardUtil::HasFilenames(IDataObject* data_object) {
   DCHECK(data_object);
   return HasData(data_object, ClipboardFormatType::GetCFHDropType()) ||
-         HasData(data_object, ClipboardFormatType::GetFilenameWType()) ||
-         HasData(data_object, ClipboardFormatType::GetFilenameType());
+         HasData(data_object, ClipboardFormatType::GetFilenameType()) ||
+         HasData(data_object, ClipboardFormatType::GetFilenameAType());
 }
 
 bool ClipboardUtil::HasVirtualFilenames(IDataObject* data_object) {
@@ -463,15 +463,15 @@ bool ClipboardUtil::HasVirtualFilenames(IDataObject* data_object) {
   return !HasFilenames(data_object) &&
          HasData(data_object,
                  ClipboardFormatType::GetFileContentAtIndexType(0)) &&
-         (HasData(data_object, ClipboardFormatType::GetFileDescriptorWType()) ||
-          HasData(data_object, ClipboardFormatType::GetFileDescriptorType()));
+         (HasData(data_object, ClipboardFormatType::GetFileDescriptorType()) ||
+          HasData(data_object, ClipboardFormatType::GetFileDescriptorAType()));
 }
 
 bool ClipboardUtil::HasFileContents(IDataObject* data_object) {
   DCHECK(data_object);
   return HasData(data_object, ClipboardFormatType::GetFileContentZeroType()) &&
-         (HasData(data_object, ClipboardFormatType::GetFileDescriptorWType()) ||
-          HasData(data_object, ClipboardFormatType::GetFileDescriptorType()));
+         (HasData(data_object, ClipboardFormatType::GetFileDescriptorType()) ||
+          HasData(data_object, ClipboardFormatType::GetFileDescriptorAType()));
 }
 
 bool ClipboardUtil::HasHtml(IDataObject* data_object) {
@@ -482,8 +482,8 @@ bool ClipboardUtil::HasHtml(IDataObject* data_object) {
 
 bool ClipboardUtil::HasPlainText(IDataObject* data_object) {
   DCHECK(data_object);
-  return HasData(data_object, ClipboardFormatType::GetPlainTextWType()) ||
-         HasData(data_object, ClipboardFormatType::GetPlainTextType());
+  return HasData(data_object, ClipboardFormatType::GetPlainTextType()) ||
+         HasData(data_object, ClipboardFormatType::GetPlainTextAType());
 }
 
 bool ClipboardUtil::GetUrl(IDataObject* data_object,
@@ -500,7 +500,7 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
     return true;
 
   if (GetData(data_object, ClipboardFormatType::GetMozUrlType(), &store) ||
-      GetData(data_object, ClipboardFormatType::GetUrlWType(), &store)) {
+      GetData(data_object, ClipboardFormatType::GetUrlType(), &store)) {
     {
       // Mozilla URL format or Unicode URL
       base::win::ScopedHGlobal<wchar_t*> data(store.hGlobal);
@@ -510,7 +510,7 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
     return url->is_valid();
   }
 
-  if (GetData(data_object, ClipboardFormatType::GetUrlType(), &store)) {
+  if (GetData(data_object, ClipboardFormatType::GetUrlAType(), &store)) {
     {
       // URL using ASCII
       base::win::ScopedHGlobal<char*> data(store.hGlobal);
@@ -558,7 +558,7 @@ bool ClipboardUtil::GetFilenames(IDataObject* data_object,
     return !filenames->empty();
   }
 
-  if (GetData(data_object, ClipboardFormatType::GetFilenameWType(), &medium)) {
+  if (GetData(data_object, ClipboardFormatType::GetFilenameType(), &medium)) {
     {
       // filename using Unicode
       base::win::ScopedHGlobal<wchar_t*> data(medium.hGlobal);
@@ -569,7 +569,7 @@ bool ClipboardUtil::GetFilenames(IDataObject* data_object,
     return true;
   }
 
-  if (GetData(data_object, ClipboardFormatType::GetFilenameType(), &medium)) {
+  if (GetData(data_object, ClipboardFormatType::GetFilenameAType(), &medium)) {
     {
       // filename using ASCII
       base::win::ScopedHGlobal<char*> data(medium.hGlobal);
@@ -642,7 +642,7 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
     return false;
 
   STGMEDIUM store;
-  if (GetData(data_object, ClipboardFormatType::GetPlainTextWType(), &store)) {
+  if (GetData(data_object, ClipboardFormatType::GetPlainTextType(), &store)) {
     {
       // Unicode text
       base::win::ScopedHGlobal<wchar_t*> data(store.hGlobal);
@@ -652,7 +652,7 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
     return true;
   }
 
-  if (GetData(data_object, ClipboardFormatType::GetPlainTextType(), &store)) {
+  if (GetData(data_object, ClipboardFormatType::GetPlainTextAType(), &store)) {
     {
       // ASCII text
       base::win::ScopedHGlobal<char*> data(store.hGlobal);

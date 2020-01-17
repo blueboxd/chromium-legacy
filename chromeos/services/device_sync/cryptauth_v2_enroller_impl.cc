@@ -447,8 +447,6 @@ void CryptAuthV2EnrollerImpl::SetState(State state) {
   if (!timeout_for_state)
     return;
 
-  // TODO(https://crbug.com/936273): Add metrics to track failure rates due
-  // to async timeouts.
   timer_->Start(FROM_HERE, *timeout_for_state,
                 base::BindOnce(&CryptAuthV2EnrollerImpl::OnTimeout,
                                base::Unretained(this)));

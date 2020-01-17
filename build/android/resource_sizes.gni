@@ -20,9 +20,7 @@ template("android_resource_sizes_test") {
     assert(defined(invoker.apk_name) != defined(invoker.file_path),
            "Exactly one of apk_name or file_path should be provided.")
 
-    data_deps = [
-      "//build/android:resource_sizes_py",
-    ]
+    data_deps = [ "//build/android:resource_sizes_py" ]
     if (defined(invoker.data_deps)) {
       data_deps += invoker.data_deps
     }

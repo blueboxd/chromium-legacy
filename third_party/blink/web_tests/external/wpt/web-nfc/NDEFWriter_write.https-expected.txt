@@ -1,0 +1,33 @@
+This is a testharness.js-based test.
+PASS Test that promise is rejected with TypeError if NDEFMessageSource is invalid.
+PASS Test that promise is rejected with SyntaxError if NDEFMessageSource contains invalid records.
+PASS NDEFWriter.write should fail if user permission is not granted.
+PASS NDEFWriter.write should fail if no implementation for NFC Mojo interface is available.
+PASS NDEFWriter.write should fail if abort write request before write happends.
+PASS NDEFWriter.write should fail if signal's aborted flag is set.
+PASS NDEFWriter.write should fail if signal is not an AbortSignal.
+PASS Synchronously signaled abort.
+PASS NDEFWriter.write should fail when NFC HW is disabled.
+PASS NDEFWriter.write should fail when NFC HW is not supported.
+PASS Reject promise with NotSupportedError if NFC message size exceeds 32KB.
+PASS Test that WebNFC API is not accessible from iframe context.
+PASS NDEFWriter.write should succeed when NFC HW is enabled
+PASS NDEFWriter.write NDEFMessage containing text, mime, unknown, url, absolute-url and external records with default NDEFWriteOptions.
+PASS NDEFWriter.write NDEFMessage containing embedded records.
+PASS Test that NDEFWriter.write succeeds when message is DOMString.
+PASS Test that NDEFWriter.write succeeds when message is ArrayBuffer.
+PASS Test that NDEFWriter.write succeeds when message is ArrayBufferView.
+PASS NDEFWriter.write with 'empty' record should succeed.
+PASS Check that default NDEFWriteOptions values are correctly set.
+PASS Check that provided NDEFWriteOptions values are correctly converted.
+PASS NDEFWriter.write should read data when ignoreRead is false.
+PASS NDEFWriter.write should ignore reading data when ignoreRead is true.
+PASS NDEFWriter.write should replace all previously configured write operations.
+PASS Test that mediaType should be set to 'application/octet-stream' if NDEFRecordInit.record's recordType is 'mime' and NDEFRecordInit.record's mediaType is undefined.
+PASS NDEFWriter.write should fail when the NFC device coming up does not expose NDEF technology.
+PASS NDEFWriter.write should succeed to write data to an unformatted NFC device when the NDEFWriteOptions.overwrite is false.
+PASS NDEFWriter.write should succeed to overwrite the existing data when the NDEFWriteOptions.overwrite is true.
+FAIL NDEFWriter.write should fail when there are NDEF records on the NFC device and NDEFWriteOptions.overwrite is false. assert_unreached: Should have rejected: undefined Reached unreachable code
+PASS NDEFWriter.write should fail with NetworkError when NFC data transfer fails.
+Harness: the test ran to completion.
+

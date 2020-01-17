@@ -135,7 +135,9 @@ suite('Multidevice', function() {
 
   test('clicking SmartLock item routes to SmartLock subpage', function() {
     multideviceSubpage.$$('#smartLockItem').$$('.link-wrapper').click();
-    assertEquals(settings.getCurrentRoute(), settings.routes.SMART_LOCK);
+    assertEquals(
+        settings.Router.getInstance().getCurrentRoute(),
+        settings.routes.SMART_LOCK);
   });
 
   test('AndroidMessages item shows button when not set up', function() {

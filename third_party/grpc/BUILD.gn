@@ -111,9 +111,7 @@ if (current_toolchain == host_toolchain) {
       "//build/config/compiler:no_chromium_code",
     ]
     public_configs = [ ":grpc_config" ]
-    deps = [
-      "//third_party/protobuf:protoc_lib",
-    ]
+    deps = [ "//third_party/protobuf:protoc_lib" ]
   }
 }
 
@@ -506,9 +504,7 @@ static_library("grpc_core") {
     ":nanopb",
     "//third_party/boringssl",
   ]
-  public_deps = [
-    "//third_party/zlib",
-  ]
+  public_deps = [ "//third_party/zlib" ]
 }
 
 static_library("nanopb") {
@@ -570,9 +566,7 @@ group("fuzzers") {
 }
 
 fuzzer_test("grpc_alts_credentials_fuzzer") {
-  sources = [
-    "src/test/core/security/alts_credentials_fuzzer.cc",
-  ]
+  sources = [ "src/test/core/security/alts_credentials_fuzzer.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -588,9 +582,7 @@ fuzzer_test("grpc_alts_credentials_fuzzer") {
 }
 
 fuzzer_test("grpc_api_fuzzer") {
-  sources = [
-    "src/test/core/end2end/fuzzers/api_fuzzer.cc",
-  ]
+  sources = [ "src/test/core/end2end/fuzzers/api_fuzzer.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -607,9 +599,7 @@ fuzzer_test("grpc_api_fuzzer") {
 }
 
 fuzzer_test("grpc_client_fuzzer") {
-  sources = [
-    "src/test/core/end2end/fuzzers/client_fuzzer.cc",
-  ]
+  sources = [ "src/test/core/end2end/fuzzers/client_fuzzer.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -626,9 +616,7 @@ fuzzer_test("grpc_client_fuzzer") {
 }
 
 fuzzer_test("grpc_hpack_parser_fuzzer_test") {
-  sources = [
-    "src/test/core/transport/chttp2/hpack_parser_fuzzer_test.cc",
-  ]
+  sources = [ "src/test/core/transport/chttp2/hpack_parser_fuzzer_test.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -644,9 +632,7 @@ fuzzer_test("grpc_hpack_parser_fuzzer_test") {
 }
 
 fuzzer_test("grpc_request_fuzzer") {
-  sources = [
-    "src/test/core/http/request_fuzzer.cc",
-  ]
+  sources = [ "src/test/core/http/request_fuzzer.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -662,9 +648,7 @@ fuzzer_test("grpc_request_fuzzer") {
 }
 
 fuzzer_test("grpc_response_fuzzer") {
-  sources = [
-    "src/test/core/http/response_fuzzer.cc",
-  ]
+  sources = [ "src/test/core/http/response_fuzzer.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -680,9 +664,7 @@ fuzzer_test("grpc_response_fuzzer") {
 }
 
 fuzzer_test("grpc_json_fuzzer") {
-  sources = [
-    "src/test/core/json/fuzzer.cc",
-  ]
+  sources = [ "src/test/core/json/fuzzer.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -698,9 +680,7 @@ fuzzer_test("grpc_json_fuzzer") {
 }
 
 fuzzer_test("grpc_nanopb_fuzzer_response") {
-  sources = [
-    "src/test/core/nanopb/fuzzer_response.cc",
-  ]
+  sources = [ "src/test/core/nanopb/fuzzer_response.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -716,9 +696,7 @@ fuzzer_test("grpc_nanopb_fuzzer_response") {
 }
 
 fuzzer_test("grpc_nanopb_fuzzer_serverlist") {
-  sources = [
-    "src/test/core/nanopb/fuzzer_serverlist.cc",
-  ]
+  sources = [ "src/test/core/nanopb/fuzzer_serverlist.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -734,9 +712,7 @@ fuzzer_test("grpc_nanopb_fuzzer_serverlist") {
 }
 
 fuzzer_test("grpc_percent_decode_fuzzer") {
-  sources = [
-    "src/test/core/slice/percent_decode_fuzzer.cc",
-  ]
+  sources = [ "src/test/core/slice/percent_decode_fuzzer.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -752,9 +728,7 @@ fuzzer_test("grpc_percent_decode_fuzzer") {
 }
 
 fuzzer_test("grpc_percent_encode_fuzzer") {
-  sources = [
-    "src/test/core/slice/percent_encode_fuzzer.cc",
-  ]
+  sources = [ "src/test/core/slice/percent_encode_fuzzer.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -770,9 +744,7 @@ fuzzer_test("grpc_percent_encode_fuzzer") {
 }
 
 fuzzer_test("grpc_server_fuzzer") {
-  sources = [
-    "src/test/core/end2end/fuzzers/server_fuzzer.cc",
-  ]
+  sources = [ "src/test/core/end2end/fuzzers/server_fuzzer.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -788,9 +760,7 @@ fuzzer_test("grpc_server_fuzzer") {
 }
 
 fuzzer_test("grpc_ssl_server_fuzzer") {
-  sources = [
-    "src/test/core/security/ssl_server_fuzzer.cc",
-  ]
+  sources = [ "src/test/core/security/ssl_server_fuzzer.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",
@@ -806,9 +776,7 @@ fuzzer_test("grpc_ssl_server_fuzzer") {
 }
 
 fuzzer_test("grpc_uri_fuzzer_test") {
-  sources = [
-    "src/test/core/client_channel/uri_fuzzer_test.cc",
-  ]
+  sources = [ "src/test/core/client_channel/uri_fuzzer_test.cc" ]
   deps = [
     ":grpc_core",
     ":grpc_test_util",

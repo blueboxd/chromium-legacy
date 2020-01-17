@@ -219,13 +219,12 @@ void PasswordGenerationControllerImpl::ShowDialog(PasswordGenerationType type) {
 
   dialog_view_ = create_dialog_factory_.Run(this);
 
-  uint32_t spec_priority = 0;
   base::string16 password =
       active_frame_driver_->GetPasswordGenerationHelper()->GeneratePassword(
           web_contents_->GetLastCommittedURL().GetOrigin(),
           generation_element_data_->form_signature,
           generation_element_data_->field_signature,
-          generation_element_data_->max_password_length, &spec_priority);
+          generation_element_data_->max_password_length);
   dialog_view_->Show(password, active_frame_driver_, type);
 }
 

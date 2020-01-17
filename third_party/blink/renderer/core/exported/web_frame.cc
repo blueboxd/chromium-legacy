@@ -128,7 +128,7 @@ bool WebFrame::Swap(WebFrame* frame) {
                            ToTraceValue(&local_frame));
     }
   } else {
-    ToWebRemoteFrameImpl(frame)->InitializeCoreFrame(
+    To<WebRemoteFrameImpl>(frame)->InitializeCoreFrame(
         *page, owner, name, &old_frame->window_agent_factory());
   }
 
@@ -341,7 +341,7 @@ void WebFrame::TraceFrame(Visitor* visitor, WebFrame* frame) {
   if (auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(frame))
     visitor->Trace(web_local_frame);
   else
-    visitor->Trace(ToWebRemoteFrameImpl(frame));
+    visitor->Trace(To<WebRemoteFrameImpl>(frame));
 }
 
 void WebFrame::TraceFrames(Visitor* visitor, WebFrame* frame) {
@@ -373,7 +373,7 @@ Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {
   if (auto* web_local_frame = DynamicTo<WebLocalFrameImpl>(&frame))
     return web_local_frame->GetFrame();
   if (frame.IsWebRemoteFrame())
-    return ToWebRemoteFrameImpl(frame).GetFrame();
+    return To<WebRemoteFrameImpl>(frame).GetFrame();
   NOTREACHED();
   return nullptr;
 }

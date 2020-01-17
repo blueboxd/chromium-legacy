@@ -178,9 +178,7 @@ policy_templates_grd_file = "resources/policy_templates.grd"
 # Translates policy_templates.json into various languages.
 grit("translate_policy_templates") {
   source = policy_templates_grd_file
-  inputs = [
-    "resources/policy_templates.json",
-  ]
+  inputs = [ "resources/policy_templates.json" ]
   output_dir = "$root_gen_dir/chrome"
   outputs = policy_templates_translation_outputs
 }
@@ -190,9 +188,7 @@ action("policy_templates") {
   script = "tools/template_writers/template_formatter.py"
   chrome_version_abspath = "//chrome/VERSION"
   chrome_version_path = rebase_path(chrome_version_abspath, root_build_dir)
-  deps = [
-    ":translate_policy_templates_grit",
-  ]
+  deps = [ ":translate_policy_templates_grit" ]
   inputs = [ chrome_version_abspath ] + policy_templates_translation_outputs
   outputs = []
   args = [
@@ -291,16 +287,12 @@ action("policy_templates") {
 
 # Run the proto compiler over the generated file and make it a component.
 component("cloud_policy_proto_generated_compile") {
-  public_deps = [
-    ":cloud_policy_proto_generated_compile_proto",
-  ]
+  public_deps = [ ":cloud_policy_proto_generated_compile_proto" ]
 }
 proto_library("cloud_policy_proto_generated_compile_proto") {
   visibility = [ ":cloud_policy_proto_generated_compile" ]
 
-  sources = [
-    cloud_policy_proto_path,
-  ]
+  sources = [ cloud_policy_proto_path ]
 
   import_dirs = [ "//components/policy/proto" ]
   proto_out_dir = "components/policy/proto"
@@ -317,17 +309,13 @@ proto_library("cloud_policy_proto_generated_compile_proto") {
 # This target builds the "full" protobuf, used for tests only.
 component("chrome_settings_proto_generated_compile") {
   testonly = true
-  public_deps = [
-    ":chrome_settings_proto_generated_compile_proto",
-  ]
+  public_deps = [ ":chrome_settings_proto_generated_compile_proto" ]
 }
 proto_library("chrome_settings_proto_generated_compile_proto") {
   testonly = true
   visibility = [ ":chrome_settings_proto_generated_compile" ]
 
-  sources = [
-    chrome_settings_proto_path,
-  ]
+  sources = [ chrome_settings_proto_path ]
 
   import_dirs = [ "//components/policy/proto" ]
   proto_out_dir = "components/policy/proto"
@@ -357,9 +345,7 @@ static_library("generated") {
     "//components/policy/proto:policy_common_definitions_compile_proto",
     "//third_party/protobuf:protobuf_lite",
   ]
-  deps = [
-    "//build:branding_buildflags",
-  ]
+  deps = [ "//build:branding_buildflags" ]
 }
 
 if (gen_policy_templates_android && is_android) {
@@ -368,12 +354,8 @@ if (gen_policy_templates_android && is_android) {
   _generated_resources_dir = "$root_gen_dir/chrome/app/policy/android"
 
   copy("app_restrictions_resources_copy") {
-    sources = [
-      app_restrictions_path,
-    ]
-    outputs = [
-      "$_generated_resources_dir/xml-v21/app_restrictions.xml",
-    ]
+    sources = [ app_restrictions_path ]
+    outputs = [ "$_generated_resources_dir/xml-v21/app_restrictions.xml" ]
     deps = [
       ":policy_code_generate",
       ":policy_templates",
@@ -394,19 +376,13 @@ if (gen_policy_templates_android && is_android) {
     output = "$target_gen_dir/$chrome_mac_bundle_id.manifest"
     format = "xml1"
 
-    deps = [
-      ":policy_templates",
-    ]
+    deps = [ ":policy_templates" ]
   }
 
   bundle_data("manifest_bundle_data") {
     sources = get_target_outputs(":convert_mcx_plist")
-    outputs = [
-      "{{bundle_resources_dir}}/{{source_file_part}}",
-    ]
-    public_deps = [
-      ":convert_mcx_plist",
-    ]
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
+    public_deps = [ ":convert_mcx_plist" ]
   }
 
   # The reason we are not enumerating all the locales is that
@@ -416,12 +392,8 @@ if (gen_policy_templates_android && is_android) {
     sources = [
       "$policy_templates_base_dir/mac/strings/en.lproj/Localizable.strings",
     ]
-    outputs = [
-      "{{bundle_resources_dir}}/en.lproj/{{source_file_part}}",
-    ]
-    public_deps = [
-      ":policy_templates",
-    ]
+    outputs = [ "{{bundle_resources_dir}}/en.lproj/{{source_file_part}}" ]
+    public_deps = [ ":policy_templates" ]
   }
 
   create_bundle("chrome_manifest_bundle") {
@@ -440,12 +412,8 @@ if (gen_policy_templates_zip) {
   version_path = "$policy_templates_base_dir/VERSION"
 
   copy("add_version") {
-    sources = [
-      "//chrome/VERSION",
-    ]
-    outputs = [
-      version_path,
-    ]
+    sources = [ "//chrome/VERSION" ]
+    outputs = [ version_path ]
   }
 
   action("pack_policy_templates") {
@@ -453,9 +421,7 @@ if (gen_policy_templates_zip) {
     script = "tools/make_policy_zip.py"
     inputs = [ version_path ] + policy_templates_win_outputs +
              policy_templates_chromeos_outputs + policy_templates_common_outputs
-    outputs = [
-      output_zip_file,
-    ]
+    outputs = [ output_zip_file ]
     args = [
       "--output",
       rebase_path(output_zip_file, root_build_dir),

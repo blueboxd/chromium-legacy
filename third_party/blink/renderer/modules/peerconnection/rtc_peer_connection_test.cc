@@ -377,9 +377,7 @@ static const char* kOfferSdpPlanBMultipleAudioTracks =
     "a=ssrc:4092260337 mslabel:46f8615e-7599-49f3-9a45-3cf0faf58614\r\n"
     "a=ssrc:4092260337 label:6b5f436e-f85d-40a1-83e4-acec63ca4b82\r\n";
 
-template <typename PlatformSupportType>
-class RTCPeerConnectionTestWithPlatformTestingPlatformType
-    : public testing::Test {
+class RTCPeerConnectionTest : public testing::Test {
  public:
   RTCPeerConnection* CreatePC(V8TestingScope& scope,
                               const String& sdpSemantics = String()) {
@@ -392,8 +390,7 @@ class RTCPeerConnectionTestWithPlatformTestingPlatformType
     config->setIceServers(ice_servers);
     RTCPeerConnection::SetRtcPeerConnectionHandlerFactoryForTesting(
         base::BindRepeating(
-            &RTCPeerConnectionTestWithPlatformTestingPlatformType::
-                CreateRTCPeerConnectionHandler,
+            &RTCPeerConnectionTest::CreateRTCPeerConnectionHandler,
             base::Unretained(this)));
     return RTCPeerConnection::Create(scope.GetExecutionContext(), config,
                                      Dictionary(), scope.GetExceptionState());
@@ -436,14 +433,8 @@ class RTCPeerConnectionTestWithPlatformTestingPlatformType
   }
 
  protected:
-  ScopedTestingPlatformSupport<PlatformSupportType> platform_;
+  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
-
-// TODO(crbug.com/787254): Consider removing or simplifying the inheritance
-// altogether.
-class RTCPeerConnectionTest
-    : public RTCPeerConnectionTestWithPlatformTestingPlatformType<
-          TestingPlatformSupport> {};
 
 TEST_F(RTCPeerConnectionTest, GetAudioTrack) {
   V8TestingScope scope;
@@ -761,11 +752,7 @@ class FakeRTCPeerConnectionHandlerPlatform
 // completed. Without fakes we would have had to await promises and callbacks,
 // passing SDP returned by one operation to the next.
 //
-// TODO(crbug.com/787254): Consider removing or simplifying the inheritance
-// altogether.
-class RTCPeerConnectionCallSetupStateTest
-    : public RTCPeerConnectionTestWithPlatformTestingPlatformType<
-          TestingPlatformSupport> {
+class RTCPeerConnectionCallSetupStateTest : public RTCPeerConnectionTest {
  public:
   std::unique_ptr<RTCPeerConnectionHandlerPlatform>
   CreateRTCPeerConnectionHandler() override {

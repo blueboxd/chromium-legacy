@@ -142,8 +142,9 @@ class IndexedDBTest : public testing::Test {
             ->leveldb_state()
             ->RequestDestruction(callback,
                                  base::SequencedTaskRunnerHandle::Get());
-        context_->ForceClose(origin,
-                             IndexedDBContextImpl::FORCE_CLOSE_DELETE_ORIGIN);
+        context_->ForceCloseSync(
+            origin,
+            storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN);
       }
       loop.Run();
     }
@@ -285,8 +286,8 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
       IndexedDBConnection::CloseErrorHandling::kAbortAllReturnLastError);
   RunPostedTasks();
 
-  context()->ForceClose(kTestOrigin,
-                        IndexedDBContextImpl::FORCE_CLOSE_DELETE_ORIGIN);
+  context()->ForceCloseSync(
+      kTestOrigin, storage::mojom::ForceCloseReason::FORCE_CLOSE_DELETE_ORIGIN);
   EXPECT_TRUE(open_db_callbacks->forced_close_called());
   EXPECT_FALSE(closed_db_callbacks->forced_close_called());
 

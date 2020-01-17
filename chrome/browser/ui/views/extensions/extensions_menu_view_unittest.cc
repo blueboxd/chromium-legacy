@@ -40,6 +40,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -109,6 +110,10 @@ class ExtensionsMenuViewUnitTest : public TestWithBrowserView {
   // from left to right.
   std::vector<std::string> GetPinnedExtensionNames();
 
+  // Since this is a unittest (and doesn't have as much "real" rendering),
+  // the ExtensionsMenuView sometimes needs a nudge to re-layout the views.
+  void LayoutMenuIfNecessary();
+
  private:
   base::AutoReset<bool> allow_extension_menu_instances_;
   base::test::ScopedFeatureList feature_list_;
@@ -140,6 +145,8 @@ ExtensionsMenuViewUnitTest::AddSimpleExtension(const std::string& name) {
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder(name).Build();
   extension_service()->AddExtension(extension.get());
+  // Force the menu to re-layout, since a new item was added.
+  LayoutMenuIfNecessary();
 
   return extension;
 }
@@ -204,6 +211,10 @@ std::vector<std::string> ExtensionsMenuViewUnitTest::GetPinnedExtensionNames() {
   return result;
 }
 
+void ExtensionsMenuViewUnitTest::LayoutMenuIfNecessary() {
+  extensions_menu()->GetWidget()->LayoutRootViewIfNecessary();
+}
+
 TEST_F(ExtensionsMenuViewUnitTest, ExtensionsAreShownInTheMenu) {
   // To start, there should be no extensions in the menu.
   EXPECT_EQ(0u, extensions_menu()->extensions_menu_items_for_testing().size());
@@ -229,8 +240,7 @@ TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInToolbar) {
 
   ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
   ASSERT_TRUE(menu_item);
-  ToolbarActionViewController* controller =
-      menu_item->view_controller_for_testing();
+  ToolbarActionViewController* controller = menu_item->view_controller();
   EXPECT_FALSE(extensions_container()->IsActionVisibleOnToolbar(controller));
   EXPECT_THAT(GetPinnedExtensionNames(), testing::IsEmpty());
 
@@ -242,7 +252,7 @@ TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInToolbar) {
   ClickPinButton(menu_item);  // Unpin.
 
   EXPECT_FALSE(extensions_container()->IsActionVisibleOnToolbar(
-      menu_item->view_controller_for_testing()));
+      menu_item->view_controller()));
   EXPECT_THAT(GetPinnedExtensionNames(), testing::IsEmpty());
 }
 
@@ -259,7 +269,7 @@ TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInAnotherWindow) {
 
   // Window that was already open gets the pinned extension.
   browser2.extensions_container()->IsActionVisibleOnToolbar(
-      menu_item->view_controller_for_testing());
+      menu_item->view_controller());
 
   AdditionalBrowser browser3(
       CreateBrowser(browser()->profile(), browser()->type(),
@@ -267,7 +277,7 @@ TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInAnotherWindow) {
 
   // Brand-new window also gets the pinned extension.
   browser3.extensions_container()->IsActionVisibleOnToolbar(
-      menu_item->view_controller_for_testing());
+      menu_item->view_controller());
 }
 
 TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionRemovedWhenDisabled) {
@@ -306,7 +316,7 @@ TEST_F(ExtensionsMenuViewUnitTest, ReorderPinnedExtensions) {
   for (auto* menu_item : menu_items) {
     ClickPinButton(menu_item);
     EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(
-        menu_item->view_controller_for_testing()));
+        menu_item->view_controller()));
   }
 
   EXPECT_THAT(GetPinnedExtensionNames(),
@@ -389,13 +399,15 @@ TEST_F(ExtensionsMenuViewUnitTest, ReloadExtension) {
   extensions::ChromeTestExtensionLoader loader(profile());
   scoped_refptr<const extensions::Extension> extension =
       loader.LoadExtension(extension_directory.UnpackedPath());
+  // Force the menu to re-layout, since a new item was added.
+  LayoutMenuIfNecessary();
   ASSERT_EQ(1u, extensions_menu()->extensions_menu_items_for_testing().size());
 
   {
     ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
     ClickPinButton(menu_item);
     EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(
-        menu_item->view_controller_for_testing()));
+        menu_item->view_controller()));
     // |menu_item| will not be valid after the extension reloads.
   }
 
@@ -403,10 +415,11 @@ TEST_F(ExtensionsMenuViewUnitTest, ReloadExtension) {
       extensions::ExtensionRegistry::Get(profile()));
   extension_service()->ReloadExtension(extension->id());
   ASSERT_TRUE(registry_observer.WaitForExtensionLoaded());
+  LayoutMenuIfNecessary();
 
   ASSERT_EQ(1u, extensions_menu()->extensions_menu_items_for_testing().size());
   EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(
-      GetOnlyMenuItem()->view_controller_for_testing()));
+      GetOnlyMenuItem()->view_controller()));
 }
 
 // Tests that a when an extension is reloaded with manifest errors, and
@@ -423,6 +436,7 @@ TEST_F(ExtensionsMenuViewUnitTest, ReloadExtensionFailed) {
   extensions::ChromeTestExtensionLoader loader(profile());
   scoped_refptr<const extensions::Extension> extension =
       loader.LoadExtension(extension_directory.UnpackedPath());
+  LayoutMenuIfNecessary();
   ExtensionsMenuItemView* menu_item = GetOnlyMenuItem();
   ASSERT_TRUE(menu_item);
   ClickPinButton(menu_item);

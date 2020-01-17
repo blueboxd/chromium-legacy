@@ -437,14 +437,4 @@ TestIntegerIndexed* V8TestIntegerIndexed::ToImplWithTypeCheck(
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestIntegerIndexed* NativeValueTraits<TestIntegerIndexed>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestIntegerIndexed* native_value = V8TestIntegerIndexed::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestIntegerIndexed"));
-  }
-  return native_value;
-}
-
 }  // namespace blink

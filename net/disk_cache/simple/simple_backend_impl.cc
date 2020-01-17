@@ -179,7 +179,7 @@ void RecordIndexLoad(net::CacheType cache_type,
 }  // namespace
 
 const base::Feature SimpleBackendImpl::kPrioritizedSimpleCacheTasks{
-    "PrioritizedSimpleCacheTasks", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PrioritizedSimpleCacheTasks", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Static function which is called by base::trace_event::EstimateMemoryUsage()
 // to estimate the memory of SimpleEntryImpl* type.

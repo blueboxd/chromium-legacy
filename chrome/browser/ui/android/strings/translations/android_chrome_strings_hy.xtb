@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Փակել ընթացիկ ներդիրը</translation>
 <translation id="1258753120186372309">Google doodle՝ <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Որոնում և առաջարկներ</translation>
-<translation id="1264974993859112054">Սպորտ</translation>
 <translation id="1266864766717917324">Չհաջողվեց ուղարկել բովանդակությունը (<ph name="CONTENT_TYPE" />)</translation>
 <translation id="1272079795634619415">Դադարեցնել</translation>
 <translation id="1283039547216852943">Հպեք՝ ընդարձակելու համար</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Ձեր էջանիշները բոլոր սարքերում օգտագործելու համար մտեք հաշիվ և միացրեք համաժամացումը</translation>
 <translation id="2822354292072154809">Վերակայե՞լ բոլոր կայքերի թույլտվությունները <ph name="CHOSEN_OBJECT_NAME" />-ի համար:</translation>
 <translation id="2842985007712546952">Վերադաս պանակ</translation>
-<translation id="2858138569776157458">Կայքերի ընտրանի</translation>
 <translation id="2860954141821109167">Համոզվեք, որ «Հեռախոս» հավելվածը միացված է այս սարքում</translation>
 <translation id="2870560284913253234">Կայք</translation>
 <translation id="2874939134665556319">Նախորդը</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Մուտք գործել Chrome</translation>
 <translation id="3288003805934695103">Վերաբեռնել էջը</translation>
 <translation id="32895400574683172">Ծանուցումները թույլատրված են</translation>
+<translation id="3290926146403723641">Համացանցում Օգնականի միջոցով առաջադրանքներ կատարելու համար Chrome-ը Google-ին է ուղարկում կայքի URL հասցեն, բովանդակությունը և համապատասխան անձնական տեղեկություններ։</translation>
 <translation id="3295530008794733555">Որոնեք ավելի արագ: Օգտագործեք ավելի քիչ թրաֆիկ:</translation>
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Ներբեռնե՞լ բովանդակությունը:</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Հեռախոսահամարներ</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ներբեռնում ջնջվեց</translation>
 <translation id="3822502789641063741">Մաքրե՞լ կայքերի տվյալները:</translation>
-<translation id="3853625385350850937">Շարունակելու համար ձեր սարքում միացրեք NFC-ն</translation>
 <translation id="3859306556332390985">Որոնել դեպի առաջ</translation>
 <translation id="388596076286380598">Դուք կարող եք կարդալ հոդվածներ, դիտել տեսանյութեր և այլ բովանդակություն ձեր սիրած կայքերից նույնիսկ, երբ կապը թույլ է կամ բացակայում է։</translation>
 <translation id="3894427358181296146">Պանակի ավելացում</translation>
@@ -764,7 +762,6 @@
 <translation id="6697947395630195233">Chrome-ին այս կայքի համար անհրաժեշտ է ձեզ տեղորոշելու թույլտվություն։</translation>
 <translation id="6698801883190606802">Կառավարել համաժամացված տվյալները</translation>
 <translation id="6699370405921460408">Google-ի սերվերները կօպտիմալացնեն ձեր այցելած էջերը։</translation>
-<translation id="6709133671862442373">Նորություններ</translation>
 <translation id="6710213216561001401">Նախորդը</translation>
 <translation id="671481426037969117"><ph name="FQDN" /> հավելվածի ժամաչափի ժամանակը լրացել է։ Վաղը այն նորից կաշխատի:</translation>
 <translation id="6738867403308150051">Ներբեռնում…</translation>
@@ -1079,7 +1076,6 @@
 <translation id="9133397713400217035">Դիտել անցանց ռեժիմում</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Ցույց տալ բնօրինակը</translation>
-<translation id="9139318394846604261">Գնումներ</translation>
 <translation id="9155898266292537608">Կարող եք նաև որոնել՝ սեղմելով բառի վրա</translation>
 <translation id="9169507124922466868">Նավարկման պատմության թերթը կիսաբացված է</translation>
 <translation id="9204836675896933765">Մնաց 1 ֆայլ</translation>

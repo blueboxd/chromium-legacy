@@ -11,7 +11,5 @@ group("notifications") {
 
 group("unit_tests") {
   testonly = true
-  deps = [
-    "//chrome/browser/notifications/scheduler:unit_tests",
-  ]
+  deps = [ "//chrome/browser/notifications/scheduler:unit_tests" ]
 }

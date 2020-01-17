@@ -64,6 +64,7 @@
 
       function addMarkerRule()
       {
+          document.styleSheets[0].addRule("#inspected", "display: list-item");
           document.styleSheets[0].addRule("#inspected::marker", "content: \\"MARKER\\"");
       }
 
@@ -123,7 +124,7 @@
     },
 
     function removeMarker(next) {
-      executeAndDumpTree('removeLastRule()', SDK.DOMModel.Events.NodeRemoved, next);
+      executeAndDumpTree('removeLastRule(); removeLastRule()', SDK.DOMModel.Events.NodeRemoved, next);
     },
 
     function addAfter(next) {

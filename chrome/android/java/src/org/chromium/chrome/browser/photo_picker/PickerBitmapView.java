@@ -166,7 +166,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     @Override
     public final void onClick(View view) {
         if (view == mPlayButton || view == mPlayButtonLarge) {
-            mCategoryView.playVideo(mBitmapDetails.getUri());
+            mCategoryView.startVideoPlaybackAsync(mBitmapDetails.getUri());
         } else {
             super.onClick(view);
         }

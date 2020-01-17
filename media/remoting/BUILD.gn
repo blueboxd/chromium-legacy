@@ -8,9 +8,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 proto_library("media_remoting_proto") {
   proto_out_dir = "media/remoting"
-  sources = [
-    "media_remoting_rpc.proto",
-  ]
+  sources = [ "media_remoting_rpc.proto" ]
 }
 
 # This target is separate from "remoting" because this code is shared by the
@@ -30,9 +28,7 @@ source_set("rpc") {
     "//media",
   ]
 
-  public_deps = [
-    ":media_remoting_proto",
-  ]
+  public_deps = [ ":media_remoting_proto" ]
 }
 
 source_set("remoting") {

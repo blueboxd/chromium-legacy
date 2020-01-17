@@ -100,23 +100,23 @@ var statsNameBlackList = {
 function isStandardReportBlacklisted(report) {
   // Codec stats reflect what has been negotiated. There are LOTS of them and
   // they don't change over time on their own.
-  if (report.type == 'codec') {
+  if (report.type === 'codec') {
     return true;
   }
   // Unused data channels can stay in "connecting" indefinitely and their
   // counters stay zero.
-  if (report.type == 'data-channel' &&
-      readReportStat(report, 'state') == 'connecting') {
+  if (report.type === 'data-channel' &&
+      readReportStat(report, 'state') === 'connecting') {
     return true;
   }
   // The same is true for transports and "new".
-  if (report.type == 'transport' &&
-      readReportStat(report, 'dtlsState') == 'new') {
+  if (report.type === 'transport' &&
+      readReportStat(report, 'dtlsState') === 'new') {
     return true;
   }
   // Local and remote candidates don't change over time and there are several of
   // them.
-  if (report.type == 'local-candidate' || report.type == 'remote-candidate') {
+  if (report.type === 'local-candidate' || report.type === 'remote-candidate') {
     return true;
   }
   return false;
@@ -125,7 +125,7 @@ function isStandardReportBlacklisted(report) {
 function readReportStat(report, stat) {
   let values = report.stats.values;
   for (let i = 0; i < values.length; i += 2) {
-    if (values[i] == stat) {
+    if (values[i] === stat) {
       return values[i + 1];
     }
   }
@@ -135,11 +135,11 @@ function readReportStat(report, stat) {
 function isStandardStatBlacklisted(report, statName) {
   // The datachannelid is an identifier, but because it is a number it shows up
   // as a graph if we don't blacklist it.
-  if (report.type == 'data-channel' && statName == 'datachannelid') {
+  if (report.type === 'data-channel' && statName === 'datachannelid') {
     return true;
   }
   // The priority does not change over time on its own; plotting uninteresting.
-  if (report.type == 'candidate-pair' && statName == 'priority') {
+  if (report.type === 'candidate-pair' && statName === 'priority') {
     return true;
   }
   return false;
@@ -176,7 +176,7 @@ function drawSingleReport(peerConnectionElement, report, isLegacyReport) {
   for (var i = 0; i < stats.values.length - 1; i = i + 2) {
     var rawLabel = stats.values[i];
     // Propagation deltas are handled separately.
-    if (rawLabel == RECEIVED_PROPAGATION_DELTA_LABEL) {
+    if (rawLabel === RECEIVED_PROPAGATION_DELTA_LABEL) {
       drawReceivedPropagationDelta(
           peerConnectionElement, report, stats.values[i + 1]);
       continue;
@@ -310,7 +310,7 @@ function drawReceivedPropagationDelta(peerConnectionElement, report, deltas) {
   var times = null;
   // Find the packet group arrival times.
   for (var i = 0; i < stats.values.length - 1; i = i + 2) {
-    if (stats.values[i] == RECEIVED_PACKET_GROUP_ARRIVAL_TIME_LABEL) {
+    if (stats.values[i] === RECEIVED_PACKET_GROUP_ARRIVAL_TIME_LABEL) {
       times = stats.values[i + 1];
       break;
     }
@@ -355,20 +355,20 @@ function drawReceivedPropagationDelta(peerConnectionElement, report, deltas) {
 // can be deduced from existing stats labels. Otherwise empty string for
 // non-SSRC reports or where type (audio/video) can't be deduced.
 function getSsrcReportType(report) {
-  if (report.type != 'ssrc') {
+  if (report.type !== 'ssrc') {
     return '';
   }
   if (report.stats && report.stats.values) {
     // Known stats keys for audio send/receive streams.
-    if (report.stats.values.indexOf('audioOutputLevel') != -1 ||
-        report.stats.values.indexOf('audioInputLevel') != -1) {
+    if (report.stats.values.indexOf('audioOutputLevel') !== -1 ||
+        report.stats.values.indexOf('audioInputLevel') !== -1) {
       return 'audio';
     }
     // Known stats keys for video send/receive streams.
     // TODO(pbos): Change to use some non-goog-prefixed stats when available for
     // video.
-    if (report.stats.values.indexOf('googFrameRateReceived') != -1 ||
-        report.stats.values.indexOf('googFrameRateSent') != -1) {
+    if (report.stats.values.indexOf('googFrameRateReceived') !== -1 ||
+        report.stats.values.indexOf('googFrameRateSent') !== -1) {
       return 'video';
     }
   }
@@ -393,11 +393,11 @@ function ensureStatsGraphTopContainer(peerConnectionElement, report) {
     container.firstChild.firstChild.textContent =
         'Stats graphs for ' + report.id + ' (' + report.type + ')';
     var statsType = getSsrcReportType(report);
-    if (statsType != '') {
+    if (statsType !== '') {
       container.firstChild.firstChild.textContent += ' (' + statsType + ')';
     }
 
-    if (report.type == 'ssrc') {
+    if (report.type === 'ssrc') {
       var ssrcInfoElement = document.createElement('div');
       container.firstChild.appendChild(ssrcInfoElement);
       ssrcInfoManager.populateSsrcInfo(
@@ -423,7 +423,7 @@ function createStatsGraphView(peerConnectionElement, report, statsName) {
   topContainer.appendChild(container);
   container.innerHTML = '<div>' + statsName + '</div>' +
       '<div id=' + divId + '><canvas id=' + canvasId + '></canvas></div>';
-  if (statsName == 'bweCompound') {
+  if (statsName === 'bweCompound') {
     container.insertBefore(
         createBweCompoundLegend(peerConnectionElement, report.id), $(divId));
   }

@@ -36,12 +36,15 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_gl_api_implementation.h"
+#include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/shared_gl_fence_egl.h"
 #include "ui/gl/trace_util.h"
 
 #if defined(OS_ANDROID)
 #include "gpu/command_buffer/service/shared_image_backing_egl_image.h"
+#include "gpu/command_buffer/service/shared_image_batch_access_manager.h"
 #endif
 
 namespace gpu {
@@ -378,6 +381,10 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
         texture_(texture),
         attribs_(attribs) {
     DCHECK(texture_);
+    gl::GLImage* image =
+        texture_->GetLevelImage(texture_->target(), 0, nullptr);
+    if (image)
+      native_pixmap_ = image->GetNativePixmap();
   }
 
   ~SharedImageBackingGLTexture() override {
@@ -479,6 +486,10 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
     }
   }
 
+  scoped_refptr<gfx::NativePixmap> GetNativePixmap() override {
+    return native_pixmap_;
+  }
+
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
       SharedImageManager* manager,
@@ -557,6 +568,7 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
   gles2::Texture* rgb_emulation_texture_ = nullptr;
   sk_sp<SkPromiseImageTexture> cached_promise_texture_;
   const UnpackStateAttribs attribs_;
+  scoped_refptr<gfx::NativePixmap> native_pixmap_;
 };
 
 // Implementation of SharedImageBacking that creates a GL Texture and stores it
@@ -670,10 +682,14 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     const GpuPreferences& gpu_preferences,
     const GpuDriverBugWorkarounds& workarounds,
     const GpuFeatureInfo& gpu_feature_info,
-    ImageFactory* image_factory)
+    ImageFactory* image_factory,
+    SharedImageBatchAccessManager* batch_access_manager)
     : use_passthrough_(gpu_preferences.use_passthrough_cmd_decoder &&
                        gles2::PassthroughCommandDecoderSupported()),
       image_factory_(image_factory) {
+#if defined(OS_ANDROID)
+  batch_access_manager_ = batch_access_manager;
+#endif
   gl::GLApi* api = gl::g_current_gl_context;
   api->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
   // When the passthrough command decoder is used, the max_texture_size
@@ -1169,9 +1185,10 @@ SharedImageBackingFactoryGLTexture::MakeEglImageBacking(
     DLOG(ERROR) << "MakeEglImageBacking: Failed to calculate SharedImage size";
     return nullptr;
   }
+
   return std::make_unique<SharedImageBackingEglImage>(
       mailbox, format, size, color_space, usage, estimated_size,
-      format_info.gl_format, format_info.gl_type);
+      format_info.gl_format, format_info.gl_type, batch_access_manager_);
 #else
   return nullptr;
 #endif

@@ -58,7 +58,7 @@ cr.define('chrome.sync', function() {
                             return a.concat(b);
                           });
 
-        if (currSearchId != searchId) {
+        if (currSearchId !== searchId) {
           return;
         }
         callback(nodes.filter(function(elem) {

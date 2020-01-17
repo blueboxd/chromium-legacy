@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 
+#include "android_webview/browser/gfx/begin_frame_source_webview.h"
 #include "android_webview/browser/gfx/child_frame.h"
 #include "android_webview/browser/gfx/compositor_frame_producer.h"
 #include "android_webview/browser/gfx/parent_compositor_draw_constraints.h"
@@ -37,6 +38,7 @@ class WebContents;
 
 namespace android_webview {
 
+class AwAttachingToWindowRecorder;
 class BrowserViewRendererClient;
 class ChildFrame;
 class CompositorFrameConsumer;
@@ -149,6 +151,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
       content::SynchronousCompositor* compositor,
       std::unique_ptr<viz::CopyOutputRequest> copy_request) override;
 
+  void AddBeginFrameCompletionCallback(base::OnceClosure callback) override;
+
   // CompositorFrameProducer overrides
   base::WeakPtr<CompositorFrameProducer> GetWeakPtr() override;
   void RemoveCompositorFrameConsumer(
@@ -189,6 +193,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
       CompositorFrameConsumer* compositor_frame_consumer);
   void ReleaseHardware();
   bool DoUpdateParentDrawData();
+  void UpdateBeginFrameSource();
 
   gfx::Vector2d max_scroll_offset() const;
 
@@ -261,6 +266,10 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   base::Optional<gfx::Vector2d> scroll_on_scroll_state_update_;
 
   ParentCompositorDrawConstraints external_draw_constraints_;
+
+  std::unique_ptr<BeginFrameSourceWebView> begin_frame_source_;
+
+  scoped_refptr<AwAttachingToWindowRecorder> recorder_;
 
   base::WeakPtrFactory<CompositorFrameProducer> weak_ptr_factory_{this};
 

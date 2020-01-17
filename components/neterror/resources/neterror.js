@@ -73,7 +73,7 @@ if (window.errorPageController) {
 // Subframes use a different layout but the same html file.  This is to make it
 // easier to support platforms that load the error page via different
 // mechanisms (Currently just iOS).
-if (window.top.location != window.location) {
+if (window.top.location !== window.location) {
   document.documentElement.setAttribute('subframe', '');
 }
 
@@ -92,7 +92,7 @@ function updateIconClass(classList, newClass) {
 
   if (classList.hasOwnProperty('last_icon_class')) {
     oldClass = classList['last_icon_class'];
-    if (oldClass == newClass) {
+    if (oldClass === newClass) {
       return;
     }
   }
@@ -104,7 +104,7 @@ function updateIconClass(classList, newClass) {
 
   classList['last_icon_class'] = newClass;
 
-  if (newClass == 'icon-offline') {
+  if (newClass === 'icon-offline') {
     document.firstElementChild.classList.add('offline');
     new Runner('.interstitial-wrapper');
   } else {
@@ -358,7 +358,7 @@ function offlineContentAvailable(isShown, suggestions) {
   }
 
   const contentListElement = document.getElementById('offline-content-list');
-  if (document.dir == 'rtl') {
+  if (document.dir === 'rtl') {
     contentListElement.classList.add('is-rtl');
   }
   contentListElement.hidden = false;
@@ -420,8 +420,8 @@ function onDocumentLoadOrUpdate() {
 
   const reloadButton = document.getElementById('reload-button');
   const downloadButton = document.getElementById('download-button');
-  if (reloadButton.style.display == 'none' &&
-      downloadButton.style.display == 'none') {
+  if (reloadButton.style.display === 'none' &&
+      downloadButton.style.display === 'none') {
     detailsButton.classList.add('singular');
   }
 

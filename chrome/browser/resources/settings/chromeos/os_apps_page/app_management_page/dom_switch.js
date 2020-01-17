@@ -78,7 +78,7 @@ Polymer({
 
   firstRenderForTesting_: new PromiseResolver(),
 
-  attached: function() {
+  attached() {
     const template = this.getContentChildren()[0];
     this.templatize(template);
 
@@ -103,7 +103,7 @@ Polymer({
   /**
    * @param {?string} newRouteId
    */
-  onRouteChanged_: function(newRouteId) {
+  onRouteChanged_(newRouteId) {
     if (!this.instance_) {
       return;
     }
@@ -137,7 +137,7 @@ Polymer({
    * @param {string} prop
    * @param {Object} value
    */
-  _forwardHostPropV2: function(prop, value) {
+  _forwardHostPropV2(prop, value) {
     if (this.instance_) {
       this.instance_.forwardHostProp(prop, value);
     }

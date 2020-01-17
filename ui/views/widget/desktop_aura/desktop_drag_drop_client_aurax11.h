@@ -43,7 +43,7 @@ namespace ui {
 class DropTargetEvent;
 class OSExchangeData;
 class OSExchangeDataProviderAuraX11;
-class XDragContext;
+class XTopmostWindowFinder;
 }
 
 namespace views {
@@ -68,20 +68,14 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
       ::Window xwindow);
   ~DesktopDragDropClientAuraX11() override;
 
-  // We maintain a mapping of live DesktopDragDropClientAuraX11 objects to
-  // their ::Windows. We do this so that we're able to short circuit sending
-  // X11 messages to windows in our process.
-  static DesktopDragDropClientAuraX11* GetForWindow(::Window window);
-
   void Init();
 
   // These methods handle the various X11 client messages from the platform.
-  void OnXdndEnter(const XClientMessageEvent& event);
-  void OnXdndLeave(const XClientMessageEvent& event);
-  void OnXdndPosition(const XClientMessageEvent& event);
-  void OnXdndStatus(const XClientMessageEvent& event);
-  void OnXdndFinished(const XClientMessageEvent& event);
-  void OnXdndDrop(const XClientMessageEvent& event);
+  void OnXdndEnter(const XClientMessageEvent& event) override;
+  void OnXdndLeave(const XClientMessageEvent& event) override;
+  void OnXdndStatus(const XClientMessageEvent& event) override;
+  void OnXdndFinished(const XClientMessageEvent& event) override;
+  void OnXdndDrop(const XClientMessageEvent& event) override;
 
   // Called when XSelection data has been copied to our process.
   void OnSelectionNotify(const XSelectionEvent& xselection);
@@ -118,14 +112,6 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // Creates a move loop.
   virtual std::unique_ptr<X11MoveLoop> CreateMoveLoop(
       X11MoveLoopDelegate* delegate);
-
-  // Finds the topmost X11 window at |screen_point| and returns it if it is
-  // Xdnd aware. Returns NULL otherwise.
-  virtual ::Window FindWindowFor(const gfx::Point& screen_point);
-
-  // Sends |xev| to |xid|, optionally short circuiting the round trip to the X
-  // server.
-  virtual void SendXClientEvent(::Window xid, XEvent* xev);
 
  protected:
   Widget* drag_widget() { return drag_widget_.get(); }
@@ -172,7 +158,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // This returns a representation of the data we're offering in this
   // drag. This is done to bypass an asynchronous roundtrip with the X11
   // server.
-  ui::SelectionFormatMap GetFormatMap() const;
+  ui::SelectionFormatMap GetFormatMap() const override;
 
   // Handling XdndPosition can be paused while waiting for more data; this is
   // called either synchronously from OnXdndPosition, or asynchronously after
@@ -180,12 +166,9 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   void CompleteXdndPosition(::Window source_window,
                             const gfx::Point& screen_point) override;
 
-  void SendXdndEnter(::Window dest_window);
-  void SendXdndLeave(::Window dest_window);
   void SendXdndPosition(::Window dest_window,
                         const gfx::Point& screen_point,
                         unsigned long event_time);
-  void SendXdndDrop(::Window dest_window);
 
   // Creates a widget for the user to drag around.
   void CreateDragWidget(const gfx::ImageSkia& image);
@@ -194,7 +177,9 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // with alpha > 32).
   bool IsValidDragImage(const gfx::ImageSkia& image);
 
-  void ResetDragContext();
+  void ResetDragContext() override;
+
+  std::unique_ptr<ui::XTopmostWindowFinder> CreateWindowFinder() override;
 
   // A nested run loop that notifies this object of events through the
   // X11MoveLoopDelegate interface.
@@ -206,8 +191,6 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
 
   // Events that we have selected on |source_window_|.
   std::unique_ptr<ui::XScopedEventSelector> source_window_events_;
-  // Target side information.
-  std::unique_ptr<ui::XDragContext> target_current_context_;
 
   // The Aura window that is currently under the cursor. We need to manually
   // keep track of this because Windows will only call our drag enter method
@@ -242,7 +225,6 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
 
   // Source side information.
   ui::OSExchangeDataProviderAuraX11 const* source_provider_ = nullptr;
-  ::Window source_current_window_ = x11::None;
   SourceState source_state_ = SourceState::kOther;
 
   // The current drag-drop client that has an active operation. Since we have

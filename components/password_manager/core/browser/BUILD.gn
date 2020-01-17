@@ -367,12 +367,8 @@ static_library("password_generator") {
     "generation/password_generator.cc",
     "generation/password_generator.h",
   ]
-  public_deps = [
-    "//components/autofill/core/browser/proto",
-  ]
-  deps = [
-    "//base",
-  ]
+  public_deps = [ "//components/autofill/core/browser/proto" ]
+  deps = [ "//base" ]
 }
 
 if (is_android) {
@@ -385,9 +381,7 @@ if (is_android) {
 }
 
 fuzzable_proto_library("proto") {
-  sources = [
-    "android_affiliation/affiliation_api.proto",
-  ]
+  sources = [ "android_affiliation/affiliation_api.proto" ]
 }
 
 jumbo_static_library("password_hash_data") {
@@ -506,10 +500,8 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/password_manager/login_db_v9.sql",
     "//components/test/data/password_manager/login_db_v9_without_use_additional_auth_field.sql",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 source_set("unit_tests") {
@@ -660,9 +652,7 @@ source_set("unit_tests") {
 }
 
 fuzzer_test("csv_reader_fuzzer") {
-  sources = [
-    "import/password_csv_reader_fuzzer.cc",
-  ]
+  sources = [ "import/password_csv_reader_fuzzer.cc" ]
   deps = [
     ":browser",
     ":csv",
@@ -675,9 +665,8 @@ fuzzer_test("csv_reader_fuzzer") {
 
 if (use_libfuzzer) {
   fuzzer_test("lookup_affiliation_response_parser_fuzzer") {
-    sources = [
-      "android_affiliation/lookup_affiliation_response_parser_fuzzer.cc",
-    ]
+    sources =
+        [ "android_affiliation/lookup_affiliation_response_parser_fuzzer.cc" ]
     deps = [
       ":browser",
       ":proto",
@@ -688,9 +677,7 @@ if (use_libfuzzer) {
   }
 
   fuzzer_test("password_generator_proto_fuzzer") {
-    sources = [
-      "generation/password_generator_proto_fuzzer.cc",
-    ]
+    sources = [ "generation/password_generator_proto_fuzzer.cc" ]
     deps = [
       ":password_generator",
       "//components/autofill/core/browser/proto",
@@ -720,9 +707,7 @@ static_library("affiliation") {
 
 source_set("affiliation_unittests") {
   testonly = true
-  sources = [
-    "android_affiliation/affiliation_utils_unittest.cc",
-  ]
+  sources = [ "android_affiliation/affiliation_utils_unittest.cc" ]
   deps = [
     ":affiliation",
     "//base",

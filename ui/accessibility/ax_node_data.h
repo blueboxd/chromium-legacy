@@ -205,6 +205,7 @@ struct AX_EXPORT AXNodeData {
   bool IsPlainTextField() const;
 
   // Helper to determine if |GetRestriction| is either ReadOnly or Disabled.
+  // By default, all nodes that can't be edited are readonly.
   bool IsReadOnlyOrDisabled() const;
 
   // Helper to determine if the data belongs to a node that supports

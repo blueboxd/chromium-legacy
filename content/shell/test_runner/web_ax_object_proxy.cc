@@ -776,7 +776,8 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
                  &WebAXObjectProxy::AriaActiveDescendantElement)
       .SetMethod("ariaControlsElementAtIndex",
                  &WebAXObjectProxy::AriaControlsElementAtIndex)
-      .SetMethod("ariaDetailsElement", &WebAXObjectProxy::AriaDetailsElement)
+      .SetMethod("ariaDetailsElementAtIndex",
+                 &WebAXObjectProxy::AriaDetailsElementAtIndex)
       .SetMethod("ariaErrorMessageElement",
                  &WebAXObjectProxy::AriaErrorMessageElement)
       .SetMethod("ariaFlowToElementAtIndex",
@@ -1543,14 +1544,19 @@ v8::Local<v8::Object> WebAXObjectProxy::AriaControlsElementAtIndex(
   return factory_->GetOrCreate(elements[index]);
 }
 
-v8::Local<v8::Object> WebAXObjectProxy::AriaDetailsElement() {
+v8::Local<v8::Object> WebAXObjectProxy::AriaDetailsElementAtIndex(
+    unsigned index) {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   SparseAttributeAdapter attribute_adapter;
   accessibility_object_.GetSparseAXAttributes(attribute_adapter);
-  blink::WebAXObject element =
-      attribute_adapter
-          .object_attributes[blink::WebAXObjectAttribute::kAriaDetails];
-  return factory_->GetOrCreate(element);
+  blink::WebVector<blink::WebAXObject> elements =
+      attribute_adapter.object_vector_attributes
+          [blink::WebAXObjectVectorAttribute::kAriaDetails];
+  size_t elementCount = elements.size();
+  if (index >= elementCount)
+    return v8::Local<v8::Object>();
+
+  return factory_->GetOrCreate(elements[index]);
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::AriaErrorMessageElement() {

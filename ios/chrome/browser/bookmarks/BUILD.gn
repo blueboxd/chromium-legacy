@@ -31,9 +31,7 @@ source_set("bookmarks") {
     "//ios/chrome/browser/undo",
     "//ios/web",
   ]
-  public_deps = [
-    ":bookmarks_utils",
-  ]
+  public_deps = [ ":bookmarks_utils" ]
   allow_circular_includes_from = [
     "//ios/chrome/browser/history",
     ":bookmarks_utils",

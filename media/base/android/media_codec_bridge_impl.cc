@@ -22,7 +22,6 @@
 #include "media/base/android/media_jni_headers/MediaCodecBridgeBuilder_jni.h"
 #include "media/base/android/media_jni_headers/MediaCodecBridge_jni.h"
 #include "media/base/audio_codecs.h"
-#include "media/base/bit_reader.h"
 #include "media/base/subsample_entry.h"
 #include "media/base/video_codecs.h"
 
@@ -55,20 +54,27 @@ enum {
 using CodecSpecificData = std::vector<uint8_t>;
 
 // Parses |extra_data| to get info to be added to a Java MediaFormat.
-bool GetCodecSpecificDataForAudio(AudioCodec codec,
-                                  const uint8_t* extra_data,
-                                  size_t extra_data_size,
-                                  int64_t codec_delay_ns,
-                                  int64_t seek_preroll_ns,
+bool GetCodecSpecificDataForAudio(const AudioDecoderConfig& config,
                                   CodecSpecificData* output_csd0,
                                   CodecSpecificData* output_csd1,
                                   CodecSpecificData* output_csd2,
                                   bool* output_frame_has_adts_header) {
+  // It's important that the multiplication is first in this calculation to
+  // reduce the precision loss due to integer truncation.
+  const int64_t codec_delay_ns = base::Time::kNanosecondsPerSecond *
+                                 config.codec_delay() /
+                                 config.samples_per_second();
+  const int64_t seek_preroll_ns = config.seek_preroll().InMicroseconds() *
+                                  base::Time::kNanosecondsPerMicrosecond;
+
+  const uint8_t* extra_data = config.extra_data().data();
+  const size_t extra_data_size = config.extra_data().size();
+
   *output_frame_has_adts_header = false;
-  if (extra_data_size == 0 && codec != kCodecOpus)
+  if (extra_data_size == 0 && config.codec() != kCodecOpus)
     return true;
 
-  switch (codec) {
+  switch (config.codec()) {
     case kCodecVorbis: {
       if (extra_data[0] != 2) {
         LOG(ERROR) << "Invalid number of vorbis headers before the codec "
@@ -111,39 +117,9 @@ bool GetCodecSpecificDataForAudio(AudioCodec codec,
       break;
     }
     case kCodecAAC: {
-      media::BitReader reader(extra_data, extra_data_size);
-
-      // The following code is copied from aac.cc
-      // TODO(qinmin): refactor the code in aac.cc to make it more reusable.
-      uint8_t profile = 0;
-      uint8_t frequency_index = 0;
-      uint8_t channel_config = 0;
-      RETURN_ON_ERROR(reader.ReadBits(5, &profile));
-      RETURN_ON_ERROR(reader.ReadBits(4, &frequency_index));
-
-      if (0xf == frequency_index)
-        RETURN_ON_ERROR(reader.SkipBits(24));
-      RETURN_ON_ERROR(reader.ReadBits(4, &channel_config));
-
-      if (profile == 5 || profile == 29) {
-        // Read extension config.
-        uint8_t ext_frequency_index = 0;
-        RETURN_ON_ERROR(reader.ReadBits(4, &ext_frequency_index));
-        if (ext_frequency_index == 0xf)
-          RETURN_ON_ERROR(reader.SkipBits(24));
-        RETURN_ON_ERROR(reader.ReadBits(5, &profile));
-      }
-
-      if (profile < 1 || profile > 4 || frequency_index == 0xf ||
-          channel_config > 7) {
-        LOG(ERROR) << "Invalid AAC header";
-        return false;
-      }
-
-      output_csd0->push_back(profile << 3 | frequency_index >> 1);
-      output_csd0->push_back((frequency_index & 0x01) << 7 | channel_config
-                                                                 << 3);
-      *output_frame_has_adts_header = true;
+      output_csd0->assign(extra_data, extra_data + extra_data_size);
+      *output_frame_has_adts_header =
+          config.profile() != AudioCodecProfile::kXHE_AAC;
       break;
     }
     case kCodecOpus: {
@@ -170,8 +146,8 @@ bool GetCodecSpecificDataForAudio(AudioCodec codec,
       break;
     }
     default:
-      LOG(ERROR) << "Invalid header encountered for codec: "
-                 << GetCodecName(codec);
+      LOG(ERROR) << "Unsupported audio codec encountered: "
+                 << GetCodecName(config.codec());
       return false;
   }
   return true;
@@ -204,19 +180,9 @@ std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateAudioDecoder(
   const int channel_count =
       ChannelLayoutToChannelCount(config.channel_layout());
 
-  // It's important that the multiplication is first in this calculation to
-  // reduce the precision loss due to integer truncation.
-  const int64_t codec_delay_ns = base::Time::kNanosecondsPerSecond *
-                                 config.codec_delay() /
-                                 config.samples_per_second();
-  const int64_t seek_preroll_ns = config.seek_preroll().InMicroseconds() *
-                                  base::Time::kNanosecondsPerMicrosecond;
-
   CodecSpecificData csd0, csd1, csd2;
   bool output_frame_has_adts_header;
-  if (!GetCodecSpecificDataForAudio(config.codec(), config.extra_data().data(),
-                                    config.extra_data().size(), codec_delay_ns,
-                                    seek_preroll_ns, &csd0, &csd1, &csd2,
+  if (!GetCodecSpecificDataForAudio(config, &csd0, &csd1, &csd2,
                                     &output_frame_has_adts_header)) {
     return nullptr;
   }

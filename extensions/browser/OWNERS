@@ -12,5 +12,5 @@ per-file extension_function_histogram_value.h=file://extensions/common/api/API_O
 per-file device_local_account_util*=isandrk@chromium.org
 
 # For security review.
-per-file extensions_browser_interface_binders.cc=set noparent
-per-file extensions_browser_interface_binders.cc=file://ipc/SECURITY_OWNERS
+per-file extensions_browser_interface_binders.*=set noparent
+per-file extensions_browser_interface_binders.*=file://ipc/SECURITY_OWNERS

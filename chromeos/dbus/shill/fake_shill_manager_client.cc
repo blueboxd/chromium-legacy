@@ -645,7 +645,7 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
             CompareNetworks);
 
   // Rebuild |complete_path_list| with the new sort order.
-  complete_path_list->GetList().clear();
+  complete_path_list->ClearList();
   for (const base::Value& dict : complete_dict_list) {
     std::string service_path = GetStringValue(dict, kPathKey);
     complete_path_list->Append(base::Value(service_path));

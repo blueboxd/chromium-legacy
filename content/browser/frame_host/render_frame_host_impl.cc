@@ -200,6 +200,7 @@
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
+#include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/geolocation/geolocation_service.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
@@ -1560,7 +1561,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
   // JavaScriptExecuteRequestsForTests call is redundant with this update. We
   // should determine if the redundancy can be removed.
   frame_tree_node()->UpdateUserActivationState(
-      blink::UserActivationUpdateType::kNotifyActivation);
+      blink::mojom::UserActivationUpdateType::kNotifyActivation);
 
   const bool has_user_gesture = true;
   GetNavigationControl()->JavaScriptExecuteRequestForTests(
@@ -1570,15 +1571,15 @@ void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
 void RenderFrameHostImpl::CopyImageAt(int x, int y) {
   gfx::PointF point_in_view =
       GetView()->TransformRootPointToViewCoordSpace(gfx::PointF(x, y));
-  Send(new FrameMsg_CopyImageAt(routing_id_, point_in_view.x(),
-                                point_in_view.y()));
+  GetAssociatedLocalFrame()->CopyImageAt(
+      gfx::Point(point_in_view.x(), point_in_view.y()));
 }
 
 void RenderFrameHostImpl::SaveImageAt(int x, int y) {
   gfx::PointF point_in_view =
       GetView()->TransformRootPointToViewCoordSpace(gfx::PointF(x, y));
-  Send(new FrameMsg_SaveImageAt(routing_id_, point_in_view.x(),
-                                point_in_view.y()));
+  GetAssociatedLocalFrame()->SaveImageAt(
+      gfx::Point(point_in_view.x(), point_in_view.y()));
 }
 
 RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
@@ -1640,7 +1641,6 @@ PageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
 }
 
 bool RenderFrameHostImpl::Send(IPC::Message* message) {
-  DCHECK(IPC_MESSAGE_ID_CLASS(message->type()) != InputMsgStart);
   return GetProcess()->Send(message);
 }
 
@@ -1959,7 +1959,7 @@ void RenderFrameHostImpl::ReportContentSecurityPolicyViolation(
 
 void RenderFrameHostImpl::SanitizeDataForUseInCspViolation(
     bool is_redirect,
-    CSPDirective::Name directive,
+    network::mojom::CSPDirectiveName directive,
     GURL* blocked_url,
     SourceLocation* source_location) const {
   DCHECK(blocked_url);
@@ -1983,7 +1983,7 @@ void RenderFrameHostImpl::SanitizeDataForUseInCspViolation(
 
   // When a renderer tries to do a form submission, it already knows the url of
   // the blocked url, except when it is redirected.
-  if (!is_redirect && directive == CSPDirective::FormAction)
+  if (!is_redirect && directive == network::mojom::CSPDirectiveName::FormAction)
     sanitize_blocked_url = false;
 
   if (sanitize_blocked_url)
@@ -2567,12 +2567,13 @@ void RenderFrameHostImpl::DidAddContentSecurityPolicies(
                "RenderFrameHostImpl::OnDidAddContentSecurityPolicies",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id());
 
-  std::vector<ContentSecurityPolicyHeader> headers;
+  std::vector<network::mojom::ContentSecurityPolicyHeaderPtr> headers;
   for (const ContentSecurityPolicy& policy : policies) {
     AddContentSecurityPolicy(policy);
-    headers.push_back(policy.header);
+    headers.push_back(
+        network::mojom::ContentSecurityPolicyHeader::New(policy.header));
   }
-  frame_tree_node()->AddContentSecurityPolicies(headers);
+  frame_tree_node()->AddContentSecurityPolicies(std::move(headers));
 }
 
 void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
@@ -3539,8 +3540,7 @@ void RenderFrameHostImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
     return;
   }
 
-  proxy->Send(new FrameMsg_SetNeedsOcclusionTracking(proxy->GetRoutingID(),
-                                                     needs_tracking));
+  proxy->GetAssociatedRemoteFrame()->SetNeedsOcclusionTracking(needs_tracking);
 }
 
 void RenderFrameHostImpl::LifecycleStateChanged(
@@ -4082,7 +4082,7 @@ void RenderFrameHostImpl::DidReceiveFirstUserActivation() {
 }
 
 void RenderFrameHostImpl::OnUpdateUserActivationState(
-    blink::UserActivationUpdateType update_type) {
+    blink::mojom::UserActivationUpdateType update_type) {
   if (!is_active())
     return;
   frame_tree_node_->UpdateUserActivationState(update_type);
@@ -4376,7 +4376,7 @@ void RenderFrameHostImpl::CreateNewWindow(
     // Consume activation even w/o User Activation v2, to sync other renderers
     // with calling renderer.
     was_consumed = frame_tree_node_->UpdateUserActivationState(
-        blink::UserActivationUpdateType::kConsumeTransientActivation);
+        blink::mojom::UserActivationUpdateType::kConsumeTransientActivation);
   } else {
     std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
     return;
@@ -4547,7 +4547,15 @@ void RenderFrameHostImpl::CreatePortal(
   auto it = portals_.insert(std::move(portal)).first;
 
   RenderFrameProxyHost* proxy_host = (*it)->CreateProxyAndAttachPortal();
-  std::move(callback).Run(proxy_host->GetRoutingID(), (*it)->portal_token(),
+
+  // Since the portal is newly created and has yet to commit a navigation, this
+  // state is trivial.
+  const FrameReplicationState& initial_replicated_state =
+      proxy_host->frame_tree_node()->current_replication_state();
+  DCHECK(initial_replicated_state.origin.opaque());
+
+  std::move(callback).Run(proxy_host->GetRoutingID(), initial_replicated_state,
+                          (*it)->portal_token(),
                           (*it)->GetDevToolsFrameToken());
 }
 
@@ -7057,6 +7065,27 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
     return false;
   }
 
+  // A cross-document navigation requires an embedding token for all embedded
+  // frames (a child frame to a remote parent). Embedding tokens should not
+  // exist for other cases.
+  if (!is_same_document_navigation) {
+    if (frame_tree_node()->IsMainFrame() &&
+        params->embedding_token.has_value()) {
+      bad_message::ReceivedBadMessage(
+          process, bad_message::RFH_UNEXPECTED_EMBEDDING_TOKEN);
+      return false;
+    } else if (IsCrossProcessSubframe() &&
+               !params->embedding_token.has_value()) {
+      bad_message::ReceivedBadMessage(process,
+                                      bad_message::RFH_MISSING_EMBEDDING_TOKEN);
+      return false;
+    }
+  } else if (params->embedding_token.has_value()) {
+    bad_message::ReceivedBadMessage(
+        process, bad_message::RFH_UNEXPECTED_EMBEDDING_TOKEN);
+    return false;
+  }
+
   return true;
 }
 
@@ -7989,6 +8018,14 @@ bool RenderFrameHostImpl::IsBackForwardCacheDisabled() const {
 
 bool RenderFrameHostImpl::IsDOMContentLoaded() {
   return dom_content_loaded_;
+}
+
+void RenderFrameHostImpl::IsClipboardPasteAllowed(
+    const ui::ClipboardFormatType& data_type,
+    const std::string& data,
+    IsClipboardPasteAllowedCallback callback) {
+  delegate_->IsClipboardPasteAllowed(GetLastCommittedURL(), data_type, data,
+                                     std::move(callback));
 }
 
 RenderFrameHostImpl* RenderFrameHostImpl::ParentOrOuterDelegateFrame() {

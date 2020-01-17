@@ -6,9 +6,7 @@ import("//build/config/android/rules.gni")
 import("//chrome/android/modules/buildflags.gni")
 
 android_library("java") {
-  sources = [
-    "java/src/org/chromium/chrome/modules/test_dummy/TestDummyProviderImpl.java",
-  ]
+  sources = [ "java/src/org/chromium/chrome/modules/test_dummy/TestDummyProviderImpl.java" ]
   deps = [
     "//base:base_java",
     "//chrome/android/features/test_dummy/internal:java",
@@ -22,15 +20,11 @@ android_library("java") {
 # component target must be named according to the feature, so that the component
 # build's .cr.co library is named properly (ie. libtest_dummy.cr.so).
 group("native") {
-  deps = [
-    ":test_dummy",
-  ]
+  deps = [ ":test_dummy" ]
 }
 
 component("test_dummy") {
-  sources = [
-    "entrypoints.cc",
-  ]
+  sources = [ "entrypoints.cc" ]
   deps = [
     ":jni_registration",
     "//base",

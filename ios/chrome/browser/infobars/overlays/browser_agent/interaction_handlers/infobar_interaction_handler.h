@@ -7,44 +7,11 @@
 
 #include <memory>
 
-#include "ios/chrome/browser/overlays/public/overlay_request_support.h"
+#import "ios/chrome/browser/infobars/infobar_type.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_type.h"
+#include "ios/chrome/browser/overlays/public/overlay_request_callback_installer.h"
 
 class InfoBarIOS;
-namespace web {
-class WebState;
-}
-
-// Handler for infobar banner user interaction events.
-class InfobarBannerInteractionHandler {
- public:
-  virtual ~InfobarBannerInteractionHandler() = default;
-
-  // Updates the model when the visibility of |infobar|'s banner is changed.
-  virtual void BannerVisibilityChanged(InfoBarIOS* infobar, bool visible) = 0;
-  // Updates the model when the main button is tapped for |infobar|'s banner.
-  virtual void MainButtonTapped(InfoBarIOS* infobar) = 0;
-  // Shows the modal when the modal button is tapped for |infobar|'s banner.
-  // |web_state| is the WebState associated with |infobar|'s InfoBarManager.
-  virtual void ShowModalButtonTapped(InfoBarIOS* infobar,
-                                     web::WebState* web_state) = 0;
-  // Notifies the model that the upcoming dismissal is user-initiated (i.e.
-  // a swipe dismissal in the refresh UI).
-  virtual void BannerDismissedByUser(InfoBarIOS* infobar) = 0;
-};
-
-// Handler for infobar detail sheet user interaction events.
-class InfobarDetailSheetInteractionHandler {
- public:
-  virtual ~InfobarDetailSheetInteractionHandler() = default;
-  // TODO(crbug.com/1030357): Add interaction handling for detail sheets.
-};
-
-// Handler for infobar modal user interaction events.
-class InfobarModalInteractionHandler {
- public:
-  virtual ~InfobarModalInteractionHandler() = default;
-  // TODO(crbug.com/1030357): Add interaction handling for modals.
-};
 
 // Helper object, intended to be subclassed, that encapsulates the model-layer
 // updates required for interaction with each type of UI used to display an
@@ -52,46 +19,65 @@ class InfobarModalInteractionHandler {
 // user interaction for InfoBars of that type.
 class InfobarInteractionHandler {
  public:
+  // Helper object used by InfobarInteractionHandler to handle interaction for
+  // a single InfobarOverlayType.
+  class Handler {
+   public:
+    Handler() = default;
+    virtual ~Handler() = default;
+
+    // Creates a callback installer used to make model-layer updates for this
+    // handler's InfobarOverlayType.
+    virtual std::unique_ptr<OverlayRequestCallbackInstaller>
+    CreateInstaller() = 0;
+    // Notifies the handler that |infobar|'s UI with the handler's InfobarType
+    virtual void InfobarVisibilityChanged(InfoBarIOS* infobar,
+                                          bool visible) = 0;
+  };
+
+  // Constructor for an InfobarInteractionHandler that uses the provided
+  // handlers for each InfobarOverlayType.  |banner_handler| must be non-null.
+  // |detail_sheet_handler| and |modal_handler| may be null if their
+  // corresponding InfobarOverlayTypes are not supported for |infobar_type|.
+  InfobarInteractionHandler(InfobarType infobar_type,
+                            std::unique_ptr<Handler> banner_handler,
+                            std::unique_ptr<Handler> detail_sheet_handler,
+                            std::unique_ptr<Handler> modal_handler);
   virtual ~InfobarInteractionHandler();
 
-  // Returns the request support for the handler.  Interaction events will only
-  // be handled for supported requests.  Guaranteed to be non-null.
-  const OverlayRequestSupport* request_support() const {
-    return request_support_;
-  }
+  // Returns the InfobarType whose interactions are handled by this instance.
+  InfobarType infobar_type() const { return infobar_type_; }
 
-  // Returns the handlers for each InfobarOverlayType.  Guaranteed to be
-  // non-null.
-  InfobarBannerInteractionHandler* banner_handler() const {
-    return banner_handler_.get();
-  }
-  // Returns the detail sheet handler for this interaction handler.
-  InfobarDetailSheetInteractionHandler* sheet_handler() const {
-    return sheet_handler_.get();
-  }
-  // Returns the modal handler for this interaction handler.
-  InfobarModalInteractionHandler* modal_handler() const {
-    return modal_handler_.get();
-  }
+  // Creates an OverlayRequestCallbackInstaller that handles model-layer updates
+  // the the infobar's banner UI.  Guaranteed to be non-null.
+  std::unique_ptr<OverlayRequestCallbackInstaller>
+  CreateBannerCallbackInstaller();
+
+  // Creates an OverlayRequestCallbackInstaller that handles model-layer updates
+  // the the infobar's detail sheet UI.  Returns null  if detail sheets are not
+  // supported for this InfobarType.
+  std::unique_ptr<OverlayRequestCallbackInstaller>
+  CreateDetailSheetCallbackInstaller();
+
+  // Creates an OverlayRequestCallbackInstaller that handles model-layer updates
+  // the the infobar's modal UI.  Returns null  if modals are not
+  // supported for this InfobarType.
+  std::unique_ptr<OverlayRequestCallbackInstaller>
+  CreateModalCallbackInstaller();
+
+  // Called to notify the interaction handler that |infobar|'s overlay UI with
+  // |overlay_type|'s visibility has changed.
+  void InfobarVisibilityChanged(InfoBarIOS* infobar,
+                                InfobarOverlayType overlay_type,
+                                bool visible);
 
  protected:
-  // Initializer used by subclasses that return the passed handlers from the
-  // getters above.  |banner_handler| must be non-null for all InfobarTypes.
-  // |sheet_handler| and |modal_handler| may be null if the infobar whose
-  // interactions are being handled do not support these overlay types.
-  InfobarInteractionHandler(
-      const OverlayRequestSupport* request_support,
-      std::unique_ptr<InfobarBannerInteractionHandler> banner_handler,
-      std::unique_ptr<InfobarDetailSheetInteractionHandler> sheet_handler,
-      std::unique_ptr<InfobarModalInteractionHandler> modal_handler);
-
-  // The request support passed on initialization.  Only interactions with
-  // supported requests should be handled by this instance.
-  const OverlayRequestSupport* request_support_ = nullptr;
-  // The interaction handlers passed on initialization.
-  std::unique_ptr<InfobarBannerInteractionHandler> banner_handler_;
-  std::unique_ptr<InfobarDetailSheetInteractionHandler> sheet_handler_;
-  std::unique_ptr<InfobarModalInteractionHandler> modal_handler_;
+  // The type of infobar whose interactions are handled by this instance.
+  InfobarType infobar_type_;
+  // The handlers for each InfobarOverlayType.
+  std::unique_ptr<Handler> banner_handler_;
+  std::unique_ptr<Handler> detail_sheet_handler_;
+  std::unique_ptr<Handler> modal_handler_;
 };
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_OVERLAYS_BROWSER_AGENT_INTERACTION_HANDLERS_INFOBAR_INTERACTION_HANDLER_H_

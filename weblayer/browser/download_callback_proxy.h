@@ -28,6 +28,14 @@ class DownloadCallbackProxy : public DownloadDelegate {
                          const std::string& content_disposition,
                          const std::string& mime_type,
                          int64_t content_length) override;
+  void AllowDownload(const GURL& url,
+                     const std::string& request_method,
+                     base::Optional<url::Origin> request_initiator,
+                     AllowDownloadCallback callback) override;
+  void DownloadStarted(Download* download) override;
+  void DownloadProgressChanged(Download* download) override;
+  void DownloadCompleted(Download* download) override;
+  void DownloadFailed(Download* download) override;
 
  private:
   Tab* tab_;

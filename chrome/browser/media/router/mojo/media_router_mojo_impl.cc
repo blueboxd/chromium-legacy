@@ -29,12 +29,12 @@
 #include "chrome/browser/media/router/mojo/media_sink_service_status.h"
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -112,7 +112,8 @@ content::WebContents* GetWebContentsFromId(
       for (int i = 0; i < target_tab_strip->count(); ++i) {
         content::WebContents* target_contents =
             target_tab_strip->GetWebContentsAt(i);
-        if (SessionTabHelper::IdForTab(target_contents).id() == tab_id) {
+        if (sessions::SessionTabHelper::IdForTab(target_contents).id() ==
+            tab_id) {
           return target_contents;
         }
       }
@@ -327,9 +328,10 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
                        presentation_id, origin, web_contents, timeout,
                        incognito, std::move(mr_callback)));
   } else {
-    const int tab_id = source.IsTabMirroringSource()
-                           ? SessionTabHelper::IdForTab(web_contents).id()
-                           : -1;
+    const int tab_id =
+        source.IsTabMirroringSource()
+            ? sessions::SessionTabHelper::IdForTab(web_contents).id()
+            : -1;
     media_route_providers_[provider_id]->CreateRoute(
         source_id, sink_id, presentation_id, origin, tab_id, timeout, incognito,
         std::move(mr_callback));
@@ -360,7 +362,7 @@ void MediaRouterMojoImpl::JoinRoute(const MediaSource::Id& source_id,
     return;
   }
 
-  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
   auto mr_callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
       presentation_id, *provider_id, incognito, std::move(callback), true);
@@ -387,7 +389,7 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
     return;
   }
 
-  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+  int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
   auto mr_callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),

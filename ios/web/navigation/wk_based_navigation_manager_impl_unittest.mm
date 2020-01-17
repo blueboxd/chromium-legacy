@@ -667,7 +667,6 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
 // Tests that restoring session replaces existing history in navigation manager.
 TEST_F(WKBasedNavigationManagerTest, RestoreSessionResetsHistory) {
   EXPECT_EQ(-1, manager_->GetPendingItemIndex());
-  EXPECT_EQ(-1, manager_->GetPreviousItemIndex());
   EXPECT_EQ(-1, manager_->GetLastCommittedItemIndex());
 
   // Sets up the navigation history with 2 entries, and a pending back-forward
@@ -698,7 +697,6 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionResetsHistory) {
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
   EXPECT_EQ(1, manager_->GetLastCommittedItemIndex());
-  EXPECT_EQ(0, manager_->GetPreviousItemIndex());
   EXPECT_EQ(0, manager_->GetPendingItemIndex());
   EXPECT_TRUE(manager_->GetPendingItem() != nullptr);
 
@@ -717,7 +715,6 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionResetsHistory) {
   // loading in the web view. This is not tested here because this test doesn't
   // use real WKWebView.
   EXPECT_EQ(-1, manager_->GetLastCommittedItemIndex());
-  EXPECT_EQ(-1, manager_->GetPreviousItemIndex());
   EXPECT_EQ(-1, manager_->GetPendingItemIndex());
 
   // Check that the only pending item is restore_session.html.
@@ -798,7 +795,6 @@ TEST_F(WKBasedNavigationManagerTest, EmptyWindowOpenNavigation) {
   EXPECT_EQ(1, manager_->GetIndexForOffset(1));
   EXPECT_EQ(-1, manager_->GetIndexForOffset(-1));
 
-  EXPECT_EQ(-1, manager_->GetPreviousItemIndex());
   EXPECT_EQ(1, manager_->GetItemCount());
   EXPECT_EQ(last_committed_item, manager_->GetItemAtIndex(0));
   EXPECT_FALSE(manager_->GetItemAtIndex(1));
@@ -841,7 +837,6 @@ TEST_F(WKBasedNavigationManagerTest, EmptyWindowOpenNavigation) {
   EXPECT_EQ(1, manager_->GetIndexForOffset(1));
   EXPECT_EQ(-1, manager_->GetIndexForOffset(-1));
 
-  EXPECT_EQ(-1, manager_->GetPreviousItemIndex());
   EXPECT_EQ(1, manager_->GetItemCount());
   EXPECT_EQ(last_committed_item_2, manager_->GetItemAtIndex(0));
   EXPECT_FALSE(manager_->GetItemAtIndex(1));

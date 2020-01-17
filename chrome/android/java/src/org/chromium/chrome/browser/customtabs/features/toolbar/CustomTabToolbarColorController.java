@@ -12,8 +12,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
+import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -47,14 +47,6 @@ public class CustomTabToolbarColorController {
     private final ChromeActivity mActivity;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final CustomTabActivityTabProvider mTabProvider;
-
-    private final CustomTabActivityTabProvider.Observer mActivityTabObserver =
-            new CustomTabActivityTabProvider.Observer() {
-                @Override
-                public void onTabSwapped(@NonNull Tab tab) {
-                    updateColor();
-                }
-            };
 
     private ToolbarManager mToolbarManager;
     private boolean mUseTabThemeColor;
@@ -103,13 +95,12 @@ public class CustomTabToolbarColorController {
         assert manager != null : "Toolbar manager not initialized";
 
         observeTabToUpdateColor();
-        mTabProvider.addObserver(mActivityTabObserver);
 
         updateColor();
     }
 
     private void observeTabToUpdateColor() {
-        mTabObserverRegistrar.registerActivityTabObserver(new EmptyTabObserver() {
+        mTabObserverRegistrar.registerActivityTabObserver(new CustomTabTabObserver() {
             @Override
             public void onPageLoadFinished(Tab tab, String url) {
                 // Update the color when the page load finishes.
@@ -129,6 +120,11 @@ public class CustomTabToolbarColorController {
 
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
+                updateColor();
+            }
+
+            @Override
+            public void onObservingDifferentTab(@NonNull Tab tab) {
                 updateColor();
             }
         });

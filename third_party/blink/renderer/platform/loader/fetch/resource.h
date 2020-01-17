@@ -378,7 +378,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
   // in ResourceFetcher::StartLoad() for retry in cache-aware loading, remove
   // once ResourceRequest is not modified in StartLoad(). crbug.com/632580
   void SetResourceRequest(const ResourceRequest& resource_request) {
-    resource_request_ = resource_request;
+    resource_request_.CopyFrom(resource_request);
   }
 
   // Used by the MemoryCache to reduce the memory consumption of the entry.
@@ -475,7 +475,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
    public:
     explicit RedirectPair(const ResourceRequest& request,
                           const ResourceResponse& redirect_response)
-        : request_(request), redirect_response_(redirect_response) {}
+        : redirect_response_(redirect_response) {
+      request_.CopyFrom(request);
+    }
 
     ResourceRequest request_;
     ResourceResponse redirect_response_;

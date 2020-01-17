@@ -14,9 +14,7 @@ static_library("renderer") {
     "distiller_page_notifier_service_impl.h",
   ]
 
-  public_deps = [
-    "//components/dom_distiller/core/proto",
-  ]
+  public_deps = [ "//components/dom_distiller/core/proto" ]
   deps = [
     "//base",
     "//components/dom_distiller/content/common/mojom",

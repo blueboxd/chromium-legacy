@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/shared_image_backing_egl_image.h"
 
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/shared_image_batch_access_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
 #include "gpu/command_buffer/service/texture_definition.h"
@@ -12,6 +13,7 @@
 #include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/scoped_binders.h"
+#include "ui/gl/shared_gl_fence_egl.h"
 
 namespace gpu {
 
@@ -53,12 +55,11 @@ class SharedImageRepresentationEglImageGLTexture
     if (mode_ == RepresentationAccessMode::kNone)
       return;
 
-    std::unique_ptr<gl::GLFenceEGL> egl_fence = gl::GLFenceEGL::Create();
     // Pass this fence to its backing.
     if (mode_ == RepresentationAccessMode::kRead) {
-      egl_backing()->EndRead(this, std::move(egl_fence));
+      egl_backing()->EndRead(this);
     } else if (mode_ == RepresentationAccessMode::kWrite) {
-      egl_backing()->EndWrite(std::move(egl_fence));
+      egl_backing()->EndWrite();
     } else {
       NOTREACHED();
     }
@@ -85,7 +86,8 @@ SharedImageBackingEglImage::SharedImageBackingEglImage(
     uint32_t usage,
     size_t estimated_size,
     GLuint gl_format,
-    GLuint gl_type)
+    GLuint gl_type,
+    SharedImageBatchAccessManager* batch_access_manager)
     : ClearTrackingSharedImageBacking(mailbox,
                                       format,
                                       size,
@@ -94,9 +96,15 @@ SharedImageBackingEglImage::SharedImageBackingEglImage(
                                       estimated_size,
                                       true /*is_thread_safe*/),
       gl_format_(gl_format),
-      gl_type_(gl_type) {}
+      gl_type_(gl_type),
+      batch_access_manager_(batch_access_manager) {
+  DCHECK(batch_access_manager_);
+}
 
-SharedImageBackingEglImage::~SharedImageBackingEglImage() {}
+SharedImageBackingEglImage::~SharedImageBackingEglImage() {
+  // Un-Register this backing from the |batch_access_manager_|.
+  batch_access_manager_->UnregisterEglBacking(this);
+}
 
 void SharedImageBackingEglImage::Update(
     std::unique_ptr<gfx::GpuFence> in_fence) {
@@ -157,14 +165,14 @@ bool SharedImageBackingEglImage::BeginWrite() {
     // can not update |read_fences_|.
     read_fences_.clear();
   }
+
   if (write_fence_)
     write_fence_->ServerWait();
 
   return true;
 }
 
-void SharedImageBackingEglImage::EndWrite(
-    std::unique_ptr<gl::GLFenceEGL> end_write_fence) {
+void SharedImageBackingEglImage::EndWrite() {
   AutoLock auto_lock(this);
 
   if (!is_writing_) {
@@ -174,7 +182,7 @@ void SharedImageBackingEglImage::EndWrite(
   }
 
   is_writing_ = false;
-  write_fence_ = std::move(end_write_fence);
+  write_fence_ = gl::GLFenceEGL::Create();
 }
 
 bool SharedImageBackingEglImage::BeginRead(
@@ -198,8 +206,7 @@ bool SharedImageBackingEglImage::BeginRead(
 }
 
 void SharedImageBackingEglImage::EndRead(
-    const SharedImageRepresentation* reader,
-    std::unique_ptr<gl::GLFenceEGL> end_read_fence) {
+    const SharedImageRepresentation* reader) {
   AutoLock auto_lock(this);
 
   if (!active_readers_.contains(reader)) {
@@ -208,7 +215,19 @@ void SharedImageBackingEglImage::EndRead(
     return;
   }
   active_readers_.erase(reader);
-  read_fences_[gl::g_current_gl_context] = std::move(end_read_fence);
+
+  // For batch reads, we only need to create 1 fence after the last
+  // EndRead() for the whole batch of reads. Hence we just register this backing
+  // here with the |batch_access_manager_| so that it can set an end read fence
+  // on this backing later after the last read of the batch. This improves
+  // performance because creating and inserting gl fences are costly. For non
+  // batch reads/regular reads, we create 1 fence per EndRead().
+  if (batch_access_manager_->IsDoingBatchReads()) {
+    batch_access_manager_->RegisterEglBackingForEndReadFence(this);
+  } else {
+    read_fences_[gl::g_current_gl_context] =
+        base::MakeRefCounted<gl::SharedGLFenceEGL>();
+  }
 }
 
 gles2::Texture* SharedImageBackingEglImage::GenEGLImageSibling() {
@@ -275,6 +294,12 @@ gles2::Texture* SharedImageBackingEglImage::GenEGLImageSibling() {
 
   texture->SetImmutable(true /*immutable*/, false /*immutable_storage*/);
   return texture;
+}
+
+void SharedImageBackingEglImage::SetEndReadFence(
+    scoped_refptr<gl::SharedGLFenceEGL> shared_egl_fence) {
+  AutoLock auto_lock(this);
+  read_fences_[gl::g_current_gl_context] = std::move(shared_egl_fence);
 }
 
 }  // namespace gpu

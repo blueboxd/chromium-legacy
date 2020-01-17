@@ -10,6 +10,7 @@ cr.define('settings', function() {
    */
   const Ctap2Status = {
     OK: 0x0,
+    ERR_INVALID_OPTION: 0x2C,
     ERR_KEEPALIVE_CANCEL: 0x2D,
   };
 
@@ -36,24 +37,33 @@ cr.define('settings', function() {
   let Credential;
 
   /**
-   * EnrollmentStatus represents the current status of an enrollment
-   * suboperation, where 'remaining' is the number of samples left, 'status' is
-   * the last enrollment status, 'code' indicates the final
-   * CtapDeviceResponseCode of the operation, and 'enrollment' contains the new
-   * Enrollment.
+   * SampleStatus is the result for reading an individual sample ("touch")
+   * during a fingerprint enrollment. This is a subset of the
+   * lastEnrollSampleStatus enum defined in the CTAP spec.
+   * @enum {number}
+   */
+  const SampleStatus = {
+    OK: 0x0,
+  };
+
+  /**
+   * SampleResponse indicates the result of an individual sample (sensor touch)
+   * for an enrollment suboperation.
    *
-   * For each enrollment sample, 'status' is set - when the enrollment operation
-   * reaches an end state, 'code' and, if successful, 'enrollment' are set. |OK|
-   * indicates successful enrollment. A code of |ERR_KEEPALIVE_CANCEL| indicates
-   * user-initated cancellation.
+   * @typedef {{status: settings.SampleStatus,
+   *            remaining: number}}
+   * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
+   */
+  let SampleResponse;
+
+  /**
+   * EnrollmentResponse is the final response to an enrollment suboperation,
    *
-   * @typedef {{status: ?number,
-   *            code: ?settings.Ctap2Status,
-   *            remaining: number,
+   * @typedef {{code: settings.Ctap2Status,
    *            enrollment: ?settings.Enrollment}}
    * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
    */
-  let EnrollmentStatus;
+  let EnrollmentResponse;
 
   /**
    * Enrollment represents a valid fingerprint template stored on a security
@@ -201,7 +211,7 @@ cr.define('settings', function() {
      * out waiting for a touch, or has successfully processed a touch. Any
      * errors will fire the 'security-keys-bio-enrollment-error' WebListener.
      *
-     * @return {!Promise<!settings.EnrollmentStatus>} resolves when the
+     * @return {!Promise<!settings.EnrollmentResponse>} resolves when the
      *     enrollment operation is finished successfully.
      */
     startEnrolling() {}
@@ -354,7 +364,9 @@ cr.define('settings', function() {
     Credential,
     Ctap2Status,
     Enrollment,
-    EnrollmentStatus,
+    EnrollmentResponse,
+    SampleStatus,
+    SampleResponse,
     SecurityKeysBioEnrollProxy,
     SecurityKeysBioEnrollProxyImpl,
     SecurityKeysCredentialBrowserProxy,

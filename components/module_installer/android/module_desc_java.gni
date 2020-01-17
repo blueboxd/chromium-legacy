@@ -27,9 +27,7 @@ template("module_desc_java") {
     if (defined(invoker.shared_libraries)) {
       deps = invoker.shared_libraries
     }
-    outputs = [
-      _libraries,
-    ]
+    outputs = [ _libraries ]
     data_keys = [ "shared_libraries" ]
     walk_keys = [ "shared_libraries_barrier" ]
     rebase = root_build_dir
@@ -39,15 +37,9 @@ template("module_desc_java") {
   _srcjar = "$target_gen_dir/${_target_name}__srcjar.srcjar"
   action_with_pydeps("${_target_name}__srcjar") {
     script = "//components/module_installer/android/module_desc_java.py"
-    deps = [
-      ":${_target_name}__libraries",
-    ]
-    inputs = [
-      _libraries,
-    ]
-    outputs = [
-      _srcjar,
-    ]
+    deps = [ ":${_target_name}__libraries" ]
+    inputs = [ _libraries ]
+    outputs = [ _srcjar ]
     args = [
       "--module",
       invoker.module_name,

@@ -52,7 +52,7 @@ const EventsView = (function() {
      * being dragged.  When this happens, we may not receive a list of files for
      * security reasons, which is why we allow the |files| array to be empty.
      */
-    onDrag: function(event) {
+    onDrag(event) {
       // NOTE: Use Array.prototype.indexOf here is necessary while WebKit
       // decides which type of data structure dataTransfer.types will be
       // (currently between DOMStringList and Array). These have different APIs
@@ -67,7 +67,7 @@ const EventsView = (function() {
      * Called when something is dropped onto the drop target.  If it's a single
      * file, redirect to the events tab to show the depreciation message.
      */
-    onDrop: function(event) {
+    onDrop(event) {
       const indexOf = Array.prototype.indexOf;
       if (indexOf.call(event.dataTransfer.types, 'Files') == -1 ||
           event.dataTransfer.files.length != 1) {

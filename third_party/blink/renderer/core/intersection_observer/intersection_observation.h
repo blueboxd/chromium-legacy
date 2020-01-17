@@ -5,20 +5,22 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_INTERSECTION_OBSERVATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_INTERSECTION_OBSERVATION_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_geometry.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
 class Element;
 class IntersectionObserver;
+class IntersectionObserverEntry;
 
 // IntersectionObservation represents the result of calling
 // IntersectionObserver::observe(target) for some target element; it tracks the
 // intersection between a single target element and the IntersectionObserver's
 // root.  It is an implementation-internal class without any exposed interface.
-class IntersectionObservation final
+class CORE_EXPORT IntersectionObservation final
     : public GarbageCollected<IntersectionObservation> {
  public:
   // Flags that drive the behavior of the ComputeIntersections() method. For an
@@ -51,11 +53,15 @@ class IntersectionObservation final
       unsigned flags);
   void TakeRecords(HeapVector<Member<IntersectionObserverEntry>>&);
   void Disconnect();
+  void InvalidateCachedRects();
 
   void Trace(blink::Visitor*);
 
+  bool CanUseCachedRectsForTesting() const { return CanUseCachedRects(); }
+
  private:
   bool ShouldCompute(unsigned flags);
+  bool CanUseCachedRects() const;
   unsigned GetIntersectionGeometryFlags(unsigned compute_flags) const;
   // Inspect the geometry to see if there has been a transition event; if so,
   // generate a notification and schedule it for delivery.
@@ -69,6 +75,8 @@ class IntersectionObservation final
   WeakMember<Element> target_;
   HeapVector<Member<IntersectionObserverEntry>> entries_;
   DOMHighResTimeStamp last_run_time_;
+
+  std::unique_ptr<IntersectionGeometry::CachedRects> cached_rects_;
 
   unsigned last_is_visible_ : 1;
   unsigned needs_update_ : 1;

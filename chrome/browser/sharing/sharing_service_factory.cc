@@ -117,10 +117,14 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
           vapid_key_manager.get());
 
   auto fcm_sender = std::make_unique<SharingFCMSender>(
-      gcm_driver, sync_prefs.get(), vapid_key_manager.get());
+      gcm_driver, sync_prefs.get(), vapid_key_manager.get(),
+      local_device_info_provider);
   SharingFCMSender* fcm_sender_ptr = fcm_sender.get();
   auto sharing_message_sender = std::make_unique<SharingMessageSender>(
-      std::move(fcm_sender), sync_prefs.get(), local_device_info_provider);
+      sync_prefs.get(), local_device_info_provider);
+
+  sharing_message_sender->RegisterSendDelegate(
+      SharingMessageSender::DelegateType::kFCM, std::move(fcm_sender));
 
   auto device_source = std::make_unique<SharingDeviceSourceSync>(
       sync_service, local_device_info_provider, device_info_tracker);

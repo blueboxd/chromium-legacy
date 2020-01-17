@@ -16,7 +16,7 @@ Polymer({
   },
 
   /** @private */
-  getBackgroundImage_: function() {
+  getBackgroundImage_() {
     let backgroundImage = cr.icon.getFavicon('');
     if (this.faviconUrl) {
       const url = this.ensureUrlHasScheme_(this.faviconUrl);
@@ -35,7 +35,7 @@ Polymer({
    * @return {string} The resulting pattern.
    * @private
    */
-  removePatternWildcard_: function(pattern) {
+  removePatternWildcard_(pattern) {
     if (!pattern || pattern.length === 0) {
       return pattern;
     }
@@ -56,7 +56,7 @@ Polymer({
    * @return {string} The URL with a scheme, or an empty string.
    * @private
    */
-  ensureUrlHasScheme_: function(url) {
+  ensureUrlHasScheme_(url) {
     if (!url || url.length === 0) {
       return url;
     }

@@ -27,10 +27,7 @@ extern NSString* const kSettingsAddCreditCardCancelButtonID;
 - (instancetype)initWithDelegate:
     (id<AddCreditCardViewControllerDelegate>)delegate NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-    NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 // Returns "YES" if any of tableview cells has user input.
 @property(nonatomic, getter=tableViewHasUserInput, readonly)

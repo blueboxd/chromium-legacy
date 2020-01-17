@@ -47,6 +47,12 @@ cr.define('printerBrowserProxy', function() {
       this.getPrinterInfoResult_ = null;
 
       /**
+       * Contains the result code from querying a print server.
+       * @private {PrintServerResult}
+       */
+      this.queryPrintServerResult_ = null;
+
+      /**
        * If set, 'addDiscoveredPrinter' will fail and the promise will be
        * rejected with this printer.
        * @private {CupsPrinterInfo}
@@ -143,6 +149,9 @@ cr.define('printerBrowserProxy', function() {
     /** @override */
     queryPrintServer(serverUrl) {
       this.methodCalled('queryPrintServer', serverUrl);
+      if (this.queryPrintServerResult_ != PrintServerResult.NO_ERRORS) {
+        return Promise.reject(this.queryPrintServerResult_);
+      }
       return Promise.resolve(this.printServerPrinters);
     }
 
@@ -155,6 +164,11 @@ cr.define('printerBrowserProxy', function() {
     /** @param {PrinterSetupResult} result */
     setGetPrinterInfoResult(result) {
       this.getPrinterInfoResult_ = result;
+    }
+
+    /** @param {PrintServerResult} result */
+    setQueryPrintServerResult(result) {
+      this.queryPrintServerResult_ = result;
     }
 
     /** @param {!CupsPrinterInfo} printer */

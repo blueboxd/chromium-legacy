@@ -25,7 +25,7 @@ cr.define('ntp', function() {
   DotList.prototype = {
     __proto__: HTMLUListElement.prototype,
 
-    decorate: function() {
+    decorate() {
       this.addEventListener('keydown', this.onKeyDown_.bind(this));
       navDots = this.getElementsByClassName('dot');
     },
@@ -43,7 +43,7 @@ cr.define('ntp', function() {
      * element.
      * @param {!Event} e The KeyboardEvent.
      */
-    onKeyDown_: function(e) {
+    onKeyDown_(e) {
       if (hasKeyModifiers(e)) {
         return;
       }

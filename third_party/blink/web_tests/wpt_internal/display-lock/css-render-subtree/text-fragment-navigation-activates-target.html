@@ -1,0 +1,44 @@
+<!doctype html>
+<title>Text fragment navigation helper.</title>
+
+<script src="text-fragment-helper.js"></script>
+<script>
+function isInView(element) {
+  let rect = element.getBoundingClientRect();
+  return rect.top >= 0 && rect.top <= window.innerHeight
+      && rect.left >= 0 && rect.left <= window.innerWidth;
+}
+function checkScroll() {
+  let position = 'unknown';
+  if (window.scrollY == 0)
+    position = 'top';
+  else if(isInView(document.getElementById("text")))
+    position = 'text';
+
+  const target = document.querySelector(":target");
+  let results = {
+    scrollPosition: position,
+    href: window.location.href,
+    target: target ? target.id : 'undefined'
+  };
+  let key = (new URL(document.location)).searchParams.get("key");
+  stashResults(key, results);
+}
+</script>
+
+<style>
+.spacer {
+  height: 10000px;
+}
+.locked {
+  render-subtree: invisible skip-viewport-activation;
+}
+</style>
+
+<body onload="requestAnimationFrame(checkScroll)">
+<div class=spacer></div>
+<div class=locked>
+  <div id=text>lockedtext</div>
+</div>
+<div class=spacer></div>
+</body>

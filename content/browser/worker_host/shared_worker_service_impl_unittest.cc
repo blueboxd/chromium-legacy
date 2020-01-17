@@ -49,8 +49,10 @@ void ConnectToSharedWorker(
     const std::string& name,
     MockSharedWorkerClient* client,
     MessagePortChannel* local_port) {
+  auto options = blink::mojom::WorkerOptions::New();
+  options->name = name;
   blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
-      url, name, std::string(),
+      url, std::move(options), std::string(),
       network::mojom::ContentSecurityPolicyType::kReport,
       network::mojom::IPAddressSpace::kPublic));
 

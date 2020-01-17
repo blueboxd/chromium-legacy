@@ -52,7 +52,7 @@ Polymer({
     fontSizeOptions_: {
       readOnly: true,
       type: Array,
-      value: function() {
+      value() {
         return [
           {value: 9, name: loadTimeData.getString('verySmall')},
           {value: 12, name: loadTimeData.getString('small')},
@@ -86,7 +86,7 @@ Polymer({
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
-      value: function() {
+      value() {
         const map = new Map();
         if (settings.routes.FONTS) {
           map.set(
@@ -111,13 +111,13 @@ Polymer({
   ],
 
   /** @override */
-  created: function() {
+  created() {
     this.appearanceBrowserProxy_ =
         settings.AppearanceBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.$.defaultFontSize.menuOptions = this.fontSizeOptions_;
     // TODO(dschuyler): Look into adding a listener for the
     // default zoom percent.
@@ -134,7 +134,7 @@ Polymer({
    * @return {number} A zoom easier read by users.
    * @private
    */
-  formatZoom_: function(zoom) {
+  formatZoom_(zoom) {
     return Math.round(zoom * 100);
   },
 
@@ -145,7 +145,7 @@ Polymer({
    * @return {string} The sub-label.
    * @private
    */
-  getShowHomeSubLabel_: function(showHomepage, isNtp, homepageValue) {
+  getShowHomeSubLabel_(showHomepage, isNtp, homepageValue) {
     if (!showHomepage) {
       return this.i18n('homeButtonDisabled');
     }
@@ -156,12 +156,12 @@ Polymer({
   },
 
   /** @private */
-  onCustomizeFontsTap_: function() {
-    settings.navigateTo(settings.routes.FONTS);
+  onCustomizeFontsTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.FONTS);
   },
 
   /** @private */
-  onDisableExtension_: function() {
+  onDisableExtension_() {
     this.fire('refresh-pref', 'homepage');
   },
 
@@ -169,7 +169,7 @@ Polymer({
    * @param {number} value The changed font size slider value.
    * @private
    */
-  defaultFontSizeChanged_: function(value) {
+  defaultFontSizeChanged_(value) {
     // This pref is handled separately in some extensions, but here it is tied
     // to default_font_size (to simplify the UI).
     this.set(
@@ -181,12 +181,12 @@ Polymer({
    * Open URL for either current theme or the theme gallery.
    * @private
    */
-  openThemeUrl_: function() {
+  openThemeUrl_() {
     window.open(this.themeUrl_ || loadTimeData.getString('themesGalleryUrl'));
   },
 
   /** @private */
-  onUseDefaultTap_: function() {
+  onUseDefaultTap_() {
     this.appearanceBrowserProxy_.useDefaultTheme();
   },
 
@@ -195,7 +195,7 @@ Polymer({
    * @param {boolean} useSystemTheme
    * @private
    */
-  useSystemThemePrefChanged_: function(useSystemTheme) {
+  useSystemThemePrefChanged_(useSystemTheme) {
     this.useSystemTheme_ = useSystemTheme;
   },
 
@@ -205,7 +205,7 @@ Polymer({
    * @return {boolean} Whether to show the "USE CLASSIC" button.
    * @private
    */
-  showUseClassic_: function(themeId, useSystemTheme) {
+  showUseClassic_(themeId, useSystemTheme) {
     return !!themeId || useSystemTheme;
   },
 
@@ -215,7 +215,7 @@ Polymer({
    * @return {boolean} Whether to show the "USE GTK+" button.
    * @private
    */
-  showUseSystem_: function(themeId, useSystemTheme) {
+  showUseSystem_(themeId, useSystemTheme) {
     return (!!themeId || !useSystemTheme) &&
         !this.appearanceBrowserProxy_.isSupervised();
   },
@@ -227,13 +227,13 @@ Polymer({
    *     and "USE GTK+" buttons live.
    * @private
    */
-  showThemesSecondary_: function(themeId, useSystemTheme) {
+  showThemesSecondary_(themeId, useSystemTheme) {
     return this.showUseClassic_(themeId, useSystemTheme) ||
         this.showUseSystem_(themeId, useSystemTheme);
   },
 
   /** @private */
-  onUseSystemTap_: function() {
+  onUseSystemTap_() {
     this.appearanceBrowserProxy_.useSystemTheme();
   },
   // </if>
@@ -243,7 +243,7 @@ Polymer({
    * @param {boolean} useSystemTheme
    * @private
    */
-  themeChanged_: function(themeId, useSystemTheme) {
+  themeChanged_(themeId, useSystemTheme) {
     if (this.prefs == undefined || useSystemTheme == undefined) {
       return;
     }
@@ -277,7 +277,7 @@ Polymer({
   },
 
   /** @private */
-  onZoomLevelChange_: function() {
+  onZoomLevelChange_() {
     chrome.settingsPrivate.setDefaultZoom(parseFloat(this.$.zoomLevel.value));
   },
 
@@ -286,7 +286,7 @@ Polymer({
    * @return {string} 'first' if the argument is false or empty otherwise.
    * @private
    */
-  getFirst_: function(bookmarksBarVisible) {
+  getFirst_(bookmarksBarVisible) {
     return !bookmarksBarVisible ? 'first' : '';
   },
 
@@ -297,7 +297,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  zoomValuesEqual_: function(zoom1, zoom2) {
+  zoomValuesEqual_(zoom1, zoom2) {
     return Math.abs(zoom1 - zoom2) <= 0.001;
   },
 });

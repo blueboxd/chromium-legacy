@@ -6,8 +6,6 @@
 
 #include <stdint.h>
 
-#include <string>
-
 #include "base/guid.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/sync/base/unique_position.h"
@@ -22,6 +20,7 @@ namespace {
 
 using testing::Eq;
 using testing::IsEmpty;
+using testing::Ne;
 
 enum class ExpectedSyncPositioningScheme {
   kUniquePosition = 0,
@@ -34,8 +33,9 @@ enum class ExpectedSyncPositioningScheme {
 enum class ExpectedBookmarkGuidSource {
   kSpecifics = 0,
   kValidOCII = 1,
-  kLeftEmpty = 2,
-  kMaxValue = kLeftEmpty,
+  kDeprecatedLeftEmpty = 2,
+  kInferred = 3,
+  kMaxValue = kInferred,
 };
 
 TEST(BookmarkUpdatePreprocessingTest, ShouldPropagateUniquePosition) {
@@ -145,9 +145,9 @@ TEST(BookmarkUpdatePreprocessingTest, ShouldUseOriginatorClientItemIdAsGuid) {
                                       /*count=*/1);
 }
 
-// Tests that AdaptGuidForBookmark() leaves the GUID in specifics empty when it
-// is originally empty and originator client item ID is not a valid GUID.
-TEST(BookmarkUpdatePreprocessingTest, ShouldLeaveEmptyGuid) {
+// Tests that AdaptGuidForBookmark() infers the GUID when the field in specifics
+// is empty and originator client item ID is not a valid GUID.
+TEST(BookmarkUpdatePreprocessingTest, ShouldInferGuid) {
   const std::string kOriginatorClientItemId = "1";
 
   sync_pb::SyncEntity entity;
@@ -159,12 +159,29 @@ TEST(BookmarkUpdatePreprocessingTest, ShouldLeaveEmptyGuid) {
   sync_pb::EntitySpecifics specifics = entity.specifics();
   AdaptGuidForBookmark(entity, &specifics);
 
-  EXPECT_THAT(specifics.bookmark().guid(), IsEmpty());
+  EXPECT_TRUE(base::IsValidGUIDOutputString(specifics.bookmark().guid()));
 
   histogram_tester.ExpectUniqueSample("Sync.BookmarkGUIDSource2",
                                       /*sample=*/
-                                      ExpectedBookmarkGuidSource::kLeftEmpty,
+                                      ExpectedBookmarkGuidSource::kInferred,
                                       /*count=*/1);
+}
+
+// Tests that inferred GUIDs are computed deterministically.
+TEST(BookmarkUpdatePreprocessingTest, ShouldInferDeterministicGuid) {
+  EXPECT_THAT(InferGuidForLegacyBookmarkForTesting("cacheguid1", "1"),
+              Eq(InferGuidForLegacyBookmarkForTesting("cacheguid1", "1")));
+  EXPECT_THAT(InferGuidForLegacyBookmarkForTesting("cacheguid1", "2"),
+              Eq(InferGuidForLegacyBookmarkForTesting("cacheguid1", "2")));
+}
+
+// Tests that unique GUIDs are produced if either of the two involved fields
+// changes.
+TEST(BookmarkUpdatePreprocessingTest, ShouldInferDistictGuids) {
+  EXPECT_THAT(InferGuidForLegacyBookmarkForTesting("cacheguid1", "1"),
+              Ne(InferGuidForLegacyBookmarkForTesting("cacheguid1", "2")));
+  EXPECT_THAT(InferGuidForLegacyBookmarkForTesting("cacheguid1", "1"),
+              Ne(InferGuidForLegacyBookmarkForTesting("cacheguid2", "1")));
 }
 
 }  // namespace

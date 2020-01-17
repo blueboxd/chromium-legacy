@@ -41,6 +41,7 @@ source_set("coordinator") {
   deps = [
     ":qr_scanner",
     "//base",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/scanner",
@@ -52,9 +53,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "qr_scanner_view_controller_egtest.mm",
-  ]
+  sources = [ "qr_scanner_view_controller_egtest.mm" ]
   deps = [
     ":test_support",
     "//base",
@@ -81,9 +80,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "qr_scanner_view_controller_egtest.mm",
-  ]
+  sources = [ "qr_scanner_view_controller_egtest.mm" ]
   deps = [
     ":eg_test_support+eg2",
     "//base",
@@ -170,10 +167,6 @@ source_set("eg_test_support+eg2") {
   ]
   testonly = true
 
-  sources = [
-    "qr_scanner_app_interface.h",
-  ]
-  deps = [
-    "//ios/chrome/browser/ui/scanner:camera_state",
-  ]
+  sources = [ "qr_scanner_app_interface.h" ]
+  deps = [ "//ios/chrome/browser/ui/scanner:camera_state" ]
 }

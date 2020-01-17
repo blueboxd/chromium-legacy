@@ -43,10 +43,7 @@ extern NSString* const kImportDataContinueButtonId;
                          toEmail:(NSString*)toEmail
                       isSignedIn:(BOOL)isSignedIn NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-    NS_UNAVAILABLE;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 @end
 

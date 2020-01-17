@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
@@ -36,7 +37,8 @@ using web_modal::WebContentsModalDialogManager;
 
 namespace {
 
-struct TestClientCertificateDelegateResults {
+struct TestClientCertificateDelegateResults
+    : public base::SupportsWeakPtr<TestClientCertificateDelegateResults> {
   bool destroyed = false;
   bool continue_with_certificate_called = false;
   scoped_refptr<net::X509Certificate> cert;
@@ -46,17 +48,26 @@ struct TestClientCertificateDelegateResults {
 class TestClientCertificateDelegate
     : public content::ClientCertificateDelegate {
  public:
-  // Creates a ClientCertificateDelegate that sets |*destroyed| to true on
-  // destruction.
+  // Creates a ClientCertificateDelegate that sets |results->destroyed| to true
+  // on destruction. The |results| parameter is a WeakPtr so we avoid retaining
+  // a dangling pointer to a stack object that has since been deallocated.
   explicit TestClientCertificateDelegate(
-      TestClientCertificateDelegateResults* results)
+      base::WeakPtr<TestClientCertificateDelegateResults> results)
       : results_(results) {}
 
-  ~TestClientCertificateDelegate() override { results_->destroyed = true; }
+  ~TestClientCertificateDelegate() override {
+    if (!results_) {
+      return;
+    }
+    results_->destroyed = true;
+  }
 
   // content::ClientCertificateDelegate.
   void ContinueWithCertificate(scoped_refptr<net::X509Certificate> cert,
                                scoped_refptr<net::SSLPrivateKey> key) override {
+    if (!results_) {
+      return;
+    }
     EXPECT_FALSE(results_->continue_with_certificate_called);
     results_->cert = cert;
     results_->key = key;
@@ -65,7 +76,7 @@ class TestClientCertificateDelegate
   }
 
  private:
-  TestClientCertificateDelegateResults* results_;
+  base::WeakPtr<TestClientCertificateDelegateResults> results_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClientCertificateDelegate);
 };
@@ -143,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Basic) {
       chrome::ShowSSLClientCertificateSelector(
           web_contents, auth_requestor_->cert_request_info_.get(),
           GetTestCertificateList(),
-          std::make_unique<TestClientCertificateDelegate>(&results));
+          std::make_unique<TestClientCertificateDelegate>(results.AsWeakPtr()));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
@@ -174,10 +185,11 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
       chrome::ShowSSLClientCertificateSelector(
           web_contents, auth_requestor_->cert_request_info_.get(),
           GetTestCertificateList(),
-          std::make_unique<TestClientCertificateDelegate>(&results));
+          std::make_unique<TestClientCertificateDelegate>(results.AsWeakPtr()));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
+  // Cancel the dialog without selecting a certificate.
   std::move(cancellation_callback).Run();
 
   base::RunLoop().RunUntilIdle();
@@ -186,10 +198,20 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
   // The user did not close the tab, so there should be zero samples reported
   // for ClientCertSelectionResult::kUserCloseTab.
 
-  // The TestClientCertificateDelegate will not be freed (yet) because no
-  // SSLClientAuthObserver methods have been invoked. The SSLClientAuthObserver
-  // owns the ClientCertificateDelegate in a unique_ptr, so it will be freed the
-  // SSLClientAuthObserver is destroyed.
+  // A note on object lifetimes:
+  //
+  // The earlier call to ShowSSLClientCertificateSelector() created a
+  // self-owning (and self-deleting) SSLClientAuthObserver, which also owns the
+  // TestClientCertificateDelegate in this test.
+  //
+  // At this point, the TestClientCertificateDelegate's destructor has not
+  // executed because no SSLClientAuthObserver methods that trigger
+  // self-deletion have been called, e.g.  ContinueWithCertificate().
+  //
+  // Since ~TestClientCertificateDelegate() must write to |results| to indicate
+  // destruction occurred, it must have some way to know whether |results|
+  // still exists. This is why we are using a WeakPtr to |results|.
+
   EXPECT_FALSE(results.destroyed);
   EXPECT_FALSE(results.continue_with_certificate_called);
 }
@@ -207,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Cancel) {
       chrome::ShowSSLClientCertificateSelectorMacForTesting(
           web_contents, auth_requestor_->cert_request_info_.get(),
           GetTestCertificateList(),
-          std::make_unique<TestClientCertificateDelegate>(&results),
+          std::make_unique<TestClientCertificateDelegate>(results.AsWeakPtr()),
           base::DoNothing());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
@@ -239,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Accept) {
       chrome::ShowSSLClientCertificateSelectorMacForTesting(
           web_contents, auth_requestor_->cert_request_info_.get(),
           GetTestCertificateList(),
-          std::make_unique<TestClientCertificateDelegate>(&results),
+          std::make_unique<TestClientCertificateDelegate>(results.AsWeakPtr()),
           base::DoNothing());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
@@ -282,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, HideShow) {
       chrome::ShowSSLClientCertificateSelector(
           web_contents, auth_requestor_->cert_request_info_.get(),
           GetTestCertificateList(),
-          std::make_unique<TestClientCertificateDelegate>(&results));
+          std::make_unique<TestClientCertificateDelegate>(results.AsWeakPtr()));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 

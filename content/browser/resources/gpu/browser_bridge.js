@@ -124,7 +124,7 @@ cr.define('gpu', function() {
       this.callAsync(
           'requestLogMessages', undefined,
           (function(messages) {
-            if (messages.length != this.logMessages_.length) {
+            if (messages.length !== this.logMessages_.length) {
               this.logMessages_ = messages;
               cr.dispatchSimpleEvent(this, 'logMessagesChange');
             }
@@ -146,7 +146,7 @@ cr.define('gpu', function() {
     isSandboxedForTesting() {
       for (i = 0; i < this.gpuInfo_.basicInfo.length; ++i) {
         const info = this.gpuInfo_.basicInfo[i];
-        if (info.description == 'Sandboxed') {
+        if (info.description === 'Sandboxed') {
           return info.value;
         }
       }

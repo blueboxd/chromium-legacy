@@ -489,8 +489,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Image processor. Accessed on |decoder_thread_|.
   std::unique_ptr<ImageProcessor> image_processor_;
 
-  // The V4L2Device GLImage is created from.
-  scoped_refptr<V4L2Device> gl_image_device_;
   // The format of GLImage.
   base::Optional<Fourcc> gl_image_format_fourcc_;
   // The logical dimensions of GLImage buffer in pixels.

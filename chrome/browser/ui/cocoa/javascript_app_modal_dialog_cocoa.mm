@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_app_modal_dialog_factory.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/javascript_dialog_manager.h"
-#include "components/app_modal/javascript_native_dialog_factory.h"
 #include "components/remote_cocoa/app_shim/alert.h"
 #include "components/remote_cocoa/browser/application_host.h"
 #include "components/strings/grit/components_strings.h"
@@ -170,30 +169,15 @@ bool JavaScriptAppModalDialogCocoa::IsShowing() const {
   return is_showing_;
 }
 
-namespace {
-
-class ChromeJavaScriptNativeDialogCocoaFactory
-    : public app_modal::JavaScriptNativeDialogFactory {
- public:
-  ChromeJavaScriptNativeDialogCocoaFactory() {}
-  ~ChromeJavaScriptNativeDialogCocoaFactory() override {}
-
- private:
-  app_modal::NativeAppModalDialog* CreateNativeJavaScriptDialog(
-      app_modal::JavaScriptAppModalDialog* dialog) override {
-    app_modal::NativeAppModalDialog* d =
-        new JavaScriptAppModalDialogCocoa(dialog);
-    dialog->web_contents()->GetDelegate()->ActivateContents(
-        dialog->web_contents());
-    return d;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeJavaScriptNativeDialogCocoaFactory);
-};
-
-}  // namespace
-
 void InstallChromeJavaScriptNativeAppModalDialogFactory() {
   app_modal::JavaScriptDialogManager::GetInstance()->SetNativeDialogFactory(
-      base::WrapUnique(new ChromeJavaScriptNativeDialogCocoaFactory));
+      base::BindRepeating([](app_modal::JavaScriptAppModalDialog* dialog) {
+        app_modal::NativeAppModalDialog* d =
+            new JavaScriptAppModalDialogCocoa(dialog);
+        // Match Views by activating the tab during creation (rather than when
+        // showing).
+        dialog->web_contents()->GetDelegate()->ActivateContents(
+            dialog->web_contents());
+        return d;
+      }));
 }

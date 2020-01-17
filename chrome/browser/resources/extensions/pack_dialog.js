@@ -62,12 +62,12 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.dialog.showModal();
   },
 
   /** @private */
-  onRootBrowse_: function() {
+  onRootBrowse_() {
     this.delegate.choosePackRootDirectory().then(path => {
       if (path) {
         this.set('packDirectory_', path);
@@ -76,7 +76,7 @@ Polymer({
   },
 
   /** @private */
-  onKeyBrowse_: function() {
+  onKeyBrowse_() {
     this.delegate.choosePrivateKeyPath().then(path => {
       if (path) {
         this.set('keyFile_', path);
@@ -85,12 +85,12 @@ Polymer({
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     this.$.dialog.cancel();
   },
 
   /** @private */
-  onConfirmTap_: function() {
+  onConfirmTap_() {
     this.delegate.packExtension(
         this.packDirectory_, this.keyFile_, 0, this.onPackResponse_.bind(this));
   },
@@ -100,7 +100,7 @@ Polymer({
    *    response from request to pack an extension.
    * @private
    */
-  onPackResponse_: function(response) {
+  onPackResponse_(response) {
     this.lastResponse_ = response;
   },
 
@@ -112,7 +112,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onAlertClose_: function(e) {
+  onAlertClose_(e) {
     e.stopPropagation();
 
     if (this.lastResponse_.status ===

@@ -217,9 +217,7 @@ static_library("test_support") {
     "test_utils.h",
   ]
 
-  public_deps = [
-    "//ppapi/shared_impl",
-  ]
+  public_deps = [ "//ppapi/shared_impl" ]
   deps = [
     "//base/test:test_support",
     "//ipc",

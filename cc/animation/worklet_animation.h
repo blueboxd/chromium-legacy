@@ -8,9 +8,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/animation_export.h"
 #include "cc/animation/animation_host.h"
-#include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/trees/property_tree.h"
 
 namespace cc {
@@ -33,8 +33,7 @@ class ScrollTimeline;
 // When Blink WorkletAnimation is updated, it calls the UI thread instance to
 // modify its properties. The updated properties are pushed by the UI thread
 // instance to the Impl thread instance during commit.
-class CC_ANIMATION_EXPORT WorkletAnimation final
-    : public SingleKeyframeEffectAnimation {
+class CC_ANIMATION_EXPORT WorkletAnimation final : public Animation {
  public:
   enum class State { PENDING, RUNNING, REMOVED };
   WorkletAnimation(int cc_animation_id,

@@ -18,9 +18,7 @@ action("interfaces_info") {
     "$bindings_core_output_dir/interfaces_info_core.pickle",
     "$bindings_modules_output_dir/interfaces_info_modules.pickle",
   ]
-  outputs = [
-    "$bindings_output_dir/interfaces_info.pickle",
-  ]
+  outputs = [ "$bindings_output_dir/interfaces_info.pickle" ]
 
   args = [
     "--",
@@ -56,9 +54,7 @@ template("collect_idl_files") {
     script = "${bindings_scripts_dir}/collect_idl_files.py"
 
     inputs = invoker.inputs
-    outputs = [
-      invoker.output,
-    ]
+    outputs = [ invoker.output ]
 
     # List input file names in a temporary file.
     response_file_contents = rebase_path(inputs, root_build_dir)
@@ -122,9 +118,7 @@ action_with_pydeps("web_idl_database") {
              runtime_enabled_features_test_file,
            ]
   output_data_file = "${bindings_output_dir}/web_idl_database.pickle"
-  outputs = [
-    output_data_file,
-  ]
+  outputs = [ output_data_file ]
 
   args = [
            "--output",
@@ -156,9 +150,7 @@ if (use_v8_bind_gen_for_dictionary) {
     web_idl_database_outputs = get_target_outputs(":web_idl_database")
     web_idl_database = web_idl_database_outputs[0]
 
-    inputs = [
-      web_idl_database,
-    ]
+    inputs = [ web_idl_database ]
     outputs =
         generated_core_dictionary_files + generated_modules_dictionary_files +
         generated_core_testing_dictionary_files + generated_demo_files
@@ -177,9 +169,7 @@ if (use_v8_bind_gen_for_dictionary) {
       rebase_path("${bindings_output_dir}/modules/v8/", root_gen_dir),
     ]
 
-    deps = [
-      ":web_idl_database",
-    ]
+    deps = [ ":web_idl_database" ]
   }
 }
 
@@ -189,13 +179,9 @@ action_with_pydeps("generate_high_entropy_list") {
   web_idl_database_outputs = get_target_outputs(":web_idl_database")
   web_idl_database = web_idl_database_outputs[0]
 
-  inputs = [
-    web_idl_database,
-  ]
+  inputs = [ web_idl_database ]
   output_data_file = "${bindings_output_dir}/high_entropy_list.txt"
-  outputs = [
-    output_data_file,
-  ]
+  outputs = [ output_data_file ]
 
   args = [
     "--web_idl_database",
@@ -204,7 +190,5 @@ action_with_pydeps("generate_high_entropy_list") {
     rebase_path(output_data_file, root_build_dir),
   ]
 
-  deps = [
-    ":web_idl_database",
-  ]
+  deps = [ ":web_idl_database" ]
 }

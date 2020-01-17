@@ -23,7 +23,7 @@ Polymer({
     },
   },
 
-  attached: function() {
+  attached() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
     this.updateFromStore();
 
@@ -33,7 +33,7 @@ Polymer({
   /**
    * @private
    */
-  onClickSiteSettingsButton_: function() {
+  onClickSiteSettingsButton_() {
     app_management.BrowserProxy.getInstance().handler.openNativeSettings(
         this.app_.id);
     app_management.util.recordAppManagementUserAction(
@@ -43,7 +43,7 @@ Polymer({
   /**
    * @private
    */
-  toggleListExpanded_: function() {
+  toggleListExpanded_() {
     this.listExpanded_ = !this.listExpanded_;
   },
 
@@ -52,7 +52,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  iconUrlFromId_: function(app) {
+  iconUrlFromId_(app) {
     return app_management.util.getAppIcon(app);
   },
 
@@ -61,7 +61,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getCollapsedIcon_: function(listExpanded) {
+  getCollapsedIcon_(listExpanded) {
     return listExpanded ? 'cr:expand-less' : 'cr:expand-more';
   },
 });

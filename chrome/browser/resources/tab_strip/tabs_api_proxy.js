@@ -51,6 +51,7 @@ export const TabAlertState = {
  *    blocked: boolean,
  *    crashed: boolean,
  *    favIconUrl: (string|undefined),
+ *    groupId: (string|undefined),
  *    id: number,
  *    index: number,
  *    isDefaultFavicon: boolean,

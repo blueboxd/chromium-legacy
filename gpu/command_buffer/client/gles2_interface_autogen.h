@@ -1058,4 +1058,6 @@ virtual GLuint CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
 virtual void BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
                                                   GLenum mode) = 0;
 virtual void EndSharedImageAccessDirectCHROMIUM(GLuint texture) = 0;
+virtual void BeginBatchReadAccessSharedImageCHROMIUM() = 0;
+virtual void EndBatchReadAccessSharedImageCHROMIUM() = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

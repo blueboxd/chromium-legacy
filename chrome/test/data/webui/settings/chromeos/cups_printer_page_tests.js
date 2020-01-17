@@ -1250,3 +1250,188 @@ suite('EditPrinterDialog', function() {
         });
   });
 });
+
+suite('PrintServerTests', function() {
+  let page = null;
+  let dialog = null;
+
+  /** @type {?settings.TestCupsPrintersBrowserProxy} */
+  let cupsPrintersBrowserProxy = null;
+
+  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  let mojoApi_;
+
+  suiteSetup(function() {
+    mojoApi_ = new FakeNetworkConfig();
+    network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
+  });
+
+  setup(function() {
+    const mojom = chromeos.networkConfig.mojom;
+    cupsPrintersBrowserProxy =
+        new printerBrowserProxy.TestCupsPrintersBrowserProxy;
+
+    settings.CupsPrintersBrowserProxyImpl.instance_ = cupsPrintersBrowserProxy;
+
+    // Simulate internet connection.
+    mojoApi_.resetForTest();
+    const wifi1 =
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1');
+    wifi1.connectionState = mojom.ConnectionStateType.kOnline;
+    mojoApi_.addNetworksForTest([wifi1]);
+
+    PolymerTest.clearBody();
+    settings.Router.getInstance().navigateTo(settings.routes.CUPS_PRINTERS);
+
+    page = document.createElement('settings-cups-printers');
+    document.body.appendChild(page);
+    assertTrue(!!page);
+    dialog = page.$$('settings-cups-add-printer-dialog');
+    assertTrue(!!dialog);
+
+    Polymer.dom.flush();
+  });
+
+  teardown(function() {
+    mojoApi_.resetForTest();
+    cupsPrintersBrowserProxy.reset();
+    page.remove();
+    dialog = null;
+    page = null;
+  });
+
+  /**
+   * @param {!HTMLElement} page
+   * @return {?HTMLElement} Returns the print server dialog if it is available.
+   * @private
+   */
+  function getPrintServerDialog(page) {
+    assertTrue(!!page);
+    dialog = page.$$('settings-cups-add-printer-dialog');
+    return dialog.$$('add-print-server-dialog');
+  }
+
+  /**
+   * Opens the add print server dialog, inputs |address| with the specified
+   * |error|. Adds the print server and returns a promise for handling the add
+   * event.
+   * @param {string} address
+   * @param {number} error
+   * @return {!Promise} The promise returned when queryPrintServer is called.
+   * @private
+   */
+  function addPrintServer(address, error) {
+    // Open the add manual printe dialog.
+    assertTrue(!!page);
+    dialog.open();
+    Polymer.dom.flush();
+
+    const addPrinterDialog = dialog.$$('add-printer-manually-dialog');
+    // Switch to Add print server dialog.
+    addPrinterDialog.$$('#print-server-button').click();
+    Polymer.dom.flush();
+    const printServerDialog = dialog.$$('add-print-server-dialog');
+    assertTrue(!!printServerDialog);
+
+    Polymer.dom.flush();
+    cupsPrintersBrowserProxy.setQueryPrintServerResult(error);
+    return test_util.flushTasks().then(() => {
+      // Fill dialog with the server address.
+      const address = printServerDialog.$$('#printServerAddressInput');
+      assertTrue(!!address);
+      address.value = address;
+
+      // Add the print server.
+      const button = printServerDialog.$$('.action-button');
+      // Button should not be disabled before clicking on it.
+      assertTrue(!button.disabled);
+      button.click();
+
+      // Clicking on the button should disable it.
+      assertTrue(button.disabled);
+      return cupsPrintersBrowserProxy.whenCalled('queryPrintServer');
+    });
+  }
+
+  /**
+   * @param {string} expectedError
+   * @private
+   */
+  function verifyErrorMessage(expectedError) {
+    // Assert that the dialog did not close on errors.
+    const printServerDialog = getPrintServerDialog(page);
+    const dialogError = printServerDialog.$$('#server-dialog-error');
+    // Assert that the dialog error is displayed.
+    assertTrue(!dialogError.hidden);
+    assertEquals(loadTimeData.getString(expectedError), dialogError.errorText);
+  }
+
+  test('AddPrintServerIsSuccessful', function() {
+    // Initialize the return result from adding a print server.
+    cupsPrintersBrowserProxy.printServerPrinters =
+        /** @type{} CupsPrintServerPrintersInfo*/ ({
+          printerList: [
+            cups_printer_test_util.createCupsPrinterInfo(
+                'nameA', 'addressA', 'idA'),
+            cups_printer_test_util.createCupsPrinterInfo(
+                'nameB', 'addressB', 'idB')
+          ]
+        });
+    return addPrintServer('serverAddressA', PrintServerResult.NO_ERRORS)
+        .then(() => {
+          Polymer.dom.flush();
+          const toast = page.$$('#printServerErrorToast');
+          assertTrue(toast.open);
+          assertEquals(
+              loadTimeData.getStringF(
+                  'printServerFoundManyPrinters',
+                  /*expectedPrintersLength=*/ 2),
+              toast.textContent.trim());
+        });
+  });
+
+  test('AddPrintServerAddressError', function() {
+    cupsPrintersBrowserProxy.printServerPrinters =
+        /** @type{} CupsPrintServerPrintersInfo*/ ({printerList: []});
+    return addPrintServer('serverAddressA', PrintServerResult.INCORRECT_URL)
+        .then(() => {
+          Polymer.dom.flush();
+          const printServerDialog = getPrintServerDialog(page);
+          // Assert that the dialog did not close on errors.
+          assertTrue(!!printServerDialog);
+          // Assert that the address input field is invalid.
+          assertTrue(printServerDialog.$$('#printServerAddressInput').invalid);
+        });
+  });
+
+  test('AddPrintServerConnectionError', function() {
+    cupsPrintersBrowserProxy.printServerPrinters =
+        /** @type{} CupsPrintServerPrintersInfo*/ ({printerList: []});
+    return addPrintServer('serverAddressA', PrintServerResult.CONNECTION_ERROR)
+        .then(() => {
+          Polymer.dom.flush();
+          verifyErrorMessage('printServerConnectionError');
+        });
+  });
+
+  test('AddPrintServerReachableServerButIppResponseError', function() {
+    cupsPrintersBrowserProxy.printServerPrinters =
+        /** @type{} CupsPrintServerPrintersInfo*/ ({printerList: []});
+    return addPrintServer(
+               'serverAddressA', PrintServerResult.CANNOT_PARSE_IPP_RESPONSE)
+        .then(() => {
+          Polymer.dom.flush();
+          verifyErrorMessage('printServerConfigurationErrorMessage');
+        });
+  });
+
+  test('AddPrintServerReachableServerButHttpResponseError', function() {
+    cupsPrintersBrowserProxy.printServerPrinters =
+        /** @type{} CupsPrintServerPrintersInfo*/ ({printerList: []});
+    return addPrintServer('serverAddressA', PrintServerResult.HTTP_ERROR)
+        .then(() => {
+          Polymer.dom.flush();
+          verifyErrorMessage('printServerConfigurationErrorMessage');
+        });
+  });
+});

@@ -1121,6 +1121,73 @@ TEST_F(BrowserAccessibilityWinTest, TestWordBoundariesInTextControls) {
   manager.reset();
 }
 
+TEST_F(BrowserAccessibilityWinTest, TextBoundariesOnlyEmbeddedObjectsNoCrash) {
+  // Update the tree structure to test get_textAtOffset from an
+  // embedded object that has no text, only an embedded object child.
+  //
+  // +-1 root_data
+  //   +-2 menu_data
+  //   | +-3 button_1_data
+  //   | +-4 button_2_data
+  //   +-5 static_text_data "after"
+  //
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  ui::AXNodeData menu_data;
+  menu_data.id = 2;
+  menu_data.role = ax::mojom::Role::kMenu;
+
+  ui::AXNodeData button_1_data;
+  button_1_data.id = 3;
+  button_1_data.role = ax::mojom::Role::kButton;
+
+  ui::AXNodeData button_2_data;
+  button_2_data.id = 4;
+  button_2_data.role = ax::mojom::Role::kButton;
+
+  ui::AXNodeData static_text_data;
+  static_text_data.id = 5;
+  static_text_data.role = ax::mojom::Role::kStaticText;
+  static_text_data.SetName("after");
+
+  root_data.child_ids = {menu_data.id, static_text_data.id};
+  menu_data.child_ids = {button_1_data.id, button_2_data.id};
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root_data, menu_data, button_1_data, button_2_data,
+                           static_text_data),
+          test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
+
+  ASSERT_NE(nullptr, manager->GetRoot());
+  BrowserAccessibilityWin* root_accessible =
+      ToBrowserAccessibilityWin(manager->GetRoot());
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(2U, root_accessible->PlatformChildCount());
+
+  BrowserAccessibilityComWin* menu_accessible_com =
+      ToBrowserAccessibilityComWin(root_accessible->PlatformGetChild(0));
+  ASSERT_NE(nullptr, menu_accessible_com);
+  ASSERT_EQ(ax::mojom::Role::kMenu, menu_accessible_com->GetData().role);
+
+  LONG start;
+  LONG end;
+  base::win::ScopedBstr text;
+  EXPECT_EQ(S_OK, menu_accessible_com->get_textAtOffset(
+                      0, IA2_TEXT_BOUNDARY_CHAR, &start, &end, text.Receive()));
+  // TODO(crbug.com/1039528): This should not have 2 embedded object characters.
+  EXPECT_EQ(0, start);
+  EXPECT_EQ(2, end);
+  EXPECT_STREQ(
+      L"\xFFFC"
+      L"\xFFFC",
+      text);
+  text.Reset();
+}
+
 TEST_F(BrowserAccessibilityWinTest, TestCaretAndSelectionInSimpleFields) {
   ui::AXNodeData root;
   root.id = 1;

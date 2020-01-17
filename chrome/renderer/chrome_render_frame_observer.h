@@ -74,7 +74,6 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
       int thumbnail_min_area_pixels,
       const gfx::Size& thumbnail_max_size_pixels,
       int callback_id);
-  void OnPrintNodeUnderContextMenu();
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
 
   // chrome::mojom::ChromeRenderFrame:

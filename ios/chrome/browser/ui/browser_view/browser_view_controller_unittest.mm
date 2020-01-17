@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "base/files/scoped_temp_dir.h"
 #include "components/search_engines/template_url_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
@@ -66,6 +67,10 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     BlockCleanupTest::SetUp();
     // Set up a TestChromeBrowserState instance.
     TestChromeBrowserState::Builder test_cbs_builder;
+
+    ASSERT_TRUE(state_dir_.CreateUniqueTempDir());
+    test_cbs_builder.SetPath(state_dir_.GetPath());
+
     test_cbs_builder.AddTestingFactory(
         IOSChromeTabRestoreServiceFactory::GetInstance(),
         IOSChromeTabRestoreServiceFactory::GetDefaultFactory());
@@ -176,6 +181,11 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   }
 
   MOCK_METHOD0(OnCompletionCalled, void());
+
+  // A state directory that outlives |task_environment_| is needed because
+  // CreateHistoryService/CreateBookmarkModel use the directory to host
+  // databases. See https://crbug.com/546640 for more details.
+  base::ScopedTempDir state_dir_;
 
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingLocalState local_state_;

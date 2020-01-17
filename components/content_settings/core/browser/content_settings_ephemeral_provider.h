@@ -40,8 +40,8 @@ class EphemeralProvider : public UserModifiableProvider {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier) override;
+  void SetClockForTesting(base::Clock* clock) override;
 
-  void SetClockForTesting(base::Clock* clock);
   void SetSupportedTypesForTesting(
       std::set<ContentSettingsType>& supported_types) {
     supported_types_ = supported_types;

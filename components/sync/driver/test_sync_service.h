@@ -50,6 +50,7 @@ class TestSyncService : public SyncService {
   void SetDetailedSyncStatus(bool engine_available, SyncStatus status);
   void SetPassphraseRequired(bool required);
   void SetPassphraseRequiredForPreferredDataTypes(bool required);
+  void SetTrustedVaultKeyRequired(bool required);
   void SetTrustedVaultKeyRequiredForPreferredDataTypes(bool required);
   void SetIsUsingSecondaryPassphrase(bool enabled);
 

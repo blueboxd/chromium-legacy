@@ -101,14 +101,4 @@ TestDataView* V8DataView::ToImplWithTypeCheck(
   return value->IsDataView() ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestDataView* NativeValueTraits<TestDataView>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestDataView* native_value = V8DataView::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "DataView"));
-  }
-  return native_value;
-}
-
 }  // namespace blink

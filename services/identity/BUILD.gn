@@ -32,9 +32,7 @@ source_set("lib") {
 source_set("tests") {
   testonly = true
 
-  sources = [
-    "identity_accessor_impl_unittest.cc",
-  ]
+  sources = [ "identity_accessor_impl_unittest.cc" ]
 
   deps = [
     ":lib",
@@ -51,8 +49,6 @@ source_set("tests") {
 
 if (is_android) {
   java_group("java") {
-    deps = [
-      "//components/signin/core/browser/android:java",
-    ]
+    deps = [ "//components/signin/core/browser/android:java" ]
   }
 }

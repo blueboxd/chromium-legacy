@@ -65,7 +65,7 @@ Polymer({
    * @private
    */
   isShowingPlaceholder_() {
-    return this.value == FAKE_CREDENTIAL;
+    return this.value === FAKE_CREDENTIAL;
   },
 
   /**
@@ -105,7 +105,7 @@ Polymer({
    * @private
    */
   onKeypress_(event) {
-    if (event.target.id == 'input' && event.key == 'Enter') {
+    if (event.target.id === 'input' && event.key === 'Enter') {
       event.stopPropagation();
       this.fire('enter');
     }
@@ -120,8 +120,8 @@ Polymer({
       return;
     }
 
-    if (event.key.indexOf('Arrow') < 0 && event.key != 'Home' &&
-        event.key != 'End') {
+    if (event.key.indexOf('Arrow') < 0 && event.key !== 'Home' &&
+        event.key !== 'End') {
       return;
     }
 
@@ -140,7 +140,7 @@ Polymer({
       return;
     }
 
-    if (document.activeElement != event.target) {
+    if (document.activeElement !== event.target) {
       // Focus the field and select the placeholder text if not already focused.
       this.focus();
     }

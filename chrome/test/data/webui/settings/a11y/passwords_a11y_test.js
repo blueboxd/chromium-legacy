@@ -55,13 +55,14 @@ AccessibilityTest.define('SettingsA11yPasswords', {
       PolymerTest.clearBody();
 
       // Set the URL to be that of specific route to load upon injecting
-      // settings-ui. Simply calling settings.navigateTo(route) prevents
-      // use of mock APIs for fake data.
+      // settings-ui. Simply calling
+      // settings.Router.getInstance().navigateTo(route) prevents use of mock
+      // APIs for fake data.
       window.history.pushState(
           'object or string', 'Test', settings.routes.PASSWORDS.path);
 
       PasswordManagerImpl.instance_ = new TestPasswordManagerProxy();
-      this.passwordManager = PasswordManagerImpl.instance_;
+      this.passwordManager = PasswordManagerImpl.getInstance();
 
       const settingsUi = document.createElement('settings-ui');
 

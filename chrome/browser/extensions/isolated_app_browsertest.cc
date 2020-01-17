@@ -135,7 +135,8 @@ class IsolatedAppTest : public ExtensionBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(IsolatedAppTest, CrossProcessClientRedirect) {
+// Flaky: https://crbug.com/1032668
+IN_PROC_BROWSER_TEST_F(IsolatedAppTest, DISABLED_CrossProcessClientRedirect) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("isolated_apps/app1")));

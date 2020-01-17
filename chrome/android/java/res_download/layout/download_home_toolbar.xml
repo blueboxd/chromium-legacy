@@ -21,7 +21,7 @@
         android:layout_height="@dimen/toolbar_height_no_shadow"
         style="@style/ModernToolbar"/>
 
-    <org.chromium.chrome.browser.ui.widget.FadingShadowView
+    <org.chromium.components.browser_ui.widget.FadingShadowView
         android:id="@+id/shadow"
         android:layout_width="match_parent"
         android:layout_height="@dimen/action_bar_shadow_height"

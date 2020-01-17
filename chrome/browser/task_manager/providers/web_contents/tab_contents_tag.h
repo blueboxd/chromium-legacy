@@ -17,7 +17,7 @@ class TabContentsTag : public WebContentsTag {
   ~TabContentsTag() override;
 
   // task_manager::WebContentsTag:
-  TabContentsTask* CreateTask() const override;
+  TabContentsTask* CreateTask(WebContentsTaskProvider*) const override;
 
  private:
   friend class WebContentsTags;

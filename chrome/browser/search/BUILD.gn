@@ -25,9 +25,7 @@ action("local_ntp_code_generate") {
     voice_js,
   ]
 
-  outputs = [
-    header_path,
-  ]
+  outputs = [ header_path ]
 
   args = [
     "--output_path=" + rebase_path(header_path, root_build_dir),
@@ -44,7 +42,5 @@ action("local_ntp_code_generate") {
 source_set("generated") {
   sources = get_target_outputs(":local_ntp_code_generate")
 
-  public_deps = [
-    ":local_ntp_code_generate",
-  ]
+  public_deps = [ ":local_ntp_code_generate" ]
 }

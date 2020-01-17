@@ -6,14 +6,14 @@ import stat
 import errno
 import subprocess
 import tempfile
-import urlparse
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 from distutils.spawn import find_executable
 
+from six.moves.urllib.parse import urlsplit
 import requests
 
-from utils import call, get, untar, unzip
+from .utils import call, get, untar, unzip
 
 uname = platform.uname()
 
@@ -172,7 +172,7 @@ class Firefox(Browser):
                 filename = filenames[0]
 
         if not filename:
-            filename = urlparse.urlsplit(resp.url).path.rsplit("/", 1)[1]
+            filename = urlsplit(resp.url).path.rsplit("/", 1)[1]
 
         if not filename:
             filename = "firefox.tar.bz2"
@@ -1212,7 +1212,7 @@ class WebKitGTKMiniBrowser(WebKit):
         gcc = find_executable("gcc")
         if gcc:
             try:
-                triplet = call(gcc, "-dumpmachine").strip()
+                triplet = call(gcc, "-dumpmachine").decode().strip()
             except subprocess.CalledProcessError:
                 pass
         # Add Debian/Ubuntu path
@@ -1231,7 +1231,7 @@ class WebKitGTKMiniBrowser(WebKit):
         if binary is None:
             return None
         try:  # WebKitGTK MiniBrowser before 2.26.0 doesn't support --version
-            output = call(binary, "--version").strip()
+            output = call(binary, "--version").decode().strip()
         except subprocess.CalledProcessError:
             return None
         # Example output: "WebKitGTK 2.26.1"

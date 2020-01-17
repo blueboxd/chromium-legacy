@@ -9,6 +9,7 @@ for_blink = true
 _typemap_imports = [
   "//cc/typemaps.gni",
   "//device/gamepad/public/cpp/typemaps.gni",
+  "//device/vr/public/mojom/blink_typemaps.gni",
   "//mojo/public/cpp/bindings/tests/blink_typemaps.gni",
   "//skia/public/mojom/typemaps.gni",
   "//third_party/blink/renderer/platform/mojo/blink_typemaps.gni",

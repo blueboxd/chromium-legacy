@@ -20,7 +20,9 @@ namespace base {
 //
 // Note: You should almost always use the ThreadChecker class to get the right
 // version for your build configuration.
-class BASE_EXPORT ThreadCheckerImpl {
+// Note: This is only a check, not a "lock". It is marked "LOCKABLE" only in
+// order to support thread_annotations.h.
+class LOCKABLE BASE_EXPORT ThreadCheckerImpl {
  public:
   ThreadCheckerImpl();
   ~ThreadCheckerImpl();

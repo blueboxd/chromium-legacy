@@ -199,8 +199,8 @@ base::TimeDelta ThreadHeapStatsCollector::Event::foreground_marking_time()
 
 base::TimeDelta ThreadHeapStatsCollector::Event::background_marking_time()
     const {
-  return base::TimeDelta::FromMicroseconds(
-      base::subtle::NoBarrier_Load(&concurrent_scope_data[kConcurrentMark]));
+  return base::TimeDelta::FromMicroseconds(base::subtle::NoBarrier_Load(
+      &concurrent_scope_data[kConcurrentMarkingStep]));
 }
 
 base::TimeDelta ThreadHeapStatsCollector::Event::marking_time() const {
@@ -233,7 +233,7 @@ base::TimeDelta ThreadHeapStatsCollector::Event::foreground_sweeping_time()
 base::TimeDelta ThreadHeapStatsCollector::Event::background_sweeping_time()
     const {
   return base::TimeDelta::FromMicroseconds(
-      concurrent_scope_data[kConcurrentSweep]);
+      concurrent_scope_data[kConcurrentSweepingStep]);
 }
 
 base::TimeDelta ThreadHeapStatsCollector::Event::sweeping_time() const {

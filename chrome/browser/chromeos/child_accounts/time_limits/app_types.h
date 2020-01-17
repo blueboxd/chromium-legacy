@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_APP_TYPES_H_
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_APP_TYPES_H_
 
-#include <optional>
+#include <list>
 #include <string>
-#include <vector>
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 
@@ -110,8 +110,22 @@ class AppActivity {
     ActiveTime(const ActiveTime& rhs);
     ActiveTime& operator=(const ActiveTime& rhs);
 
+    bool operator==(const ActiveTime&) const;
+    bool operator!=(const ActiveTime&) const;
+
+    // Returns whether |timestamp| is included in this time period.
+    bool Contains(base::Time timestamp) const;
+
+    // Returns whether |timestamp| is earlier than this time period's start.
+    bool IsEarlierThan(base::Time timestamp) const;
+
+    // Returns whether |timestamp| is later than this time period's end.
+    bool IsLaterThan(base::Time timestamp) const;
+
     base::Time active_from() const { return active_from_; }
+    void set_active_from(base::Time active_from);
     base::Time active_to() const { return active_to_; }
+    void set_active_to(base::Time active_to);
 
    private:
     base::Time active_from_;
@@ -136,9 +150,12 @@ class AppActivity {
 
   base::TimeDelta RunningActiveTime() const;
 
+  // Removes active time data older than given |timestamp|.
+  void RemoveActiveTimeEarlierThan(base::Time timestamp);
+
   bool is_active() const { return is_active_; }
   AppState app_state() const { return app_state_; }
-  const std::vector<ActiveTime>& active_times() const { return active_times_; }
+  const std::list<ActiveTime>& active_times() const { return active_times_; }
 
  private:
   // boolean to specify if the application is active.
@@ -153,7 +170,7 @@ class AppActivity {
   base::TimeDelta running_active_time_;
 
   // The time app was active.
-  std::vector<ActiveTime> active_times_;
+  std::list<ActiveTime> active_times_;
 
   // Time tick for the last time the activity was updated.
   base::TimeTicks last_updated_time_ticks_;

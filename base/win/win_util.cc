@@ -289,7 +289,7 @@ bool IsKeyboardPresentOnSlate(HWND hwnd, std::string* reason) {
   // 3. If step 1 and 2 fail then we check attached keyboards and return true
   //    if we find ACPI\* or HID\VID* keyboards.
 
-  typedef BOOL(WINAPI * GetAutoRotationState)(PAR_STATE state);
+  using GetAutoRotationState = decltype(&::GetAutoRotationState);
   static const auto get_rotation_state = reinterpret_cast<GetAutoRotationState>(
       GetUser32FunctionPointer("GetAutoRotationState"));
   if (get_rotation_state) {
@@ -550,7 +550,7 @@ bool IsDeviceUsedAsATablet(std::string* reason) {
   // a convertible or a detachable.
   // See
   // https://msdn.microsoft.com/en-us/library/windows/desktop/dn629263(v=vs.85).aspx
-  typedef decltype(GetAutoRotationState)* GetAutoRotationStateType;
+  using GetAutoRotationStateType = decltype(GetAutoRotationState)*;
   static const auto get_auto_rotation_state_func =
       reinterpret_cast<GetAutoRotationStateType>(
           GetUser32FunctionPointer("GetAutoRotationState"));
@@ -601,8 +601,8 @@ bool IsUser32AndGdi32Available() {
     if (GetVersion() < Version::WIN8)
       return true;
 
-    typedef decltype(
-        GetProcessMitigationPolicy)* GetProcessMitigationPolicyType;
+    using GetProcessMitigationPolicyType =
+        decltype(GetProcessMitigationPolicy)*;
     GetProcessMitigationPolicyType get_process_mitigation_policy_func =
         reinterpret_cast<GetProcessMitigationPolicyType>(GetProcAddress(
             GetModuleHandle(L"kernel32.dll"), "GetProcessMitigationPolicy"));

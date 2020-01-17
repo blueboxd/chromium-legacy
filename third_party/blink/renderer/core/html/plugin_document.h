@@ -36,7 +36,7 @@ class WebPluginContainerImpl;
 
 class CORE_EXPORT PluginDocument final : public HTMLDocument {
  public:
-  PluginDocument(const DocumentInit&, Color background_color);
+  PluginDocument(const DocumentInit&);
 
   void SetPluginNode(HTMLPlugInElement* plugin_node) {
     plugin_node_ = plugin_node;

@@ -26,7 +26,7 @@ Polymer({
      */
     showCrostiniExportImport_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('showCrostiniExportImport');
       },
     },
@@ -40,7 +40,7 @@ Polymer({
     /** @private {boolean} */
     isArcAdbSideloadingSupported_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('arcAdbSideloadingSupported');
       },
     },
@@ -65,7 +65,7 @@ Polymer({
      */
     showCrostiniContainerUpgrade_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('showCrostiniContainerUpgrade');
       },
     },
@@ -79,7 +79,7 @@ Polymer({
     'onArcEnabledChanged_(prefs.arc.enabled.value)'
   ],
 
-  attached: function() {
+  attached() {
     const callback = (status) => {
       this.hideCrostiniUninstall_ = status;
     };
@@ -88,7 +88,7 @@ Polymer({
         .requestCrostiniInstallerStatus();
   },
 
-  ready: function() {
+  ready() {
     const r = settings.routes;
     this.addFocusConfig_(r.CROSTINI_SHARED_PATHS, '#crostini-shared-paths');
     this.addFocusConfig_(
@@ -98,33 +98,36 @@ Polymer({
   },
 
   /** @private */
-  onCrostiniEnabledChanged_: function(enabled) {
+  onCrostiniEnabledChanged_(enabled) {
     if (!enabled &&
-        settings.getCurrentRoute() == settings.routes.CROSTINI_DETAILS) {
-      settings.navigateToPreviousRoute();
+        settings.Router.getInstance().getCurrentRoute() ==
+            settings.routes.CROSTINI_DETAILS) {
+      settings.Router.getInstance().navigateToPreviousRoute();
     }
   },
 
   /** @private */
-  onArcEnabledChanged_: function(enabled) {
+  onArcEnabledChanged_(enabled) {
     this.isAndroidEnabled_ = enabled;
   },
 
   /** @private */
-  onExportImportClick_: function() {
-    settings.navigateTo(settings.routes.CROSTINI_EXPORT_IMPORT);
+  onExportImportClick_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.CROSTINI_EXPORT_IMPORT);
   },
 
   /** @private */
-  onEnableArcAdbClick_: function() {
-    settings.navigateTo(settings.routes.CROSTINI_ANDROID_ADB);
+  onEnableArcAdbClick_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.CROSTINI_ANDROID_ADB);
   },
 
   /**
    * Shows a confirmation dialog when removing crostini.
    * @private
    */
-  onRemoveClick_: function() {
+  onRemoveClick_() {
     settings.CrostiniBrowserProxyImpl.getInstance().requestRemoveCrostini();
   },
 
@@ -132,23 +135,25 @@ Polymer({
    * Shows the upgrade flow dialog.
    * @private
    */
-  onContainerUpgradeClick_: function() {
+  onContainerUpgradeClick_() {
     settings.CrostiniBrowserProxyImpl.getInstance()
         .requestCrostiniContainerUpgradeView();
   },
 
   /** @private */
-  onSharedPathsClick_: function() {
-    settings.navigateTo(settings.routes.CROSTINI_SHARED_PATHS);
+  onSharedPathsClick_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.CROSTINI_SHARED_PATHS);
   },
 
   /** @private */
-  onSharedUsbDevicesClick_: function() {
-    settings.navigateTo(settings.routes.CROSTINI_SHARED_USB_DEVICES);
+  onSharedUsbDevicesClick_() {
+    settings.Router.getInstance().navigateTo(
+        settings.routes.CROSTINI_SHARED_USB_DEVICES);
   },
 
   /** @private */
-  and_: function(a, b) {
+  and_(a, b) {
     return a && b;
   },
 });

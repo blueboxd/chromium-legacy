@@ -13,8 +13,9 @@
 
 @protocol ApplicationCommands;
 @protocol BrowsingDataCommands;
-@class TabModel;
 @protocol TabSwitcher;
+
+class Browser;
 
 @interface TabGridCoordinator : ChromeRootCoordinator<ViewControllerSwapping>
 
@@ -29,8 +30,8 @@
 
 @property(nonatomic, readonly) id<TabSwitcher> tabSwitcher;
 
-@property(nonatomic, weak) TabModel* regularTabModel;
-@property(nonatomic, weak) TabModel* incognitoTabModel;
+@property(nonatomic, assign) Browser* regularBrowser;
+@property(nonatomic, assign) Browser* incognitoBrowser;
 
 // If this property is YES, calls to |showTabSwitcher:completion:| and
 // |showTabViewController:completion:| will present the given view controllers

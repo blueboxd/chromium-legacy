@@ -169,7 +169,7 @@ Polymer({
      */
     syncSetupFriendlySettings_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.valueExists('syncSetupFriendlySettings') &&
             loadTimeData.getBoolean('syncSetupFriendlySettings');
       }
@@ -253,25 +253,27 @@ Polymer({
   setupCancelConfirmed_: false,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'page-status-changed', this.handlePageStatusChanged_.bind(this));
     this.addWebUIListener(
         'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
 
-    if (settings.getCurrentRoute() == settings.routes.SYNC) {
+    if (settings.Router.getInstance().getCurrentRoute() ==
+        settings.routes.SYNC) {
       this.onNavigateToPage_();
     }
   },
 
   /** @override */
-  detached: function() {
-    if (settings.routes.SYNC.contains(settings.getCurrentRoute())) {
+  detached() {
+    if (settings.routes.SYNC.contains(
+            settings.Router.getInstance().getCurrentRoute())) {
       this.onNavigateAwayFromPage_();
     }
 
@@ -289,7 +291,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeSignedIn_: function() {
+  computeSignedIn_() {
     return !!this.syncStatus.signedIn;
   },
 
@@ -297,7 +299,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeSyncSectionDisabled_: function() {
+  computeSyncSectionDisabled_() {
     return this.syncStatus !== undefined &&
         (!this.syncStatus.signedIn || !!this.syncStatus.disabled ||
          (!!this.syncStatus.hasError &&
@@ -311,7 +313,7 @@ Polymer({
    * @return {boolean} Returns true if History sync is off or data is encrypted.
    * @private
    */
-  computeHistoryNotSyncedOrEncrypted_: function() {
+  computeHistoryNotSyncedOrEncrypted_() {
     return !!(this.syncPrefs) &&
         (!this.syncPrefs.typedUrlsSynced || this.syncPrefs.encryptAllData);
   },
@@ -320,7 +322,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeHideActivityControlsUrl_: function() {
+  computeHideActivityControlsUrl_() {
     return !!this.syncSetupFriendlySettings_ &&
         !!this.historyNotSyncedOrEncrypted_;
   },
@@ -332,8 +334,9 @@ Polymer({
    * a query to |Web and App Activity| is needed.
    * @private
    */
-  fetchSWAA_: function() {
-    if (settings.getCurrentRoute() !== settings.routes.SYNC) {
+  fetchSWAA_() {
+    if (settings.Router.getInstance().getCurrentRoute() !==
+        settings.routes.SYNC) {
       return;
     }
 
@@ -375,7 +378,7 @@ Polymer({
    * most up-to-date.
    * @private
    */
-  visibilityHandler_: function() {
+  visibilityHandler_() {
     if (document.visibilityState === 'visible') {
       this.fetchSWAA_();
     }
@@ -386,7 +389,7 @@ Polymer({
    * the history usage row.
    * @private
    */
-  getHistoryUsageHint_: function() {
+  getHistoryUsageHint_() {
     if (this.sWAA_ === sWAAState.ON) {
       return this.i18n('sWAAOnHint');
     }
@@ -407,7 +410,7 @@ Polymer({
   /**
    * @private
    */
-  getSWAAStateText_: function() {
+  getSWAAStateText_() {
     if (!this.isSWAAFetched_()) {
       return '';
     }
@@ -418,43 +421,46 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeSyncDisabledByAdmin_: function() {
+  computeSyncDisabledByAdmin_() {
     return this.syncStatus != undefined && !!this.syncStatus.managed;
   },
 
   /** @private */
-  onSetupCancelDialogBack_: function() {
+  onSetupCancelDialogBack_() {
     this.$$('#setupCancelDialog').cancel();
     chrome.metricsPrivate.recordUserAction(
         'Signin_Signin_CancelCancelAdvancedSyncSettings');
   },
 
   /** @private */
-  onSetupCancelDialogConfirm_: function() {
+  onSetupCancelDialogConfirm_() {
     this.setupCancelConfirmed_ = true;
     this.$$('#setupCancelDialog').close();
-    settings.navigateTo(settings.routes.BASIC);
+    settings.Router.getInstance().navigateTo(settings.routes.BASIC);
     chrome.metricsPrivate.recordUserAction(
         'Signin_Signin_ConfirmCancelAdvancedSyncSettings');
   },
 
   /** @private */
-  onSetupCancelDialogClose_: function() {
+  onSetupCancelDialogClose_() {
     this.showSetupCancelDialog_ = false;
   },
 
   /** @protected */
-  currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.routes.SYNC) {
+  currentRouteChanged() {
+    if (settings.Router.getInstance().getCurrentRoute() ==
+        settings.routes.SYNC) {
       this.onNavigateToPage_();
       return;
     }
 
-    if (settings.routes.SYNC.contains(settings.getCurrentRoute())) {
+    if (settings.routes.SYNC.contains(
+            settings.Router.getInstance().getCurrentRoute())) {
       return;
     }
 
-    const searchParams = settings.getQueryParameters().get('search');
+    const searchParams =
+        settings.Router.getInstance().getQueryParameters().get('search');
     if (searchParams) {
       // User navigated away via searching. Cancel sync without showing
       // confirmation dialog.
@@ -473,7 +479,7 @@ Polymer({
       // firing). Triggering navigation from within an observer leads to some
       // undefined behavior and runtime errors.
       requestAnimationFrame(() => {
-        settings.navigateTo(settings.routes.SYNC);
+        settings.Router.getInstance().navigateTo(settings.routes.SYNC);
         this.showSetupCancelDialog_ = true;
         // Flush to make sure that the setup cancel dialog is attached.
         Polymer.dom.flush();
@@ -493,7 +499,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isStatus_: function(expectedPageStatus) {
+  isStatus_(expectedPageStatus) {
     return expectedPageStatus == this.pageStatus_;
   },
 
@@ -501,7 +507,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isSWAAFetching_: function() {
+  isSWAAFetching_() {
     return this.sWAA_ === sWAAState.FETCHING;
   },
 
@@ -509,13 +515,15 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isSWAAFetched_: function() {
+  isSWAAFetched_() {
     return this.sWAA_ === sWAAState.ON || this.sWAA_ === sWAAState.OFF;
   },
 
   /** @private */
-  onNavigateToPage_: function() {
-    assert(settings.getCurrentRoute() == settings.routes.SYNC);
+  onNavigateToPage_() {
+    assert(
+        settings.Router.getInstance().getCurrentRoute() ==
+        settings.routes.SYNC);
     this.sWAA_ = sWAAState.NOT_FETCHED;
     this.fetchSWAA_();
     if (this.beforeunloadCallback_) {
@@ -552,7 +560,7 @@ Polymer({
   },
 
   /** @private */
-  onNavigateAwayFromPage_: function() {
+  onNavigateAwayFromPage_() {
     if (!this.beforeunloadCallback_) {
       return;
     }
@@ -583,7 +591,7 @@ Polymer({
    * Handler for when the sync preferences are updated.
    * @private
    */
-  handleSyncPrefsChanged_: function(syncPrefs) {
+  handleSyncPrefsChanged_(syncPrefs) {
     this.syncPrefs = syncPrefs;
     this.pageStatus_ = settings.PageStatus.CONFIGURE;
 
@@ -602,7 +610,7 @@ Polymer({
   },
 
   /** @private */
-  onActivityControlsTap_: function() {
+  onActivityControlsTap_() {
     this.browserProxy_.openActivityControlsUrl();
   },
 
@@ -612,7 +620,7 @@ Polymer({
    * @return {boolean} Whether the passphrase save button should be enabled.
    * @private
    */
-  isSaveNewPassphraseEnabled_: function(passphrase, confirmation) {
+  isSaveNewPassphraseEnabled_(passphrase, confirmation) {
     return passphrase !== '' && confirmation !== '';
   },
 
@@ -621,7 +629,7 @@ Polymer({
    * @private
    * @param {!Event} e
    */
-  onSaveNewPassphraseTap_: function(e) {
+  onSaveNewPassphraseTap_(e) {
     assert(this.creatingNewPassphrase_);
 
     // Ignore events on irrelevant elements or with irrelevant keys.
@@ -651,7 +659,7 @@ Polymer({
    * @private
    * @param {!Event} e
    */
-  onSubmitExistingPassphraseTap_: function(e) {
+  onSubmitExistingPassphraseTap_(e) {
     if (e.type == 'keypress' && e.key != 'Enter') {
       return;
     }
@@ -672,7 +680,7 @@ Polymer({
    * @param {!settings.PageStatus} pageStatus
    * @private
    */
-  handlePageStatusChanged_: function(pageStatus) {
+  handlePageStatusChanged_(pageStatus) {
     switch (pageStatus) {
       case settings.PageStatus.SPINNER:
       case settings.PageStatus.TIMEOUT:
@@ -680,8 +688,9 @@ Polymer({
         this.pageStatus_ = pageStatus;
         return;
       case settings.PageStatus.DONE:
-        if (settings.getCurrentRoute() == settings.routes.SYNC) {
-          settings.navigateTo(settings.routes.PEOPLE);
+        if (settings.Router.getInstance().getCurrentRoute() ==
+            settings.routes.SYNC) {
+          settings.Router.getInstance().navigateTo(settings.routes.PEOPLE);
         }
         return;
       case settings.PageStatus.PASSPHRASE_FAILED:
@@ -703,7 +712,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onEncryptionRadioSelectionChanged_: function(event) {
+  onEncryptionRadioSelectionChanged_(event) {
     this.creatingNewPassphrase_ =
         event.detail.value == RadioButtonNames.ENCRYPT_WITH_PASSPHRASE;
   },
@@ -712,7 +721,7 @@ Polymer({
    * Computed binding returning the selected encryption radio button.
    * @private
    */
-  selectedEncryptionRadio_: function() {
+  selectedEncryptionRadio_() {
     return this.syncPrefs.encryptAllData || this.creatingNewPassphrase_ ?
         RadioButtonNames.ENCRYPT_WITH_PASSPHRASE :
         RadioButtonNames.ENCRYPT_WITH_GOOGLE;
@@ -725,7 +734,7 @@ Polymer({
    *     passphrases were valid).
    * @private
    */
-  validateCreatedPassphrases_: function() {
+  validateCreatedPassphrases_() {
     const emptyPassphrase = !this.passphrase_;
     const mismatchedPassphrase = this.passphrase_ != this.confirmation_;
 
@@ -740,7 +749,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onLearnMoreTap_: function(event) {
+  onLearnMoreTap_(event) {
     if (event.target.tagName == 'A') {
       // Stop the propagation of events, so that clicking on links inside
       // checkboxes or radio buttons won't change the value.
@@ -754,7 +763,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getPassphraseHintLines_: function() {
+  getPassphraseHintLines_() {
     return this.syncPrefs.encryptAllData ? 'three-line' : 'two-line';
   },
 
@@ -762,7 +771,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowSyncAccountControl_: function() {
+  shouldShowSyncAccountControl_() {
     // <if expr="chromeos">
     if (!loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
       return false;
@@ -776,7 +785,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowExistingPassphraseBelowAccount_: function() {
+  shouldShowExistingPassphraseBelowAccount_() {
     return this.syncPrefs !== undefined && !!this.syncPrefs.passphraseRequired;
   },
 
@@ -792,7 +801,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeDisableEncryptionOptions_: function() {
+  computeDisableEncryptionOptions_() {
     return !!(
         (this.syncPrefs &&
          (this.syncPrefs.encryptAllData ||
@@ -802,8 +811,8 @@ Polymer({
   },
 
   /** @private */
-  onSyncAdvancedTap_: function() {
-    settings.navigateTo(settings.routes.SYNC_ADVANCED);
+  onSyncAdvancedTap_() {
+    settings.Router.getInstance().navigateTo(settings.routes.SYNC_ADVANCED);
   },
 
   /**
@@ -811,7 +820,7 @@ Polymer({
    *     settings-sync-account-control.
    * @private
    */
-  onSyncSetupDone_: function(e) {
+  onSyncSetupDone_(e) {
     if (e.detail) {
       this.didAbort_ = false;
       chrome.metricsPrivate.recordUserAction(
@@ -821,7 +830,7 @@ Polymer({
       chrome.metricsPrivate.recordUserAction(
           'Signin_Signin_CancelAdvancedSyncSettings');
     }
-    settings.navigateTo(settings.routes.BASIC);
+    settings.Router.getInstance().navigateTo(settings.routes.BASIC);
   },
 
   /**
@@ -829,10 +838,12 @@ Polymer({
    * visible.
    * @private
    */
-  focusPassphraseInput_: function() {
+  focusPassphraseInput_() {
     const passphraseInput =
         /** @type {!CrInputElement} */ (this.$$('#existingPassphraseInput'));
-    if (passphraseInput && settings.getCurrentRoute() == settings.routes.SYNC) {
+    if (passphraseInput &&
+        settings.Router.getInstance().getCurrentRoute() ==
+            settings.routes.SYNC) {
       passphraseInput.focus();
     }
   },

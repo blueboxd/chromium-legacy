@@ -68,6 +68,7 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilitySpokenFeedbackEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityStickyKeysEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityShortcutsEnabled));
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilityVirtualKeyboardEnabled));
 }

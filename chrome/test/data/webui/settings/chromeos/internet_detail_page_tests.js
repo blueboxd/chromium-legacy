@@ -97,7 +97,7 @@ suite('InternetDetailPage', function() {
       internetDetailPage.close();
       internetDetailPage.remove();
       internetDetailPage = null;
-      settings.resetRouteForTesting();
+      settings.Router.getInstance().resetRouteForTesting();
     });
   });
 

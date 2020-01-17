@@ -15,11 +15,11 @@ function SwitchAccessPredicateTest() {
 SwitchAccessPredicateTest.prototype = {
   __proto__: SwitchAccessE2ETest.prototype,
 
-  setDesktop: function(desktop) {
+  setDesktop(desktop) {
     this.desktop = desktop;
   },
 
-  getNodeByName: function(name) {
+  getNodeByName(name) {
     assertTrue(this.desktop != undefined, 'Desktop is undefined');
     const node = new AutomationTreeWalker(
                      this.desktop, constants.Dir.FORWARD,

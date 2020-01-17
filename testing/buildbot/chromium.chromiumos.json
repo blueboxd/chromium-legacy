@@ -186,6 +186,25 @@
               "os": "Ubuntu-16.04",
               "pool": "chromium.tests.cros.vm"
             }
+          ],
+          "idempotent": false
+        },
+        "test": "disk_usage_tast_test",
+        "test_target": "//chromeos:disk_usage_tast_test"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04",
+              "pool": "chromium.tests.cros.vm"
+            }
           ]
         },
         "test": "display_unittests",
@@ -706,6 +725,28 @@
         },
         "test": "cros_browser_sanity_test",
         "test_target": "//chromeos:cros_browser_sanity_test",
+        "trigger_script": {
+          "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
+        }
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "kevin",
+              "os": "ChromeOS",
+              "pool": "chrome-cros-dut"
+            }
+          ],
+          "idempotent": false
+        },
+        "test": "disk_usage_tast_test",
+        "test_target": "//chromeos:disk_usage_tast_test",
         "trigger_script": {
           "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
         }

@@ -12,7 +12,6 @@
 #include "base/threading/thread_checker.h"
 #include "components/arc/mojom/enterprise_reporting.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class BrowserContext;

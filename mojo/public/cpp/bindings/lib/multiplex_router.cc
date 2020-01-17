@@ -514,6 +514,8 @@ bool MultiplexRouter::PrefersSerializedMessages() {
 void MultiplexRouter::CloseMessagePipe() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   connector_.CloseMessagePipe();
+  flush_pipe_watcher_.reset();
+  active_flush_pipe_.reset();
   // CloseMessagePipe() above won't trigger connection error handler.
   // Explicitly call OnPipeConnectionError() so that associated endpoints will
   // get notified.
@@ -521,22 +523,28 @@ void MultiplexRouter::CloseMessagePipe() {
 }
 
 void MultiplexRouter::PauseIncomingMethodCallProcessing() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  connector_.PauseIncomingMethodCallProcessing();
-
-  MayAutoLock locker(&lock_);
-  paused_ = true;
-
-  for (auto iter = endpoints_.begin(); iter != endpoints_.end(); ++iter)
-    iter->second->ResetSyncMessageSignal();
+  PauseInternal(/*must_resume_manually=*/true);
 }
 
 void MultiplexRouter::ResumeIncomingMethodCallProcessing() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // If the owner is manually resuming from a previous pause request, the
+  // interface may also still be paused due to waiting on a pending async flush
+  // in the system.
+  //
+  // In that case we ignore the caller, except to subsequently allow implicit
+  // resume once the pending flush operation is finished.
+  if (active_flush_pipe_) {
+    MayAutoLock locker(&lock_);
+    must_resume_manually_ = false;
+    return;
+  }
+
   connector_.ResumeIncomingMethodCallProcessing();
 
   MayAutoLock locker(&lock_);
   paused_ = false;
+  must_resume_manually_ = false;
 
   for (auto iter = endpoints_.begin(); iter != endpoints_.end(); ++iter) {
     auto sync_iter = sync_message_tasks_.find(iter->first);
@@ -548,6 +556,14 @@ void MultiplexRouter::ResumeIncomingMethodCallProcessing() {
   }
 
   ProcessTasks(NO_DIRECT_CLIENT_CALLS, nullptr);
+}
+
+void MultiplexRouter::FlushAsync(AsyncFlusher flusher) {
+  control_message_proxy_.FlushAsync(std::move(flusher));
+}
+
+void MultiplexRouter::PausePeerUntilFlushCompletes(PendingFlush flush) {
+  control_message_proxy_.PausePeerUntilFlushCompletes(std::move(flush));
 }
 
 bool MultiplexRouter::HasAssociatedEndpoints() const {
@@ -656,6 +672,31 @@ bool MultiplexRouter::OnPeerAssociatedEndpointClosed(
   return true;
 }
 
+bool MultiplexRouter::WaitForFlushToComplete(ScopedMessagePipeHandle pipe) {
+  // If this MultiplexRouter has an associated interface on some task runner
+  // other than the master interface's task runner, it is possible to process
+  // incoming control messages on that task runner. We don't support this
+  // control message on anything but the main interface though.
+  if (!task_runner_->RunsTasksInCurrentSequence())
+    return false;
+
+  flush_pipe_watcher_.emplace(FROM_HERE, SimpleWatcher::ArmingPolicy::MANUAL,
+                              task_runner_);
+  flush_pipe_watcher_->Watch(
+      pipe.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+      MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+      base::BindRepeating(&MultiplexRouter::OnFlushPipeSignaled, this));
+  if (flush_pipe_watcher_->Arm() != MOJO_RESULT_OK) {
+    // The peer must already be closed, so consider the flush to be complete.
+    flush_pipe_watcher_.reset();
+    return true;
+  }
+
+  active_flush_pipe_ = std::move(pipe);
+  PauseInternal(/*must_resume_manually=*/false);
+  return true;
+}
+
 void MultiplexRouter::OnPipeConnectionError(bool force_async_dispatch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -686,6 +727,35 @@ void MultiplexRouter::OnPipeConnectionError(bool force_async_dispatch) {
     call_behavior = ALLOW_DIRECT_CLIENT_CALLS_FOR_SYNC_MESSAGES;
 
   ProcessTasks(call_behavior, connector_.task_runner());
+}
+
+void MultiplexRouter::OnFlushPipeSignaled(MojoResult result,
+                                          const HandleSignalsState& state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  flush_pipe_watcher_.reset();
+  active_flush_pipe_.reset();
+
+  // If there is not an explicit Pause waiting for a Resume, we can unpause.
+  if (!must_resume_manually_)
+    ResumeIncomingMethodCallProcessing();
+}
+
+void MultiplexRouter::PauseInternal(bool must_resume_manually) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  connector_.PauseIncomingMethodCallProcessing();
+
+  MayAutoLock locker(&lock_);
+
+  paused_ = true;
+  for (auto& entry : endpoints_)
+    entry.second->ResetSyncMessageSignal();
+
+  // We do not want to override this to |false| if it's already |true|. If it's
+  // ever |true|, that means there's been at least one explicit Pause call since
+  // the last Resume and we must never unpause until at least one call to Resume
+  // is made.
+  must_resume_manually_ = must_resume_manually_ || must_resume_manually;
 }
 
 void MultiplexRouter::ProcessTasks(

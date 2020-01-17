@@ -42,12 +42,12 @@ Polymer({
   },
 
   /** @return {!CrToolbarSearchFieldElement} */
-  getSearchField: function() {
+  getSearchField() {
     return this.$.search;
   },
 
   /** @private */
-  onMenuTap_: function() {
+  onMenuTap_() {
     this.fire('os-toolbar-menu-tap');
   },
 });

@@ -85,14 +85,6 @@ std::string PreviousSaveCreditCardPromptUserDecisionToString(
 
 }  // namespace
 
-int64_t HashFormSignature(autofill::FormSignature form_signature) {
-  return static_cast<uint64_t>(form_signature) % 1021;
-}
-
-int64_t HashFieldSignature(autofill::FieldSignature field_signature) {
-  return static_cast<uint64_t>(field_signature) % 1021;
-}
-
 // First, translates |field_type| to the corresponding logical |group| from
 // |FieldTypeGroupForMetrics|.  Then, interpolates this with the given |metric|,
 // which should be in the range [0, |num_possible_metrics|).

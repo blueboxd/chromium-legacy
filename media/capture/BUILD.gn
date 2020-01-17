@@ -87,9 +87,7 @@ jumbo_source_set("capture_device_specific") {
     "video/video_capture_device_factory.h",
   ]
 
-  public_deps = [
-    ":capture_base",
-  ]
+  public_deps = [ ":capture_base" ]
   deps = [
     "//base",
     "//base:i18n",
@@ -364,9 +362,7 @@ test("capture_unittests") {
     "video_capture_types_unittest.cc",
   ]
 
-  data = [
-    "//media/test/data/bear.mjpeg",
-  ]
+  data = [ "//media/test/data/bear.mjpeg" ]
 
   deps = [
     ":capture",

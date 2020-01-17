@@ -33,6 +33,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
+#include "chrome/browser/push_messaging/push_messaging_features.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/ui/browser.h"
@@ -2590,7 +2591,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, EncryptionKeyUniqueness) {
 
 class PushMessagingIncognitoBrowserTest : public PushMessagingBrowserTest {
  public:
-  ~PushMessagingIncognitoBrowserTest() override {}
+  ~PushMessagingIncognitoBrowserTest() override = default;
 
   // PushMessagingBrowserTest:
   void SetUpOnMainThread() override {
@@ -2618,4 +2619,42 @@ IN_PROC_BROWSER_TEST_F(PushMessagingIncognitoBrowserTest,
   // it should just fulfill with null.
   ASSERT_TRUE(RunScript("hasSubscription()", &script_result));
   ASSERT_EQ("false - not subscribed", script_result);
+}
+
+class PushMessagingDisallowSenderIdsBrowserTest
+    : public PushMessagingBrowserTest {
+ public:
+  PushMessagingDisallowSenderIdsBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(kPushMessagingDisallowSenderIDs);
+  }
+
+  ~PushMessagingDisallowSenderIdsBrowserTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PushMessagingDisallowSenderIdsBrowserTest,
+                       SubscriptionWithSenderIdFails) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  ASSERT_NO_FATAL_FAILURE(RequestAndAcceptPermission());
+
+  LoadTestPage();  // Reload to become controlled.
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  // Attempt to create a subscription with a GCM Sender ID ("numeric key"),
+  // which should fail because the kPushMessagingDisallowSenderIDs feature has
+  // been enabled for this test.
+  ASSERT_TRUE(
+      RunScript("documentSubscribePushWithNumericKey()", &script_result));
+  EXPECT_EQ(
+      "AbortError - Registration failed - GCM Sender IDs are no longer "
+      "supported, please upgrade to VAPID authentication instead",
+      script_result);
 }

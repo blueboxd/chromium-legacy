@@ -882,6 +882,11 @@ bool HTMLInputElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
          TextControlElement::LayoutObjectIsNeeded(style);
 }
 
+// TODO(crbug.com/1040826): Remove this override.
+bool HTMLInputElement::TypeShouldForceLegacyLayout() const {
+  return input_type_view_->TypeShouldForceLegacyLayout();
+}
+
 LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style,
                                                    LegacyLayout legacy) {
   return input_type_view_->CreateLayoutObject(style, legacy);
@@ -1538,8 +1543,12 @@ void HTMLInputElement::SetCanReceiveDroppedFiles(
   if (!!can_receive_dropped_files_ == can_receive_dropped_files)
     return;
   can_receive_dropped_files_ = can_receive_dropped_files;
-  if (GetLayoutObject())
-    GetLayoutObject()->UpdateFromElement();
+  if (HTMLInputElement* button = UploadButton())
+    button->SetActive(can_receive_dropped_files);
+}
+
+HTMLInputElement* HTMLInputElement::UploadButton() const {
+  return input_type_view_->UploadButton();
 }
 
 String HTMLInputElement::SanitizeValue(const String& proposed_value) const {
@@ -1645,9 +1654,8 @@ void HTMLInputElement::SelectColorInColorChooser(const Color& color) {
     client->DidChooseColor(color);
 }
 
-void HTMLInputElement::EndColorChooser() {
-  if (ColorChooserClient* client = input_type_->GetColorChooserClient())
-    client->DidEndChooser();
+void HTMLInputElement::EndColorChooserForTesting() {
+  input_type_view_->ClosePopupView();
 }
 
 HTMLElement* HTMLInputElement::list() const {
@@ -1993,6 +2001,10 @@ PaintLayerScrollableArea* HTMLInputElement::GetScrollableArea() const {
     return InnerEditorElement()->GetScrollableArea();
 
   return Element::GetScrollableArea();
+}
+
+bool HTMLInputElement::IsDraggedSlider() const {
+  return input_type_view_->IsDraggedSlider();
 }
 
 }  // namespace blink

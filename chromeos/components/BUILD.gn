@@ -9,9 +9,7 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 # To add a unit test to this target, make a "unit_test" source_set in your
 # component and add a reference here.
 test("chromeos_components_unittests") {
-  sources = [
-    "run_all_unittests.cc",
-  ]
+  sources = [ "run_all_unittests.cc" ]
 
   deps = [
     "//base",

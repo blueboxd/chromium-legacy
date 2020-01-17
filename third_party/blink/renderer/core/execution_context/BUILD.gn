@@ -22,6 +22,8 @@ blink_core_sources("execution_context") {
     "remote_security_context.h",
     "security_context.cc",
     "security_context.h",
+    "security_context_init.cc",
+    "security_context_init.h",
     "window_agent.cc",
     "window_agent.h",
     "window_agent_factory.cc",

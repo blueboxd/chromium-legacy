@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Vala ithebhu yamanje</translation>
 <translation id="1258753120186372309">I-Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Sesha futhi uhlole</translation>
-<translation id="1264974993859112054">Ezemidlalo</translation>
 <translation id="1266864766717917324">Ayikwazanga ukwabelana nge-<ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Misa</translation>
 <translation id="1283039547216852943">Thepha ukuze unwebe</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Ukuze uthole amabhukhimakhi akho kuwo onke amadivayisi akho, ngena ngemvume uphinde uvule ukuvumelanisa</translation>
 <translation id="2822354292072154809">Ingabe uqinisekile ukuthi ufuna ukusetha kabusha zonke izimvume zesayithi le-<ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2842985007712546952">Ifolda yomzali</translation>
-<translation id="2858138569776157458">Amasayithi ahamba phambili</translation>
 <translation id="2860954141821109167">Sicela uqinisekise ukuthi uhlelo lokusebenza lwefoni linikwe amandla kule divayisi</translation>
 <translation id="2870560284913253234">Isayithi</translation>
 <translation id="2874939134665556319">Ithrekhi yangaphambilini</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Ngena ngemvume ku-Chrome</translation>
 <translation id="3288003805934695103">Ilayisha kabusha ikhasi</translation>
 <translation id="32895400574683172">Izaziso zivunyelwe</translation>
+<translation id="3290926146403723641">Ukuze uqedele imisebenzi kuwebhu ngomsizi we-Google, i-Chrome ithumela i-URL yesayithi, okuqukethwe kwesayithi, kanye nolwazi lomuntu siqu ku-Google</translation>
 <translation id="3295530008794733555">Phequlula ngokushesha. Sebenzisa idatha encane.</translation>
 <translation id="3298243779924642547">I-Lite</translation>
 <translation id="3303414029551471755">Qhubeka ngokulanda okuqukethwe?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Izinombolo zefoni</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ukulanda kutholakele</translation>
 <translation id="3822502789641063741">Sula isitoreji sesayithi?</translation>
-<translation id="3853625385350850937">Ukuze uqhubeke, vula i-NFC kudivayisi yakho</translation>
 <translation id="3859306556332390985">Funela phambili</translation>
 <translation id="388596076286380598">Thola ama-athikili, amavidiyo, nokunye okuqukethwe kusuka kumasayithi owathandayo, ngisho noma ungaxhumekile ku-inthanethi noma uxhumo lwakho lungaqinile.</translation>
 <translation id="3894427358181296146">Engeza ifolda</translation>
@@ -764,7 +762,6 @@ Isibonelo, amanye amawebhusayithi angaphendula lesi sicelo ngokukubonisa izikhan
 <translation id="6697947395630195233">I-Chrome idinga ukufinyelela endaweni yakho ukwabelana ngendawo yakho naleli sayithi.</translation>
 <translation id="6698801883190606802">Phatha idatha evumelanisiwe</translation>
 <translation id="6699370405921460408">Amaseva e-Google azolungiselela amakhasi owavakashelayo.</translation>
-<translation id="6709133671862442373">Izindaba</translation>
 <translation id="6710213216561001401">Okwedlule</translation>
 <translation id="671481426037969117">Isibalisikhathi sakho se-<ph name="FQDN" /> siphelile. Sizoqala futhi kusasa.</translation>
 <translation id="6738867403308150051">Iyalanda...</translation>
@@ -1079,7 +1076,6 @@ Isayithi ALITHOLI ukufinyelela kukhamera. Izithombe zekhamera zibonakala kuwe ku
 <translation id="9133397713400217035">Hlola okungaxhunyiwe ku-inthanethi</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Bonisa okwangempela</translation>
-<translation id="9139318394846604261">Ukuthenga</translation>
 <translation id="9155898266292537608">Futhi ungasesha ngokuthepha okusheshayo egameni</translation>
 <translation id="9169507124922466868">Umlando wokuzula uvuleke ngohhafu</translation>
 <translation id="9204836675896933765">1 ifayela elisele</translation>

@@ -363,12 +363,6 @@ Cada item da lista da política é uma string que contém um código de extensã
       Essa política será removida no Chrome 88.
 
       Consulte https://www.chromestatus.com/feature/5989473649164288 (link em inglês).</translation>
-<translation id="1559980755219453326">Esta política controla a permissão de fornecimento de informações sobre extensões e plug-ins.
-
-      Quando esta política não for configurada ou for definida como true, os dados de extensões e plug-ins serão coletados.
-      Quando esta política for definida como false, os dados de extensões e plug-ins não serão coletados.
-
-      Esta política só é eficaz quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e quando a máquina está inscrita na política <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1560205870554624777">Controla se a funcionalidade do Kerberos está ativada. Kerberos é um protocolo de autenticação que pode ser usado para autenticar apps da Web e compartilhamentos de arquivos.
 
           Se esta política for ativada, a funcionalidade do Kerberos também será. As contas do Kerberos podem ser adicionadas por meio da política "Configurar contas do Kerberos" ou nas configurações de contas do protocolo, na página de configurações "Pessoas".
@@ -713,12 +707,6 @@ Quando esta política for definida como um caminho de arquivo, esse arquivo ser�
 
       Não configurar esta política é o mesmo que ativá-la (veja a descrição acima).</translation>
 <translation id="2113068765175018713">Limitar tempo de execução do dispositivo reiniciando automaticamente</translation>
-<translation id="2116790137063002724">Esta política controla a permissão de fornecimento de informações que podem ser usadas para identificar usuários, como o login do SO, o login do perfil do <ph name="PRODUCT_NAME" />, o nome do perfil do <ph name="PRODUCT_NAME" />, o caminho do perfil do <ph name="PRODUCT_NAME" /> e o caminho executável do <ph name="PRODUCT_NAME" />.
-
-      Quando esta política não for definida ou for definida como verdadeira, informações que podem ser usadas para identificar os usuários serão coletadas.
-      Quando esta política for definida como falsa, informações que podem ser usadas para identificar os usuários não serão coletadas.
-
-      Esta política só é eficaz quando o <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativado e quando a máquina está inscrita na <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Permitir notificações nesses sites</translation>
 <translation id="2131902621292742709">Intervalo de escurecimento de tela no funcionamento com energia da bateria</translation>
 <translation id="2134437727173969994">Autorizar bloqueio da tela</translation>
@@ -2969,9 +2957,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
         Se a política for definida como falsa, os usuários não poderão enviar feedback para o Google.
 
         Se a política não for definida ou for definida como verdadeira, os usuários poderão enviar feedback para o Google em "Menu" -&gt; "Ajuda" -&gt; "Informar um problema" ou usando uma combinação de teclas.</translation>
-<translation id="5581292529942108810">Configurar as políticas relacionadas à Chrome Reporting Extension.
-
-      Esta política só é eficaz quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e quando a máquina está inscrita na <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5583806683960333345">Se esta configuração for ativada, os usuários terão permissão para usar tethering instantâneo, o que permite que o smartphone Google deles compartilhe os dados móveis com o dispositivo.
 
       Se esta configuração for desativada, os usuários não terão permissão para usar tethering instantâneo.
@@ -3612,12 +3597,6 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 
       Especifica os sinalizadores a serem aplicados ao <ph name="PRODUCT_NAME" /> quando ele for iniciado. Os sinalizadores especificados são aplicados apenas na tela de login. Os sinalizadores definidos por meio desta política não são propagados em sessões de usuário.</translation>
 <translation id="685769593149966548">Aplicar o Modo restrito rigoroso para o YouTube</translation>
-<translation id="6857824281777105940">Esta política controla a permissão de fornecimento de informações sobre o "Navegação segura", incluindo o número do aviso e do clique de aviso.
-
-      Quando esta política não for configurada ou for definida como true, os dados do "Navegação segura" serão coletados.
-      Quando esta política for definida como false, os dados do "Navegação segura" não serão coletados.
-
-      Esta política só é eficaz quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e quando a máquina está inscrita na <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="686079137349561371">Microsoft Windows 7 ou versão posterior</translation>
 <translation id="6864244339257535116">Permitir upload e download de arquivos protegidos por senha</translation>
 <translation id="687046793986382807">Esta política foi desativada a partir da versão 35 do <ph name="PRODUCT_NAME" />.
@@ -3960,12 +3939,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7311458740754205918">Se a política é definida como true ou não é configurada, a página "Nova guia" pode mostrar sugestões de conteúdo com base no histórico de navegação, nos interesses ou no local do usuário.
 
       Se a política for definida como false, as sugestões de conteúdo geradas automaticamente não serão mostradas na página "Nova guia".</translation>
-<translation id="7313793931637495417">Esta política controla a permissão de fornecimento das informações sobre versão, como a versão, a plataforma e a arquitetura do SO, a versão do <ph name="PRODUCT_NAME" /> e o canal do <ph name="PRODUCT_NAME" />.
-
-      Quando esta política não for configurada ou for definida como verdadeira, as informações sobre versão serão coletadas.
-      Quando esta política for definida como falsa, as informações sobre versão não serão coletadas.
-
-      Essa política só é eficaz quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada, e quando a máquina está inscrita na <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7323896582714668701">Parâmetros de linha de comando adicionais para o <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Semelhante a Wipe (valor 2), mas tenta preservar os tokens de login para que o usuário não precise fazer login novamente.</translation>
 <translation id="7329968046053403405">Especifica o tipo de conta fornecida pelo app de autenticação Android compatível com a autenticação <ph name="HTTP_NEGOTIATE" /> (por exemplo, autenticação Kerberos). Essa informação deve ser disponibilizada pelo fornecedor do app de autenticação. Para ver outros detalhes, consulte https://goo.gl/hajyfN.
@@ -3986,12 +3959,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7339315111520512972">Força a execução do código de rede no processo do navegador</translation>
 <translation id="7340034977315324840">Informar horário das atividades do dispositivo</translation>
 <translation id="7343497214039883642">Arquivo de configuração de impressora empresarial para dispositivos</translation>
-<translation id="735902178936442460">Esta política controla a permissão de fornecimento das informações que podem ser usadas para identificar as máquinas, como endereços da rede e nome da máquina.
-
-      Quando esta política não for configurada ou for definida como verdadeira, as informações que podem ser usadas para identificar máquinas serão coletadas.
-      Quando esta política for definida como falsa, as informações que podem ser usadas para identificar máquinas não serão coletadas.
-
-      Esta política só é eficaz quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e quando a máquina está inscrita na política <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7359307926583593395">
       Esta política se aplica à tela de login. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica à sessão do usuário. É recomendado definir as duas políticas com o mesmo valor. Se os valores não coincidirem, poderá haver um atraso ao entrar em uma sessão enquanto o valor especificado pela política do usuário estiver sendo aplicado.
       </translation>
@@ -4395,12 +4362,6 @@ Esses favoritos são colocados em uma pasta que não pode ser modificada pelo us
       Se a configuração estiver ativada ou não estiver definida, os sites terão permissão para verificar se o usuário salvou formas de pagamento.</translation>
 <translation id="8118665053362250806">Definir tamanho do cache de disco da mídia</translation>
 <translation id="8124468781472887384">Política de acesso à configuração de impressoras do dispositivo.</translation>
-<translation id="8138009212169037227">Esta política controla a permissão de fornecimento dos dados da política e do horário de busca dela.
-
-      Quando esta política não for configurada ou for definida como verdadeira, os dados e o horário de busca da política serão coletados.
-      Quando esta política for definida como falsa, os dados e o horário de busca da política não serão coletados.
-
-      Esta política só é eficaz quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e quando a máquina está inscrita na política <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="8140204717286305802">Informa ao servidor a lista de interfaces de rede com os respectivos tipos e endereços de hardware.
 
       Se a política estiver definida como "False", a lista de interfaces não será informada.</translation>

@@ -40,7 +40,7 @@ namespace {
 void EraseHeadersIf(
     base::Value* headers,
     base::RepeatingCallback<bool(const std::string&)> predicate) {
-  base::EraseIf(headers->GetList(), [&predicate](const base::Value& v) {
+  headers->EraseListValueIf([&predicate](const base::Value& v) {
     return predicate.Run(v.FindKey(keys::kHeaderNameKey)->GetString());
   });
 }

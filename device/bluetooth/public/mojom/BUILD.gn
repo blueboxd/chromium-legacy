@@ -5,19 +5,13 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "uuid.mojom",
-  ]
+  sources = [ "uuid.mojom" ]
 }
 
 mojom("fake_bluetooth_interfaces") {
-  sources = [
-    "test/fake_bluetooth.mojom",
-  ]
+  sources = [ "test/fake_bluetooth.mojom" ]
 
-  public_deps = [
-    ":mojom",
-  ]
+  public_deps = [ ":mojom" ]
 }
 
 # Experimental interfaces are not ready for production use yet. See README.md
@@ -27,9 +21,7 @@ mojom("deprecated_experimental_interfaces") {
     "device.mojom",
   ]
 
-  public_deps = [
-    ":mojom",
-  ]
+  public_deps = [ ":mojom" ]
 
   visibility = [
     # Experimental interfaces are not ready for production use yet. See

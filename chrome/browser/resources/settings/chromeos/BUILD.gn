@@ -39,18 +39,14 @@ if (optimize_webui) {
       "chrome://resources/mojo/mojo/public/mojom/base/time.mojom.html",
     ]
 
-    deps = [
-      ":unpak",
-    ]
+    deps = [ ":unpak" ]
   }
 
   unpak("unpak") {
     pak_file = settings_pak_file
     out_folder = unpak_folder
 
-    deps = [
-      ":flattened_resources",
-    ]
+    deps = [ ":flattened_resources" ]
   }
 
   grit("flattened_resources") {
@@ -81,6 +77,7 @@ group("closure_compile") {
     "google_assistant_page:closure_compile",
     "internet_page:closure_compile",
     "localized_link:closure_compile",
+    "multidevice_page:closure_compile",
     "os_a11y_page:closure_compile",
     "os_apps_page:closure_compile",
     "os_files_page:closure_compile",

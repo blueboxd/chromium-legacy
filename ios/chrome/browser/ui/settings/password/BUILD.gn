@@ -57,9 +57,7 @@ source_set("password_constants") {
     "passwords_table_view_constants.h",
     "passwords_table_view_constants.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("test_support") {
@@ -70,9 +68,7 @@ source_set("test_support") {
     "password_exporter_for_testing.h",
     "reauthentication_module_for_testing.h",
   ]
-  deps = [
-    ":password",
-  ]
+  deps = [ ":password" ]
 }
 
 source_set("unit_tests") {
@@ -145,9 +141,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "passwords_settings_egtest.mm",
-  ]
+  sources = [ "passwords_settings_egtest.mm" ]
   deps = [
     ":eg_test_support",
     ":password_constants",
@@ -213,9 +207,7 @@ source_set("eg_test_support+eg2") {
   ]
   testonly = true
 
-  sources = [
-    "passwords_settings_app_interface.h",
-  ]
+  sources = [ "passwords_settings_app_interface.h" ]
 }
 
 source_set("eg2_tests") {
@@ -225,9 +217,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "passwords_settings_egtest.mm",
-  ]
+  sources = [ "passwords_settings_egtest.mm" ]
   deps = [
     ":eg_test_support+eg2",
     ":password_constants",

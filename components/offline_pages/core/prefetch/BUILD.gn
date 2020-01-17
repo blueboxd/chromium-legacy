@@ -101,9 +101,7 @@ static_library("prefetch") {
     "visuals_fetch_by_url.h",
   ]
 
-  public_deps = [
-    ":proto",
-  ]
+  public_deps = [ ":proto" ]
 
   deps = [
     "//base",

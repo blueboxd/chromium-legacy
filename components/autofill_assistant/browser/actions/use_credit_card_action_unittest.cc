@@ -159,6 +159,9 @@ TEST_F(UseCreditCardActionTest, FillCreditCardRequiredFieldsFilled) {
 }
 
 TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
+  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
+
   ActionProto action = CreateUseCreditCardAction();
   AddRequiredField(
       &action, UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE,
@@ -181,6 +184,9 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
   AddRequiredField(&action,
                    UseCreditCardProto::RequiredField::CREDIT_CARD_EXP_MM_YY,
                    "#exp_month_year2");
+  AddRequiredField(&action,
+                   UseCreditCardProto::RequiredField::CREDIT_CARD_NETWORK,
+                   "#network");
 
   // First validation fails.
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#cvc"}), _))
@@ -199,6 +205,8 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
   EXPECT_CALL(mock_web_controller_,
               OnGetFieldValue(Selector({"#exp_month_year2"}), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#network"}), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
 
   // Expect fields to be filled
@@ -231,6 +239,10 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
       EXPECT_CALL(mock_action_delegate_,
                   OnSetFieldValue(Selector({"#exp_month_year2"}), "09/24", _))
           .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  Expectation set_card_network =
+      EXPECT_CALL(mock_action_delegate_,
+                  OnSetFieldValue(Selector({"#network"}), "visa", _))
+          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   // After fallback, second validation succeeds.
   EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#cvc"}), _))
@@ -257,6 +269,9 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
               OnGetFieldValue(Selector({"#exp_month_year2"}), _))
       .After(set_expyear4)
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#network"}), _))
+      .After(set_card_network)
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   autofill::CreditCard credit_card;
   credit_card.SetExpirationMonth(9);
@@ -278,6 +293,9 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
 }
 
 TEST_F(UseCreditCardActionTest, ForcedFallback) {
+  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
+
   ActionProto action = CreateUseCreditCardAction();
   auto* cvc_required = AddRequiredField(
       &action, UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE,
@@ -335,6 +353,9 @@ TEST_F(UseCreditCardActionTest, AutofillFailureWithoutRequiredFieldsIsFatal) {
 
 TEST_F(UseCreditCardActionTest,
        AutofillFailureWithRequiredFieldsLaunchesFallback) {
+  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
+
   ActionProto action_proto = CreateUseCreditCardAction();
   AddRequiredField(
       &action_proto,

@@ -356,7 +356,8 @@ class WPTExpectationsUpdater(object):
             line_parts = []
             if specifier:
                 line_parts.append('[ %s ]' % specifier)
-            line_parts.append(test_name)
+            # Escape literal asterisks for typ (https://crbug.com/1036130).
+            line_parts.append(test_name.replace('*', '\\*'))
             line_parts.append(expectations)
 
             # Only add the bug link if the expectations do not include WontFix.

@@ -20,12 +20,12 @@ namespace ash {
 
 class AssistantResponse;
 class AssistantCardElement;
-class AssistantTextElement;
+class AssistantUiElementViewFactory;
 class AssistantViewDelegate;
 
 // UiElementContainerView is the child of AssistantMainView concerned with
-// laying out text views and embedded card views in response to Assistant
-// interaction model UI element events.
+// laying out Assistant UI element views in response to Assistant interaction
+// model events.
 class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
     : public AnimatedContainerView {
  public:
@@ -49,7 +49,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
   void OnAllViewsAnimatedIn() override;
 
   void OnCardElementAdded(const AssistantCardElement* card_element);
-  void OnTextElementAdded(const AssistantTextElement* text_element);
+
+  // Factory instance used to construct views for modeled UI elements.
+  std::unique_ptr<AssistantUiElementViewFactory> view_factory_;
 
   // Whether or not the card we are adding is the first card for the current
   // Assistant response. The first card requires the addition of a top margin.

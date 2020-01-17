@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #include "ios/chrome/browser/overlays/public/overlay_dispatch_callback.h"
-#include "ios/chrome/browser/overlays/public/overlay_request_support.h"
 #include "ios/chrome/browser/overlays/public/overlay_response_support.h"
 
 #pragma mark - MockOverlayRequestCallbackReceiver
@@ -20,31 +19,32 @@ MockOverlayRequestCallbackReceiver::MockOverlayRequestCallbackReceiver() =
 MockOverlayRequestCallbackReceiver::~MockOverlayRequestCallbackReceiver() =
     default;
 
+#pragma mark - FakeOverlayRequestCallbackReceiver
+
+void FakeOverlayRequestCallbackReceiver::RunCompletionCallback(
+    OverlayRequest* request,
+    OverlayResponse* response) {
+  CompletionCallback(request);
+}
+
+void FakeOverlayRequestCallbackReceiver::RunDispatchCallback(
+    OverlayRequest* request,
+    const OverlayResponseSupport* response_support,
+    OverlayResponse* response) {
+  DispatchCallback(request, response_support);
+}
+
 #pragma mark - FakeOverlayRequestCallbackInstaller
 
 FakeOverlayRequestCallbackInstaller::FakeOverlayRequestCallbackInstaller(
-    FakeOverlayRequestCallbackReceiver* receiver)
-    : receiver_(receiver), request_support_(OverlayRequestSupport::All()) {
+    FakeOverlayRequestCallbackReceiver* receiver,
+    const std::set<const OverlayResponseSupport*>& dispatch_supports)
+    : receiver_(receiver), dispatch_supports_(dispatch_supports) {
   DCHECK(receiver_);
 }
 
 FakeOverlayRequestCallbackInstaller::~FakeOverlayRequestCallbackInstaller() =
     default;
-
-#pragma mark - Public
-
-void FakeOverlayRequestCallbackInstaller::SetRequestSupport(
-    const OverlayRequestSupport* request_support) {
-  DCHECK(request_support);
-  request_support_ = request_support;
-}
-
-void FakeOverlayRequestCallbackInstaller::
-    StartInstallingDispatchCallbacksWithSupport(
-        const OverlayResponseSupport* response_support) {
-  DCHECK(response_support);
-  dispatch_response_supports_.insert(response_support);
-}
 
 #pragma mark - OverlayRequestCallbackInstaller
 
@@ -57,12 +57,12 @@ void FakeOverlayRequestCallbackInstaller::InstallCallbacksInternal(
     OverlayRequest* request) {
   OverlayCallbackManager* manager = request->GetCallbackManager();
   manager->AddCompletionCallback(
-      base::BindOnce(&FakeOverlayRequestCallbackReceiver::CompletionCallback,
+      base::BindOnce(&FakeOverlayRequestCallbackReceiver::RunCompletionCallback,
                      base::Unretained(receiver_), request));
-  for (const OverlayResponseSupport* support : dispatch_response_supports_) {
+  for (const OverlayResponseSupport* support : dispatch_supports_) {
     manager->AddDispatchCallback(OverlayDispatchCallback(
         base::BindRepeating(
-            &FakeOverlayRequestCallbackReceiver::DispatchCallback,
+            &FakeOverlayRequestCallbackReceiver::RunDispatchCallback,
             base::Unretained(receiver_), request, support),
         support));
   }

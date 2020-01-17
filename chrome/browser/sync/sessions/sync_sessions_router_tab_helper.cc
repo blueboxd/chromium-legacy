@@ -6,10 +6,10 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/language/core/common/language_experiments.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"

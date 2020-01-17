@@ -66,9 +66,8 @@ class BatteryManager final : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  private:
-  using BatteryProperty = ScriptPromiseProperty<Member<BatteryManager>,
-                                                Member<BatteryManager>,
-                                                Member<DOMException>>;
+  using BatteryProperty =
+      ScriptPromiseProperty<Member<BatteryManager>, Member<DOMException>>;
   Member<BatteryProperty> battery_property_;
   BatteryStatus battery_status_;
 };

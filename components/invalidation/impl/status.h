@@ -46,7 +46,7 @@ struct Status {
 
   bool IsSuccess() const { return code == StatusCode::SUCCESS; }
   bool IsAuthFailure() const { return code == StatusCode::AUTH_FAILURE; }
-  bool ShouldRetry() const { return code != StatusCode::FAILED_NON_RETRIABLE; }
+  bool ShouldRetry() const { return code == StatusCode::FAILED; }
 
   StatusCode code;
   // The message is not meant to be displayed to the user.

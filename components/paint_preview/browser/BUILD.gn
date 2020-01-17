@@ -56,9 +56,7 @@ source_set("browser") {
 
 if (is_android) {
   generate_jni("jni_headers") {
-    sources = [
-      "android/java/src/org/chromium/components/paintpreview/browser/PaintPreviewBaseService.java",
-    ]
+    sources = [ "android/java/src/org/chromium/components/paintpreview/browser/PaintPreviewBaseService.java" ]
   }
 }
 
@@ -74,9 +72,7 @@ source_set("test_support") {
     "//components/keyed_service/core",
   ]
 
-  public_deps = [
-    ":browser",
-  ]
+  public_deps = [ ":browser" ]
 }
 
 source_set("unit_tests") {

@@ -16,6 +16,7 @@
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/highlighter/highlighter_controller.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -34,6 +35,7 @@ class AssistantInteractionController
       public AssistantInteractionModelObserver,
       public AssistantUiModelObserver,
       public AssistantViewDelegateObserver,
+      public TabletModeObserver,
       public HighlighterController::Observer {
  public:
   using AssistantInteractionMetadata =
@@ -118,13 +120,22 @@ class AssistantInteractionController
   void OnDialogPlateContentsCommitted(const std::string& text) override;
   void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
 
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
+
  private:
+  void OnTabletModeChanged();
+
   bool HasUnprocessedPendingResponse();
+  bool HasActiveInteraction() const;
 
   void OnProcessPendingResponse();
   void OnPendingResponseProcessed(bool success);
 
   void OnUiVisible(AssistantEntryPoint entry_point);
+  bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point) const;
+  void AttemptWarmerWelcome();
 
   void StartMetalayerInteraction(const gfx::Rect& region);
   void StartProactiveSuggestionsInteraction(
@@ -137,6 +148,10 @@ class AssistantInteractionController
   void StartVoiceInteraction();
   void StopActiveInteraction(bool cancel_conversation);
 
+  ash::InputModality GetDefaultInputModality() const;
+
+  AssistantVisibility GetVisibility() const;
+  bool IsVisible() const;
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
@@ -148,7 +163,10 @@ class AssistantInteractionController
 
   AssistantInteractionModel model_;
 
-  bool should_attempt_warmer_welcome_ = true;
+  // The number of times the Assistant UI has been shown (since the device
+  // booted).
+  // Might overflow so do not use for super critical things.
+  int number_of_times_shown_ = 0;
 
   base::WeakPtrFactory<AssistantInteractionController> weak_factory_{this};
 

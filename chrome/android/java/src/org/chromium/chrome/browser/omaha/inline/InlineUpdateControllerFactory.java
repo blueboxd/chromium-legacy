@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.omaha.inline;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omaha.UpdateConfigs;
 
 /**

@@ -26,7 +26,7 @@ Polymer({
   listeners: {'change-page': 'onChangePage_'},
 
   /** @override */
-  attached: function() {
+  attached() {
     this.setSelectedPage('user-pods-page');
   },
 
@@ -36,7 +36,7 @@ Polymer({
    *     and the optional data to be passed to the page.
    * @private
    */
-  onChangePage_: function(e) {
+  onChangePage_(e) {
     this.setSelectedPage(e.detail.page, e.detail.data);
   },
 
@@ -45,7 +45,7 @@ Polymer({
    * @param {string} pageId ID of the page that is to be selected.
    * @param {Object=} opt_pageData Optional data to be passed to the page.
    */
-  setSelectedPage: function(pageId, opt_pageData) {
+  setSelectedPage(pageId, opt_pageData) {
     this.pageData_ = opt_pageData || null;
     this.selectedPage_ = pageId;
     /** @type {CrViewManagerElement} */ (this.$.animatedPages)
@@ -62,12 +62,12 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  stopPropagation_: function(e) {
+  stopPropagation_(e) {
     e.stopPropagation();
   },
 
   /** @return {boolean} */
-  shouldShowCreateProfile_: function() {
+  shouldShowCreateProfile_() {
     return this.selectedPage_ == 'create-user-page';
   }
 });

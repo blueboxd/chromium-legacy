@@ -64,14 +64,14 @@ Polymer({
   },
 
   /** @public */
-  reset: function() {
+  reset() {
     this.$.animatedPages.selected = 0;
     this.resetInputFields_();
     this.updateNavigation_();
   },
 
   /** @private */
-  resetInputFields_: function() {
+  resetInputFields_() {
     this.oldPassword = '';
     this.newPassword = '';
     this.newPasswordRepeat = '';
@@ -87,7 +87,7 @@ Polymer({
    *  password depending on passed error.
    * @param {ACTIVE_DIRECTORY_PASSWORD_CHANGE_ERROR_STATE} error
    */
-  setInvalid: function(error) {
+  setInvalid(error) {
     switch (error) {
       case ACTIVE_DIRECTORY_PASSWORD_CHANGE_ERROR_STATE.WRONG_OLD_PASSWORD:
         this.oldPasswordWrong_ = true;
@@ -101,7 +101,7 @@ Polymer({
   },
 
   /** @private */
-  onSubmit_: function() {
+  onSubmit_() {
     if (!this.$.oldPassword.validate() || !this.$.newPassword.validate()) {
       return;
     }
@@ -121,14 +121,14 @@ Polymer({
   },
 
   /** @private */
-  onClose_: function() {
+  onClose_() {
     if (!this.$.navigation.closeVisible)
       return;
     this.fire('cancel');
   },
 
   /** @private */
-  updateNavigation_: function() {
+  updateNavigation_() {
     this.$.navigation.closeVisible = (this.$.animatedPages.selected == 0);
   },
 });

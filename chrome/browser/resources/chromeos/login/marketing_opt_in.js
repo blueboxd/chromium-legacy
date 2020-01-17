@@ -16,7 +16,7 @@ Polymer({
    * This is 'on-tap' event handler for 'AcceptAndContinue/Next' buttons.
    * @private
    */
-  onAllSet_: function() {
+  onAllSet_() {
     chrome.send('login.MarketingOptInScreen.allSet', [
       this.$.playUpdatesOption.checked, this.$.chromebookUpdatesOption.checked
     ]);

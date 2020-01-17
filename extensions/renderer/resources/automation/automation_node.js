@@ -1242,7 +1242,6 @@ var intAttributes = [
 // Int attribute, relation property to expose, reverse relation to expose.
 var nodeRefAttributes = [
     ['activedescendantId', 'activeDescendant', 'activeDescendantFor'],
-    ['detailsId', 'details', 'detailsFor'],
     ['errormessageId', 'errorMessage', 'errorMessageFor'],
     ['inPageLinkTargetId', 'inPageLinkTarget', null],
     ['nextFocusId', 'nextFocus', null],
@@ -1262,6 +1261,7 @@ var intListAttributes = [
 var nodeRefListAttributes = [
     ['controlsIds', 'controls', 'controlledBy'],
     ['describedbyIds', 'describedBy', 'descriptionFor'],
+    ['detailsIds', 'details', 'detailsFor'],
     ['flowtoIds', 'flowTo', 'flowFrom'],
     ['labelledbyIds', 'labelledBy', 'labelFor']];
 

@@ -257,7 +257,7 @@ Polymer({
    * @private
    */
   placeholderChanged_() {
-    if (this.placeholder || this.placeholder == '') {
+    if (this.placeholder || this.placeholder === '') {
       this.inputElement.setAttribute('placeholder', this.placeholder);
     } else {
       this.inputElement.removeAttribute('placeholder');
@@ -282,7 +282,7 @@ Polymer({
    * @return {boolean} Whether the <input> element was focused.
    */
   focusInput() {
-    if (this.shadowRoot.activeElement == this.inputElement) {
+    if (this.shadowRoot.activeElement === this.inputElement) {
       return false;
     }
     this.inputElement.focus();

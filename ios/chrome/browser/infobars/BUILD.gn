@@ -29,9 +29,7 @@ source_set("infobars") {
     "//ios/web",
     "//ui/gfx",
   ]
-  public_deps = [
-    "//components/infobars/core",
-  ]
+  public_deps = [ "//components/infobars/core" ]
 }
 
 source_set("badge_public") {
@@ -80,9 +78,7 @@ source_set("public") {
     "infobar_metrics_recorder.mm",
     "infobar_type.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {

@@ -34,9 +34,7 @@ jumbo_static_library("weblayer_shell_lib") {
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
-  public_deps = [
-    "//weblayer:weblayer_lib",
-  ]
+  public_deps = [ "//weblayer:weblayer_lib" ]
   deps = [
     ":resources",
     "//base",
@@ -125,36 +123,24 @@ grit("weblayer_shell_resources_grit") {
 copy("copy_shell_resources") {
   testonly = true
 
-  sources = [
-    "$target_gen_dir/weblayer_shell_resources.pak",
-  ]
-  outputs = [
-    "$root_out_dir/weblayer_shell_resources.pak",
-  ]
+  sources = [ "$target_gen_dir/weblayer_shell_resources.pak" ]
+  outputs = [ "$root_out_dir/weblayer_shell_resources.pak" ]
 
-  public_deps = [
-    ":weblayer_shell_resources_grit",
-  ]
+  public_deps = [ ":weblayer_shell_resources_grit" ]
 }
 
 group("resources") {
   testonly = true
 
-  public_deps = [
-    ":copy_shell_resources",
-  ]
+  public_deps = [ ":copy_shell_resources" ]
 }
 
 repack("shell_pak") {
   testonly = true
 
-  sources = [
-    "$root_gen_dir/weblayer/shell/weblayer_shell_resources.pak",
-  ]
+  sources = [ "$root_gen_dir/weblayer/shell/weblayer_shell_resources.pak" ]
 
-  deps = [
-    ":resources",
-  ]
+  deps = [ ":resources" ]
   output = "$root_out_dir/weblayer_shell.pak"
 }
 
@@ -225,23 +211,17 @@ repack("pak") {
 if (is_android) {
   group("weblayer_shell") {
     testonly = true
-    deps = [
-      "//weblayer/shell/android:weblayer_shell_apk",
-    ]
+    deps = [ "//weblayer/shell/android:weblayer_shell_apk" ]
   }
   group("weblayer_support") {
     testonly = true
-    deps = [
-      "//weblayer/shell/android:weblayer_support_apk",
-    ]
+    deps = [ "//weblayer/shell/android:weblayer_support_apk" ]
   }
 } else {
   executable("weblayer_shell") {
     testonly = true
 
-    sources = [
-      "app/shell_main.cc",
-    ]
+    sources = [ "app/shell_main.cc" ]
 
     if (is_win) {
       sources += [ "app/shell.rc" ]

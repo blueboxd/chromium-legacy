@@ -19,6 +19,7 @@
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/gbm_defines.h"
 #include "ui/gfx/linux/gbm_device.h"
+#include "ui/gfx/linux/gbm_util.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
@@ -36,29 +37,6 @@
 namespace ui {
 
 namespace {
-
-uint32_t BufferUsageToGbmFlags(gfx::BufferUsage usage) {
-  switch (usage) {
-    case gfx::BufferUsage::GPU_READ:
-      return GBM_BO_USE_TEXTURING;
-    case gfx::BufferUsage::SCANOUT:
-      return GBM_BO_USE_RENDERING | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
-    case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
-      return GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_WRITE | GBM_BO_USE_SCANOUT |
-             GBM_BO_USE_TEXTURING;
-    case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
-      return GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_WRITE;
-    case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
-      return GBM_BO_USE_LINEAR | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
-    case gfx::BufferUsage::SCANOUT_VDA_WRITE:
-      return GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING |
-             GBM_BO_USE_HW_VIDEO_DECODER;
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-      return GBM_BO_USE_LINEAR | GBM_BO_USE_TEXTURING;
-    case gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE:
-      return GBM_BO_USE_TEXTURING | GBM_BO_USE_HW_VIDEO_ENCODER;
-  }
-}
 
 void CreateBufferWithGbmFlags(const scoped_refptr<DrmDevice>& drm,
                               uint32_t fourcc_format,
@@ -151,7 +129,7 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   CHECK(drm) << "No devices available for buffer allocation.";
 
   DrmWindow* window = screen_manager_->GetWindow(widget);
-  uint32_t flags = BufferUsageToGbmFlags(usage);
+  uint32_t flags = ui::BufferUsageToGbmFlags(usage);
   uint32_t fourcc_format = ui::GetFourCCFormatFromBufferFormat(format);
 
   // TODO(hoegsberg): We shouldn't really get here without a window,

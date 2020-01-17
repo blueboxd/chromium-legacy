@@ -603,18 +603,27 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
   // HistoryURLProvider so we only generate them if this provider is present.
   if (control_key_state_ == DOWN && !is_keyword_selected() &&
       autocomplete_controller()->history_url_provider()) {
-    // Generate a new AutocompleteInput, copying the latest one but using "com"
-    // as the desired TLD. Then use this autocomplete input to generate a
-    // URL_WHAT_YOU_TYPED AutocompleteMatch. Note that using the most recent
-    // input instead of the currently visible text means we'll ignore any
+    // For generating the hostname of the URL, we use the most recent
+    // input instead of the currently visible text. This means we'll ignore any
     // visible inline autocompletion: if a user types "foo" and is autocompleted
     // to "foodnetwork.com", ctrl-enter will navigate to "foo.com", not
     // "foodnetwork.com".  At the time of writing, this behavior matches
-    // Internet Explorer, but not Firefox.
+    // Internet Explorer, but not Firefox. Two exceptions to our own rule:
+    //  1. If the user has selected a suggestion, use the suggestion text.
+    //  2. If the user has never edited the text, use the current page's full
+    //     URL instead of the elided URL to avoid HTTPS downgrading.
+    base::string16 text_for_desired_tld_navigation = input_.text();
+    if (has_temporary_text_)
+      text_for_desired_tld_navigation = view_->GetText();
+    else if (!user_input_in_progress())
+      text_for_desired_tld_navigation = url_for_editing_;
+
+    // Generate a new AutocompleteInput, copying the latest one but using "com"
+    // as the desired TLD. Then use this autocomplete input to generate a
+    // URL_WHAT_YOU_TYPED AutocompleteMatch.
     AutocompleteInput input(
-        has_temporary_text_ ? view_->GetText() : input_.text(),
-        input_.cursor_position(), "com", input_.current_page_classification(),
-        client_->GetSchemeClassifier());
+        text_for_desired_tld_navigation, input_.cursor_position(), "com",
+        input_.current_page_classification(), client_->GetSchemeClassifier());
     input.set_prevent_inline_autocomplete(input_.prevent_inline_autocomplete());
     input.set_prefer_keyword(input_.prefer_keyword());
     input.set_keyword_mode_entry_method(input_.keyword_mode_entry_method());
@@ -675,9 +684,11 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
 
   client_->OnInputAccepted(match);
 
-  DCHECK(popup_model());
-  view_->OpenMatch(match, disposition, alternate_nav_url, base::string16(),
-                   popup_model()->selected_line(), match_selection_timestamp);
+  // popup_model() could be nullptr during unit tests.
+  if (popup_model()) {
+    view_->OpenMatch(match, disposition, alternate_nav_url, base::string16(),
+                     popup_model()->selected_line(), match_selection_timestamp);
+  }
 }
 
 void OmniboxEditModel::EnterKeywordModeForDefaultSearchProvider(

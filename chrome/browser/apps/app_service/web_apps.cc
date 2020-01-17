@@ -348,6 +348,12 @@ void WebApps::UnpauseApps(const std::string& app_id) {
   SetIconEffect(app_id);
 }
 
+void WebApps::GetMenuModel(const std::string& app_id,
+                           apps::mojom::MenuType menu_type,
+                           GetMenuModelCallback callback) {
+  std::move(callback).Run(apps::mojom::MenuItems::New());
+}
+
 void WebApps::OpenNativeSettings(const std::string& app_id) {
   if (!profile_) {
     return;
@@ -584,11 +590,13 @@ IconEffects WebApps::GetIconEffects(const web_app::WebApp* web_app) {
       static_cast<IconEffects>(icon_effects | IconEffects::kResizeAndPad);
   if (extensions::util::ShouldApplyChromeBadgeToWebApp(profile_,
                                                        web_app->app_id())) {
-    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kBadge);
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kChromeBadge);
   }
 #endif
   if (!web_app->is_locally_installed()) {
-    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kGray);
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
   }
   icon_effects =
       static_cast<IconEffects>(icon_effects | IconEffects::kRoundCorners);

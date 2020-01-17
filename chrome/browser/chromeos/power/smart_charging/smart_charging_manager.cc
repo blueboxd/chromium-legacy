@@ -4,9 +4,24 @@
 
 #include "chrome/browser/chromeos/power/smart_charging/smart_charging_manager.h"
 
+#include <memory>
+
+#include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/important_file_writer.h"
+#include "base/location.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/task_runner_util.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/power/ml/recent_events_counter.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/core/session_manager_observer.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "ui/aura/env.h"
@@ -16,6 +31,8 @@ namespace chromeos {
 namespace power {
 
 namespace {
+constexpr int kBucketSize = 15;
+
 // Interval at which data should be logged.
 constexpr base::TimeDelta kLoggingInterval = base::TimeDelta::FromMinutes(30);
 
@@ -27,11 +44,110 @@ constexpr base::TimeDelta kUserActivityDuration =
 // Granularity of input events is per minute.
 constexpr int kNumUserInputEventsBuckets =
     kUserActivityDuration / base::TimeDelta::FromMinutes(1);
+
+constexpr char kSavedFileName[] = "past_charging_events.pb";
+constexpr char kSavedDir[] = "smartcharging";
+
+// Given a proto and file path, writes to disk and logs the error(if any).
+void WriteProtoToDisk(const PastChargingEvents& proto,
+                      const base::FilePath& file_path) {
+  std::string proto_string;
+  if (!proto.SerializeToString(&proto_string)) {
+    // TODO(crbug.com/1028853): adds a UMA log here.
+    return;
+  }
+  bool write_result;
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
+    write_result = base::ImportantFileWriter::WriteFileAtomically(
+        file_path, proto_string.data(), "SmartCharging");
+  }
+
+  if (!write_result) {
+    // TODO(crbug.com/1028853): adds a UMA log here.
+    return;
+  }
+  // TODO(crbug.com/1028853): adds a UMA log here.
+}
+
+// Reads a proto from a file path.
+std::unique_ptr<PastChargingEvents> ReadProto(const base::FilePath& file_path) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  std::string proto_str;
+  if (!base::ReadFileToString(file_path, &proto_str)) {
+    // TODO(crbug.com/1028853): adds a UMA log here.
+    return nullptr;
+  }
+
+  auto proto = std::make_unique<PastChargingEvents>();
+  if (!proto->ParseFromString(proto_str)) {
+    // TODO(crbug.com/1028853): adds a UMA log here.
+    return nullptr;
+  }
+  // TODO(crbug.com/1028853): adds a UMA log here.
+  return proto;
+}
+
+// If |create_new_path| is true, try to create new path and return true if
+// success.
+// If |create_new_path| is false, try to get the path and return true if
+// sucesss.
+bool GetPathSuccess(const base::FilePath profile_path,
+                    base::FilePath* file_path,
+                    bool create_new_path) {
+  const base::FilePath path = profile_path.AppendASCII(kSavedDir);
+  if (create_new_path) {
+    if (!base::DirectoryExists(path) && !base::CreateDirectory(path)) {
+      // TODO(crbug.com/1028853): adds a UMA log here.
+      return false;
+    }
+  } else if (!base::PathExists(path.AppendASCII(kSavedFileName))) {
+    // TODO(crbug.com/1028853): adds a UMA log here.
+    return false;
+  }
+  // TODO(crbug.com/1028853): adds a UMA log here.
+  *file_path = path.AppendASCII(kSavedFileName);
+  return true;
+}
+
+// Checks if an event is a halt (shutdown/suspend) event.
+bool IsHaltEvent(const PastEvent& event) {
+  return event.reason() == UserChargingEvent::Event::SHUTDOWN ||
+         event.reason() == UserChargingEvent::Event::SUSPEND;
+}
+
+// Loads data from disk given a profile file path.
+std::unique_ptr<PastChargingEvents> LoadFromDisk(
+    const base::FilePath& profile_path) {
+  base::FilePath file_path;
+  std::unique_ptr<PastChargingEvents> proto;
+  if (GetPathSuccess(profile_path, &file_path, false /*create_new_path*/)) {
+    proto = ReadProto(file_path);
+  }
+  return proto;
+}
+
+// Saves data to disk given a profile file path.
+void SaveToDisk(const std::vector<PastEvent>& past_events,
+                const base::FilePath& profile_path) {
+  base::FilePath file_path;
+  if (GetPathSuccess(profile_path, &file_path, true /*create_new_path*/)) {
+    PastChargingEvents proto;
+    for (const auto& event : past_events) {
+      *proto.add_events() = event;
+    }
+    WriteProtoToDisk(proto, file_path);
+  }
+}
+
 }  // namespace
 
 SmartChargingManager::SmartChargingManager(
     ui::UserActivityDetector* detector,
     mojo::PendingReceiver<viz::mojom::VideoDetectorObserver> receiver,
+    session_manager::SessionManager* session_manager,
     std::unique_ptr<base::RepeatingTimer> periodic_timer)
     : periodic_timer_(std::move(periodic_timer)),
       receiver_(this, std::move(receiver)),
@@ -50,8 +166,13 @@ SmartChargingManager::SmartChargingManager(
       ukm_logger_(std::make_unique<SmartChargingUkmLogger>()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(detector);
+  DCHECK(session_manager);
   user_activity_observer_.Add(detector);
   power_manager_client_observer_.Add(chromeos::PowerManagerClient::Get());
+  session_manager_observer_.Add(session_manager);
+  blocking_task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 SmartChargingManager::~SmartChargingManager() = default;
@@ -70,6 +191,7 @@ std::unique_ptr<SmartChargingManager> SmartChargingManager::CreateInstance() {
   std::unique_ptr<SmartChargingManager> screen_brightness_manager =
       std::make_unique<SmartChargingManager>(
           detector, video_observer.InitWithNewPipeAndPassReceiver(),
+          session_manager::SessionManager::Get(),
           std::make_unique<base::RepeatingTimer>());
 
   aura::Env::GetInstance()
@@ -201,6 +323,21 @@ void SmartChargingManager::OnVideoActivityEnded() {
   is_video_playing_ = false;
 }
 
+void SmartChargingManager::OnUserSessionStarted(bool /* is_primary_user */) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // The first sign-in user is the primary user, hence if |OnUserSessionStarted|
+  // is called, the primary user profile should have been created. We will
+  // ignore |is_primary_user|.
+  if (loaded_from_disk_)
+    return;
+  if (!ProfileManager::GetPrimaryUserProfile()) {
+    // TODO(crbug.com/1028853): adds a UMA log here.
+    return;
+  }
+  profile_path_ = ProfileManager::GetPrimaryUserProfile()->GetPath();
+  MaybeLoadFromDisk(profile_path_.value());
+}
+
 void SmartChargingManager::PopulateUserChargingEventProto(
     UserChargingEvent* proto) {
   auto& features = *proto->mutable_features();
@@ -229,8 +366,9 @@ void SmartChargingManager::PopulateUserChargingEventProto(
   base::Time::Exploded now_exploded;
   now.LocalExplode(&now_exploded);
 
-  features.set_time_of_the_day(ukm::GetExponentialBucketMinForCounts1000(
-      now_exploded.hour * 60 + now_exploded.minute));
+  features.set_time_of_the_day(ukm::GetLinearBucketMin(
+      static_cast<int64_t>(now_exploded.hour * 60 + now_exploded.minute),
+      kBucketSize));
   features.set_day_of_week(static_cast<UserChargingEvent::Features::DayOfWeek>(
       now_exploded.day_of_week));
   features.set_day_of_month(now_exploded.day_of_month);
@@ -247,10 +385,41 @@ void SmartChargingManager::PopulateUserChargingEventProto(
   } else {
     features.set_device_mode(UserChargingEvent::Features::UNKNOWN_MODE);
   }
+
+  // Last charge related features. This logic relies on the fact that
+  // there will be at most one halt event because of |UpdatePastEvents()|.
+  bool halt_from_last_charge = false;
+  for (const auto& event : past_events_) {
+    if (IsHaltEvent(event)) {
+      halt_from_last_charge = true;
+      break;
+    }
+  }
+  features.set_halt_from_last_charge(halt_from_last_charge);
+
+  PastEvent last_charge_plugged_in;
+  PastEvent last_charge_unplugged;
+  std::tie(last_charge_plugged_in, last_charge_unplugged) =
+      GetLastChargeEvents();
+
+  if (!last_charge_plugged_in.has_time() || !last_charge_unplugged.has_time())
+    return;
+  features.set_time_since_last_charge(ukm::GetExponentialBucketMinForCounts1000(
+      now.ToDeltaSinceWindowsEpoch().InMinutes() -
+      last_charge_unplugged.time()));
+  features.set_duration_of_last_charge(
+      ukm::GetExponentialBucketMinForCounts1000(last_charge_unplugged.time() -
+                                                last_charge_plugged_in.time()));
+  features.set_battery_percentage_before_last_charge(
+      last_charge_plugged_in.battery_percent());
+  features.set_battery_percentage_of_last_charge(
+      last_charge_unplugged.battery_percent());
+  features.set_timezone_difference_from_last_charge(
+      (now.UTCMidnight() - now.LocalMidnight()).InHours() -
+      last_charge_unplugged.timezone());
 }
 
-void SmartChargingManager::LogEvent(
-    const UserChargingEvent::Event::Reason& reason) {
+void SmartChargingManager::LogEvent(const EventReason& reason) {
   UserChargingEvent proto;
   proto.mutable_event()->set_event_id(++event_id_);
   proto.mutable_event()->set_reason(reason);
@@ -261,6 +430,16 @@ void SmartChargingManager::LogEvent(
   user_charging_event_for_test_ = proto;
 
   ukm_logger_->LogEvent(proto);
+
+  AddPastEvent(reason);
+  // Calls |UpdatePastEvents()| after |AddPastEvent()| to keep the number of
+  // saved past events to be minimum.
+  UpdatePastEvents();
+  if (profile_path_.has_value()) {
+    MaybeSaveToDisk(profile_path_.value());
+  } else {
+    // TODO(crbug.com/1028853): adds a UMA log here.
+  }
 }
 
 void SmartChargingManager::OnTimerFired() {
@@ -304,6 +483,124 @@ base::TimeDelta SmartChargingManager::DurationRecentVideoPlaying() {
                                             most_recent_video_start_time_);
   }
   return total_time;
+}
+
+void SmartChargingManager::MaybeLoadFromDisk(
+    const base::FilePath& profile_path) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&LoadFromDisk, profile_path),
+      base::BindOnce(&SmartChargingManager::OnLoadProtoFromDiskComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SmartChargingManager::MaybeSaveToDisk(const base::FilePath& profile_path) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  blocking_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&SaveToDisk, past_events_, profile_path));
+}
+
+void SmartChargingManager::OnLoadProtoFromDiskComplete(
+    std::unique_ptr<PastChargingEvents> proto) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!proto) {
+    return;
+  }
+  loaded_from_disk_ = true;
+  for (const auto& event : proto.get()->events()) {
+    past_events_.emplace_back(event);
+  }
+}
+
+void SmartChargingManager::AddPastEvent(const EventReason& reason) {
+  // Since we use |past_events_| to calculate last charge information, we don't
+  // need to save if the reason is PERIODIC_LOG.
+  if (reason == UserChargingEvent::Event::PERIODIC_LOG)
+    return;
+  PastEvent new_event;
+  const base::Time now = base::Time::Now();
+  new_event.set_time(now.ToDeltaSinceWindowsEpoch().InMinutes());
+  if (battery_percent_.has_value())
+    new_event.set_battery_percent(static_cast<int>(battery_percent_.value()));
+  new_event.set_timezone((now.UTCMidnight() - now.LocalMidnight()).InHours());
+  new_event.set_reason(reason);
+  past_events_.emplace_back(new_event);
+}
+
+void SmartChargingManager::UpdatePastEvents() {
+  PastEvent last_charge_plugged_in;
+  PastEvent last_charge_unplugged;
+  PastEvent new_plugged_in;
+  PastEvent new_halt;
+
+  std::tie(last_charge_plugged_in, last_charge_unplugged) =
+      GetLastChargeEvents();
+  if (last_charge_unplugged.has_time()) {
+    // Gets the unplugged and halt(shutdown/suspend) events after the unplug (if
+    // any).
+    for (const auto& event : past_events_) {
+      if (event.time() > last_charge_unplugged.time()) {
+        if (event.reason() == UserChargingEvent::Event::CHARGER_PLUGGED_IN) {
+          new_plugged_in = event;
+        } else if (IsHaltEvent(event)) {
+          new_halt = event;
+        }
+      }
+    }
+  } else {
+    // Gets the last halt and plugged in event.
+    for (const auto& event : past_events_) {
+      if (event.reason() == UserChargingEvent::Event::CHARGER_PLUGGED_IN) {
+        new_plugged_in = event;
+      }
+      if (IsHaltEvent(event)) {
+        new_halt = event;
+      }
+    }
+  }
+
+  // Removes everything else.
+  past_events_.clear();
+
+  // Adds useful events back.
+  if (last_charge_plugged_in.has_time())
+    past_events_.emplace_back(last_charge_plugged_in);
+  if (last_charge_unplugged.has_time())
+    past_events_.emplace_back(last_charge_unplugged);
+  if (new_plugged_in.has_time())
+    past_events_.emplace_back(new_plugged_in);
+  if (new_halt.has_time())
+    past_events_.emplace_back(new_halt);
+}
+
+// Returns the last pair of plug/unplug events. If can't find the last pair,
+// return a pair of empty events.
+std::tuple<PastEvent, PastEvent> SmartChargingManager::GetLastChargeEvents() {
+  PastEvent plugged_in;
+  PastEvent unplugged;
+  PastEvent temp_plugged_in;
+  // There could be multiple events with CHARGER_PLUGGED_IN and/or
+  // CHARGER_UNPLUGGED. This function relies on the fact that all events are
+  // sorted by time.
+  for (const auto& event : past_events_) {
+    if (event.has_reason()) {
+      if (event.reason() == UserChargingEvent::Event::CHARGER_PLUGGED_IN) {
+        temp_plugged_in = event;
+      } else if (event.reason() ==
+                 UserChargingEvent::Event::CHARGER_UNPLUGGED) {
+        if (!temp_plugged_in.has_time())
+          continue;
+        // Updates the pair of results.
+        if (!plugged_in.has_time() ||
+            temp_plugged_in.time() != plugged_in.time()) {
+          plugged_in = temp_plugged_in;
+          unplugged = event;
+        }
+      }
+    }
+  }
+  return std::make_tuple(plugged_in, unplugged);
 }
 
 }  // namespace power

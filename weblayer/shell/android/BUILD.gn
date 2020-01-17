@@ -12,13 +12,9 @@ import("//weblayer/variables.gni")
 android_assets("weblayer_shell_assets") {
   testonly = true
 
-  sources = [
-    "$root_out_dir/weblayer_shell.pak",
-  ]
+  sources = [ "$root_out_dir/weblayer_shell.pak" ]
   disable_compression = true
-  deps = [
-    "//weblayer/shell:shell_pak",
-  ]
+  deps = [ "//weblayer/shell:shell_pak" ]
 }
 
 android_resources("weblayer_shell_resources") {

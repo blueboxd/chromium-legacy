@@ -22,24 +22,24 @@ Polymer({
     },
   },
 
-  focus: function() {
+  focus() {
     this.$['app-downloading-dialog'].focus();
   },
 
   /** @private */
-  onContinue_: function() {
+  onContinue_() {
     chrome.send(
         'login.AppDownloadingScreen.userActed',
         ['appDownloadingContinueSetup']);
   },
 
   /** @private */
-  hasSingleApp_: function(numOfApps) {
+  hasSingleApp_(numOfApps) {
     return numOfApps === 1;
   },
 
   /** @private */
-  getDialogTitleA11yString_: function(numOfApps) {
+  getDialogTitleA11yString_(numOfApps) {
     if (this.hasSingleApp_(numOfApps)) {
       return this.i18n('appDownloadingScreenTitleSingular');
     } else {

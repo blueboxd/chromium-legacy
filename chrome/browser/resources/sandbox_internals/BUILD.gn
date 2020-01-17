@@ -6,14 +6,10 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   if (is_win) {
-    deps = [
-      ":sandbox_internals_win",
-    ]
+    deps = [ ":sandbox_internals_win" ]
   }
   if (is_android || is_linux) {
-    deps = [
-      ":sandbox_internals",
-    ]
+    deps = [ ":sandbox_internals" ]
   }
 }
 

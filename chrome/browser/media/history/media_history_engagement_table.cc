@@ -9,6 +9,8 @@
 
 namespace media_history {
 
+const char MediaHistoryEngagementTable::kTableName[] = "mediaEngagement";
+
 MediaHistoryEngagementTable::MediaHistoryEngagementTable(
     scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner)
     : MediaHistoryTableBase(std::move(db_task_runner)) {}
@@ -19,19 +21,21 @@ sql::InitStatus MediaHistoryEngagementTable::CreateTableIfNonExistent() {
   if (!CanAccessDatabase())
     return sql::INIT_FAILURE;
 
-  bool success = DB()->Execute(
-      "CREATE TABLE IF NOT EXISTS mediaEngagement("
-      "origin_id INTEGER PRIMARY KEY,"
-      "last_updated INTEGER,"
-      "visits INTEGER,"
-      "playbacks INTEGER,"
-      "last_playback_time REAL,"
-      "has_high_score INTEGER,"
-      "CONSTRAINT fk_origin "
-      "FOREIGN KEY (origin_id) "
-      "REFERENCES origin(id) "
-      "ON DELETE CASCADE"
-      ")");
+  bool success =
+      DB()->Execute(base::StringPrintf("CREATE TABLE IF NOT EXISTS %s("
+                                       "origin_id INTEGER PRIMARY KEY,"
+                                       "last_updated INTEGER,"
+                                       "visits INTEGER,"
+                                       "playbacks INTEGER,"
+                                       "last_playback_time REAL,"
+                                       "has_high_score INTEGER,"
+                                       "CONSTRAINT fk_origin "
+                                       "FOREIGN KEY (origin_id) "
+                                       "REFERENCES origin(id) "
+                                       "ON DELETE CASCADE"
+                                       ")",
+                                       kTableName)
+                        .c_str());
 
   if (!success) {
     ResetDB();

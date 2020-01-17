@@ -21,12 +21,12 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.$.dialog.showModal();
   },
 
   /** @private */
-  onOkTap_: function() {
+  onOkTap_() {
     this.$.dialog.close();
   },
 });

@@ -34,9 +34,7 @@ template("tweak_info_plist") {
       forward_variables_from(invoker, [ "testonly" ])
       script = "//build/config/mac/plist_util.py"
       sources = invoker.info_plists
-      outputs = [
-        _source_name,
-      ]
+      outputs = [ _source_name ]
       args = [
                "merge",
                "-f=xml1",
@@ -64,12 +62,8 @@ template("tweak_info_plist") {
       lastchange_file,
       "//chrome/VERSION",
     ]
-    sources = [
-      _source_name,
-    ]
-    outputs = [
-      _output_name,
-    ]
+    sources = [ _source_name ]
+    outputs = [ _output_name ]
     if (!defined(args)) {
       args = []
     }

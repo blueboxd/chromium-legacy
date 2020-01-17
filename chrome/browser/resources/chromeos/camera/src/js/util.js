@@ -434,30 +434,3 @@ export function fitWindow() {
     Object.assign(inner, {width, height, minWidth: width, minHeight: height});
   });
 }
-
-/** @const */
-cca.util.orientPhoto = orientPhoto;
-/** @const */
-cca.util.animateCancel = animateCancel;
-/** @const */
-cca.util.animateOnce = animateOnce;
-/** @const */
-cca.util.getShortcutIdentifier = getShortcutIdentifier;
-/** @const */
-cca.util.makeUnfocusableByMouse = makeUnfocusableByMouse;
-/** @const */
-cca.util.isWindowFullSize = isWindowFullSize;
-/** @const */
-cca.util.openHelp = openHelp;
-/** @const */
-cca.util.setupI18nElements = setupI18nElements;
-/** @const */
-cca.util.blobToImage = blobToImage;
-/** @const */
-cca.util.getDefaultFacing = getDefaultFacing;
-/** @const */
-cca.util.scalePicture = scalePicture;
-/** @const */
-cca.util.toggleChecked = toggleChecked;
-/** @const */
-cca.util.fitWindow = fitWindow;

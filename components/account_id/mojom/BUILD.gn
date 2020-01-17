@@ -5,7 +5,5 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "account_id.mojom",
-  ]
+  sources = [ "account_id.mojom" ]
 }

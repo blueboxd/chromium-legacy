@@ -552,7 +552,7 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
   static const base::NoDestructor<scoped_refptr<base::RefCountedMemory>>
       new_tab_theme_css(
           ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              IDR_NEW_INCOGNITO_TAB_THEME_CSS));
+              IDR_INCOGNITO_TAB_THEME_CSS));
   CHECK(*new_tab_theme_css);
 
   // Create the string from our template and the replacements.

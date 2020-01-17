@@ -285,9 +285,7 @@ void WebRemoteFrameImpl::AddReplicatedContentSecurityPolicyHeader(
   GetFrame()
       ->GetSecurityContext()
       ->GetContentSecurityPolicy()
-      ->AddPolicyFromHeaderValue(
-          header_value, static_cast<ContentSecurityPolicyHeaderType>(type),
-          static_cast<ContentSecurityPolicyHeaderSource>(source));
+      ->AddPolicyFromHeaderValue(header_value, type, source);
 }
 
 void WebRemoteFrameImpl::ResetReplicatedContentSecurityPolicy() {
@@ -319,10 +317,6 @@ void WebRemoteFrameImpl::ForwardResourceTimingToParent(
                           mojo::NullReceiver() /* worker_timing_receiver */);
 }
 
-void WebRemoteFrameImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
-  GetFrame()->View()->SetNeedsOcclusionTracking(needs_tracking);
-}
-
 void WebRemoteFrameImpl::DidStartLoading() {
   GetFrame()->SetIsLoading(true);
 }
@@ -344,27 +338,14 @@ bool WebRemoteFrameImpl::IsIgnoredForHitTest() const {
 }
 
 void WebRemoteFrameImpl::UpdateUserActivationState(
-    UserActivationUpdateType update_type) {
-  switch (update_type) {
-    case UserActivationUpdateType::kNotifyActivation:
-      GetFrame()->NotifyUserActivationInLocalTree();
-      break;
-    case UserActivationUpdateType::kConsumeTransientActivation:
-      GetFrame()->ConsumeTransientUserActivationInLocalTree();
-      break;
-    case UserActivationUpdateType::kClearActivation:
-      GetFrame()->ClearUserActivationInLocalTree();
-      break;
-    case UserActivationUpdateType::kNotifyActivationPendingBrowserVerification:
-      NOTREACHED() << "Unexpected UserActivationUpdateType from browser";
-      break;
-  }
+    mojom::blink::UserActivationUpdateType update_type) {
+  GetFrame()->UpdateUserActivationState(update_type);
 }
 
 void WebRemoteFrameImpl::TransferUserActivationFrom(
     blink::WebRemoteFrame* source_frame) {
   GetFrame()->TransferUserActivationFrom(
-      ToWebRemoteFrameImpl(source_frame)->GetFrame());
+      To<WebRemoteFrameImpl>(source_frame)->GetFrame());
 }
 
 void WebRemoteFrameImpl::ScrollRectToVisible(

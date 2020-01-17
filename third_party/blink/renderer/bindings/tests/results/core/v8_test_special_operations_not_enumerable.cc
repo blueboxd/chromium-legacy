@@ -304,14 +304,4 @@ TestSpecialOperationsNotEnumerable* V8TestSpecialOperationsNotEnumerable::ToImpl
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestSpecialOperationsNotEnumerable* NativeValueTraits<TestSpecialOperationsNotEnumerable>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestSpecialOperationsNotEnumerable* native_value = V8TestSpecialOperationsNotEnumerable::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestSpecialOperationsNotEnumerable"));
-  }
-  return native_value;
-}
-
 }  // namespace blink

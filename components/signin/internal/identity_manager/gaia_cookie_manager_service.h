@@ -21,6 +21,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/signin_client.h"
+#include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -54,8 +55,10 @@ enum class SetAccountsInCookieResult;
 // Also checks the External CC result to ensure no services that consume the
 // GAIA cookie are blocked (such as youtube). This is executed once for the
 // lifetime of this object, when the first call is made to AddAccountToCookie.
-class GaiaCookieManagerService : public GaiaAuthConsumer,
-                                 public network::mojom::CookieChangeListener {
+class GaiaCookieManagerService
+    : public GaiaAuthConsumer,
+      public signin::AccountsCookieMutator::PartitionDelegate,
+      public network::mojom::CookieChangeListener {
  public:
   using AccountIdGaiaIdPair = std::pair<CoreAccountId, std::string>;
 
@@ -330,6 +333,11 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
   void OnLogOutSuccess() override;
   void OnLogOutFailure(const GoogleServiceAuthError& error) override;
+
+  // Overridden from signin::AccountsCookieMutator::PartitionDelegate.
+  std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcherForPartition(
+      GaiaAuthConsumer* consumer) override;
+  network::mojom::CookieManager* GetCookieManagerForPartition() override;
 
   // Helper method to initialize listed accounts ids.
   void InitializeListedAccountsIds();

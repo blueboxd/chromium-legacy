@@ -166,6 +166,7 @@ HRESULT FakeBluetoothLEDeviceWinrt::GetGattServicesAsync(
   auto async_op = Make<base::win::AsyncOperation<GattDeviceServicesResult*>>();
   gatt_services_callback_ = async_op->callback();
   *operation = async_op.Detach();
+  service_uuid_.reset();
   bluetooth_test_winrt_->OnFakeBluetoothDeviceConnectGattCalled();
   return S_OK;
 }
@@ -179,7 +180,12 @@ HRESULT FakeBluetoothLEDeviceWinrt::GetGattServicesWithCacheModeAsync(
 HRESULT FakeBluetoothLEDeviceWinrt::GetGattServicesForUuidAsync(
     GUID service_uuid,
     IAsyncOperation<GattDeviceServicesResult*>** operation) {
-  return E_NOTIMPL;
+  auto async_op = Make<base::win::AsyncOperation<GattDeviceServicesResult*>>();
+  gatt_services_callback_ = async_op->callback();
+  service_uuid_ = service_uuid;
+  *operation = async_op.Detach();
+  bluetooth_test_winrt_->OnFakeBluetoothDeviceConnectGattCalled();
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::GetGattServicesForUuidWithCacheModeAsync(
@@ -212,6 +218,13 @@ void FakeBluetoothLEDeviceWinrt::SimulateDevicePaired(bool is_paired) {
 void FakeBluetoothLEDeviceWinrt::SimulatePairingPinCode(std::string pin_code) {
   device_information_ = Make<FakeDeviceInformationWinrt>(
       Make<FakeDeviceInformationPairingWinrt>(std::move(pin_code)));
+}
+
+base::Optional<BluetoothUUID> FakeBluetoothLEDeviceWinrt::GetTargetGattService()
+    const {
+  if (!service_uuid_)
+    return base::nullopt;
+  return BluetoothUUID(*service_uuid_);
 }
 
 void FakeBluetoothLEDeviceWinrt::SimulateGattConnection() {

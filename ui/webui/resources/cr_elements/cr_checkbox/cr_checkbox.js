@@ -98,7 +98,7 @@ Polymer({
    * @private
    */
   onClick_(e) {
-    if (this.disabled || e.target.tagName == 'A') {
+    if (this.disabled || e.target.tagName === 'A') {
       return;
     }
 
@@ -116,7 +116,7 @@ Polymer({
    * @private
    */
   onKeyDown_(e) {
-    if (e.key != ' ' && e.key != 'Enter') {
+    if (e.key !== ' ' && e.key !== 'Enter') {
       return;
     }
 
@@ -126,7 +126,7 @@ Polymer({
       return;
     }
 
-    if (e.key == 'Enter') {
+    if (e.key === 'Enter') {
       this.click();
     }
   },
@@ -136,12 +136,12 @@ Polymer({
    * @private
    */
   onKeyUp_(e) {
-    if (e.key == ' ' || e.key == 'Enter') {
+    if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
       e.stopPropagation();
     }
 
-    if (e.key == ' ') {
+    if (e.key === ' ') {
       this.click();
     }
   },

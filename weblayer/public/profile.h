@@ -8,6 +8,10 @@
 #include <algorithm>
 #include <string>
 
+namespace base {
+class FilePath;
+}
+
 namespace weblayer {
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.weblayer_private
@@ -31,6 +35,11 @@ class Profile {
       base::Time from_time,
       base::Time to_time,
       base::OnceClosure callback) = 0;
+
+  // Allows embedders to override the default download directory, which is the
+  // system download directory on Android and on other platforms it's in the
+  // home directory.
+  virtual void SetDownloadDirectory(const base::FilePath& directory) = 0;
 };
 
 }  // namespace weblayer

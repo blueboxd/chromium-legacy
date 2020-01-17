@@ -779,8 +779,8 @@ TEST_P(ReportingCacheTest, GetClientsAsValue) {
       )json");
 
   // Compare disregarding order.
-  std::vector<base::Value> expected_list = std::move(expected->GetList());
-  std::vector<base::Value> actual_list = std::move(actual.GetList());
+  auto expected_list = expected->TakeList();
+  auto actual_list = actual.TakeList();
   std::sort(expected_list.begin(), expected_list.end());
   std::sort(actual_list.begin(), actual_list.end());
   EXPECT_EQ(expected_list, actual_list);

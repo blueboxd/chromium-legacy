@@ -78,9 +78,7 @@ static_library("test_support") {
     "mock_proximity_auth_client.h",
   ]
 
-  public_deps = [
-    ":proximity_auth",
-  ]
+  public_deps = [ ":proximity_auth" ]
 
   deps = [
     "//base",
@@ -135,9 +133,7 @@ source_set("unit_tests") {
 # Note: This is a convenience target for ease of rapid iteration during
 # development. It is not executed on any try or build bots.
 test("proximity_auth_unittests") {
-  sources = [
-    "run_all_unittests.cc",
-  ]
+  sources = [ "run_all_unittests.cc" ]
   deps = [
     ":unit_tests",
     "//base",

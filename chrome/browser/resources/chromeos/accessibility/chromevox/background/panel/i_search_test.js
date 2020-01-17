@@ -47,16 +47,16 @@ function FakeISearchHandler(testObj) {
 
 FakeISearchHandler.prototype = {
   /** @override */
-  onSearchReachedBoundary: function(boundaryNode) {
+  onSearchReachedBoundary(boundaryNode) {
     this.expect_.shift()({node: boundaryNode, isBoundary: true});
   },
 
   /** @override */
-  onSearchResultChanged: function(node, start, end) {
+  onSearchResultChanged(node, start, end) {
     this.expect_.shift()({node: node, start: start, end: end});
   },
 
-  expect: function(str, opt_callback) {
+  expect(str, opt_callback) {
     this.expect_.push(this.test.newCallback(function(args) {
       var node = args.node;
       var actual = node.name || node.role;

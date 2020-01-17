@@ -18,13 +18,13 @@ Polymer({
     /** Whether the camera is present / available */
     cameraPresent: Boolean,
 
-    /** Image source to show when imageType != CAMERA. */
+    /** Image source to show when imageType !== CAMERA. */
     imageSrc: {
       type: String,
       observer: 'imageSrcChanged_',
     },
 
-    /** Image URL to use when imageType != CAMERA. */
+    /** Image URL to use when imageType !== CAMERA. */
     imageUrl: {
       type: String,
       value: '',
@@ -84,7 +84,7 @@ Polymer({
    */
   getCameraActive_() {
     return this.cameraPresent &&
-        this.imageType == CrPicture.SelectionTypes.CAMERA;
+        this.imageType === CrPicture.SelectionTypes.CAMERA;
   },
 
   /** @private */
@@ -145,7 +145,7 @@ Polymer({
    * @private
    */
   showDiscard_() {
-    return this.imageType == CrPicture.SelectionTypes.OLD;
+    return this.imageType === CrPicture.SelectionTypes.OLD;
   },
 
   /** @private */

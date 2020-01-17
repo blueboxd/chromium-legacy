@@ -43,7 +43,7 @@ cr.define('cr.translateInternals', function() {
       hash = hash.substring(1);
 
       const id = 'tabpanel-' + hash;
-      if (tabpanelIds.indexOf(id) == -1) {
+      if (tabpanelIds.indexOf(id) === -1) {
         return;
       }
 

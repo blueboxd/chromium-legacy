@@ -7,12 +7,11 @@
  * intended to facilitate passing data between elements in the MultiDevice page
  * cleanly and concisely. It includes some constants and utility methods.
  */
-cr.exportPath('settings');
 
 /** @polymerBehavior */
 const MultiDeviceFeatureBehaviorImpl = {
   properties: {
-    /** @type {!MultiDevicePageContentData} */
+    /** @type {!settings.MultiDevicePageContentData} */
     pageContentData: Object,
 
     /**
@@ -30,7 +29,7 @@ const MultiDeviceFeatureBehaviorImpl = {
    * on.
    * @return {boolean}
    */
-  isSuiteOn: function() {
+  isSuiteOn() {
     return !!this.pageContentData &&
         this.pageContentData.betterTogetherState ===
         settings.MultiDeviceFeatureState.ENABLED_BY_USER;
@@ -41,7 +40,7 @@ const MultiDeviceFeatureBehaviorImpl = {
    * allowed by policy.
    * @return {boolean}
    */
-  isSuiteAllowedByPolicy: function() {
+  isSuiteAllowedByPolicy() {
     return !!this.pageContentData &&
         this.pageContentData.betterTogetherState !==
         settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY;
@@ -52,7 +51,7 @@ const MultiDeviceFeatureBehaviorImpl = {
    * @param {!settings.MultiDeviceFeature} feature
    * @return {boolean}
    */
-  isFeatureAllowedByPolicy: function(feature) {
+  isFeatureAllowedByPolicy(feature) {
     return this.getFeatureState(feature) !==
         settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY;
   },
@@ -61,7 +60,7 @@ const MultiDeviceFeatureBehaviorImpl = {
    * @param {!settings.MultiDeviceFeature} feature
    * @return {boolean}
    */
-  isFeatureSupported: function(feature) {
+  isFeatureSupported(feature) {
     return ![settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
              settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_PHONE,
     ].includes(this.getFeatureState(feature));
@@ -73,7 +72,7 @@ const MultiDeviceFeatureBehaviorImpl = {
    * @param {!settings.MultiDeviceFeature} feature
    * @return {boolean}
    */
-  isFeatureStateEditable: function(feature) {
+  isFeatureStateEditable(feature) {
     // The suite is off and the toggle corresponds to an individual feature
     // (as opposed to the full suite).
     if (feature !== settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE &&
@@ -92,7 +91,7 @@ const MultiDeviceFeatureBehaviorImpl = {
    * @param {!settings.MultiDeviceFeature} feature
    * @return {string}
    */
-  getFeatureName: function(feature) {
+  getFeatureName(feature) {
     switch (feature) {
       case settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE:
         return this.i18n('multideviceSetupItemHeading');
@@ -113,7 +112,7 @@ const MultiDeviceFeatureBehaviorImpl = {
    * @param {!settings.MultiDeviceFeature} feature
    * @return {string}
    */
-  getIconName: function(feature) {
+  getIconName(feature) {
     switch (feature) {
       case settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE:
         return 'os-settings:multidevice-better-together-suite';
@@ -132,7 +131,7 @@ const MultiDeviceFeatureBehaviorImpl = {
    * @param {!settings.MultiDeviceFeature} feature
    * @return {string}
    */
-  getFeatureSummaryHtml: function(feature) {
+  getFeatureSummaryHtml(feature) {
     switch (feature) {
       case settings.MultiDeviceFeature.SMART_LOCK:
         return this.i18nAdvanced('multideviceSmartLockItemSummary');
@@ -152,7 +151,7 @@ const MultiDeviceFeatureBehaviorImpl = {
    * @param {!settings.MultiDeviceFeature} feature
    * @return {?settings.MultiDeviceFeatureState}
    */
-  getFeatureState: function(feature) {
+  getFeatureState(feature) {
     if (!this.pageContentData) {
       return null;
     }
@@ -175,7 +174,7 @@ const MultiDeviceFeatureBehaviorImpl = {
    * Whether a host phone has been set by the user (not necessarily verified).
    * @return {boolean}
    */
-  isHostSet: function() {
+  isHostSet() {
     return [
       settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
       settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,

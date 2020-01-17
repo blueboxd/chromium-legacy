@@ -185,6 +185,10 @@ class PerUserTopicSubscriptionManagerTest : public testing::Test {
     task_environment_.FastForwardBy(delta);
   }
 
+  signin::IdentityTestEnvironment* identity_test_env() {
+    return &identity_test_env_;
+  }
+
  private:
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
@@ -292,6 +296,109 @@ TEST_F(PerUserTopicSubscriptionManagerTest, ShouldRepeatRequestsOnFailure) {
   FastForwardTimeBy(base::TimeDelta::FromMilliseconds(600));
   EXPECT_FALSE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                    .empty());
+  EXPECT_TRUE(
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
+}
+
+TEST_F(PerUserTopicSubscriptionManagerTest,
+       ShouldInvalidateAccessTokenOnUnauthorized) {
+  // For this test, we need to manually control when access tokens are returned.
+  identity_test_env()->SetAutomaticIssueOfAccessTokens(false);
+
+  auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
+
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
+  ASSERT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
+                  .empty());
+
+  // The first subscription attempt will fail with an "unauthorized" error.
+  AddCorrectSubscriptionResponce(
+      /*private_topic=*/std::string(), kFakeInstanceIdToken,
+      net::HTTP_UNAUTHORIZED);
+
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
+      ids, kFakeInstanceIdToken);
+  // This should have resulted in a request for an access token. Return one
+  // (which is considered invalid, e.g. already expired).
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "invalid_access_token", base::Time::Now());
+
+  // Now the subscription requests should be scheduled.
+  ASSERT_FALSE(
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
+
+  // Wait for the subscription requests to happen.
+  base::RunLoop().RunUntilIdle();
+
+  // Since the subscriptions failed, the requests should still be pending.
+  ASSERT_FALSE(
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
+
+  // A new access token should have been requested. (Note: We'd really want to
+  // check that the previous token got invalidated before a new one was
+  // requested, but the identity test code doesn't expose that.)
+  // Serving a new access token will trigger another subscription attempt; let
+  // this one succeed.
+  AddCorrectSubscriptionResponce();
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "valid_access_token", base::Time::Max());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
+                   .empty());
+  EXPECT_TRUE(
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
+}
+
+TEST_F(PerUserTopicSubscriptionManagerTest,
+       ShouldInvalidateAccessTokenOnlyOnce) {
+  // For this test, we need to manually control when access tokens are returned.
+  identity_test_env()->SetAutomaticIssueOfAccessTokens(false);
+
+  auto ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
+
+  auto per_user_topic_subscription_manager = BuildRegistrationManager();
+  ASSERT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
+                  .empty());
+
+  // The first subscription attempt will fail with an "unauthorized" error.
+  AddCorrectSubscriptionResponce(
+      /*private_topic=*/std::string(), kFakeInstanceIdToken,
+      net::HTTP_UNAUTHORIZED);
+
+  per_user_topic_subscription_manager->UpdateSubscribedTopics(
+      ids, kFakeInstanceIdToken);
+  // This should have resulted in a request for an access token. Return one
+  // (which is considered invalid, e.g. already expired).
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "invalid_access_token", base::Time::Now());
+
+  // Now the subscription requests should be scheduled.
+  ASSERT_FALSE(
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
+
+  // Wait for the subscription requests to happen.
+  base::RunLoop().RunUntilIdle();
+
+  // Since the subscriptions failed, the requests should still be pending.
+  ASSERT_FALSE(
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
+
+  // A new access token should have been requested. (Note: We'd really want to
+  // check that the previous token got invalidated before a new one was
+  // requested, but the identity test code doesn't expose that.)
+  // Serving a new access token will trigger another subscription attempt, but
+  // it'll fail again with the same error.
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "invalid_access_token_2", base::Time::Max());
+  base::RunLoop().RunUntilIdle();
+
+  // On the second auth failure, we should have given up - no new access token
+  // request should have happened, and all the pending subscriptions should have
+  // been dropped, even though still no topics are subscribed.
+  EXPECT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
+  EXPECT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
+                  .empty());
   EXPECT_TRUE(
       per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
 }

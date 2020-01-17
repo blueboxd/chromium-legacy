@@ -197,10 +197,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Get the platfrom specific configuration for this surface, if available.
   virtual void* GetConfig();
 
-  // Get the key corresponding to the set of GLSurfaces that can be made current
-  // with this GLSurface.
-  virtual unsigned long GetCompatibilityKey();
-
   // Get the GL pixel format of the surface. Must be implemented in a
   // subclass, though it's ok to just "return GLSurfaceFormat()" if
   // the default is appropriate.
@@ -371,7 +367,6 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void* GetShareHandle() override;
   void* GetDisplay() override;
   void* GetConfig() override;
-  unsigned long GetCompatibilityKey() override;
   GLSurfaceFormat GetFormat() override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   void SetVSyncEnabled(bool enabled) override;

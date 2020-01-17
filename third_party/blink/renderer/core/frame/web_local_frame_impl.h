@@ -125,6 +125,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool ScrollTo(const gfx::Point& scrollPosition,
                 bool animate,
                 base::OnceClosure on_finish) override;
+  void SetEmbeddingToken(
+      const base::UnguessableToken& embedding_token) override;
+  const base::Optional<base::UnguessableToken>& GetEmbeddingToken() override;
   void SendPings(const WebURL& destination_url) override;
   void StartReload(WebFrameLoadType) override;
   void StartNavigation(const WebURLRequest&) override;
@@ -135,8 +138,6 @@ class CORE_EXPORT WebLocalFrameImpl final
       const blink::WebContentSecurityPolicyViolation&) override;
   void SetReferrerForRequest(WebURLRequest&, const WebURL& referrer) override;
   bool IsNavigationScheduledWithin(base::TimeDelta interval) const override;
-  void BlinkFeatureUsageReport(
-      const std::set<blink::mojom::WebFeature>& features) override;
   void BlinkFeatureUsageReport(blink::mojom::WebFeature feature) override;
   void MixedContentFound(const WebURL& main_resource_url,
                          const WebURL& mixed_content_url,
@@ -266,8 +267,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                       bool wrap_within_frame) override;
   void SetTickmarks(const WebVector<WebRect>&) override;
   WebNode ContextMenuNode() const override;
-  void CopyImageAt(const WebPoint&) override;
-  void SaveImageAt(const WebPoint&) override;
+  void CopyImageAtForTesting(const WebPoint&) override;
   void DispatchMessageEventWithOriginCheck(
       const WebSecurityOrigin& intended_target_origin,
       const WebDOMMessageEvent&) override;

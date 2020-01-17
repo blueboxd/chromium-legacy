@@ -4900,7 +4900,8 @@ class ColorTransformPixelTest
     // and 4 bytes for LUT-based transforms (determined empirically).
     cc::FuzzyPixelComparator comparator(false, 100.f, 0.f, 2.f, 2, 0);
     EXPECT_TRUE(
-        this->RunPixelTest(&pass_list, &expected_output_colors, comparator));
+        this->RunPixelTest(&pass_list, &expected_output_colors, comparator))
+        << " src:" << src_color_space_ << ", dst:" << dst_color_space_;
   }
 
   gfx::ColorSpace src_color_space_;
@@ -4929,18 +4930,16 @@ gfx::ColorSpace src_color_spaces[] = {
     // here).
     gfx::ColorSpace(),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::BT709),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::GAMMA22),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::GAMMA24),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::GAMMA28),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTE170M),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTE240M),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::LINEAR),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::BT2020_10),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::BT2020_12),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTEST428_1),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1_HDR),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR),
+    gfx::ColorSpace::CreatePiecewiseHDR(PrimaryID::BT709, 0.5, 1.5),
+    gfx::ColorSpace::CreateHDR10(50.f),
+    gfx::ColorSpace::CreateHDR10(250.f),
 };
 
 gfx::ColorSpace dst_color_spaces[] = {
@@ -4948,15 +4947,35 @@ gfx::ColorSpace dst_color_spaces[] = {
     // here).
     gfx::ColorSpace(),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::BT709),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::GAMMA22),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::GAMMA24),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::GAMMA28),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTE170M),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTE240M),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::LINEAR),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::BT2020_10),
-    gfx::ColorSpace(PrimaryID::BT709, TransferID::BT2020_12),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1_HDR),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR),
+    gfx::ColorSpace::CreatePiecewiseHDR(PrimaryID::BT709, 0.25, 2.5),
+};
+
+// Skia renderer doesn't support piecewise-HDR or custom-white-point PQ yet, so
+// use a separate color space list for Skia renderer tests.
+gfx::ColorSpace sk_src_color_spaces[] = {
+    gfx::ColorSpace(),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::BT709),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::GAMMA28),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTE240M),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::LINEAR),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTEST428_1),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1_HDR),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR),
+};
+gfx::ColorSpace sk_dst_color_spaces[] = {
+    gfx::ColorSpace(),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::BT709),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::GAMMA28),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::SMPTE240M),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::LINEAR),
+    gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::IEC61966_2_1_HDR),
     gfx::ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR),
 };
@@ -4987,7 +5006,7 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     FromColorSpace,
     SkiaColorTransformPixelTest,
-    testing::Combine(testing::ValuesIn(src_color_spaces),
+    testing::Combine(testing::ValuesIn(sk_src_color_spaces),
                      testing::ValuesIn(intermediate_color_spaces),
                      testing::ValuesIn(color_space_premul_values)));
 
@@ -4995,7 +5014,7 @@ INSTANTIATE_TEST_SUITE_P(
     ToColorSpace,
     SkiaColorTransformPixelTest,
     testing::Combine(testing::ValuesIn(intermediate_color_spaces),
-                     testing::ValuesIn(dst_color_spaces),
+                     testing::ValuesIn(sk_dst_color_spaces),
                      testing::ValuesIn(color_space_premul_values)));
 
 #endif  // !defined(OS_ANDROID)

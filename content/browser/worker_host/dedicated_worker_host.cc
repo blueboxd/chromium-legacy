@@ -20,6 +20,7 @@
 #include "content/browser/url_loader_factory_params_helper.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/browser/webtransport/quic_transport_connector_impl.h"
+#include "content/browser/worker_host/dedicated_worker_service_impl.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -39,12 +40,16 @@
 namespace content {
 
 DedicatedWorkerHost::DedicatedWorkerHost(
+    DedicatedWorkerServiceImpl* service,
+    DedicatedWorkerId id,
     RenderProcessHost* worker_process_host,
     GlobalFrameRoutingId creator_render_frame_host_id,
     GlobalFrameRoutingId ancestor_render_frame_host_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host)
-    : worker_process_host_(worker_process_host),
+    : service_(service),
+      id_(id),
+      worker_process_host_(worker_process_host),
       scoped_process_host_observer_(this),
       creator_render_frame_host_id_(creator_render_frame_host_id),
       ancestor_render_frame_host_id_(ancestor_render_frame_host_id),
@@ -54,9 +59,14 @@ DedicatedWorkerHost::DedicatedWorkerHost(
   DCHECK(worker_process_host_);
 
   scoped_process_host_observer_.Add(worker_process_host_);
+
+  service_->NotifyWorkerStarted(id_, worker_process_host_->GetID(),
+                                ancestor_render_frame_host_id_);
 }
 
-DedicatedWorkerHost::~DedicatedWorkerHost() = default;
+DedicatedWorkerHost::~DedicatedWorkerHost() {
+  service_->NotifyWorkerTerminating(id_, ancestor_render_frame_host_id_);
+}
 
 void DedicatedWorkerHost::BindBrowserInterfaceBrokerReceiver(
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver) {
@@ -518,14 +528,22 @@ class DedicatedWorkerHostFactoryImpl final
       return;
     }
 
+    auto* storage_partition = static_cast<StoragePartitionImpl*>(
+        worker_process_host->GetStoragePartition());
+
+    // Get the dedicated worker service.
+    DedicatedWorkerServiceImpl* service =
+        storage_partition->GetDedicatedWorkerService();
+
     // TODO(crbug.com/729021): Once |parent_context_origin_| no longer races
     // with the request for |DedicatedWorkerHostFactory|, enforce that
     // the worker's origin either matches the origin of the creating context
     // (Document or DedicatedWorkerGlobalScope), or is unique.
     // Deletes itself on Mojo disconnection.
     auto* host = new DedicatedWorkerHost(
-        worker_process_host, creator_render_frame_host_id_,
-        ancestor_render_frame_host_id_, origin, std::move(host_receiver));
+        service, service->GenerateNextDedicatedWorkerId(), worker_process_host,
+        creator_render_frame_host_id_, ancestor_render_frame_host_id_, origin,
+        std::move(host_receiver));
     host->BindBrowserInterfaceBrokerReceiver(std::move(broker_receiver));
   }
 
@@ -557,15 +575,22 @@ class DedicatedWorkerHostFactoryImpl final
       return;
     }
 
+    auto* storage_partition = static_cast<StoragePartitionImpl*>(
+        worker_process_host->GetStoragePartition());
+
+    // Get the dedicated worker service.
+    DedicatedWorkerServiceImpl* service =
+        storage_partition->GetDedicatedWorkerService();
+
     // TODO(crbug.com/729021): Once |parent_context_origin_| no longer races
     // with the request for |DedicatedWorkerHostFactory|, enforce that
     // the worker's origin either matches the origin of the creating context
     // (Document or DedicatedWorkerGlobalScope), or is unique.
     // Deletes itself on Mojo disconnection.
     auto* host = new DedicatedWorkerHost(
-        worker_process_host, creator_render_frame_host_id_,
-        ancestor_render_frame_host_id_, request_initiator_origin,
-        std::move(host_receiver));
+        service, service->GenerateNextDedicatedWorkerId(), worker_process_host,
+        creator_render_frame_host_id_, ancestor_render_frame_host_id_,
+        request_initiator_origin, std::move(host_receiver));
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker;
     host->BindBrowserInterfaceBrokerReceiver(
         broker.InitWithNewPipeAndPassReceiver());

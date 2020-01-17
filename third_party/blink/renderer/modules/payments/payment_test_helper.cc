@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/modules/payments/payment_test_helper.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_payment_details_modifier.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/modules/payments/payment_currency_amount.h"
-#include "third_party/blink/renderer/modules/payments/payment_details_modifier.h"
 #include "third_party/blink/renderer/modules/payments/payment_method_data.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"

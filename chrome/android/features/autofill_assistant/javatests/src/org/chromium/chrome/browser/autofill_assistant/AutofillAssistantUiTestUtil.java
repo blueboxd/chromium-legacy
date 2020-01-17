@@ -9,6 +9,9 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
+import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -19,9 +22,10 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.NoMatchingViewException;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
+import android.support.test.espresso.ViewAssertion;
 import android.support.test.espresso.core.deps.guava.base.Preconditions;
 import android.support.test.espresso.matcher.BoundedMatcher;
-import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.style.ClickableSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -231,13 +235,13 @@ class AutofillAssistantUiTestUtil {
             @Override
             public void perform(UiController uiController, View view) {
                 TextView textView = (TextView) view;
-                SpannableString spannableString = (SpannableString) textView.getText();
+                Spanned spannedString = (Spanned) textView.getText();
                 ClickableSpan[] spans =
-                        spannableString.getSpans(0, spannableString.length(), ClickableSpan.class);
+                        spannedString.getSpans(0, spannedString.length(), ClickableSpan.class);
                 for (ClickableSpan span : spans) {
                     if (textLink.contentEquals(
-                                spannableString.subSequence(spannableString.getSpanStart(span),
-                                        spannableString.getSpanEnd(span)))) {
+                                spannedString.subSequence(spannedString.getSpanStart(span),
+                                        spannedString.getSpanEnd(span)))) {
                         span.onClick(view);
                         return;
                     }
@@ -271,6 +275,12 @@ class AutofillAssistantUiTestUtil {
      */
     public static void waitUntilViewMatchesCondition(
             Matcher<View> matcher, Matcher<View> condition) {
+        waitUntilViewMatchesCondition(matcher, condition, DEFAULT_MAX_TIME_TO_POLL);
+    }
+
+    /** @see {@link #waitUntilViewMatchesCondition(Matcher, Matcher)} */
+    public static void waitUntilViewMatchesCondition(
+            Matcher<View> matcher, Matcher<View> condition, long maxTimeoutMs) {
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Timeout while waiting for " + matcher + " to satisfy " + condition) {
                     @Override
@@ -284,7 +294,32 @@ class AutofillAssistantUiTestUtil {
                             return false;
                         }
                     }
-                });
+                },
+                maxTimeoutMs, DEFAULT_POLLING_INTERVAL);
+    }
+
+    /**
+     * Same as {@link #waitUntilViewMatchesCondition(Matcher, Matcher, long)}, but waits for a view
+     * assertion instead.
+     */
+    public static void waitUntilViewAssertionTrue(
+            Matcher<View> matcher, ViewAssertion viewAssertion, long maxTimeoutMs) {
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria(
+                        "Timeout while waiting for " + matcher + " to satisfy " + viewAssertion) {
+                    @Override
+                    public boolean isSatisfied() {
+                        try {
+                            onView(matcher).check(viewAssertion);
+                            return true;
+                        } catch (NoMatchingViewException | AssertionError e) {
+                            // Note: all other exceptions are let through, in particular
+                            // AmbiguousViewMatcherException.
+                            return false;
+                        }
+                    }
+                },
+                maxTimeoutMs, DEFAULT_POLLING_INTERVAL);
     }
 
     /**
@@ -360,6 +395,7 @@ class AutofillAssistantUiTestUtil {
         testRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(), "about:blank"));
     }
+
     /**
      * Starts Autofill Assistant on the given {@code activity} and injects the given {@code
      * testService}.

@@ -55,7 +55,7 @@
        */
       showTechnologyBadge_: {
         type: Boolean,
-        value: function() {
+        value() {
           return loadTimeData.valueExists('showTechnologyBadge') &&
               loadTimeData.getBoolean('showTechnologyBadge');
         }
@@ -83,24 +83,24 @@
     is_shown_: false,
 
     /** Refreshes the list of the networks. */
-    refresh: function() {
+    refresh() {
       /** @type {!NetworkSelectElement} */ (this.$.networkSelect)
           .refreshNetworks();
       this.networkLastSelectedGuid_ = '';
     },
 
-    focus: function() {
+    focus() {
       this.$.networkSelect.focus();
     },
 
     /** Called when dialog is shown. */
-    onBeforeShow: function() {
+    onBeforeShow() {
       this.is_shown_ = true;
       this.attemptApplyConfiguration_();
     },
 
     /** Called when dialog is hidden. */
-    onBeforeHide: function() {
+    onBeforeHide() {
       this.is_shown_ = false;
     },
 
@@ -109,7 +109,7 @@
      * when connected to a network.
      * @private
      */
-    getNetworkCustomItems_: function() {
+    getNetworkCustomItems_() {
       var self = this;
       var items = [];
       if (this.isOfflineDemoModeSetup) {
@@ -148,7 +148,7 @@
      *
      * @private
      */
-    openInternetDetailDialog_: function(item) {
+    openInternetDetailDialog_(item) {
       chrome.send('launchInternetDetailDialog');
     },
 
@@ -157,7 +157,7 @@
      *
      * @private
      */
-    openAddWiFiNetworkDialog_: function(item) {
+    openAddWiFiNetworkDialog_(item) {
       chrome.send('launchAddWiFiNetworkDialog');
     },
 
@@ -165,7 +165,7 @@
      * Offline demo setup button handler.
      * @private
      */
-    onOfflineDemoSetupClicked_: function(item) {
+    onOfflineDemoSetupClicked_(item) {
       chrome.send('login.NetworkScreen.userActed', ['offline-demo-setup']);
     },
 
@@ -174,7 +174,7 @@
      * done.
      * @private
      */
-    onSelectedNetworkConnected_: function() {
+    onSelectedNetworkConnected_() {
       this.networkLastSelectedGuid_ = '';
       this.fire('selected-network-connected');
     },
@@ -184,7 +184,7 @@
      * @param {!CustomEvent<OncMojo.NetworkStateProperties>} event
      * @private
      */
-    onDefaultNetworkChanged_: function(event) {
+    onDefaultNetworkChanged_(event) {
       // Note: event.detail will be {} if there is no default network.
       var networkState = event.detail.type ? event.detail : undefined;
       this.isConnected = !!networkState &&
@@ -199,7 +199,7 @@
      * @param {!CustomEvent<!OncMojo.NetworkStateProperties>} event
      * @private
      */
-    onNetworkConnectChanged_: function(event) {
+    onNetworkConnectChanged_(event) {
       var networkState = event.detail;
       if (networkState && networkState.guid == this.networkLastSelectedGuid_ &&
           OncMojo.connectionStateIsConnected(networkState.connectionState)) {
@@ -212,7 +212,7 @@
      * @param {!CustomEvent<!Array<!OncMojo.NetworkStateProperties>>} event
      * @private
      */
-    onNetworkListChanged_: function(event) {
+    onNetworkListChanged_(event) {
       if (!this.is_shown_)
         return;
       this.attemptApplyConfiguration_();
@@ -222,7 +222,7 @@
      * Tries to apply OOBE configuration on current list of networks.
      * @private
      */
-    attemptApplyConfiguration_: function() {
+    attemptApplyConfiguration_() {
       if (this.configuration_applied_)
         return;
       var configuration = Oobe.getInstance().getOobeConfiguration();
@@ -258,7 +258,7 @@
      * @param {!CustomEvent<!OncMojo.NetworkStateProperties>} event
      * @private
      */
-    onNetworkListNetworkItemSelected_: function(event) {
+    onNetworkListNetworkItemSelected_(event) {
       this.handleNetworkSelection_(event.detail);
     },
 
@@ -267,7 +267,7 @@
      * @param {!OncMojo.NetworkStateProperties} networkState
      * @private
      */
-    handleNetworkSelection_: function(networkState) {
+    handleNetworkSelection_(networkState) {
       assert(networkState);
 
       var isConnected =
@@ -341,7 +341,7 @@
      * @param {!CustomEvent<{customData:!networkCustomItemCustomData}>} event
      * @private
      */
-    onNetworkListCustomItemSelected_: function(event) {
+    onNetworkListCustomItemSelected_(event) {
       var itemState = event.detail;
       itemState.customData.onTap();
     },
@@ -351,7 +351,7 @@
      * part of offline demo mode setup changes.
      * @private
      */
-    onIsOfflineDemoModeSetupChanged_: function() {
+    onIsOfflineDemoModeSetupChanged_() {
       this.$.networkSelect.customItems = this.getNetworkCustomItems_();
     },
   });

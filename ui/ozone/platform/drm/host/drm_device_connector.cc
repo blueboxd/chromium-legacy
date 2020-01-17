@@ -41,11 +41,6 @@ void DrmDeviceConnector::OnGpuServiceLaunched(
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     GpuHostBindInterfaceCallback binder,
     GpuHostTerminateCallback terminate_callback) {
-  // We can get into this state if a new instance of GpuProcessHost is created
-  // before the old one is destroyed.
-  if (host_drm_device_->IsConnected())
-    host_drm_device_->OnGpuServiceLost();
-
   // We need to preserve |binder| to let us bind interfaces later.
   binder_callback_ = std::move(binder);
   host_id_ = host_id;

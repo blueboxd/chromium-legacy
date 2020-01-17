@@ -124,7 +124,7 @@ cr.define('cr.login', function() {
    * and the data field of the HTML5 Payload.
    */
   const messageHandlers = {
-    'attemptLogin': function(msg) {
+    'attemptLogin'(msg) {
       this.email_ = msg.email;
       if (this.authMode == AuthMode.DESKTOP) {
         this.password_ = msg.password;
@@ -135,65 +135,65 @@ cr.define('cr.login', function() {
       // We need to dispatch only first event, before user enters password.
       this.dispatchEvent(new CustomEvent('attemptLogin', {detail: msg.email}));
     },
-    'dialogShown': function(msg) {
+    'dialogShown'(msg) {
       this.dispatchEvent(new Event('dialogShown'));
     },
-    'dialogHidden': function(msg) {
+    'dialogHidden'(msg) {
       this.dispatchEvent(new Event('dialogHidden'));
     },
-    'backButton': function(msg) {
+    'backButton'(msg) {
       this.dispatchEvent(new CustomEvent('backButton', {detail: msg.show}));
     },
-    'showView': function(msg) {
+    'showView'(msg) {
       this.dispatchEvent(new Event('showView'));
     },
-    'menuItemClicked': function(msg) {
+    'menuItemClicked'(msg) {
       this.dispatchEvent(
           new CustomEvent('menuItemClicked', {detail: msg.item}));
     },
-    'identifierEntered': function(msg) {
+    'identifierEntered'(msg) {
       this.dispatchEvent(new CustomEvent(
           'identifierEntered',
           {detail: {accountIdentifier: msg.accountIdentifier}}));
     },
-    'userInfo': function(msg) {
+    'userInfo'(msg) {
       this.services_ = msg.services;
       if (this.email_ && this.gaiaId_ && this.sessionIndex_) {
         this.maybeCompleteAuth_();
       }
     },
-    'showIncognito': function(msg) {
+    'showIncognito'(msg) {
       this.dispatchEvent(new Event('showIncognito'));
     },
-    'setPrimaryActionLabel': function(msg) {
+    'setPrimaryActionLabel'(msg) {
       if (!this.enableGaiaActionButtons_) {
         return;
       }
       this.dispatchEvent(
           new CustomEvent('setPrimaryActionLabel', {detail: msg.value}));
     },
-    'setPrimaryActionEnabled': function(msg) {
+    'setPrimaryActionEnabled'(msg) {
       if (!this.enableGaiaActionButtons_) {
         return;
       }
       this.dispatchEvent(
           new CustomEvent('setPrimaryActionEnabled', {detail: msg.value}));
     },
-    'setSecondaryActionLabel': function(msg) {
+    'setSecondaryActionLabel'(msg) {
       if (!this.enableGaiaActionButtons_) {
         return;
       }
       this.dispatchEvent(
           new CustomEvent('setSecondaryActionLabel', {detail: msg.value}));
     },
-    'setSecondaryActionEnabled': function(msg) {
+    'setSecondaryActionEnabled'(msg) {
       if (!this.enableGaiaActionButtons_) {
         return;
       }
       this.dispatchEvent(
           new CustomEvent('setSecondaryActionEnabled', {detail: msg.value}));
     },
-    'setAllActionsEnabled': function(msg) {
+    'setAllActionsEnabled'(msg) {
       if (!this.enableGaiaActionButtons_) {
         return;
       }

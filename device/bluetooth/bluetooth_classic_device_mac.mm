@@ -73,7 +73,8 @@ uint32_t BluetoothClassicDeviceMac::GetBluetoothClass() const {
   return [device_ classOfDevice];
 }
 
-void BluetoothClassicDeviceMac::CreateGattConnectionImpl() {
+void BluetoothClassicDeviceMac::CreateGattConnectionImpl(
+    base::Optional<BluetoothUUID> service_uuid) {
   // Classic devices do not support GATT connection.
   DidFailToConnectGatt(ERROR_UNSUPPORTED_DEVICE);
 }

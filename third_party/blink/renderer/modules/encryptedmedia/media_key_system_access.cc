@@ -93,6 +93,11 @@ static HeapVector<Member<MediaKeySystemMediaCapability>> ConvertCapabilities(
 
     switch (capabilities[i].encryption_scheme) {
       case WebMediaKeySystemMediaCapability::EncryptionScheme::kNotSpecified:
+        // https://w3c.github.io/encrypted-media/#dom-mediakeysystemaccess-getconfiguration
+        // "If encryptionScheme was not given by the application, the
+        // accumulated configuration MUST still contain a encryptionScheme
+        // field with a value of null, so that polyfills can detect the user
+        // agent's support for the field without specifying specific values."
         capability->setEncryptionSchemeToNull();
         break;
       case WebMediaKeySystemMediaCapability::EncryptionScheme::kCenc:
@@ -100,6 +105,13 @@ static HeapVector<Member<MediaKeySystemMediaCapability>> ConvertCapabilities(
         break;
       case WebMediaKeySystemMediaCapability::EncryptionScheme::kCbcs:
         capability->setEncryptionScheme("cbcs");
+        break;
+      case WebMediaKeySystemMediaCapability::EncryptionScheme::kCbcs_1_9:
+        capability->setEncryptionScheme("cbcs-1-9");
+        break;
+      case WebMediaKeySystemMediaCapability::EncryptionScheme::kUnrecognized:
+        NOTREACHED()
+            << "Unrecognized encryption scheme should never be returned.";
         break;
     }
 

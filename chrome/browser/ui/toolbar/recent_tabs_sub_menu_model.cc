@@ -592,11 +592,11 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
     history_ui_favicon_request_handler->GetFaviconImageForPageURL(
         url,
         base::BindOnce(&RecentTabsSubMenuModel::OnFaviconDataAvailable,
-                       weak_ptr_factory_.GetWeakPtr(), command_id),
+                       weak_ptr_factory_for_other_devices_tab_.GetWeakPtr(),
+                       command_id),
 
         favicon::HistoryUiFaviconRequestOrigin::kRecentTabs,
-        open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),
-        &other_devices_tab_cancelable_task_tracker_);
+        open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL());
   }
 }
 
@@ -650,7 +650,7 @@ void RecentTabsSubMenuModel::ClearTabsFromOtherDevices() {
   for (int index = count - 1; index > last_local_model_index_; --index)
     RemoveItemAt(index);
 
-  other_devices_tab_cancelable_task_tracker_.TryCancelAll();
+  weak_ptr_factory_for_other_devices_tab_.InvalidateWeakPtrs();
 
   other_devices_tab_navigation_items_.clear();
 }

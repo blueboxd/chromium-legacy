@@ -70,7 +70,7 @@ suite('InternetPage', function() {
     }
     internetPage.remove();
     internetPage = null;
-    settings.resetRouteForTesting();
+    settings.Router.getInstance().resetRouteForTesting();
   });
 
   suite('MainPage', function() {

@@ -56,7 +56,8 @@ std::vector<ShellDevToolsBindings*>* GetShellDevtoolsBindingsInstances() {
 
 std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
     const net::HttpResponseHeaders* rh,
-    bool success) {
+    bool success,
+    int net_error) {
   auto response = std::make_unique<base::DictionaryValue>();
   int responseCode = 200;
   if (rh) {
@@ -66,6 +67,8 @@ std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
     responseCode = 404;
   }
   response->SetInteger("statusCode", responseCode);
+  response->SetInteger("netError", net_error);
+  response->SetString("netErrorName", net::ErrorToString(net_error));
 
   auto headers = std::make_unique<base::DictionaryValue>();
   size_t iterator = 0;
@@ -126,7 +129,8 @@ class ShellDevToolsBindings::NetworkResourceLoader
   }
 
   void OnComplete(bool success) override {
-    auto response = BuildObjectForResponse(response_headers_.get(), success);
+    auto response = BuildObjectForResponse(response_headers_.get(), success,
+                                           loader_->NetError());
     bindings_->SendMessageAck(request_id_, response.get());
     bindings_->loaders_.erase(bindings_->loaders_.find(this));
   }
@@ -285,6 +289,7 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
     if (!gurl.is_valid()) {
       base::DictionaryValue response;
       response.SetInteger("statusCode", 404);
+      response.SetBoolean("urlValid", false);
       SendMessageAck(request_id, &response);
       return;
     }

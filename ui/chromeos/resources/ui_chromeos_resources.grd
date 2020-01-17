@@ -12,7 +12,11 @@
   <release seq="1">
     <structures fallback_to_low_resolution="true">
       <!-- Badge for Chrome Apps if Arc is enabled. -->
-      <structure type="chrome_scaled_image" name="IDR_ARC_DUAL_ICON_BADGE" file="arc/dual-icon-badge.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHROME_ICON_BADGE" file="badges/chrome-icon-badge.png" />
+      <!-- Badge for disabled apps. -->
+      <structure type="chrome_scaled_image" name="IDR_BLOCK_ICON_BADGE" file="badges/block-icon-badge.png" />
+      <!-- Badge for apps that used their daily time limit. -->
+      <structure type="chrome_scaled_image" name="IDR_HOURGLASS_ICON_BADGE" file="badges/hourglass-icon-badge.png" />
 
       <!-- Default user profile images. -->
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER" file="default_user_images/avatar_anonymous.png" />
@@ -92,6 +96,7 @@
       <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_HELP" file="print_notification/help.png" />
 
       <!-- Fingerprint images. -->
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_BOTTOM_LEFT_ANIMATION" file="fingerprint/fingerprint_scanner_laptop_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_BOTTOM_RIGHT_ANIMATION" file="fingerprint/fingerprint_scanner_laptop_bottom_right.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_TOP_RIGHT_ANIMATION" file="fingerprint/fingerprint_scanner_laptop_top_right.png" />
       <structure type="chrome_html" name="IDR_LOGIN_FINGER_PRINT_TABLET_ANIMATION" file="vector/finger_print.json" compress="gzip" />

@@ -838,7 +838,7 @@ public class InstalledAppProviderTest {
     public void testArtificialDelay() throws Exception {
         byte[] salt = {0x64, 0x09, -0x68, -0x25, 0x70, 0x11, 0x25, 0x24, 0x68, -0x1a, 0x08, 0x79,
                 -0x12, -0x50, 0x3b, -0x57, -0x17, -0x4d, 0x46, 0x02};
-        PackageHash.setGlobalSaltForTesting(salt);
+        PackageHash.Salt.setGlobalSaltForTesting(salt);
         setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
 
         // Installed app.

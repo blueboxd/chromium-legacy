@@ -497,12 +497,14 @@ FormDataBytesConsumer::FormDataBytesConsumer(const String& string)
               UTF8Encoding().Encode(string, WTF::kNoUnencodables)))) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBuffer* buffer)
-    : FormDataBytesConsumer(buffer->Data(),
-                            buffer->DeprecatedByteLengthAsUnsigned()) {}
+    : FormDataBytesConsumer(
+          buffer->Data(),
+          base::checked_cast<wtf_size_t>(buffer->ByteLengthAsSizeT())) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBufferView* view)
-    : FormDataBytesConsumer(view->BaseAddress(),
-                            view->deprecatedByteLengthAsUnsigned()) {}
+    : FormDataBytesConsumer(
+          view->BaseAddress(),
+          base::checked_cast<wtf_size_t>(view->byteLengthAsSizeT())) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(const void* data, wtf_size_t size)
     : impl_(MakeGarbageCollected<SimpleFormDataBytesConsumer>(

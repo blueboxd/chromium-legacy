@@ -197,7 +197,7 @@ Polymer({
     /** @private {!settings.ChromeCleanerScannerResults} */
     scannerResults_: {
       type: Array,
-      value: function() {
+      value() {
         return {'files': [], 'registryKeys': [], 'extensions': []};
       },
     },
@@ -223,7 +223,7 @@ Polymer({
     /** @private {chrome.settingsPrivate.PrefObject} */
     logsUploadPref_: {
       type: Object,
-      value: function() {
+      value() {
         return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
       },
     },
@@ -266,7 +266,7 @@ Polymer({
   renderScanOfferedByDefault_: true,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.browserProxy_ = settings.ChromeCleanupProxyImpl.getInstance();
     this.cardStateToComponentsMap_ = this.buildCardStateToComponentsMap_();
 
@@ -293,7 +293,7 @@ Polymer({
    * either to start an action such as a cleanup or to restart the computer.
    * @private
    */
-  proceed_: function() {
+  proceed_() {
     this.doAction_();
   },
 
@@ -301,7 +301,7 @@ Polymer({
    * Notifies Chrome that the details section was opened or closed.
    * @private
    */
-  itemsToRemoveSectionExpandedChanged_: function(newVal, oldVal) {
+  itemsToRemoveSectionExpandedChanged_(newVal, oldVal) {
     if (!oldVal && newVal) {
       this.browserProxy_.notifyShowDetails(this.itemsToRemoveSectionExpanded_);
     }
@@ -312,7 +312,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShowExplanation_: function(explanation) {
+  computeShowExplanation_(explanation) {
     return explanation != '';
   },
 
@@ -356,7 +356,7 @@ Polymer({
    * @param {string} idleReason
    * @private
    */
-  onIdle_: function(idleReason) {
+  onIdle_(idleReason) {
     this.ongoingAction_ = settings.ChromeCleanupOngoingAction.NONE;
     this.scannerResults_ = this.emptyChromeCleanerScannerResults_;
 
@@ -425,7 +425,7 @@ Polymer({
    * card and cleanup this element's fields.
    * @private
    */
-  onScanning_: function() {
+  onScanning_() {
     this.ongoingAction_ = settings.ChromeCleanupOngoingAction.SCANNING;
     this.scannerResults_ = this.emptyChromeCleanerScannerResults_;
     this.renderScanOfferedByDefault_ = false;
@@ -441,7 +441,7 @@ Polymer({
    *     items to be presented to the user.
    * @private
    */
-  onInfected_: function(isPoweredByPartner, scannerResults) {
+  onInfected_(isPoweredByPartner, scannerResults) {
     this.isPoweredByPartner_ = isPoweredByPartner;
     this.ongoingAction_ = settings.ChromeCleanupOngoingAction.NONE;
     this.renderScanOfferedByDefault_ = false;
@@ -460,7 +460,7 @@ Polymer({
    *     items to be presented to the user.
    * @private
    */
-  onCleaning_: function(isPoweredByPartner, scannerResults) {
+  onCleaning_(isPoweredByPartner, scannerResults) {
     this.isPoweredByPartner_ = isPoweredByPartner;
     this.ongoingAction_ = settings.ChromeCleanupOngoingAction.CLEANING;
     this.renderScanOfferedByDefault_ = false;
@@ -475,7 +475,7 @@ Polymer({
    * the card and cleanup this element's fields.
    * @private
    */
-  onRebootRequired_: function() {
+  onRebootRequired_() {
     this.ongoingAction_ = settings.ChromeCleanupOngoingAction.NONE;
     this.scannerResults_ = this.emptyChromeCleanerScannerResults_;
     this.renderScanOfferedByDefault_ = false;
@@ -488,7 +488,7 @@ Polymer({
    *     rendered.
    * @private
    */
-  renderCleanupCard_: function(state) {
+  renderCleanupCard_(state) {
     const components = this.cardStateToComponentsMap_.get(state);
     assert(components);
 
@@ -505,7 +505,7 @@ Polymer({
    *     The button to render, or null if no button should be shown.
    * @private
    */
-  updateActionButton_: function(actionButton) {
+  updateActionButton_(actionButton) {
     if (!actionButton) {
       this.showActionButton_ = false;
       this.actionButtonLabel_ = '';
@@ -523,7 +523,7 @@ Polymer({
    * @param {number} flags Flags indicating optional components to be rendered.
    * @private
    */
-  updateCardFlags_: function(flags) {
+  updateCardFlags_(flags) {
     this.showLogsPermission_ =
         (flags & settings.ChromeCleanupCardFlags.SHOW_LOGS_PERMISSIONS) != 0;
     this.isWaitingForResult_ =
@@ -542,7 +542,7 @@ Polymer({
    * @param {boolean} enabled Whether cleanup is enabled.
    * @private
    */
-  onCleanupEnabledChange_: function(enabled) {
+  onCleanupEnabledChange_(enabled) {
     this.cleanupEnabled_ = enabled;
   },
 
@@ -550,7 +550,7 @@ Polymer({
    * Sends an action to the browser proxy to start scanning.
    * @private
    */
-  startScanning_: function() {
+  startScanning_() {
     this.browserProxy_.startScanning(
         this.$.chromeCleanupLogsUploadControl.checked);
   },
@@ -559,7 +559,7 @@ Polymer({
    * Sends an action to the browser proxy to start the cleanup.
    * @private
    */
-  startCleanup_: function() {
+  startCleanup_() {
     this.browserProxy_.startCleanup(
         this.$.chromeCleanupLogsUploadControl.checked);
   },
@@ -568,7 +568,7 @@ Polymer({
    * Sends an action to the browser proxy to restart the machine.
    * @private
    */
-  restartComputer_: function() {
+  restartComputer_() {
     this.browserProxy_.restartComputer();
   },
 
@@ -578,7 +578,7 @@ Polymer({
    * it may require a plural version. Otherwise, use the default value for
    * |chromeCleanupLinkShowItems|.
    */
-  updateShowItemsLinklabel_: function() {
+  updateShowItemsLinklabel_() {
     const setShowItemsLabel = text => this.showItemsLinkLabel_ = text;
     this.browserProxy_
         .getItemsToRemovePluralString(
@@ -594,7 +594,7 @@ Polymer({
    *               !settings.ChromeCleanupCardComponents>}
    * @private
    */
-  buildCardStateToComponentsMap_: function() {
+  buildCardStateToComponentsMap_() {
     /**
      * The action buttons to show on the card.
      * @enum {settings.ChromeCleanupCardActionButton}
@@ -718,7 +718,7 @@ Polymer({
    * @return {!Array<settings.ChromeCleanupRemovalListItem>}
    * @private
    */
-  getListEntriesFromStrings_: function(list) {
+  getListEntriesFromStrings_(list) {
     return list.map(entry => ({text: entry, highlightSuffix: null}));
   },
 
@@ -727,7 +727,7 @@ Polymer({
    * @return {!Array<settings.ChromeCleanupRemovalListItem>}
    * @private
    */
-  getListEntriesFromFilePaths_: function(paths) {
+  getListEntriesFromFilePaths_(paths) {
     return paths.map(
         path => ({text: path.dirname, highlightSuffix: path.basename}));
   },

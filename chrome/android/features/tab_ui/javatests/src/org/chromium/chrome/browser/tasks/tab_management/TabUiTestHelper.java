@@ -230,7 +230,7 @@ public class TabUiTestHelper {
      * @param normalTabs     The correct number of normal tabs.
      * @param incognitoTabs  The correct number of incognito tabs.
      */
-    static void verifyTabModelTabCount(
+    public static void verifyTabModelTabCount(
             ChromeTabbedActivity cta, int normalTabs, int incognitoTabs) {
         CriteriaHelper.pollUiThread(Criteria.equals(
                 normalTabs, () -> cta.getTabModelSelector().getModel(false).getCount()));

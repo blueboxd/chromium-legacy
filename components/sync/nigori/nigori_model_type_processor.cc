@@ -92,14 +92,15 @@ void NigoriModelTypeProcessor::GetLocalChanges(
 
 void NigoriModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
-    const CommitResponseDataList& response_list) {
+    const CommitResponseDataList& committed_response_list,
+    const FailedCommitResponseDataList& error_response_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(entity_);
 
   model_type_state_ = type_state;
-  if (!response_list.empty()) {
-    entity_->ReceiveCommitResponse(response_list[0], /*commit_only=*/false,
-                                   ModelType::NIGORI);
+  if (!committed_response_list.empty()) {
+    entity_->ReceiveCommitResponse(committed_response_list[0],
+                                   /*commit_only=*/false, ModelType::NIGORI);
   } else {
     // If the entity hasn't been mentioned in response_list, then it's not
     // committed and we should reset its commit_requested_sequence_number so

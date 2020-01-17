@@ -111,7 +111,7 @@ class NativeWidgetMac::ZoomFocusMonitor : public FocusChangeListener {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetMac, public:
+// NativeWidgetMac:
 
 NativeWidgetMac::NativeWidgetMac(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
@@ -162,9 +162,6 @@ bool NativeWidgetMac::ExecuteCommand(
   NOTIMPLEMENTED();
   return false;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetMac, internal::NativeWidgetPrivate implementation:
 
 void NativeWidgetMac::InitNativeWidget(Widget::InitParams params) {
   ownership_ = params.ownership;
@@ -251,14 +248,6 @@ void NativeWidgetMac::FrameTypeChanged() {
   // widget.
   GetWidget()->ThemeChanged();
   GetWidget()->GetRootView()->SchedulePaint();
-}
-
-Widget* NativeWidgetMac::GetWidget() {
-  return delegate_->AsWidget();
-}
-
-const Widget* NativeWidgetMac::GetWidget() const {
-  return delegate_->AsWidget();
 }
 
 gfx::NativeView NativeWidgetMac::GetNativeView() const {
@@ -809,9 +798,6 @@ void NativeWidgetMac::SetInitNativeWidgetCallback(
       new base::RepeatingCallback<void(NativeWidgetMac*)>(std::move(callback));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetMac, protected:
-
 NativeWidgetMacNSWindow* NativeWidgetMac::CreateNSWindow(
     const remote_cocoa::mojom::CreateWindowParams* params) {
   return remote_cocoa::NativeWidgetNSWindowBridge::CreateNSWindow(params)
@@ -852,9 +838,6 @@ void NativeWidgetMac::SetFocusManager(FocusManager* new_focus_manager) {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetMac, FocusChangeListener:
-
 void NativeWidgetMac::OnWillChangeFocus(View* focused_before,
                                         View* focused_now) {}
 
@@ -875,9 +858,6 @@ void NativeWidgetMac::OnDidChangeFocus(View* focused_before,
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetMac, internal::InputMethodDelegate:
-
 ui::EventDispatchDetails NativeWidgetMac::DispatchKeyEventPostIME(
     ui::KeyEvent* key) {
   DCHECK(focus_manager_);
@@ -888,8 +868,12 @@ ui::EventDispatchDetails NativeWidgetMac::DispatchKeyEventPostIME(
   return ui::EventDispatchDetails();
 }
 
+const Widget* NativeWidgetMac::GetWidgetImpl() const {
+  return delegate_->AsWidget();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-// Widget, public:
+// Widget:
 
 // static
 void Widget::CloseAllSecondaryWidgets() {
@@ -925,7 +909,7 @@ const ui::NativeTheme* Widget::GetNativeTheme() const {
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
-// internal::NativeWidgetPrivate, public:
+// internal::NativeWidgetPrivate:
 
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(

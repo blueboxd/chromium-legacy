@@ -23,6 +23,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/async_flusher.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
@@ -30,6 +31,7 @@
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/lib/pending_remote_state.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
+#include "mojo/public/cpp/bindings/pending_flush.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
@@ -80,6 +82,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
 
   void QueryVersion(base::OnceCallback<void(uint32_t)> callback);
   void RequireVersion(uint32_t version);
+  void PauseReceiverUntilFlushCompletes(PendingFlush flush);
+  void FlushAsync(AsyncFlusher flusher);
   void Swap(InterfacePtrStateBase* other);
   void Bind(PendingRemoteState* remote_state,
             scoped_refptr<base::SequencedTaskRunner> task_runner);
@@ -144,6 +148,16 @@ class InterfacePtrState : public InterfacePtrStateBase {
   void RequireVersion(uint32_t version) {
     ConfigureProxyIfNecessary();
     InterfacePtrStateBase::RequireVersion(version);
+  }
+
+  void PauseReceiverUntilFlushCompletes(PendingFlush flush) {
+    ConfigureProxyIfNecessary();
+    InterfacePtrStateBase::PauseReceiverUntilFlushCompletes(std::move(flush));
+  }
+
+  void FlushAsync(AsyncFlusher flusher) {
+    ConfigureProxyIfNecessary();
+    InterfacePtrStateBase::FlushAsync(std::move(flusher));
   }
 
   void FlushForTesting() {

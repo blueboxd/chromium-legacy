@@ -349,13 +349,17 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
       state.feature_policy_header, state.opener_feature_state);
   if (state.has_received_user_gesture) {
     web_frame_->UpdateUserActivationState(
-        blink::UserActivationUpdateType::kNotifyActivation);
+        blink::mojom::UserActivationUpdateType::kNotifyActivation);
   }
   web_frame_->SetHadStickyUserActivationBeforeNavigation(
       state.has_received_user_gesture_before_nav);
 
   web_frame_->ResetReplicatedContentSecurityPolicy();
-  OnAddContentSecurityPolicies(state.accumulated_csp_headers);
+  for (const auto& header : state.accumulated_csp_headers) {
+    web_frame_->AddReplicatedContentSecurityPolicyHeader(
+        blink::WebString::FromUTF8(header.header_value), header.type,
+        header.source);
+  }
 }
 
 // Update the proxy's FrameOwner with new sandbox flags and container policy
@@ -419,22 +423,15 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnDidSetFramePolicyHeaders)
     IPC_MESSAGE_HANDLER(FrameMsg_ForwardResourceTimingToParent,
                         OnForwardResourceTimingToParent)
-    IPC_MESSAGE_HANDLER(FrameMsg_SetNeedsOcclusionTracking,
-                        OnSetNeedsOcclusionTracking)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
-    IPC_MESSAGE_HANDLER(FrameMsg_AddContentSecurityPolicies,
-                        OnAddContentSecurityPolicies)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
                         OnEnforceInsecureRequestPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
-    IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetPageFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateVisualProperties,
                         OnDidUpdateVisualProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_EnableAutoResize, OnEnableAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_DisableAutoResize, OnDisableAutoResize)
-    IPC_MESSAGE_HANDLER(FrameMsg_UpdateUserActivationState,
-                        OnUpdateUserActivationState)
     IPC_MESSAGE_HANDLER(FrameMsg_TransferUserActivationFrom,
                         OnTransferUserActivationFrom)
     IPC_MESSAGE_HANDLER(FrameMsg_ScrollRectToVisible, OnScrollRectToVisible)
@@ -497,23 +494,10 @@ void RenderFrameProxy::OnForwardResourceTimingToParent(
       ResourceTimingInfoToWebResourceTimingInfo(info));
 }
 
-void RenderFrameProxy::OnSetNeedsOcclusionTracking(bool needs_tracking) {
-  web_frame_->SetNeedsOcclusionTracking(needs_tracking);
-}
-
 void RenderFrameProxy::OnDidUpdateName(const std::string& name,
                                        const std::string& unique_name) {
   web_frame_->SetReplicatedName(blink::WebString::FromUTF8(name));
   unique_name_ = unique_name;
-}
-
-void RenderFrameProxy::OnAddContentSecurityPolicies(
-    const std::vector<ContentSecurityPolicyHeader>& headers) {
-  for (const auto& header : headers) {
-    web_frame_->AddReplicatedContentSecurityPolicyHeader(
-        blink::WebString::FromUTF8(header.header_value), header.type,
-        header.source);
-  }
 }
 
 void RenderFrameProxy::OnEnforceInsecureRequestPolicy(
@@ -525,15 +509,6 @@ void RenderFrameProxy::OnSetFrameOwnerProperties(
     const FrameOwnerProperties& properties) {
   web_frame_->SetFrameOwnerProperties(
       ConvertFrameOwnerPropertiesToWebFrameOwnerProperties(properties));
-}
-
-void RenderFrameProxy::OnSetPageFocus(bool is_focused) {
-  render_view_->SetFocus(is_focused);
-}
-
-void RenderFrameProxy::OnUpdateUserActivationState(
-    blink::UserActivationUpdateType update_type) {
-  web_frame_->UpdateUserActivationState(update_type);
 }
 
 void RenderFrameProxy::OnTransferUserActivationFrom(int32_t source_routing_id) {

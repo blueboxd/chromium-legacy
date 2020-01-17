@@ -93,22 +93,16 @@ class ServerConnectionEventListener {
 //
 class ServerConnectionManager {
  public:
-  // buffer_in - will be POSTed
-  // buffer_out - string will be overwritten with response
-  struct PostBufferParams {
-    std::string buffer_in;
-    std::string buffer_out;
-    HttpResponse response = HttpResponse::Uninitialized();
-  };
-
   ServerConnectionManager();
   virtual ~ServerConnectionManager();
 
-  // POSTS buffer_in and reads a response into buffer_out. Uses our currently
-  // set access token in our headers.
+  // POSTS buffer_in and reads a http_response into buffer_out.
+  // Uses our currently set access token in our headers.
   //
   // Returns true if executed successfully.
-  bool PostBufferWithCachedAuth(PostBufferParams* params);
+  bool PostBufferWithCachedAuth(const std::string& buffer_in,
+                                std::string* buffer_out,
+                                HttpResponse* http_response);
 
   void AddListener(ServerConnectionEventListener* listener);
   void RemoveListener(ServerConnectionEventListener* listener);
@@ -152,9 +146,11 @@ class ServerConnectionManager {
 
   // Internal PostBuffer base function which subclasses are expected to
   // implement.
-  virtual bool PostBufferToPath(PostBufferParams*,
+  virtual bool PostBufferToPath(const std::string& buffer_in,
                                 const std::string& path,
-                                const std::string& access_token) = 0;
+                                const std::string& access_token,
+                                std::string* buffer_out,
+                                HttpResponse* http_response) = 0;
 
   void ClearAccessToken();
 

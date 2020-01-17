@@ -46,12 +46,6 @@ class V8ArrayBufferView {
 };
 
 template <>
-struct NativeValueTraits<TestArrayBufferView> : public NativeValueTraitsBase<TestArrayBufferView> {
-  CORE_EXPORT static TestArrayBufferView* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-  CORE_EXPORT static TestArrayBufferView* NullValue() { return nullptr; }
-};
-
-template <>
 struct V8TypeOf<TestArrayBufferView> {
   typedef V8ArrayBufferView Type;
 };

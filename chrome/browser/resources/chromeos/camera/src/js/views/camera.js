@@ -399,7 +399,7 @@ export class Camera extends View {
           this.facingMode_ = await this.options_.updateValues(stream);
           await this.modes_.updateModeSelectionUI(deviceId);
           await this.modes_.updateMode(mode, stream, deviceId, captureR);
-          nav.close('warning', 'no-camera');
+          nav.close(ViewName.WARNING, 'no-camera');
           return true;
         } catch (e) {
           this.preview_.stop();
@@ -466,7 +466,7 @@ export class Camera extends View {
       this.activeDeviceId_ = null;
       if (!(error instanceof CameraSuspendedError)) {
         console.error(error);
-        nav.open('warning', 'no-camera');
+        nav.open(ViewName.WARNING, 'no-camera');
       }
       // Schedule to retry.
       if (this.retryStartTimeout_) {
@@ -482,6 +482,3 @@ export class Camera extends View {
     }
   }
 }
-
-/** @const */
-cca.views.Camera = Camera;

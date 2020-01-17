@@ -828,11 +828,10 @@ suite('SecurityKeysBioEnrollment', function() {
     await uiReady;
 
     assertShown(allDivs, dialog, 'enroll');
-    uiReady =
-        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     cr.webUIListenerCallback(
-        'security-keys-bio-enroll-status', {status: 0, remaining: 1});
-    await uiReady;
+        'security-keys-bio-enroll-status',
+        {status: settings.SampleStatus.OK, remaining: 1});
+    Polymer.dom.flush();
     assertFalse(dialog.$.arc.isComplete());
     assertFalse(dialog.$.cancelButton.hidden);
     assert(dialog.$.confirmButton.hidden);
@@ -843,7 +842,6 @@ suite('SecurityKeysBioEnrollment', function() {
     const enrollmentName = 'New Fingerprint';
     enrollingResolver.resolve({
       code: 0,
-      remaining: 0,
       enrollment: {
         id: enrollmentId,
         name: enrollmentName,
@@ -917,5 +915,31 @@ suite('SecurityKeysBioEnrollment', function() {
 
     await uiReady;
     assertShown(allDivs, dialog, 'enrollments');
+  });
+
+  test('EnrollError', async function() {
+    // Test that resolving the startEnrolling promise with a CTAP error brings
+    // up the error page.
+    const enrollResolver = new PromiseResolver;
+    browserProxy.setResponseFor('startEnrolling', enrollResolver.promise);
+
+    document.body.appendChild(dialog);
+    await browserProxy.whenCalled('startBioEnroll');
+
+    dialog.dialogPage_ = 'enrollments';
+
+    let uiReady =
+        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    dialog.$.addButton.click();
+    await browserProxy.whenCalled('startEnrolling');
+    await uiReady;
+
+    uiReady =
+        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+
+    enrollResolver.resolve({code: settings.Ctap2Status.ERR_INVALID_OPTION});
+
+    await uiReady;
+    assertShown(allDivs, dialog, 'error');
   });
 });

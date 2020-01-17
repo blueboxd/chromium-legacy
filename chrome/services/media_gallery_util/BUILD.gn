@@ -31,9 +31,7 @@ source_set("lib") {
     ]
   }
 
-  public_deps = [
-    "//chrome/services/media_gallery_util/public/mojom",
-  ]
+  public_deps = [ "//chrome/services/media_gallery_util/public/mojom" ]
 
   if (media_use_ffmpeg) {
     deps += [
@@ -46,9 +44,7 @@ source_set("lib") {
 if (is_android) {
   source_set("unit_tests") {
     testonly = true
-    sources = [
-      "media_parser_android_unittest.cc",
-    ]
+    sources = [ "media_parser_android_unittest.cc" ]
 
     data = [
       "//media/test/data/bear.mp4",

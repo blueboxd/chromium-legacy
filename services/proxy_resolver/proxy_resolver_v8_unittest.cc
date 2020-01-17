@@ -145,15 +145,12 @@ class ProxyResolverV8Test : public testing::Test {
   std::unique_ptr<ProxyResolverV8> resolver_;
 };
 
-// Doesn't really matter what these values are for many of the tests.
-const GURL kQueryUrl("http://www.google.com");
-const GURL kPacUrl;
-
 TEST_F(ProxyResolverV8Test, Direct) {
   ASSERT_THAT(CreateResolver("direct.js"), IsOk());
 
   net::ProxyInfo proxy_info;
-  int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+  int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                         &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
   EXPECT_TRUE(proxy_info.is_direct());
@@ -166,7 +163,8 @@ TEST_F(ProxyResolverV8Test, ReturnEmptyString) {
   ASSERT_THAT(CreateResolver("return_empty_string.js"), IsOk());
 
   net::ProxyInfo proxy_info;
-  int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+  int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                         &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
   EXPECT_TRUE(proxy_info.is_direct());
@@ -219,7 +217,8 @@ TEST_F(ProxyResolverV8Test, BadReturnType) {
 
     MockJSBindings bindings;
     net::ProxyInfo proxy_info;
-    int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, &bindings);
+    int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                           &proxy_info, &bindings);
 
     EXPECT_THAT(result, IsError(net::ERR_PAC_SCRIPT_FAILED));
 
@@ -263,7 +262,8 @@ TEST_F(ProxyResolverV8Test, SideEffects) {
   // The PAC script increments a counter each time we invoke it.
   for (int i = 0; i < 3; ++i) {
     net::ProxyInfo proxy_info;
-    int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+    int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                           &proxy_info, bindings());
     EXPECT_THAT(result, IsOk());
     EXPECT_EQ(base::StringPrintf("sideffect_%d:80", i),
               proxy_info.proxy_server().ToURI());
@@ -275,7 +275,8 @@ TEST_F(ProxyResolverV8Test, SideEffects) {
 
   for (int i = 0; i < 3; ++i) {
     net::ProxyInfo proxy_info;
-    int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+    int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                           &proxy_info, bindings());
     EXPECT_THAT(result, IsOk());
     EXPECT_EQ(base::StringPrintf("sideffect_%d:80", i),
               proxy_info.proxy_server().ToURI());
@@ -287,7 +288,8 @@ TEST_F(ProxyResolverV8Test, UnhandledException) {
   ASSERT_THAT(CreateResolver("unhandled_exception.js"), IsOk());
 
   net::ProxyInfo proxy_info;
-  int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+  int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                         &proxy_info, bindings());
 
   EXPECT_THAT(result, IsError(net::ERR_PAC_SCRIPT_FAILED));
 
@@ -319,7 +321,8 @@ TEST_F(ProxyResolverV8Test, ExceptionAccessingFindProxyForURLDuringResolve) {
               IsOk());
 
   net::ProxyInfo proxy_info;
-  int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+  int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                         &proxy_info, bindings());
 
   EXPECT_THAT(result, IsError(net::ERR_PAC_SCRIPT_FAILED));
 
@@ -335,7 +338,8 @@ TEST_F(ProxyResolverV8Test, ReturnUnicode) {
   ASSERT_THAT(CreateResolver("return_unicode.js"), IsOk());
 
   net::ProxyInfo proxy_info;
-  int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+  int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                         &proxy_info, bindings());
 
   // The result from this resolve was unparseable, because it
   // wasn't ASCII.
@@ -347,7 +351,8 @@ TEST_F(ProxyResolverV8Test, JavascriptLibrary) {
   ASSERT_THAT(CreateResolver("pac_library_unittest.js"), IsOk());
 
   net::ProxyInfo proxy_info;
-  int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+  int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                         &proxy_info, bindings());
 
   // If the javascript side of this unit-test fails, it will throw a javascript
   // exception. Otherwise it will return "PROXY success:80".
@@ -364,7 +369,8 @@ TEST_F(ProxyResolverV8Test, V8Bindings) {
   bindings()->dns_resolve_result = "127.0.0.1";
 
   net::ProxyInfo proxy_info;
-  int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+  int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                         &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
   EXPECT_TRUE(proxy_info.is_direct());
@@ -406,7 +412,8 @@ TEST_F(ProxyResolverV8Test, BindingCalledDuringInitialization) {
   EXPECT_EQ(1, bindings()->my_ip_address_count);
 
   net::ProxyInfo proxy_info;
-  int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+  int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                         &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
   EXPECT_FALSE(proxy_info.is_direct());
@@ -428,7 +435,8 @@ TEST_F(ProxyResolverV8Test, EndsWithCommentNoNewline) {
   ASSERT_THAT(CreateResolver("ends_with_comment.js"), IsOk());
 
   net::ProxyInfo proxy_info;
-  int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+  int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                         &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
   EXPECT_FALSE(proxy_info.is_direct());
@@ -443,7 +451,8 @@ TEST_F(ProxyResolverV8Test, EndsWithStatementNoNewline) {
   ASSERT_THAT(CreateResolver("ends_with_statement_no_semicolon.js"), IsOk());
 
   net::ProxyInfo proxy_info;
-  int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+  int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                         &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
   EXPECT_FALSE(proxy_info.is_direct());
@@ -458,7 +467,8 @@ TEST_F(ProxyResolverV8Test, DNSResolutionFailure) {
   ASSERT_THAT(CreateResolver("dns_fail.js"), IsOk());
 
   net::ProxyInfo proxy_info;
-  int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+  int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                         &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
   EXPECT_FALSE(proxy_info.is_direct());
@@ -470,7 +480,8 @@ TEST_F(ProxyResolverV8Test, DNSResolutionOfInternationDomainName) {
 
   // Execute FindProxyForURL().
   net::ProxyInfo proxy_info;
-  int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
+  int result = resolver().GetProxyForURL(GURL("http://www.google.com"),
+                                         &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
   EXPECT_TRUE(proxy_info.is_direct());

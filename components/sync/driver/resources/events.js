@@ -7,7 +7,7 @@ cr.define('chrome.sync.events_tab', function() {
 
   function toggleDisplay(event) {
     const originatingButton = event.target;
-    if (originatingButton.className != 'toggle-button') {
+    if (originatingButton.className !== 'toggle-button') {
       return;
     }
     const detailsNode =

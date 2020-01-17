@@ -115,7 +115,7 @@ class FakeNfcService : public device::mojom::blink::NFC {
     client_.Bind(std::move(client));
   }
   void Push(device::mojom::blink::NDEFMessagePtr message,
-            device::mojom::blink::NDEFPushOptionsPtr options,
+            device::mojom::blink::NDEFWriteOptionsPtr options,
             PushCallback callback) override {
     set_tag_message(std::move(message));
     std::move(callback).Run(nullptr);

@@ -10,6 +10,10 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace content {
 
 // This class implements a LocalFrame that can be attached to the
@@ -38,6 +42,10 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void EnableViewSourceMode() override;
   void Focus() override;
   void ClearFocusedElement() override;
+  void CopyImageAt(const gfx::Point& window_point) override;
+  void SaveImageAt(const gfx::Point& window_point) override;
+  void ReportBlinkFeatureUsage(
+      const std::vector<blink::mojom::WebFeature>&) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

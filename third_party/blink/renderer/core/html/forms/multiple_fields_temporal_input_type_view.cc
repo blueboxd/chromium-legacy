@@ -280,8 +280,7 @@ bool MultipleFieldsTemporalInputTypeView::
 void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
     const String& value) {
   if (GetElement().IsValidValue(value)) {
-    GetElement().setValue(value,
-                          TextFieldEventBehavior::kDispatchInputAndChangeEvent);
+    GetElement().setValue(value, TextFieldEventBehavior::kDispatchInputEvent);
     return;
   }
 
@@ -298,7 +297,6 @@ void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
     if (date.ParseDate(value, 0, end) && end == value.length())
       edit->SetOnlyYearMonthDay(date);
   }
-  GetElement().DispatchFormControlChangeEvent();
 }
 
 void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
@@ -306,11 +304,10 @@ void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
   DCHECK(std::isfinite(value) || std::isnan(value));
   if (std::isnan(value)) {
     GetElement().setValue(g_empty_string,
-                          TextFieldEventBehavior::kDispatchInputAndChangeEvent);
+                          TextFieldEventBehavior::kDispatchInputEvent);
   } else {
-    GetElement().setValueAsNumber(
-        value, ASSERT_NO_EXCEPTION,
-        TextFieldEventBehavior::kDispatchInputAndChangeEvent);
+    GetElement().setValueAsNumber(value, ASSERT_NO_EXCEPTION,
+                                  TextFieldEventBehavior::kDispatchInputEvent);
   }
 }
 
@@ -334,6 +331,10 @@ bool MultipleFieldsTemporalInputTypeView::SetupDateTimeChooserParameters(
   }
 
   return GetElement().SetupDateTimeChooserParameters(parameters);
+}
+
+void MultipleFieldsTemporalInputTypeView::DidEndChooser() {
+  GetElement().EnqueueChangeEvent();
 }
 
 MultipleFieldsTemporalInputTypeView::MultipleFieldsTemporalInputTypeView(

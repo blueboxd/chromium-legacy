@@ -157,6 +157,23 @@ NGInlineCursor NGInlineCursor::CursorForDescendants() const {
   return NGInlineCursor();
 }
 
+void NGInlineCursor::ExpandRootToContainingBlock() {
+  if (root_paint_fragment_) {
+    root_paint_fragment_ = root_paint_fragment_->Root();
+    return;
+  }
+  if (fragment_items_) {
+    const unsigned index_diff = items_.data() - fragment_items_->Items().data();
+    DCHECK_LT(index_diff, fragment_items_->Items().size());
+    const unsigned item_index = item_iter_ - items_.begin();
+    items_ = fragment_items_->Items();
+    // Update the iterator to the one for the new span.
+    MoveToItem(items_.begin() + item_index + index_diff);
+    return;
+  }
+  NOTREACHED();
+}
+
 bool NGInlineCursor::HasSoftWrapToNextLine() const {
   DCHECK(IsLineBox());
   const NGInlineBreakToken& break_token = CurrentInlineBreakToken();
@@ -771,9 +788,8 @@ void NGInlineCursor::MoveToContainingLine() {
     return;
   }
   if (current_item_) {
-    do {
+    while (current_item_ && !IsLineBox())
       MoveToPreviousItem();
-    } while (current_item_ && !IsLineBox());
     return;
   }
   NOTREACHED();

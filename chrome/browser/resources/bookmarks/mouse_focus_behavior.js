@@ -12,7 +12,7 @@ export const HIDE_FOCUS_RING_ATTRIBUTE = 'hide-focus-ring';
  * @polymerBehavior
  */
 export const MouseFocusBehavior = {
-  attached: function() {
+  attached() {
     this.boundOnMousedown_ = this.onMousedown_.bind(this);
     this.boundOnKeydown = this.onKeydown_.bind(this);
 
@@ -24,13 +24,13 @@ export const MouseFocusBehavior = {
     document.addEventListener('keydown', this.boundOnKeydown, true);
   },
 
-  detached: function() {
+  detached() {
     document.removeEventListener('mousedown', this.boundOnMousedown_, true);
     document.removeEventListener('keydown', this.boundOnKeydown, true);
   },
 
   /** @private */
-  onMousedown_: function() {
+  onMousedown_() {
     this.setAttribute(HIDE_FOCUS_RING_ATTRIBUTE, '');
   },
 
@@ -38,7 +38,7 @@ export const MouseFocusBehavior = {
    * @param {KeyboardEvent} e
    * @private
    */
-  onKeydown_: function(e) {
+  onKeydown_(e) {
     if (!['Shift', 'Alt', 'Control', 'Meta'].includes(e.key)) {
       this.removeAttribute(HIDE_FOCUS_RING_ATTRIBUTE);
     }

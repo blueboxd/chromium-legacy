@@ -32,12 +32,8 @@ if (is_android) {
   keycode_conversion_data_android_gen_path = "$target_gen_dir/keycodes/dom/keycode_conversion_data_android_generated.inc"
 
   copy("keycode_conversion_data_android") {
-    sources = [
-      keycode_conversion_data_android_path,
-    ]
-    outputs = [
-      keycode_conversion_data_android_gen_path,
-    ]
+    sources = [ keycode_conversion_data_android_path ]
+    outputs = [ keycode_conversion_data_android_gen_path ]
   }
 }
 
@@ -55,9 +51,7 @@ jumbo_static_library("dom_keycode_converter") {
     "keycodes/dom/keycode_converter.cc",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   if (!is_ios) {
     deps += [ "//ipc:param_traits" ]
@@ -118,15 +112,11 @@ static_library("dom_keyboard_layout") {
 }
 
 source_set("event_constants") {
-  sources = [
-    "event_constants.h",
-  ]
+  sources = [ "event_constants.h" ]
 }
 
 source_set("platform_event") {
-  sources = [
-    "platform_event.h",
-  ]
+  sources = [ "platform_event.h" ]
 }
 
 jumbo_component("events_base") {
@@ -645,9 +635,7 @@ if (!is_ios) {
       sources += [ "android/motion_event_android_unittest.cc" ]
       deps += [ "//ui/android:ui_full_java" ]
     } else {
-      data_deps = [
-        "//third_party/mesa_headers",
-      ]
+      data_deps = [ "//third_party/mesa_headers" ]
     }
 
     if (use_x11) {
@@ -724,9 +712,7 @@ if (is_android) {
 source_set("events_interactive_ui_tests") {
   testonly = true
   if (is_win) {
-    sources = [
-      "win/media_keyboard_hook_win_interactive_test.cc",
-    ]
+    sources = [ "win/media_keyboard_hook_win_interactive_test.cc" ]
 
     deps = [
       ":events",

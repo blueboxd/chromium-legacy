@@ -51,7 +51,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
  public:
   DirectRenderer(const RendererSettings* settings,
                  OutputSurface* output_surface,
-                 DisplayResourceProvider* resource_provider);
+                 DisplayResourceProvider* resource_provider,
+                 OverlayProcessorInterface* overlay_processor);
   virtual ~DirectRenderer();
 
   void Initialize();
@@ -120,11 +121,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   void SetEnlargePassTextureAmountForTesting(const gfx::Size& amount) {
     enlarge_pass_texture_amount_ = amount;
   }
-
-  bool has_overlay_validator() const {
-    return overlay_processor_->IsOverlaySupported();
-  }
-  bool OverlayNeedsSurfaceOccludingDamageRect() const;
 
   gfx::Rect GetLastRootScissorRectForTesting() const {
     return last_root_render_pass_scissor_rect_;
@@ -245,7 +241,9 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   OutputSurface* const output_surface_;
   DisplayResourceProvider* const resource_provider_;
   // This can be replaced by test implementations.
-  std::unique_ptr<OverlayProcessorInterface> overlay_processor_;
+  // TODO(weiliangc): For SoftwareRenderer and tests where overlay is not used,
+  // use OverlayProcessorStub so this pointer is never null.
+  OverlayProcessorInterface* overlay_processor_;
 
   // Whether it's valid to SwapBuffers with an empty rect. Trivially true when
   // using partial swap.

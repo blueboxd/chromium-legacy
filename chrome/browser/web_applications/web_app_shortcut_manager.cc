@@ -4,24 +4,144 @@
 
 #include "chrome/browser/web_applications/web_app_shortcut_manager.h"
 
+#include <vector>
+
+#include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
+#include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/file_handler_manager.h"
+#include "chrome/browser/web_applications/components/web_app_shortcut.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/file_handler_info.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep_default.h"
 
 namespace web_app {
 
-WebAppShortcutManager::WebAppShortcutManager(Profile* profile)
-    : AppShortcutManager(profile) {}
+WebAppShortcutManager::WebAppShortcutManager(
+    Profile* profile,
+    WebAppIconManager* icon_manager,
+    FileHandlerManager* file_handler_manager)
+    : AppShortcutManager(profile),
+      icon_manager_(icon_manager),
+      file_handler_manager_(file_handler_manager) {}
 
 WebAppShortcutManager::~WebAppShortcutManager() = default;
 
-bool WebAppShortcutManager::CanCreateShortcuts() const {
-  NOTIMPLEMENTED();
-  return false;
+void WebAppShortcutManager::OnWebAppWillBeUninstalled(const AppId& app_id) {
+  const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
+  DCHECK(app);
+
+  std::unique_ptr<ShortcutInfo> shortcut_info = BuildShortcutInfoForWebApp(app);
+  base::FilePath shortcut_data_dir =
+      internals::GetShortcutDataDir(*shortcut_info);
+
+  internals::PostShortcutIOTask(
+      base::BindOnce(&internals::DeletePlatformShortcuts, shortcut_data_dir),
+      std::move(shortcut_info));
 }
 
 void WebAppShortcutManager::GetShortcutInfoForApp(
     const AppId& app_id,
     GetShortcutInfoCallback callback) {
-  NOTIMPLEMENTED();
+  const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
+  DCHECK(app);
+
+  // Build a common intersection between desired and downloaded icons.
+  auto icon_sizes_in_px = base::STLSetIntersection<std::vector<SquareSizePx>>(
+      app->downloaded_icon_sizes(), GetDesiredIconSizesForShortcut());
+
+  if (!icon_sizes_in_px.empty()) {
+    icon_manager_->ReadIcons(app_id, icon_sizes_in_px,
+                             base::BindOnce(&WebAppShortcutManager::OnIconsRead,
+                                            weak_ptr_factory_.GetWeakPtr(),
+                                            app_id, std::move(callback)));
+    return;
+  }
+
+  // If there is no single icon at the desired sizes, we will resize what we can
+  // get.
+  SquareSizePx desired_icon_size = GetDesiredIconSizesForShortcut().back();
+
+  if (icon_manager_->HasIconToResize(app_id, desired_icon_size)) {
+    icon_manager_->ReadIconAndResize(
+        app_id, desired_icon_size,
+        base::BindOnce(&WebAppShortcutManager::OnIconsRead,
+                       weak_ptr_factory_.GetWeakPtr(), app_id,
+                       std::move(callback)));
+  } else {
+    // No icon found. Create shortcut info with the standard application icon
+    // anyway.
+    OnIconsRead(app_id, std::move(callback),
+                std::map<SquareSizePx, SkBitmap>());
+  }
+}
+
+void WebAppShortcutManager::OnIconsRead(
+    const AppId& app_id,
+    GetShortcutInfoCallback callback,
+    std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
+  // |icon_bitmaps| can be empty here.
+  const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
+  if (!app) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  gfx::ImageFamily image_family;
+  for (auto& size_and_bitmap : icon_bitmaps) {
+    image_family.Add(gfx::ImageSkia(
+        gfx::ImageSkiaRep(size_and_bitmap.second, /*scale=*/0.0f)));
+  }
+
+  // If the image failed to load, use the standard application icon.
+  if (image_family.empty()) {
+    SquareSizePx icon_size_in_px = GetDesiredIconSizesForShortcut().back();
+    gfx::ImageSkia image_skia = CreateDefaultApplicationIcon(icon_size_in_px);
+    image_family.Add(gfx::Image(image_skia));
+  }
+
+  std::unique_ptr<ShortcutInfo> shortcut_info = BuildShortcutInfoForWebApp(app);
+  shortcut_info->favicon = std::move(image_family);
+
+  std::move(callback).Run(std::move(shortcut_info));
+}
+
+std::unique_ptr<ShortcutInfo> WebAppShortcutManager::BuildShortcutInfoForWebApp(
+    const WebApp* app) {
+  auto shortcut_info = std::make_unique<ShortcutInfo>();
+
+  shortcut_info->extension_id = app->app_id();
+  shortcut_info->url = app->launch_url();
+  shortcut_info->title = base::UTF8ToUTF16(app->name());
+  shortcut_info->description = base::UTF8ToUTF16(app->description());
+  shortcut_info->profile_path = profile()->GetPath();
+  shortcut_info->profile_name =
+      profile()->GetPrefs()->GetString(prefs::kProfileName);
+
+  if (const std::vector<apps::FileHandlerInfo>* file_handler_infos =
+          file_handler_manager_->GetEnabledFileHandlers(app->app_id())) {
+    shortcut_info->file_handler_extensions =
+        GetFileExtensionsFromFileHandlers(*file_handler_infos);
+    shortcut_info->file_handler_mime_types =
+        GetMimeTypesFromFileHandlers(*file_handler_infos);
+  }
+
+  return shortcut_info;
+}
+
+WebAppRegistrar& WebAppShortcutManager::GetWebAppRegistrar() {
+  WebAppRegistrar* web_app_registrar = registrar()->AsWebAppRegistrar();
+  DCHECK(web_app_registrar);
+  return *web_app_registrar;
 }
 
 }  // namespace web_app

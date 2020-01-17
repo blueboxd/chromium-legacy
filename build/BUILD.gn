@@ -7,9 +7,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 
 source_set("buildflag_header_h") {
-  sources = [
-    "buildflag.h",
-  ]
+  sources = [ "buildflag.h" ]
 }
 
 buildflag_header("branding_buildflags") {

@@ -395,7 +395,12 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
       @"document.cookie ? document.cookie.split(/;\\s*/) : [];";
   id result = [self executeJavaScript:kGetCookiesScript];
   // TODO(crbug.com/1041000): Assert that |result| is iterable using
-  // respondToSelector, after the bug is fixed.
+  // respondToSelector instead of methodSignatureForSelector, after upgrading to
+  // the EG version which handles selectors.
+  EG_TEST_HELPER_ASSERT_TRUE(
+      [result methodSignatureForSelector:@selector(objectEnumerator)],
+      @"The script response is not iterable.");
+
   NSMutableDictionary* cookies = [NSMutableDictionary dictionary];
   for (NSString* nameValuePair in result) {
     NSArray* cookieNameValue = [nameValuePair componentsSeparatedByString:@"="];
@@ -775,16 +780,20 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface isNewOmniboxPopupLayoutEnabled];
 }
 
+- (BOOL)isVariationEnabled:(int)variationID {
+  return [ChromeEarlGreyAppInterface isVariationEnabled:variationID];
+}
+
+- (BOOL)isTriggerVariationEnabled:(int)variationID {
+  return [ChromeEarlGreyAppInterface isTriggerVariationEnabled:variationID];
+}
+
 - (BOOL)isUMACellularEnabled {
   return [ChromeEarlGreyAppInterface isUMACellularEnabled];
 }
 
 - (BOOL)isUKMEnabled {
   return [ChromeEarlGreyAppInterface isUKMEnabled];
-}
-
-- (BOOL)isWebPaymentsModifiersEnabled {
-  return [ChromeEarlGreyAppInterface isWebPaymentsModifiersEnabled];
 }
 
 - (BOOL)isCreditCardScannerEnabled {

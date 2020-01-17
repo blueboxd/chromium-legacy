@@ -5,7 +5,5 @@
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
-  sources = [
-    "google_streaming_api.proto",
-  ]
+  sources = [ "google_streaming_api.proto" ]
 }

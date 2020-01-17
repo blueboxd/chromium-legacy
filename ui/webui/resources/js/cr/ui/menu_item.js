@@ -73,7 +73,7 @@ cr.define('cr.ui', function() {
         this.command_.removeEventListener('checkedChange', this);
       }
 
-      if (typeof command == 'string' && command[0] == '#') {
+      if (typeof command === 'string' && command[0] === '#') {
         command = assert(this.ownerDocument.body.querySelector(command));
         cr.ui.decorate(command, Command);
       }
@@ -126,7 +126,7 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether the menu item is a separator.
      */
     isSeparator() {
-      return this.tagName == 'HR';
+      return this.tagName === 'HR';
     },
 
     /**
@@ -143,7 +143,7 @@ cr.define('cr.ui', function() {
 
       const shortcuts = this.command_.shortcut.split(/\s+/);
 
-      if (shortcuts.length == 0) {
+      if (shortcuts.length === 0) {
         return;
       }
 
@@ -173,11 +173,11 @@ cr.define('cr.ui', function() {
         }
       });
 
-      if (ident == ' ') {
+      if (ident === ' ') {
         ident = 'Space';
       }
 
-      if (ident.length != 1) {
+      if (ident.length !== 1) {
         shortcutText +=
             loadTimeData.getString('SHORTCUT_' + ident.toUpperCase());
       } else {

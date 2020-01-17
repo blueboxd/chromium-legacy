@@ -47,6 +47,8 @@ source_set("ui") {
   ]
 
   sources = [
+    "crw_properties_store.h",
+    "crw_properties_store.mm",
     "crw_swipe_recognizer_provider.h",
     "crw_touch_tracking_recognizer.h",
     "crw_touch_tracking_recognizer.mm",
@@ -82,13 +84,9 @@ source_set("web_view_handler") {
 }
 
 source_set("crw_web_view_navigation_proxy") {
-  sources = [
-    "crw_web_view_navigation_proxy.h",
-  ]
+  sources = [ "crw_web_view_navigation_proxy.h" ]
 
-  deps = [
-    "//ios/third_party/webkit",
-  ]
+  deps = [ "//ios/third_party/webkit" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

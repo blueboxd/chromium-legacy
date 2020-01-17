@@ -23,9 +23,7 @@ generate_stubs("libva_stubs") {
     sigs += [ "va_drm.sigs" ]
   }
   output_name = "va_stubs"
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("vaapi") {
@@ -163,9 +161,7 @@ source_set("vaapi_test_utils") {
     "//testing/gtest",
     "//third_party/libyuv:libyuv",
   ]
-  public_deps = [
-    "//ui/gfx/geometry",
-  ]
+  public_deps = [ "//ui/gfx/geometry" ]
 }
 
 source_set("unit_test") {
@@ -207,9 +203,7 @@ source_set("vaapi_image_decoder_test_common") {
 
 source_set("jpeg_decoder_unit_test") {
   testonly = true
-  sources = [
-    "vaapi_jpeg_decoder_unittest.cc",
-  ]
+  sources = [ "vaapi_jpeg_decoder_unittest.cc" ]
   deps = [
     ":vaapi",
     ":vaapi_image_decoder_test_common",
@@ -227,9 +221,7 @@ source_set("jpeg_decoder_unit_test") {
 
 source_set("webp_decoder_unit_test") {
   testonly = true
-  sources = [
-    "vaapi_webp_decoder_unittest.cc",
-  ]
+  sources = [ "vaapi_webp_decoder_unittest.cc" ]
   deps = [
     ":vaapi",
     ":vaapi_image_decoder_test_common",
@@ -246,9 +238,7 @@ source_set("webp_decoder_unit_test") {
 
 source_set("vaapi_utils_unittest") {
   testonly = true
-  sources = [
-    "vaapi_utils_unittest.cc",
-  ]
+  sources = [ "vaapi_utils_unittest.cc" ]
   deps = [
     ":vaapi",
     "//base",
@@ -259,9 +249,7 @@ source_set("vaapi_utils_unittest") {
 }
 
 test("vaapi_unittest") {
-  sources = [
-    "vaapi_unittest.cc",
-  ]
+  sources = [ "vaapi_unittest.cc" ]
   deps = [
     ":jpeg_decoder_unit_test",
     ":vaapi",

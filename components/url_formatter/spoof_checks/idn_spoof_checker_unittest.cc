@@ -1201,40 +1201,46 @@ const IDNTestCase kIdnCases[] = {
     {"xn--googlecom-g040a.com", L"google讠com.com", kUnsafe},  // (U+8BA0)
     {"xn--googlecom-b85n.com", L"google丁com.com", kUnsafe},   // (U+4E01)
 
-    {"xn--7dbh4a.com", L"חסד.com", kUnsafe},
-    {"xn--7dbh4a.il", L"חסד.il", kSafe},
-
-    // Whole-script-confusable in Ethiopic.
-    {"xn--6xd66aa62c.com", L"ሠዐዐፐ.com", kUnsafe},
-    {"xn--6xd66aa62c.et", L"ሠዐዐፐ.et", kSafe},
-
-    // Whole-script-confusable in Greek.
-    {"xn--mxapd.com", L"ικα.com", kUnsafe},
-    {"xn--mxapd.gr", L"ικα.gr", kSafe},
-    {"xn--mxapd.xn--qxam", L"ικα.ελ", kSafe},
-
-    // Whole-script-confusable in Armenian.
+    // Whole-script-confusables. Cyrillic is sufficiently handled in cases above
+    // so it's not included here.
+    // Armenian:
     {"xn--mbbkpm.com", L"ոսւօ.com", kUnsafe},
     {"xn--mbbkpm.am", L"ոսւօ.am", kSafe},
     {"xn--mbbkpm.xn--y9a3aq", L"ոսւօ.հայ", kSafe},
-
-    // Whole-script-confusable in Bengali:
+    // Ethiopic:
+    {"xn--6xd66aa62c.com", L"ሠዐዐፐ.com", kUnsafe},
+    {"xn--6xd66aa62c.et", L"ሠዐዐፐ.et", kSafe},
+    {"xn--6xd66aa62c.xn--m0d3gwjla96a", L"ሠዐዐፐ.ኢትዮጵያ", kSafe},
+    // Greek:
+    {"xn--mxapd.com", L"ικα.com", kUnsafe},
+    {"xn--mxapd.gr", L"ικα.gr", kSafe},
+    {"xn--mxapd.xn--qxam", L"ικα.ελ", kSafe},
+    // Georgian:
+    {"xn--gpd3ag.com", L"ჽჿხ.com", kUnsafe},
+    {"xn--gpd3ag.ge", L"ჽჿხ.ge", kSafe},
+    {"xn--gpd3ag.xn--node", L"ჽჿხ.გე", kSafe},
+    // Hebrew.
+    {"xn--7dbh4a.com", L"חסד.com", kUnsafe},
+    {"xn--7dbh4a.il", L"חסד.il", kSafe},
+    {"xn--9dbq2a.xn--7dbh4a", L"קום.חסד", kSafe},
+    // Indic scripts:
+    // Bengali:
     {"xn--07baub.com", L"০৭০৭.com", kUnsafe},
-    // Whole-script-confusable in Devanagari:
+    // Devanagari:
     {"xn--62ba6j.com", L"ऽ०ऽ.com", kUnsafe},
-    // Whole-script-confusable in Gujarati:
+    // Gujarati:
     {"xn--becd.com", L"ડટ.com", kUnsafe},
-    // Whole-script-confusable in Gurmukhi:
+    // Gurmukhi:
     {"xn--occacb.com", L"੦੧੦੧.com", kUnsafe},
-    // Whole-script-confusable in Kannada:
+    // Kannada:
     {"xn--stca6jf.com", L"ಽ೦ಽ೧.com", kUnsafe},
-    // Whole-script-confusable in Malayalam:
+    // Malayalam:
     {"xn--lwccv.com", L"ടഠധ.com", kUnsafe},
-    // Whole-script-confusable in Oriya:
+    // Oriya:
     {"xn--zhca6ub.com", L"୮ଠ୮ଠ.com", kUnsafe},
-    // Whole-script-confusable in Tamil:
+    // Tamil:
     {"xn--mlca6ab.com", L"டபடப.com", kUnsafe},
-    // Whole-script-confusable in Telugu:
+    // Telugu:
     {"xn--brcaabbb.com", L"౧౦౧౦౧౦.com", kUnsafe},
 
     // IDN domain matching an IDN top-domain (fóó.com)

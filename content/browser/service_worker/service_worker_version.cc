@@ -443,7 +443,7 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
   // Ensure the live registration during starting worker so that the worker can
   // get associated with it in
   // ServiceWorkerProviderHost::CompleteStartWorkerPreparation.
-  context_->storage()->FindRegistrationForId(
+  context_->registry()->FindRegistrationForId(
       registration_id_, scope_.GetOrigin(),
       base::BindOnce(
           &ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker,
@@ -538,7 +538,7 @@ void ServiceWorkerVersion::ScheduleUpdate() {
 void ServiceWorkerVersion::StartUpdate() {
   if (!context_)
     return;
-  context_->storage()->FindRegistrationForId(
+  context_->registry()->FindRegistrationForId(
       registration_id_, scope_.GetOrigin(),
       base::BindOnce(&ServiceWorkerVersion::FoundRegistrationForUpdate,
                      weak_factory_.GetWeakPtr()));
@@ -2185,9 +2185,11 @@ void ServiceWorkerVersion::NotifyControlleeRemoved(const std::string& uuid) {
 void ServiceWorkerVersion::PrepareForUpdate(
     std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
         compared_script_info_map,
-    const GURL& updated_script_url) {
+    const GURL& updated_script_url,
+    network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
   compared_script_info_map_ = std::move(compared_script_info_map);
   updated_script_url_ = updated_script_url;
+  cross_origin_embedder_policy_ = cross_origin_embedder_policy;
 }
 
 const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&

@@ -3533,10 +3533,19 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                                          0xDEADC0DEU);
   placeholder_text_data2.SetName("placeholder2");
 
+  ui::AXNodeData link_data;
+  link_data.id = 16;
+  link_data.role = ax::mojom::Role::kLink;
+
+  ui::AXNodeData link_text_data;
+  link_text_data.id = 17;
+  link_text_data.role = ax::mojom::Role::kStaticText;
+  link_data.child_ids = {17};
+
   ui::AXNodeData root_data;
   root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids = {2, 3, 5, 7, 12, 14};
+  root_data.child_ids = {2, 3, 5, 7, 12, 14, 16};
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -3559,6 +3568,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   update.nodes.push_back(placeholder_text_data);
   update.nodes.push_back(input_text_data2);
   update.nodes.push_back(placeholder_text_data2);
+  update.nodes.push_back(link_data);
+  update.nodes.push_back(link_text_data);
 
   Init(update);
   AXNodePosition::SetTree(tree_.get());
@@ -3579,6 +3590,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   AXNode* placeholder_text_node = input_text_node->children()[0];
   AXNode* input_text_node2 = root_node->children()[5];
   AXNode* placeholder_text_node2 = input_text_node2->children()[0];
+  AXNode* link_node = root_node->children()[6];
+  AXNode* link_text_node = link_node->children()[0];
 
   ComPtr<ITextRangeProvider> document_range_provider;
   GetTextRangeProviderFromTextNode(document_range_provider, root_node);
@@ -3603,6 +3616,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ComPtr<ITextRangeProvider> placeholder_text_range_provider2;
   GetTextRangeProviderFromTextNode(placeholder_text_range_provider2,
                                    placeholder_text_node2);
+
+  ComPtr<ITextRangeProvider> link_text_range_provider;
+  GetTextRangeProviderFromTextNode(link_text_range_provider, link_text_node);
 
   base::win::ScopedVariant expected_variant;
 
@@ -3696,6 +3712,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   expected_variant.Set(false);
   EXPECT_UIA_TEXTATTRIBUTE_EQ(placeholder_text_range_provider2,
+                              UIA_IsReadOnlyAttributeId, expected_variant);
+  expected_variant.Reset();
+
+  expected_variant.Set(true);
+  EXPECT_UIA_TEXTATTRIBUTE_EQ(link_text_range_provider,
                               UIA_IsReadOnlyAttributeId, expected_variant);
   expected_variant.Reset();
 

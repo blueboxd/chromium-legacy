@@ -129,6 +129,8 @@ component("bindings") {
     "associated_receiver.h",
     "associated_receiver_set.h",
     "associated_remote.h",
+    "async_flusher.cc",
+    "async_flusher.h",
     "binder_map.cc",
     "binder_map.h",
     "binding.h",
@@ -183,6 +185,8 @@ component("bindings") {
     "native_enum.h",
     "pending_associated_receiver.h",
     "pending_associated_remote.h",
+    "pending_flush.cc",
+    "pending_flush.h",
     "pending_receiver.h",
     "pending_remote.h",
     "pipe_control_message_handler.h",
@@ -240,9 +244,7 @@ component("bindings") {
     "//mojo/public/interfaces/bindings",
   ]
 
-  deps = [
-    "//ipc:native_handle_type_converters",
-  ]
+  deps = [ "//ipc:native_handle_type_converters" ]
 
   defines = [ "IS_MOJO_CPP_BINDINGS_IMPL" ]
 }

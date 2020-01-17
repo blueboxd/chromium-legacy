@@ -19,7 +19,7 @@
 -keep,allowobfuscation class android.support.v7.media.MediaRouter$GlobalMediaRouter$** { *; }
 -keep,allowobfuscation class com.google.common.logging.nano.Vr$VREvent$HistogramBucket { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.ChromeActivity { *; }
--keep,allowobfuscation class org.chromium.chrome.browser.ChromeFeatureList { *; }
+-keep,allowobfuscation class org.chromium.chrome.browser.flags.ChromeFeatureList { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.compositor.CompositorViewHolder { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.compositor.CompositorViewHolder$CompositorAccessibilityProvider { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.compositor.layouts.components.VirtualView { *; }

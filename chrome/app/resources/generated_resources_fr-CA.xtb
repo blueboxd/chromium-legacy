@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">Ce compte d'utilisateur n'appartient pas au domaine pour lequel cet appareil est enregistré. Si vous souhaitez vous enregistrer à un autre domaine, vous devez d'abord suivre la procédure de récupération de votre appareil.</translation>
 <translation id="1274977772557788323">Paramètres de stockage d'Adobe Flash Player</translation>
 <translation id="1274997165432133392">Témoins et autres données de sites</translation>
-<translation id="127668050356036882">Fermer toutes vos fenêtres</translation>
 <translation id="1280820357415527819">Recherche de réseaux mobiles en cours…</translation>
 <translation id="1282420830958964167">La limite fixée par ton parent pour « <ph name="APP_NAME" /> » a expiré. Tu pourras l'utiliser à nouveau demain pendant <ph name="TIME_LIMIT" />.</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
@@ -518,7 +517,6 @@
 <translation id="1712552549805331520">L'URL <ph name="URL" /> veut stocker des données de façon permanente sur votre ordinateur local</translation>
 <translation id="1714644264617423774">Activez les fonctionnalités d'accessibilité afin de faciliter l'utilisation de votre appareil. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Capteurs de mouvements</translation>
-<translation id="171824261579749339">Australien <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">Dernière heure</translation>
 <translation id="1719312230114180055">Remarque : Votre empreinte digitale peut être moins sécuritaire qu'un mot de passe ou un NIP fiables.</translation>
 <translation id="1720318856472900922">Authentification du serveur WWW TLS</translation>
@@ -729,7 +727,6 @@
 <translation id="2006638907958895361">Ouvrir le lien dans <ph name="APP" /></translation>
 <translation id="2007404777272201486">Signaler un problème...</translation>
 <translation id="2010501376126504057">Appareils compatibles</translation>
-<translation id="2016430552235416146">Traditionnel</translation>
 <translation id="2017334798163366053">Désactiver la collecte de données de performances</translation>
 <translation id="2017836877785168846">Efface l'historique et la saisie semi-automatique de la barre d'adresse.</translation>
 <translation id="2018352199541442911">Désolés, votre périphérique de stockage externe n'est pas compatible pour le moment.</translation>
@@ -770,7 +767,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2076672359661571384">Moyenne (recommandé)</translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle si possible</translation>
 <translation id="2078019350989722914">Confirmation avant de quitter (<ph name="KEY_EQUIVALENT" />)</translation>
-<translation id="2078494137444990774">Désactivé</translation>
 <translation id="2079053412993822885">Si vous supprimez l'un de vos propres certificats, vous ne pouvez plus l'utiliser pour vous identifier.</translation>
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="2080070583977670716">Plus de paramètres</translation>
@@ -1210,7 +1206,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2665647207431876759">Expiré</translation>
 <translation id="2665717534925640469">Cette page est maintenant en mode plein écran et a désactivé le curseur de votre souris.</translation>
 <translation id="2665919335226618153">Oups… Une erreur s'est produite lors du formatage.</translation>
-<translation id="2666990579225592931">Ouvrir une fenêtre d'invité</translation>
 <translation id="2667463864537187133">Gérer le correcteur orthographique</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> partage un onglet Chrome.</translation>
 <translation id="2670429602441959756">Cette page contient des fonctions qui ne sont pas encore prises en charge dans la RV. Fermeture en cours…</translation>
@@ -2407,7 +2402,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> partage une fenêtre.</translation>
 <translation id="4364830672918311045">Afficher les notifications</translation>
-<translation id="436499142539576997">Impossible d'obtenir les données de l'application, qui tente toujours de s'exécuter…</translation>
 <translation id="4370975561335139969">L’adresse de courriel et le mot de passe que vous avez entrés ne correspondent pas</translation>
 <translation id="437184764829821926">Paramètres de police avancés</translation>
 <translation id="4374831787438678295">Installateur Linux</translation>
@@ -3434,7 +3428,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5867841422488265304">Recherchez ou entrez une adresse Web</translation>
 <translation id="5869029295770560994">OK, j'ai compris</translation>
 <translation id="5869522115854928033">Mots de passe enregistrés</translation>
-<translation id="5869948122057593679">Fermer toutes vos fenêtres</translation>
 <translation id="5870086504539785141">Fermer le menu d'accessibilité</translation>
 <translation id="5870155679953074650">Défaillances matérielles</translation>
 <translation id="5876851302954717356">Nouvel onglet à droite</translation>
@@ -4483,7 +4476,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7385854874724088939">Une erreur s'est produite lors de l'impression. Veuillez vérifier votre imprimante et essayer de nouveau.</translation>
 <translation id="7385896526023870365">Cette extension ne comporte pas d'accès au site supplémentaire.</translation>
 <translation id="7388044238629873883">Vous avez presque terminé!</translation>
-<translation id="7388222713940428051">Ouvrir une fenêtre d'invité</translation>
 <translation id="7392118418926456391">Échec de l'analyse antivirus</translation>
 <translation id="7392915005464253525">&amp;Rouvrir la fenêtre fermée</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> sera lancé au démarrage du système et continuera de s'exécuter en arrière-plan, même si toutes les fenêtres de <ph name="PRODUCT_NAME" /> sont fermées.</translation>
@@ -4748,7 +4740,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7784067724422331729">Les paramètres de sécurité de votre ordinateur ont entraîné le blocage de ce fichier.</translation>
 <translation id="7784796923038949829">Impossible de lire ou de modifier les données du site</translation>
 <translation id="778480864305029524">Pour utiliser la fonction Partage de connexion instantané, activez les notifications pour les services Google Play.</translation>
-<translation id="7786207843293321886">Fermer la session d'invité</translation>
 <translation id="7786889348652477777">Actua&amp;liser l'application</translation>
 <translation id="7787308148023287649">Afficher sur un autre écran</translation>
 <translation id="7788298548579301890">Un autre programme sur votre ordinateur a ajouté une application qui risque de modifier le fonctionnement de Google Chrome.
@@ -4862,7 +4853,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7908378463497120834">Nous sommes désolés, il y a au moins une partition sur votre périphérique externe qui n'est pas installable.</translation>
 <translation id="7909969815743704077">Téléchargé en mode Navigation privée</translation>
 <translation id="7910768399700579500">&amp;Nouveau dossier</translation>
-<translation id="7910831464510799808">Activé</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Votre mot de passe a été modifié sur le serveur. Veuillez vous déconnecter, puis vous reconnecter.</translation>
 <translation id="7915457674565721553">Connectez-vous à Internet pour configurer les contrôles parentaux</translation>

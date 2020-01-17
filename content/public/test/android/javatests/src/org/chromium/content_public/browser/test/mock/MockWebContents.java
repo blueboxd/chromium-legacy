@@ -145,6 +145,9 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public void setFocus(boolean hasFocus) {}
+
+    @Override
     public void exitFullscreen() {}
 
     @Override
@@ -271,4 +274,7 @@ public class MockWebContents implements WebContents {
 
     @Override
     public void notifyRendererPreferenceUpdate() {}
+
+    @Override
+    public void notifyBrowserControlsHeightChanged() {}
 }

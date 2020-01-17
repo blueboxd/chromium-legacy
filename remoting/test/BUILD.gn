@@ -132,13 +132,9 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
     defines = []
     libs = []
 
-    sources = [
-      "it2me_standalone_host_main.cc",
-    ]
+    sources = [ "it2me_standalone_host_main.cc" ]
 
-    deps = [
-      ":it2me_standalone_host",
-    ]
+    deps = [ ":it2me_standalone_host" ]
 
     if (is_desktop_linux) {
       deps += [ "//build/config/linux/gtk" ]
@@ -158,13 +154,9 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
   # purpose only.
   executable("capability_test_stub") {
     testonly = true
-    sources = [
-      "capability_test_stub_main.cc",
-    ]
+    sources = [ "capability_test_stub_main.cc" ]
 
-    deps = [
-      "//base",
-    ]
+    deps = [ "//base" ]
   }
 }
 

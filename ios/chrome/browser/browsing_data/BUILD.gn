@@ -7,16 +7,12 @@ source_set("feature_flags") {
     "browsing_data_features.cc",
     "browsing_data_features.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("browsing_data_remove_mask") {
-  sources = [
-    "browsing_data_remove_mask.h",
-  ]
+  sources = [ "browsing_data_remove_mask.h" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 

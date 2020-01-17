@@ -13,6 +13,7 @@
 #include "cc/cc_export.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/metrics/frame_sequence_tracker.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_timing_details.h"
 
 namespace viz {
@@ -118,6 +119,7 @@ class CC_EXPORT CompositorFrameReporter {
 
   CompositorFrameReporter(
       const base::flat_set<FrameSequenceTrackerType>* active_trackers,
+      const viz::BeginFrameId& id,
       LatencyUkmReporter* latency_ukm_reporter,
       bool is_single_threaded = false);
   ~CompositorFrameReporter();
@@ -125,6 +127,8 @@ class CC_EXPORT CompositorFrameReporter {
   CompositorFrameReporter(const CompositorFrameReporter& reporter) = delete;
   CompositorFrameReporter& operator=(const CompositorFrameReporter& reporter) =
       delete;
+
+  const viz::BeginFrameId frame_id_;
 
   void MissedSubmittedFrame();
 

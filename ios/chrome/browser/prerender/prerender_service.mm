@@ -5,8 +5,9 @@
 #import "ios/chrome/browser/prerender/prerender_service.h"
 
 #include "base/metrics/histogram_macros.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/prerender/preload_controller.h"
-#import "ios/chrome/browser/sessions/session_window_restoring.h"
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -45,11 +46,9 @@ void PrerenderService::StartPrerender(const GURL& url,
                 immediately:immediately];
 }
 
-bool PrerenderService::MaybeLoadPrerenderedURL(
-    const GURL& url,
-    ui::PageTransition transition,
-    WebStateList* web_state_list,
-    id<SessionWindowRestoring> restorer) {
+bool PrerenderService::MaybeLoadPrerenderedURL(const GURL& url,
+                                               ui::PageTransition transition,
+                                               Browser* browser) {
   if (!HasPrerenderForUrl(url)) {
     CancelPrerender();
     return false;
@@ -61,6 +60,8 @@ bool PrerenderService::MaybeLoadPrerenderedURL(
     CancelPrerender();
     return false;
   }
+
+  WebStateList* web_state_list = browser->GetWebStateList();
 
   // Due to some security workarounds inside ios/web, sometimes a restored
   // webState may mark new navigations as renderer initiated instead of browser
@@ -102,8 +103,8 @@ bool PrerenderService::MaybeLoadPrerenderedURL(
     LoadTimingTabHelper::FromWebState(active_web_state)
         ->DidPromotePrerenderTab();
   }
-
-  [restorer saveSessionImmediately:NO];
+  SessionRestorationBrowserAgent::FromBrowser(browser)->SaveSession(
+      /*immediately=*/false);
   return true;
 }
 

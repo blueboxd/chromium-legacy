@@ -149,9 +149,7 @@ template("fuchsia_package") {
 
     script = "//build/gn_run_binary.py"
 
-    deps = [
-      ":$_write_manifest_target",
-    ]
+    deps = [ ":$_write_manifest_target" ]
 
     inputs = [
       # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
@@ -162,9 +160,7 @@ template("fuchsia_package") {
       inputs += pkg.additional_manifests
     }
 
-    outputs = [
-      _meta_far_file,
-    ]
+    outputs = [ _meta_far_file ]
 
     args = [
       rebase_path(_pm_tool_path, root_build_dir),
@@ -194,9 +190,7 @@ template("fuchsia_package") {
       _archive_manifest,
     ]
 
-    outputs = [
-      _combined_far_file,
-    ]
+    outputs = [ _combined_far_file ]
 
     args = [
       rebase_path(_pm_tool_path, root_build_dir),
@@ -215,13 +209,9 @@ template("fuchsia_package") {
     forward_variables_from(invoker, [ "testonly" ])
 
     # Allows dependent targets to make use of "ids.txt".
-    public_deps = [
-      ":$_write_manifest_target",
-    ]
+    public_deps = [ ":$_write_manifest_target" ]
 
-    deps = [
-      ":$_bundle_target",
-    ]
+    deps = [ ":$_bundle_target" ]
 
     data = [
       _final_far_file,
@@ -231,11 +221,7 @@ template("fuchsia_package") {
       _build_ids_file,
     ]
 
-    sources = [
-      _combined_far_file,
-    ]
-    outputs = [
-      _final_far_file,
-    ]
+    sources = [ _combined_far_file ]
+    outputs = [ _final_far_file ]
   }
 }

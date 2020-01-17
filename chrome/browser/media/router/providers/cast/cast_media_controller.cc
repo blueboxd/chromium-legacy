@@ -189,6 +189,8 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
   SetIfValid(&media_session_id_, status_value.FindKey("mediaSessionId"));
   SetIfValid(&media_status_.title,
              status_value.FindPath("media.metadata.title"));
+  SetIfValid(&media_status_.secondary_title,
+             status_value.FindPath("media.metadata.subtitle"));
   SetIfValid(&media_status_.current_time, status_value.FindKey("currentTime"));
   SetIfValid(&media_status_.duration, status_value.FindPath("media.duration"));
 

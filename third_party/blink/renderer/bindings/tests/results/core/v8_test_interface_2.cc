@@ -852,16 +852,6 @@ TestInterface2* V8TestInterface2::ToImplWithTypeCheck(
   return HasInstance(value, isolate) ? ToImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
-TestInterface2* NativeValueTraits<TestInterface2>::NativeValue(
-    v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exception_state) {
-  TestInterface2* native_value = V8TestInterface2::ToImplWithTypeCheck(isolate, value);
-  if (!native_value) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        "TestInterface2"));
-  }
-  return native_value;
-}
-
 InstallRuntimeEnabledFeaturesOnTemplateFunction
 V8TestInterface2::install_runtime_enabled_features_on_template_function_ =
     &V8TestInterface2::InstallRuntimeEnabledFeaturesOnTemplate;

@@ -164,10 +164,6 @@ class AXContentNodeDataSparseAttributeAdapter
         // more information than the sparse interface does.
         // ******** Why is this a TODO? ********
         break;
-      case WebAXObjectAttribute::kAriaDetails:
-        dst_->AddIntAttribute(ax::mojom::IntAttribute::kDetailsId,
-                              value.AxID());
-        break;
       case WebAXObjectAttribute::kAriaErrorMessage:
         // Use WebAXObject::ErrorMessage(), which provides both ARIA error
         // messages as well as built-in HTML form validation messages.
@@ -184,6 +180,10 @@ class AXContentNodeDataSparseAttributeAdapter
       case WebAXObjectVectorAttribute::kAriaControls:
         AddIntListAttributeFromWebObjects(
             ax::mojom::IntListAttribute::kControlsIds, value, dst_);
+        break;
+      case WebAXObjectVectorAttribute::kAriaDetails:
+        AddIntListAttributeFromWebObjects(
+            ax::mojom::IntListAttribute::kDetailsIds, value, dst_);
         break;
       case WebAXObjectVectorAttribute::kAriaFlowTo:
         AddIntListAttributeFromWebObjects(

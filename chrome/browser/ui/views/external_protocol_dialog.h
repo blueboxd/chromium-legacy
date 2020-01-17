@@ -31,7 +31,6 @@ class ExternalProtocolDialog : public views::DialogDelegateView,
                          const GURL& url,
                          const base::string16& program_name,
                          const base::Optional<url::Origin>& initiating_origin);
-
   ~ExternalProtocolDialog() override;
 
   // views::DialogDelegateView:
@@ -42,14 +41,15 @@ class ExternalProtocolDialog : public views::DialogDelegateView,
   bool Accept() override;
   views::View* GetContentsView() override;
   ui::ModalType GetModalType() const override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
 
  private:
   friend class test::ExternalProtocolDialogTestApi;
 
   void ShowRememberSelectionCheckbox();
   void SetRememberSelectionCheckboxCheckedForTesting(bool checked);
+
+  // views::DialogDelegateView:
+  const views::Widget* GetWidgetImpl() const override;
 
   const GURL url_;
   const base::string16 program_name_;

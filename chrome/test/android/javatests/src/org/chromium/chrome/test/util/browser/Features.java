@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.AnnotationRule;
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;

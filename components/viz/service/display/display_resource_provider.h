@@ -39,7 +39,7 @@ class ColorSpace;
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
-}
+}  // namespace gles2
 }  // namespace gpu
 
 namespace viz {
@@ -339,6 +339,9 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   void DeclareUsedResourcesFromChild(int child,
                                      const ResourceIdSet& resources_from_child);
 
+  // Returns the mailbox corresponding to a resource id.
+  gpu::Mailbox GetMailbox(int resource_id);
+
  private:
   enum DeleteStyle {
     NORMAL,
@@ -478,6 +481,18 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     gpu::SyncToken sync_token_;
   };
 
+  // Class to do Scoped Begin/End read access on a batch of shared images.
+  class ScopedBatchReadAccess {
+   public:
+    explicit ScopedBatchReadAccess(gpu::gles2::GLES2Interface* gl);
+    ~ScopedBatchReadAccess();
+
+   private:
+    gpu::gles2::GLES2Interface* gl_ = nullptr;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedBatchReadAccess);
+  };
+
   using ChildMap = std::unordered_map<int, Child>;
   using ResourceMap = std::unordered_map<ResourceId, ChildResource>;
 
@@ -554,6 +569,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 #endif
 
   bool enable_shared_images_;
+  std::unique_ptr<ScopedBatchReadAccess> scoped_batch_read_access_;
 };
 
 }  // namespace viz

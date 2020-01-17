@@ -71,5 +71,36 @@
             android:maxLines="1"
             android:textAppearance="@style/TextAppearance.BlackCaption"
             app:leading="@dimen/text_size_small_leading" />
+
+        <LinearLayout
+            android:id="@+id/menu_header_performance_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+          <org.chromium.ui.widget.ChromeImageView
+              android:id="@+id/performance_info_icon"
+              android:layout_height="@dimen/text_size_small_leading"
+              android:layout_width="@dimen/text_size_small_leading"
+              android:layout_gravity="center_vertical"
+              android:scaleType="fitStart"
+              android:importantForAccessibility="no"
+              app:srcCompat="@drawable/ic_speed_24dp"
+              app:tint="@color/default_icon_color_blue" />
+
+          <org.chromium.ui.widget.TextViewWithLeading
+              android:id="@+id/performance_info_text"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_gravity="center_vertical"
+              android:paddingStart="4sp"
+              android:textAlignment="viewStart"
+              android:ellipsize="end"
+              android:maxLines="1"
+              android:textAppearance="@style/TextAppearance.BlackCaptionDefault"
+              app:leading="@dimen/text_size_small_leading" />
+
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

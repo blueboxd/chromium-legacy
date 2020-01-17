@@ -17,6 +17,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
@@ -215,10 +216,14 @@ void BookmarkModelTypeProcessor::GetLocalChanges(
 
 void BookmarkModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
-    const syncer::CommitResponseDataList& response_list) {
+    const syncer::CommitResponseDataList& committed_response_list,
+    const syncer::FailedCommitResponseDataList& error_response_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  for (const syncer::CommitResponseData& response : response_list) {
+  // |error_response_list| is ignored, because all errors are treated as
+  // transientand the processor with eventually retry.
+
+  for (const syncer::CommitResponseData& response : committed_response_list) {
     // In order to save space, |response.id_in_request| is written when it's
     // different from |response.id|. If it's empty, then there was no id change
     // during the commit, and |response.id| carries both the old and new ids.
@@ -593,8 +598,10 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
   data.name = base::UTF16ToUTF8(node->GetTitle());
   data.is_folder = node->is_folder();
   data.unique_position = metadata->unique_position();
-  data.specifics = CreateSpecificsFromBookmarkNode(
-      node, bookmark_model_, /*force_favicon_load=*/false);
+  data.specifics = CreateSpecificsFromBookmarkNode(node, bookmark_model_,
+                                                   /*force_favicon_load=*/false,
+                                                   entity->has_final_guid());
+
   if (node->is_permanent_node()) {
     data.server_defined_unique_tag =
         ComputeServerDefinedUniqueTagForDebugging(node, bookmark_model_);

@@ -62,7 +62,7 @@ cr.define('local_discovery', function() {
      * Update the device.
      * @param {Object} info New information about the device.
      */
-    updateDevice: function(info) {
+    updateDevice(info) {
       this.info = info;
       this.renderDevice();
     },
@@ -70,14 +70,14 @@ cr.define('local_discovery', function() {
     /**
      * Delete the device.
      */
-    removeDevice: function() {
+    removeDevice() {
       this.deviceContainer().removeChild(this.domElement);
     },
 
     /**
      * Render the device to the device list.
      */
-    renderDevice: function() {
+    renderDevice() {
       if (this.domElement) {
         clearElement(this.domElement);
       } else {
@@ -96,21 +96,21 @@ cr.define('local_discovery', function() {
     /**
      * Return the correct container for the device.
      */
-    deviceContainer: function() {
+    deviceContainer() {
       return $('register-device-list');
     },
 
     /**
      * Register the device.
      */
-    register: function() {
+    register() {
       chrome.send('registerDevice', [this.info.service_name]);
       setRegisterPage('register-printer-page-adding1');
     },
     /**
      * Show registrtation UI for device.
      */
-    showRegister: function() {
+    showRegister() {
       $('register-continue').onclick = this.register.bind(this);
 
       showRegisterOverlay();
@@ -118,7 +118,7 @@ cr.define('local_discovery', function() {
     /**
      * Set registration button enabled/disabled
      */
-    setRegisterEnabled: function(isEnabled) {
+    setRegisterEnabled(isEnabled) {
       this.registerEnabled = isEnabled;
       if (this.registerButton) {
         this.registerButton.disabled = !isEnabled;
@@ -139,7 +139,7 @@ cr.define('local_discovery', function() {
   LocalDiscoveryFocusManager.prototype = {
     __proto__: cr.ui.FocusManager.prototype,
     /** @override */
-    getFocusParent: function() {
+    getFocusParent() {
       return document.querySelector('#overlay .showing') || $('main-page');
     }
   };

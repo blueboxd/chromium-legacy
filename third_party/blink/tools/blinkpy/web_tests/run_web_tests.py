@@ -481,6 +481,11 @@ def parse_args(args):
                 action='store_true',
                 help='run all tests in parallel'),
             optparse.make_option(
+                '--virtual-parallel',
+                action='store_true',
+                help='When running in parallel, include virtual tests. Useful for running a single '
+                     'virtual test suite, but will be slower in other cases.'),
+            optparse.make_option(
                 '-i', '--ignore-tests',
                 action='append',
                 default=[],

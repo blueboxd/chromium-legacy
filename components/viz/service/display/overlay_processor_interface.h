@@ -15,6 +15,7 @@
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/gpu_task_scheduler_helper.h"
 
 #if defined(OS_WIN)
 #include "components/viz/service/display/dc_layer_overlay.h"
@@ -93,7 +94,9 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
       SkiaOutputSurface* skia_output_surface,
       gpu::SurfaceHandle surface_handle,
       const OutputSurface::Capabilities& capabilities,
-      const RendererSettings& renderer_settings);
+      const RendererSettings& renderer_settings,
+      scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
+      gpu::SharedImageInterface* shared_image_interface);
 
   virtual ~OverlayProcessorInterface() {}
 
@@ -125,6 +128,11 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
   // processor.
   virtual void AdjustOutputSurfaceOverlay(
       base::Optional<OutputSurfaceOverlayPlane>* output_surface_plane) = 0;
+
+  // TODO(weiliangc): Make it pure virtual after it is implemented by every
+  // subclass.
+  virtual void ScheduleOverlays(
+      DisplayResourceProvider* display_resource_provider);
 
   // These two functions are used by Android SurfaceControl.
   virtual void SetDisplayTransformHint(gfx::OverlayTransform transform) {}

@@ -8,9 +8,7 @@ source_set("user_feedback") {
     "user_feedback_provider.h",
     "user_feedback_provider.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("test_support") {

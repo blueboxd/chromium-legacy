@@ -82,7 +82,6 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
       defer_all_script_eligibility_reason_;
   base::Optional<previews::PreviewsEligibilityReason>
       offline_eligibility_reason_;
-  base::Optional<base::TimeDelta> navigation_restart_penalty_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

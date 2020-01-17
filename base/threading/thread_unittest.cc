@@ -543,28 +543,6 @@ TEST_F(ThreadTest, GetTaskExecutorForCurrentThread) {
   a.Stop();
 }
 
-TEST_F(ThreadTest, CurrentThread) {
-  Thread a("CurrentThread");
-  ASSERT_TRUE(a.Start());
-
-  base::WaitableEvent event;
-
-  a.task_runner()->PostTask(
-      FROM_HERE, base::BindLambdaForTesting([&]() {
-        EXPECT_EQ(a.task_runner(),
-                  base::CreateSingleThreadTaskRunner({base::CurrentThread()}));
-
-        // There's only a single task runner so base::TaskPriority is ignored.
-        EXPECT_EQ(a.task_runner(), base::CreateSingleThreadTaskRunner(
-                                       {base::CurrentThread(),
-                                        base::TaskPriority::BEST_EFFORT}));
-        event.Signal();
-      }));
-
-  event.Wait();
-  a.Stop();
-}
-
 namespace {
 
 class SequenceManagerThreadDelegate : public Thread::Delegate {

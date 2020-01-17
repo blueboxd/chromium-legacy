@@ -42,12 +42,6 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
-#ifdef IPC_MESSAGE_START
-#error IPC_MESSAGE_START
-#endif
-
-#define IPC_MESSAGE_START InputMsgStart
-
 IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventAckSource,
                           content::InputEventAckSource::MAX_FROM_RENDERER)
 IPC_ENUM_TRAITS_MAX_VALUE(
@@ -153,9 +147,5 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionListParams)
   IPC_STRUCT_TRAITS_PARENT(content::SyntheticGestureParams)
   IPC_STRUCT_TRAITS_MEMBER(params)
 IPC_STRUCT_TRAITS_END()
-
-// TODO(dtapuska): Remove this as only OOPIF uses this
-IPC_MESSAGE_ROUTED1(InputMsg_SetFocus,
-                    bool /* enable */)
 
 #endif  // CONTENT_COMMON_INPUT_MESSAGES_H_

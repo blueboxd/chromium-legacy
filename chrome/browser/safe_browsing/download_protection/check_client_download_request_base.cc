@@ -211,6 +211,7 @@ void CheckClientDownloadRequestBase::FinishRequest(
                               reason, REASON_MAX);
   }
 
+  bool did_upload_binary = false;
   if (ShouldUploadBinary(reason)) {
     if (password_protected_allowed_ && is_password_protected_) {
       Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
@@ -229,7 +230,8 @@ void CheckClientDownloadRequestBase::FinishRequest(
       result = DownloadCheckResult::BLOCKED_TOO_LARGE;
       reason = DownloadCheckResultReason::REASON_BLOCKED_TOO_LARGE;
     } else {
-      UploadBinary(result, reason);
+      UploadBinary();
+      did_upload_binary = true;
     }
   }
 
@@ -238,14 +240,13 @@ void CheckClientDownloadRequestBase::FinishRequest(
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
                             REASON_MAX);
 
-  if (MaybeReturnAsynchronousVerdict(reason)) {
-    timeout_closure_.Cancel();
-  } else {
+  if (!did_upload_binary) {
     std::move(callback_).Run(result);
-    NotifyRequestFinished(result, reason);
-    service()->RequestFinished(this);
-    // DownloadProtectionService::RequestFinished may delete us.
   }
+
+  NotifyRequestFinished(result, reason);
+  service()->RequestFinished(this);
+  // DownloadProtectionService::RequestFinished may delete us.
 }
 
 bool CheckClientDownloadRequestBase::ShouldSampleWhitelistedDownload() {

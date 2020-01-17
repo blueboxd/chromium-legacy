@@ -190,9 +190,7 @@ static_library("test_support") {
 executable("app_list_demo") {
   testonly = true
 
-  sources = [
-    "demo/app_list_demo_views.cc",
-  ]
+  sources = [ "demo/app_list_demo_views.cc" ]
 
   deps = [
     ":app_list",

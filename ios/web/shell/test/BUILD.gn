@@ -64,9 +64,7 @@ source_set("earl_grey_test_support") {
     "//url",
   ]
 
-  public_deps = [
-    "//build/config/ios:xctest",
-  ]
+  public_deps = [ "//build/config/ios:xctest" ]
 
   sources = [
     "app/navigation_test_util.h",

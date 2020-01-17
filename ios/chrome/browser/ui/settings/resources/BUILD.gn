@@ -5,9 +5,7 @@
 import("//build/config/ios/asset_catalog.gni")
 
 colorset("settings_catalog_example_text") {
-  sources = [
-    "settings_catalog_example_text.colorset/Contents.json",
-  ]
+  sources = [ "settings_catalog_example_text.colorset/Contents.json" ]
 }
 
 imageset("app_icon_placeholder") {

@@ -39,7 +39,6 @@
 <translation id="124678866338384709">Pechar a pestana actual</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Buscar e explorar</translation>
-<translation id="1264974993859112054">Deportes</translation>
 <translation id="1266864766717917324">Non se puido compartir este contido: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Deter</translation>
 <translation id="1283039547216852943">Toca para despregar</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">Inicia sesión e activa a sincronización para ter os marcadores en todos os teus dispositivos</translation>
 <translation id="2822354292072154809">Seguro que queres restablecer todos os permisos do sitio <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2842985007712546952">Cartafol principal</translation>
-<translation id="2858138569776157458">Populares</translation>
 <translation id="2860954141821109167">Asegúrate de que haxa unha aplicación de teléfono activada neste dispositivo</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
 <translation id="3288003805934695103">Volver cargar a páxina</translation>
 <translation id="32895400574683172">Permítese mostrar notificacións</translation>
+<translation id="3290926146403723641">Para completar tarefas na Web a través do Asistente de Google, Chrome envíalle a Google o URL e o contido do sitio, así como a información persoal relevante</translation>
 <translation id="3295530008794733555">Navega máis rápido. Usa menos datos.</translation>
 <translation id="3298243779924642547">Básico</translation>
 <translation id="3303414029551471755">Queres continuar coa descarga do contido?</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">Números de teléfono</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descargas eliminadas</translation>
 <translation id="3822502789641063741">Borrar datos do sitio?</translation>
-<translation id="3853625385350850937">Para continuar, activa a NFC no teu dispositivo</translation>
 <translation id="3859306556332390985">Buscar cara adiante</translation>
 <translation id="388596076286380598">Accede a artigos, vídeos e outros contidos dos sitios que che gustan, aínda que esteas sen conexión ou esta sexa de mala calidade.</translation>
 <translation id="3894427358181296146">Engadir cartafol</translation>
@@ -764,7 +762,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6697947395630195233">Chrome precisa acceder á túa localización para compartila con este sitio.</translation>
 <translation id="6698801883190606802">Xestionar datos sincronizados</translation>
 <translation id="6699370405921460408">Os servidores de Google optimizarán as páxinas que visites.</translation>
-<translation id="6709133671862442373">Noticias</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="671481426037969117">O temporizador de <ph name="FQDN" /> chegou ao final. Volverá comezar mañá.</translation>
 <translation id="6738867403308150051">Descargando...</translation>
@@ -1079,7 +1076,6 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="9133397713400217035">Explorar sen conexión</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar orixinal</translation>
-<translation id="9139318394846604261">Compras</translation>
 <translation id="9155898266292537608">Tamén podes realizar buscas con só tocar rapidamente unha palabra</translation>
 <translation id="9169507124922466868">O historial de navegación abriuse ata a metade</translation>
 <translation id="9204836675896933765">Queda 1 ficheiro</translation>

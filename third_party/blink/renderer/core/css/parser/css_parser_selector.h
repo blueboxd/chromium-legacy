@@ -54,6 +54,9 @@ class CORE_EXPORT CSSParserSelector {
     selector_->SetAttribute(value, match_type);
   }
   void SetArgument(const AtomicString& value) { selector_->SetArgument(value); }
+  void SetPartNames(std::unique_ptr<Vector<AtomicString>> part_names) {
+    selector_->SetPartNames(std::move(part_names));
+  }
   void SetNth(int a, int b) { selector_->SetNth(a, b); }
   void SetMatch(CSSSelector::MatchType value) { selector_->SetMatch(value); }
   void SetRelation(CSSSelector::RelationType value) {
@@ -80,6 +83,7 @@ class CORE_EXPORT CSSParserSelector {
   void AdoptSelectorVector(
       Vector<std::unique_ptr<CSSParserSelector>>& selector_vector);
   void SetSelectorList(std::unique_ptr<CSSSelectorList>);
+  void SetAtomics(std::unique_ptr<CSSSelectorList>);
 
   bool IsHostPseudoSelector() const;
 

@@ -64,7 +64,7 @@ void PendingAppManagerImpl::UninstallApps(std::vector<GURL> uninstall_urls,
                                           ExternalInstallSource install_source,
                                           const UninstallCallback& callback) {
   for (auto& url : uninstall_urls) {
-    finalizer()->UninstallExternalWebApp(
+    finalizer()->UninstallExternalWebAppByUrl(
         url, install_source,
         base::BindOnce(
             [](const UninstallCallback& callback, const GURL& app_url,

@@ -12,36 +12,14 @@
 
 namespace gl {
 
-bool GLImage::BindTexImageWithInternalformat(unsigned target,
-                                             unsigned internalformat) {
-  return false;
+gfx::Size GLImage::GetSize() {
+  NOTREACHED();
+  return gfx::Size();
 }
 
-void GLImage::SetColorSpace(const gfx::ColorSpace& color_space) {
-  color_space_ = color_space;
-}
-
-bool GLImage::EmulatingRGB() const {
-  return false;
-}
-
-GLImage::Type GLImage::GetType() const {
-  return Type::NONE;
-}
-
-#if defined(OS_ANDROID)
-std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
-GLImage::GetAHardwareBuffer() {
-  return nullptr;
-}
-
-gfx::Rect GLImage::GetCropRect() {
-  return gfx::Rect();
-}
-#endif
-
-bool GLImage::HasMutableState() const {
-  return true;
+unsigned GLImage::GetInternalFormat() {
+  NOTREACHED();
+  return GL_NONE;
 }
 
 unsigned GLImage::GetDataFormat() {
@@ -68,6 +46,95 @@ unsigned GLImage::GetDataFormat() {
       NOTREACHED();
       return GL_NONE;
   }
+}
+
+unsigned GLImage::GetDataType() {
+  NOTREACHED();
+  return GL_NONE;
+}
+
+GLImage::BindOrCopy GLImage::ShouldBindOrCopy() {
+  NOTREACHED();
+  return BIND;
+}
+
+bool GLImage::BindTexImage(unsigned target) {
+  NOTREACHED();
+  return false;
+}
+
+bool GLImage::BindTexImageWithInternalformat(unsigned target,
+                                             unsigned internalformat) {
+  NOTREACHED();
+  return false;
+}
+
+void GLImage::ReleaseTexImage(unsigned target) {
+  NOTREACHED();
+}
+
+bool GLImage::CopyTexImage(unsigned target) {
+  NOTREACHED();
+  return false;
+}
+
+bool GLImage::CopyTexSubImage(unsigned target,
+                              const gfx::Point& offset,
+                              const gfx::Rect& rect) {
+  NOTREACHED();
+  return false;
+}
+
+bool GLImage::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                                   int z_order,
+                                   gfx::OverlayTransform transform,
+                                   const gfx::Rect& bounds_rect,
+                                   const gfx::RectF& crop_rect,
+                                   bool enable_blend,
+                                   std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  NOTREACHED();
+  return false;
+}
+
+void GLImage::SetColorSpace(const gfx::ColorSpace& color_space) {
+  color_space_ = color_space;
+}
+
+void GLImage::Flush() {
+  NOTREACHED();
+}
+
+void GLImage::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                           uint64_t process_tracing_id,
+                           const std::string& dump_name) {
+  NOTREACHED();
+}
+
+bool GLImage::EmulatingRGB() const {
+  return false;
+}
+
+GLImage::Type GLImage::GetType() const {
+  return Type::NONE;
+}
+
+#if defined(OS_ANDROID)
+std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+GLImage::GetAHardwareBuffer() {
+  return nullptr;
+}
+
+gfx::Rect GLImage::GetCropRect() {
+  return gfx::Rect();
+}
+#endif
+
+bool GLImage::HasMutableState() const {
+  return true;
+}
+
+scoped_refptr<gfx::NativePixmap> GLImage::GetNativePixmap() {
+  return nullptr;
 }
 
 }  // namespace gl

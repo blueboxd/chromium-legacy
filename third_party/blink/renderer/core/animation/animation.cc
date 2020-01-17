@@ -1245,8 +1245,7 @@ void Animation::updatePlaybackRate(double playback_rate,
 ScriptPromise Animation::finished(ScriptState* script_state) {
   if (!finished_promise_) {
     finished_promise_ = MakeGarbageCollected<AnimationPromise>(
-        ExecutionContext::From(script_state), this,
-        AnimationPromise::kFinished);
+        ExecutionContext::From(script_state));
     // Defer resolving the finished promise if the finish notification task is
     // pending. The finished state could change before the next microtask
     // checkpoint.
@@ -1260,7 +1259,7 @@ ScriptPromise Animation::finished(ScriptState* script_state) {
 ScriptPromise Animation::ready(ScriptState* script_state) {
   if (!ready_promise_) {
     ready_promise_ = MakeGarbageCollected<AnimationPromise>(
-        ExecutionContext::From(script_state), this, AnimationPromise::kReady);
+        ExecutionContext::From(script_state));
     if (!pending())
       ready_promise_->Resolve(this);
   }
@@ -1278,7 +1277,7 @@ ExecutionContext* Animation::GetExecutionContext() const {
 bool Animation::HasPendingActivity() const {
   bool has_pending_promise =
       finished_promise_ &&
-      finished_promise_->GetState() == ScriptPromisePropertyBase::kPending;
+      finished_promise_->GetState() == AnimationPromise::kPending;
 
   return pending_finished_event_ || has_pending_promise ||
          (!finished_ && HasEventListeners(event_type_names::kFinish));

@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationMetadata;
@@ -142,23 +143,22 @@ public class WebApkServiceClient {
 
     /** Finishes and removes the WebAPK's task. */
     @TargetApi(Build.VERSION_CODES.M)
-    public void finishAndRemoveTaskSdk23(final WebApkActivity webApkActivity) {
+    public void finishAndRemoveTaskSdk23(final ChromeActivity activity, WebApkExtras webApkExtras) {
         final ApiUseCallback connectionCallback = new ApiUseCallback() {
             @Override
             public void useApi(IWebApkApi api) throws RemoteException {
-                if (webApkActivity.isActivityFinishingOrDestroyed()) return;
+                if (activity.isActivityFinishingOrDestroyed()) return;
 
                 if (!api.finishAndRemoveTaskSdk23()) {
-                    // If |webApkActivity| is not the root of the task, hopefully the activities
-                    // below this one will close themselves.
-                    webApkActivity.finish();
+                    // If |activity| is not the root of the task, hopefully the activities below
+                    // this one will close themselves.
+                    activity.finish();
                 }
             }
         };
 
-        String webApkPackage = webApkActivity.getWebApkPackageName();
-        mConnectionManager.connect(
-                ContextUtils.getApplicationContext(), webApkPackage, connectionCallback);
+        mConnectionManager.connect(ContextUtils.getApplicationContext(),
+                webApkExtras.webApkPackageName, connectionCallback);
     }
 
     /** Returns whether there are any WebAPK service API calls in progress. */

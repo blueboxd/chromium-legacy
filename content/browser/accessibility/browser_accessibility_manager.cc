@@ -462,10 +462,16 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     // Some screen readers need a focus event in order to work properly.
     FireFocusEventsIfNeeded();
 
-    // Also, perform the initial run of language detection.
-    // TODO(chrishall): we will want to run this more often for dynamic pages.
-    tree_->language_detection_manager->DetectLanguages(tree_->root());
-    tree_->language_detection_manager->LabelLanguages(tree_->root());
+    // Perform the initial run of language detection.
+    tree_->language_detection_manager->DetectLanguages();
+    tree_->language_detection_manager->LabelLanguages();
+
+    // After initial language detection, enable language detection for future
+    // content updates in order to support dynamic content changes.
+    //
+    // If the LanguageDetectionDynamic feature flag is not enabled then this
+    // is a no-op.
+    tree_->language_detection_manager->RegisterLanguageDetectionObserver();
   }
 
   // Allow derived classes to do event post-processing.

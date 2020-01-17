@@ -38,9 +38,7 @@ component("mirroring_service") {
     "wifi_status_monitor.h",
   ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 
   deps = [
     "//components/mirroring/mojom:service",

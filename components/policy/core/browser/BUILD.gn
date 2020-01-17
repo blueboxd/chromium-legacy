@@ -7,13 +7,9 @@ import("//build/config/jumbo.gni")
 
 group("browser") {
   if (is_component_build) {
-    public_deps = [
-      "//components/policy",
-    ]
+    public_deps = [ "//components/policy" ]
   } else {
-    public_deps = [
-      ":internal",
-    ]
+    public_deps = [ ":internal" ]
   }
 }
 
@@ -48,9 +44,7 @@ jumbo_source_set("internal") {
 
   configs += [ "//components/policy:component_implementation" ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
   deps = [
     "//base/third_party/dynamic_annotations",
     "//components/google/core/common",
@@ -103,9 +97,7 @@ jumbo_static_library("test_support") {
     "//components/policy:generated",
     "//components/policy/core/common:test_support",
   ]
-  deps = [
-    "//testing/gtest",
-  ]
+  deps = [ "//testing/gtest" ]
 }
 
 source_set("unit_tests") {

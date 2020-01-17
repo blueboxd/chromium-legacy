@@ -4,9 +4,26 @@
      found in the LICENSE file. -->
 
 <resources>
-    <!-- DualControlLayout dimensions -->
+    <!-- DualControlLayout -->
     <dimen name="dual_control_margin_between_items">8dp</dimen>
 
-    <!-- ChromeTextInputLayout dimensions -->
+    <!-- ChromeTextInputLayout -->
     <dimen name="text_input_layout_padding_start">3dp</dimen>
+
+    <!-- Dialogs -->
+    <dimen name="dialog_max_width">600dp</dimen>
+    <dimen name="dialog_header_margin">14dp</dimen>
+    <dimen name="promo_dialog_illustration_margin">24dp</dimen>
+    <dimen name="promo_dialog_illustration_width">150dp</dimen>
+    <dimen name="promo_dialog_padding">16dp</dimen>
+    <dimen name="promo_dialog_stacked_margin">16dp</dimen>
+    <dimen name="promo_dialog_max_content_width">320dp</dimen>
+    <dimen name="promo_dialog_min_scrollable_height">100dp</dimen>
+
+    <!-- RadioButtonWithDescription -->
+    <dimen name="radio_button_with_description_lateral_padding">16dp</dimen>
+    <dimen name="radio_button_with_description_vertical_padding">10dp</dimen>
+
+    <!-- RadioButton(WithDescription)Layout dimensions -->
+    <dimen name="default_vertical_margin_between_items">8dp</dimen>
 </resources>

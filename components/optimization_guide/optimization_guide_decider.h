@@ -38,6 +38,9 @@ struct OptimizationMetadata {
 
   // Only applicable for the PERFORMANCE_HINTS optimization type.
   proto::PerformanceHintsMetadata performance_hints_metadata;
+
+  // Only applicable for the COMPRESS_PUBLIC_IMAGES optimization type.
+  proto::PublicImageMetadata public_image_metadata;
 };
 
 class OptimizationGuideDecider {

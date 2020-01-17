@@ -2391,16 +2391,15 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   // Try to get cross-site passwords from the subframe's process and wait for it
   // to be killed.
-  std::vector<autofill::PasswordForm> password_forms;
-  password_forms.push_back(autofill::PasswordForm());
-  password_forms.back().origin = main_frame_url;
+  std::vector<autofill::FormData> forms_data(1, autofill::FormData());
+  forms_data.back().url = main_frame_url;
   ContentPasswordManagerDriverFactory* factory =
       ContentPasswordManagerDriverFactory::FromWebContents(WebContents());
   EXPECT_TRUE(factory);
   autofill::mojom::PasswordManagerDriver* driver =
       factory->GetDriverForFrame(iframe);
   EXPECT_TRUE(driver);
-  driver->PasswordFormsParsed(password_forms);
+  driver->PasswordFormsParsed(forms_data);
 
   iframe_killed.Wait();
 }

@@ -89,6 +89,7 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">Ro‘yxatdan o‘tish domeni:</translation>
 <translation id="1340482604681802745">Olib ketish manzili</translation>
+<translation id="1346748346194534595">O‘ngga</translation>
 <translation id="1348198688976932919">Ehtiyot bo‘ling! Saytda xavfli ilovalar bor!</translation>
 <translation id="1348779747280417563">Ismni tasdiqlang</translation>
 <translation id="1357195169723583938">Qurilma kim tomonidan qachon ishlatilgan</translation>
@@ -113,6 +114,7 @@
 <translation id="1455413310270022028">Oʻchirgʻich</translation>
 <translation id="1462245070427461050">JIS B9</translation>
 <translation id="1463543813647160932">5x7</translation>
+<translation id="1467432559032391204">Chapga</translation>
 <translation id="1472675084647422956">Yana</translation>
 <translation id="1473183651233018052">JIS B10</translation>
 <translation id="147358896496811705">2A0</translation>
@@ -257,6 +259,7 @@
 <translation id="2148613324460538318">Yangi karta qo‘shish</translation>
 <translation id="2154054054215849342">Domeningizda sinxronizatsiya xizmati o‘chirib qo‘yilgan</translation>
 <translation id="2154484045852737596">Karta ma’lumotlarini tahrirlash</translation>
+<translation id="2161656808144014275">Matn</translation>
 <translation id="2166049586286450108">Administratorning barcha ma’lumotlarga to‘liq ruxsati</translation>
 <translation id="2166378884831602661">Bu sayt bilan xavfsiz aloqa o‘rnatib bo‘lmaydi</translation>
 <translation id="2169984857010174799">Kaku2 (Envelope)</translation>
@@ -345,6 +348,7 @@
 <translation id="254947805923345898">Parametr qiymati yaroqsiz.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> yaroqsiz javob qaytardi.</translation>
 <translation id="2556876185419854533">&amp;Tahrirni bekor qilish</translation>
+<translation id="257674075312929031">Guruh</translation>
 <translation id="2586657967955657006">Klipbord</translation>
 <translation id="2587730715158995865">Manba: <ph name="ARTICLE_PUBLISHER" />. Bu va yana <ph name="OTHER_ARTICLE_COUNT" /> ta maqolani mutolaa qilishingiz mumkin.</translation>
 <translation id="2587841377698384444">Katalog API ID:</translation>
@@ -369,6 +373,7 @@
     uchun siyosat taqdim qilmadi. Manba siyosatlari sayt operatorlari
     tomonidan sayt xavfsizligi va boshqa parametrlarni sozlashda ishlatiladi.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Hech qanday}=1{1 ta parol (<ph name="DOMAIN_LIST" /> uchun)}=2{2 ta parol (<ph name="DOMAIN_LIST" /> uchun)}other{# ta parol (<ph name="DOMAIN_LIST" /> uchun)}}</translation>
+<translation id="2666092431469916601">Tepaga</translation>
 <translation id="2666117266261740852">Boshqa varaq va ilovalarni yoping</translation>
 <translation id="2674170444375937751">Ushbu sahifalar tarixdan butunlay o‘chirilsinmi?</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
@@ -452,6 +457,7 @@
 <translation id="3061707000357573562">Xizmatni tuzatish</translation>
 <translation id="3064966200440839136">Tashqi ilova orqali to‘lash uchun inkognito rejimidan chiqib ketasiz. Davom ettirilsinmi?</translation>
 <translation id="3086579638707268289">Internetdagi faoliyatingiz kuzatuv ostida</translation>
+<translation id="3087734570205094154">Pastga</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Olib ketish manzilini qo‘shing</translation>
 <translation id="3105172416063519923">Obyekt identifikatori:</translation>
@@ -494,6 +500,7 @@
 <translation id="3303855915957856445">Qidiruv hech qanday natija bermadi</translation>
 <translation id="3320021301628644560">To‘lov manzilini kiriting</translation>
 <translation id="3324983252691184275">Malina rang</translation>
+<translation id="3329013043687509092">To‘liqlik</translation>
 <translation id="3338095232262050444">Xavfsiz</translation>
 <translation id="3355823806454867987">Proksi-server sozlamalarini o‘zgartirish...</translation>
 <translation id="3360103848165129075">Toʻlovni qayta ishlash vositasi</translation>
@@ -529,6 +536,7 @@
 <translation id="3484560055331845446">Google hisobingiz xavf ostida. Parolingizni yangilashni tavsiya qilamiz. Hisobingizga qayta kirishingiz talab qilinadi.</translation>
 <translation id="3495081129428749620">“<ph name="PAGE_TITLE" />” sahifasidan qidirish</translation>
 <translation id="3512163584740124171">Bu parametr shu guruhdagi boshqa parametr ustunligi tufayli inkor etilgan.</translation>
+<translation id="3513704683820682405">Boyitilgan reallik</translation>
 <translation id="3528171143076753409">Server sertifikati ishonchli emas.</translation>
 <translation id="3528485271872257980">Toʻq jigarrang</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{sinxronlangan qurilmalarda kamida 1 element}=1{1 ta element (boshqalari esa sinxronlangan qurilmalarda)}other{# ta element (boshqalari sinxronlangan qurilmalarda)}}</translation>
@@ -574,6 +582,7 @@
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Yuklanmoqda…</translation>
 <translation id="3709599264800900598">Nusxalangan matn</translation>
+<translation id="3711895659073496551">To‘xtatib qo‘yish</translation>
 <translation id="3712624925041724820">Litsenziyalar yetarli emas</translation>
 <translation id="3714780639079136834">Mobil internet yoki Wi-Fi tarmoqlarini yoqish</translation>
 <translation id="3715597595485130451">Wi-Fi‘ga ulanish</translation>
@@ -767,6 +776,7 @@
 <translation id="4594403342090139922">&amp;O‘chirishni bekor qilish</translation>
 <translation id="4597348597567598915">Hajmi: 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="4628948037717959914">Rasm</translation>
 <translation id="4635654612248442824"><ph name="ORIGIN" /> sayti manba siyosati tekshiruvini talab qildi
     lekin bu tekshiruv barcha soʻrovlar uchun ishlatilganda bu siyosat uchun qoʻllanilmaydi.</translation>
 <translation id="464342062220857295">Funksiyalar qidiruvi</translation>
@@ -823,6 +833,7 @@
 <translation id="4926049483395192435">Qiymatini belgilang.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> saytidagi amalni tasdiqlang</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943703118917034429">Virtual reallik</translation>
 <translation id="4943872375798546930">Hech narsa topilmadi</translation>
 <translation id="4950898438188848926">Varaqlar orasida almashish tugmasi, shu varaqqa almashish uchun Enter tugmasini bosing, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Harakatlar</translation>
@@ -990,6 +1001,7 @@
 <translation id="5689199277474810259">JSON formatida eksport qilish</translation>
 <translation id="5689516760719285838">Joylashuv</translation>
 <translation id="569000877158168851">DnsOverHttpsTemplates qiymati mos emas va DnsOverHttpsMode qoidasi<ph name="SECURE_DNS_MODE_AUTOMATIC" /> yoki <ph name="SECURE_DNS_MODE_SECURE" /> qilib sozlanmaguncha ishlatilmaydi.</translation>
+<translation id="5701381305118179107">Markaz bo‘yicha tartiblash</translation>
 <translation id="570530837424789914">Boshqarish...</translation>
 <translation id="57094364128775171">Ishonchli parol yaratish…</translation>
 <translation id="5710435578057952990">Bu saytning identifikatsiya ma’lumotlari tekshirilmadi.</translation>
@@ -1022,7 +1034,6 @@
 <translation id="5855253129151731373">Sayt nomi mana bunga oʻxshash ekan: <ph name="LOOKALIKE_DOMAIN" />. Odatda shubhali kimsalar domen nomida kichik oʻzgarishlar kiritib, saytlarga soxta nusxalar yasaydi.
 
     Bu ogohlantirish xato chiqqan boʻlsa, https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals sahifasini oching.</translation>
-<translation id="5860033963881614850">O‘chiq</translation>
 <translation id="5863847714970149516">Bu sahifa sizdan pul talab qilishi mumkin</translation>
 <translation id="5866257070973731571">Telefon raqamini qo‘shing</translation>
 <translation id="5866898949289125849">Dasturchi vositalari sahifasidasiz</translation>
@@ -1034,13 +1045,11 @@
 <translation id="5901630391730855834">Sariq</translation>
 <translation id="5905445707201418379"><ph name="ORIGIN" /> manba siyosati asosida bloklandi.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sinxronlandi)</translation>
-<translation id="5916664084637901428">Yoniq</translation>
 <translation id="59174027418879706">Yoqilgan</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Ushbu karta Google hisobingizda saqlansinmi?</translation>
 <translation id="5922853866070715753">Deyarli tayyor</translation>
 <translation id="5932224571077948991">Saytda yoqimsiz yoki befoyda reklamalar chiqadi</translation>
-<translation id="5939847200023027600">PDF nashrlash xizmati</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> ochilmoqda…</translation>
 <translation id="5951495562196540101">Qurilmani iste’molchi hisobidan registratsiya qilib bo‘lmadi (to‘plamli litsenziyasi bor)</translation>
 <translation id="5967592137238574583">Aloqa ma’lumotini tahrirlang</translation>
@@ -1080,6 +1089,7 @@
 <translation id="6080696365213338172">Siz administrator bergan sertifikat bilan kontentga kirdingiz. <ph name="DOMAIN" /> domeniga uzatiladigan ma’lumotlarni administratoringiz tutishi mumkin.</translation>
 <translation id="6094273045989040137">Izohlash</translation>
 <translation id="6104072995492677441">JIS B6</translation>
+<translation id="6106989379647458772"><ph name="PAGE" /> veb-sahifasi vaqtincha ishlamayotgan yoki yangi veb-manzilga o‘tkazilgan bo‘lishi mumkin.</translation>
 <translation id="610911394827799129">Google hisobingiz orqali bajargan internetdagi faoliyatingizni <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> orqali ko‘rishingiz mumkin.</translation>
 <translation id="6120179357481664955">UPI identifikatori eslab qolinsinmi?</translation>
 <translation id="6132597952260690497">Oʻrnatilgan kengaytma va plaginlar axboroti</translation>
@@ -1118,6 +1128,7 @@
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6302269476990306341">Chrome ichidagi Google Assistent toʻxtatilmoqda</translation>
 <translation id="6305205051461490394"><ph name="URL" /> bilan aloqa o‘rnatib bo‘lmadi.</translation>
+<translation id="6312113039770857350">Veb-sahifa mavjud emas</translation>
 <translation id="6321917430147971392">DNS sozlamalarini tekshiring</translation>
 <translation id="6322182122604171028">Windows Hello ishlatib boʻlmadi</translation>
 <translation id="6328639280570009161">Tarmoqni oldindan aniqlash funksiyasidan foydalanib ko‘ring</translation>
@@ -1144,6 +1155,7 @@
 <translation id="6410264514553301377"><ph name="CREDIT_CARD" /> kartasining amal qilish muddati va CVC kodini kiriting</translation>
 <translation id="6415778972515849510">Chromium Google hisobingizni himoyalash va parolni almashtirish uchun yordam beradi.</translation>
 <translation id="6423385022588644828">Touch ID yordamida kartalaringizni tezda tasdiqlang</translation>
+<translation id="6425092077175753609">Material</translation>
 <translation id="6427730057873428458">Darvozasimon taxlash</translation>
 <translation id="6433490469411711332">Aloqa ma’lumotini tahrirlash</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> serveri ulanish so‘rovini rad etdi.</translation>
@@ -1411,6 +1423,7 @@ Batafsil axborot:
 <translation id="7716147886133743102">Administrator bloklagan</translation>
 <translation id="7716424297397655342">Bu saytni keshdan yuklab bo‘lmadi</translation>
 <translation id="7723047071702270851">Kartani tahrirlang</translation>
+<translation id="7740996059027112821">Standart</translation>
 <translation id="774634243536837715">Xavfli kontent bloklandi</translation>
 <translation id="7752995774971033316">Boshqarilmaydi</translation>
 <translation id="7757555340166475417">Dai-Pa-Kai</translation>
@@ -1516,6 +1529,7 @@ Batafsil axborot:
 <translation id="8241707690549784388">Siz qidirayotgan sahifada o‘zingiz kiritgan ma’lumotlardan foydalanilgan. Unga qaytib borsangiz, u yerda bajargan amallaringiz takrorlanishi mumkin. Davom etasizmi?</translation>
 <translation id="8241712895048303527">Bu saytda bloklansin</translation>
 <translation id="8242426110754782860">Davom etish</translation>
+<translation id="8249296373107784235">Bekor qilish</translation>
 <translation id="8249320324621329438">Oxirgi yuklanish vaqti:</translation>
 <translation id="8253091569723639551">To‘lov manzilini kiriting</translation>
 <translation id="825929999321470778">Saqlangan barcha parollar ko‘rsatilsin</translation>
@@ -1585,6 +1599,7 @@ Batafsil axborot:
 <translation id="8647750283161643317">Barchasini standart holatga qaytarish</translation>
 <translation id="8663226718884576429">Buyurtma axboroti, <ph name="TOTAL_LABEL" />, Batafsil</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, javob, <ph name="ANSWER" /></translation>
+<translation id="8681531050781943054"><ph name="PAGE" /> veb-sahifasi quyidagi sabablarga ko‘ra yuklanmadi:</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Bo‘sh</translation>
 <translation id="869891660844655955">Tugash muddati</translation>
@@ -1635,6 +1650,7 @@ Batafsil axborot:
 <translation id="8943282376843390568">Laym</translation>
 <translation id="8957210676456822347">Tegishli portalga kirish</translation>
 <translation id="8962950042226115166">Shubhali sayt</translation>
+<translation id="8963213021028234748"><ph name="MARKUP_1" />Takliflar:<ph name="MARKUP_2" />Internetga ulanishni tekshirib ko‘ring<ph name="MARKUP_3" />Keyinroq veb-sahifani yangilang<ph name="MARKUP_4" />Kiritlgan manzilni tekshirib ko‘ring<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">Karta eslab qolinsin</translation>
 <translation id="8971063699422889582">Server sertifikati eskirdi.</translation>
 <translation id="8975012916872825179">Telefon raqamlari, epochta va eltib berish manzillari kabi ma’lumotlarni eslab qoladi</translation>
@@ -1711,6 +1727,7 @@ Batafsil axborot:
 <translation id="985199708454569384">&lt;p&gt;Kompyuter yoki mobil qurilmangizning soati xato bo‘lsa, bu xabar sizga bildiriladi.&lt;/p&gt;
     &lt;p&gt;Buni hal qilish uchun qurilmangiz soatidan vaqt va sanani tuzating.&lt;/p&gt;</translation>
 <translation id="985956168329721395">Prc-32K</translation>
+<translation id="987264212798334818">Umumiy</translation>
 <translation id="988159990683914416">Dasturchilar yig‘masi</translation>
 <translation id="989988560359834682">Manzilni o‘zgartirish</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

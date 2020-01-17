@@ -351,6 +351,11 @@ public class ManualFillingTestHelper {
                 "94102", "", "US", "(415) 999-0000", "marc@acme-mail.inc", "en"));
     }
 
+    public static void disableServerPredictions() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ManualFillingComponentBridge.disableServerPredictionsForTesting(); });
+    }
+
     // --------------------------------------------------
     // Generic helpers to match, check or wait for views.
     // TODO(fhorschig): Consider Moving to ViewUtils.

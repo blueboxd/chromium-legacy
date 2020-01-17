@@ -96,20 +96,33 @@ void AXLanguageInfoStats::GenerateTopResults() {
   top_results_valid_ = true;
 }
 
-AXLanguageDetectionManager::AXLanguageDetectionManager()
+AXLanguageDetectionManager::AXLanguageDetectionManager(AXTree* tree)
     : short_text_language_identifier_(kShortTextIdentifierMinByteLength,
-                                      kShortTextIdentifierMaxByteLength) {}
+                                      kShortTextIdentifierMaxByteLength),
+      tree_(tree) {}
+
 AXLanguageDetectionManager::~AXLanguageDetectionManager() = default;
 
-// Detect languages for a subtree rooted at the given subtree_root.
-void AXLanguageDetectionManager::DetectLanguages(AXNode* subtree_root) {
+void AXLanguageDetectionManager::RegisterLanguageDetectionObserver() {
+  // If the dynamic feature flag is not enabled then do nothing.
+  if (!::switches::
+          IsExperimentalAccessibilityLanguageDetectionDynamicEnabled()) {
+    return;
+  }
+
+  // Construct our new Observer as requested.
+  // If there is already an Observer on this Manager then this will destroy it.
+  language_detection_observer_.reset(new AXLanguageDetectionObserver(tree_));
+}
+
+// Detect languages for each node.
+void AXLanguageDetectionManager::DetectLanguages() {
   TRACE_EVENT0("accessibility", "AXLanguageInfo::DetectLanguages");
-  DCHECK(subtree_root);
   if (!::switches::IsExperimentalAccessibilityLanguageDetectionEnabled()) {
     return;
   }
 
-  DetectLanguagesForSubtree(subtree_root);
+  DetectLanguagesForSubtree(tree_->root());
 }
 
 // Detect languages for a subtree rooted at the given subtree_root.
@@ -165,29 +178,32 @@ void AXLanguageDetectionManager::DetectLanguagesForNode(AXNode* node) {
   if (reliable_results.size()) {
     AXLanguageInfo* lang_info = node->GetLanguageInfo();
     if (lang_info) {
+      // Clear previously detected and labelled languages.
       lang_info->detected_languages.clear();
+      lang_info->language.clear();
     } else {
       node->SetLanguageInfo(std::make_unique<AXLanguageInfo>());
       lang_info = node->GetLanguageInfo();
     }
 
+    // Keep these results.
     lang_info->detected_languages = std::move(reliable_results);
+
+    // Update statistics to take these results into account.
     lang_info_stats_.Add(lang_info->detected_languages);
   }
 }
 
-// Label languages for each node in the subtree rooted at the given
-// subtree_root. This relies on DetectLanguages having already been run.
-void AXLanguageDetectionManager::LabelLanguages(AXNode* subtree_root) {
+// Label languages for each node. This relies on DetectLanguages having already
+// been run.
+void AXLanguageDetectionManager::LabelLanguages() {
   TRACE_EVENT0("accessibility", "AXLanguageInfo::LabelLanguages");
-
-  DCHECK(subtree_root);
 
   if (!::switches::IsExperimentalAccessibilityLanguageDetectionEnabled()) {
     return;
   }
 
-  LabelLanguagesForSubtree(subtree_root);
+  LabelLanguagesForSubtree(tree_->root());
 }
 
 // Label languages for each node in the subtree rooted at the given
@@ -293,6 +309,65 @@ AXLanguageDetectionManager::GetLanguageAnnotationForStringAttribute(
     }
   }
   return language_annotation;
+}
+
+AXLanguageDetectionObserver::AXLanguageDetectionObserver(AXTree* tree)
+    : tree_(tree) {
+  // We expect the feature flag to have be checked before this Observer is
+  // constructed, this should have been checked by
+  // RegisterLanguageDetectionObserver.
+  DCHECK(
+      ::switches::IsExperimentalAccessibilityLanguageDetectionDynamicEnabled());
+
+  tree_->AddObserver(this);
+}
+
+AXLanguageDetectionObserver::~AXLanguageDetectionObserver() {
+  tree_->RemoveObserver(this);
+}
+
+void AXLanguageDetectionObserver::OnAtomicUpdateFinished(
+    ui::AXTree* tree,
+    bool root_changed,
+    const std::vector<Change>& changes) {
+  // TODO(chrishall): We likely want to re-consider updating or resetting
+  // AXLanguageInfoStats over time to better support detection on long running
+  // pages.
+
+  // TODO(chrishall): To support pruning deleted node data from stats we should
+  // consider implementing OnNodeWillBeDeleted. Other options available include:
+  // 1) move lang info from AXNode into a map on AXTree so that we can fetch
+  //    based on id in here
+  // 2) AXLanguageInfo destructor could remove itself
+
+  // TODO(chrishall): Possible optimisation: only run detect/label for certain
+  // change.type(s)), at least NODE_CREATED, NODE_CHANGED, and SUBTREE_CREATED.
+
+  DCHECK(tree->language_detection_manager);
+
+  // Perform Detect and Label for each node changed or created.
+  // We currently only consider kStaticText for detection.
+  //
+  // Note that language inheritance is now handled by AXNode::GetLanguage.
+  //
+  // Note that since Label no longer handles language inheritance, we only need
+  // to call Label and Detect on the nodes that changed and don't need to
+  // recurse.
+  //
+  // We do this in two passes because Detect updates page level statistics which
+  // are later used by Label in order to make more accurate decisions.
+
+  for (auto& change : changes) {
+    if (change.node->data().role == ax::mojom::Role::kStaticText) {
+      tree->language_detection_manager->DetectLanguagesForNode(change.node);
+    }
+  }
+
+  for (auto& change : changes) {
+    if (change.node->data().role == ax::mojom::Role::kStaticText) {
+      tree->language_detection_manager->LabelLanguagesForNode(change.node);
+    }
+  }
 }
 
 }  // namespace ui

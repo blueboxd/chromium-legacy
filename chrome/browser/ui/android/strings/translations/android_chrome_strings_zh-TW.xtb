@@ -39,7 +39,6 @@
 <translation id="124678866338384709">關閉目前的分頁</translation>
 <translation id="1258753120186372309">Google Doodle：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">搜尋及探索</translation>
-<translation id="1264974993859112054">運動資訊</translation>
 <translation id="1266864766717917324">無法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1283039547216852943">輕觸即可展開</translation>
@@ -242,7 +241,6 @@
 <translation id="2818669890320396765">如要將書籤同步到所有裝置，請登入並開啟同步處理功能</translation>
 <translation id="2822354292072154809">確定要重設「<ph name="CHOSEN_OBJECT_NAME" />」的所有網站權限嗎？</translation>
 <translation id="2842985007712546952">上層資料夾</translation>
-<translation id="2858138569776157458">熱門網站</translation>
 <translation id="2860954141821109167">請確認此裝置已啟用手機應用程式</translation>
 <translation id="2870560284913253234">網站</translation>
 <translation id="2874939134665556319">上一首曲目</translation>
@@ -303,6 +301,7 @@
 <translation id="3282568296779691940">登入 Chrome</translation>
 <translation id="3288003805934695103">重新載入網頁</translation>
 <translation id="32895400574683172">允許顯示通知</translation>
+<translation id="3290926146403723641">為了透過 Google 助理在網路上完成工作，Chrome 會將網站的網址、內容以及相關個人資訊傳送給 Google</translation>
 <translation id="3295530008794733555">瀏覽速度更快，數據用量更少。</translation>
 <translation id="3298243779924642547">精簡版本</translation>
 <translation id="3303414029551471755">繼續下載這項內容？</translation>
@@ -366,7 +365,6 @@
 <translation id="381841723434055211">電話號碼</translation>
 <translation id="3819178904835489326">已刪除 <ph name="NUMBER_OF_DOWNLOADS" /> 個下載項目</translation>
 <translation id="3822502789641063741">要清除網站儲存的資料嗎？</translation>
-<translation id="3853625385350850937">如要繼續，請開啟裝置的 NFC 功能</translation>
 <translation id="3859306556332390985">快轉到特定的播放時間點</translation>
 <translation id="388596076286380598">即使處於離線狀態或網路訊號不良，你也可以查看喜愛網站上的文章、影片和其他內容。</translation>
 <translation id="3894427358181296146">新增資料夾</translation>
@@ -764,7 +762,6 @@
 <translation id="6697947395630195233">Chrome 需要位置資訊存取權，才能與這個網站分享你的位置資訊。</translation>
 <translation id="6698801883190606802">管理同步資料</translation>
 <translation id="6699370405921460408">Google 伺服器會針對你造訪的網頁進行最佳化處理。</translation>
-<translation id="6709133671862442373">新聞內容</translation>
 <translation id="6710213216561001401">返回</translation>
 <translation id="671481426037969117">「<ph name="FQDN" />」計時器已結束計時，將於明天重新開始。</translation>
 <translation id="6738867403308150051">下載中…</translation>
@@ -1079,7 +1076,6 @@
 <translation id="9133397713400217035">離線探索</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">顯示原文</translation>
-<translation id="9139318394846604261">購物</translation>
 <translation id="9155898266292537608">快速輕觸字詞也可以展開搜尋</translation>
 <translation id="9169507124922466868">已在畫面下半部顯示瀏覽記錄</translation>
 <translation id="9204836675896933765">還剩 1 個檔案</translation>

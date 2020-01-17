@@ -71,9 +71,7 @@ static_library("test_support") {
     "../../test/webview_test_helper.h",
   ]
 
-  public_deps = [
-    ":webview",
-  ]
+  public_deps = [ ":webview" ]
   deps = [
     "//base",
     "//content",

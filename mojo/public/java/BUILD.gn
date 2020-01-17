@@ -22,9 +22,7 @@ android_library("system_java") {
     "system/src/org/chromium/mojo/system/Watcher.java",
   ]
 
-  deps = [
-    "//base:base_java",
-  ]
+  deps = [ "//base:base_java" ]
 }
 
 android_library("bindings_java") {
@@ -69,9 +67,7 @@ android_library("bindings_java") {
 }
 
 android_library("base_java") {
-  sources = [
-    "base/src/org/chromium/mojo_base/BigBufferUtil.java",
-  ]
+  sources = [ "base/src/org/chromium/mojo_base/BigBufferUtil.java" ]
 
   deps = [
     ":system_java",

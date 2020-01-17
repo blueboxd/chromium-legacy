@@ -34,6 +34,7 @@ enum class ProcessType {
   NACL_BROKER_PROCESS,
   NACL_LOADER_PROCESS,
 #endif
+  CRASHPAD_HANDLER_PROCESS,
 };
 
 // Caches the |ProcessType| of the current process.
@@ -319,6 +320,8 @@ ProcessType GetProcessType(const std::wstring& process_type) {
   if (process_type == kNaClLoaderProcess)
     return ProcessType::NACL_LOADER_PROCESS;
 #endif
+  if (process_type == kCrashpadHandler)
+    return ProcessType::CRASHPAD_HANDLER_PROCESS;
   return ProcessType::OTHER_PROCESS;
 }
 
@@ -336,6 +339,8 @@ bool ProcessNeedsProfileDir(ProcessType process_type) {
 #endif
       return true;
     case ProcessType::OTHER_PROCESS:
+      return false;
+    case ProcessType::CRASHPAD_HANDLER_PROCESS:
       return false;
     case ProcessType::UNINITIALIZED:
       assert(false);
@@ -575,6 +580,11 @@ bool IsProcessTypeInitialized() {
 bool IsNonBrowserProcess() {
   assert(g_process_type != ProcessType::UNINITIALIZED);
   return g_process_type != ProcessType::BROWSER_PROCESS;
+}
+
+bool IsCrashpadHandlerProcess() {
+  assert(g_process_type != ProcessType::UNINITIALIZED);
+  return g_process_type == ProcessType::CRASHPAD_HANDLER_PROCESS;
 }
 
 bool ProcessNeedsProfileDir(const std::string& process_type) {

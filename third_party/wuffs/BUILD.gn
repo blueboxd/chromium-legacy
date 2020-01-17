@@ -73,9 +73,7 @@ static_library("wuffs") {
   # comment at the top of this file.
   visibility = [ "//skia" ]
 
-  sources = [
-    "src/release/c/wuffs-v0.2.c",
-  ]
+  sources = [ "src/release/c/wuffs-v0.2.c" ]
 }
 # Do not add build targets, or change their configuration or visibility,
 # without considering the "consult ENG_REVIEW_OWNERS" comment at the top of

@@ -61,6 +61,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -412,6 +413,16 @@ void BlinkTestRunner::SetLocale(const std::string& locale) {
   setlocale(LC_NUMERIC, "C");
 }
 
+base::FilePath BlinkTestRunner::GetWritableDirectory() {
+  base::FilePath result;
+  Send(new WebTestHostMsg_GetWritableDirectory(routing_id(), &result));
+  return result;
+}
+
+void BlinkTestRunner::SetFilePathForMockFileDialog(const base::FilePath& path) {
+  Send(new WebTestHostMsg_SetFilePathForMockFileDialog(routing_id(), path));
+}
+
 void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
     const base::DictionaryValue& changed_values) {
   // Ignore changes that happen before we got the initial, accumulated
@@ -618,20 +629,9 @@ void BlinkTestRunner::SetPermission(const std::string& name,
                                     const std::string& value,
                                     const GURL& origin,
                                     const GURL& embedding_origin) {
-  blink::mojom::PermissionStatus status;
-  if (value == "granted") {
-    status = blink::mojom::PermissionStatus::GRANTED;
-  } else if (value == "prompt") {
-    status = blink::mojom::PermissionStatus::ASK;
-  } else if (value == "denied") {
-    status = blink::mojom::PermissionStatus::DENIED;
-  } else {
-    NOTREACHED();
-    status = blink::mojom::PermissionStatus::DENIED;
-  }
-
-  Send(new WebTestHostMsg_SetPermission(routing_id(), name, status, origin,
-                                        embedding_origin));
+  Send(new WebTestHostMsg_SetPermission(routing_id(), name,
+                                        blink::ToPermissionStatus(value),
+                                        origin, embedding_origin));
 }
 
 void BlinkTestRunner::ResetPermissions() {
@@ -681,21 +681,6 @@ void BlinkTestRunner::ForceTextInputStateUpdate(WebLocalFrame* frame) {
 
 void BlinkTestRunner::DidClearWindowObject(WebLocalFrame* frame) {
   WebTestingSupport::InjectInternalsObject(frame);
-}
-
-bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(BlinkTestRunner, message)
-    IPC_MESSAGE_HANDLER(BlinkTestMsg_Reset, OnReset)
-    IPC_MESSAGE_HANDLER(BlinkTestMsg_TestFinishedInSecondaryRenderer,
-                        OnTestFinishedInSecondaryRenderer)
-    IPC_MESSAGE_HANDLER(BlinkTestMsg_ReplyBluetoothManualChooserEvents,
-                        OnReplyBluetoothManualChooserEvents)
-    IPC_MESSAGE_HANDLER(BlinkTestMsg_LayoutDumpCompleted, OnLayoutDumpCompleted)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
 }
 
 // Public methods - -----------------------------------------------------------

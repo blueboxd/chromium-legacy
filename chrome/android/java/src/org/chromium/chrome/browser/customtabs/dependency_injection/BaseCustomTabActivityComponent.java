@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitializer;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
@@ -33,4 +34,5 @@ public interface BaseCustomTabActivityComponent extends ChromeActivityComponent 
     CustomTabToolbarCoordinator resolveToolbarCoordinator();
     SplashController resolveSplashController();
     TabObserverRegistrar resolveTabObserverRegistrar();
+    TwaFinishHandler resolveTwaFinishHandler();
 }

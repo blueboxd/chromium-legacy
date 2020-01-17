@@ -32,8 +32,16 @@ message BookmarkSpecifics {
   optional int64 creation_time_us = 4;
   optional string icon_url = 5;
   repeated MetaInfo meta_info = 6;
-  // Introduced in M78. If not present, originator_client_item_id is interpreted
-  // as GUID as long as it is of the valid format. Otherwise, field is either
-  // ignored or overwritten locally.
-  optional string guid = 7;
+  reserved 7;
+  // Introduced in M81, it represents a globally unique and immutable ID.
+  //
+  // If present, it must be the same as originator_client_item_id, unless
+  // originator client item ID is not a valid GUID. In such cases (which is the
+  // case for bookmarks created before 2015), this GUID must match the value
+  // inferred from the combination of originator cache GUID and
+  // originator client item ID, see InferGuidForLegacyBookmark().
+  //
+  // If not present, the value can be safely inferred using the very same
+  // methods listed above.
+  optional string guid = 8;
 }

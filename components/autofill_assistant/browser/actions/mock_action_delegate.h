@@ -193,6 +193,12 @@ class MockActionDelegate : public ActionDelegate {
                void(const Selector& selector,
                     base::OnceCallback<void(const ClientStatus&,
                                             const std::string&)> callback));
+
+  MOCK_METHOD2(GetElementTag,
+               void(const Selector& selector,
+                    base::OnceCallback<void(const ClientStatus&,
+                                            const std::string&)> callback));
+
   MOCK_METHOD0(ExpectNavigation, void());
   MOCK_METHOD0(ExpectedNavigationHasStarted, bool());
   MOCK_METHOD1(WaitForNavigation,

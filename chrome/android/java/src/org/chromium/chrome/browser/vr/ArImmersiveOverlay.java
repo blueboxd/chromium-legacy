@@ -62,6 +62,7 @@ public class ArImmersiveOverlay
 
     private interface SurfaceUiWrapper {
         public void onSurfaceVisible();
+        public void forwardMotionEvent(MotionEvent ev);
         public void destroy();
     }
 
@@ -102,6 +103,9 @@ public class ArImmersiveOverlay
         }
 
         @Override // SurfaceUiWrapper
+        public void forwardMotionEvent(MotionEvent ev) {}
+
+        @Override // SurfaceUiWrapper
         public void destroy() {
             if (mNotificationToast != null) {
                 mNotificationToast.cancel();
@@ -128,6 +132,10 @@ public class ArImmersiveOverlay
             mSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
             mSurfaceView.getHolder().addCallback(ArImmersiveOverlay.this);
             mSurfaceView.setKeepScreenOn(true);
+
+            // Process touch input events for XR input. This consumes them, they'll be resent to
+            // the compositor view via forwardMotionEvent.
+            mSurfaceView.setOnTouchListener(ArImmersiveOverlay.this);
 
             View content = mActivity.getWindow().findViewById(android.R.id.content);
             ViewGroup group = (ViewGroup) content.getParent();
@@ -156,6 +164,12 @@ public class ArImmersiveOverlay
         public void onSurfaceVisible() {}
 
         @Override // SurfaceUiWrapper
+        public void forwardMotionEvent(MotionEvent ev) {
+            View contentView = mActivity.getCompositorViewHolder();
+            contentView.dispatchTouchEvent(ev);
+        }
+
+        @Override // SurfaceUiWrapper
         public void destroy() {
             mActivity.getFullscreenManager().removeListener(mFullscreenListener);
             View content = mActivity.getWindow().findViewById(android.R.id.content);
@@ -171,11 +185,18 @@ public class ArImmersiveOverlay
         // Only forward primary actions, ignore more complex events such as secondary pointer
         // touches. Ignore batching since we're only sending one ray pose per frame.
         if (ev.getAction() == MotionEvent.ACTION_DOWN || ev.getAction() == MotionEvent.ACTION_MOVE
-                || ev.getAction() == MotionEvent.ACTION_UP) {
-            boolean touching = ev.getAction() != MotionEvent.ACTION_UP;
+                || ev.getAction() == MotionEvent.ACTION_UP
+                || ev.getAction() == MotionEvent.ACTION_CANCEL) {
+            boolean touching = ev.getAction() != MotionEvent.ACTION_UP
+                    && ev.getAction() != MotionEvent.ACTION_CANCEL;
             if (DEBUG_LOGS) Log.i(TAG, "onTouch touching=" + touching);
             mArCoreJavaUtils.onDrawingSurfaceTouch(touching, ev.getX(0), ev.getY(0));
         }
+
+        // We need to consume the touch (returning true) to ensure that we get
+        // followup events such as MOVE and UP. DOM Overlay mode needs to forward
+        // the touch to the content view so that its UI elements keep working.
+        mSurfaceUi.forwardMotionEvent(ev);
         return true;
     }
 
@@ -292,7 +313,7 @@ public class ArImmersiveOverlay
         // The JS app may have put an element into fullscreen mode during the immersive session,
         // even if this wasn't visible to the user. Ensure that we fully exit out of any active
         // fullscreen state on session end to avoid being left in a confusing state.
-        if (mActivity.getActivityTab() != null) {
+        if (mActivity.getActivityTab() != null && !mActivity.isActivityFinishingOrDestroyed()) {
             mActivity.getFullscreenManager().onExitFullscreen(mActivity.getActivityTab());
         }
 

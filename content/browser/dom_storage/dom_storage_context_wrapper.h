@@ -140,9 +140,9 @@ class CONTENT_EXPORT DOMStorageContextWrapper
 
   void OnStartupUsageRetrieved(
       std::vector<storage::mojom::LocalStorageUsageInfoPtr> usage);
-  void EnsureLocalStorageOriginIsTracked(const GURL& origin);
+  void EnsureLocalStorageOriginIsTracked(const url::Origin& origin);
   void OnStoragePolicyChanged();
-  bool ShouldPurgeLocalStorageOnShutdown(const GURL& origin);
+  bool ShouldPurgeLocalStorageOnShutdown(const url::Origin& origin);
 
   // Keep all mojo-ish details together and not bleed them through the public
   // interface. The |mojo_session_state_| object is owned by this object, but
@@ -193,7 +193,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
     bool will_purge_on_shutdown = false;
   };
   // NOTE: The GURL key is specifically an origin GURL.
-  std::map<GURL, LocalStorageOriginState> local_storage_origins_;
+  std::map<url::Origin, LocalStorageOriginState> local_storage_origins_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContextWrapper);
 };

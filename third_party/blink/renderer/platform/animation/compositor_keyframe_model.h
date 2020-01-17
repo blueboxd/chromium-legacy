@@ -63,7 +63,7 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
   void SetStartTime(base::TimeTicks);
 
   double TimeOffset() const;
-  void SetTimeOffset(double monotonic_time);
+  void SetTimeOffset(base::TimeDelta monotonic_time);
 
   Direction GetDirection() const;
   void SetDirection(Direction);

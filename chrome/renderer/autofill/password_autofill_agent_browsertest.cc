@@ -638,23 +638,21 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
           expected_properties_masks,
       autofill::mojom::SubmissionIndicatorEvent expected_submission_event) {
     base::RunLoop().RunUntilIdle();
-    autofill::PasswordForm form;
+    autofill::FormData form_data;
     if (expected_type == PasswordFormSubmitted) {
       ASSERT_TRUE(fake_driver_.called_password_form_submitted());
-      ASSERT_TRUE(static_cast<bool>(fake_driver_.password_form_submitted()));
-      form = *(fake_driver_.password_form_submitted());
+      ASSERT_TRUE(static_cast<bool>(fake_driver_.form_data_submitted()));
+      form_data = *(fake_driver_.form_data_submitted());
     } else {
       ASSERT_EQ(PasswordFormSameDocumentNavigation, expected_type);
       ASSERT_TRUE(fake_driver_.called_same_document_navigation());
-      ASSERT_TRUE(
-          static_cast<bool>(fake_driver_.password_form_maybe_submitted()));
-      form = *(fake_driver_.password_form_maybe_submitted());
-      EXPECT_EQ(expected_submission_event, form.submission_event);
-      EXPECT_EQ(expected_submission_event, form.form_data.submission_event);
+      ASSERT_TRUE(static_cast<bool>(fake_driver_.form_data_maybe_submitted()));
+      form_data = *(fake_driver_.form_data_maybe_submitted());
+      EXPECT_EQ(expected_submission_event, form_data.submission_event);
     }
 
     size_t unchecked_masks = expected_properties_masks.size();
-    for (const FormFieldData& field : form.form_data.fields) {
+    for (const FormFieldData& field : form_data.fields) {
       const auto& it = expected_properties_masks.find(field.name);
       if (it == expected_properties_masks.end())
         continue;
@@ -675,18 +673,18 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     return web_form.UniqueRendererFormId();
   }
 
-  void ExpectFormWithUsernameAndPasswordsAndEvent(
-      const autofill::PasswordForm& form,
-      uint32_t form_rendere_id,
+  void ExpectFormDataWithUsernameAndPasswordsAndEvent(
+      const autofill::FormData& form_data,
+      uint32_t form_renderer_id,
       const std::string& username_value,
       const std::string& password_value,
       const std::string& new_password_value,
       SubmissionIndicatorEvent event) {
-    EXPECT_EQ(form_rendere_id, form.form_data.unique_renderer_id);
-    EXPECT_TRUE(FormHasFieldWithValue(form.form_data, username_value));
-    EXPECT_TRUE(FormHasFieldWithValue(form.form_data, password_value));
-    EXPECT_TRUE(FormHasFieldWithValue(form.form_data, new_password_value));
-    EXPECT_EQ(form.form_data.submission_event, event);
+    EXPECT_EQ(form_renderer_id, form_data.unique_renderer_id);
+    EXPECT_TRUE(FormHasFieldWithValue(form_data, username_value));
+    EXPECT_TRUE(FormHasFieldWithValue(form_data, password_value));
+    EXPECT_TRUE(FormHasFieldWithValue(form_data, new_password_value));
+    EXPECT_EQ(form_data.submission_event, event);
   }
 
   void ExpectFormSubmittedWithUsernameAndPasswords(
@@ -696,10 +694,10 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
       const std::string& new_password_value) {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(fake_driver_.called_password_form_submitted());
-    ASSERT_TRUE(static_cast<bool>(fake_driver_.password_form_submitted()));
-    ExpectFormWithUsernameAndPasswordsAndEvent(
-        *(fake_driver_.password_form_submitted()), form_rendere_id,
-        username_value, password_value, new_password_value,
+    ASSERT_TRUE(static_cast<bool>(fake_driver_.form_data_submitted()));
+    ExpectFormDataWithUsernameAndPasswordsAndEvent(
+        *(fake_driver_.form_data_submitted()), form_rendere_id, username_value,
+        password_value, new_password_value,
         SubmissionIndicatorEvent::HTML_FORM_SUBMISSION);
   }
 
@@ -711,10 +709,9 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
       SubmissionIndicatorEvent event) {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(fake_driver_.called_same_document_navigation());
-    ASSERT_TRUE(
-        static_cast<bool>(fake_driver_.password_form_maybe_submitted()));
-    ExpectFormWithUsernameAndPasswordsAndEvent(
-        *(fake_driver_.password_form_maybe_submitted()), form_rendere_id,
+    ASSERT_TRUE(static_cast<bool>(fake_driver_.form_data_maybe_submitted()));
+    ExpectFormDataWithUsernameAndPasswordsAndEvent(
+        *(fake_driver_.form_data_maybe_submitted()), form_rendere_id,
         username_value, password_value, new_password_value, event);
   }
 
@@ -1136,11 +1133,11 @@ TEST_F(PasswordAutofillAgentTest,
   LoadHTML(kVisibleFormWithNoUsernameHTML);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
-  ASSERT_TRUE(fake_driver_.password_forms_parsed());
-  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_parsed());
+  EXPECT_FALSE(fake_driver_.form_data_parsed()->empty());
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(fake_driver_.password_forms_rendered());
-  EXPECT_FALSE(fake_driver_.password_forms_rendered()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_rendered());
+  EXPECT_FALSE(fake_driver_.form_data_rendered()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_EmptyForm) {
@@ -1150,8 +1147,8 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_EmptyForm) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(fake_driver_.called_password_forms_parsed());
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(fake_driver_.password_forms_rendered());
-  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_rendered());
+  EXPECT_TRUE(fake_driver_.form_data_rendered()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_FormWithoutPasswords) {
@@ -1163,8 +1160,8 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_FormWithoutPasswords) {
   EXPECT_FALSE(fake_driver_.called_password_forms_parsed());
 
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(fake_driver_.password_forms_rendered());
-  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_rendered());
+  EXPECT_TRUE(fake_driver_.form_data_rendered()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest,
@@ -1183,12 +1180,12 @@ TEST_F(PasswordAutofillAgentTest,
   EXPECT_TRUE(SimulateElementClick("random_field"));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
-  ASSERT_TRUE(fake_driver_.password_forms_parsed());
-  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_parsed());
+  EXPECT_FALSE(fake_driver_.form_data_parsed()->empty());
 
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(fake_driver_.password_forms_rendered());
-  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_rendered());
+  EXPECT_TRUE(fake_driver_.form_data_rendered()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_NonDisplayedForm) {
@@ -1196,11 +1193,11 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_NonDisplayedForm) {
   LoadHTML(kNonDisplayedFormHTML);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
-  ASSERT_TRUE(fake_driver_.password_forms_parsed());
-  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_parsed());
+  EXPECT_FALSE(fake_driver_.form_data_parsed()->empty());
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(fake_driver_.password_forms_rendered());
-  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_rendered());
+  EXPECT_TRUE(fake_driver_.form_data_rendered()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_NonVisibleForm) {
@@ -1208,11 +1205,11 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_NonVisibleForm) {
   LoadHTML(kNonVisibleFormHTML);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
-  ASSERT_TRUE(fake_driver_.password_forms_parsed());
-  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_parsed());
+  EXPECT_FALSE(fake_driver_.form_data_parsed()->empty());
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(fake_driver_.password_forms_rendered());
-  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_rendered());
+  EXPECT_TRUE(fake_driver_.form_data_rendered()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_PasswordChangeForm) {
@@ -1220,11 +1217,11 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_PasswordChangeForm) {
   LoadHTML(kPasswordChangeFormHTML);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
-  ASSERT_TRUE(fake_driver_.password_forms_parsed());
-  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_parsed());
+  EXPECT_FALSE(fake_driver_.form_data_parsed()->empty());
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(fake_driver_.password_forms_rendered());
-  EXPECT_FALSE(fake_driver_.password_forms_rendered()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_rendered());
+  EXPECT_FALSE(fake_driver_.form_data_rendered()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest,
@@ -1235,11 +1232,11 @@ TEST_F(PasswordAutofillAgentTest,
   LoadHTML(kCreditCardFormHTML);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
-  ASSERT_TRUE(fake_driver_.password_forms_parsed());
-  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_parsed());
+  EXPECT_FALSE(fake_driver_.form_data_parsed()->empty());
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
-  ASSERT_TRUE(fake_driver_.password_forms_rendered());
-  EXPECT_FALSE(fake_driver_.password_forms_rendered()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_rendered());
+  EXPECT_FALSE(fake_driver_.form_data_rendered()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_ReloadTab) {
@@ -1256,8 +1253,8 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_ReloadTab) {
   url_string.append(kNonVisibleFormHTML);
   Reload(GURL(url_string));
   EXPECT_TRUE(fake_driver_.called_password_forms_parsed());
-  ASSERT_TRUE(fake_driver_.password_forms_parsed());
-  EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
+  ASSERT_TRUE(fake_driver_.form_data_parsed());
+  EXPECT_FALSE(fake_driver_.form_data_parsed()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_Redirection) {
@@ -2046,15 +2043,7 @@ TEST_F(PasswordAutofillAgentTest,
   // username and password and sent that to the browser.
   ExpectFormSubmittedWithUsernameAndPasswords(GetFormUniqueRendererId("form"),
                                               "username", "", "random");
-
-  // Also check that |*_element| fields are correct.
-  const autofill::PasswordForm& form =
-      *(fake_driver_.password_form_submitted());
-  EXPECT_EQ(ASCIIToUTF16("random_info"), form.username_element);
-  EXPECT_TRUE(form.password_element.empty());
-  EXPECT_EQ(ASCIIToUTF16("new_password"), form.new_password_element);
-  EXPECT_EQ(ASCIIToUTF16("confirm_password"),
-            form.confirmation_password_element);
+  fake_driver_.form_data_submitted();
 }
 
 // Similar to RememberLastNonEmptyPasswordOnSubmit_ScriptCleared, but this time
@@ -3447,7 +3436,7 @@ TEST_F(PasswordAutofillAgentTest, NoForm_MultipleAJAXEventsWithoutSubmission) {
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(fake_driver_.called_password_form_submitted());
-  ASSERT_FALSE(static_cast<bool>(fake_driver_.password_form_submitted()));
+  ASSERT_FALSE(static_cast<bool>(fake_driver_.form_data_submitted()));
 }
 
 TEST_F(PasswordAutofillAgentTest, ManualFallbackForSaving) {
@@ -3554,10 +3543,10 @@ TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {
   fake_driver_.Flush();
   // Check that information about Gaia reauthentication is sent to the browser.
   ASSERT_TRUE(fake_driver_.called_password_forms_parsed());
-  const std::vector<autofill::PasswordForm>& parsed_forms =
-      fake_driver_.password_forms_parsed().value();
-  ASSERT_EQ(1u, parsed_forms.size());
-  EXPECT_TRUE(parsed_forms[0].form_data.is_gaia_with_skip_save_password_form);
+  const std::vector<autofill::FormData>& parsed_form_data =
+      fake_driver_.form_data_parsed().value();
+  ASSERT_EQ(1u, parsed_form_data.size());
+  EXPECT_TRUE(parsed_form_data[0].is_gaia_with_skip_save_password_form);
 }
 
 TEST_F(PasswordAutofillAgentTest,

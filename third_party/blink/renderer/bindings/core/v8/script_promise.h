@@ -152,6 +152,10 @@ class CORE_EXPORT ScriptPromise final {
     ScriptValue resolver_;
   };
 
+  bool IsAssociatedWith(ScriptState* script_state) const {
+    return script_state == script_state_;
+  }
+
  private:
   static void IncreaseInstanceCount();
   static void DecreaseInstanceCount();

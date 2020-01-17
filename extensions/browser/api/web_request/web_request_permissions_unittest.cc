@@ -91,6 +91,10 @@ TEST_F(ExtensionWebRequestPermissionsTest, TestHideRequestForURL) {
       // Unsupported scheme.
       {"blob:https://chrome.google.com/fc3f440b-78ed-469f-8af8-7a1717ff39ae",
        HIDE_ALL},
+      // Unsupported scheme.
+      {"chrome://test/", HIDE_ALL},
+      // Unsupported scheme.
+      {"chrome-untrusted://test/", HIDE_ALL},
       {"notregisteredscheme://www.foobar.com", HIDE_ALL},
       {"https://chrome.google.com:80/webstore", HIDE_ALL},
       {"https://chrome.google.com/webstore?query", HIDE_ALL},
@@ -133,6 +137,21 @@ TEST_F(ExtensionWebRequestPermissionsTest, TestHideRequestForURL) {
           test_case.expected_hide_request_mask & HIDE_RENDERER_REQUEST;
       EXPECT_EQ(expect_hidden,
                 WebRequestPermissions::HideRequest(permission_helper, request));
+    }
+
+    {
+      SCOPED_TRACE(
+          "Renderer initiated sub-resource request from "
+          "chrome-untrusted://");
+      auto request_init_params = create_request_params(
+          request_url, content::ResourceType::kSubResource, kRendererProcessId);
+      GURL url("chrome-untrusted://test/");
+      request_init_params.initiator = url::Origin::Create(url);
+
+      WebRequestInfo request(std::move(request_init_params));
+      // Always hide requests from chrome-untrusted://
+      EXPECT_TRUE(
+          WebRequestPermissions::HideRequest(permission_helper, request));
     }
 
     {

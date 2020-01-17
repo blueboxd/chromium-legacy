@@ -14,6 +14,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_win.h"
 #include "chrome/browser/web_applications/test/test_file_handler_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -76,9 +77,10 @@ class WebAppFileHandlerRegistrationWinTest : public testing::Test {
         registry_override_.OverrideRegistry(HKEY_LOCAL_MACHINE));
     ASSERT_NO_FATAL_FAILURE(
         registry_override_.OverrideRegistry(HKEY_CURRENT_USER));
-    // Until the CL to create the shim app is submitted, create it by
+    // Until the CL to create the PWA launcher is submitted, create it by
     // hand. TODO(davidbienvenu): Remove this once cl/1815220 lands.
-    base::File app_shim(GetChromePwaLauncherPath(), base::File::FLAG_CREATE);
+    base::File pwa_launcher(GetChromePwaLauncherPath(),
+                            base::File::FLAG_CREATE);
   }
 
   Profile* profile() { return &profile_; }
@@ -102,17 +104,27 @@ class WebAppFileHandlerRegistrationWinTest : public testing::Test {
            value == L"";
   }
 
-  base::FilePath GetShimAppPathForApp(Profile* profile,
-                                      const AppId app_id,
-                                      const std::string& sanitized_app_name) {
-    base::FilePath sanitized_path(
-        base::ASCIIToUTF16(sanitized_app_name + ".exe"));
+  // Creates a "Web Applications" directory containing a subdirectory for
+  // |app_id| inside |profile|'s data directory, then returns the expected app-
+  // launcher path inside the subdirectory for |app_id|.
+  base::FilePath CreateDataDirectoryAndGetLauncherPathForApp(
+      Profile* profile,
+      const AppId app_id,
+      const std::string& sanitized_app_name) {
     base::FilePath web_app_dir(
-        GetWebAppDataDirectory(profile->GetPath(), app_id, GURL()).DirName());
+        GetWebAppDataDirectory(profile->GetPath(), app_id, GURL()));
     // Make sure web app dir exists. Normally installing an extension would
     // handle this.
     EXPECT_TRUE(base::CreateDirectory(web_app_dir));
-    return web_app_dir.Append(sanitized_path);
+
+    base::FilePath app_specific_launcher_filename(
+        base::ASCIIToUTF16(sanitized_app_name));
+    if (base::win::GetVersion() > base::win::Version::WIN7) {
+      app_specific_launcher_filename =
+          app_specific_launcher_filename.AddExtension(L"exe");
+    }
+
+    return web_app_dir.Append(app_specific_launcher_filename);
   }
 
  private:
@@ -150,15 +162,18 @@ TEST_F(WebAppFileHandlerRegistrationWinTest, RegisterFileHandlersForWebApp) {
   std::set<std::string> file_extensions({"txt", "doc"});
   AppId app_id("app_id");
   std::string app_name("app name");
+  base::FilePath app_specific_launcher_path =
+      CreateDataDirectoryAndGetLauncherPathForApp(profile(), app_id, app_name);
+
   RegisterFileHandlersWithOs(app_id, app_name, profile(), file_extensions,
                              /*mime_types=*/{});
-  base::FilePath shim_app_path =
-      GetShimAppPathForApp(profile(), app_id, app_name);
-  EXPECT_TRUE(!shim_app_path.empty());
   base::ThreadPoolInstance::Get()->FlushForTesting();
-  EXPECT_TRUE(base::PathExists(shim_app_path));
-  EXPECT_EQ(shim_app_path, ShellUtil::GetApplicationPathForProgId(
-                               GetProgIdForApp(profile(), app_id)));
+  base::FilePath registered_app_path = ShellUtil::GetApplicationPathForProgId(
+      GetProgIdForApp(profile(), app_id));
+  EXPECT_FALSE(registered_app_path.empty());
+  EXPECT_TRUE(base::PathExists(app_specific_launcher_path));
+  EXPECT_EQ(app_specific_launcher_path, registered_app_path);
+
   // .txt should have |app_name| in its Open With list.
   EXPECT_TRUE(ProgIdRegisteredForFileExtension(".txt", app_id));
   EXPECT_TRUE(ProgIdRegisteredForFileExtension(".doc", app_id));
@@ -166,48 +181,97 @@ TEST_F(WebAppFileHandlerRegistrationWinTest, RegisterFileHandlersForWebApp) {
 
 TEST_F(WebAppFileHandlerRegistrationWinTest, UnregisterFileHandlersForWebApp) {
   // Register file handlers, and then verify that unregistering removes
-  // the registry settings and the shim app.
+  // the registry settings and the app-specific launcher.
   std::set<std::string> file_extensions({"txt", "doc"});
   AppId app_id("app_id");
   std::string app_name("app name");
+  base::FilePath app_specific_launcher_path =
+      CreateDataDirectoryAndGetLauncherPathForApp(profile(), app_id, app_name);
+
   RegisterFileHandlersWithOs(app_id, app_name, profile(), file_extensions,
                              /*mime_types=*/{});
-  base::FilePath shim_app_path =
-      GetShimAppPathForApp(profile(), app_id, app_name);
   base::ThreadPoolInstance::Get()->FlushForTesting();
-  EXPECT_TRUE(base::PathExists(shim_app_path));
+  EXPECT_TRUE(base::PathExists(app_specific_launcher_path));
   EXPECT_TRUE(ProgIdRegisteredForFileExtension(".txt", app_id));
   EXPECT_TRUE(ProgIdRegisteredForFileExtension(".doc", app_id));
 
   UnregisterFileHandlersWithOs(app_id, profile());
   base::ThreadPoolInstance::Get()->FlushForTesting();
-  EXPECT_FALSE(base::PathExists(shim_app_path));
+  EXPECT_FALSE(base::PathExists(app_specific_launcher_path));
 
   EXPECT_FALSE(ProgIdRegisteredForFileExtension(".txt", app_id));
   EXPECT_FALSE(ProgIdRegisteredForFileExtension(".doc", app_id));
 }
 
-// Test that invalid file name characters in app_name are replaced with '_',
-// and that ".exe" is appended to the shim app name, when file handlers
-// are registered for a Web App.
+// Test that invalid file name characters in app_name are replaced with '_'.
 TEST_F(WebAppFileHandlerRegistrationWinTest, AppNameWithInvalidChars) {
   std::set<std::string> file_extensions({"txt"});
   AppId app_id("app_id");
+
   // '*' is an invalid char in Windows file names, so it should be replaced
   // with '_'.
   std::string app_name("app*name");
-  std::string sanitized_app_name("app_name");
+  base::FilePath app_specific_launcher_path =
+      CreateDataDirectoryAndGetLauncherPathForApp(profile(), app_id,
+                                                  "app_name");
+
   RegisterFileHandlersWithOs(app_id, app_name, profile(),
                              /*file_extensions*/ {"txt"}, /*mime_types=*/{});
-  base::FilePath shim_app_path =
-      GetShimAppPathForApp(profile(), app_id, sanitized_app_name);
+
   base::ThreadPoolInstance::Get()->FlushForTesting();
   base::FilePath registered_app_path = ShellUtil::GetApplicationPathForProgId(
       GetProgIdForApp(profile(), app_id));
   EXPECT_FALSE(registered_app_path.empty());
-  EXPECT_TRUE(base::PathExists(shim_app_path));
-  EXPECT_EQ(shim_app_path.BaseName().value(),
-            base::UTF8ToUTF16(sanitized_app_name + ".exe"));
+  EXPECT_TRUE(base::PathExists(app_specific_launcher_path));
+  EXPECT_EQ(app_specific_launcher_path, registered_app_path);
+}
+
+// Test that an app name that is a reserved filename on Windows has '_' appended
+// to it when used as a filename for its launcher.
+TEST_F(WebAppFileHandlerRegistrationWinTest, AppNameIsReservedFilename) {
+  std::set<std::string> file_extensions({"txt"});
+  AppId app_id("app_id");
+
+  // "con" is a reserved filename on Windows, so it should have '_' appended.
+  std::string app_name("con");
+  base::FilePath app_specific_launcher_path =
+      CreateDataDirectoryAndGetLauncherPathForApp(profile(), app_id, "con_");
+
+  RegisterFileHandlersWithOs(app_id, app_name, profile(),
+                             /*file_extensions*/ {"txt"}, /*mime_types=*/{});
+
+  base::ThreadPoolInstance::Get()->FlushForTesting();
+  base::FilePath registered_app_path = ShellUtil::GetApplicationPathForProgId(
+      GetProgIdForApp(profile(), app_id));
+  EXPECT_FALSE(registered_app_path.empty());
+  EXPECT_TRUE(base::PathExists(app_specific_launcher_path));
+  EXPECT_EQ(app_specific_launcher_path, registered_app_path);
+}
+
+// Test that an app name that consists of a reserved filename on Windows plus
+// '.' has all its '.' characters replaced by '_' when used as a filename for
+// its launcher.
+TEST_F(WebAppFileHandlerRegistrationWinTest, AppNameIsReservedFilenameWithDot) {
+  std::set<std::string> file_extensions({"txt"});
+  AppId app_id("app_id");
+
+  // "con" is a reserved filename on Windows, and appending '_' won't make it
+  // legitimate (because any text after '.' is interpreted as part of a file
+  // extension), so all '.' characters should be replaced with '_'.
+  std::string app_name("con.nect");
+  base::FilePath app_specific_launcher_path =
+      CreateDataDirectoryAndGetLauncherPathForApp(profile(), app_id,
+                                                  "con_nect");
+
+  RegisterFileHandlersWithOs(app_id, app_name, profile(),
+                             /*file_extensions*/ {"txt"}, /*mime_types=*/{});
+
+  base::ThreadPoolInstance::Get()->FlushForTesting();
+  base::FilePath registered_app_path = ShellUtil::GetApplicationPathForProgId(
+      GetProgIdForApp(profile(), app_id));
+  EXPECT_FALSE(registered_app_path.empty());
+  EXPECT_TRUE(base::PathExists(app_specific_launcher_path));
+  EXPECT_EQ(app_specific_launcher_path, registered_app_path);
 }
 
 }  // namespace web_app

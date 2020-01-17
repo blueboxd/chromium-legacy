@@ -50,7 +50,5 @@ blink_core_sources("fetch") {
     jumbo_excluded_sources = [ "body.cc" ]
   }
 
-  public_deps = [
-    "//third_party/blink/renderer/platform",
-  ]
+  public_deps = [ "//third_party/blink/renderer/platform" ]
 }

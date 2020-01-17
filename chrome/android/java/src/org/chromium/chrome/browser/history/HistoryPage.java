@@ -33,7 +33,6 @@ public class HistoryPage extends BasicNativePage {
         mHistoryManager = new HistoryManager(activity, false, activity.getSnackbarManager(),
                 activity.getCurrentTabModel().isIncognito());
         mTitle = host.getContext().getResources().getString(R.string.menu_history);
-        mHistoryManager.setHistoryNavigationDelegate(host.createHistoryNavigationDelegate());
 
         initWithView(mHistoryManager.getView());
     }

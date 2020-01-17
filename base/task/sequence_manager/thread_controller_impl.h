@@ -40,10 +40,6 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
       SequenceManagerImpl* funneled_sequence_manager,
       const TickClock* time_source);
 
-  static std::unique_ptr<ThreadControllerImpl> CreateSequenceFunneled(
-      scoped_refptr<SingleThreadTaskRunner> task_runner,
-      const TickClock* time_source);
-
   // ThreadController:
   void SetWorkBatchSize(int work_batch_size) override;
   void WillQueueTask(PendingTask* pending_task,

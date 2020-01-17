@@ -103,11 +103,9 @@ class MODULES_EXPORT MediaRecorder
   int video_bits_per_second_;
 
   State state_;
-
+  bool first_write_received_ = false;
   std::unique_ptr<BlobData> blob_data_;
-
   Member<MediaRecorderHandler> recorder_handler_;
-
   HeapVector<Member<Event>> scheduled_events_;
 };
 

@@ -84,7 +84,6 @@ public class IncognitoNewTabPage
         mIncognitoNewTabPageView =
                 (IncognitoNewTabPageView) inflater.inflate(R.layout.new_tab_page_incognito, null);
         mIncognitoNewTabPageView.initialize(mIncognitoNewTabPageManager);
-        mIncognitoNewTabPageView.setNavigationDelegate(host.createHistoryNavigationDelegate());
 
         TextView newTabIncognitoHeader =
                 mIncognitoNewTabPageView.findViewById(R.id.new_tab_incognito_title);

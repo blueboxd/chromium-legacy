@@ -6,6 +6,7 @@ import("//build/config/android/config.gni")
 import("//build/config/c++/c++.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
+import("//build/config/chromeos/args.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
@@ -143,11 +144,10 @@ declare_args() {
   # rest with 0xAA. This makes behavior of uninitialized memory bugs consistent,
   # recognizeble in debugger, and crashes memory accesses by uninitialized
   # pointers.
-  # TODO(vitalybuka): investigate why some debug windows bots fail tests.
+  # TODO(vitalybuka):
   # 'is_android' breaks content_shell_test_apk on android-kitkat-arm-rel.
   # 'use_xcode_clang' may call old clang.
-  init_stack_vars = !is_android && !(is_win && is_debug) && !use_xcode_clang &&
-                    !is_official_build
+  init_stack_vars = !is_android && !use_xcode_clang && !is_official_build
 }
 
 declare_args() {
@@ -508,6 +508,17 @@ config("compiler") {
       "-Xclang",
       "-instcombine-lower-dbg-declare=0",
     ]
+
+    if (llvm_force_head_revision) {
+      # Before Clang 10, lax vector conversions were allowed by default.
+      # Chromium currently relies on this behavior.
+      # TODO(crbug.com/1042470): Fix the code and remove this flag.
+      if (is_win) {
+        cflags += [ "/clang:-flax-vector-conversions=all" ]
+      } else if (cros_sdk_version == "") {
+        cflags += [ "-flax-vector-conversions=all" ]
+      }
+    }
   }
 
   # C11/C++11 compiler flags setup.
@@ -2246,15 +2257,11 @@ config("afdo") {
       rebased_clang_sample_profile =
           rebase_path(_clang_sample_profile, root_build_dir)
       cflags += [ "-fprofile-sample-use=${rebased_clang_sample_profile}" ]
-      inputs = [
-        _clang_sample_profile,
-      ]
+      inputs = [ _clang_sample_profile ]
     }
   } else if (auto_profile_path != "" && is_a_target_toolchain) {
     cflags = [ "-fauto-profile=${auto_profile_path}" ]
-    inputs = [
-      auto_profile_path,
-    ]
+    inputs = [ auto_profile_path ]
   }
 }
 
@@ -2528,9 +2535,7 @@ if (is_win || is_android || is_chromeos) {
           "/ignore:4065",
         ]
       }
-      inputs = [
-        chrome_orderfile_path,
-      ]
+      inputs = [ chrome_orderfile_path ]
     }
   }
 }

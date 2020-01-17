@@ -73,8 +73,7 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
-  self = [super initWithTableViewStyle:style
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super initWithStyle:style];
   if (self) {
     _prefs = prefs;
     _translationEnabled = [[PrefBackedBoolean alloc]

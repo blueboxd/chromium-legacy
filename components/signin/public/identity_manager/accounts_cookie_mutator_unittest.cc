@@ -26,6 +26,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/network/test/test_cookie_manager.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,7 +60,9 @@ enum class AccountsCookiesMutatorAction {
 }  // namespace
 
 namespace signin {
-class AccountsCookieMutatorTest : public testing::Test {
+class AccountsCookieMutatorTest
+    : public testing::Test,
+      public AccountsCookieMutator::PartitionDelegate {
  public:
   const CoreAccountId kTestUnavailableAccountId;
   const CoreAccountId kTestOtherUnavailableAccountId;
@@ -146,10 +149,22 @@ class AccountsCookieMutatorTest : public testing::Test {
   }
 
  private:
+  // AccountsCookieMutator::PartitionDelegate
+  std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcherForPartition(
+      GaiaAuthConsumer* consumer) override {
+    return test_signin_client_.CreateGaiaAuthFetcher(consumer,
+                                                     gaia::GaiaSource::kChrome);
+  }
+
+  network::mojom::CookieManager* GetCookieManagerForPartition() override {
+    return &cookie_manager_for_partition_;
+  }
+
   base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   TestSigninClient test_signin_client_;
   IdentityTestEnvironment identity_test_env_;
+  network::TestCookieManager cookie_manager_for_partition_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountsCookieMutatorTest);
 };
@@ -358,6 +373,64 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_AllExistingAccounts) {
       base::Time::Now() + base::TimeDelta::FromHours(1));
 
   run_loop.Run();
+}
+
+// Test that trying to set a list of accounts in a partitionned cookie jar where
+// all of those accounts have refresh tokens in IdentityManager results in them
+// being successfully set.
+TEST_F(AccountsCookieMutatorTest,
+       SetAccountsInCookieForPartition_AllExistingAccounts) {
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kSetAccountsInCookie);
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts);
+
+  CoreAccountId account_id = AddAcountWithRefreshToken(kTestAccountEmail);
+  CoreAccountId other_account_id =
+      AddAcountWithRefreshToken(kTestOtherAccountEmail);
+  base::RunLoop run_loop;
+  MultiloginParameters parameters = {
+      gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+      {account_id, other_account_id}};
+  std::unique_ptr<AccountsCookieMutator::SetAccountsInCookieTask> task =
+      accounts_cookie_mutator()->SetAccountsInCookieForPartition(
+          this, parameters,
+          base::BindOnce(
+              [](base::OnceClosure quit_closure,
+                 SetAccountsInCookieResult result) {
+                EXPECT_EQ(result, SetAccountsInCookieResult::kSuccess);
+                std::move(quit_closure).Run();
+              },
+              run_loop.QuitClosure()));
+
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      account_id, kTestAccessToken,
+      base::Time::Now() + base::TimeDelta::FromHours(1));
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      other_account_id, kTestAccessToken,
+      base::Time::Now() + base::TimeDelta::FromHours(1));
+
+  run_loop.Run();
+}
+
+// Test that setting accounts in a partition can be cancelled.
+TEST_F(AccountsCookieMutatorTest, SetAccountsInCookieForPartition_Cancel) {
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kSetAccountsInCookie);
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts);
+
+  CoreAccountId account_id = AddAcountWithRefreshToken(kTestAccountEmail);
+  CoreAccountId other_account_id =
+      AddAcountWithRefreshToken(kTestOtherAccountEmail);
+  MultiloginParameters parameters = {
+      gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+      {account_id, other_account_id}};
+  std::unique_ptr<AccountsCookieMutator::SetAccountsInCookieTask> task =
+      accounts_cookie_mutator()->SetAccountsInCookieForPartition(
+          this, parameters,
+          base::BindOnce([](SetAccountsInCookieResult) { NOTREACHED(); }));
+  task.reset();
 }
 
 // Test triggering the update of a cookie jar with no accounts works.

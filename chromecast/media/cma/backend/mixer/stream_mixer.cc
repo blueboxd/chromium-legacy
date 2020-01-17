@@ -824,6 +824,10 @@ void StreamMixer::WriteMixedPcm(int frames, int64_t expected_playback_time) {
 
   if (playback_interrupted) {
     loopback_handler_->SendInterrupt(LoopbackInterruptReason::kUnderrun);
+
+    for (const auto& input : inputs_) {
+      input.first->OnOutputUnderrun();
+    }
   }
 }
 

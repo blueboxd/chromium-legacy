@@ -76,18 +76,17 @@ class PathManager(object):
     def __init__(self, idl_definition):
         assert self._is_initialized, self._REQUIRE_INIT_MESSAGE
 
-        if isinstance(idl_definition, web_idl.Dictionary):
-            idl_path = PathManager.relpath_to_project_root(
-                posixpath.normpath(
-                    idl_definition.debug_info.location.filepath))
-            idl_basepath, _ = posixpath.splitext(idl_path)
-            self._idl_dir, _ = posixpath.split(idl_basepath)
-        else:
-            self._idl_dir = None
-
         components = sorted(idl_definition.components)  # "core" < "modules"
 
-        if len(components) == 1:
+        if len(components) == 0:
+            assert isinstance(idl_definition, web_idl.Union)
+            # Unions of built-in types, e.g. DoubleOrString, do not have a
+            # component.
+            self._is_cross_components = False
+            default_component = web_idl.Component("core")
+            self._api_component = default_component
+            self._impl_component = default_component
+        elif len(components) == 1:
             component = components[0]
             self._is_cross_components = False
             self._api_component = component
@@ -105,8 +104,6 @@ class PathManager(object):
         self._impl_dir = self._component_reldirs[self._impl_component]
         self._v8_bind_basename = name_style.file("v8",
                                                  idl_definition.identifier)
-        self._blink_basename = name_style.file(
-            blink_class_name(idl_definition))
 
     @property
     def is_cross_components(self):
@@ -138,14 +135,6 @@ class PathManager(object):
         return self._join(
             dirpath=self.impl_dir,
             filename=(filename or self._v8_bind_basename),
-            ext=ext)
-
-    # TODO(crbug.com/1034398): Remove this API
-    def dict_path(self, filename=None, ext=None):
-        assert self._idl_dir is not None
-        return self._join(
-            dirpath=self._idl_dir,
-            filename=(filename or self._blink_basename),
             ext=ext)
 
     @staticmethod

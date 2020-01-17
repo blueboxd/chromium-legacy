@@ -894,6 +894,64 @@ TEST_P(SurfaceTest, SurfaceQuad) {
   }
 }
 
+TEST_P(SurfaceTest, ScaledSurfaceQuad) {
+  gfx::Size buffer_size(1, 1);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
+      true, true, false);
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  surface->Attach(buffer.get());
+  surface->SetAlpha(1.0f);
+
+  surface->SetEmbeddedSurfaceId(base::BindRepeating([]() -> viz::SurfaceId {
+    return viz::SurfaceId(
+        viz::FrameSinkId(1, 1),
+        viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
+  }));
+
+  // A 256x256 surface, of which as 128x128 chunk is selected, drawn into a
+  // 128x64 rect.
+  surface->SetEmbeddedSurfaceSize(gfx::Size(256, 256));
+
+  surface->SetViewport(gfx::Size(128, 64));
+  surface->SetCrop(
+      gfx::RectF(gfx::PointF(32.0f, 32.0f), gfx::SizeF(128.0f, 128.0f)));
+
+  {
+    surface->Commit();
+    base::RunLoop().RunUntilIdle();
+
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    EXPECT_EQ(1u, frame.render_pass_list.size());
+    EXPECT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
+    EXPECT_EQ(1u, frame.resource_list.size());
+    // Ensure that the quad is correct and the resource is included.
+    EXPECT_EQ(1u, frame.resource_list.back().id);
+    EXPECT_EQ(viz::DrawQuad::Material::kSurfaceContent,
+              frame.render_pass_list.back()->quad_list.back()->material);
+    // We are outputting to 0,0 -> 128,64.
+    EXPECT_EQ(gfx::Rect(gfx::Point(), gfx::Size(128, 64)),
+              frame.render_pass_list.back()
+                  ->quad_list.back()
+                  ->shared_quad_state->clip_rect);
+    // Rect should be the unmodified surface size.
+    EXPECT_EQ(gfx::Rect(gfx::Point(0, 0), gfx::Size(256, 256)),
+              frame.render_pass_list.back()->quad_list.back()->rect);
+    // To get 32,32 -> 160,160 into the correct position it must be translated
+    // backwards and scaled 0.5x in Y, then everything is scaled by the scale
+    // factor.
+    EXPECT_EQ(gfx::Transform(1.0f * device_scale_factor(), 0.0f, 0.0f,
+                             0.5f * device_scale_factor(),
+                             -32.0f * device_scale_factor(),
+                             -16.0f * device_scale_factor()),
+              frame.render_pass_list.back()
+                  ->quad_list.back()
+                  ->shared_quad_state->quad_to_target_transform);
+  }
+}
+
 TEST_P(SurfaceTest, Commit) {
   std::unique_ptr<Surface> surface(new Surface);
 

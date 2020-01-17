@@ -16,11 +16,13 @@
     'chrome': {
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-betty-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-betty-chrome': 'cros_chrome_sdk',
-      'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk',
-      'chromeos-eve-chrome': 'cros_chrome_sdk',
-      'chromeos-kevin-chrome': 'cros_chrome_sdk',
-      'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols',
+      'chromeos-betty-chrome': 'cros_chrome_sdk_include_unwind_tables',
+      'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk_include_unwind_tables',
+      'chromeos-eve-chrome': 'cros_chrome_sdk_include_unwind_tables',
+      'chromeos-kevin-chrome': 'cros_chrome_sdk_include_unwind_tables',
+      'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols_include_unwind_tables',
+      # Don't include unwind tables for the remaining three builders since
+      # they monitor binary size growth, which may be affected by the tables.
       'linux-chrome': 'official_goma',
       'mac-chrome': 'official_goma',
       'win-chrome': 'official_goma_x86',
@@ -70,6 +72,7 @@
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild',
 
       'android-pie-arm64-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
+      'android-10-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_google',
     },
 
     'chromium.android.fyi': {
@@ -158,6 +161,10 @@
       'Dawn Win10 x64 Builder': 'dawn_tests_release_trybot',
       'Dawn Win10 x86 DEPS Builder': 'dawn_tests_release_trybot_x86',
       'Dawn Win10 x64 DEPS Builder': 'dawn_tests_release_trybot',
+    },
+
+    'chromium.devtools-frontend': {
+      'DevTools Linux (chromium)': 'release_trybot',
     },
 
     'chromium.fuzz': {
@@ -680,6 +687,7 @@
       'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google',
       'android-webview-pie-arm64-fyi-rel': 'android_release_trybot_arm64_webview_google',
       'android-pie-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_google',
+      'android-10-arm64-rel': 'android_release_trybot_arm64_fastbuild_webview_google',
       'android-webview-marshmallow-arm64-dbg': 'android_release_trybot_arm64_webview_google',
       'android-webview-nougat-arm64-dbg': 'android_release_trybot_arm64_webview_google',
       'android-webview-oreo-arm64-dbg': 'android_release_trybot_arm64_webview_google',
@@ -747,14 +755,14 @@
     'tryserver.chrome': {
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-betty-cfi-thin-lto-chrome': 'cros_chrome_sdk_cfi_thin_lto',
-      'chromeos-betty-chrome': 'cros_chrome_sdk',
-      'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk',
-      'chromeos-eve-chrome': 'cros_chrome_sdk',
-      'chromeos-eve-compile-chrome': 'cros_chrome_sdk',
-      'chromeos-kevin-chrome': 'cros_chrome_sdk',
-      'chromeos-kevin-compile-chrome': 'cros_chrome_sdk',
+      'chromeos-betty-chrome': 'cros_chrome_sdk_include_unwind_tables',
+      'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk_include_unwind_tables',
+      'chromeos-eve-chrome': 'cros_chrome_sdk_include_unwind_tables',
+      'chromeos-eve-compile-chrome': 'cros_chrome_sdk_include_unwind_tables',
+      'chromeos-kevin-chrome': 'cros_chrome_sdk_include_unwind_tables',
+      'chromeos-kevin-compile-chrome': 'cros_chrome_sdk_include_unwind_tables',
       'linux-chrome': 'official_goma',
-      'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols',
+      'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols_include_unwind_tables',
       'win_chrome_official': 'official_goma_x86',
       'win-celab-try-rel': 'official_celab_release_bot',
     },
@@ -1161,6 +1169,11 @@
       'strip_debug_info',
     ],
 
+    'android_release_bot_minimal_symbols_arm64_fastbuild_webview_google': [
+      'android', 'release_bot', 'minimal_symbols', 'arm64',
+      'strip_debug_info', 'android_fastbuild', 'webview_google',
+    ],
+
     'android_release_bot_minimal_symbols_arm64_webview_google': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
       'strip_debug_info', 'webview_google',
@@ -1187,6 +1200,11 @@
 
     'android_release_trybot_arm64': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
+    ],
+
+    'android_release_trybot_arm64_fastbuild_webview_google': [
+      'android', 'release_trybot', 'arm64', 'strip_debug_info',
+      'android_fastbuild', 'webview_google',
     ],
 
     'android_release_trybot_arm64_webview_google': [
@@ -1509,6 +1527,10 @@
 
     'cros_chrome_sdk_cfi_thin_lto': [
       'cros_chrome_sdk', 'cfi_full', 'thin_lto',
+    ],
+
+    'cros_chrome_sdk_include_unwind_tables': [
+      'cros_chrome_sdk', 'include_unwind_tables',
     ],
 
     'dawn_tests_release_trybot': [
@@ -1850,8 +1872,9 @@
       'official', 'goma', 'no_gnome_keyring',
     ],
 
-    'official_goma_chromeos_minimal_symbols': [
+    'official_goma_chromeos_minimal_symbols_include_unwind_tables': [
       'official', 'goma', 'chromeos', 'minimal_symbols',
+      'include_unwind_tables',
     ],
 
     'official_goma_minimal_symbols_android': [
@@ -2315,6 +2338,10 @@
     'hybrid': {
       'gn_args': 'v8_target_cpu="arm" target_cpu="x86"',
       'mixins': ['disable_nacl'],
+    },
+
+    'include_unwind_tables': {
+      'gn_args': 'exclude_unwind_tables=false',
     },
 
     'incremental': {

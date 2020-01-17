@@ -15,6 +15,7 @@ class WebContents;
 namespace task_manager {
 
 class RendererTask;
+class WebContentsTaskProvider;
 
 // Defines a TaskManager-specific UserData type for WebContents. This is an
 // abstract base class for all concrete UserData types. They all share the same
@@ -38,8 +39,9 @@ class WebContentsTag : public base::SupportsUserData::Data {
   // WebContentsTaskProvider to create the appropriate Tasks.
   //
   // The returned |RendererTask| is owned by the caller (in this case it will be
-  // the provider).
-  virtual RendererTask* CreateTask() const = 0;
+  // the provider, |task_provider|).
+  virtual RendererTask* CreateTask(
+      WebContentsTaskProvider* task_provider) const = 0;
 
   content::WebContents* web_contents() const { return web_contents_; }
 

@@ -203,7 +203,6 @@
 <translation id="1272978324304772054">裝置註冊的網域中沒有這個使用者帳戶。如果你要使用其他網域進行註冊，必須先完成裝置修復作業。</translation>
 <translation id="1274977772557788323">Adobe Flash Player 儲存設定</translation>
 <translation id="1274997165432133392">Cookie 和其他網站資料</translation>
-<translation id="127668050356036882">關閉所有視窗</translation>
 <translation id="1280820357415527819">正在搜尋行動網路</translation>
 <translation id="1282420830958964167">「<ph name="APP_NAME" />」的使用時間已達到貴家長設定的上限。你明天可以使用 <ph name="TIME_LIMIT" />。</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
@@ -518,7 +517,6 @@
 <translation id="1712552549805331520"><ph name="URL" /> 要求在你的本機電腦上永久儲存資料</translation>
 <translation id="1714644264617423774">啟用無障礙功能，讓裝置更容易使用。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">動作感應器</translation>
-<translation id="171824261579749339">澳洲式。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="1718835860248848330">過去 1 小時</translation>
 <translation id="1719312230114180055">注意：使用高強度的密碼或 PIN 碼會比感應指紋來得安全。</translation>
 <translation id="1720318856472900922">TLS WWW 伺服器驗證</translation>
@@ -539,7 +537,7 @@
 <translation id="1737968601308870607">回報錯誤</translation>
 <translation id="1741314857973421784">繼續</translation>
 <translation id="1743570585616704562">無法識別</translation>
-<translation id="1743846852744439013">系統會將你登出所有網站 (這項操作會套用到所有已開啟的分頁)。</translation>
+<translation id="1743846852744439013">系統會將你登出所有網站 (包含所有已開啟的分頁)。</translation>
 <translation id="1743970419083351269">關閉下載內容列</translation>
 <translation id="1744060673522309905">無法將這個裝置加入網域。請確認裝置數量沒有超過添加上限。</translation>
 <translation id="1744108098763830590">背景頁面</translation>
@@ -729,7 +727,6 @@
 <translation id="2006638907958895361">在「<ph name="APP" />」中開啟連結</translation>
 <translation id="2007404777272201486">回報問題...</translation>
 <translation id="2010501376126504057">相容裝置</translation>
-<translation id="2016430552235416146">傳統</translation>
 <translation id="2017334798163366053">停用效能資料收集</translation>
 <translation id="2017836877785168846">將歷史記錄和自動即時查詢從網址列中清除。</translation>
 <translation id="2018352199541442911">很抱歉，系統目前不支援你的外部儲存裝置。</translation>
@@ -770,7 +767,6 @@
 <translation id="2076672359661571384">中 (建議)</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2078019350989722914">結束前顯示警告訊息 (<ph name="KEY_EQUIVALENT" />)</translation>
-<translation id="2078494137444990774">關閉</translation>
 <translation id="2079053412993822885">如果你刪除了你所擁有的某個憑證，那麼你將無法再使用這個憑證來識別你的身分。</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="2080070583977670716">顯示更多設定</translation>
@@ -1208,7 +1204,6 @@
 <translation id="2665647207431876759">已過期</translation>
 <translation id="2665717534925640469">這個網頁已顯示為全螢幕，並停用了滑鼠游標。</translation>
 <translation id="2665919335226618153">糟糕！格式化過程中發生錯誤。</translation>
-<translation id="2666990579225592931">開啟訪客視窗</translation>
 <translation id="2667463864537187133">管理拼字檢查</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> 正在共用 Chrome 分頁。</translation>
 <translation id="2670429602441959756">這個網頁所含的功能目前與 VR 不相容。正在結束 VR 模式...</translation>
@@ -2143,7 +2138,7 @@
 <translation id="3954354850384043518">下載中</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" />x<ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> 赫茲)</translation>
 <translation id="3954953195017194676">你最近並未擷取 WebRTC 事件記錄。</translation>
-<translation id="3955163004258753966">開始升級時發生錯誤</translation>
+<translation id="3955163004258753966">啟動升級時發生錯誤</translation>
 <translation id="3955193568934677022">允許網站播放受保護的內容 (建議)</translation>
 <translation id="3955896417885489542">在設定完成後顯示 Google Play 選項</translation>
 <translation id="3956702100721821638">無法連上 Google Play</translation>
@@ -2404,7 +2399,6 @@
 <translation id="4364327530094270451">瓜</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> 正在共用視窗。</translation>
 <translation id="4364830672918311045">顯示通知</translation>
-<translation id="436499142539576997">無法取得應用程式資料，系統仍在嘗試執行應用程式…</translation>
 <translation id="4370975561335139969">您所輸入的電子郵件和密碼不相符</translation>
 <translation id="437184764829821926">進階字型設定</translation>
 <translation id="4374831787438678295">Linux 安裝程式</translation>
@@ -3431,7 +3425,6 @@
 <translation id="5867841422488265304">搜尋或輸入網址</translation>
 <translation id="5869029295770560994">好，我知道了</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
-<translation id="5869948122057593679">關閉所有視窗</translation>
 <translation id="5870086504539785141">關閉無障礙選單</translation>
 <translation id="5870155679953074650">硬性錯誤數</translation>
 <translation id="5876851302954717356">在右側新增分頁</translation>
@@ -4480,7 +4473,6 @@
 <translation id="7385854874724088939">準備列印時出現錯誤，請檢查你的印表機，然後再試一次。</translation>
 <translation id="7385896526023870365">這個擴充功能沒有其他網站存取權。</translation>
 <translation id="7388044238629873883">就快完成了！</translation>
-<translation id="7388222713940428051">開啟訪客視窗</translation>
 <translation id="7392118418926456391">病毒掃描失敗</translation>
 <translation id="7392915005464253525">重新開啟已關閉視窗(&amp;E)</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> 會隨著系統一併啟動，即使在所有 <ph name="PRODUCT_NAME" /> 視窗都關閉後仍會在背景繼續執行。</translation>
@@ -4745,7 +4737,6 @@
 <translation id="7784067724422331729">你的電腦安全性設定封鎖了這個檔案。</translation>
 <translation id="7784796923038949829">無法讀取或變更網站的資料</translation>
 <translation id="778480864305029524">如要使用即時網路共用功能，請開啟 Google Play 服務的通知。</translation>
-<translation id="7786207843293321886">結束訪客工作階段</translation>
 <translation id="7786889348652477777">重新載入應用程式(&amp;R)</translation>
 <translation id="7787308148023287649">在其他螢幕上顯示</translation>
 <translation id="7788298548579301890">電腦中的其他程式新增了一個應用程式，可能會使 Chrome 的運作方式發生變更。
@@ -4859,7 +4850,6 @@
 <translation id="7908378463497120834">很抱歉，你的外部儲存裝置上至少有一個分割區無法掛載。</translation>
 <translation id="7909969815743704077">已在無痕模式中下載</translation>
 <translation id="7910768399700579500">新增資料夾(&amp;N)</translation>
-<translation id="7910831464510799808">開啟</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">伺服器上的密碼已變更。請先登出然後重新登入。</translation>
 <translation id="7915457674565721553">如要設定家長監護功能，請連線至網際網路</translation>

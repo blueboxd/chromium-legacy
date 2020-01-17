@@ -40,7 +40,7 @@ class COMPONENT_EXPORT(CROS_HEALTHD) CrosHealthdClient {
 
   // Uses D-Bus to bootstrap the Mojo connection between the cros_healthd daemon
   // and the browser. Returns a bound remote
-  virtual mojo::Remote<cros_healthd::mojom::CrosHealthdService>
+  virtual mojo::Remote<cros_healthd::mojom::CrosHealthdServiceFactory>
   BootstrapMojoConnection(
       base::OnceCallback<void(bool success)> result_callback) = 0;
 

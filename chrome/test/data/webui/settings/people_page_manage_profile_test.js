@@ -81,7 +81,7 @@ cr.define('settings_people_page_manage_profile', function() {
       manageProfile.profileName = 'Initial Fake Name';
       manageProfile.syncStatus = {supervisedUser: false, childUser: false};
       document.body.appendChild(manageProfile);
-      settings.navigateTo(settings.routes.MANAGE_PROFILE);
+      settings.Router.getInstance().navigateTo(settings.routes.MANAGE_PROFILE);
     });
 
     teardown(function() {
@@ -189,7 +189,7 @@ cr.define('settings_people_page_manage_profile', function() {
     // Tests profile shortcut toggle is visible and toggling it removes and
     // creates the profile shortcut respectively.
     test('ManageProfileShortcutToggle', function() {
-      settings.navigateTo(settings.routes.MANAGE_PROFILE);
+      settings.Router.getInstance().navigateTo(settings.routes.MANAGE_PROFILE);
       Polymer.dom.flush();
 
       assertFalse(!!manageProfile.$$('#hasShortcutToggle'));
@@ -226,7 +226,7 @@ cr.define('settings_people_page_manage_profile', function() {
       browserProxy.setProfileShortcutStatus(
           ProfileShortcutStatus.PROFILE_SHORTCUT_NOT_FOUND);
 
-      settings.navigateTo(settings.routes.MANAGE_PROFILE);
+      settings.Router.getInstance().navigateTo(settings.routes.MANAGE_PROFILE);
       Polymer.dom.flush();
 
       assertFalse(!!manageProfile.$$('#hasShortcutToggle'));
@@ -248,7 +248,7 @@ cr.define('settings_people_page_manage_profile', function() {
       browserProxy.setProfileShortcutStatus(
           ProfileShortcutStatus.PROFILE_SHORTCUT_SETTING_HIDDEN);
 
-      settings.navigateTo(settings.routes.MANAGE_PROFILE);
+      settings.Router.getInstance().navigateTo(settings.routes.MANAGE_PROFILE);
       Polymer.dom.flush();
 
       assertFalse(!!manageProfile.$$('#hasShortcutToggle'));

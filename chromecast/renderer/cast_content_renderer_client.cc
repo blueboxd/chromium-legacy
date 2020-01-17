@@ -32,9 +32,11 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
+#include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
 
@@ -148,6 +150,12 @@ void CastContentRendererClient::RenderThreadStarted() {
       std::make_unique<extensions::ExtensionsGuestViewContainerDispatcher>();
   thread->AddObserver(guest_view_container_dispatcher_.get());
 #endif
+
+  for (auto& origin_or_hostname_pattern :
+       network::SecureOriginAllowlist::GetInstance().GetCurrentAllowlist()) {
+    blink::WebSecurityPolicy::AddOriginToTrustworthySafelist(
+        blink::WebString::FromUTF8(origin_or_hostname_pattern));
+  }
 }
 
 void CastContentRendererClient::RenderViewCreated(
@@ -238,30 +246,34 @@ void CastContentRendererClient::AddSupportedKeySystems(
 
 bool CastContentRendererClient::IsSupportedAudioType(
     const ::media::AudioType& type) {
-  if (type.spatialRendering)
+  if (type.spatial_rendering)
     return false;
 
 #if defined(OS_ANDROID)
   // No ATV device we know of has (E)AC3 decoder, so it relies on the audio sink
   // device.
-  if (type.codec == ::media::kCodecEAC3)
+  if (type.codec == ::media::kCodecEAC3) {
     return kBitstreamAudioCodecEac3 &
            supported_bitstream_audio_codecs_info_.codecs;
-  if (type.codec == ::media::kCodecAC3)
+  }
+  if (type.codec == ::media::kCodecAC3) {
     return kBitstreamAudioCodecAc3 &
            supported_bitstream_audio_codecs_info_.codecs;
-  if (type.codec == ::media::kCodecMpegHAudio)
+  }
+  if (type.codec == ::media::kCodecMpegHAudio) {
     return kBitstreamAudioCodecMpegHAudio &
            supported_bitstream_audio_codecs_info_.codecs;
+  }
 
-  // TODO(sanfin): Implement this for Android.
-  return true;
+  return ::media::IsDefaultSupportedAudioType(type);
 #else
+  if (type.profile == ::media::AudioCodecProfile::kXHE_AAC)
+    return false;
+
   // If the HDMI sink supports bitstreaming the codec, then the vendor backend
   // does not need to support it.
-  if (IsSupportedBitstreamAudioCodec(type.codec)) {
+  if (IsSupportedBitstreamAudioCodec(type.codec))
     return true;
-  }
 
   media::AudioCodec codec = media::ToCastAudioCodec(type.codec);
   // Cast platform implements software decoding of Opus and FLAC, so only PCM

@@ -21,7 +21,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -34,6 +36,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.PhotoPickerListener;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObserver<PickerBitmap>,
                                               DecoderServiceHost.ServiceReadyCallback,
+                                              PickerCategoryView.VideoPlaybackStatusCallback,
                                               AnimationListener {
     // The timeout (in seconds) to wait for the decoder service to be ready.
     private static final long WAIT_TIMEOUT_SECONDS = 30L;
@@ -88,6 +92,12 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     // A callback that fires when a PickerBitmapView is animated in the dialog.
     public final CallbackHelper onAnimatedCallback = new CallbackHelper();
 
+    // A callback that fires when playback starts for a video.
+    public final CallbackHelper onVideoPlayingCallback = new CallbackHelper();
+
+    // A callback that fires when playback ends for a video.
+    public final CallbackHelper onVideoEndedCallback = new CallbackHelper();
+
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
@@ -99,6 +109,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         mTestFiles.add(new PickerBitmap(Uri.parse("e"), 1L, PickerBitmap.TileTypes.PICTURE));
         mTestFiles.add(new PickerBitmap(Uri.parse("f"), 0L, PickerBitmap.TileTypes.PICTURE));
         PickerCategoryView.setTestFiles(mTestFiles);
+        PickerCategoryView.setProgressCallback(this);
         PickerBitmapView.setAnimationListenerForTest(this);
 
         DecoderServiceHost.setReadyCallback(this);
@@ -119,6 +130,18 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     @Override
     public void serviceReady() {
         onDecoderReadyCallback.notifyCalled();
+    }
+
+    // PickerCategoryView.VideoStatusCallback:
+
+    @Override
+    public void onVideoPlaying() {
+        onVideoPlayingCallback.notifyCalled();
+    }
+
+    @Override
+    public void onVideoEnded() {
+        onVideoEndedCallback.notifyCalled();
     }
 
     // SelectionObserver:
@@ -198,7 +221,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         Assert.assertEquals(PhotoPickerAction.PHOTOS_SELECTED, mLastActionRecorded);
     }
 
-    public void clickCancel() throws Exception {
+    private void clickCancel() throws Exception {
         mLastActionRecorded = PhotoPickerAction.NUM_ENTRIES;
 
         PickerCategoryView categoryView = mDialog.getCategoryViewForTesting();
@@ -207,6 +230,13 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         categoryView.onClick(cancel);
         onActionCallback.waitForCallback(callCount, 1);
         Assert.assertEquals(PhotoPickerAction.CANCEL, mLastActionRecorded);
+    }
+
+    private void playVideo(Uri uri) throws Exception {
+        int callCount = onVideoPlayingCallback.getCallCount();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mDialog.getCategoryViewForTesting().startVideoPlaybackAsync(uri); });
+        onVideoPlayingCallback.waitForCallback(callCount, 1);
     }
 
     private void dismissDialog() {
@@ -293,5 +323,45 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
         Assert.assertEquals(mTestFiles.get(4).getUri().getPath(), mLastSelectedPhotos[2].getPath());
 
         dismissDialog();
+    }
+
+    @Test
+    @LargeTest
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.N) // Video is only supported on N+.
+    public void testVideoPlayerPlayAndRestart() throws Throwable {
+        createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
+        Assert.assertTrue(mDialog.isShowing());
+        waitForDecoder();
+
+        PickerCategoryView categoryView = mDialog.getCategoryViewForTesting();
+
+        View container = categoryView.findViewById(R.id.playback_container);
+        Assert.assertTrue(container.getVisibility() == View.GONE);
+
+        // This test video takes less than a second to play.
+        String fileName = "chrome/test/data/android/photo_picker/noogler.mp4";
+        File file = new File(UrlUtils.getIsolatedTestFilePath(fileName));
+
+        int callCount = onVideoEndedCallback.getCallCount();
+
+        playVideo(Uri.fromFile(file));
+        Assert.assertTrue(container.getVisibility() == View.VISIBLE);
+
+        onVideoEndedCallback.waitForCallback(callCount, 1);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            View mute = categoryView.findViewById(R.id.mute);
+            categoryView.onClick(mute);
+        });
+
+        // Clicking the play button should restart playback.
+        callCount = onVideoEndedCallback.getCallCount();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            View playbutton = categoryView.findViewById(R.id.video_player_play_button);
+            categoryView.onClick(playbutton);
+        });
+
+        onVideoEndedCallback.waitForCallback(callCount, 1);
     }
 }

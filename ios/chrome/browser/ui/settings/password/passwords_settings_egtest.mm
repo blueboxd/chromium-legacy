@@ -51,6 +51,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(PasswordSettingsAppInterface);
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsDoneButton;
+using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::TurnSettingsSwitchOn;
 
 namespace {
@@ -107,17 +108,6 @@ GREYElementInteraction* GetInteractionForPasswordsExportConfirmAlert(
   return [[EarlGrey
       selectElementWithMatcher:grey_allOf(matcher, grey_interactable(), nil)]
       inRoot:grey_accessibilityID(kPasswordsExportConfirmViewId)];
-}
-
-id<GREYMatcher> SettingsMenuBackButton(NSString* backItemTitle) {
-#if defined(CHROME_EARL_GREY_2)
-  return grey_allOf(
-      grey_accessibilityLabel(backItemTitle),
-      grey_kindOfClassName(@"UIAccessibilityBackButtonElement"),
-      grey_ancestor(grey_accessibilityID(@"SettingNavigationBar")), nil);
-#else
-  return chrome_test_util::SettingsMenuBackButton();
-#endif
 }
 
 // Matcher for a UITextField inside a SettingsSearchCell.
@@ -395,10 +385,10 @@ void TapEdit() {
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -439,9 +429,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -470,9 +460,9 @@ void TapEdit() {
       selectElementWithMatcher:grey_accessibilityLabel(@"concrete password")]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -505,9 +495,9 @@ void TapEdit() {
   // button, which does need one). The reason is that the password not being
   // shown is enough of a message that the action failed.
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -531,9 +521,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -557,9 +547,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -613,7 +603,7 @@ void TapEdit() {
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -676,7 +666,7 @@ void TapEdit() {
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -731,7 +721,7 @@ void TapEdit() {
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -775,12 +765,12 @@ void TapEdit() {
 
   // Go back to the list view and verify that the password is still in the
   // list.
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -810,7 +800,7 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:CopyPasswordButton()]
       assertWithMatcher:grey_nil()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -843,9 +833,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -879,9 +869,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -921,9 +911,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -971,9 +961,9 @@ void TapEdit() {
   [GetInteractionForPasswordDetailItem(grey_text(kMaskedPassword))
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1010,9 +1000,9 @@ void TapEdit() {
   [GetInteractionForPasswordDetailItem(PasswordHeader())
       assertWithMatcher:grey_nil()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1067,9 +1057,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:FederationHeader()]
       assertWithMatcher:grey_nil()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1107,9 +1097,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:FederationHeader()]
       assertWithMatcher:grey_nil()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1160,9 +1150,9 @@ void TapEdit() {
   [[EarlGrey selectElementWithMatcher:PasswordHeader()]
       assertWithMatcher:grey_nil()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1203,7 +1193,7 @@ void TapEdit() {
         assertWithMatcher:grey_notNil()];
   }
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1228,7 +1218,7 @@ void TapEdit() {
                     @"State of the UI toggle differs from real preferences.");
   }
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1257,7 +1247,7 @@ void TapEdit() {
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1317,7 +1307,7 @@ void TapEdit() {
                                    learnHow)] performAction:grey_tap()];
   // Check the sub menu is closed due to the help article.
   NSError* error = nil;
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       assertWithMatcher:grey_notNil()
                   error:&error];
   GREYAssertTrue(error, @"The settings back button is still displayed");
@@ -1380,9 +1370,9 @@ void TapEdit() {
   [GetInteractionForPasswordDetailItem(siteCell)
       assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Passwords")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -1410,7 +1400,7 @@ void TapEdit() {
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
 
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(@"Settings")]
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];

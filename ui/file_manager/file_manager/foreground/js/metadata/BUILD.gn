@@ -98,9 +98,7 @@ js_unittest("external_metadata_provider_unittest") {
 }
 
 js_library("file_system_metadata_provider") {
-  deps = [
-    ":metadata_provider",
-  ]
+  deps = [ ":metadata_provider" ]
 }
 
 js_unittest("file_system_metadata_provider_unittest") {
@@ -111,15 +109,11 @@ js_unittest("file_system_metadata_provider_unittest") {
 }
 
 js_library("function_parallel") {
-  deps = [
-    ":metadata_parser",
-  ]
+  deps = [ ":metadata_parser" ]
 }
 
 js_library("function_sequence") {
-  deps = [
-    ":metadata_parser",
-  ]
+  deps = [ ":metadata_parser" ]
 }
 
 js_library("id3_parser") {
@@ -142,9 +136,7 @@ js_unittest("image_orientation_unittest") {
 }
 
 js_library("image_parsers") {
-  deps = [
-    ":metadata_parser",
-  ]
+  deps = [ ":metadata_parser" ]
   externs_list = [ "//ui/file_manager/externs/metadata_worker_window.js" ]
 }
 
@@ -217,9 +209,7 @@ js_unittest("metadata_model_unittest") {
 }
 
 js_library("metadata_parser") {
-  deps = [
-    ":byte_reader",
-  ]
+  deps = [ ":byte_reader" ]
 }
 
 js_library("metadata_provider") {
@@ -234,15 +224,11 @@ js_library("metadata_request") {
 }
 
 js_library("mock_metadata") {
-  deps = [
-    ":metadata_model",
-  ]
+  deps = [ ":metadata_model" ]
 }
 
 js_library("mpeg_parser") {
-  deps = [
-    ":metadata_parser",
-  ]
+  deps = [ ":metadata_parser" ]
 }
 
 js_library("multi_metadata_provider") {
@@ -263,9 +249,7 @@ js_unittest("multi_metadata_provider_unittest") {
 }
 
 js_library("thumbnail_model") {
-  deps = [
-    ":metadata_model",
-  ]
+  deps = [ ":metadata_model" ]
 }
 
 js_unittest("thumbnail_model_unittest") {

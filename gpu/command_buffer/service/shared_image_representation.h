@@ -359,7 +359,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationOverlay
  protected:
   // TODO(weiliangc): Currently this only handles Android pre-SurfaceControl
   // case. Add appropriate fence later.
-  virtual void BeginReadAccess() = 0;
+  virtual bool BeginReadAccess() = 0;
   virtual void EndReadAccess() = 0;
 
   // TODO(weiliangc): Add API to backing AHardwareBuffer.

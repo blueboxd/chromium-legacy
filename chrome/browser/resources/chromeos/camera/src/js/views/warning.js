@@ -80,6 +80,3 @@ export class Warning extends View {
     return true;
   }
 }
-
-/** @const */
-cca.views.Warning = Warning;

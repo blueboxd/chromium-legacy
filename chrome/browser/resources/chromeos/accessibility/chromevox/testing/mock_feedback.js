@@ -67,7 +67,7 @@ var MockFeedback = function(opt_finishedCallback) {
   this.inProcess_ = false;
   /**
    * Pending expectations and callbacks.
-   * @type {Array<{perform: function(): boolean, toString: function(): string}>}
+   * @type {Array<{perform(): boolean, toString(): string}>}
    * @private
    */
   this.pendingActions_ = [];
@@ -108,7 +108,7 @@ MockFeedback.prototype = {
    * Install mock objects as |ChromeVox.tts| and |ChromeVox.braille|
    * to collect feedback.
    */
-  install: function() {
+  install() {
     assertFalse(this.replaying_);
 
     var MockTts = function() {};
@@ -145,7 +145,7 @@ MockFeedback.prototype = {
    *     expectations.
    * @return {MockFeedback} |this| for chaining
    */
-  expectSpeech: function() {
+  expectSpeech() {
     assertFalse(this.replaying_);
     Array.prototype.forEach.call(arguments, function(text) {
       this.pendingActions_.push({
@@ -153,7 +153,7 @@ MockFeedback.prototype = {
           return !!MockFeedback.matchAndConsume_(
               text, {}, this.pendingUtterances_);
         }.bind(this),
-        toString: function() {
+        toString() {
           return 'Speak \'' + text + '\'';
         }
       });
@@ -168,7 +168,7 @@ MockFeedback.prototype = {
    * @param {QueueMode} queueMode The expected queue mode.
    * @return {MockFeedback} |this| for chaining
    */
-  expectSpeechWithQueueMode: function(text, queueMode) {
+  expectSpeechWithQueueMode(text, queueMode) {
     return this.expectSpeechWithProperties.apply(
         this, [{queueMode: queueMode}, text]);
   },
@@ -178,7 +178,7 @@ MockFeedback.prototype = {
    * @param {string|RegExp} text One utterance expectation.
    * @return {MockFeedback} |this| for chaining
    */
-  expectQueuedSpeech: function(text) {
+  expectQueuedSpeech(text) {
     return this.expectSpeechWithQueueMode(text, QueueMode.QUEUE);
   },
 
@@ -187,7 +187,7 @@ MockFeedback.prototype = {
    * @param {string|RegExp} text One utterance expectation.
    * @return {MockFeedback} |this| for chaining
    */
-  expectFlushingSpeech: function(text) {
+  expectFlushingSpeech(text) {
     return this.expectSpeechWithQueueMode(text, QueueMode.FLUSH);
   },
 
@@ -197,7 +197,7 @@ MockFeedback.prototype = {
    * @param {string|RegExp} text One utterance expectation.
    * @return {MockFeedback} |this| for chaining
    */
-  expectCategoryFlushSpeech: function(text) {
+  expectCategoryFlushSpeech(text) {
     return this.expectSpeechWithQueueMode(text, QueueMode.CATEGORY_FLUSH);
   },
 
@@ -207,7 +207,7 @@ MockFeedback.prototype = {
    * @param {...(string)} rest One or more utterances to add as expectations.
    * @return {MockFeedback} |this| for chaining
    */
-  expectSpeechWithLanguage: function(language, ...rest) {
+  expectSpeechWithLanguage(language, ...rest) {
     return this.expectSpeechWithProperties.apply(
         this, [{lang: language}].concat(rest));
   },
@@ -218,7 +218,7 @@ MockFeedback.prototype = {
    * @param {...(string)} rest One or more utterances to add as expectations.
    * @return {MockFeedback} |this| for chaining
    */
-  expectSpeechWithProperties: function(expectedProps, ...rest) {
+  expectSpeechWithProperties(expectedProps, ...rest) {
     assertFalse(this.replaying_);
     Array.prototype.forEach.call(rest, function(text) {
       this.pendingActions_.push({
@@ -226,7 +226,7 @@ MockFeedback.prototype = {
           return !!MockFeedback.matchAndConsume_(
               text, expectedProps, this.pendingUtterances_);
         }.bind(this),
-        toString: function() {
+        toString() {
           return 'Speak \'' + text + '\' with props ' +
               JSON.stringify(expectedProps);
         }
@@ -247,7 +247,7 @@ MockFeedback.prototype = {
    *     negative expectations.
    * @return {MockFeedback} |this| for chaining
    */
-  expectNextSpeechUtteranceIsNot: function() {
+  expectNextSpeechUtteranceIsNot() {
     assertFalse(this.replaying_);
     Array.prototype.forEach.call(arguments, function(text) {
       this.pendingActions_.push({
@@ -261,7 +261,7 @@ MockFeedback.prototype = {
           }
           return true;
         }.bind(this),
-        toString: function() {
+        toString() {
           return 'Do not speak \'' + text + '\'';
         }
       });
@@ -276,7 +276,7 @@ MockFeedback.prototype = {
    *     |NavBraille|
    * @return {MockFeedback} |this| for chaining
    */
-  expectBraille: function(text, opt_props) {
+  expectBraille(text, opt_props) {
     assertFalse(this.replaying_);
     var props = opt_props || {};
     this.pendingActions_.push({
@@ -288,7 +288,7 @@ MockFeedback.prototype = {
         }
         return !!match;
       }.bind(this),
-      toString: function() {
+      toString() {
         return 'Braille \'' + text + '\' ' + JSON.stringify(props);
       }
     });
@@ -300,7 +300,7 @@ MockFeedback.prototype = {
    * @param {string} earconName The name of the earcon.
    * @return {MockFeedback} |this| for chaining
    */
-  expectEarcon: function(earconName, opt_props) {
+  expectEarcon(earconName, opt_props) {
     assertFalse(this.replaying_);
     this.pendingActions_.push({
       perform: function() {
@@ -308,7 +308,7 @@ MockFeedback.prototype = {
             MockFeedback.matchAndConsume_(earconName, {}, this.pendingEarcons_);
         return !!match;
       }.bind(this),
-      toString: function() {
+      toString() {
         return 'Earcon \'' + earconName + '\'';
       }
     });
@@ -322,14 +322,14 @@ MockFeedback.prototype = {
    * @param {Function} callback
    * @return {MockFeedback} |this| for chaining
    */
-  call: function(callback) {
+  call(callback) {
     assertFalse(this.replaying_);
     this.pendingActions_.push({
-      perform: function() {
+      perform() {
         callback();
         return true;
       },
-      toString: function() {
+      toString() {
         return 'Callback';
       }
     });
@@ -341,7 +341,7 @@ MockFeedback.prototype = {
    * overlap with future expectations.
    * @return {MockFeedback} |this| for chaining
    */
-  clearPendingOutput: function() {
+  clearPendingOutput() {
     this.call(function() {
       this.pendingUtterances_.length = 0;
       this.pendingBraille_.length = 0;
@@ -359,7 +359,7 @@ MockFeedback.prototype = {
    * the finish callbcak, if any, is called.
    * This function may only be called once.
    */
-  replay: function() {
+  replay() {
     assertFalse(this.replaying_);
     this.replaying_ = true;
     this.process_();
@@ -382,7 +382,7 @@ MockFeedback.prototype = {
    * @param {Object=} properties
    * @private
    */
-  addUtterance_: function(textString, queueMode, properties) {
+  addUtterance_(textString, queueMode, properties) {
     var callback;
     if (properties && (properties.startCallback || properties.endCallback)) {
       var startCallback = properties.startCallback;
@@ -405,19 +405,19 @@ MockFeedback.prototype = {
   },
 
   /** @private */
-  addBraille_: function(navBraille) {
+  addBraille_(navBraille) {
     this.pendingBraille_.push(navBraille);
     this.process_();
   },
 
   /** @private */
-  addEarcon_: function(earconName) {
+  addEarcon_(earconName) {
     this.pendingEarcons_.push({text: earconName});
     this.process_();
   },
 
   /*** @private */
-  process_: function() {
+  process_() {
     if (!this.replaying_ || this.inProcess_) {
       return;
     }
@@ -454,7 +454,7 @@ MockFeedback.prototype = {
   },
 
   /** @private */
-  logPendingState_: function() {
+  logPendingState_() {
     if (this.pendingActions_.length > 0) {
       console.log('Still waiting for ' + this.pendingActions_[0].toString());
     }

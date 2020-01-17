@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 /**
  * Utility wrapper around |ChromeFeatureList| to enable kWebPaymentsExperimentalFeature to be used

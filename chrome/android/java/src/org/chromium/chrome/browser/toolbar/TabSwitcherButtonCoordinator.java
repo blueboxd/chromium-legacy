@@ -6,9 +6,7 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.res.ColorStateList;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
@@ -55,10 +53,9 @@ public class TabSwitcherButtonCoordinator {
 
     /**
      * Build the controller that manages the tab switcher button.
-     * @param root The root {@link ViewGroup} for locating the view to inflate.
+     * @param view The {@link TabSwitcherButtonView} the controller manages.
      */
-    public TabSwitcherButtonCoordinator(ViewGroup root) {
-        final TabSwitcherButtonView view = root.findViewById(R.id.tab_switcher_button);
+    public TabSwitcherButtonCoordinator(TabSwitcherButtonView view) {
         PropertyModelChangeProcessor.create(
                 mTabSwitcherButtonModel, view, new TabSwitcherButtonViewBinder());
         mOverviewModeObserver = new EmptyOverviewModeObserver() {

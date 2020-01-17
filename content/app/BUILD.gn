@@ -179,9 +179,7 @@ implement_content_app("both") {
 group("both_for_content_tests") {
   visibility = [ "//content/test/*" ]
   if (!is_component_build) {
-    public_deps = [
-      ":both",
-    ]
+    public_deps = [ ":both" ]
   }
 }
 
@@ -192,17 +190,13 @@ if (is_multi_dll_chrome) {
   implement_content_app("browser") {
     visibility = [ "//content/public/app:browser" ]
     defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
-    deps = [
-      ":content_app_browser_deps",
-    ]
+    deps = [ ":content_app_browser_deps" ]
     include_browser_sources = true
   }
 
   implement_content_app("child") {
     visibility = [ "//content/public/app:child" ]
     defines = [ "CHROME_MULTIPLE_DLL_CHILD" ]
-    deps = [
-      ":content_app_child_deps",
-    ]
+    deps = [ ":content_app_child_deps" ]
   }
 }

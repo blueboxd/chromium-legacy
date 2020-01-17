@@ -14,11 +14,11 @@ NDEFWriter and NDEFReader are the two primary interfaces of the Web NFC APIs.
 
 The NDEFWriter interface has the push method for writing data to NFC devices such as
 tags. This method will return a promise, which will be resolved when the
-message is successfully written to some target or be rejected when errors
+message is successfully written to a NFC tag or be rejected when errors
 happened or the process is aborted by setting the AbortSignal in the
 NDEFPushOptions.
 
-The NDEFReader interface has the scan method to try to read data from any NFC device
+The NDEFReader interface has the scan method to try to read data from any NFC tag
 that comes within proximity. Once there is some data found to be matching the
 filtering criteria provided by web developers in NDEFScanOptions, an
 NDEFReadingEvent carrying the data will be dispatched to the NDEFReader.

@@ -963,20 +963,4 @@ bool ApplyColorReduction(const SkBitmap& source_bitmap,
   return true;
 }
 
-bool ComputePrincipalComponentImage(const SkBitmap& source_bitmap,
-                                    SkBitmap* target_bitmap) {
-  if (!target_bitmap) {
-    NOTREACHED();
-    return false;
-  }
-
-  gfx::Matrix3F covariance = ComputeColorCovariance(source_bitmap);
-  gfx::Matrix3F eigenvectors = gfx::Matrix3F::Zeros();
-  gfx::Vector3dF eigenvals = covariance.SolveEigenproblem(&eigenvectors);
-  gfx::Vector3dF principal = eigenvectors.get_column(0);
-  if (eigenvals == gfx::Vector3dF() || principal == gfx::Vector3dF())
-    return false;  // This may happen for some edge cases.
-  return ApplyColorReduction(source_bitmap, principal, true, target_bitmap);
-}
-
 }  // color_utils

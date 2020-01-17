@@ -36,13 +36,13 @@
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
+#include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
@@ -471,12 +471,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Overrides the effective connection type for testing.
   virtual void SetEffectiveConnectionTypeForTesting(
       WebEffectiveConnectionType) {}
-
-  // This frame tried to perform a navigation from |initiator_url| to
-  // |blocked_url| but was blocked because of |reason|.
-  virtual void DidBlockNavigation(const WebURL& blocked_url,
-                                  const WebURL& initiator_url,
-                                  blink::NavigationBlockedReason reason) {}
 
   // Tells the embedder to navigate back or forward in session history by
   // the given offset (relative to the current position in session

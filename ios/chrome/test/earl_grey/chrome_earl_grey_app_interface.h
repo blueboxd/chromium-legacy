@@ -357,9 +357,6 @@
 // Returns YES if WebPaymentsModifiers feature is enabled.
 + (BOOL)isWebPaymentsModifiersEnabled WARN_UNUSED_RESULT;
 
-// Returns YES if SettingsAddPaymentMethod feature is enabled.
-+ (BOOL)isSettingsAddPaymentMethodEnabled WARN_UNUSED_RESULT;
-
 // Returns YES if CreditCardScanner feature is enabled.
 + (BOOL)isCreditCardScannerEnabled WARN_UNUSED_RESULT;
 

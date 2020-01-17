@@ -38,13 +38,8 @@ namespace leveldb {
 class Env;
 }
 
-namespace storage {
-class QuotaManagerProxy;
-class SpecialStoragePolicy;
-}  // namespace storage
-
-namespace storage {
-class FileStreamReader;
+namespace url {
+class Origin;
 }
 
 namespace storage {
@@ -53,12 +48,15 @@ class AsyncFileUtil;
 class FileStreamWriter;
 class FileSystemFileUtil;
 class FileSystemOperationContext;
+class FileStreamReader;
 class FileSystemURL;
 class FileSystemUsageCache;
 class ObfuscatedFileUtil;
 class ObfuscatedFileUtilMemoryDelegate;
+class QuotaManagerProxy;
 class QuotaReservationManager;
 class SandboxQuotaObserver;
+class SpecialStoragePolicy;
 
 // Delegate implementation of the some methods in Sandbox/SyncFileSystemBackend.
 // An instance of this class is created and owned by FileSystemContext.
@@ -149,7 +147,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
                                          const GURL& origin_url,
                                          FileSystemType type) override;
   scoped_refptr<QuotaReservation> CreateQuotaReservationOnFileTaskRunner(
-      const GURL& origin_url,
+      const url::Origin& origin,
       FileSystemType type) override;
 
   // Adds an observer for the secified |type| of a file system, bound to

@@ -78,7 +78,7 @@ enum AvatarSyncErrorType {
 struct StatusLabels {
   MessageType message_type;
   int status_label_string_id;
-  int link_label_string_id;
+  int button_string_id;
   ActionType action_type;
 };
 

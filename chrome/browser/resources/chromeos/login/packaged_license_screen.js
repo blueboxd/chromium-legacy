@@ -21,6 +21,13 @@ Polymer({
     });
   },
 
+  /**
+   * Returns the control which should receive initial focus.
+   */
+  get defaultControl() {
+    return this.$.packagedLicenseDialog;
+  },
+
   /*
    * Executed on language change.
    */

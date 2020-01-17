@@ -72,7 +72,7 @@ class KerberosCredentialsManager : public KeyedService,
   static const char* GetDefaultKerberosConfig();
 
   // Returns true if the Kerberos feature is enabled.
-  bool IsKerberosEnabled();
+  bool IsKerberosEnabled() const;
 
   // PolicyService:
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,

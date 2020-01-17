@@ -206,15 +206,6 @@ GFX_EXPORT bool ApplyColorReduction(const SkBitmap& source_bitmap,
                                    bool fit_to_range,
                                    SkBitmap* target_bitmap);
 
-// Compute a monochrome image representing the principal color component of
-// the |source_bitmap|. The result is stored in |target_bitmap|, which must be
-// initialized to the required size and type (SkBitmap::kA8_Config).
-// Returns true if the conversion succeeded. Note that there might be legitimate
-// reasons for the process to fail even if all input was correct. This is a
-// condition the caller must be able to handle.
-GFX_EXPORT bool ComputePrincipalComponentImage(const SkBitmap& source_bitmap,
-                                              SkBitmap* target_bitmap);
-
 }  // namespace color_utils
 
 #endif  // UI_GFX_COLOR_ANALYSIS_H_

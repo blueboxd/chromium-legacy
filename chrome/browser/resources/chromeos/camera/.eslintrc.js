@@ -393,9 +393,5 @@ module.exports = {
     // code should be formatted properly by clang-format, as we required
     // `git cl format --js` before uploading.
     'indent': 'off',
-
-    // TODO(shik): temporarily disable the rules we violate (b/117810572).
-    'no-var': 'off',        // 64 errors
-    'prefer-const': 'off',  // 27 errors
   }),
 };

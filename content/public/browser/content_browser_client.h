@@ -35,7 +35,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "services/network/public/mojom/websocket.mojom-forward.h"
@@ -60,6 +60,7 @@
 
 namespace net {
 class AuthCredentials;
+class SiteForCookies;
 }  // namespace net
 
 class GURL;

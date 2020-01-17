@@ -24,10 +24,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
-#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/common/security/security_style.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom-forward.h"
+#include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
@@ -578,10 +578,11 @@ class CONTENT_EXPORT WebContentsDelegate {
   // |blocked_url| is the blocked navigation target, |initiator_url| is the URL
   // of the frame initiating the navigation, |reason| specifies why the
   // navigation was blocked.
-  virtual void OnDidBlockNavigation(WebContents* web_contents,
-                                    const GURL& blocked_url,
-                                    const GURL& initiator_url,
-                                    blink::NavigationBlockedReason reason) {}
+  virtual void OnDidBlockNavigation(
+      WebContents* web_contents,
+      const GURL& blocked_url,
+      const GURL& initiator_url,
+      blink::mojom::NavigationBlockedReason reason) {}
 
   // Reports that passive mixed content was found at the specified url.
   virtual void PassiveInsecureContentFound(const GURL& resource_url) {}

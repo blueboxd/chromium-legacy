@@ -13,7 +13,7 @@
 #include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "printing/buildflags/buildflags.h"
-#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
+#include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 
 namespace content {
 struct FileChooserParams;
@@ -100,10 +100,11 @@ class TabWebContentsDelegateAndroid
   blink::SecurityStyle GetSecurityStyle(
       content::WebContents* web_contents,
       content::SecurityStyleExplanations* security_style_explanations) override;
-  void OnDidBlockNavigation(content::WebContents* web_contents,
-                            const GURL& blocked_url,
-                            const GURL& initiator_url,
-                            blink::NavigationBlockedReason reason) override;
+  void OnDidBlockNavigation(
+      content::WebContents* web_contents,
+      const GURL& blocked_url,
+      const GURL& initiator_url,
+      blink::mojom::NavigationBlockedReason reason) override;
   void UpdateUserGestureCarryoverInfo(
       content::WebContents* web_contents) override;
   content::PictureInPictureResult EnterPictureInPicture(

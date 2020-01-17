@@ -126,12 +126,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
 
   bool DeleteDataForOriginOnFileTaskRunner(const GURL& origin_url);
 
-  // Creates a new QuotaReservation for the given |origin_url| and |type|.
+  // Creates a new QuotaReservation for the given |origin| and |type|.
   // Returns nullptr if |type| does not support quota or reservation fails.
   // This should be run on |default_file_task_runner_| and the returned value
   // should be destroyed on the runner.
   scoped_refptr<QuotaReservation> CreateQuotaReservationOnFileTaskRunner(
-      const GURL& origin_url,
+      const url::Origin& origin,
       FileSystemType type);
 
   storage::QuotaManagerProxy* quota_manager_proxy() const {

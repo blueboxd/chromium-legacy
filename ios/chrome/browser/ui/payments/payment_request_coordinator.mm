@@ -20,7 +20,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
-#include "ios/chrome/browser/ui/payments/full_card_requester.h"
+#include "ios/chrome/browser/ui/autofill/manual_fill/full_card_requester.h"
 #include "ios/chrome/browser/ui/payments/payment_request_mediator.h"
 #import "ios/chrome/browser/ui/payments/payment_request_navigation_controller.h"
 #include "ui/base/l10n/l10n_util.h"

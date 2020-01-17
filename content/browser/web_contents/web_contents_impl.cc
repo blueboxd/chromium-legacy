@@ -151,6 +151,7 @@
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/security/security_style.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
@@ -5371,7 +5372,7 @@ void WebContentsImpl::OnInterfaceRequest(
 void WebContentsImpl::OnDidBlockNavigation(
     const GURL& blocked_url,
     const GURL& initiator_url,
-    blink::NavigationBlockedReason reason) {
+    blink::mojom::NavigationBlockedReason reason) {
   if (delegate_)
     delegate_->OnDidBlockNavigation(this, blocked_url, initiator_url, reason);
 }

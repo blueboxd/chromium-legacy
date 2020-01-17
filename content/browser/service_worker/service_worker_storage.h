@@ -60,10 +60,12 @@ FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest,
 }  // namespace service_worker_storage_unittest
 
 // This class provides an interface to store and retrieve ServiceWorker
-// registration data. The lifetime is equal to ServiceWorkerContextCore that is
+// registration data. The lifetime is equal to ServiceWorkerRegistry that is
 // an owner of this class. When a storage operation fails, this is marked as
-// disabled and all subsequent requests are aborted until the context core is
+// disabled and all subsequent requests are aborted until the registry is
 // restarted.
+// TODO(crbug.com/1039200): Move some methods/fields to ServiceWorkerRegistry.
+// See the toplevel description of ServiceWorkerRegistry.
 class CONTENT_EXPORT ServiceWorkerStorage {
  public:
   using ResourceList = std::vector<ServiceWorkerDatabase::ResourceRecord>;

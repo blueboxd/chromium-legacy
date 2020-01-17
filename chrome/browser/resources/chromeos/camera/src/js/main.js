@@ -170,11 +170,11 @@ export class App {
    * @return {!Promise}
    */
   async start() {
-    var ackMigrate = false;
+    let ackMigrate = false;
     filesystem
         .initialize(() => {
           // Prompt to migrate pictures if needed.
-          var message = chrome.i18n.getMessage('migrate_pictures_msg');
+          const message = chrome.i18n.getMessage('migrate_pictures_msg');
           return nav.open('message-dialog', {message, cancellable: false})
               .then((acked) => {
                 if (!acked) {

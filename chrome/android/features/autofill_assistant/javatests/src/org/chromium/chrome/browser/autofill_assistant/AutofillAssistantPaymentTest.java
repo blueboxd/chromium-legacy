@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
@@ -22,6 +23,7 @@ import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getElementValue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilKeyboardMatchesCondition;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.support.test.InstrumentationRegistry;
@@ -43,7 +45,11 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProt
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto.InputType;
+import org.chromium.chrome.browser.autofill_assistant.proto.TextInputSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UseCreditCardProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.UserFormSectionProto;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -181,5 +187,64 @@ public class AutofillAssistantPaymentTest {
                                              .COLLECT_USER_DATA_CHECKBOX_TERMS_SECTION_TAG))),
                        withId(R.id.collect_data_privacy_notice)))
                 .check(matches(not(isDisplayed())));
+    }
+
+    /**
+     * If the user taps away from a text field, the keyboard should become hidden
+     */
+    @Test
+    @MediumTest
+    public void testKeyboardIsHiddenOnLostFocus() throws Exception {
+        String profileId = mHelper.addDummyProfile("John Doe", "johndoe@gmail.com");
+        mHelper.addDummyCreditCard(profileId);
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        UserFormSectionProto userFormSectionProto =
+                UserFormSectionProto.newBuilder()
+                        .setTitle("User form")
+                        .setTextInputSection(
+                                TextInputSectionProto.newBuilder()
+                                        .addInputFields(TextInputProto.newBuilder()
+                                                                .setHint("Field 1")
+                                                                .setInputType(InputType.INPUT_TEXT)
+                                                                .setClientMemoryKey("field_1"))
+                                        .addInputFields(TextInputProto.newBuilder()
+                                                                .setHint("Field 2")
+                                                                .setInputType(InputType.INPUT_TEXT)
+                                                                .setClientMemoryKey("field_2")))
+                        .build();
+
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(
+                                 CollectUserDataProto.newBuilder()
+                                         .setPrivacyNoticeText("3rd party privacy text")
+                                         .setShowTermsAsCheckbox(true)
+                                         .setRequestTermsAndConditions(true)
+                                         .setAcceptTermsAndConditionsText("accept terms")
+                                         .setTermsAndConditionsState(
+                                                 TermsAndConditionsState.ACCEPTED)
+                                         .addAdditionalPrependedSections(userFormSectionProto))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("User form"), isDisplayed());
+        onView(withText("User form")).perform(click());
+        waitUntilViewMatchesCondition(withText("Field 1"), isDisplayed());
+        onView(withText("Field 1")).perform(click());
+        waitUntilKeyboardMatchesCondition(mTestRule, true);
+        onView(withText("Field 2")).perform(scrollTo(), click());
+        waitUntilKeyboardMatchesCondition(mTestRule, true);
+        onView(withText("User form")).perform(scrollTo(), click());
+        waitUntilKeyboardMatchesCondition(mTestRule, false);
     }
 }

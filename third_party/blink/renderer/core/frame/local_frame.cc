@@ -39,9 +39,9 @@
 #include "skia/public/mojom/skcolor.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/interface_registry.h"
@@ -1040,9 +1040,9 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
           !LocalFrame::HasTransientUserActivation(this)) {
         // With only 'allow-top-navigation-by-user-activation' (but not
         // 'allow-top-navigation'), top navigation requires a user gesture.
-        Client()->DidBlockNavigation(
+        GetLocalFrameHostRemote().DidBlockNavigation(
             destination_url, GetDocument()->Url(),
-            blink::NavigationBlockedReason::kRedirectWithNoUserGestureSandbox);
+            mojom::NavigationBlockedReason::kRedirectWithNoUserGestureSandbox);
         PrintNavigationErrorMessage(
             target_frame,
             "The frame attempting navigation of the top-level window is "
@@ -1115,9 +1115,10 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
         "but is neither same-origin with its target nor has it received a "
         "user gesture. See "
         "https://www.chromestatus.com/features/5851021045661696.");
-    Client()->DidBlockNavigation(
+    GetLocalFrameHostRemote().DidBlockNavigation(
         destination_url, GetDocument()->Url(),
-        blink::NavigationBlockedReason::kRedirectWithNoUserGesture);
+        mojom::NavigationBlockedReason::kRedirectWithNoUserGesture);
+
   } else {
     PrintNavigationErrorMessage(target_frame,
                                 "The frame attempting navigation is neither "

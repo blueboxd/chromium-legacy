@@ -84,8 +84,14 @@ public final class NavigationController {
         }
     }
 
+    /**
+     * @since 81
+     */
     public void goToIndex(int index) {
         ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 81) {
+            throw new UnsupportedOperationException();
+        }
         try {
             mNavigationController.goToIndex(index);
         } catch (RemoteException e) {
@@ -134,6 +140,22 @@ public final class NavigationController {
         ThreadCheck.ensureOnUiThread();
         try {
             return Uri.parse(mNavigationController.getNavigationEntryDisplayUri(index));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * @since 81
+     */
+    @NonNull
+    public String getNavigationEntryTitle(int index) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 81) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return mNavigationController.getNavigationEntryTitle(index);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

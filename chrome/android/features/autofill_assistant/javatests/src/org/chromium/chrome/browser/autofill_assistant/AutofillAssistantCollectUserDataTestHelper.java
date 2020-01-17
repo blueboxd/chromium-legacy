@@ -155,6 +155,9 @@ public class AutofillAssistantCollectUserDataTestHelper {
         public void onKeyValueChanged(String key, String value) {
             mAdditionalValues.put(key, value);
         }
+
+        @Override
+        public void onTextFocusLost() {}
     }
 
     public AutofillAssistantCollectUserDataTestHelper() throws TimeoutException {

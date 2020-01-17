@@ -81,18 +81,20 @@ const FilesQuickView = Polymer({
         autoplay: false,
         browsable: false,
     });
-    this.removeAttribute('load-error');
+
     const video = this.$.contentPanel.querySelector('#videoSafeMedia');
     if (video) {
       video.src = '';
       video.fire('src-changed');
     }
+
+    this.removeAttribute('load-error');
   },
 
   // Handle load error from the files-safe-media container.
   loaderror: function() {
-    this.contentUrl = '';
     this.setAttribute('load-error', '');
+    this.contentUrl = '';
   },
 
   /** @return {boolean} */

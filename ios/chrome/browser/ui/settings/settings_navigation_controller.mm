@@ -242,8 +242,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                                           delegate {
   DCHECK(browser);
   AutofillCreditCardTableViewController* controller =
-      [[AutofillCreditCardTableViewController alloc]
-          initWithBrowserState:browser->GetBrowserState()];
+      [[AutofillCreditCardTableViewController alloc] initWithBrowser:browser];
   controller.dispatcher = [delegate dispatcherForSettings];
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
@@ -543,7 +542,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (UIViewController*)baseViewController {
   AutofillCreditCardTableViewController* controller =
       [[AutofillCreditCardTableViewController alloc]
-          initWithBrowserState:self.browser->GetBrowserState()];
+          initWithBrowser:self.browser];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];

@@ -203,6 +203,19 @@ bool PseudoElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return PseudoElementLayoutObjectIsNeeded(&style);
 }
 
+bool PseudoElement::CanGeneratePseudoElement(PseudoId pseudo_id) const {
+  switch (pseudo_id_) {
+    case kPseudoIdBefore:
+    case kPseudoIdAfter:
+      if (pseudo_id != kPseudoIdMarker)
+        return false;
+      break;
+    default:
+      return false;
+  }
+  return Element::CanGeneratePseudoElement(pseudo_id);
+}
+
 Node* PseudoElement::InnerNodeForHitTesting() const {
   return ParentOrShadowHostNode();
 }

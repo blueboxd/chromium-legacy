@@ -142,6 +142,7 @@ class UiControllerAndroid : public ControllerObserver {
                                  int minute,
                                  int second);
   void OnKeyValueChanged(const std::string& key, const std::string& value);
+  void OnTextFocusLost();
 
   // Called by AssistantFormDelegate:
   void OnCounterChanged(int input_index, int counter_index, int value);
@@ -209,6 +210,7 @@ class UiControllerAndroid : public ControllerObserver {
   void Shutdown(Metrics::DropOutReason reason);
   void UpdateActions(const std::vector<UserAction>& GetUserActions);
   void UpdateSuggestions(const std::vector<UserAction>& GetUserActions);
+  void HideKeyboardIfFocusNotOnText();
 
   // Hide the UI, show a snackbar with an undo button, and execute the given
   // action after a short delay unless the user taps the undo button.

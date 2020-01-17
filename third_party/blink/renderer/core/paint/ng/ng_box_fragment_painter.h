@@ -174,6 +174,12 @@ class NGBoxFragmentPainter : public BoxPainterBase {
           inline_root_offset(inline_root_offset),
           result(result) {}
 
+    // Add |node| to |HitTestResult|. Returns true if the hit-testing should
+    // stop.
+    bool AddNodeToResult(Node* node,
+                         const PhysicalRect& bounds_rect,
+                         const PhysicalOffset& offset) const;
+
     HitTestAction action;
     const HitTestLocation& location;
     // When traversing within an inline formatting context, this member

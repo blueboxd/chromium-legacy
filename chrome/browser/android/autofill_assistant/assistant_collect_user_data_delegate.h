@@ -73,6 +73,9 @@ class AssistantCollectUserDataDelegate {
                          const base::android::JavaParamRef<jstring>& jkey,
                          const base::android::JavaParamRef<jstring>& jvalue);
 
+  void OnTextFocusLost(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& jcaller);
+
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 
  private:

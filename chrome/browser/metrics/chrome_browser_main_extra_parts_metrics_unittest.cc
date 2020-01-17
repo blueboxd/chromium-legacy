@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/screen.h"
@@ -125,8 +126,16 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
 #else
 
 // Verify a TouchEventsEnabled value is recorded during PostBrowserStart.
+// Flaky on Win only.  http://crbug.com/1026946
+#if defined(OS_WIN)
+#define MAYBE_VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart \
+  DISABLED_VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart
+#else
+#define MAYBE_VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart \
+  VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart
+#endif
 TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
-       VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart) {
+       MAYBE_VerifyTouchEventsEnabledIsRecordedAfterPostBrowserStart) {
   base::HistogramTester histogram_tester;
   ChromeBrowserMainExtraPartsMetrics test_target;
 

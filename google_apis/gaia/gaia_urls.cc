@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/google_api_keys.h"
 #include "url/url_canon.h"
@@ -30,7 +31,17 @@ const char kEmbeddedSetupWindowsUrlSuffix[] = "embedded/setup/windows";
 // signs in to Chrome. Note that Gaia will pass this client specified parameter
 // to all URLs that are loaded as part of thi sign-in flow.
 const char kSigninChromeSyncDice[] = "signin/chrome/sync?ssp=1";
+
+#if defined(OS_ANDROID)
+const char kSigninChromeSyncKeysUrl[] = "encryption/unlock/android";
+#elif defined(OS_IOS)
+const char kSigninChromeSyncKeysUrl[] = "encryption/unlock/ios";
+#elif defined(OS_CHROMEOS)
+const char kSigninChromeSyncKeysUrl[] = "encryption/unlock/chromeos";
+#else
 const char kSigninChromeSyncKeysUrl[] = "encryption/unlock/desktop";
+#endif
+
 const char kServiceLoginAuthUrlSuffix[] = "ServiceLoginAuth";
 const char kServiceLogoutUrlSuffix[] = "Logout";
 const char kContinueUrlForLogoutSuffix[] = "chrome/blank.html";

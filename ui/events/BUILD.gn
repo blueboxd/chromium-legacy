@@ -233,13 +233,10 @@ jumbo_component("events") {
     "event_utils.h",
     "events_export.h",
     "gestures/gesture_recognizer.h",
-    "gestures/gesture_recognizer_impl_mac.h",
     "gestures/gesture_types.h",
     "keyboard_hook.h",
     "null_event_targeter.h",
     "scoped_target_handler.h",
-    "win/events_win_utils.h",
-    "win/system_event_state_lookup.h",
   ]
 
   sources = [
@@ -264,6 +261,11 @@ jumbo_component("events") {
   ]
 
   if (is_win) {
+    public += [
+      "win/events_win_utils.h",
+      "win/system_event_state_lookup.h",
+    ]
+
     sources += [
       "keycodes/platform_key_map_win.cc",
       "keycodes/platform_key_map_win.h",
@@ -278,6 +280,8 @@ jumbo_component("events") {
   }
 
   if (is_mac) {
+    public += [ "gestures/gesture_recognizer_impl_mac.h" ]
+
     sources += [
       "cocoa/cocoa_event_utils.mm",
       "cocoa/events_mac.mm",
@@ -470,8 +474,6 @@ jumbo_component("gesture_detection") {
 
 jumbo_static_library("test_support") {
   sources = [
-    "test/cocoa_test_event_utils.h",
-    "test/cocoa_test_event_utils.mm",
     "test/event_generator.cc",
     "test/event_generator.h",
     "test/events_test_utils.cc",
@@ -503,7 +505,11 @@ jumbo_static_library("test_support") {
   }
 
   if (is_mac) {
-    sources += [ "test/keyboard_layout_mac.cc" ]
+    sources += [
+      "test/cocoa_test_event_utils.h",
+      "test/cocoa_test_event_utils.mm",
+      "test/keyboard_layout_mac.cc",
+    ]
   }
 
   public_deps = [
@@ -520,13 +526,6 @@ jumbo_static_library("test_support") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
-
-  if (is_ios) {
-    sources -= [
-      "test/cocoa_test_event_utils.h",
-      "test/cocoa_test_event_utils.mm",
-    ]
-  }
 
   if (is_mac) {
     libs = [ "Carbon.framework" ]
@@ -572,7 +571,6 @@ if (!is_ios) {
       "blink/scroll_predictor_unittest.cc",
       "blink/web_input_event_traits_unittest.cc",
       "blink/web_input_event_unittest.cc",
-      "cocoa/events_mac_unittest.mm",
       "event_dispatcher_unittest.cc",
       "event_processor_unittest.cc",
       "event_rewriter_unittest.cc",
@@ -598,6 +596,10 @@ if (!is_ios) {
       "platform/platform_event_source_unittest.cc",
       "scoped_target_handler_unittest.cc",
     ]
+
+    if (is_mac) {
+      sources += [ "cocoa/events_mac_unittest.mm" ]
+    }
 
     if (is_win) {
       sources += [

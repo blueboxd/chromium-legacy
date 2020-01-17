@@ -60,7 +60,6 @@ source_set("payments") {
   ]
   deps = [
     ":payments_ui",
-    ":requesters",
     "resources:ic_add",
     "//base",
     "//components/autofill/core/browser",
@@ -81,6 +80,7 @@ source_set("payments") {
     "//ios/chrome/browser/ui/autofill",
     "//ios/chrome/browser/ui/autofill:autofill_ui",
     "//ios/chrome/browser/ui/autofill/cells",
+    "//ios/chrome/browser/ui/autofill/manual_fill:requesters",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
@@ -97,25 +97,6 @@ source_set("payments") {
     "//ios/web/public/security",
     "//third_party/libaddressinput",
     "//third_party/libaddressinput:strings_grit",
-    "//ui/base",
-  ]
-  libs = [ "UIKit.framework" ]
-}
-
-source_set("requesters") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "full_card_requester.h",
-    "full_card_requester.mm",
-  ]
-  deps = [
-    ":payments_ui",
-    "resources:ic_add",
-    "//base",
-    "//components/autofill/core/browser",
-    "//components/autofill/ios/browser",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/ui/autofill:bridges",
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
@@ -192,7 +173,6 @@ source_set("unit_tests") {
     "country_selection_coordinator_unittest.mm",
     "credit_card_edit_coordinator_unittest.mm",
     "credit_card_edit_mediator_unittest.mm",
-    "full_card_requester_unittest.mm",
     "payment_items_display_coordinator_unittest.mm",
     "payment_items_display_mediator_unittest.mm",
     "payment_items_display_view_controller_unittest.mm",
@@ -214,7 +194,6 @@ source_set("unit_tests") {
   deps = [
     ":payments",
     ":payments_ui",
-    ":requesters",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",

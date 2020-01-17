@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {getFileWriter} from './filesystem.js';
 // eslint-disable-next-line no-unused-vars
 import {VideoSaver} from './video_saver_interface.js';
 
@@ -13,7 +14,6 @@ export class FileVideoSaver {
   /**
    * @param {!FileEntry} file
    * @param {!FileWriter} writer
-   * @private
    */
   constructor(file, writer) {
     /**
@@ -34,15 +34,23 @@ export class FileVideoSaver {
   }
 
   /**
+   * @param {!Blob} blob
+   * @protected
+   */
+  async doWrite_(blob) {
+    return new Promise((resolve) => {
+      this.writer_.onwriteend = resolve;
+      this.writer_.write(blob);
+    });
+  }
+
+  /**
    * @override
    */
   async write(blob) {
     this.curWrite_ = (async () => {
       await this.curWrite_;
-      await new Promise((resolve) => {
-        this.writer_.onwriteend = resolve;
-        this.writer_.write(blob);
-      });
+      await this.doWrite_(blob);
     })();
     await this.curWrite_;
   }
@@ -61,9 +69,8 @@ export class FileVideoSaver {
    *     video into.
    * @return {!Promise<!FileVideoSaver>}
    */
-  static async create(file) {
-    const writer = await new Promise(
-        (resolve, reject) => file.createWriter(resolve, reject));
+  static async createFileVideoSaver(file) {
+    const writer = await getFileWriter(file);
     return new FileVideoSaver(file, writer);
   }
 }

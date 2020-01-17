@@ -3243,6 +3243,8 @@
     'weblayer_android_gtests': {
       'weblayer_instrumentation_test_apk': {
       },
+      'weblayer_private_instrumentation_test_apk': {
+      },
     },
 
     'weblayer_gtests': {

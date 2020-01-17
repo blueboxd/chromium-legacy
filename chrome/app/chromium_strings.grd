@@ -935,7 +935,7 @@ Chromium is unable to recover your settings.
         <message name="IDS_SYNC_UPGRADE_CLIENT" desc="Message indicating client needs to be upgraded to the latest version.">
           Update Chromium to start sync
         </message>
-        <message name="IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL" desc="Hyperlink text indicating client needs to be upgraded to the latest version.">
+        <message name="IDS_SYNC_UPGRADE_CLIENT_BUTTON" desc="Button indicating client needs to be upgraded to the latest version.">
           Update Chromium
         </message>
       </if>

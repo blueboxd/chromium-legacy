@@ -21,7 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_request_body_android.h"
-#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
+#include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
@@ -346,7 +346,7 @@ void WebContentsDelegateAndroid::OnDidBlockNavigation(
     content::WebContents* web_contents,
     const GURL& initiator_url,
     const GURL& blocked_url,
-    blink::NavigationBlockedReason reason) {}
+    blink::mojom::NavigationBlockedReason reason) {}
 
 int WebContentsDelegateAndroid::GetTopControlsHeight() {
   JNIEnv* env = AttachCurrentThread();

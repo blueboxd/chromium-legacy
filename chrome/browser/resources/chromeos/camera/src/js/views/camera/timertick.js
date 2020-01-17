@@ -42,7 +42,7 @@ export function start() {
       3: '#sound-tick-inc',
       [tickCounter]: '#sound-tick-start',
     };
-    var onTimerTick = () => {
+    const onTimerTick = () => {
       if (tickCounter === 0) {
         resolve();
       } else {

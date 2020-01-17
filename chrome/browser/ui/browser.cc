@@ -221,7 +221,7 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "net/base/filename_util.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
+#include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1385,11 +1385,13 @@ bool Browser::ShouldAllowRunningInsecureContent(
   return allowed;
 }
 
-void Browser::OnDidBlockNavigation(content::WebContents* web_contents,
-                                   const GURL& blocked_url,
-                                   const GURL& initiator_url,
-                                   blink::NavigationBlockedReason reason) {
-  if (reason == blink::NavigationBlockedReason::kRedirectWithNoUserGesture) {
+void Browser::OnDidBlockNavigation(
+    content::WebContents* web_contents,
+    const GURL& blocked_url,
+    const GURL& initiator_url,
+    blink::mojom::NavigationBlockedReason reason) {
+  if (reason ==
+      blink::mojom::NavigationBlockedReason::kRedirectWithNoUserGesture) {
     if (auto* framebust_helper =
             FramebustBlockTabHelper::FromWebContents(web_contents)) {
       auto on_click = [](const GURL& url, size_t index, size_t total_elements) {

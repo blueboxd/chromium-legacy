@@ -73,13 +73,13 @@ chromeos::disks::DiskMountManager::MountPointInfo MakeMountPointInfo(
 class SmbFsMounterTest : public testing::Test {
  public:
   void PostMountEvent(const std::string& source_path,
-                      const std::string& mount_path) {
+                      const std::string& mount_path,
+                      chromeos::MountError mount_error) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&chromeos::disks::MockDiskMountManager::NotifyMountEvent,
                        base::Unretained(&mock_disk_mount_manager_),
-                       chromeos::disks::DiskMountManager::MOUNTING,
-                       chromeos::MOUNT_ERROR_NONE,
+                       chromeos::disks::DiskMountManager::MOUNTING, mount_error,
                        MakeMountPointInfo(source_path, mount_path)));
   }
 
@@ -125,6 +125,31 @@ TEST_F(SmbFsMounterTest, FilesystemMountTimeout) {
             base::TimeDelta::FromSeconds(20));
 }
 
+TEST_F(SmbFsMounterTest, FilesystemMountFailure) {
+  base::RunLoop run_loop;
+  auto callback =
+      base::BindLambdaForTesting([&run_loop](mojom::MountError mount_error,
+                                             std::unique_ptr<SmbFsHost> host) {
+        EXPECT_EQ(mount_error, mojom::MountError::kUnknown);
+        EXPECT_FALSE(host);
+        run_loop.Quit();
+      });
+
+  std::unique_ptr<SmbFsMounter> mounter = std::make_unique<SmbFsMounter>(
+      kSharePath, kMountDir, SmbFsMounter::MountOptions(), &mock_delegate_,
+      &mock_disk_mount_manager_);
+
+  EXPECT_CALL(mock_disk_mount_manager_,
+              MountPath(StartsWith(kMountUrlPrefix), _, kMountDir, _, _, _))
+      .WillOnce(WithArg<0>([this](const std::string& source_path) {
+        PostMountEvent(source_path, kMountPath, chromeos::MOUNT_ERROR_INTERNAL);
+      }));
+  EXPECT_CALL(mock_disk_mount_manager_, UnmountPath(_, _)).Times(0);
+
+  mounter->Mount(callback);
+  run_loop.Run();
+}
+
 TEST_F(SmbFsMounterTest, TimeoutAfterFilesystemMount) {
   base::RunLoop run_loop;
   auto callback =
@@ -142,7 +167,7 @@ TEST_F(SmbFsMounterTest, TimeoutAfterFilesystemMount) {
   EXPECT_CALL(mock_disk_mount_manager_,
               MountPath(StartsWith(kMountUrlPrefix), _, kMountDir, _, _, _))
       .WillOnce(WithArg<0>([this](const std::string& source_path) {
-        PostMountEvent(source_path, kMountPath);
+        PostMountEvent(source_path, kMountPath, chromeos::MOUNT_ERROR_NONE);
       }));
   // Destructing SmbFsMounter on failure will cause the mount point to be
   // unmounted.
@@ -157,6 +182,34 @@ TEST_F(SmbFsMounterTest, TimeoutAfterFilesystemMount) {
 
   EXPECT_GE(task_environment_.NowTicks() - start_time,
             base::TimeDelta::FromSeconds(20));
+}
+
+TEST_F(SmbFsMounterTest, FilesystemMountAfterDestruction) {
+  base::RunLoop run_loop;
+  auto callback = base::BindLambdaForTesting(
+      [](mojom::MountError mount_error, std::unique_ptr<SmbFsHost> host) {
+        FAIL() << "Callback should not be run";
+      });
+
+  std::unique_ptr<SmbFsMounter> mounter = std::make_unique<SmbFsMounter>(
+      kSharePath, kMountDir, SmbFsMounter::MountOptions(), &mock_delegate_,
+      &mock_disk_mount_manager_);
+
+  EXPECT_CALL(mock_disk_mount_manager_,
+              MountPath(StartsWith(kMountUrlPrefix), _, kMountDir, _, _, _))
+      .WillOnce(WithArg<0>([this](const std::string& source_path) {
+        // This posts a mount event to the task queue, which will not be run
+        // until |run_loop| is started.
+        PostMountEvent(source_path, kMountPath, chromeos::MOUNT_ERROR_INTERNAL);
+      }));
+  EXPECT_CALL(mock_disk_mount_manager_, UnmountPath(_, _)).Times(0);
+
+  mounter->Mount(callback);
+
+  // Delete the mounter. Callback should not be run.
+  mounter.reset();
+
+  run_loop.RunUntilIdle();
 }
 
 class SmbFsMounterE2eTest : public testing::Test {

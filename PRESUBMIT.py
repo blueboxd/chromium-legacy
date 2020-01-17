@@ -2859,6 +2859,8 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
       # These files are just used to communicate between class loaders running
       # in the same process.
       'weblayer/browser/java/org/chromium/weblayer_private/interfaces/*',
+      'weblayer/browser/java/org/chromium/weblayer_private/test_interfaces/*',
+
   ]
 
   # Dictionary mapping an OWNERS file path to Patterns.

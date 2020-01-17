@@ -118,6 +118,8 @@ class MODULES_EXPORT MediaStreamTrack
   void applyConstraintsImageCapture(ScriptPromiseResolver*,
                                     const MediaTrackConstraints*);
 
+  std::string GetTrackLogString() const;
+
   MediaStreamSource::ReadyState ready_state_;
   HeapHashSet<Member<MediaStream>> registered_media_streams_;
   bool is_iterating_registered_media_streams_ = false;

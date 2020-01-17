@@ -1867,8 +1867,11 @@ void WebGLRenderingContextBase::bindTexture(GLenum target,
   // We use TEXTURE_EXTERNAL_OES to implement video texture on Android platform
   if (target == GL_TEXTURE_VIDEO_IMAGE_WEBGL) {
 #if defined(OS_ANDROID)
-    ContextGL()->BindTexture(GL_TEXTURE_EXTERNAL_OES, ObjectOrZero(texture));
+    // TODO(crbug.com/776222): Support extension on Android
+    NOTIMPLEMENTED();
+    return;
 #else
+    // TODO(crbug.com/776222): Using GL_TEXTURE_VIDEO_IMAGE_WEBGL in blink
     ContextGL()->BindTexture(GL_TEXTURE_2D, ObjectOrZero(texture));
     if (texture && !texture->GetTarget()) {
       ContextGL()->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,

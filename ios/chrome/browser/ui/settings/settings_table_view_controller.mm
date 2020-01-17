@@ -793,7 +793,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
       break;
     case ItemTypeAutofillCreditCard:
       controller = [[AutofillCreditCardTableViewController alloc]
-          initWithBrowserState:_browserState];
+          initWithBrowser:_browser];
       break;
     case ItemTypeAutofillProfile:
       controller = [[AutofillProfileTableViewController alloc]

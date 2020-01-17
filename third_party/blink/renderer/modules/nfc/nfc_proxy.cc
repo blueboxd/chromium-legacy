@@ -97,10 +97,9 @@ void NFCProxy::Push(device::mojom::blink::NDEFMessagePtr message,
 }
 
 void NFCProxy::CancelPush(
-    const String& target,
     device::mojom::blink::NFC::CancelPushCallback callback) {
   DCHECK(nfc_remote_);
-  nfc_remote_->CancelPush(StringToNDEFPushTarget(target), std::move(callback));
+  nfc_remote_->CancelPush(std::move(callback));
 }
 
 // device::mojom::blink::NFCClient implementation.

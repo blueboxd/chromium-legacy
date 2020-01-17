@@ -353,7 +353,8 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
 
   login_shelf_view_->SetLoginDialogState(
       OobeDialogState::SAML_PASSWORD_CONFIRM);
-  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kApps}));
 
   login_shelf_view_->SetLoginDialogState(OobeDialogState::HIDDEN);
   EXPECT_TRUE(

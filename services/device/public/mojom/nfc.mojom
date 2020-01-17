@@ -20,15 +20,6 @@ enum NDEFErrorType {
   IO_ERROR
 };
 
-enum NDEFPushTarget {
-  // The target of a push operation must be the NFC tag.
-  TAG,
-  // The target of a push operation must be the NFC peer (device to device).
-  PEER,
-  // The target of a push operation must be either NFC tag or peer.
-  ANY
-};
-
 // https://w3c.github.io/web-nfc/#the-record-type-string
 enum NDEFRecordTypeCategory {
   // Standardized well known types, including "empty", "text", "url",
@@ -97,9 +88,6 @@ struct NDEFMessage {
 };
 
 struct NDEFPushOptions {
-  // The target of the push operation.
-  NDEFPushTarget target;
-
   // If the property is true, the push operation will suspend active watchers
   // until its completion.
   bool ignore_read;
@@ -129,7 +117,7 @@ interface NFC {
   Push(NDEFMessage message, NDEFPushOptions? options) => (NDEFError? error);
 
   // Cancels pending push request.
-  CancelPush(NDEFPushTarget target) => (NDEFError? error);
+  CancelPush() => (NDEFError? error);
 
   // Starts watching for nearby NFC devices with data that matches
   // NDEFScanOptions filtering criteria. |id| identifies each watch request on

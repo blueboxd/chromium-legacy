@@ -50,7 +50,12 @@ var HistoryListFocusTest = class extends HistoryFocusTest {
   }
 };
 
-TEST_F('HistoryListFocusTest', 'All', function() {
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_AllListFocus DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_AllListFocus All');
+GEN('#endif');
+TEST_F('HistoryListFocusTest', 'MAYBE_AllListFocus', function() {
   mocha.run();
 });
 

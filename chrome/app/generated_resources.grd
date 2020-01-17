@@ -7893,10 +7893,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_SYNC_STATUS_NEEDS_PASSWORD" desc="Message indicating user must re-enter their sync password.">
           Enter your passphrase to sync your data
         </message>
-        <message name="IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL" desc="Hyperlink text indicating user must re-enter their sync password.">
+        <message name="IDS_SYNC_STATUS_NEEDS_PASSWORD_BUTTON" desc="Button indicating user must re-enter their sync password.">
           Enter passphrase
         </message>
-        <message name="IDS_SYNC_STATUS_NEEDS_KEYS_LINK_LABEL" desc="Hyperlink text indicating user must reauthenticate to sync encrypted datatypes.">
+        <message name="IDS_SYNC_STATUS_NEEDS_KEYS_BUTTON" desc="Button indicating user must reauthenticate to sync encrypted datatypes.">
           Fix now
         </message>
 
@@ -7914,12 +7914,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
           </message>
         </if>
         <if expr="not chromeos">
-          <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to sign in again to use sync.">
+          <message name="IDS_SYNC_RELOGIN_BUTTON" desc="The text to display on the button when the user needs to sign in again to use sync.">
             Sign in again
           </message>
         </if>
         <if expr="chromeos">
-          <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to sign out and sign in again to use sync on Chrome OS.">
+          <message name="IDS_SYNC_RELOGIN_BUTTON" desc="The text to display on the button when the user needs to sign out and sign in again to use sync on Chrome OS.">
             Sign out
           </message>
           <message name="IDS_ACTIVE_DIRECTORY_PASSWORD_EXPIRED" desc="The text to display on the hyperlink when the user needs to sign out and sign in again to change their password.">

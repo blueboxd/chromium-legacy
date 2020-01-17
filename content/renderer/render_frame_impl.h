@@ -736,9 +736,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void ForwardResourceTimingToParent(
       const blink::WebResourceTimingInfo& info) override;
   void DispatchLoad() override;
-  void DidBlockNavigation(const blink::WebURL& blocked_url,
-                          const blink::WebURL& initiator_url,
-                          blink::NavigationBlockedReason reason) override;
   void NavigateBackForwardSoon(int offset, bool has_user_gesture) override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   void RenderFallbackContentInParentProcess() override;

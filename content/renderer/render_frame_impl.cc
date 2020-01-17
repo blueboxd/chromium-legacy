@@ -4793,14 +4793,6 @@ void RenderFrameImpl::DispatchLoad() {
   Send(new FrameHostMsg_DispatchLoad(routing_id_));
 }
 
-void RenderFrameImpl::DidBlockNavigation(
-    const WebURL& blocked_url,
-    const WebURL& initiator_url,
-    blink::NavigationBlockedReason reason) {
-  Send(new FrameHostMsg_DidBlockNavigation(GetRoutingID(), blocked_url,
-                                           initiator_url, reason));
-}
-
 void RenderFrameImpl::NavigateBackForwardSoon(int offset,
                                               bool has_user_gesture) {
   Send(new FrameHostMsg_GoToEntryAtOffset(GetRoutingID(), offset,

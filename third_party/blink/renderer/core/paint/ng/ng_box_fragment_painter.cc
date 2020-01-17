@@ -1434,6 +1434,16 @@ bool NGBoxFragmentPainter::IsInSelfHitTestingPhase(HitTestAction action) const {
   return action == kHitTestForeground;
 }
 
+bool NGBoxFragmentPainter::HitTestContext::AddNodeToResult(
+    Node* node,
+    const PhysicalRect& bounds_rect,
+    const PhysicalOffset& offset) const {
+  if (node && !result->InnerNode())
+    result->SetNodeAndPosition(node, location.Point() - offset);
+  return result->AddNodeToListBasedTestResult(node, location, bounds_rect) ==
+         kStopHitTesting;
+}
+
 bool NGBoxFragmentPainter::NodeAtPoint(HitTestResult& result,
                                        const HitTestLocation& hit_test_location,
                                        const PhysicalOffset& physical_offset,
@@ -1502,15 +1512,9 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
     if (fragment.IsInlineBox())
       bounds_rect = PhysicalRect(PixelSnappedIntRect(bounds_rect));
     if (hit_test.location.Intersects(bounds_rect)) {
-      Node* node = fragment.NodeForHitTest();
-      if (!hit_test.result->InnerNode() && node) {
-        PhysicalOffset point = hit_test.location.Point() - physical_offset;
-        hit_test.result->SetNodeAndPosition(node, point);
-      }
-      if (hit_test.result->AddNodeToListBasedTestResult(
-              node, hit_test.location, bounds_rect) == kStopHitTesting) {
+      if (hit_test.AddNodeToResult(fragment.NodeForHitTest(), bounds_rect,
+                                   physical_offset))
         return true;
-      }
     }
   }
 
@@ -1548,15 +1552,9 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
   if (!hit_test.location.Intersects(rect))
     return false;
 
-  Node* node = text_fragment.NodeForHitTest();
-  if (!hit_test.result->InnerNode() && node) {
-    PhysicalOffset point = hit_test.location.Point() - physical_offset +
-                           text_paint_fragment->InlineOffsetToContainerBox();
-    hit_test.result->SetNodeAndPosition(node, point);
-  }
-
-  return hit_test.result->AddNodeToListBasedTestResult(node, hit_test.location,
-                                                       rect) == kStopHitTesting;
+  return hit_test.AddNodeToResult(
+      text_fragment.NodeForHitTest(), rect,
+      physical_offset - text_paint_fragment->InlineOffsetToContainerBox());
 }
 
 bool NGBoxFragmentPainter::HitTestTextItem(const HitTestContext& hit_test,
@@ -1581,15 +1579,8 @@ bool NGBoxFragmentPainter::HitTestTextItem(const HitTestContext& hit_test,
   if (!hit_test.location.Intersects(rect))
     return false;
 
-  Node* node = text_item.NodeForHitTest();
-  if (!hit_test.result->InnerNode() && node) {
-    PhysicalOffset point =
-        hit_test.location.Point() - hit_test.inline_root_offset;
-    hit_test.result->SetNodeAndPosition(node, point);
-  }
-
-  return hit_test.result->AddNodeToListBasedTestResult(node, hit_test.location,
-                                                       rect) == kStopHitTesting;
+  return hit_test.AddNodeToResult(text_item.NodeForHitTest(), rect,
+                                  hit_test.inline_root_offset);
 }
 
 // Replicates logic in legacy InlineFlowBox::NodeAtPoint().
@@ -1638,14 +1629,8 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
       return false;
   }
 
-  Node* node = fragment.NodeForHitTest();
-  if (!hit_test.result->InnerNode() && node) {
-    const PhysicalOffset point =
-        hit_test.location.Point() - physical_offset + cursor.CurrentOffset();
-    hit_test.result->SetNodeAndPosition(node, point);
-  }
-  return hit_test.result->AddNodeToListBasedTestResult(
-             node, hit_test.location, bounds_rect) == kStopHitTesting;
+  return hit_test.AddNodeToResult(fragment.NodeForHitTest(), bounds_rect,
+                                  physical_offset - cursor.CurrentOffset());
 }
 
 bool NGBoxFragmentPainter::HitTestChildBoxFragment(
@@ -1723,8 +1708,31 @@ bool NGBoxFragmentPainter::HitTestChildBoxItem(
 
   DCHECK(item.GetLayoutObject()->IsLayoutInline());
   DCHECK(!ToLayoutInline(item.GetLayoutObject())->ShouldCreateBoxFragment());
-  if (NGInlineCursor descendants = cursor.CursorForDescendants())
-    return HitTestItemsChildren(hit_test, descendants);
+  if (NGInlineCursor descendants = cursor.CursorForDescendants()) {
+    if (HitTestItemsChildren(hit_test, descendants))
+      return true;
+  }
+
+  // Now hit test ourselves.
+  if (hit_test.action == kHitTestForeground &&
+      IsVisibleToHitTest(item, hit_test.result->GetHitTestRequest())) {
+    const PhysicalOffset child_offset =
+        hit_test.inline_root_offset + item.Offset();
+    PhysicalRect bounds_rect(child_offset, item.Size());
+    if (UNLIKELY(hit_test.result->GetHitTestRequest().GetType() &
+                 HitTestRequest::kHitTestVisualOverflow)) {
+      bounds_rect = item.SelfInkOverflow();
+      bounds_rect.Move(child_offset);
+    }
+    // TODO(kojii): Don't have good explanation why only inline box needs to
+    // snap, but matches to legacy and fixes crbug.com/976606.
+    bounds_rect = PhysicalRect(PixelSnappedIntRect(bounds_rect));
+    if (hit_test.location.Intersects(bounds_rect)) {
+      if (hit_test.AddNodeToResult(item.NodeForHitTest(), bounds_rect,
+                                   child_offset))
+        return true;
+    }
+  }
 
   return false;
 }

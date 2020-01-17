@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
+import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSection.Delegate;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionContainer;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
@@ -167,14 +168,29 @@ class AssistantCollectUserDataBinder
             view.mDateRangeStartSection.setDelegate(dateStartDelegate);
             view.mDateRangeEndSection.setDelegate(dateEndDelegate);
             view.mPrependedSections.setDelegate(collectUserDataDelegate != null
-                            ? collectUserDataDelegate::onKeyValueChanged
+                            ? getAdditionalSectionsDelegate(collectUserDataDelegate)
                             : null);
             view.mAppendedSections.setDelegate(collectUserDataDelegate != null
-                            ? collectUserDataDelegate::onKeyValueChanged
+                            ? getAdditionalSectionsDelegate(collectUserDataDelegate)
                             : null);
         } else {
             assert handled : "Unhandled property detected in AssistantCollectUserDataBinder!";
         }
+    }
+
+    private Delegate getAdditionalSectionsDelegate(
+            AssistantCollectUserDataDelegate collectUserDataDelegate) {
+        return new Delegate() {
+            @Override
+            public void onValueChanged(String key, String value) {
+                collectUserDataDelegate.onKeyValueChanged(key, value);
+            }
+
+            @Override
+            public void onTextFocusLost() {
+                collectUserDataDelegate.onTextFocusLost();
+            }
+        };
     }
 
     private boolean shouldShowContactDetails(AssistantCollectUserDataModel model) {

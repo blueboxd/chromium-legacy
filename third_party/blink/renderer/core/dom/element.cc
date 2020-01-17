@@ -5256,8 +5256,11 @@ void Element::UpdatePseudoElement(PseudoId pseudo_id,
                                   const StyleRecalcChange change) {
   PseudoElement* element = GetPseudoElement(pseudo_id);
   if (!element) {
-    if ((element = CreatePseudoElementIfNeeded(pseudo_id)))
+    if ((element = CreatePseudoElementIfNeeded(pseudo_id))) {
+      // ::before and ::after can have a nested ::marker
+      element->CreatePseudoElementIfNeeded(kPseudoIdMarker);
       element->SetNeedsReattachLayoutTree();
+    }
     return;
   }
 
@@ -5275,8 +5278,6 @@ void Element::UpdatePseudoElement(PseudoId pseudo_id,
 }
 
 PseudoElement* Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
-  if (IsPseudoElement())
-    return nullptr;
   if (!CanGeneratePseudoElement(pseudo_id))
     return nullptr;
   if (pseudo_id == kPseudoIdFirstLetter) {

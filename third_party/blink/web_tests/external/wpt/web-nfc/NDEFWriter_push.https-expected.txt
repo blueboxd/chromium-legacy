@@ -10,7 +10,6 @@ PASS Synchronously signaled abort.
 PASS NDEFWriter.push should fail when NFC HW is disabled.
 PASS NDEFWriter.push should fail when NFC HW is not supported.
 PASS Reject promise with NotSupportedError if NFC message size exceeds 32KB.
-PASS NDEFWriter.push should fail with TypeError when invalid target value is provided.
 PASS Test that WebNFC API is not accessible from iframe context.
 PASS NDEFWriter.push should succeed when NFC HW is enabled
 PASS NDEFWriter.push NDEFMessage containing text, mime, unknown, url, absolute-url and external records with default NDEFPushOptions.

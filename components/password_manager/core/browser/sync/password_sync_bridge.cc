@@ -293,21 +293,6 @@ PasswordSyncBridge::CreateMetadataChangeList() {
 base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  base::Optional<syncer::ModelError> error = MergeSyncDataInternal(
-      std::move(metadata_change_list), std::move(entity_data));
-  if (error) {
-    base::UmaHistogramCounts10000(
-        "Sync.DownloadedPasswordsCountWhenInitialMergeFails",
-        entity_data.size());
-  } else {
-    sync_enabled_or_disabled_cb_.Run();
-  }
-  return error;
-}
-
-base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
-    std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-    syncer::EntityChangeList entity_data) {
   // This method merges the local and remote passwords based on their client
   // tags. For a form |F|, there are three cases to handle:
   // 1. |F| exists only in the local model --> |F| should be Put() in the change
@@ -544,6 +529,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
   }
 
   metrics_util::LogPasswordSyncState(metrics_util::SYNCING_OK);
+  sync_enabled_or_disabled_cb_.Run();
   return base::nullopt;
 }
 

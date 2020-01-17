@@ -51,7 +51,6 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
@@ -63,6 +62,7 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
@@ -148,8 +148,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::FrameOcclusionState,
                               blink::FrameOcclusionState::kUnknown,
                               blink::FrameOcclusionState::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::NavigationBlockedReason,
-                          blink::NavigationBlockedReason::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::WebFeature,
                           blink::mojom::WebFeature::kMaxValue)
 
@@ -1204,13 +1202,6 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_DidLoadResourceFromMemoryCache,
                     std::string /* http method */,
                     std::string /* mime type */,
                     content::ResourceType /* resource type */)
-
-// This frame attempted to navigate the main frame from the |initiator_url| to
-// the |blocked_url|, but the navigation was blocked because of |reason|.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_DidBlockNavigation,
-                    GURL /* blocked_url */,
-                    GURL /* initiator_url */,
-                    blink::NavigationBlockedReason /* reason */)
 
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.

@@ -10,8 +10,6 @@
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 
-using device::mojom::blink::NDEFPushTarget;
-
 namespace blink {
 
 size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessage& message) {
@@ -21,16 +19,6 @@ size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessage& message) {
     message_size += message.data[i]->data.size();
   }
   return message_size;
-}
-
-NDEFPushTarget StringToNDEFPushTarget(const String& target) {
-  if (target == "tag")
-    return NDEFPushTarget::TAG;
-
-  if (target == "peer")
-    return NDEFPushTarget::PEER;
-
-  return NDEFPushTarget::ANY;
 }
 
 DOMException* NDEFErrorTypeToDOMException(

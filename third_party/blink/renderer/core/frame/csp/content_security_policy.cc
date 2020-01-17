@@ -28,6 +28,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/debug/dump_without_crashing.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -559,6 +560,12 @@ bool ContentSecurityPolicy::AllowWasmEval(
 
 String ContentSecurityPolicy::EvalDisabledErrorMessage() const {
   for (const auto& policy : policies_) {
+    // Check that the policy is non-null.
+    // TODO(clamy): Remove this DumpWithoutCrashing once
+    // https://crbug.com/1037776 is fixed.
+    if (!policy)
+      base::debug::DumpWithoutCrashing();
+
     if (policy->ShouldDisableEval()) {
       return policy->EvalDisabledErrorMessage();
     }

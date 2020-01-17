@@ -361,7 +361,6 @@ export function saveBlob(blob, filename) {
   return saveToFile(dir, filename, blob);
 }
 
-
 /**
  * Gets metadata of the file.
  * @param {!FileEntry} file
@@ -369,6 +368,15 @@ export function saveBlob(blob, filename) {
  */
 export function getMetadata(file) {
   return new Promise((resolve) => file.getMetadata(resolve));
+}
+
+/**
+ * Gets FileWriter of the file.
+ * @param {!FileEntry} file
+ * @return {!Promise<!FileWriter>}
+ */
+export function getFileWriter(file) {
+  return new Promise((resolve, reject) => file.createWriter(resolve, reject));
 }
 
 /**
@@ -418,7 +426,7 @@ export async function saveVideo(tempfile, filename) {
   assert(dir !== null);
 
   // Non-null version for the Closure Compiler.
-  let nonNullDir = dir;
+  const nonNullDir = dir;
 
   // Assuming content of tempfile contains all recorded chunks appended together
   // and is a well-formed video. The work needed here is just to move the file

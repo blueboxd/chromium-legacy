@@ -104,7 +104,7 @@ export class MasterSettings extends BaseSettings {
    * @private
    */
   openFeedback() {
-    var data = {
+    const data = {
       'categoryTag': 'chromeos-camera-app',
       'requestFeedback': true,
       'feedbackInfo': {

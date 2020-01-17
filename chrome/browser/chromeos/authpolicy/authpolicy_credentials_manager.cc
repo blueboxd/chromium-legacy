@@ -257,7 +257,7 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
 
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(
-      l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL)));
+      l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_BUTTON)));
 
   const std::string notification_id = kProfileSigninNotificationId +
                                       profile_->GetProfileUserName() +

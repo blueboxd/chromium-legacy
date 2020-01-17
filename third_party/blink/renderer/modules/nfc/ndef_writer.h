@@ -46,7 +46,7 @@ class NDEFWriter : public ScriptWrappable, public ContextClient {
 
  private:
   void InitNfcProxyIfNeeded();
-  void Abort(const String& target, ScriptPromiseResolver* resolver);
+  void Abort(ScriptPromiseResolver* resolver);
   void OnRequestCompleted(ScriptPromiseResolver* resolver,
                           device::mojom::blink::NDEFErrorPtr error);
 

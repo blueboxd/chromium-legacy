@@ -55,7 +55,8 @@ public class AssistantTextInputSection implements AssistantAdditionalSection {
             mKey = key;
         }
 
-        View createView(Context context, Callback<Pair<String, String>> changedCallback) {
+        EditorTextField createView(
+                Context context, Callback<Pair<String, String>> changedCallback) {
             TextWatcher textWatcher = new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -126,7 +127,7 @@ public class AssistantTextInputSection implements AssistantAdditionalSection {
         for (TextInputFactory input : inputs) {
             TextView summaryView = new TextView(context);
             ApiCompatibilityUtils.setTextAppearance(summaryView, R.style.TextAppearance_BlackBody);
-            View inputView = input.createView(context, result -> {
+            EditorTextField inputView = input.createView(context, result -> {
                 if (mDelegate == null) {
                     return;
                 }
@@ -134,6 +135,11 @@ public class AssistantTextInputSection implements AssistantAdditionalSection {
                 summaryView.setVisibility(
                         TextUtils.isEmpty(result.second) ? View.GONE : View.VISIBLE);
                 mDelegate.onValueChanged(result.first, result.second);
+            });
+            inputView.getInputLayout().addEditTextOnFocusChangeListener((unusedView, hasFocus) -> {
+                if (!hasFocus && mDelegate != null) {
+                    mDelegate.onTextFocusLost();
+                }
             });
             mInputContainer.addView(inputView);
             mSummaryViews.add(summaryView);

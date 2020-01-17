@@ -21,6 +21,7 @@
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
+#include "content/browser/service_worker/service_worker_registry.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/service_worker_context.h"
@@ -148,7 +149,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void OnNoControllees(ServiceWorkerVersion* version) override;
 
   ServiceWorkerContextWrapper* wrapper() const { return wrapper_; }
-  ServiceWorkerStorage* storage() { return storage_.get(); }
+  ServiceWorkerRegistry* registry() const { return registry_.get(); }
+  // TODO(crbug.com/1016064): Remove this accessor once some parts of
+  // ServiceWorkerStorage are moved to the Storage Service.
+  ServiceWorkerStorage* storage() const;
   ServiceWorkerProcessManager* process_manager();
   ServiceWorkerJobCoordinator* job_coordinator() {
     return job_coordinator_.get();
@@ -360,7 +364,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // ServiceWorkerProviderHost.
   std::unique_ptr<ContainerHostByClientUUIDMap> container_host_by_uuid_;
 
-  std::unique_ptr<ServiceWorkerStorage> storage_;
+  std::unique_ptr<ServiceWorkerRegistry> registry_;
   std::unique_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
   std::map<int64_t, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64_t, ServiceWorkerVersion*> live_versions_;

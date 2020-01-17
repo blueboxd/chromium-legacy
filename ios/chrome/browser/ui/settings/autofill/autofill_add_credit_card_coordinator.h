@@ -12,6 +12,12 @@
 // The coordinator for add credit card screen.
 @interface AutofillAddCreditCardCoordinator : ChromeCoordinator
 
+// Use -initWithBaseViewController:browser:
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_AUTOFILL_ADD_CREDIT_CARD_COORDINATOR_H_

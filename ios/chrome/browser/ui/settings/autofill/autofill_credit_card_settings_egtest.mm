@@ -244,78 +244,8 @@ id<GREYMatcher> SettingsMenuBackButton(NSString* backItemTitle) {
   [self exitSettingsMenu];
 }
 
-// Checks that the toolbar appears in edit mode once a card is selected and
-// disappears when a card is deselected.
-- (void)testToolbarInEditMode {
-  if ([ChromeEarlGrey isSettingsAddPaymentMethodEnabled]) {
-    // The toolbar is always displayed when the AddPayment feature is enabled.
-    EARL_GREY_TEST_SKIPPED(
-        @"This test makes sense only when there is no Add Payment button.");
-  }
-
-  NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
-  [self openCreditCardListInEditMode];
-
-  [[EarlGrey selectElementWithMatcher:BottomToolbar()]
-      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
-                                          [self creditCardLabel:lastDigits])]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:BottomToolbar()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
-                                          [self creditCardLabel:lastDigits])]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:BottomToolbar()]
-      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-}
-
-// Checks the toolbar buttons in the edit mode of the list of credit cards. The
-// delete button should appear on selecting a card and be removed when no card
-// is selected. There should be no 'Add payment method' button if the
-// kSettingsAddPaymentMethod flag is not enabled.
-- (void)testToolbarButtonsInEditMode {
-  if ([ChromeEarlGrey isSettingsAddPaymentMethodEnabled]) {
-    // The toolbar is always displayed when the AddPayment feature is enabled.
-    EARL_GREY_TEST_SKIPPED(
-        @"This test makes sense only when there is no Add Payment button.");
-  }
-
-  NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
-  [self openCreditCardListInEditMode];
-
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
-                                          [self creditCardLabel:lastDigits])]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::AddPaymentMethodButton()]
-      assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          SettingsBottomToolbarDeleteButton()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
-                                          [self creditCardLabel:lastDigits])]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::AddPaymentMethodButton()]
-      assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          SettingsBottomToolbarDeleteButton()]
-      assertWithMatcher:grey_nil()];
-}
-
-// Checks that the toolbar always appears in edit mode when the 'Add Payment
-// method' feature is enabled.
+// Checks that the toolbar always appears in edit mode.
 - (void)testToolbarInEditModeAddPaymentMethodFeatureEnabled {
-  [[AppLaunchManager sharedManager]
-      ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod}
-                                  disabled:{}
-                            relaunchPolicy:NoForceRelaunchAndResetState];
-  if (![ChromeEarlGrey isSettingsAddPaymentMethodEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test has no meaning when AddPaymentMethod is disabled");
-  }
-
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [self openCreditCardListInEditMode];
 
@@ -333,17 +263,9 @@ id<GREYMatcher> SettingsMenuBackButton(NSString* backItemTitle) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Checks the 'Add Payment Method' button is always visible when the feature is
-// enabled and directs a user to the Add Payent method view.
+// Checks the 'Add Payment Method' button is always visible and directs a user
+// to the Add Payent method view.
 - (void)testToolbarAddPaymentMethodButtonFeatureEnabled {
-  [[AppLaunchManager sharedManager]
-      ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod}
-                                  disabled:{}
-                            relaunchPolicy:NoForceRelaunchAndResetState];
-  if (![ChromeEarlGrey isSettingsAddPaymentMethodEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test has no meaning when AddPaymentMethod is disabled");
-  }
   [AutofillAppInterface saveLocalCreditCard];
   [self openCreditCardListInEditMode];
 
@@ -357,18 +279,10 @@ id<GREYMatcher> SettingsMenuBackButton(NSString* backItemTitle) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Checks the 'Delete' button is always visible when the feature is displayed.
+// Checks the 'Delete' button is always visible.
 // The button is enabled when a card is selected and disabled when a card is not
 // selected.
 - (void)testToolbarDeleteButtonWithAddPaymentMethodFeatureEnabled {
-  [[AppLaunchManager sharedManager]
-      ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod}
-                                  disabled:{}
-                            relaunchPolicy:NoForceRelaunchAndResetState];
-  if (![ChromeEarlGrey isSettingsAddPaymentMethodEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test has no meaning when AddPaymentMethod is disabled");
-  }
   NSString* lastDigits = [AutofillAppInterface saveLocalCreditCard];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           SettingsBottomToolbarDeleteButton()]

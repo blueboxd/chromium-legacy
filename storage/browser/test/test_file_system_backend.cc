@@ -83,7 +83,7 @@ class TestFileSystemBackend::QuotaUtil : public storage::FileSystemQuotaUtil,
 
   scoped_refptr<storage::QuotaReservation>
   CreateQuotaReservationOnFileTaskRunner(
-      const GURL& origin_url,
+      const url::Origin& origin,
       storage::FileSystemType type) override {
     NOTREACHED();
     return scoped_refptr<storage::QuotaReservation>();

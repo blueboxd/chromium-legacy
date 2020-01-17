@@ -16,6 +16,10 @@
 #include "storage/common/file_system/file_system_types.h"
 #include "url/gurl.h"
 
+namespace url {
+class Origin;
+}
+
 namespace storage {
 
 class FileSystemContext;
@@ -57,7 +61,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaUtil {
 
   // Creates new reservation object for the origin and the type.
   virtual scoped_refptr<QuotaReservation>
-  CreateQuotaReservationOnFileTaskRunner(const GURL& origin_url,
+  CreateQuotaReservationOnFileTaskRunner(const url::Origin& origin,
                                          FileSystemType type) = 0;
 };
 

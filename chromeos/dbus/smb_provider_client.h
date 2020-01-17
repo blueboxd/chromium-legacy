@@ -205,8 +205,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SmbProviderClient
                          ReadDirectoryCallback callback) = 0;
 
   // Calls SetupKerberos. This sets up Kerberos for the user |account_id|,
-  // fetching the user's Kerberos files from AuthPolicy. The user must be
-  // ChromAD enrolled.
+  // fetching the user's Kerberos files from AuthPolicy (if user is enrolled to
+  // ChromAD) or Kerberos. If user is enrolled to ChromAD, |account_id| is
+  // expected to be an object guid, otherwise it must be a principal name.
   virtual void SetupKerberos(const std::string& account_id,
                              SetupKerberosCallback callback) = 0;
 

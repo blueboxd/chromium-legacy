@@ -109,7 +109,6 @@ jumbo_component("views") {
     "bubble/info_bubble.h",
     "bubble/tooltip_icon.h",
     "button_drag_utils.h",
-    "cocoa/native_widget_mac_ns_window_host.h",
     "color_chooser/color_chooser_listener.h",
     "color_chooser/color_chooser_view.h",
     "context_menu_controller.h",
@@ -138,8 +137,6 @@ jumbo_component("views") {
     "controls/image_view.h",
     "controls/label.h",
     "controls/link.h",
-    "controls/menu/menu_closure_animation_mac.h",
-    "controls/menu/menu_cocoa_watcher_mac.h",
     "controls/menu/menu_config.h",
     "controls/menu/menu_controller.h",
     "controls/menu/menu_controller_delegate.h",
@@ -154,7 +151,6 @@ jumbo_component("views") {
     "controls/menu/menu_runner_handler.h",
     "controls/menu/menu_runner_impl.h",
     "controls/menu/menu_runner_impl_adapter.h",
-    "controls/menu/menu_runner_impl_cocoa.h",
     "controls/menu/menu_runner_impl_interface.h",
     "controls/menu/menu_scroll_view_container.h",
     "controls/menu/menu_separator.h",
@@ -172,7 +168,6 @@ jumbo_component("views") {
     "controls/scroll_view.h",
     "controls/scrollbar/base_scroll_bar_button.h",
     "controls/scrollbar/base_scroll_bar_thumb.h",
-    "controls/scrollbar/cocoa_scroll_bar.h",
     "controls/scrollbar/overlay_scroll_bar.h",
     "controls/scrollbar/scroll_bar.h",
     "controls/scrollbar/scroll_bar_views.h",
@@ -199,7 +194,6 @@ jumbo_component("views") {
     "drag_controller.h",
     "drag_utils.h",
     "event_monitor.h",
-    "event_monitor_mac.h",
     "focus/external_focus_tracker.h",
     "focus/focus_manager.h",
     "focus/focus_manager_delegate.h",
@@ -260,19 +254,16 @@ jumbo_component("views") {
     "widget/drop_helper.h",
     "widget/native_widget.h",
     "widget/native_widget_delegate.h",
-    "widget/native_widget_mac.h",
     "widget/native_widget_private.h",
     "widget/root_view.h",
     "widget/root_view_targeter.h",
     "widget/tooltip_manager.h",
     "widget/widget.h",
-    "widget/widget_aura_utils.h",
     "widget/widget_delegate.h",
     "widget/widget_deletion_observer.h",
     "widget/widget_observer.h",
     "widget/widget_removals_observer.h",
     "widget/widget_utils.h",
-    "widget/widget_utils_mac.h",
     "window/caption_button_layout_constants.h",
     "window/caption_button_types.h",
     "window/client_view.h",
@@ -354,8 +345,6 @@ jumbo_component("views") {
     "controls/image_view.cc",
     "controls/label.cc",
     "controls/link.cc",
-    "controls/menu/menu_closure_animation_mac.mm",
-    "controls/menu/menu_cocoa_watcher_mac.mm",
     "controls/menu/menu_config.cc",
     "controls/menu/menu_controller.cc",
     "controls/menu/menu_delegate.cc",
@@ -367,20 +356,17 @@ jumbo_component("views") {
     "controls/menu/menu_runner.cc",
     "controls/menu/menu_runner_impl.cc",
     "controls/menu/menu_runner_impl_adapter.cc",
-    "controls/menu/menu_runner_impl_cocoa.mm",
     "controls/menu/menu_scroll_view_container.cc",
     "controls/menu/menu_separator.cc",
     "controls/menu/submenu_view.cc",
     "controls/message_box_view.cc",
     "controls/native/native_view_host.cc",
-    "controls/native/native_view_host_mac.mm",
     "controls/prefix_selector.cc",
     "controls/progress_bar.cc",
     "controls/resize_area.cc",
     "controls/scroll_view.cc",
     "controls/scrollbar/base_scroll_bar_button.cc",
     "controls/scrollbar/base_scroll_bar_thumb.cc",
-    "controls/scrollbar/cocoa_scroll_bar.mm",
     "controls/scrollbar/overlay_scroll_bar.cc",
     "controls/scrollbar/scroll_bar.cc",
     "controls/scrollbar/scroll_bar_views.cc",
@@ -401,7 +387,6 @@ jumbo_component("views") {
     "controls/views_text_services_context_menu.cc",
     "controls/views_text_services_context_menu_base.cc",
     "controls/views_text_services_context_menu_base.h",
-    "controls/views_text_services_context_menu_mac.mm",
     "debug_utils.cc",
     "drag_utils.cc",
     "focus/external_focus_tracker.cc",
@@ -474,42 +459,6 @@ jumbo_component("views") {
     "window/window_shape.cc",
   ]
 
-  if (is_chromeos) {
-    sources += [ "controls/menu/menu_config_chromeos.cc" ]
-  }
-
-  if (is_linux) {
-    sources += [ "controls/menu/menu_config_linux.cc" ]
-  }
-
-  if (is_mac) {
-    sources += [
-      "controls/menu/menu_config_mac.mm",
-      "metrics_mac.cc",
-      "views_touch_selection_controller_factory_mac.cc",
-    ]
-  }
-
-  if (is_win) {
-    public += [ "controls/menu/native_menu_win.h" ]
-    sources += [
-      "controls/menu/menu_config_win.cc",
-      "controls/menu/native_menu_win.cc",
-    ]
-  }
-
-  if (is_mac) {
-    sources += [
-      "accessibility/ax_virtual_view_mac.mm",
-      "drag_utils_mac.mm",
-      "event_monitor_mac.mm",
-      "native_cursor_mac.mm",
-      "style/platform_style_mac.mm",
-      "widget/native_widget_mac.mm",
-      "widget/widget_utils_mac.mm",
-    ]
-  }
-
   # Other targets in this file (e.g. tests) get access to the internal headers.
   friend = [ ":*" ]
 
@@ -520,18 +469,6 @@ jumbo_component("views") {
     "controls/button/label_button_label.h",
     "controls/menu/menu_pre_target_handler.h",
   ]
-
-  if (is_mac) {
-    sources += [
-      "cocoa/drag_drop_client_mac.h",
-      "cocoa/drag_drop_client_mac.mm",
-      "cocoa/native_widget_mac_ns_window_host.mm",
-      "cocoa/text_input_host.h",
-      "cocoa/text_input_host.mm",
-      "cocoa/tooltip_manager_mac.h",
-      "cocoa/tooltip_manager_mac.mm",
-    ]
-  }
 
   sources += get_target_outputs(":views_vector_icons")
   configs += [
@@ -596,6 +533,7 @@ jumbo_component("views") {
       "linux_ui/window_button_order_observer.h",
     ]
     sources += [
+      "controls/menu/menu_config_linux.cc",
       "linux_ui/linux_ui.cc",
       "linux_ui/status_icon_linux.cc",
       "linux_ui/window_button_order_provider.cc",
@@ -603,11 +541,69 @@ jumbo_component("views") {
   }
 
   if (is_chromeos) {
-    sources -= [ "controls/menu/menu_config_linux.cc" ]
+    sources += [ "controls/menu/menu_config_chromeos.cc" ]
+  }
+
+  if (is_mac) {
+    public += [
+      "cocoa/native_widget_mac_ns_window_host.h",
+      "controls/menu/menu_closure_animation_mac.h",
+      "controls/menu/menu_cocoa_watcher_mac.h",
+      "controls/menu/menu_runner_impl_cocoa.h",
+      "controls/scrollbar/cocoa_scroll_bar.h",
+      "event_monitor_mac.h",
+      "widget/native_widget_mac.h",
+      "widget/widget_utils_mac.h",
+    ]
+    sources += [
+      "accessibility/ax_virtual_view_mac.mm",
+      "cocoa/drag_drop_client_mac.h",
+      "cocoa/drag_drop_client_mac.mm",
+      "cocoa/native_widget_mac_ns_window_host.mm",
+      "cocoa/text_input_host.h",
+      "cocoa/text_input_host.mm",
+      "cocoa/tooltip_manager_mac.h",
+      "cocoa/tooltip_manager_mac.mm",
+      "controls/menu/menu_closure_animation_mac.mm",
+      "controls/menu/menu_cocoa_watcher_mac.mm",
+      "controls/menu/menu_config_mac.mm",
+      "controls/menu/menu_pre_target_handler_mac.h",
+      "controls/menu/menu_pre_target_handler_mac.mm",
+      "controls/menu/menu_runner_impl_cocoa.mm",
+      "controls/native/native_view_host_mac.mm",
+      "controls/scrollbar/cocoa_scroll_bar.mm",
+      "controls/views_text_services_context_menu_mac.mm",
+      "drag_utils_mac.mm",
+      "event_monitor_mac.mm",
+      "metrics_mac.cc",
+      "native_cursor_mac.mm",
+      "style/platform_style_mac.mm",
+      "views_touch_selection_controller_factory_mac.cc",
+      "widget/native_widget_mac.mm",
+      "widget/widget_utils_mac.mm",
+    ]
+    sources -= [ "controls/views_text_services_context_menu.cc" ]
+    public_deps += [ "//components/remote_cocoa/common:mojo" ]
+    deps += [
+      "//components/crash/core/common",
+      "//components/remote_cocoa/app_shim",
+      "//components/remote_cocoa/browser",
+      "//ui/accelerated_widget_mac",
+      "//ui/events:dom_keycode_converter",
+    ]
+    libs = [
+      "AppKit.framework",
+      "CoreGraphics.framework",
+      "Foundation.framework",
+      "IOSurface.framework",
+      "QuartzCore.framework",
+      "ApplicationServices.framework",
+    ]
   }
 
   if (is_win) {
     public += [
+      "controls/menu/native_menu_win.h",
       "widget/widget_hwnd_utils.h",
       "win/fullscreen_handler.h",
       "win/hwnd_message_handler.h",
@@ -618,6 +614,8 @@ jumbo_component("views") {
       "win/scoped_fullscreen_visibility.h",
     ]
     sources += [
+      "controls/menu/menu_config_win.cc",
+      "controls/menu/native_menu_win.cc",
       "widget/widget_hwnd_utils.cc",
       "win/fullscreen_handler.cc",
       "win/hwnd_message_handler.cc",
@@ -682,6 +680,7 @@ jumbo_component("views") {
       "widget/focus_manager_event_handler.h",
       "widget/native_widget_aura.h",
       "widget/tooltip_manager_aura.h",
+      "widget/widget_aura_utils.h",
       "widget/window_reorderer.h",
     ]
 
@@ -822,30 +821,6 @@ jumbo_component("views") {
     }
   }
 
-  if (is_mac) {
-    sources -= [ "controls/views_text_services_context_menu.cc" ]
-    sources += [
-      "controls/menu/menu_pre_target_handler_mac.h",
-      "controls/menu/menu_pre_target_handler_mac.mm",
-    ]
-    deps += [
-      "//components/crash/core/common",
-      "//components/remote_cocoa/app_shim",
-      "//components/remote_cocoa/browser",
-      "//ui/accelerated_widget_mac",
-      "//ui/events:dom_keycode_converter",
-    ]
-    public_deps += [ "//components/remote_cocoa/common:mojo" ]
-    libs = [
-      "AppKit.framework",
-      "CoreGraphics.framework",
-      "Foundation.framework",
-      "IOSurface.framework",
-      "QuartzCore.framework",
-      "ApplicationServices.framework",
-    ]
-  }
-
   if (has_native_accessibility) {
     sources += [
       "accessibility/view_ax_platform_node_delegate.cc",
@@ -926,7 +901,6 @@ jumbo_source_set("test_support") {
     "test/native_widget_factory.h",
     "test/platform_test_helper.cc",
     "test/platform_test_helper.h",
-    "test/platform_test_helper_cocoa.mm",
     "test/scoped_views_test_helper.cc",
     "test/scoped_views_test_helper.h",
     "test/slider_test_api.cc",
@@ -963,6 +937,7 @@ jumbo_source_set("test_support") {
       "test/desktop_test_views_delegate_mac.mm",
       "test/event_generator_delegate_mac.h",
       "test/event_generator_delegate_mac.mm",
+      "test/platform_test_helper_cocoa.mm",
       "test/test_views_delegate_mac.mm",
       "test/views_test_helper_mac.h",
       "test/views_test_helper_mac.mm",
@@ -1072,8 +1047,6 @@ test("views_unittests") {
     "bubble/bubble_border_unittest.cc",
     "bubble/bubble_dialog_delegate_view_unittest.cc",
     "bubble/bubble_frame_view_unittest.cc",
-    "cocoa/bridged_native_widget_unittest.mm",
-    "cocoa/cocoa_mouse_capture_unittest.mm",
     "controls/button/button_unittest.cc",
     "controls/button/checkbox_unittest.cc",
     "controls/button/image_button_factory_unittest.cc",
@@ -1090,7 +1063,6 @@ test("views_unittests") {
     "controls/menu/menu_controller_unittest.cc",
     "controls/menu/menu_item_view_unittest.cc",
     "controls/menu/menu_model_adapter_unittest.cc",
-    "controls/menu/menu_runner_cocoa_unittest.mm",
     "controls/menu/menu_runner_unittest.cc",
     "controls/menu/submenu_view_unittest.cc",
     "controls/menu/test_menu_item_view.cc",
@@ -1148,18 +1120,6 @@ test("views_unittests") {
     "window/non_client_view_unittest.cc",
     "window/window_resize_utils_unittest.cc",
   ]
-
-  if (is_mac) {
-    sources += [
-      "cocoa/drag_drop_client_mac_unittest.mm",
-      "controls/menu/menu_closure_animation_mac_unittest.cc",
-      "controls/native/native_view_host_mac_unittest.mm",
-      "controls/tabbed_pane/tabbed_pane_accessibility_mac_unittest.mm",
-      "view_unittest_mac.mm",
-      "widget/ax_native_widget_mac_unittest.mm",
-      "widget/native_widget_mac_unittest.mm",
-    ]
-  }
 
   configs += [ "//build/config:precompiled_headers" ]
 
@@ -1236,6 +1196,19 @@ test("views_unittests") {
   }
 
   if (is_mac) {
+    sources += [
+      "cocoa/bridged_native_widget_unittest.mm",
+      "cocoa/cocoa_mouse_capture_unittest.mm",
+      "cocoa/drag_drop_client_mac_unittest.mm",
+      "controls/menu/menu_closure_animation_mac_unittest.cc",
+      "controls/menu/menu_runner_cocoa_unittest.mm",
+      "controls/native/native_view_host_mac_unittest.mm",
+      "controls/tabbed_pane/tabbed_pane_accessibility_mac_unittest.mm",
+      "view_unittest_mac.mm",
+      "widget/ax_native_widget_mac_unittest.mm",
+      "widget/native_widget_mac_unittest.mm",
+    ]
+
     # views_unittests not yet compiling on Mac. http://crbug.com/378134
     sources -= [ "controls/native/native_view_host_unittest.cc" ]
 

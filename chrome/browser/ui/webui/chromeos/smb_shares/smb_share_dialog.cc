@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_share_dialog.h"
 
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/smb_client/smb_service.h"
+#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
@@ -64,11 +66,23 @@ SmbShareDialogUI::SmbShareDialogUI(content::WebUI* web_ui)
 
   AddSmbSharesStrings(source);
 
+  Profile* const profile = Profile::FromWebUI(web_ui);
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(
-          Profile::FromWebUI(web_ui));
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+
   source->AddBoolean("isActiveDirectoryUser",
                      user && user->IsActiveDirectoryUser());
+
+  // Check if Kerberos was and still is enabled via policy at the creation time
+  // of SmbService. As a result, if Kerberos policy was enabled during a user
+  // session, SSO option will not be available/visible.
+  // TODO(crbug.com/1040138): subscribe to pref. changes in SmbService and setup
+  // Kerberos after it is enabled during a user session.
+  const chromeos::smb_client::SmbService* const smb_service =
+      chromeos::smb_client::SmbServiceFactory::Get(profile);
+  bool is_kerberos_enabled =
+      smb_service && smb_service->IsKerberosEnabledViaPolicy();
+  source->AddBoolean("isKerberosEnabled", is_kerberos_enabled);
 
   source->UseStringsJs();
   source->SetDefaultResource(IDR_SMB_SHARES_DIALOG_CONTAINER_HTML);

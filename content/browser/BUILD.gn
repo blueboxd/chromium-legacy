@@ -1691,6 +1691,8 @@ jumbo_source_set("browser") {
     "service_worker/service_worker_registration_object_host.h",
     "service_worker/service_worker_registration_status.cc",
     "service_worker/service_worker_registration_status.h",
+    "service_worker/service_worker_registry.cc",
+    "service_worker/service_worker_registry.h",
     "service_worker/service_worker_request_handler.cc",
     "service_worker/service_worker_request_handler.h",
     "service_worker/service_worker_script_cache_map.cc",

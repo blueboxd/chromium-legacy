@@ -69,6 +69,10 @@ class NavigationControllerImpl : public NavigationController,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       int index);
+  base::android::ScopedJavaLocalRef<jstring> GetNavigationEntryTitle(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      int index);
 #endif
 
  private:
@@ -86,6 +90,7 @@ class NavigationControllerImpl : public NavigationController,
   int GetNavigationListSize() override;
   int GetNavigationListCurrentIndex() override;
   GURL GetNavigationEntryDisplayURL(int index) override;
+  std::string GetNavigationEntryTitle(int index) override;
 
   // content::WebContentsObserver implementation:
   void DidStartNavigation(

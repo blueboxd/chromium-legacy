@@ -40,6 +40,7 @@
 [ android ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 crbug.com/808744 [ android ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
+crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
 
 # Extensions not available under D3D9
 [ win d3d9 ] WebglExtension_EXT_sRGB [ Failure ]

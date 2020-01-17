@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.widget.TextView;
+
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.KeyboardVisibilityDelegate.KeyboardVisibilityListener;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
@@ -43,6 +45,13 @@ class AssistantKeyboardCoordinator {
     /** Hides the keyboard. */
     void hideKeyboard() {
         mKeyboardDelegate.hideKeyboard(mActivity.getCompositorViewHolder());
+    }
+
+    /** Hides the keyboard after a delay if the focus is not on a TextView */
+    void hideKeyboardIfFocusNotOnText() {
+        if (!(mActivity.getCurrentFocus() instanceof TextView)) {
+            hideKeyboard();
+        }
     }
 
     /**

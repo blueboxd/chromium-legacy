@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
@@ -304,7 +305,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     choice = ONLY_CACHE;
   }
 
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramEnumeration(
       "History.ClearBrowsingData.UserDeletedCookieOrCache", choice,
       MAX_CHOICE_VALUE);
 
@@ -598,18 +599,30 @@ void BrowsingDataRemoverImpl::Notify() {
       observer->OnBrowsingDataRemoverDone();
     }
   }
+
+  base::TimeDelta delta = base::Time::Now() - task.task_started;
   if (task.filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
-    base::TimeDelta delta = base::Time::Now() - task.task_started;
-    // Full and partial deletions are often implemented differently, so
-    // we track them in seperate metrics.
-    if (task.delete_begin.is_null() && task.delete_end.is_max() &&
-        task.filter_builder->IsEmptyBlacklist()) {
-      UMA_HISTOGRAM_MEDIUM_TIMES(
+    // Full, and time based and filtered deletions are often implemented
+    // differently, so we track them in separate metrics.
+    if (!task.filter_builder->IsEmptyBlacklist()) {
+      base::UmaHistogramMediumTimes(
+          "History.ClearBrowsingData.Duration.FilteredDeletion", delta);
+    } else if (task.delete_begin.is_null() && task.delete_end.is_max()) {
+      base::UmaHistogramMediumTimes(
           "History.ClearBrowsingData.Duration.FullDeletion", delta);
     } else {
-      UMA_HISTOGRAM_MEDIUM_TIMES(
+      base::UmaHistogramMediumTimes(
+          "History.ClearBrowsingData.Duration.TimeRangeDeletion", delta);
+    }
+    // TODO(dullweber): Remove this metric after M83.
+    if (!task.delete_begin.is_null() || !task.delete_end.is_max() ||
+        !task.filter_builder->IsEmptyBlacklist()) {
+      base::UmaHistogramMediumTimes(
           "History.ClearBrowsingData.Duration.PartialDeletion", delta);
     }
+  } else {
+    base::UmaHistogramMediumTimes(
+        "History.ClearBrowsingData.Duration.OriginDeletion", delta);
   }
 
   task_queue_.pop_front();

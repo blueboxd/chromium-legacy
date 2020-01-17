@@ -787,10 +787,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface isWebPaymentsModifiersEnabled];
 }
 
-- (BOOL)isSettingsAddPaymentMethodEnabled {
-  return [ChromeEarlGreyAppInterface isSettingsAddPaymentMethodEnabled];
-}
-
 - (BOOL)isCreditCardScannerEnabled {
   return [ChromeEarlGreyAppInterface isCreditCardScannerEnabled];
 }

@@ -284,6 +284,10 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
         }
     }
 
+    public ChromeTextInputLayout getInputLayout() {
+        return mInputLayout;
+    }
+
     @VisibleForTesting
     public static void setEditorObserverForTest(EditorObserverForTest observerForTest) {
         sObserverForTest = observerForTest;

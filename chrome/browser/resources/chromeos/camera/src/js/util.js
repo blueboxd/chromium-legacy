@@ -13,30 +13,30 @@ import {Resolution} from './type.js';
  * @return {Promise<Object<number, boolean>>}
  */
 function getPhotoOrientation(blob) {
-  let getOrientation = new Promise((resolve, reject) => {
-    let reader = new FileReader();
+  const getOrientation = new Promise((resolve, reject) => {
+    const reader = new FileReader();
     reader.onload = function(event) {
-      let view = new DataView(event.target.result);
+      const view = new DataView(event.target.result);
       if (view.getUint16(0, false) !== 0xFFD8) {
         resolve(1);
         return;
       }
-      let length = view.byteLength;
+      const length = view.byteLength;
       let offset = 2;
       while (offset < length) {
         if (view.getUint16(offset + 2, false) <= 8) {
           break;
         }
-        let marker = view.getUint16(offset, false);
+        const marker = view.getUint16(offset, false);
         offset += 2;
         if (marker === 0xFFE1) {
           if (view.getUint32(offset += 2, false) !== 0x45786966) {
             break;
           }
 
-          let little = view.getUint16(offset += 6, false) === 0x4949;
+          const little = view.getUint16(offset += 6, false) === 0x4949;
           offset += view.getUint32(offset + 4, little);
-          let tags = view.getUint16(offset, little);
+          const tags = view.getUint16(offset, little);
           offset += 2;
           for (let i = 0; i < tags; i++) {
             if (view.getUint16(offset + (i * 12), little) === 0x0112) {
@@ -89,14 +89,14 @@ function getPhotoOrientation(blob) {
 export function orientPhoto(blob, onSuccess, onFailure) {
   // TODO(shenghao): Revise or remove this function if it's no longer
   // applicable.
-  let drawPhoto = function(original, orientation, onSuccess, onFailure) {
-    let canvas = document.createElement('canvas');
-    let context = canvas.getContext('2d');
-    let canvasSquareLength = Math.max(original.width, original.height);
+  const drawPhoto = function(original, orientation, onSuccess, onFailure) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    const canvasSquareLength = Math.max(original.width, original.height);
     canvas.width = canvasSquareLength;
     canvas.height = canvasSquareLength;
 
-    let [centerX, centerY] = [canvas.width / 2, canvas.height / 2];
+    const [centerX, centerY] = [canvas.width / 2, canvas.height / 2];
     context.translate(centerX, centerY);
     context.rotate(orientation.rotation * Math.PI / 180);
     if (orientation.flip) {
@@ -111,7 +111,7 @@ export function orientPhoto(blob, onSuccess, onFailure) {
     context.rotate(-orientation.rotation * Math.PI / 180);
     context.translate(-centerX, -centerY);
 
-    let outputCanvas = document.createElement('canvas');
+    const outputCanvas = document.createElement('canvas');
     if (orientation.rotation === 90 || orientation.rotation === 270) {
       outputCanvas.width = original.height;
       outputCanvas.height = original.width;
@@ -119,11 +119,11 @@ export function orientPhoto(blob, onSuccess, onFailure) {
       outputCanvas.width = original.width;
       outputCanvas.height = original.height;
     }
-    let imageData = context.getImageData(
+    const imageData = context.getImageData(
         (canvasSquareLength - outputCanvas.width) / 2,
         (canvasSquareLength - outputCanvas.height) / 2, outputCanvas.width,
         outputCanvas.height);
-    let outputContext = outputCanvas.getContext('2d');
+    const outputContext = outputCanvas.getContext('2d');
     outputContext.putImageData(imageData, 0, 0);
 
     outputCanvas.toBlob(function(blob) {
@@ -139,7 +139,7 @@ export function orientPhoto(blob, onSuccess, onFailure) {
     if (orientation.rotation === 0 && !orientation.flip) {
       onSuccess(blob);
     } else {
-      let original = document.createElement('img');
+      const original = document.createElement('img');
       original.onload = function() {
         drawPhoto(original, orientation, onSuccess, onFailure);
       };
@@ -219,7 +219,7 @@ export function animateOnce(element, callback) {
  * @return {string} Shortcut identifier.
  */
 export function getShortcutIdentifier(event) {
-  var identifier = (event.ctrlKey ? 'Ctrl-' : '') +
+  let identifier = (event.ctrlKey ? 'Ctrl-' : '') +
       (event.altKey ? 'Alt-' : '') + (event.shiftKey ? 'Shift-' : '') +
       (event.metaKey ? 'Meta-' : '');
   if (event.key) {
@@ -283,10 +283,10 @@ export function openHelp() {
  * @param {!HTMLElement} rootElement Root of DOM subtree to be set up with.
  */
 export function setupI18nElements(rootElement) {
-  var getElements = (attr) => rootElement.querySelectorAll('[' + attr + ']');
-  var getMessage = (element, attr) =>
+  const getElements = (attr) => rootElement.querySelectorAll('[' + attr + ']');
+  const getMessage = (element, attr) =>
       chrome.i18n.getMessage(element.getAttribute(attr));
-  var setAriaLabel = (element, attr) =>
+  const setAriaLabel = (element, attr) =>
       element.setAttribute('aria-label', getMessage(element, attr));
 
   getElements('i18n-content')

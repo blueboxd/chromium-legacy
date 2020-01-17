@@ -72,6 +72,11 @@ void FakeLocalFrameHost::BubbleLogicalScrollInParentFrame(
 
 void FakeLocalFrameHost::DidAccessInitialDocument() {}
 
+void FakeLocalFrameHost::DidBlockNavigation(
+    const KURL& blocked_url,
+    const KURL& initiator_url,
+    mojom::NavigationBlockedReason reason) {}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

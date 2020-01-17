@@ -9,6 +9,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.chromium.weblayer.tests">
   <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
   <!-- We add an application tag here just so that we can indicate that this
        package needs to link against the android.test library, which is
        needed when building test cases. -->

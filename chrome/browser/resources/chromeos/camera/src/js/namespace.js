@@ -8,7 +8,7 @@
  */
 
 // eslint-disable-next-line no-unused-vars
-var cca = {
+const cca = {
   bg: {},
   device: {},
   intent: {},

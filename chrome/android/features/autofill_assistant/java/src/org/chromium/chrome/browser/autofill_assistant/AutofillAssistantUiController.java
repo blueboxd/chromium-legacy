@@ -213,6 +213,11 @@ class AutofillAssistantUiController {
     }
 
     @CalledByNative
+    private void hideKeyboardIfFocusNotOnText() {
+        mCoordinator.getKeyboardCoordinator().hideKeyboardIfFocusNotOnText();
+    }
+
+    @CalledByNative
     private void showSnackbar(int delayMs, String message) {
         mSnackbarController =
                 AssistantSnackbar.show(mActivity, delayMs, message, this::safeSnackbarResult);

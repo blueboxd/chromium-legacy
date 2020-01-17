@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/navigation_controller_impl.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -58,6 +59,16 @@ NavigationControllerImpl::GetNavigationEntryDisplayUri(
   return base::android::ScopedJavaLocalRef<jstring>(
       base::android::ConvertUTF8ToJavaString(
           env, GetNavigationEntryDisplayURL(index).spec()));
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+NavigationControllerImpl::GetNavigationEntryTitle(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    int index) {
+  return base::android::ScopedJavaLocalRef<jstring>(
+      base::android::ConvertUTF8ToJavaString(env,
+                                             GetNavigationEntryTitle(index)));
 }
 #endif
 
@@ -120,6 +131,13 @@ GURL NavigationControllerImpl::GetNavigationEntryDisplayURL(int index) {
   if (!entry)
     return GURL();
   return entry->GetVirtualURL();
+}
+
+std::string NavigationControllerImpl::GetNavigationEntryTitle(int index) {
+  auto* entry = web_contents()->GetController().GetEntryAtIndex(index);
+  if (!entry)
+    return std::string();
+  return base::UTF16ToUTF8(entry->GetTitle());
 }
 
 void NavigationControllerImpl::DidStartNavigation(

@@ -60,9 +60,6 @@ constexpr char kPasscodeArticleURL[] = "https://support.apple.com/HT204060";
 
   LAContext* context = _createLAContext();
 
-  // No fallback option is provided.
-  context.localizedFallbackTitle = @"";
-
   __weak ReauthenticationModule* weakSelf = self;
   void (^replyBlock)(BOOL, NSError*) = ^(BOOL success, NSError* error) {
     dispatch_async(dispatch_get_main_queue(), ^{

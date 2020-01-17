@@ -951,7 +951,7 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
   sync_status->SetString("statusText",
                          GetStringUTF16(status_labels.status_label_string_id));
   sync_status->SetString("statusActionText",
-                         GetStringUTF16(status_labels.link_label_string_id));
+                         GetStringUTF16(status_labels.button_string_id));
   sync_status->SetBoolean(
       "hasError", status_labels.message_type == sync_ui_util::SYNC_ERROR ||
                       status_labels.message_type ==

@@ -71,10 +71,6 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
   // MergeSyncData().
   base::Optional<syncer::ModelError> CleanupPasswordStore();
 
-  base::Optional<syncer::ModelError> MergeSyncDataInternal(
-      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-      syncer::EntityChangeList entity_data);
-
   // Password store responsible for persistence.
   PasswordStoreSync* const password_store_sync_;
 

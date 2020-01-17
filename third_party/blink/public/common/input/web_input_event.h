@@ -33,6 +33,8 @@
 
 #include <string.h>
 
+#include <memory>
+
 #include "base/time/time.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "ui/gfx/geometry/point_f.h"

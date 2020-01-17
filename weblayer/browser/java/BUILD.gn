@@ -87,6 +87,17 @@ android_library("java") {
       "//third_party/android_sdk:public_framework_system_java"
 }
 
+android_library("test_java") {
+  testonly = true
+  sources = [
+    "org/chromium/weblayer_private/test/TestWebLayerImpl.java",
+  ]
+  deps = [
+    "//net/android:net_java",
+  ]
+  srcjar_deps = [ ":test_aidl" ]
+}
+
 generate_jni("jni") {
   sources = [
     "org/chromium/weblayer_private/ContentViewRenderView.java",
@@ -178,5 +189,13 @@ android_aidl("aidl") {
     "org/chromium/weblayer_private/interfaces/ITabClient.aidl",
     "org/chromium/weblayer_private/interfaces/IWebLayer.aidl",
     "org/chromium/weblayer_private/interfaces/IWebLayerFactory.aidl",
+  ]
+}
+
+android_aidl("test_aidl") {
+  import_include = [ "." ]
+  testonly = true
+  sources = [
+    "org/chromium/weblayer_private/test_interfaces/ITestWebLayer.aidl",
   ]
 }

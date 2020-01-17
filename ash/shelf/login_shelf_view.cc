@@ -717,11 +717,8 @@ void LoginShelfView::UpdateUi() {
   // Show kiosk apps button if:
   // 1. It's in login screen.
   // 2. There are Kiosk apps available.
-  // 3. Oobe UI dialog is not visible or is currently showing gaia signin
-  // screen.
-  kiosk_apps_button_->SetVisible(
-      (!dialog_visible || dialog_state_ == OobeDialogState::GAIA_SIGNIN) &&
-      kiosk_apps_button_->HasApps() && (is_login_primary || is_oobe));
+  kiosk_apps_button_->SetVisible(kiosk_apps_button_->HasApps() &&
+                                 (is_login_primary || is_oobe));
 
   UpdateButtonColors(is_oobe);
   Layout();

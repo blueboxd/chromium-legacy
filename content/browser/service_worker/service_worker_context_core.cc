@@ -284,11 +284,11 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
       container_host_by_uuid_(std::make_unique<ContainerHostByClientUUIDMap>()),
-      storage_(ServiceWorkerStorage::Create(user_data_directory,
-                                            this,
-                                            std::move(database_task_runner),
-                                            quota_manager_proxy,
-                                            special_storage_policy)),
+      registry_(ServiceWorkerRegistry::Create(user_data_directory,
+                                              this,
+                                              std::move(database_task_runner),
+                                              quota_manager_proxy,
+                                              special_storage_policy)),
       job_coordinator_(std::make_unique<ServiceWorkerJobCoordinator>(this)),
       loader_factory_getter_(url_loader_factory_getter),
       force_update_on_page_load_(false),
@@ -307,7 +307,9 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
       container_host_by_uuid_(old_context->container_host_by_uuid_.release()),
-      storage_(ServiceWorkerStorage::Create(this, old_context->storage())),
+      registry_(ServiceWorkerRegistry::CreateForDeleteAndStartOver(
+          this,
+          old_context->registry())),
       job_coordinator_(std::make_unique<ServiceWorkerJobCoordinator>(this)),
       loader_factory_getter_(old_context->loader_factory_getter()),
       loader_factory_bundle_for_update_check_(
@@ -318,7 +320,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       next_embedded_worker_id_(old_context->next_embedded_worker_id_) {}
 
 ServiceWorkerContextCore::~ServiceWorkerContextCore() {
-  DCHECK(storage_);
+  DCHECK(registry_);
   for (const auto& it : live_versions_)
     it.second->RemoveObserver(this);
 
@@ -692,7 +694,7 @@ void ServiceWorkerContextCore::UnprotectVersion(int64_t version_id) {
 }
 
 void ServiceWorkerContextCore::ScheduleDeleteAndStartOver() const {
-  storage_->Disable();
+  storage()->Disable();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&ServiceWorkerContextWrapper::DeleteAndStartOver,
@@ -705,7 +707,7 @@ void ServiceWorkerContextCore::DeleteAndStartOver(StatusCallback callback) {
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnDeleteAndStartOver);
 
-  storage_->DeleteAndStartOver(std::move(callback));
+  storage()->DeleteAndStartOver(std::move(callback));
 }
 
 void ServiceWorkerContextCore::ClearAllServiceWorkersForTest(
@@ -922,6 +924,10 @@ void ServiceWorkerContextCore::OnNoControllees(ServiceWorkerVersion* version) {
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextCoreObserver::OnNoControllees,
                          version->version_id(), version->scope());
+}
+
+ServiceWorkerStorage* ServiceWorkerContextCore::storage() const {
+  return registry_->storage();
 }
 
 ServiceWorkerProcessManager* ServiceWorkerContextCore::process_manager() {

@@ -15,18 +15,17 @@ namespace blink {
 
 WebGLVideoTexture::WebGLVideoTexture(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
-  context->ExtensionsUtil()->EnsureExtensionEnabled("WEBGL_video_texture");
+  context->ExtensionsUtil()->EnsureExtensionEnabled("GL_WEBGL_video_texture");
 }
 
 WebGLExtensionName WebGLVideoTexture::GetName() const {
   return kWebGLVideoTextureName;
 }
 
-// We only need GL_OES_EGL_image_external extension on Android.
 bool WebGLVideoTexture::Supported(WebGLRenderingContextBase* context) {
 #if defined(OS_ANDROID)
-  return context->ExtensionsUtil()->SupportsExtension(
-      "GL_OES_EGL_image_external");
+  // TODO(crbug.com/776222): support extension on Android
+  return false;
 #else  // defined OS_ANDROID
   return true;
 #endif
@@ -45,7 +44,7 @@ VideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
     ExecutionContext* execution_context,
     unsigned target,
     HTMLVideoElement* video,
-    ExceptionState& exceptionState) {
+    ExceptionState& exception_state) {
   WebGLExtensionScopedContext scoped(this);
   if (!video || scoped.IsLost())
     return nullptr;
@@ -57,16 +56,23 @@ VideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
 
   if (!scoped.Context()->ValidateHTMLVideoElement(
           execution_context->GetSecurityOrigin(), "WEBGLVideoTexture", video,
-          exceptionState) ||
-      !scoped.Context()->ValidateTexFuncDimensions(
-          "WEBGLVideoTexture", WebGLRenderingContextBase::kTexImage, target, 0,
-          video->videoWidth(), video->videoHeight(), 1))
+          exception_state)) {
     return nullptr;
+  }
+
+  if (!scoped.Context()->ValidateTexFuncDimensions(
+          "WEBGLVideoTexture", WebGLRenderingContextBase::kTexImage, target, 0,
+          video->videoWidth(), video->videoHeight(), 1)) {
+    return nullptr;
+  }
 
   WebGLTexture* texture =
       scoped.Context()->ValidateTextureBinding("WEBGLVideoTexture", target);
-  if (!texture)
+  if (!texture) {
+    exception_state.ThrowTypeError(
+        "Failed to get correct binding texture for WEBGL_video_texture");
     return nullptr;
+  }
 
   // For WebGL last-uploaded-frame-metadata API.
   WebMediaPlayer::VideoFrameUploadMetadata frame_metadata = {};
@@ -78,16 +84,21 @@ VideoFrameMetadata* WebGLVideoTexture::VideoElementTargetVideoTexture(
   }
 
 #if defined(OS_ANDROID)
-  target = GL_TEXTURE_EXTERNAL_OES;
+  // TODO(crbug.com/776222): support extension on Android
+  NOTIMPLEMENTED();
+  return nullptr;
 #else  // defined OS_ANDROID
   target = GL_TEXTURE_2D;
 
 #endif  // defined OS_ANDROID
 
+  // TODO(shaobo.yan@intel.com) : A fallback path or exception needs to be
+  // added when video is not using gpu decoder.
   video->PrepareVideoFrameForWebGL(scoped.Context()->ContextGL(), target,
                                    texture->Object(), already_uploaded_id,
                                    frame_metadata_ptr);
   if (!frame_metadata_ptr) {
+    exception_state.ThrowTypeError("Failed to share video to texture.");
     return nullptr;
   }
 

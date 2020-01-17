@@ -8,6 +8,7 @@ import "cc/mojom/touch_action.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
+import "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom";
@@ -126,6 +127,12 @@ interface LocalFrameHost {
   // document of a main frame. After this, it is no longer safe to show a
   // pending navigation's URL, because a URL spoof is possible.
   DidAccessInitialDocument();
+
+  // Indicates an attempt by the associated frame to navigate from the
+  // |initiator_url| to the |blocked_url|, but the navigation was
+  // blocked because of |reason|.
+  DidBlockNavigation(url.mojom.Url blocked_url, url.mojom.Url initiator_url,
+                       blink.mojom.NavigationBlockedReason reason);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

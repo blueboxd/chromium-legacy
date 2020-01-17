@@ -215,7 +215,7 @@ export class GalleryButton {
    */
   async startSaveVideo() {
     const tempFile = await filesystem.createTempVideoFile();
-    return FileVideoSaver.create(tempFile);
+    return FileVideoSaver.createFileVideoSaver(tempFile);
   }
 
   /**

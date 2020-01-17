@@ -32,6 +32,10 @@ namespace leveldb {
 class Env;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace storage {
 
 class ObfuscatedFileUtil;
@@ -121,7 +125,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
                                          const GURL& origin_url,
                                          FileSystemType type) override;
   scoped_refptr<QuotaReservation> CreateQuotaReservationOnFileTaskRunner(
-      const GURL& origin_url,
+      const url::Origin& origin,
       FileSystemType type) override;
 
   // Get details on the files saved for the specified |origin_url|. Returns

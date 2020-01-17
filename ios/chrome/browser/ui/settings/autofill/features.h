@@ -9,9 +9,6 @@
 
 #include "base/feature_list.h"
 
-// Add new credit card feature.
-extern const base::Feature kSettingsAddPaymentMethod;
-
 // Scan a credit card using the camera scanner feature.
 extern const base::Feature kCreditCardScanner;
 

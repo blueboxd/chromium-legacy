@@ -112,9 +112,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   };
 
   // Source that initiated the move loop.
-  enum MoveLoopSource {
-    MOVE_LOOP_SOURCE_MOUSE,
-    MOVE_LOOP_SOURCE_TOUCH,
+  enum class MoveLoopSource {
+    kMouse,
+    kTouch,
   };
 
   // Behavior when escape is pressed during a move loop.

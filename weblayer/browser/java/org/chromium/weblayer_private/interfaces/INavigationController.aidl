@@ -26,4 +26,6 @@ interface INavigationController {
   boolean canGoForward() = 9;
 
   void goToIndex(in int index) = 10;
+
+  String getNavigationEntryTitle(in int index) = 11;
 }

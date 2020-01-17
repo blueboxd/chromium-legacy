@@ -21,16 +21,16 @@ let hovered = null;
  */
 function position() {
   const [edgeMargin, elementMargin] = [5, 8];
-  var rect = hovered.getBoundingClientRect();
-  var tooltipTop = rect.top - wrapper.offsetHeight - elementMargin;
+  const rect = hovered.getBoundingClientRect();
+  let tooltipTop = rect.top - wrapper.offsetHeight - elementMargin;
   if (tooltipTop < edgeMargin) {
     tooltipTop = rect.bottom + elementMargin;
   }
   wrapper.style.top = tooltipTop + 'px';
 
   // Center over the hovered element but avoid touching edges.
-  var hoveredCenter = rect.left + hovered.offsetWidth / 2;
-  var left = Math.min(
+  const hoveredCenter = rect.left + hovered.offsetWidth / 2;
+  const left = Math.min(
       Math.max(hoveredCenter - wrapper.clientWidth / 2, edgeMargin),
       document.body.offsetWidth - wrapper.offsetWidth - edgeMargin);
   wrapper.style.left = Math.round(left) + 'px';
@@ -75,7 +75,7 @@ export function setup(elements) {
   wrapper = assertInstanceof(document.querySelector('#tooltip'), HTMLElement);
   elements.forEach((element) => {
     const el = assertInstanceof(element, HTMLElement);
-    var handler = () => {
+    const handler = () => {
       // Handler hides tooltip only when it's for the element.
       if (el === hovered) {
         hide();

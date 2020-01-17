@@ -4005,7 +4005,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 
       <!-- NFC prompt -->
       <message name="IDS_NFC_DISABLED_ON_DEVICE_MESSAGE" desc="Text shown in a prompt to turn on NFC after user granted NFC permission to a website.">
-        To continue, turn on NFC on your device
+        To continue, turn on NFC in Android settings
       </message>
       <message name="IDS_NFC_PROMPT_TURN_ON" desc="Text on the positive button of the nfc prompt">
         Turn on

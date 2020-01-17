@@ -215,4 +215,12 @@ crbug.com/1041013 external/wpt/web-animations/timing-model/animations/update-pla
 crbug.com/1041013 external/wpt/web-animations/timing-model/animations/update-playback-rate-zero.html [ Failure ]
 
 virtual/threaded-prefer-compositing/fast/scroll-behavior/overscroll-behavior.html [ Failure ]
+virtual/threaded/fast/scroll-snap/snaps-after-touchpad-scrolling.html [ Failure ]
 http/tests/devtools/a11y-axe-core/layers/layers-a11y-test.js [ Crash ]
+
+# DCHECK(latched_scroll_type_.has_value()) in LayerTreeHostImpl::ScrollLatchedScroller().
+crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Crash ]
+crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow-desktop.html [ Crash ]
+crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Crash ]
+crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Crash ]
+crbug.com/1041322 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Crash ]

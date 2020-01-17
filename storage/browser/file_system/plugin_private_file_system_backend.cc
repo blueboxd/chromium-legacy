@@ -356,7 +356,7 @@ void PluginPrivateFileSystemBackend::GetOriginDetailsOnFileTaskRunner(
 
 scoped_refptr<QuotaReservation>
 PluginPrivateFileSystemBackend::CreateQuotaReservationOnFileTaskRunner(
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type) {
   // We don't track usage on this filesystem.
   NOTREACHED();

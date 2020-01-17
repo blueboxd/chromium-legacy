@@ -126,9 +126,8 @@ void NDEFWriter::OnRequestPermission(
 
   // If signal is not null, then add the abort steps to signal.
   if (options->hasSignal() && !options->signal()->aborted()) {
-    options->signal()->AddAlgorithm(
-        WTF::Bind(&NDEFWriter::Abort, WrapPersistent(this), options->target(),
-                  WrapPersistent(resolver)));
+    options->signal()->AddAlgorithm(WTF::Bind(
+        &NDEFWriter::Abort, WrapPersistent(this), WrapPersistent(resolver)));
   }
 
   UseCounter::Count(GetExecutionContext(), WebFeature::kWebNfcNdefWriterPush);
@@ -166,7 +165,7 @@ void NDEFWriter::InitNfcProxyIfNeeded() {
   nfc_proxy_->AddWriter(this);
 }
 
-void NDEFWriter::Abort(const String& target, ScriptPromiseResolver* resolver) {
+void NDEFWriter::Abort(ScriptPromiseResolver* resolver) {
   // |nfc_proxy_| could be null on Mojo connection failure, simply ignore the
   // abort request in this case.
   if (!nfc_proxy_)
@@ -174,8 +173,7 @@ void NDEFWriter::Abort(const String& target, ScriptPromiseResolver* resolver) {
 
   // OnRequestCompleted() should always be called whether the push operation is
   // cancelled successfully or not. So do nothing for the cancelled callback.
-  nfc_proxy_->CancelPush(target,
-                         device::mojom::blink::NFC::CancelPushCallback());
+  nfc_proxy_->CancelPush(device::mojom::blink::NFC::CancelPushCallback());
 }
 
 void NDEFWriter::OnRequestCompleted(ScriptPromiseResolver* resolver,

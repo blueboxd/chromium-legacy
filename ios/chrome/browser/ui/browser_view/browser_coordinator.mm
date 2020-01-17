@@ -344,7 +344,7 @@
 
   self.addCreditCardCoordinator = [[AutofillAddCreditCardCoordinator alloc]
       initWithBaseViewController:self.viewController
-                    browserState:self.browserState];
+                         browser:self.browser];
 }
 
 // Stops child coordinators.

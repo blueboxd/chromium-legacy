@@ -68,7 +68,14 @@ class CommandlineStartupTracingTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CommandlineStartupTracingTest);
 };
 
-IN_PROC_BROWSER_TEST_F(CommandlineStartupTracingTest, TestStartupTracing) {
+// Flaky on ASAN. crbug.com/1041392
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_TestStartupTracing DISABLED_TestStartupTracing
+#else
+#define MAYBE_TestStartupTracing TestStartupTracing
+#endif
+IN_PROC_BROWSER_TEST_F(CommandlineStartupTracingTest,
+                       MAYBE_TestStartupTracing) {
   EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "title1.html")));
   WaitForCondition(base::BindRepeating([]() {
                      return !TracingController::GetInstance()->IsTracing();
@@ -89,6 +96,8 @@ IN_PROC_BROWSER_TEST_F(CommandlineStartupTracingTest, TestStartupTracing) {
       trace.find("TracingControllerImpl::InitStartupTracingForDuration") !=
       std::string::npos);
 }
+
+#undef MAYBE_TestStartupTracing
 
 class StartupTracingInProcessTest : public ContentBrowserTest {
  public:

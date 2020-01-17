@@ -81,7 +81,6 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
@@ -89,6 +88,7 @@
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
@@ -1300,6 +1300,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::ScrollDirection direction,
       ui::input_types::ScrollGranularity granularity) override;
   void DidAccessInitialDocument() override;
+  void DidBlockNavigation(
+      const GURL& blocked_url,
+      const GURL& initiator_url,
+      blink::mojom::NavigationBlockedReason reason) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1463,9 +1467,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                        const FrameOwnerProperties& properties);
   void OnUpdateTitle(const base::string16& title,
                      blink::WebTextDirection title_direction);
-  void OnDidBlockNavigation(const GURL& blocked_url,
-                            const GURL& initiator_url,
-                            blink::NavigationBlockedReason reason);
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
   void OnDispatchLoad();

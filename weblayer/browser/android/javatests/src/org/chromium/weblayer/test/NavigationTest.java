@@ -296,6 +296,27 @@ public class NavigationTest {
 
     @Test
     @SmallTest
+    public void testGetNavigationEntryTitle() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(
+                "data:text/html,<head><title>Page A</title></head>");
+        setNavigationCallback(activity);
+
+        mActivityTestRule.navigateAndWait("data:text/html,<head><title>Page B</title></head>");
+        mActivityTestRule.navigateAndWait("data:text/html,<head><title>Page C</title></head>");
+
+        runOnUiThreadBlocking(() -> {
+            NavigationController navigationController = activity.getTab().getNavigationController();
+            assertEquals("Page A", navigationController.getNavigationEntryTitle(0));
+            assertEquals("Page B", navigationController.getNavigationEntryTitle(1));
+            assertEquals("Page C", navigationController.getNavigationEntryTitle(2));
+
+            // An out of bounds index will return an empty string.
+            assertEquals("", navigationController.getNavigationEntryTitle(1234));
+        });
+    }
+
+    @Test
+    @SmallTest
     public void testSameDocument() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
         setNavigationCallback(activity);

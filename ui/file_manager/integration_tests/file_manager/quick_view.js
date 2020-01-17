@@ -937,6 +937,48 @@
   };
 
   /**
+   * Tests that opening a broken image in Quick View displays the "no-preview
+   * available" generic icon and has a [load-error] attribute.
+   */
+  testcase.openQuickViewBrokenImage = async () => {
+    const caller = getCaller();
+
+    /**
+     * The [generic-thumbnail] element resides in the #quick-view shadow DOM
+     * as a sibling of the files-safe-media[type="image"] element.
+     */
+    const genericThumbnail = [
+      '#quick-view',
+      'files-safe-media[type="image"][hidden] + [generic-thumbnail="image"]',
+    ];
+
+    // Open Files app on Downloads containing ENTRIES.brokenJpeg.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.brokenJpeg], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.brokenJpeg.nameText);
+
+    // Check: the quick view element should have a 'load-error' attribute.
+    await remoteCall.waitForElement(appId, '#quick-view[load-error]');
+
+    // Wait for the generic thumbnail to load and display its content.
+    function checkForGenericThumbnail(elements) {
+      const haveElements = Array.isArray(elements) && elements.length === 1;
+      if (!haveElements || elements[0].styles.display !== 'block') {
+        return pending(caller, 'Waiting for generic thumbnail to load.');
+      }
+      return;
+    }
+
+    // Check: the generic thumbnail icon should be displayed.
+    await repeatUntil(async () => {
+      return checkForGenericThumbnail(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [genericThumbnail, ['display']]));
+    });
+  };
+
+  /**
    * Tests opening Quick View containing a video.
    */
   testcase.openQuickViewVideo = async () => {
@@ -1303,21 +1345,5 @@
       chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
           'requestAnimationFrame', appId, []));
     }
-  };
-
-  /**
-   * Tests opening a broken JPEG doesn't display a broken image icon.
-   */
-  testcase.openQuickViewBrokenImage = async () => {
-    // Open Files app on Downloads containing ENTRIES.brokenJpeg.
-    const appId = await setupAndWaitUntilReady(
-        RootPath.DOWNLOADS, [ENTRIES.brokenJpeg], []);
-
-    // Open the file in Quick View.
-    await openQuickView(appId, ENTRIES.brokenJpeg.nameText);
-
-    // Check: the quick view should have the attribute 'load-error'.
-    const element =
-        await remoteCall.waitForElement(appId, '#quick-view[load-error]');
   };
 })();

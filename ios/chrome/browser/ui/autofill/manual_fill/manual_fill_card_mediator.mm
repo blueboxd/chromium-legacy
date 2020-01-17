@@ -134,25 +134,19 @@ NSString* const kAddCreditCardsAccessibilityIdentifier =
   manageCreditCardsItem.accessibilityIdentifier =
       manual_fill::ManageCardsAccessibilityIdentifier;
 
-  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
-    NSString* addCreditCardsTitle =
-        l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_ADD_PAYMENT_METHOD);
+  NSString* addCreditCardsTitle =
+      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_ADD_PAYMENT_METHOD);
 
-    __weak __typeof(self) weakSelf = self;
-    auto addCreditCardsItem = [[ManualFillActionItem alloc]
-        initWithTitle:addCreditCardsTitle
-               action:^{
-                 base::RecordAction(base::UserMetricsAction(
-                     "ManualFallback_CreditCard_OpenAddCreditCard"));
-                 [weakSelf.handler showAddCreditCard];
-               }];
-    addCreditCardsItem.accessibilityIdentifier =
-        manual_fill::kAddCreditCardsAccessibilityIdentifier;
-    [self.consumer
-        presentActions:@[ addCreditCardsItem, manageCreditCardsItem ]];
-  } else {
-    [self.consumer presentActions:@[ manageCreditCardsItem ]];
-  }
+  auto addCreditCardsItem = [[ManualFillActionItem alloc]
+      initWithTitle:addCreditCardsTitle
+             action:^{
+               base::RecordAction(base::UserMetricsAction(
+                   "ManualFallback_CreditCard_OpenAddCreditCard"));
+               [weakSelf.handler showAddCreditCard];
+             }];
+  addCreditCardsItem.accessibilityIdentifier =
+      manual_fill::kAddCreditCardsAccessibilityIdentifier;
+  [self.consumer presentActions:@[ addCreditCardsItem, manageCreditCardsItem ]];
 }
 
 #pragma mark - FullCardRequestResultDelegateObserving

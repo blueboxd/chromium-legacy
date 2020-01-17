@@ -1441,7 +1441,8 @@ TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
   EXPECT_EQ(0, Size(origin1_));
 }
 
-TEST_F(CacheStorageManagerTest, PutResponseWithExistingFileTest) {
+// TODO(crbug.com/1041371): Flaky on platforms which use POSIX file I/O.
+TEST_F(CacheStorageManagerTest, DISABLED_PutResponseWithExistingFileTest) {
   const GURL kFooURL("http://example.com/foo");
   const std::string kCacheName = "foo";
 

@@ -58,7 +58,7 @@ MATCHER_P(IsDataEncryptedWith, key_params, "") {
 MATCHER_P4(StatusLabelsMatch,
            message_type,
            status_label_string_id,
-           link_label_string_id,
+           button_string_id,
            action_type,
            "") {
   if (arg.message_type != message_type) {
@@ -69,8 +69,8 @@ MATCHER_P4(StatusLabelsMatch,
     *result_listener << "Wrong status label";
     return false;
   }
-  if (arg.link_label_string_id != link_label_string_id) {
-    *result_listener << "Wrong link label";
+  if (arg.button_string_id != button_string_id) {
+    *result_listener << "Wrong button string";
     return false;
   }
   if (arg.action_type != action_type) {
@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
   ASSERT_THAT(sync_ui_util::GetStatusLabels(GetProfile(0)),
               StatusLabelsMatch(sync_ui_util::PASSWORDS_ONLY_SYNC_ERROR,
                                 IDS_SETTINGS_EMPTY_STRING,
-                                IDS_SYNC_STATUS_NEEDS_KEYS_LINK_LABEL,
+                                IDS_SYNC_STATUS_NEEDS_KEYS_BUTTON,
                                 sync_ui_util::RETRIEVE_TRUSTED_VAULT_KEYS));
 
   // Mimic opening a web page where the user can interact with the retrieval

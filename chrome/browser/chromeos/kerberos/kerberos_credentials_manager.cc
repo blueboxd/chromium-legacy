@@ -380,7 +380,7 @@ const char* KerberosCredentialsManager::GetDefaultKerberosConfig() {
   return kDefaultKerberosConfig;
 }
 
-bool KerberosCredentialsManager::IsKerberosEnabled() {
+bool KerberosCredentialsManager::IsKerberosEnabled() const {
   return local_state_->GetBoolean(prefs::kKerberosEnabled);
 }
 

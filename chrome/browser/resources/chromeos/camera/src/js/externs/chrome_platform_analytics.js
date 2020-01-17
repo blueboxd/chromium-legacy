@@ -10,7 +10,7 @@
 
 /* eslint-disable valid-jsdoc */
 
-var analytics = {};
+const analytics = {};
 
 /**
  * @constructor

@@ -926,11 +926,11 @@ class Square extends Photo {
    */
   async cropSquare(blob) {
     const img = await util.blobToImage(blob);
-    let side = Math.min(img.width, img.height);
-    let canvas = document.createElement('canvas');
+    const side = Math.min(img.width, img.height);
+    const canvas = document.createElement('canvas');
     canvas.width = side;
     canvas.height = side;
-    let ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
     ctx.drawImage(
         img, Math.floor((img.width - side) / 2),
         Math.floor((img.height - side) / 2), side, side, 0, 0, side, side);

@@ -1694,6 +1694,13 @@ template("ios_xctest_bundle") {
         ":$_arch_loadable_module_target",
       ]
     }
+
+    # Force the use of invoker.xctest_bundle_principal_class if it is
+    # defined to prevent error about unused variable while generating
+    # the targets.
+    assert(!defined(invoker.xctest_bundle_principal_class) ||
+               invoker.xctest_bundle_principal_class != "",
+           "xctest_bundle_principal_class must not be empty if defined")
   } else {
     _info_plist_target = _target_name + "_info_plist"
     _info_plist_bundle = _target_name + "_info_plist_bundle"

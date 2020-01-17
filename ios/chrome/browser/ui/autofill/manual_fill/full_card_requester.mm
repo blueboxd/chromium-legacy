@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/payments/full_card_requester.h"
+#include "ios/chrome/browser/ui/autofill/manual_fill/full_card_requester.h"
 
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

@@ -108,6 +108,13 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
                 mNativeNavigationController, NavigationControllerImpl.this, index);
     }
 
+    @Override
+    public String getNavigationEntryTitle(int index) {
+        StrictModeWorkaround.apply();
+        return NavigationControllerImplJni.get().getNavigationEntryTitle(
+                mNativeNavigationController, NavigationControllerImpl.this, index);
+    }
+
     @CalledByNative
     private NavigationImpl createNavigation(long nativeNavigationImpl) {
         return new NavigationImpl(mNavigationControllerClient, nativeNavigationImpl);
@@ -174,6 +181,8 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
         int getNavigationListCurrentIndex(
                 long nativeNavigationControllerImpl, NavigationControllerImpl caller);
         String getNavigationEntryDisplayUri(
+                long nativeNavigationControllerImpl, NavigationControllerImpl caller, int index);
+        String getNavigationEntryTitle(
                 long nativeNavigationControllerImpl, NavigationControllerImpl caller, int index);
     }
 }

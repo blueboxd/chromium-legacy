@@ -80,7 +80,9 @@
         <cr-input id="name" label="[[i18n('smbShareName')]]"
             value="{{mountName_}}" maxlength="64">
         </cr-input>
-        <div id="authentication-method" hidden="[[!isActiveDirectory_]]">
+        <div id="authentication-method"
+            hidden="[[!shouldShowAuthenticationUI_(isActiveDirectory_,
+                isKerberosEnabled_)]]">
           <label id="authentication-label" class="cr-form-field-label">
             [[i18n('smbShareAuthenticationMethod')]]
           </label>
@@ -123,4 +125,3 @@
   </template>
   <script src="add_smb_share_dialog.js"></script>
 </dom-module>
-

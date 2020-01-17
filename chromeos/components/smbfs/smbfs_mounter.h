@@ -53,6 +53,7 @@ class COMPONENT_EXPORT(SMBFS) SmbFsMounter
   ~SmbFsMounter() override;
 
   // Initiate the filesystem mount request, and run |callback| when completed.
+  // |callback| is guaranteed not to run after |this| is destroyed.
   // Must only be called once. Virtual for testing.
   virtual void Mount(DoneCallback callback);
 

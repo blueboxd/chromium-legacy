@@ -196,7 +196,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   void StopEventLog();
 
   // WebRTC event log fragments sent back from PeerConnection land here.
-  void OnWebRtcEventLogWrite(const std::string& output);
+  void OnWebRtcEventLogWrite(const WTF::Vector<uint8_t>& output);
 
  protected:
   webrtc::PeerConnectionInterface* native_peer_connection() {

@@ -336,7 +336,8 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, DISABLED_QueuedDumps) {
 #endif  // defined(OS_ANDROID)
 
 // Flaky on Mac. crbug.com/809809
-#if defined(OS_MACOSX)
+// Failing on Android ASAN. crbug.com/1041392
+#if defined(OS_MACOSX) || (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
 #define MAYBE_BrowserInitiatedDump DISABLED_BrowserInitiatedDump
 #else
 #define MAYBE_BrowserInitiatedDump BrowserInitiatedDump

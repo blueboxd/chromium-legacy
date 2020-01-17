@@ -626,10 +626,6 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
       payments::features::kWebPaymentsModifiers);
 }
 
-+ (BOOL)isSettingsAddPaymentMethodEnabled {
-  return base::FeatureList::IsEnabled(kSettingsAddPaymentMethod);
-}
-
 + (BOOL)isCreditCardScannerEnabled {
   return base::FeatureList::IsEnabled(kCreditCardScanner);
 }

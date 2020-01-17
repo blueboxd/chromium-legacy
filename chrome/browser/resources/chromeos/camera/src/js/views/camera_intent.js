@@ -60,7 +60,7 @@ export class CameraIntent extends Camera {
         await this.intent_.appendData(new Uint8Array(buf));
       },
       startSaveVideo: async () => {
-        return await IntentVideoSaver.create(intent);
+        return await IntentVideoSaver.createIntentVideoSaver(intent);
       },
       finishSaveVideo: async (video, savedName) => {
         this.videoResultFile_ = await video.endWrite();

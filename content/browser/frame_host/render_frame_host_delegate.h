@@ -31,9 +31,9 @@
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/window_open_disposition.h"
@@ -114,9 +114,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // |blocked_url| is the blocked navigation target, |initiator_url| is the URL
   // of the frame initiating the navigation, |reason| specifies why the
   // navigation was blocked.
-  virtual void OnDidBlockNavigation(const GURL& blocked_url,
-                                    const GURL& initiator_url,
-                                    blink::NavigationBlockedReason reason) {}
+  virtual void OnDidBlockNavigation(
+      const GURL& blocked_url,
+      const GURL& initiator_url,
+      blink::mojom::NavigationBlockedReason reason) {}
 
   // Gets the last committed URL. See WebContents::GetLastCommittedURL for a
   // description of the semantics.

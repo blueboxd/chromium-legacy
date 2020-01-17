@@ -53,7 +53,7 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
   void Push(device::mojom::blink::NDEFMessagePtr,
             device::mojom::blink::NDEFPushOptionsPtr,
             device::mojom::blink::NFC::PushCallback);
-  void CancelPush(const String&, device::mojom::blink::NFC::CancelPushCallback);
+  void CancelPush(device::mojom::blink::NFC::CancelPushCallback);
 
  private:
   // Implementation of device::mojom::blink::NFCClient.

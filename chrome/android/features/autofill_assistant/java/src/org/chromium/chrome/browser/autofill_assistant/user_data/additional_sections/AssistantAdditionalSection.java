@@ -11,6 +11,7 @@ public interface AssistantAdditionalSection {
     /** Delegate interface for generic key/value widgets. */
     interface Delegate {
         void onValueChanged(String key, String value);
+        void onTextFocusLost();
     }
 
     /** Returns the root view of the section. */

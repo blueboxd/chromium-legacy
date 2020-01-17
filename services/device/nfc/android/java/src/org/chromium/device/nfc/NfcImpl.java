@@ -27,7 +27,6 @@ import org.chromium.device.mojom.NdefError;
 import org.chromium.device.mojom.NdefErrorType;
 import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.NdefPushOptions;
-import org.chromium.device.mojom.NdefPushTarget;
 import org.chromium.device.mojom.NdefRecord;
 import org.chromium.device.mojom.NdefRecordTypeCategory;
 import org.chromium.device.mojom.NdefScanOptions;
@@ -171,11 +170,10 @@ public class NfcImpl implements Nfc {
     }
 
     /**
-     * Pushes NdefMessage to Tag or Peer, whenever NFC device is in proximity. At the moment, only
-     * passive NFC devices are supported (NdefPushTarget.TAG).
+     * Pushes NdefMessage to NFC Tag whenever it is in proximity.
      *
      * @param message that should be pushed to NFC device.
-     * @param options that contain information about target device type.
+     * @param options that contain options for the pending push operation.
      * @param callback that is used to notify when push operation is completed.
      */
     @Override
@@ -185,13 +183,6 @@ public class NfcImpl implements Nfc {
         if (!NdefMessageValidator.isValid(message)) {
             callback.call(createError(NdefErrorType.INVALID_MESSAGE,
                     "Cannot push the message because it's invalid."));
-            return;
-        }
-
-        // Check NdefPushOptions that are not supported by Android platform.
-        if (options.target == NdefPushTarget.PEER) {
-            callback.call(createError(
-                    NdefErrorType.NOT_SUPPORTED, "The \"peer\" target is not supported yet."));
             return;
         }
 
@@ -209,20 +200,12 @@ public class NfcImpl implements Nfc {
 
     /**
      * Cancels pending push operation.
-     * At the moment, only passive NFC devices are supported (NdefPushTarget.TAG).
      *
-     * @param target @see NdefPushTarget
      * @param callback that is used to notify caller when cancelPush() is completed.
      */
     @Override
-    public void cancelPush(int target, CancelPushResponse callback) {
+    public void cancelPush(CancelPushResponse callback) {
         if (!checkIfReady(callback)) return;
-
-        if (target == NdefPushTarget.PEER) {
-            callback.call(createError(
-                    NdefErrorType.NOT_SUPPORTED, "The \"peer\" target is not supported yet."));
-            return;
-        }
 
         if (mPendingPushOperation == null) {
             callback.call(createError(

@@ -128,6 +128,15 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
         }
     }
 
+    @Override
+    public void onTextFocusLost() {
+        if (mNativeAssistantCollectUserDataDelegate != 0) {
+            AssistantCollectUserDataNativeDelegateJni.get().onTextFocusLost(
+                    mNativeAssistantCollectUserDataDelegate,
+                    AssistantCollectUserDataNativeDelegate.this);
+        }
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantCollectUserDataDelegate = 0;
@@ -159,5 +168,7 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
                 int hour, int minute, int second);
         void onKeyValueChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, String key, String value);
+        void onTextFocusLost(long nativeAssistantCollectUserDataDelegate,
+                AssistantCollectUserDataNativeDelegate caller);
     }
 }

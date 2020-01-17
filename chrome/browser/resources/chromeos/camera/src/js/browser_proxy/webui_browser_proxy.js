@@ -40,8 +40,8 @@ class WebUIBrowserProxy {
       throw new Error('WebUI localStorageGet() cannot be run with ' + keys);
     }
 
-    let result = {};
-    for (let key of sanitizedKeys) {
+    const result = {};
+    for (const key of sanitizedKeys) {
       let value = window.localStorage.getItem(key);
       if (value !== null) {
         value = JSON.parse(value);
@@ -54,7 +54,7 @@ class WebUIBrowserProxy {
 
   /** @override */
   localStorageSet(items, callback) {
-    for (let [key, val] of Object.entries(items)) {
+    for (const [key, val] of Object.entries(items)) {
       window.localStorage.setItem(key, JSON.stringify(val));
     }
     if (callback) {
@@ -67,7 +67,7 @@ class WebUIBrowserProxy {
     if (typeof items === 'string') {
       items = [items];
     }
-    for (let key of items) {
+    for (const key of items) {
       window.localStorage.removeItem(key);
     }
     if (callback) {

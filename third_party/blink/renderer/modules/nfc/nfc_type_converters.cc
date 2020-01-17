@@ -57,9 +57,8 @@ TypeConverter<NDEFPushOptionsPtr, const blink::NDEFPushOptions*>::Convert(
     const blink::NDEFPushOptions* pushOptions) {
   // https://w3c.github.io/web-nfc/#the-ndefpushoptions-dictionary
   // Default values for NDEFPushOptions dictionary are:
-  // target = 'any', ignoreRead = true
+  // ignoreRead = true
   NDEFPushOptionsPtr pushOptionsPtr = NDEFPushOptions::New();
-  pushOptionsPtr->target = blink::StringToNDEFPushTarget(pushOptions->target());
   pushOptionsPtr->ignore_read = pushOptions->ignoreRead();
 
   return pushOptionsPtr;

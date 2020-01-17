@@ -47,6 +47,8 @@ using file_system_provider::ProviderId;
 using file_system_provider::ProviderInterface;
 using file_system_provider::Service;
 
+class SmbKerberosCredentialsUpdater;
+
 // Creates and manages an smb file system.
 class SmbService : public KeyedService,
                    public net::NetworkChangeNotifier::NetworkChangeObserver,
@@ -72,7 +74,7 @@ class SmbService : public KeyedService,
              const base::FilePath& share_path,
              const std::string& username,
              const std::string& password,
-             bool use_chromad_kerberos,
+             bool use_kerberos,
              bool should_open_file_manager_after_mount,
              bool save_credentials,
              MountResponse callback);
@@ -125,6 +127,16 @@ class SmbService : public KeyedService,
   // |callback| will be run inline.
   void OnSetupCompleteForTesting(base::OnceClosure callback);
 
+  // Sets up Kerberos / AD services.
+  void SetupKerberos(const std::string& account_identifier);
+
+  // Updates credentials for Kerberos service.
+  void UpdateKerberosCredentials(const std::string& account_identifier);
+
+  // Returns true if Kerberos was enabled via policy at service creation time
+  // and is still enabled now.
+  bool IsKerberosEnabledViaPolicy() const;
+
  private:
   friend class SmbServiceTest;
 
@@ -134,7 +146,7 @@ class SmbService : public KeyedService,
                  const base::FilePath& share_path,
                  const std::string& username,
                  const std::string& password,
-                 bool use_chromad_kerberos,
+                 bool use_kerberos,
                  bool should_open_file_manager_after_mount,
                  bool save_credentials,
                  MountResponse callback);
@@ -202,6 +214,9 @@ class SmbService : public KeyedService,
 
   // Handles the response from attempting to setup Kerberos.
   void OnSetupKerberosResponse(bool success);
+
+  // Handles the response from attempting to update Kerberos credentials.
+  void OnUpdateKerberosCredentialsResponse(bool success);
 
   // Fires |callback| with |result|.
   void FireMountCallback(MountResponse callback, SmbMountResult result);
@@ -303,6 +318,8 @@ class SmbService : public KeyedService,
   // Note, mount ID for smbfs is a randomly generated string. For smbprovider
   // shares, it is an integer.
   std::unordered_map<std::string, std::unique_ptr<SmbFsShare>> smbfs_shares_;
+
+  std::unique_ptr<SmbKerberosCredentialsUpdater> smb_credentials_updater_;
 
   base::OnceClosure setup_complete_callback_;
 

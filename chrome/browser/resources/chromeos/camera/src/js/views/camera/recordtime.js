@@ -41,14 +41,14 @@ export class RecordTime {
    */
   update_(time) {
     // Format time into HH:MM:SS or MM:SS.
-    var pad = (n) => {
+    const pad = (n) => {
       return (n < 10 ? '0' : '') + n;
     };
-    var hh = '';
+    let hh = '';
     if (time >= 3600) {
       hh = pad(Math.floor(time / 3600)) + ':';
     }
-    var mm = pad(Math.floor(time / 60) % 60) + ':';
+    const mm = pad(Math.floor(time / 60) % 60) + ':';
     document.querySelector('#record-time-msg').textContent =
         hh + mm + pad(time % 60);
   }
@@ -77,7 +77,7 @@ export class RecordTime {
       clearInterval(this.tickTimeout_);
       this.tickTimeout_ = null;
     }
-    var mins = Math.ceil(this.ticks_ / 60);
+    const mins = Math.ceil(this.ticks_ / 60);
     this.ticks_ = 0;
     this.recordTime_.hidden = true;
     this.update_(0);

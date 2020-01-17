@@ -8,8 +8,5 @@
 #error "This file requires ARC support."
 #endif
 
-const base::Feature kSettingsAddPaymentMethod{
-    "SettingsAddPaymentMethod", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kCreditCardScanner{"CreditCardScanner",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

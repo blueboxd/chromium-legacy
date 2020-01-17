@@ -761,7 +761,7 @@ Widget::MoveLoopResult NativeWidgetAura::RunMoveLoop(
 
   SetCapture();
   wm::WindowMoveSource window_move_source =
-      source == Widget::MOVE_LOOP_SOURCE_MOUSE ? wm::WINDOW_MOVE_SOURCE_MOUSE
+      source == Widget::MoveLoopSource::kMouse ? wm::WINDOW_MOVE_SOURCE_MOUSE
                                                : wm::WINDOW_MOVE_SOURCE_TOUCH;
   if (move_client->RunMoveLoop(window_, drag_offset, window_move_source) ==
       wm::MOVE_SUCCESSFUL) {

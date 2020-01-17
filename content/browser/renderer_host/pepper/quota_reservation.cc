@@ -34,7 +34,7 @@ QuotaReservation::QuotaReservation(
     : file_system_context_(file_system_context) {
   quota_reservation_ =
       file_system_context->CreateQuotaReservationOnFileTaskRunner(
-          origin_url, file_system_type);
+          url::Origin::Create(origin_url), file_system_type);
 }
 
 // For unit testing only.

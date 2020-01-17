@@ -231,14 +231,14 @@ bool FileSystemContext::DeleteDataForOriginOnFileTaskRunner(
 
 scoped_refptr<QuotaReservation>
 FileSystemContext::CreateQuotaReservationOnFileTaskRunner(
-    const GURL& origin_url,
+    const url::Origin& origin,
     FileSystemType type) {
   DCHECK(default_file_task_runner()->RunsTasksInCurrentSequence());
   FileSystemBackend* backend = GetFileSystemBackend(type);
   if (!backend || !backend->GetQuotaUtil())
     return scoped_refptr<QuotaReservation>();
-  return backend->GetQuotaUtil()->CreateQuotaReservationOnFileTaskRunner(
-      origin_url, type);
+  return backend->GetQuotaUtil()->CreateQuotaReservationOnFileTaskRunner(origin,
+                                                                         type);
 }
 
 void FileSystemContext::Shutdown() {

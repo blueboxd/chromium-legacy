@@ -46,7 +46,6 @@ import org.chromium.device.mojom.NdefError;
 import org.chromium.device.mojom.NdefErrorType;
 import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.NdefPushOptions;
-import org.chromium.device.mojom.NdefPushTarget;
 import org.chromium.device.mojom.NdefRecord;
 import org.chromium.device.mojom.NdefRecordTypeCategory;
 import org.chromium.device.mojom.NdefScanOptions;
@@ -700,7 +699,7 @@ public class NFCTest {
         PushResponse mockPushCallback = mock(PushResponse.class);
         CancelPushResponse mockCancelPushCallback = mock(CancelPushResponse.class);
         nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockPushCallback);
-        nfc.cancelPush(NdefPushTarget.ANY, mockCancelPushCallback);
+        nfc.cancelPush(mockCancelPushCallback);
 
         // Check that push request was cancelled with OPERATION_CANCELLED.
         verify(mockPushCallback).call(mErrorCaptor.capture());
@@ -1132,7 +1131,7 @@ public class NFCTest {
                         (Bundle) isNull());
 
         CancelPushResponse mockCancelPushCallback = mock(CancelPushResponse.class);
-        nfc.cancelPush(NdefPushTarget.ANY, mockCancelPushCallback);
+        nfc.cancelPush(mockCancelPushCallback);
 
         // Reader mode is disabled.
         verify(mNfcAdapter, times(1)).disableReaderMode(mActivity);
@@ -1169,7 +1168,7 @@ public class NFCTest {
 
         // Cancel the second push.
         CancelPushResponse mockCancelPushCallback = mock(CancelPushResponse.class);
-        nfc.cancelPush(NdefPushTarget.ANY, mockCancelPushCallback);
+        nfc.cancelPush(mockCancelPushCallback);
 
         // Reader mode is disabled after cancelPush is invoked.
         verify(mNfcAdapter, times(1)).disableReaderMode(mActivity);
@@ -1200,7 +1199,7 @@ public class NFCTest {
                         (Bundle) isNull());
 
         CancelPushResponse mockCancelPushCallback = mock(CancelPushResponse.class);
-        nfc.cancelPush(NdefPushTarget.ANY, mockCancelPushCallback);
+        nfc.cancelPush(mockCancelPushCallback);
 
         // Push was cancelled with OPERATION_CANCELLED.
         verify(mockPushCallback).call(mErrorCaptor.capture());
@@ -1218,26 +1217,6 @@ public class NFCTest {
 
         // Reader mode is disabled when there are no pending push / watch operations.
         verify(mNfcAdapter, times(1)).disableReaderMode(mActivity);
-    }
-
-    /**
-     * Test invalid NdefPushTarget.
-     */
-    @Test
-    @Feature({"NFCTest"})
-    public void testInvalidPushOptions() {
-        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
-        mDelegate.invokeCallback();
-
-        PushResponse mockCallback = mock(PushResponse.class);
-        // NdefPushTarget.PEER is not supported at present.
-        NdefPushOptions pushOptions = createNdefPushOptions();
-        pushOptions.target = NdefPushTarget.PEER;
-        nfc.push(createMojoNdefMessage(), pushOptions, mockCallback);
-
-        verify(mockCallback).call(mErrorCaptor.capture());
-        assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NdefErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -1267,7 +1246,6 @@ public class NFCTest {
      */
     private NdefPushOptions createNdefPushOptions() {
         NdefPushOptions pushOptions = new NdefPushOptions();
-        pushOptions.target = NdefPushTarget.ANY;
         pushOptions.ignoreRead = false;
         return pushOptions;
     }

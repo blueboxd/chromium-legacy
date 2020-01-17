@@ -61,8 +61,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/origin.h"
@@ -420,7 +420,7 @@ void TabWebContentsDelegateAndroid::OnDidBlockNavigation(
     content::WebContents* web_contents,
     const GURL& blocked_url,
     const GURL& initiator_url,
-    blink::NavigationBlockedReason reason) {
+    blink::mojom::NavigationBlockedReason reason) {
   ShowFramebustBlockInfobarInternal(web_contents, blocked_url);
 }
 

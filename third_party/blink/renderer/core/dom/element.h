@@ -774,7 +774,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   scoped_refptr<ComputedStyle> StyleForPseudoElement(
       const PseudoElementStyleRequest&,
       const ComputedStyle* parent_style = nullptr);
-  bool CanGeneratePseudoElement(PseudoId) const;
+  virtual bool CanGeneratePseudoElement(PseudoId) const;
 
   virtual bool MatchesDefaultPseudoClass() const { return false; }
   virtual bool MatchesEnabledPseudoClass() const { return false; }

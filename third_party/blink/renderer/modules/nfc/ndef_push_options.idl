@@ -4,10 +4,7 @@
 
 // https://w3c.github.io/web-nfc/#the-ndefpushoptions-dictionary
 
-enum NDEFPushTarget { "tag", "peer", "any" };
-
 dictionary NDEFPushOptions {
-    NDEFPushTarget target = "any";
     boolean ignoreRead = true;
     AbortSignal? signal;
 };

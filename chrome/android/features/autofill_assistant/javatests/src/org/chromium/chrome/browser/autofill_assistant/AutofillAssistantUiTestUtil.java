@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.autofill_assistant;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -283,6 +285,33 @@ class AutofillAssistantUiTestUtil {
                         }
                     }
                 });
+    }
+
+    /**
+     * Waits until keyboard is visible or not based on {@code isShowing}. Will automatically fail
+     * after a default timeout.
+     */
+    public static void waitUntilKeyboardMatchesCondition(
+            CustomTabActivityTestRule testRule, boolean isShowing) {
+        CriteriaHelper.pollInstrumentationThread(new Criteria(
+                "Timeout while waiting for the keyboard to be "
+                + (isShowing ? "visible" : "hidden")) {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    boolean isKeyboardShowing =
+                            testRule.getActivity()
+                                    .getWindowAndroid()
+                                    .getKeyboardDelegate()
+                                    .isKeyboardShowing(testRule.getActivity(),
+                                            testRule.getActivity().getCompositorViewHolder());
+                    assertThat("", isKeyboardShowing == isShowing);
+                    return true;
+                } catch (AssertionError e) {
+                    return false;
+                }
+            }
+        });
     }
 
     /**

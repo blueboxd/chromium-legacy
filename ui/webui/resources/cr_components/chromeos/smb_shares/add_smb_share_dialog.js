@@ -90,10 +90,19 @@ Polymer({
     },
 
     /** @private */
+    isKerberosEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isKerberosEnabled');
+      },
+    },
+
+    /** @private */
     authenticationMethod_: {
       type: String,
       value() {
-        return loadTimeData.getBoolean('isActiveDirectoryUser') ?
+        return loadTimeData.getBoolean('isActiveDirectoryUser') ||
+                loadTimeData.getBoolean('isKerberosEnabled') ?
             SmbAuthMethod.KERBEROS :
             SmbAuthMethod.CREDENTIALS;
       },
@@ -188,6 +197,14 @@ Polymer({
    */
   shouldShowCredentialUI_() {
     return this.authenticationMethod_ == SmbAuthMethod.CREDENTIALS;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowAuthenticationUI_() {
+    return this.isActiveDirectory_ || this.isKerberosEnabled_;
   },
 
   /**

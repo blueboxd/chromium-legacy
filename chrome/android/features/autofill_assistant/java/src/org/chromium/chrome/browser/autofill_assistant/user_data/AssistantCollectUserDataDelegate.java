@@ -44,4 +44,7 @@ public interface AssistantCollectUserDataDelegate {
 
     /** The value of a key/value pair has changed. */
     void onKeyValueChanged(String key, String value);
+
+    /** The focus on a text field has been lost */
+    void onTextFocusLost();
 }

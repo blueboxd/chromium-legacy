@@ -51,6 +51,9 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       blink::mojom::blink::ScrollDirection direction,
       ui::input_types::ScrollGranularity granularity) override;
   void DidAccessInitialDocument() override;
+  void DidBlockNavigation(const KURL& blocked_url,
+                          const KURL& initiator_url,
+                          mojom::NavigationBlockedReason reason) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

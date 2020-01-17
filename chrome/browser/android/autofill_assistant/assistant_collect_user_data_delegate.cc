@@ -177,6 +177,12 @@ void AssistantCollectUserDataDelegate::OnKeyValueChanged(
                                     SafeConvertJavaStringToNative(env, jvalue));
 }
 
+void AssistantCollectUserDataDelegate::OnTextFocusLost(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  ui_controller_->OnTextFocusLost();
+}
+
 base::android::ScopedJavaGlobalRef<jobject>
 AssistantCollectUserDataDelegate::GetJavaObject() {
   return java_assistant_collect_user_data_delegate_;

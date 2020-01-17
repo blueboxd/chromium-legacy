@@ -174,7 +174,7 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
   // Add an accept button to sign the user out.
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(
-      l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL)));
+      l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_BUTTON)));
 
   message_center::NotifierId notifier_id(
       message_center::NotifierType::SYSTEM_COMPONENT,
